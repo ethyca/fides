@@ -28,6 +28,9 @@ The types of changes are:
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
 
+### Docs
+* recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
+
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
