@@ -20,6 +20,7 @@ import React from "react";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
+import { utf8ToB64 } from "../common/utils";
 import {
   useCreateUserMutation,
   useUpdateUserPermissionsMutation,
@@ -44,7 +45,7 @@ const useUserForm = () => {
         username: values.username,
         first_name: values.first_name,
         last_name: values.last_name,
-        password: values.password,
+        password: utf8ToB64(values.password),
       };
 
       const createUserResult = await createUser(userBody);
