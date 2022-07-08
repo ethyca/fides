@@ -4,7 +4,8 @@ This module handles generating documentation from code.
 import json
 import sys
 
-from fidesapi.main import app
+from fidesctl.api.main import app
+
 
 def generate_openapi(outfile_dir: str) -> None:
     "Write out an openapi.json file for the API."

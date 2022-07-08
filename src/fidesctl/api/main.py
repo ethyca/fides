@@ -16,13 +16,13 @@ from loguru import logger as log
 from uvicorn import Config, Server
 
 import fidesctl
-from fidesapi import view
-from fidesapi.database import database
-from fidesapi.database.database import get_db_health
-from fidesapi.routes import crud, datamap, generate, validate, visualize
-from fidesapi.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
-from fidesapi.utils.errors import get_full_exception_name
-from fidesapi.utils.logger import setup as setup_logging
+from fidesctl.api import view
+from fidesctl.api.database import database
+from fidesctl.api.database.database import get_db_health
+from fidesctl.api.routes import crud, datamap, generate, validate, visualize
+from fidesctl.api.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fidesctl.api.utils.errors import get_full_exception_name
+from fidesctl.api.utils.logger import setup as setup_logging
 from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")

@@ -11,8 +11,8 @@ from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
-from fidesapi.utils.errors import (
+from fidesctl.api.sql_models import SqlAlchemyBase, sql_model_map
+from fidesctl.api.utils.errors import (
     AlreadyExistsError,
     QueryError,
     get_full_exception_name,

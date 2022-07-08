@@ -7,7 +7,7 @@ from typing import Callable, Dict, Union
 from fastapi import APIRouter, Response, status
 from pydantic import BaseModel
 
-from fidesapi.routes.util import (
+from fidesctl.api.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_okta_connector,

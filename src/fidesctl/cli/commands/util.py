@@ -112,7 +112,7 @@ def webserver(ctx: click.Context) -> None:
     Starts the fidesctl API server using Uvicorn on port 8080.
     """
     try:
-        from fidesapi.main import start_webserver
+        from fidesctl.api.main import start_webserver
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
         raise SystemExit
