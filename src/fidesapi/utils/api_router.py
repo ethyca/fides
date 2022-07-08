@@ -1,4 +1,4 @@
-"""Copy pasta'd from 
+"""Copy pasta'd from
 https://github.com/ethyca/fidesops/blob/a072f2a987e0f02e96c3b63a500b7bd6d9c4c8db/src/fidesops/util/api_router.py
 """
 
