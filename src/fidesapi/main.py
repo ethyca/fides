@@ -1,8 +1,6 @@
 """
 Contains the code that sets up the API.
 """
-
-
 from datetime import datetime
 from enum import Enum
 from logging import WARNING
@@ -27,19 +25,18 @@ from fidesctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()
+ROUTERS = (
+    crud.routers
+    + visualize.routers
+    + [view.router, generate.router, datamap.router, validate.router]
+)
 
 
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."
     routers = crud.routers + visualize.routers
-    for router in routers:
-        log.debug(f'Adding router to fidesctl: {" ".join(router.tags)}')
+    for router in ROUTERS:
         app.include_router(router)
-
-    app.include_router(view.router)
-    app.include_router(generate.router)
-    app.include_router(datamap.router)
-    app.include_router(validate.router)
 
 
 # Configure the routes here so we can generate the openapi json file
