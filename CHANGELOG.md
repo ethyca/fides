@@ -24,6 +24,7 @@ The types of changes are:
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+  * System scanning results: AWS systems are stored and can be selected for review
 * Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
