@@ -122,7 +122,7 @@ const Login: NextPage = () => {
                   colorScheme="primary"
                   display={["none", "none", "block"]}
                 >
-                  Sign into your account
+                  Sign in to your account
                 </Heading>
                 <Box
                   bg="white"
@@ -148,7 +148,7 @@ const Login: NextPage = () => {
                         />
                       </Flex>
                       <Heading fontSize="3xl" colorScheme="primary">
-                        Sign into your account
+                        Sign in to your account
                       </Heading>
                     </Stack>
                     <chakra.form

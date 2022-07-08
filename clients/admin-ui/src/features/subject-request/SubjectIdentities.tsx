@@ -16,7 +16,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
     <>
       <Flex direction="row" justifyContent="space-between">
         <Heading fontSize="lg" fontWeight="semibold" mb={4}>
-          Subject indentities
+          Subject identities
         </Heading>
         <Flex flexShrink={0} alignItems="flex-start">
           <PIIToggle />
