@@ -20,6 +20,7 @@ mysql_connector = "pymysql==1.0.0"
 mssql_connector = "pyodbc==4.0.32"
 snowflake_connector = "snowflake-sqlalchemy==1.3.4"
 redshift_connector = "sqlalchemy-redshift==0.8.8"
+# Remove this from optional
 fastapi = "fastapi==0.77.1"
 uvicorn = "uvicorn==0.17.6"
 aws_connector = "boto3==1.20.54"
