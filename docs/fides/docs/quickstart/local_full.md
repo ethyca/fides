@@ -10,10 +10,10 @@ See the [Prerequisites and Dependencies](../installation/prerequisites_dependenc
 
 ## Fidesctl installation
 
-The next step is to install fidesctl via pip with the required extras:
+The next step is to install fidesctl via pip:
 
 ```sh
-pip install "fidesctl[webserver]"
+pip install fidesctl
 ```
 
 For more information on pip installing fidesctl as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.

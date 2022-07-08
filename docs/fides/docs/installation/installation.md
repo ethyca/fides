@@ -10,7 +10,7 @@ When you install fidesctl, you need to [setup the database](database.md) which m
 
 Only `pip` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md)
 
-In some cases a lightweight installation might be desired, for instance, if the webserver is not needed. If this is the case, our `pip` installation supports optional dependencies.
+In some cases a lightweight installation might be desired. If this is the case, our `pip` installation supports optional dependencies.
 
 While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as the supported tools - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.
 
