@@ -250,10 +250,13 @@ def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesctlConfig) ->
     actual_result = _system.generate_system_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
+        organization_key="default_organization",
         okta_config=OktaConfig(
             orgUrl=OKTA_ORG_URL,
             token=os.environ["OKTA_CLIENT_TOKEN"],
         ),
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
     )
     assert actual_result
 
@@ -266,10 +269,13 @@ def test_scan_system_okta_success(
     _system.generate_system_okta(
         file_name=file_name,
         include_null=False,
+        organization_key="default_organization",
         okta_config=OktaConfig(
             orgUrl=OKTA_ORG_URL,
             token=os.environ["OKTA_CLIENT_TOKEN"],
         ),
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
     )
     _system.scan_system_okta(
         manifest_dir=file_name,
@@ -277,6 +283,7 @@ def test_scan_system_okta_success(
             orgUrl=OKTA_ORG_URL,
             token=os.environ["OKTA_CLIENT_TOKEN"],
         ),
+        organization_key="default_organization",
         coverage_threshold=100,
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
@@ -294,6 +301,7 @@ def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) -
                 token=os.environ["OKTA_CLIENT_TOKEN"],
             ),
             coverage_threshold=100,
+            organization_key="default_organization",
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
         )

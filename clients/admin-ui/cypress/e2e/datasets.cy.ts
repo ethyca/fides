@@ -57,9 +57,12 @@ describe("Dataset", () => {
 
     it("Can render an edit form for a dataset field with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("field-row-uuid").click();
-      cy.wait("@getDataCategory");
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("field-row-uuid")
+        .click()
+        .then(() => {
+          cy.wait("@getDataset");
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-description").should(
         "have.value",
         "User's unique ID"
@@ -72,8 +75,12 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset collection with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-collection").click();
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("modify-collection")
+        .click()
+        .then(() => {
+          cy.wait("@getDataset");
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-description").should(
         "have.value",
         "User information"
@@ -85,8 +92,12 @@ describe("Dataset", () => {
     it("Can render an edit form for a dataset with existing values", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("more-actions-btn").click();
-      cy.getByTestId("modify-dataset").click();
-      cy.getByTestId("edit-drawer-content");
+      cy.getByTestId("modify-dataset")
+        .click()
+        .then(() => {
+          cy.wait("@getDataset");
+          cy.getByTestId("edit-drawer-content");
+        });
       cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
       cy.getByTestId("input-description").should(
         "have.value",
@@ -220,6 +231,160 @@ describe("Dataset", () => {
         expect(interception.request.url).to.contain("demo_users_dataset");
       });
       cy.getByTestId("toast-success-msg");
+    });
+  });
+
+  describe("Data category checkbox tree", () => {
+    beforeEach(() => {
+      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+        "putDataset"
+      );
+    });
+    it("Can render chosen data categories", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      cy.get("[data-testid='checkbox-Unique ID'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      const ancestors = [
+        "User Data",
+        "Derived Data",
+        "Derived User Identifiable Data",
+      ];
+      ancestors.forEach((a) => {
+        cy.get(`[data-testid='checkbox-${a}'] > span`).should(
+          "have.attr",
+          "data-indeterminate"
+        );
+      });
+      cy.getByTestId("selected-categories").should(
+        "contain",
+        "user.derived.identifiable.unique_id"
+      );
+    });
+
+    it("Can deselect data categories", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("checkbox-Unique ID").click();
+      // should collapse away
+      cy.getByTestId("checkbox-Unique ID").should("not.exist");
+      cy.get("[data-testid='checkbox-User Data'] > span").should(
+        "not.have.attr",
+        "data-indeterminate"
+      );
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "not.contain",
+        "user.derived.identifiable.unique_id"
+      );
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields[5].data_categories).to.eql([]);
+      });
+    });
+
+    it("Can select more data categories", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("checkbox-Telemetry Data").click();
+      cy.getByTestId("checkbox-Account Data").click();
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "contain",
+        "user.derived.identifiable.unique_id"
+      );
+      cy.getByTestId("selected-categories").should(
+        "contain",
+        "user.derived.identifiable.telemetry"
+      );
+      cy.getByTestId("selected-categories").should("contain", "account");
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields[5].data_categories).to.eql([
+          "user.derived.identifiable.unique_id",
+          "user.derived.identifiable.telemetry",
+          "account",
+        ]);
+      });
+    });
+
+    it("Can interact with the checkbox tree properly", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      // expand account data
+      cy.getByTestId("expand-Account Data").click();
+      // select 1/2 children
+      cy.getByTestId("checkbox-Account Contact Data").click();
+      cy.get("[data-testid='checkbox-Account Contact Data'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      // parent should be indeterminate since not all children are checked
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "have.attr",
+        "data-indeterminate"
+      );
+      // now select all children
+      cy.getByTestId("checkbox-Payment Data").click();
+      // parent should be checked since all children are checked
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      // the children's children should be disabled and checked since the parent is selected
+      cy.get("[data-testid='checkbox-Account City'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      cy.get("[data-testid='checkbox-Account City'] > span").should(
+        "have.attr",
+        "data-disabled"
+      );
+      cy.getByTestId("done-btn").click();
+      const expectedSelected = [
+        "account.contact",
+        "account.payment",
+        "user.derived.identifiable.unique_id",
+      ];
+      expectedSelected.forEach((e) => {
+        cy.getByTestId("selected-categories").should("contain", e);
+      });
+    });
+
+    it("Should be able to clear selected", () => {
+      cy.visit("/dataset/demo_users");
+      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("checkbox-Account Data").click();
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "have.attr",
+        "data-checked"
+      );
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "contain",
+        "user.derived.identifiable.unique_id"
+      );
+      cy.getByTestId("selected-categories").should("contain", "account");
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("clear-btn").click();
+      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+        "not.have.attr",
+        "data-checked"
+      );
+      cy.getByTestId("done-btn").click();
+      cy.getByTestId("selected-categories").should(
+        "not.contain",
+        "user.derived.identifiable.unique_id"
+      );
     });
   });
 });

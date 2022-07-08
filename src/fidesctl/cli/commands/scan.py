@@ -12,6 +12,7 @@ from fidesctl.cli.options import (
     manifests_dir_argument,
     okta_org_url_option,
     okta_token_option,
+    organization_fides_key_option,
 )
 from fidesctl.cli.utils import (
     handle_aws_credentials_options,
@@ -94,6 +95,7 @@ def scan_system(ctx: click.Context) -> None:
 @credentials_id_option
 @okta_org_url_option
 @okta_token_option
+@organization_fides_key_option
 @coverage_threshold_option
 @with_analytics
 def scan_system_okta(
@@ -102,6 +104,7 @@ def scan_system_okta(
     credentials_id: str,
     org_url: str,
     token: str,
+    org_key: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -123,6 +126,7 @@ def scan_system_okta(
     _system.scan_system_okta(
         okta_config=okta_config,
         coverage_threshold=coverage_threshold,
+        organization_key=org_key,
         manifest_dir=manifests_dir,
         url=config.cli.server_url,
         headers=config.user.request_headers,
@@ -136,7 +140,7 @@ def scan_system_okta(
 @aws_access_key_id_option
 @aws_secret_access_key_option
 @aws_region_option
-@click.option("-o", "--organization", type=str, default="default_organization")
+@organization_fides_key_option
 @coverage_threshold_option
 @with_analytics
 def scan_system_aws(
@@ -146,7 +150,7 @@ def scan_system_aws(
     access_key_id: str,
     secret_access_key: str,
     region: str,
-    organization: str,
+    org_key: str,
     coverage_threshold: int,
 ) -> None:
     """
@@ -169,7 +173,7 @@ def scan_system_aws(
 
     _system.scan_system_aws(
         manifest_dir=manifests_dir,
-        organization_key=organization,
+        organization_key=org_key,
         aws_config=aws_config,
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
