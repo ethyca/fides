@@ -390,6 +390,28 @@ class TestAcquireAccessToken:
 
         new_client.delete(db)
 
+    def test_get_access_token_root_client(self, url, api_client):
+        data = {
+            "client_id": config.security.OAUTH_ROOT_CLIENT_ID,
+            "client_secret": config.security.OAUTH_ROOT_CLIENT_SECRET,
+        }
+
+        response = api_client.post(url, data=data)
+        jwt = json.loads(response.text).get("access_token")
+        assert 200 == response.status_code
+        assert (
+            data["client_id"]
+            == json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+                JWE_PAYLOAD_CLIENT_ID
+            ]
+        )
+        assert (
+            json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+                JWE_PAYLOAD_SCOPES
+            ]
+            == SCOPE_REGISTRY
+        )
+
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
