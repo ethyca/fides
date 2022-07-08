@@ -7,7 +7,7 @@ on:
     types: [labeled]
 
 jobs:
-  Integration-Tests-External:
+  External-Datastores:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     steps:
@@ -22,6 +22,14 @@ jobs:
           BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: make pytest-integration-external
+
+
+  External-SaaS-Connectors:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: SaaS Connector Tests
         env:
