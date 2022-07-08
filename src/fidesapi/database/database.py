@@ -5,7 +5,6 @@ from os import path
 
 from alembic import command, script
 from alembic.config import Config
-from alembic.migration import MigrationContext
 from alembic.runtime import migration
 from fideslang import DEFAULT_TAXONOMY
 from loguru import logger as log
@@ -110,7 +109,7 @@ def reset_db(database_url: str) -> None:
     connection = engine.connect()
     SqlAlchemyBase.metadata.drop_all(connection)
 
-    migration_context = MigrationContext.configure(connection)
+    migration_context = migration.MigrationContext.configure(connection)
     version = migration_context._version  # pylint: disable=protected-access
     if version.exists(connection):
         version.drop(connection)
