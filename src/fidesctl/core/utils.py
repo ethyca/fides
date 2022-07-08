@@ -130,7 +130,7 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
     repo = Repo()
     git_session = repo.git()
 
-    dirty_phrase = "Changes not staged for commit:"
+    dirty_phrases = ["Changes not staged for commit:", "Untracked files:"]
     git_status = git_session.status(dir_to_check).split("\n")
-    is_dirty = dirty_phrase in git_status
+    is_dirty = any(phrase in git_status for phrase in dirty_phrases)
     return is_dirty
