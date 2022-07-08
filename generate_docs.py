@@ -12,10 +12,10 @@ def generate_openapi(outfile_dir: str) -> None:
 
     outfile_name = "api/openapi.json"
     outfile_path = f"{outfile_dir}/{outfile_name}"
-    print(f"Generating OpenAPI JSON from fidesapi and writing to '{outfile_path}'...")
+    print(f"Generating OpenAPI JSON from the API and writing to '{outfile_path}'...")
     with open(outfile_path, "w") as outfile:
         json.dump(app.openapi(), outfile, indent=2)
-        print(f"Exported OpenAPI JSON from fidesapi to '{outfile_path}'")
+        print(f"Exported OpenAPI JSON from the API to '{outfile_path}'")
 
 
 if __name__ == "__main__":

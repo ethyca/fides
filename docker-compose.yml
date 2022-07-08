@@ -1,7 +1,7 @@
 services:
   fidesctl:
     image: ethyca/fidesctl:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesapi.main:app
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesctl.api.main:app
     healthcheck:
       test:
         [
