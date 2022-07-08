@@ -40,6 +40,7 @@ The types of changes are:
 * Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
 * Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
 * Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
+* Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
 
 ## Changed
 * Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
