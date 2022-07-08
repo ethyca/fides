@@ -28,7 +28,7 @@ log_serialization = ""
 local_mode = False
 server_host = "localhost"
 server_port = 8080
-server_protocol = "http
+server_protocol = "http"
 analytics_id = ""
 
 [user]
