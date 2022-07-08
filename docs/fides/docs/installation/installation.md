@@ -8,7 +8,7 @@ When you install fidesctl, you need to [setup the database](database.md) which m
 
 ## Installation Tools
 
-Only `pip` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md)
+Only `pip`/`pipx` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md) For environment isolation, the Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) when possible.
 
 In some cases a lightweight installation might be desired, for instance, if the webserver is not needed. If this is the case, our `pip` installation supports optional dependencies.
 
@@ -17,7 +17,7 @@ While there are some successes with using other tools like poetry or pip-tools, 
 **When this option works best**
 
 * This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
-* The only officially supported mechanisms of installation is pip.
+* The only officially supported mechanism of installation is pip.
 
 **Intended users**
 
