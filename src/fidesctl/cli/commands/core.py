@@ -142,6 +142,8 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 def sync(ctx: click.Context, manifests_dir: str) -> None:
     """
     Update local resource files by their fides_key to match their server versions.
+
+    Aborts the sync if there are unstaged or untracked files in the manifests dir.
     """
 
     config = ctx.obj["CONFIG"]
