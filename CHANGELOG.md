@@ -33,6 +33,7 @@ The types of changes are:
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
+* [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (https://github.com/ethyca/fidesops/pull/833)
 
 ### Docs
 * Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
