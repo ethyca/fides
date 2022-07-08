@@ -20,9 +20,10 @@ The types of changes are:
 ## [1.7.1](https://github.com/ethyca/fides/compare/1.6.1...1.7.1) - 2022-07-28
 ### Added
 * Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
-* Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
+* Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
 * Add ability to delete datasets from the UI [#827](https://github.com/ethyca/fides/pull/827)
 * Add Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
+* Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 
 
 ### Fixed
