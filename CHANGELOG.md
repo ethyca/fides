@@ -41,6 +41,11 @@ The types of changes are:
 * Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
 * Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
 
+## Changed
+* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
+* Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
+
+
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
 ### Added

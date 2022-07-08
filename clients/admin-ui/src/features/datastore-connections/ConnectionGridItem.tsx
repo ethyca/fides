@@ -25,7 +25,7 @@ function getConnectorDisplayName(connectionType: ConnectionType): string {
   }
 
   if (connectionType === ConnectionType.SAAS) {
-    return "Sass Connector";
+    return "SaaS Connector";
   }
 
   if (connectionType === ConnectionType.HTTPS) {
