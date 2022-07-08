@@ -1490,12 +1490,13 @@ You're not viewing the latest version.
 <h1 id="installation-from-pypi">Installation from PyPI</h1>
 <p>This page describes installations using the <code>fidesctl</code> package <a href="https://pypi.org/project/fidesctl/">published on PyPI</a>.</p>
 <h2 id="basic-installation">Basic Installation</h2>
+<p>The Fides team recommends using <a href="https://pypa.github.io/pipx/"><code>pipx</code></a> over <code>pip</code> for environment isolation. The following documentation assumes <code>pipx</code> is installed, but <code>pip</code> commands can be substituted when needed.</p>
 <p>To install Fidesctl, run:</p>
-<p><code>pip install fidesctl</code></p>
+<p><code>pipx install fidesctl</code></p>
 <p>With the default installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as <code>evaluate</code> and <code>parse</code> without the need to run a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.</p>
 <h2 id="installing-optional-dependencies">Installing Optional Dependencies</h2>
 <p>Fidesctl ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:</p>
-<p><code>pip install "fidesctl[extra_1, extra_2]"</code></p>
+<p><code>pipx install "fidesctl[extra_1, extra_2]"</code></p>
 <p>The optional dependencies are as follows:</p>
 <ul>
 <li><code>all</code>: includes all of the optional dependencies except for <code>mssql</code> due to platform-specific issues.</li>
