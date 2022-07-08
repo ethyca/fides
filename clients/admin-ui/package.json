@@ -18,6 +18,7 @@
     "prod-export": "npm run export && npm run copy-export",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
+    "cy:start": "next build && NODE_ENV=test next start",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./src/types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
