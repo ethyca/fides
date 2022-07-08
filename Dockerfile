@@ -116,4 +116,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesctl/api/build/static/
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesapi/build/static/

@@ -8,7 +8,7 @@ import yaml
 from fideslang import models
 from starlette.testclient import TestClient
 
-from fidesctl.api import main
+from fidesapi import main
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
 
