@@ -4,19 +4,21 @@ This page describes installations using the `fidesctl` package [published on PyP
 
 ## Basic Installation
 
+The Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) over `pip` for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
+  
 To install Fidesctl, run:
 
-`pip install fidesctl`
+`pipx install fidesctl`
 
 ## Installing Optional Dependencies
 
 Fidesctl ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:
 
-`pip install "fidesctl[extra_1]"`
+`pipx install "fidesctl[extra_1]"`
 
 or
 
-`pip install "fidesctl[extra_1, extra_2]"`
+`pipx install "fidesctl[extra_1, extra_2]"`
 
 The optional dependencies are as follows:
 

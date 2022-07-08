@@ -19,8 +19,9 @@ The types of changes are:
 
 ### Added
 
-* Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
-* Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
+* Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
+* Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
+* Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
@@ -35,6 +36,10 @@ The types of changes are:
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+
+### Docs
+
+* recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
 
 ### Fixed
 

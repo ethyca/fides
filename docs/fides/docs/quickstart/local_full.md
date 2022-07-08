@@ -10,13 +10,13 @@ See the [Prerequisites and Dependencies](../installation/prerequisites_dependenc
 
 ## Fidesctl installation
 
-The next step is to install fidesctl via pip:
+The next step is to install fidesctl via [`pipx`](https://pypa.github.io/pipx/) with the required extras:
 
 ```sh
-pip install fidesctl
+pipx install fidesctl
 ```
 
-For more information on pip installing fidesctl as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
+For more information on pipx, installing fidesctl, and other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
 
 ## Database installation
 
