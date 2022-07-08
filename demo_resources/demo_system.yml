@@ -33,7 +33,7 @@ system:
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:
-          #- user.provided.identifiable.contact # uncomment to add this category to the system
+          #- user.contact # uncomment to add this category to the system
           - user.device.cookie_id
         data_use: advertising
         data_subjects:
