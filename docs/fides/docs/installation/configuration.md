@@ -29,7 +29,7 @@ local_mode = False
 server_host = "localhost"
 server_port = 8080
 server_protocol = "http
-analytics_id = "test_analytics_id"
+analytics_id = ""
 
 [user]
 encryption_key = "test_encryption_key"
