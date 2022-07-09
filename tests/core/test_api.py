@@ -9,7 +9,7 @@ from fideslang import model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
-from fidesapi import main
+from fidesapi.routes import health
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import API_PREFIX
@@ -204,7 +204,7 @@ def test_api_ping(
     def mock_get_db_health(url: str) -> str:
         return database_health
 
-    monkeypatch.setattr(main, "get_db_health", mock_get_db_health)
+    monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
     response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
     assert response.status_code == expected_status_code
 
