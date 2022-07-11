@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
 ### Added
+
 * Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
@@ -31,11 +32,14 @@ The types of changes are:
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
+
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
 
 ### Docs
+
 * recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
 
 ### Fixed
@@ -45,6 +49,7 @@ The types of changes are:
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 
 ### Changed
+
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
@@ -103,7 +108,7 @@ The types of changes are:
 
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
-* Dataset UI and config wizard docs added (https://github.com/ethyca/fides/pull/697)
+* Dataset UI and config wizard docs added (<https://github.com/ethyca/fides/pull/697>)
 * The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed
