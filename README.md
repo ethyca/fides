@@ -23,13 +23,14 @@ Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ### System Requirements
 
-1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
-2. [Python](https://www.python.org/downloads/) (3.8+)
-3. [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
+* **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
+* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
+* [Python](https://www.python.org/downloads/) (3.8+)
+* [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
 
-Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system.md) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA).
+Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system/) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA).
 
 This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
@@ -131,7 +132,7 @@ For more information on getting started with Fides, how to configure and set up 
 
 - Documentation: <https://ethyca.github.io/fides/>
 - Tutorial: <https://ethyca.github.io/fides/tutorial/>
-- Deployment: <https://ethyca.github.io/fides/deployment/>
+- Installation: <https://ethyca.github.io/fides/installation/installation/>
 - Roadmap: <https://github.com/ethyca/fides/projects>
 - Website: www.ethyca.com/fides
 
