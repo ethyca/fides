@@ -105,6 +105,40 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    def test_create_privacy_request_stores_identities(
+        self,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                    "phone_number": TEST_PHONE_NUMBER,
+                },
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+        pr.delete(db=db)
+        assert run_access_request_mock.called
+
+    @mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_create_privacy_request_require_manual_approval(
         self,
         run_access_request_mock,

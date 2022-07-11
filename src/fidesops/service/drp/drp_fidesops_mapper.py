@@ -1,7 +1,7 @@
 import logging
 from typing import Dict
 
-from fidesops.models.privacy_request import PrivacyRequestStatus
+from fidesops.models.privacy_request import PrivacyRequestStatus, ProvidedIdentityType
 from fidesops.schemas.drp_privacy_request import DrpIdentity
 from fidesops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fidesops.schemas.redis_cache import PrivacyRequestIdentity
@@ -22,9 +22,11 @@ class DrpFidesopsMapper:
         This class also allows us to implement custom logic to handle "verified" id props.
         """
         fidesops_identity_kwargs: Dict[str, str] = {}
-        DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP: Dict[str, str] = {
-            "email": "email",
-            "phone_number": "phone_number",
+        DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP: Dict[
+            str, ProvidedIdentityType
+        ] = {
+            "email": ProvidedIdentityType.email,
+            "phone_number": ProvidedIdentityType.phone_number,
         }
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
@@ -32,7 +34,9 @@ class DrpFidesopsMapper:
                     f"Identity attribute of {attr} is not supported by Fidesops at this time. Continuing to use other identity props, if provided."
                 )
             else:
-                fidesops_prop: str = DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP[attr]
+                fidesops_prop: str = DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP[
+                    attr
+                ].value
                 fidesops_identity_kwargs[fidesops_prop] = val
         return PrivacyRequestIdentity(**fidesops_identity_kwargs)
 

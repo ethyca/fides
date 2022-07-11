@@ -21,6 +21,7 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
 from fidesops.util.data_category import DataCategory
 
@@ -176,7 +177,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
     for policy in policies:
         for status in PrivacyRequestStatus.__members__.values():
-            PrivacyRequest.create(
+            pr = PrivacyRequest.create(
                 db=db,
                 data={
                     "external_id": f"ext-{uuid4()}",
@@ -187,6 +188,13 @@ def create_test_data(db: orm.Session) -> FidesUser:
                     "policy_id": policy.id,
                     "client_id": policy.client_id,
                 },
+            )
+            pr.persist_identity(
+                db=db,
+                identity=PrivacyRequestIdentity(
+                    email="test@example.com",
+                    phone_number="+1 234 567 8910",
+                ),
             )
 
     print("Adding connection configs")
