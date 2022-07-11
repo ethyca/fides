@@ -28,6 +28,7 @@ The types of changes are:
 
 ### Developer Experience
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
+* Reduce docker image size [846](https://github.com/ethyca/fidesops/pull/846)
 
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)

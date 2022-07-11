@@ -3,9 +3,23 @@
 .DS_Store
 .git
 .mypy_cache
+.github
+.pytest_cache
+.python-version
 
-venv/
 clients/admin-ui/node_modules
 clients/admin-ui/.next
 clients/privacy-center/node_modules
 clients/privacy-center/.next
+
+.venv
+venv/
+env/
+
+__pycache__/
+**.*.pyc
+**.*.pyo
+**.*.pyd
+
+Dockerfile
+docker-compose*
