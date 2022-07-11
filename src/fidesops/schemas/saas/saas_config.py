@@ -184,6 +184,7 @@ class SaaSType(Enum):
     mailchimp = "mailchimp"
     hubspot = "hubspot"
     outreach = "outreach"
+    salesforce = "salesforce"
     segment = "segment"
     sentry = "sentry"
     stripe = "stripe"
