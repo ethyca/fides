@@ -169,25 +169,20 @@ def read_index() -> Response:
     return FileResponse(WEBAPP_INDEX)
 
 
-@app.get("/{catchall:path}", response_class=FileResponse, tags=["Default"])
+@app.get(
+    str(WEBAPP_DIRECTORY) + "/{catchall:path}",
+    response_class=FileResponse,
+    tags=["Default"],
+)
 def read_other_paths(request: Request) -> FileResponse:
     """
-    Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
+    Return related frontend files.
     """
-    # check first if requested file exists (for frontend assets)
+
     path = request.path_params["catchall"]
     file = WEBAPP_DIRECTORY / Path(path)
-    if file.exists():
-        return FileResponse(file)
 
-    # raise 404 for anything that should be backend endpoint but we can't find it
-    if path.startswith(API_PREFIX[1:]):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
-        )
-
-    # otherwise return the index
-    return FileResponse(WEBAPP_INDEX)
+    return FileResponse(file) if file.exists() else FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:
