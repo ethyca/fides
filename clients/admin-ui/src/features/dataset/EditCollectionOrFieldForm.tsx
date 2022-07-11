@@ -84,6 +84,7 @@ const EditCollectionOrFieldForm = ({
               name="description"
               label="Description"
               tooltip={descriptionTooltip}
+              data-testid="description-input"
             />
             <CustomSelect
               name="data_qualifier"
@@ -91,6 +92,7 @@ const EditCollectionOrFieldForm = ({
               options={IDENTIFIER_OPTIONS}
               tooltip={dataQualifierTooltip}
               isSearchable={false}
+              data-testid="identifiability-input"
             />
             <DataCategoryInput
               dataCategories={allDataCategories}
@@ -103,7 +105,12 @@ const EditCollectionOrFieldForm = ({
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
             </Button>
-            <Button type="submit" colorScheme="primary" size="sm">
+            <Button
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              data-testid="save-btn"
+            >
               Save
             </Button>
           </Box>

@@ -13,7 +13,7 @@ fidesctl>=1.0.0
 Then, install the dependencies by running:
 
 ```sh
-pip install -r requirements.txt
+pipx install -r requirements.txt
 ```
 
 ## Initializing Fidesctl

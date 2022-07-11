@@ -11,19 +11,23 @@ import {
   useToast,
 } from "@fidesui/react";
 import { useFormik } from "formik";
-import type { NextPage } from "next";
 import React, { useState } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
-
-import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
-} from "./organization.slice";
+} from "~/features/organization";
 
-const useOrganizationInfoForm = (handleChangeStep: Function) => {
+import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
+import { changeStep } from "./config-wizard.slice";
+
+const useOrganizationInfoForm = () => {
+  const dispatch = useAppDispatch();
+  const handleSuccess = () => dispatch(changeStep());
+
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
@@ -66,7 +70,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
           return;
         }
         toast.closeAll();
-        handleChangeStep(1);
+        handleSuccess();
       } else {
         const updateOrganizationResult = await updateOrganization(
           organizationBody
@@ -87,7 +91,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
           return;
         }
         toast.closeAll();
-        handleChangeStep(1);
+        handleSuccess();
       }
 
       setIsLoading(false);
@@ -114,9 +118,7 @@ const useOrganizationInfoForm = (handleChangeStep: Function) => {
   return { ...formik, isLoading };
 };
 
-const OrganizationInfoForm: NextPage<{
-  handleChangeStep: Function;
-}> = ({ handleChangeStep }) => {
+const OrganizationInfoForm = () => {
   const {
     errors,
     handleBlur,
@@ -125,7 +127,7 @@ const OrganizationInfoForm: NextPage<{
     isLoading,
     touched,
     values,
-  } = useOrganizationInfoForm(handleChangeStep);
+  } = useOrganizationInfoForm();
 
   return (
     <chakra.form onSubmit={handleSubmit} w="100%">

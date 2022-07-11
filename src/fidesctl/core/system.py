@@ -154,25 +154,51 @@ def generate_system_aws(
     return file_name
 
 
-def generate_system_okta(
-    okta_config: Optional[OktaConfig], file_name: str, include_null: bool
-) -> str:
+async def generate_okta_systems(
+    organization: Organization, okta_config: Optional[OktaConfig]
+) -> List[System]:
     """
-    Given an organization url, generates a system manifest from existing Okta
-    applications.
+    Given an okta configuration, calls okta for a list of
+    applications and returns the corresponding systems.
     """
-
-    _check_okta_connector_import()
 
     import fidesctl.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
-    okta_applications = asyncio.run(
-        okta_connector.list_okta_applications(okta_client=okta_client)
+    okta_applications = await okta_connector.list_okta_applications(
+        okta_client=okta_client
     )
     okta_systems = okta_connector.create_okta_systems(
-        okta_applications=okta_applications
+        okta_applications=okta_applications, organization_key=organization.fides_key
     )
+    return okta_systems
+
+
+def generate_system_okta(
+    organization_key: str,
+    okta_config: Optional[OktaConfig],
+    file_name: str,
+    include_null: bool,
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+) -> str:
+    """
+    Generates a system manifest from existing Okta applications.
+    """
+
+    _check_okta_connector_import()
+
+    organization = get_organization(
+        organization_key=organization_key,
+        manifest_organizations=[],
+        url=url,
+        headers=headers,
+    )
+
+    okta_systems = asyncio.run(
+        generate_okta_systems(organization=organization, okta_config=okta_config)
+    )
+
     write_system_manifest(
         file_name=file_name, include_null=include_null, systems=okta_systems
     )
@@ -357,14 +383,15 @@ def scan_system_aws(
 
 def scan_system_okta(
     manifest_dir: str,
+    organization_key: str,
     okta_config: Optional[OktaConfig],
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> None:
     """
-    Given an organization url, fetches Okta applications and compares them
-    against existing systems in the server and manifest supplied.
+    Fetches Okta applications and compares them against existing
+    systems in the server and manifest supplied.
     """
 
     _check_okta_connector_import()
@@ -375,15 +402,19 @@ def scan_system_okta(
         url=url, headers=headers, exclude_systems=manifest_systems
     )
 
-    import fidesctl.connectors.okta as okta_connector
+    organization = get_organization(
+        organization_key=organization_key,
+        manifest_organizations=manifest_taxonomy.organization
+        if manifest_taxonomy
+        else [],
+        url=url,
+        headers=headers,
+    )
 
-    okta_client = okta_connector.get_okta_client(okta_config)
-    okta_applications = asyncio.run(
-        okta_connector.list_okta_applications(okta_client=okta_client)
+    okta_systems = asyncio.run(
+        generate_okta_systems(organization=organization, okta_config=okta_config)
     )
-    okta_systems = okta_connector.create_okta_systems(
-        okta_applications=okta_applications
-    )
+
     if len(okta_systems) < 1:
         echo_red("Okta did not return any applications to scan systems")
         raise SystemExit(1)

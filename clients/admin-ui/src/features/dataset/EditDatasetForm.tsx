@@ -34,7 +34,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
     description: values.description ?? "",
     retention: values.retention ?? "",
     data_qualifier: values.data_qualifier,
-    third_country_transfers: values.third_country_transfers,
+    third_country_transfers: values.third_country_transfers ?? [],
     data_categories: values.data_categories,
   };
   const allDataCategories = useSelector(selectDataCategories);
@@ -66,22 +66,26 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               name="name"
               label="Name"
               tooltip={DATASET.name.tooltip}
+              data-testid="name-input"
             />
             <CustomTextInput
               name="description"
               label="Description"
               tooltip={DATASET.description.tooltip}
+              data-testid="description-input"
             />
             <CustomTextInput
               name="retention"
               label="Retention period"
               tooltip={DATASET.retention.tooltip}
+              data-testid="retention-input"
             />
             <CustomSelect
               name="data_qualifier"
               label="Identifiability"
               options={DATA_QUALIFIERS_OPTIONS}
               tooltip={DATASET.data_qualifiers.tooltip}
+              data-testid="identifiability-input"
             />
             <CustomMultiSelect
               name="third_country_transfers"
@@ -89,6 +93,7 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
               tooltip={DATASET.third_country_transfers.tooltip}
               isSearchable
               options={COUNTRY_OPTIONS}
+              data-testid="geography-input"
             />
             <DataCategoryInput
               dataCategories={allDataCategories}
@@ -101,7 +106,12 @@ const EditDatasetForm = ({ values, onClose, onSubmit }: Props) => {
             <Button onClick={onClose} mr={2} size="sm" variant="outline">
               Cancel
             </Button>
-            <Button type="submit" colorScheme="primary" size="sm">
+            <Button
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              data-testid="save-btn"
+            >
               Save
             </Button>
           </Box>
