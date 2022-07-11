@@ -1493,9 +1493,10 @@ You're not viewing the latest version.
 <p>The Fides team recommends using <a href="https://pypa.github.io/pipx/"><code>pipx</code></a> over <code>pip</code> for environment isolation. The following documentation assumes <code>pipx</code> is installed, but <code>pip</code> commands can be substituted when needed.</p>
 <p>To install Fidesctl, run:</p>
 <p><code>pipx install fidesctl</code></p>
-<p>With the default installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as <code>evaluate</code> and <code>parse</code> without the need to run a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.</p>
 <h2 id="installing-optional-dependencies">Installing Optional Dependencies</h2>
 <p>Fidesctl ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:</p>
+<p><code>pipx install "fidesctl[extra_1]"</code></p>
+<p>or</p>
 <p><code>pipx install "fidesctl[extra_1, extra_2]"</code></p>
 <p>The optional dependencies are as follows:</p>
 <ul>
@@ -1506,10 +1507,9 @@ You're not viewing the latest version.
 <li><code>postgres</code>: includes the Postgres database connector.</li>
 <li><code>redshift</code>: includes the Redshift database connector.</li>
 <li><code>snowflake</code>: includes the Snowflake database connector.</li>
-<li><code>webserver</code>: includes FastAPI and the Postgres database connector. Enables <code>fidesctl webserver</code>.</li>
 </ul>
 <p><strong>NOTE:</strong> When installing database adapters there may be other dependencies, such as the <a href="https://www.postgresql.org/docs/current/auth-pg-hba-conf.html">pg_hba.conf</a> file that usually requires a Postgres installation or the <a href="https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server">Microsoft ODBC Driver for SQL Server</a></p>
-<p><strong>Apple M1 users of MSSQL:</strong> Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: https://github.com/mkleehammer/pyodbc/issues/846</p>
+<p><strong>Apple M1 users of MSSQL:</strong> Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: <a href="https://github.com/mkleehammer/pyodbc/issues/846">https://github.com/mkleehammer/pyodbc/issues/846</a></p>
 
               
             </article>
