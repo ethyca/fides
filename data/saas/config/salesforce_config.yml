@@ -1,6 +1,7 @@
 saas_config:
   fides_key: salesforce_connector_example
   name: Salesforce SaaS Config
+  type: salesforce
   description: A sample schema representing the Salesforce connector for Fidesops
   version: 0.0.1
 
