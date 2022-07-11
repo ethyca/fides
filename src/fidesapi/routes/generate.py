@@ -20,8 +20,10 @@ from fidesapi.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
+    DatabaseConfig,
     OktaConfig,
 )
+from fidesctl.core.dataset import generate_db_datasets
 from fidesctl.core.system import generate_aws_systems, generate_okta_systems
 
 
@@ -31,6 +33,7 @@ class ValidTargets(str, Enum):
     """
 
     AWS = "aws"
+    DB = "db"
     OKTA = "okta"
 
 
@@ -49,7 +52,7 @@ class Generate(BaseModel):
     Defines attributes for generating resources included in a request.
     """
 
-    config: Union[AWSConfig, OktaConfig]
+    config: Union[AWSConfig, OktaConfig, DatabaseConfig]
     target: ValidTargets
     type: GenerateTypes
 
@@ -61,7 +64,11 @@ class Generate(BaseModel):
         pair (returning an error on an ('aws', 'dataset') as an example).
         """
         target_type = (values.get("target"), values.get("type"))
-        valid_target_types = [("aws", "systems"), ("okta", "systems")]
+        valid_target_types = [
+            ("aws", "systems"),
+            ("okta", "systems"),
+            ("db", "datasets"),
+        ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
         return values
@@ -111,6 +118,7 @@ async def generate(
     Currently generates Fides resources for the following:
     * AWS: Systems
     * Okta: Systems
+    * DB: Datasets
 
     In the future, this will include options for other Systems & Datasets,
     examples include:
@@ -126,6 +134,10 @@ async def generate(
             generate_results = generate_aws(
                 aws_config=generate_request_payload.generate.config,
                 organization=organization,
+            )
+        elif generate_request_payload.generate.target.lower() == "db":
+            generate_results = generate_db(
+                db_config=generate_request_payload.generate.config,
             )
         elif generate_request_payload.generate.target.lower() == "okta":
             generate_results = await generate_okta(
@@ -149,6 +161,7 @@ def generate_aws(
     """
     log.info("Generating systems from AWS")
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
+
     return [i.dict(exclude_none=True) for i in aws_systems]
 
 
@@ -164,3 +177,13 @@ async def generate_okta(
         organization=organization, okta_config=okta_config
     )
     return [i.dict(exclude_none=True) for i in okta_systems]
+
+
+def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
+    """
+    Returns a list of datasets found in a database.
+    """
+    log.info("Generating datasets from database")
+    db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
+
+    return [i.dict(exclude_none=True) for i in db_datasets]
