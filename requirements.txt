@@ -7,7 +7,7 @@ cryptography~=3.4.8
 dask==2022.6.1
 emails
 fastapi-caching[redis]
-fastapi-pagination[sqlalchemy]~= 0.8.3
+fastapi-pagination[sqlalchemy]~= 0.9.3
 fastapi[all]==0.78.0
 fideslang==1.0.0
 fideslib==2.2.2
