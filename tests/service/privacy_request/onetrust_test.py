@@ -57,10 +57,11 @@ def test_intake_onetrust_requests_success(
     policy = _create_mock_policy(client, db, storage_config_onetrust)
     # mock onetrust auth
     mock_get_onetrust_access_token.return_value = "124-asdf-23412424"
+    TEST_EMAIL = "some-customer@mail.com"
 
     # mock onetrust requests
     mock_request_1: OneTrustRequest = OneTrustRequest()
-    mock_request_1.email = "some-customer@mail.com"
+    mock_request_1.email = TEST_EMAIL
     mock_request_1.requestQueueRefId = "23xrnqq3crwf"
     mock_request_1.dateCreated = "2021-08-09T12:49:47.983Z"
     mock_request_2: OneTrustRequest = OneTrustRequest()
@@ -115,6 +116,8 @@ def test_intake_onetrust_requests_success(
         field="external_id",
         value=mock_subtask_1.subTaskId,
     )
+    persisted_identity = pr.get_persisted_identity()
+    assert persisted_identity.email == TEST_EMAIL
     assert pr is not None
     assert finish_processing_mock.called
     # clean up

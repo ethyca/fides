@@ -152,7 +152,12 @@ class OneTrustService:
             "client_id": onetrust_policy.client_id,
             "external_id": subtask_id,
         }
+
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+        privacy_request.persist_identity(
+            db=db,
+            identity=PrivacyRequestIdentity(email=identity.email),
+        )
         privacy_request.cache_identity(identity)
         try:
             queue_privacy_request(privacy_request_id=privacy_request.id)

@@ -6,6 +6,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from celery.result import AsyncResult
+from fideslib.cryptography.cryptographic_util import hash_with_salt
 from fideslib.db.base import Base
 from fideslib.db.base_class import FidesBase
 from fideslib.models.audit_log import AuditLog
@@ -17,12 +18,17 @@ from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
 
 from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.db.base_class import JSONTypeOverride
 from fidesops.graph.config import CollectionAddress
 from fidesops.models.policy import (
     ActionType,
@@ -202,13 +208,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def delete(self, db: Session) -> None:
         """
-        Clean up the cached data related to this privacy request before deleting this
-        object from the database
+        Clean up the cached and persisted data related to this privacy request before
+        deleting this object from the database
         """
         cache: FidesopsRedis = get_cache()
         all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
         for key in all_keys:
             cache.delete(key)
+
+        for provided_identity in self.provided_identities:
+            provided_identity.delete(db=db)
         super().delete(db=db)
 
     def cache_identity(self, identity: PrivacyRequestIdentity) -> None:
@@ -221,6 +230,39 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     get_identity_cache_key(self.id, key),
                     value,
                 )
+
+    def persist_identity(self, db: Session, identity: PrivacyRequestIdentity) -> None:
+        """
+        Stores the identity provided with the privacy request in a secure way, compatible with
+        blind indexing for later searching and audit purposes.
+        """
+        identity_dict: Dict[str, Any] = dict(identity)
+        for key, value in identity_dict.items():
+            if value is not None:
+                hashed_value = ProvidedIdentity.hash_value(value)
+                ProvidedIdentity.create(
+                    db=db,
+                    data={
+                        "privacy_request_id": self.id,
+                        "field_name": key,
+                        # We don't need to manually encrypt this field, it's done at the ORM level
+                        "encrypted_value": {"value": value},
+                        "hashed_value": hashed_value,
+                    },
+                )
+
+    def get_persisted_identity(self) -> PrivacyRequestIdentity:
+        """
+        Retrieves persisted identity fields from the DB.
+        """
+        schema = PrivacyRequestIdentity()
+        for field in self.provided_identities:
+            setattr(
+                schema,
+                field.field_name.value,
+                field.encrypted_value["value"],
+            )
+        return schema
 
     def cache_task_id(self, task_id: str) -> None:
         """Sets a task_id for this privacy request's asynchronous execution."""
@@ -491,6 +533,67 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "finished_processing_at": datetime.utcnow(),
             },
         )
+
+
+class ProvidedIdentityType(EnumType):
+    """Enum for privacy request identity types"""
+
+    email = "email"
+    phone_number = "phone_number"
+
+
+class ProvidedIdentity(Base):  # pylint: disable=R0904
+    """
+    A table for storing identity fields and values provided at privacy request
+    creation time.
+    """
+
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+        nullable=False,
+    )
+    privacy_request = relationship(
+        PrivacyRequest,
+        backref="provided_identities",
+    )  # Which privacy request this identity belongs to
+
+    field_name = Column(
+        EnumColumn(ProvidedIdentityType),
+        index=False,
+        nullable=False,
+    )
+    hashed_value = Column(
+        String,
+        index=True,
+        unique=False,
+        nullable=True,
+    )  # This field is used as a blind index for exact match searches
+    encrypted_value = Column(
+        MutableDict.as_mutable(
+            StringEncryptedType(
+                JSONTypeOverride,
+                config.security.APP_ENCRYPTION_KEY,
+                AesGcmEngine,
+                "pkcs5",
+            )
+        ),
+        nullable=True,
+    )  # Type bytea in the db
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: str,
+        encoding: str = "UTF-8",
+    ) -> tuple[str, str]:
+        """Utility function to hash a user's password with a generated salt"""
+        SALT = "a-salt"
+        hashed_value = hash_with_salt(
+            value.encode(encoding),
+            SALT.encode(encoding),
+        )
+        return hashed_value
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

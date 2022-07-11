@@ -43,8 +43,12 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
         cache,
     ):
-
-        identity = {"email": "test@example.com"}
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        identity = {
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE_NUMBER,
+        }
         encoded_identity: str = jwt.encode(
             identity, config.security.DRP_JWT_SECRET, algorithm="HS256"
         )
@@ -84,13 +88,17 @@ class TestCreateDrpPrivacyRequest:
         )
         assert (
             cache.get(identity_key)
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.4I8XLWnTYp8oMHjN2ypP3Hpg45DIaGNAEmj1QCYONUI"
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJwaG9uZV9udW1iZXIiOiIrMSAyMzQgNTY3IDg5MTAifQ.kHV4ru6vxQR96Meae31oKIU7mMnTJgt1cnli6GLUBFk"
         )
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute="email",
         )
         assert cache.get(fidesops_identity_key) == identity["email"]
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+
         pr.delete(db=db)
         assert run_access_request_mock.called
 

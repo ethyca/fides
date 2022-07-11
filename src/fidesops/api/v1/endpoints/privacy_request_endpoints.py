@@ -178,6 +178,9 @@ def create_privacy_request(
 
         try:
             privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request.persist_identity(
+                db=db, identity=privacy_request_data.identity
+            )
 
             cache_data(
                 privacy_request,
