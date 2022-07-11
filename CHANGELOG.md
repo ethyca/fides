@@ -27,6 +27,7 @@ The types of changes are:
 * Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
+* Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
