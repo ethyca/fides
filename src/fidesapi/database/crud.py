@@ -4,6 +4,7 @@ generated programmatically for each resource.
 """
 from typing import Dict, List, Tuple
 
+from fideslib.db.base import Base
 from loguru import logger as log
 from sqlalchemy import column
 from sqlalchemy import delete as _delete
@@ -13,15 +14,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 from fidesapi.database.session import async_session
-from fidesapi.sql_models import SqlAlchemyBase
 from fidesapi.utils import errors
 
 
 # CRUD Functions
 async def create_resource(
-    sql_model: SqlAlchemyBase,
+    sql_model: Base,
     resource_dict: Dict,
-) -> SqlAlchemyBase:
+) -> Base:
     """Create a resource in the database."""
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
@@ -53,7 +53,7 @@ async def create_resource(
         return await get_resource(sql_model, resource_dict["fides_key"])
 
 
-async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
+async def get_resource(sql_model: Base, fides_key: str) -> Base:
     """
     Get a resource from the databse by its FidesKey.
 
@@ -80,7 +80,7 @@ async def get_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyB
         return sql_resource
 
 
-async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
+async def list_resource(sql_model: Base) -> List[Base]:
     """
     Get a list of all of the resources of this type from the database.
 
@@ -104,7 +104,7 @@ async def list_resource(sql_model: SqlAlchemyBase) -> List[SqlAlchemyBase]:
         return sql_resources
 
 
-async def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict) -> Dict:
+async def update_resource(sql_model: Base, resource_dict: Dict) -> Dict:
     """Update a resource in the database by its fides_key."""
 
     with log.contextualize(
@@ -131,7 +131,7 @@ async def update_resource(sql_model: SqlAlchemyBase, resource_dict: Dict) -> Dic
 
 
 async def upsert_resources(
-    sql_model: SqlAlchemyBase,
+    sql_model: Base,
     resource_dicts: List[Dict],
 ) -> Tuple[int, int]:
     """
@@ -180,7 +180,7 @@ async def upsert_resources(
                     raise error
 
 
-async def delete_resource(sql_model: SqlAlchemyBase, fides_key: str) -> SqlAlchemyBase:
+async def delete_resource(sql_model: Base, fides_key: str) -> Base:
     """Delete a resource by its fides_key."""
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):

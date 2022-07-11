@@ -6,18 +6,19 @@ from os import path
 from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
-from fideslang import DEFAULT_TAXONOMY
+from fideslib.db.base import Base
 from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fidesapi.sql_models import SqlAlchemyBase, sql_model_map
+from fidesapi.sql_models import sql_model_map
 from fidesapi.utils.errors import (
     AlreadyExistsError,
     QueryError,
     get_full_exception_name,
 )
 from fidesctl.core.utils import get_db_engine
+from fideslang import DEFAULT_TAXONOMY
 
 from .crud import create_resource, upsert_resources
 
@@ -107,7 +108,7 @@ def reset_db(database_url: str) -> None:
     log.info("Resetting database")
     engine = get_db_engine(database_url)
     connection = engine.connect()
-    SqlAlchemyBase.metadata.drop_all(connection)
+    Base.metadata.drop_all(connection)
 
     migration_context = migration.MigrationContext.configure(connection)
     version = migration_context._version  # pylint: disable=protected-access
