@@ -8,7 +8,7 @@ from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
 from fidesctl.cli.utils import check_server, send_init_analytics, with_analytics
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.core.utils import echo_green
 
 
 @click.command()
@@ -111,10 +111,7 @@ def webserver(ctx: click.Context) -> None:
     """
     Starts the fidesctl API server using Uvicorn on port 8080.
     """
-    try:
-        from fidesctl.api.main import start_webserver
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[webserver]"')
-        raise SystemExit
+    # This has to be here to avoid a circular dependency
+    from fidesctl.api.main import start_webserver
 
     start_webserver()

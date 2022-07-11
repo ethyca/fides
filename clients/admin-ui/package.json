@@ -18,6 +18,7 @@
     "prod-export": "npm run export && npm run copy-export",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
+    "cy:start": "next build && NODE_ENV=test next start",
     "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./src/types/api --exportCore false --exportServices false --indent 2"
   },
   "dependencies": {
@@ -38,7 +39,7 @@
     "i18n-iso-countries": "^7.4.0",
     "js-yaml": "^4.1.0",
     "lodash.debounce": "^4.0.8",
-    "msw": "^0.29.0",
+    "msw": "^0.43.0",
     "next": "12.1.0",
     "next-auth": "^4.9.0",
     "next-redux-wrapper": "^7.0.5",
