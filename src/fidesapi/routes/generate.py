@@ -117,6 +117,7 @@ async def generate(
     Currently generates Fides resources for the following:
     * AWS: Systems
     * Okta: Systems
+    * DB: Datasets
 
     In the future, this will include options for other Systems & Datasets,
     examples include:
