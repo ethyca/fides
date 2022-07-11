@@ -3454,7 +3454,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate__post",
         "requestBody": {
           "content": {
@@ -4119,6 +4119,20 @@
         },
         "description": "The DataUse resource model."
       },
+      "DatabaseConfig": {
+        "title": "DatabaseConfig",
+        "required": [
+          "connection_string"
+        ],
+        "type": "object",
+        "properties": {
+          "connection_string": {
+            "title": "Connection String",
+            "type": "string"
+          }
+        },
+        "description": "The model for the connection config for databases"
+      },
       "Dataset": {
         "title": "Dataset",
         "required": [
@@ -4393,6 +4407,9 @@
               },
               {
                 "$ref": "#/components/schemas/OktaConfig"
+              },
+              {
+                "$ref": "#/components/schemas/DatabaseConfig"
               }
             ]
           },
@@ -5024,6 +5041,7 @@
         "title": "ValidTargets",
         "enum": [
           "aws",
+          "db",
           "okta"
         ],
         "type": "string",
