@@ -63,6 +63,7 @@ const DataCategoryDropdown = ({
         _active={{ backgroundColor: "transparent" }}
         rightIcon={<ArrowDownLineIcon />}
         width="100%"
+        data-testid="data-category-dropdown"
       >
         Select data categories
       </MenuButton>
@@ -85,6 +86,7 @@ const DataCategoryDropdown = ({
                   mr={2}
                   width="auto"
                   closeOnSelect={false}
+                  data-testid="clear-btn"
                 >
                   Clear
                 </MenuItem>
@@ -97,6 +99,7 @@ const DataCategoryDropdown = ({
                   _hover={{ backgroundColor: "primary.600" }}
                   onClick={() => onChecked(internalChecked)}
                   width="auto"
+                  data-testid="done-btn"
                 >
                   Done
                 </MenuItem>
