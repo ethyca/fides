@@ -5,7 +5,7 @@ import io
 import logging
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
+from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
@@ -15,6 +15,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from pydantic import conlist
+from sqlalchemy import column
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -59,6 +60,7 @@ from fidesops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
 )
 from fidesops.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fidesops.schemas.external_https import PrivacyRequestResumeFormat
@@ -293,8 +295,10 @@ def execution_logs_by_dataset_name(
 
 
 def _filter_privacy_request_queryset(
+    db: Session,
     query: Query,
     request_id: Optional[str] = None,
+    identity: Optional[str] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -337,6 +341,17 @@ def _filter_privacy_request_queryset(
                 status_code=HTTP_400_BAD_REQUEST,
                 detail=f"Value specified for {field_name}_lt: {end} must be after {field_name}_gt: {start}.",
             )
+
+    if identity:
+        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identities: Set[str] = {
+            identity[0]
+            for identity in ProvidedIdentity.filter(
+                db=db,
+                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+            ).values(column("privacy_request_id"))
+        }
+        query = query.filter(PrivacyRequest.id.in_(identities))
 
     # Further restrict all PrivacyRequests by query params
     if request_id:
@@ -433,6 +448,7 @@ def get_request_status(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     request_id: Optional[str] = None,
+    identity: Optional[str] = None,
     status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
         default=None
     ),  # type:ignore
@@ -458,8 +474,10 @@ def get_request_status(
     logger.info(f"Finding all request statuses with pagination params {params}")
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
+        db,
         query,
         request_id,
+        identity,
         status,
         created_lt,
         created_gt,
