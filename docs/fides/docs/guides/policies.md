@@ -46,7 +46,7 @@ policy:
         data_uses:
           matches: OTHER # And the use of the data is something other than...
           values:
-            - provide.system.operations
+            - provide.service.operations
             - improve.system
             - collect
         data_subjects:
@@ -129,8 +129,8 @@ policy:
         data_uses:
           matches: OTHER # And a data use other than these have been declared
           values:
-            - provide.system.operations
-            - provide.system.operations.support
+            - provide.service.operations
+            - provide.service.operations.support
         data_subjects:
           matches: ANY # And the data subject is a customer
           values:
