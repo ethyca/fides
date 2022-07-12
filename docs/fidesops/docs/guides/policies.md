@@ -1,21 +1,14 @@
-# How-To: Configure Policies
+# Configure Policies
 
-In this section we'll cover:
-
-- What is a Fidesops Policy?
-- How do I create a Policy?
-- How do I add Rules to my Policy?
-- What default Policies ship with Fidesops?
-
-## Policy Definition
+## What is a Policy?
 
 A Policy is a set of instructions (or "Rules") that are executed when a user submits a request to retrieve or delete their data (the user makes a "Privacy Request"). Each Rule contains an "execution strategy":
 
 * `action_type`: The action this Rule performs, either `access` (retrieve data) or `erasure` (delete data).
 
-* `storage_destination`: If the `action_type` is `access`, this is the key of a `StorageConfig` object that defines where the data is uploaded.  Currently, Amazon S3 buckets and local filesystem storage are supported. See [How-To: Configure Storage](storage.md) for more information.
+* `storage_destination`: If the `action_type` is `access`, this is the key of a `StorageConfig` object that defines where the data is uploaded.  Currently, Amazon S3 buckets and local filesystem storage are supported. See [Configuring Storage](storage.md) for more information.
 
-* `masking_strategy`: If the `action_type` is `erasure`, this is the key of a Masking object that defines how the erasure is implemented. See [How-To: Configure Masking Strategies](masking_strategies.md) for a list of masking strategies. 
+* `masking_strategy`: If the `action_type` is `erasure`, this is the key of a Masking object that defines how the erasure is implemented. See [Configuring Masking Strategies](masking_strategies.md) for a list of available strategies. 
 
 In addition to specifying an execution strategy, a Rule contains one or more Data Categories, or "Targets", to which the rule applies. Putting it all together, we have:
 ```
@@ -40,13 +33,11 @@ Each operation takes an array of objects, so you can create more than one at a t
     - any objects existing that are not specified in the request will not be deleted
 
 
-## Creating a Policy
+## Create a Policy
 
 Let's say you want to make a Policy that contains rules about a user's email address. You would start by first creating a Policy object:
 
-```
-PATCH /api/v1/policy
-
+```json title="<code>PATCH /api/v1/policy</code>"
 [
   {
     "name": "User Email Address",
@@ -55,9 +46,9 @@ PATCH /api/v1/policy
   }
 ]
 ```
-This policy is subtly different from the concept of a Policy in [Fidesctl](https://github.com/ethyca/fides). A [Fidesctl policy](https://ethyca.github.io/fides/language/resources/policy/) dictates which data categories can be stored where. A Fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.
+This policy is subtly different from the concept of a Policy in [Fidesctl](https://github.com/ethyca/fides). A [Fidesctl policy](https://ethyca.github.io/fides/language/resources/policy/) dictates which data categories can be stored where. A fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.
 
-### Policy Attributes
+### Policy attributes
 | Attribute | Description |
 |---|---|
 | `Policy.name` | User-friendly name for your Policy. |
@@ -66,12 +57,10 @@ This policy is subtly different from the concept of a Policy in [Fidesctl](https
 | `access` | A data subject access request. Should be used with an `access` Rule. |
 | `deletion` | A data subject erasure request. Should be used with an `erasure` Rule. |
 
-## Add an Access Rule to your Policy
+## Add an Access Rule to a Policy
 The policy creation operation returns a Policy key, which we'll use to add a Rule:
 
-```
-PATCH /api/v1/policy/{policy_key}/rule
-
+```json title="<code>PATCH /api/v1/policy/{policy_key}/rule</code>"
 [
   {
     "name": "Access User Email Address",
@@ -86,9 +75,7 @@ Note that `storage_key` must identify an existing StorageConfig object.
 
 Finally, we use the Rule key to add a Target:
 
-```
-PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
-
+```json title="<code>PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target</code>"
 [
   {
     "name": "Access User Email Address Target",
@@ -98,18 +85,17 @@ PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target
 ]
 ```
 
-### Rule Attributes
+### Rule attributes
 - `Rule.action_type`: Which action is this `Rule` handling?
-  - `access`: A data subject access request. A user would like to access their own data from within the Fidesops identity graph. Fidesops must look these fields up and return it to them. Fidesops will return these to a `storage_destination`.
-  - `erasure`: A data subject erasure request (also known in some legislation as the Right to be Forgotten). A user would like to erase their own data currently stored in the Fidesops identity graph. Fidesops must look these fields up and either erase them entirely, or apply a `masking_strategy`.
-- `Rule.storage_destination`: Where Fidesops will upload the returned data for an `access` action. Currently, Amazon S3 buckets and local filesystem storage are supported.
-- `Rule.masking_strategy`: How to erase data in the Identity Graph that applies to this `Rule`. See [How-To: Configure Masking Strategies](masking_strategies.md) for a full list of supported strategies and their respective configurations.
+  - `access`: A data subject access request. A user would like to access their own data from within the fidesops identity graph. Fidesops must look these fields up and return it to them. Fidesops will return these to a `storage_destination`.
+  - `erasure`: A data subject erasure request (also known in some legislation as the Right to be Forgotten). A user would like to erase their own data currently stored in the fidesops identity graph. Fidesops must look these fields up and either erase them entirely, or apply a `masking_strategy`.
+- `Rule.storage_destination`: Where fidesops will upload the returned data for an `access` action. Currently, Amazon S3 buckets and local filesystem storage are supported.
+- `Rule.masking_strategy`: How to erase data in the Identity Graph that applies to this `Rule`. See [Configuring Masking Strategies](masking_strategies.md) for a full list of supported strategies and their respective configurations.
 
-## Add an Erasure Rule to your Policy
+## Add an Erasure Rule to a Policy
 The simple access policy we've created above, will simply pull all data of category `user.provided.identifiable.contact.email`, but in the event of an erasure request, we might also want to mask this information. 
 
-PATCH /api/v1/policy/{policy_key}/rule
-```json
+```json title="<code>PATCH /api/v1/policy/{policy_key}/rule</code>"
 [
   {
     "name": "Mask Provided Emails",
@@ -126,8 +112,7 @@ PATCH /api/v1/policy/{policy_key}/rule
 ```
 This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to create a target for this rule:
 
-PATCH api/v1/policy/{policy_key}/rule/{rule_key}
-```json
+```json title="<code>PATCH api/v1/policy/{policy_key}/rule/{rule_key}</code>"
   [
     {
       "data_category": "user.provided.identifiable.contact.email",
@@ -139,7 +124,7 @@ This policy, `user_email_address_polcy`, will now do the following:
 - Return all data inside the Identity Graph with a data category that matches (or is nested under) `user.provided.identifiable.contact`.
 - Mask all data inside the Identity Graph with a data category that matches `user.provided.identifiable.contact.email` with a the `SHA-512` hashing function.
 
-### A Note About Erasing Data
+### Erasing data
 
 When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.provided.identifiable.contact`, _all_ of the information within the `contact` node -- including `user.provided.identifiable.contact.email` -- would be erased.
 
@@ -154,4 +139,4 @@ Fidesops ships with two default Policies: `download` (for access requests) and `
 The `download` Policy is configured to retrieve `user.provided.identifiable` data and upload to a local storage location.
 The `delete` Policy is set up to mask `user.provided.identifiable` data with the string: `MASKED`.  
 
-These autogenerated Policies are intended for use in a test environment. In production deployments, you should configure separate Policies with proper storage destinations that target and process the appropriate fields.
+These auto-generated Policies are intended for use in a test environment. In production deployments, you should configure separate Policies with proper storage destinations that target and process the appropriate fields.

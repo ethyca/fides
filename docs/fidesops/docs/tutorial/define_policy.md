@@ -1,9 +1,6 @@
 # Define Policies
 
 ## Creating a Policy with Rules and Targets 
-For more detailed information, [see the Policy Guide](../guides/policies.md).
-
----
 
 We're almost there: we need to create a Policy to describe how to handle a Privacy Request.
 
@@ -12,6 +9,8 @@ Policies with multiple Rules (how the data is handled), that each have Rule Targ
 
 Below are methods to add a Policy, a Rule, and a Rule Target, plus a cleanup method that deletes Rules for
 convenience (handy if you'll be running this script multiple times).
+
+For more detailed information, [see the Policy Guide](../guides/policies.md).
 
 ### Define helper methods
 
@@ -134,4 +133,4 @@ associated with this Data Category that we will expect in our final upload packa
 
 - `products` collection:  `description`,`name`, and `price` 
 - `user` collection: `email`, `first_name`, `last_name`, and `password`
-- `purchases` collection`: `city`, `state`, `street_1`, `street_2`, and `zip`
+- `purchases` collection: `city`, `state`, `street_1`, `street_2`, and `zip`

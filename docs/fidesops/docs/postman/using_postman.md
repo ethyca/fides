@@ -8,7 +8,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
       ![File_Import](../img/postman_images/import_collection.png)
 
-3. Upload the Fidesops collection found in `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
+3. Upload the fidesops collection found in `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
 
       ![Upload Fidesops Collection](../img/postman_images/upload_files.png)
 
@@ -37,14 +37,14 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
       ![Create root token](../img/postman_images/create_root_client_token.png)
 
-2. Copy the `access_token` returned in the response body, and paste it as the `Current Value` of `root_client_token` in Fidesops variables.
+2. Copy the `access_token` returned in the response body, and paste it as the `Current Value` of `root_client_token` in fidesops' variables.
        - **Important:** Click `Save`!
 
       ![Get root token](../img/postman_images/root_token_response.png)
       ![Save root token](../img/postman_images/save_root_client_token.png)
 
 3. Similarly, click on `Create Client`, and click `Send` to send a `POST` request to fidesops to create a new client.
-      - Copy the `client_id` and `client_secret` and paste into `Current Value` slots in Fidesops variables and click "Save".
+      - Copy the `client_id` and `client_secret` and paste into `Current Value` slots in fidesops variables and click "Save".
   
 4. Finally, click on the `Get Client Token` request, and click `Send` to send another `POST` request to fidesops. This will create a token for the client made in the previous step.
 
@@ -53,7 +53,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
       - If you click on **Body**, you can see that the `client_id` and `client_secret` have been added as form data for you.
 
 
-5. Save the returned token under `client_token` in the Fidesops variables.  The `client_token` will be automatically passed into the rest of your requests as the Bearer Token.
+5. Save the returned token under `client_token` in the fidesops variables.  The `client_token` will be automatically passed into the rest of your requests as the Bearer Token.
 
       ![final token](../img/postman_images/final_token.png)
 

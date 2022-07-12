@@ -1,6 +1,6 @@
 # Updating database diagram
 
-If you make updates to the Fidesops application database, you should update our DB Architecture diagram in the 
+If you make updates to the fidesops application database, you should update our DB Architecture diagram in the 
 documentation.
 
 1. Connect [DBeaver](https://dbeaver.io/) to our `app` DB container

@@ -2,7 +2,7 @@
 
 
 Let's sketch out a Python file in `fidesdemo/flaskr/fidesops.py` where we'll add functions that use Python's [requests](https://docs.python-requests.org/en/latest/)
-library to call the `Fidesops` API to build our required configuration.
+library to call the `fidesops` API to build our required configuration.
 
 As we go through each step in the tutorial, you'll add a couple of helper methods that are wrappers to API calls, and
 then add calls to these functions at the bottom to be executed when we run this script.

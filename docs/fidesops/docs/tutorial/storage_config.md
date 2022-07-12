@@ -3,14 +3,13 @@
 
 ## Creating a StorageConfig 
 
-For more detailed information, [see the Storage Config Guide](../guides/storage.md).
-
----
 We need to configure a location to upload the user's PII after fidesops has retrieved it from the Flask App's
 database. For tutorial purposes, we'll just write to a local file under `/fides_uploads`, but typically we'd want
 to upload this to a Storage location like S3.  S3 would require a follow-up step to set up AWS access keys and secrets.
 
-### Define helper method
+For more detailed information, [see the Storage Config Guide](../guides/storage.md).
+
+### Define a helper method
 
 ```python
 def create_local_storage(key, format, access_token):
@@ -38,7 +37,7 @@ def create_local_storage(key, format, access_token):
 
 ```
 
-### Call helper method to set up Storage
+### Call the helper method to set up storage
 
 This will define a local Storage location called `example_storage` that expects JSON data.  
 

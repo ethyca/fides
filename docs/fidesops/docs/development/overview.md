@@ -2,13 +2,13 @@
 
 ---
 
-Thanks for contributing to Fidesops! This section of the docs is designed to help you become familiar with how we work, the standards we apply, and how to ensure your contribution is successful.
+Thanks for contributing to fidesops! This section of the docs is designed to help you become familiar with how we work, the standards we apply, and how to ensure your contribution is successful.
 
 If you're stuck, don't be shy about asking for help [on GitHub](https://github.com/ethyca/fidesops/issues).
 
-## Getting Started with Fidesops in Docker
+## Getting started with fidesops in Docker
 
-The recommended way to run Fidesops is to launch it with Docker and Docker Compose. `Make` commands wrap docker-compose 
+The recommended way to run fidesops is to launch it with Docker and Docker Compose. `Make` commands wrap docker-compose 
 commands to give you different functionality.
 
 ### System Requirements 
@@ -23,7 +23,7 @@ commands to give you different functionality.
 ### Available make commands
 - `make server` - this spins up the Fastapi server and supporting resources (a Postgres database and a Redis cache), which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
 - `make integration-env` - spins up everything in make server, plus additional postgres, mongo, and mysql databases for you to execute privacy requests against.
-    - Try this out locally with our [Fidesops Postman Collection](../postman/Fidesops.postman_collection.json)
+    - Try this out locally with our [fidesops Postman collection](../postman/Fidesops.postman_collection.json)
     - `make integration-env datastores="mysql mariadb"`- brings up only mysql and mariadb datastores 
 - `make integration-shell` - spins up everything in make server, plus all Docker Compose specified datastores (Postgres, MySQL, MSSQL, Mongodb) and opens a server shell. This is most useful for running `pytest -k ...` commands within the integration shell to test connected datastores.
 - `make black`, `make mypy`, and `make pylint` - auto-formats code
@@ -36,8 +36,8 @@ commands to give you different functionality.
 - `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments. NB. This can be used to run integration tests on external datastores if those datastores are explicitly specified.
 - `make pytest-integration-external` - runs only external integration tests.
 - `make pytest-integration-erasure` - runs erasure integration tests.
-- `make reset-db` - tears down the Fidesops postgres db, then recreates and re-runs migrations.
-- `make quickstart` - runs a quick, five minute quickstart that talks to the Fidesops API to execute privacy requests
+- `make reset-db` - tears down the fidesops postgres db, then recreates and re-runs migrations.
+- `make quickstart` - runs a quick, five minute quickstart that talks to the fidesops API to execute privacy requests
 - `make check-migrations` - verifies there are no un-run migrations 
 - `make docs-serve` - spins up just the docs, which you can visit at `http://0.0.0.0:8000/fidesops/`
 
@@ -49,14 +49,14 @@ See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more o
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
 - Package not found: When running `make server`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `make server-shell`,
-and then run `pip install -e .`. Verify Fidesops is installed with `pip list`.
+and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
 
 
 ## Write your code
 
 See the [contributing details](contributing_details.md) guide to get familiar with writing and testing API endpoints, database models, and more. 
 
-We want to help you ensure your code plays nicely with the rest of the Fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in Fidesops it's a CI-checked requirement.
+We want to help you ensure your code plays nicely with the rest of the fidesops ecosystem. Many projects describe code style and documentation as a suggestion; in fidesops it's a CI-checked requirement.
 
 * To learn how to style your code, see the [style guide](code_style.md).
 * To learn how to document your code, see the [docs guide](documentation.md).
@@ -66,9 +66,9 @@ We want to help you ensure your code plays nicely with the rest of the Fidesops 
 
 ## Submit your code
 
-In order to submit code to Fidesops, please:
+In order to submit code to fidesops, please:
 
-* [Fork the Fidesops repository](https://help.github.com/en/articles/fork-a-repo)
+* [Fork the fidesops repository](https://help.github.com/en/articles/fork-a-repo)
 * Add the original as a remote (I'm naming it `upstream`), to keep your fork in sync
   ```bash
   git remote add upstream https://github.com/ethyca/fidesops.git
@@ -84,9 +84,9 @@ In order to submit code to Fidesops, please:
     ```
 * [Open a Pull Request](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) once your work is ready for review
   * Submit the pull request from *your* repo. Pull requests should be submitted with a clear description of the issue being handled, including links to any external specifications or Github issues. PRs should not be merged by the person submitting them, except in rare and urgent circumstances.
-  * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into Fidesops.
+  * Once automated tests have passed, a maintainer will review your PR and provide feedback on any changes it requires to be approved. Once approved, your PR will be merged into fidesops.
   
 
 ## Congratulations
 
-You're a Fidesops contributor - welcome to the team! 🎉
+You're a fidesops contributor - welcome to the team! 🎉

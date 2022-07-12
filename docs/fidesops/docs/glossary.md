@@ -3,15 +3,15 @@
 
 ## Fidesops terms
 
-- [`Privacy Request`](guides/privacy_requests.md): A Privacy Request is a Fidesops representation of what is more widely known as a Data Subject Request, or Data Subject Access Request.
+- [`Privacy Request`](guides/privacy_requests.md): A Privacy Request is a fidesops representation of what is more widely known as a Data Subject Request, or Data Subject Access Request.
     - `access` request: The customer wants to see the data an organization has collected about them.
     - `erasure` request: The customer wants an organization to delete the data they have collected about them.
 
-- [`Policy`](guides/policies.md):  Different from a *Fidesctl* Policy, this is a configuration that describes how to handle a Privacy Request. For example, you might define a simple policy that when given an email, it locates all the related data the customer has provided to you, and upload that to a specific S3 bucket.
+- [`Policy`](guides/policies.md):  Different from a *fidesctl* Policy, this is a configuration that describes how to handle a Privacy Request. For example, you might define a simple policy that when given an email, it locates all the related data the customer has provided to you, and upload that to a specific S3 bucket.
 
-- [`ConnectionConfig`](guides/database_connectors.md):  A configuration for how to connect a database to Fidesops, so it can retrieve or remove customer data.
+- [`ConnectionConfig`](guides/database_connectors.md):  A configuration for how to connect a database to fidesops, so it can retrieve or remove customer data.
 
-- [`DatasetConfig`](guides/datasets.md): A resource that contains a Fidesctl Dataset (the annotation of a database schema) and its related `ConnectionConfig`
+- [`DatasetConfig`](guides/datasets.md): A resource that contains a fidesctl Dataset (the annotation of a database schema) and its related `ConnectionConfig`
 
 - [`StorageConfig`](guides/storage.md): A configuration for where the customer's data is going to be sent after an access request.
 
@@ -36,11 +36,11 @@
 
 ## Fidesctl terms
 
-See the Fidesctl repo for more information, but here's some Fidesctl terms that might be helpful in Fidesops.
+See the [fidesctl repo](https://github.com/ethyca/fides) for more information, but here's some fidesctl terms that might be helpful in fidesops.
 
 - `Manifest`: YAML files that describe different types of objects within Fides, with a high-level "privacy as code" language. 
 
-- `Policy`: Different from a *Fidesops* Policy, this controls what kinds of data you are permitted to commit to source code.  For example, you might create a fidesctl policy that says, I am not going to allow any System that takes in provided contact information and uses it for marketing purposes. 
+- `Policy`: Different from a *fidesops* Policy, this controls what kinds of data you are permitted to commit to source code.  For example, you might create a fidesctl policy that says, I am not going to allow any System that takes in provided contact information and uses it for marketing purposes. 
 
 - `Dataset`: An annotation of a database schema, which describes the Collections in a database, the Fields, the Data Categories of those fields, and the relationships between relevant Collections.
 

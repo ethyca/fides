@@ -1,18 +1,8 @@
-# Complex Fields
+# Annotate Complex Fields
 
-Fidesops can retrieve and mask data from complex objects and arrays in MongoDB, although
-this involves annotating your dataset files to let fidesops know about your complex data.
+Fidesops can retrieve and mask data from complex objects and arrays in MongoDB, although this involves annotating your dataset files to let fidesops know about your complex data.
 
-In this section we'll cover:
-
-- How to annotate your dataset to describe object fields
-- How to reference a nested object 
-- How to annotate array fields
-- How to reference resources in arrays
-- Assumptions made with array queries
-- Example query traversal referencing complex fields
-
-## How do I annotate an object field?
+## Declare an object field
 
 To declare an `object` field, you should define nested fields underneath that field. You can optionally
 add the `data_type: object` annotation, but the object type will be inferred by the presence of the nested fields. In the example below, 
@@ -46,7 +36,7 @@ dataset:
               - name: id
 ```
 
-## How do I reference a nested field?
+## Reference a nested field
 
 To define a relationship between a field on one collection and a nested field on another collection, use dot notation
 in the `fidesops_meta` references for as many levels are necessary.
@@ -78,12 +68,12 @@ dataset:
 
 ```
 
-## How do I denote an Array Field?
+## Declare an array field
 
-There is not an official `array` type per se, since arrays can store scalar values or objects. Instead,  an array is represented
+There is not an official `array` type per se, since arrays can store scalar values or objects. Instead, an array is represented
 by a `[]` flag on a field.
 
-### What if I have an array of scalar values?
+### Declare an array of scalar values
 
 In this example, our `mydatabase:customer` collection has a `travel_identifiers` field that is an array of strings,
 described by `data_type: string[]`.  An array of integers would be described by `data_type: integer[]`.
@@ -102,7 +92,7 @@ dataset:
               data_categories: [system.operations]
 ```
 
-### How do I describe a nested array?
+### Declare a nested array
 
 In this example, our `mydatabase:customer` collection has a nested `workplace_info.direct_reports` array, that is an
 array of strings. In other words, we have a `workplace_info` object field, with sub-fields `employer`, `postion`, and `direct_reports`,
@@ -135,10 +125,10 @@ dataset:
                   data_type: string[]
 ```
 
-### What if my collection contains an array of objects?
+### Declare an array of objects
 
 In this example, our `mydatabase:customer` collection has an `emergency_contacts` field which is an array of objects, or
-embedded documents, denoted by `data_type: object[]`.   Each object in the `emergency_contacts` array can contain a 
+embedded documents, denoted by `data_type: object[]`. Each object in the `emergency_contacts` array can contain a 
 `name`, `relationship`, and `phone` field.
 
 ```yaml
@@ -166,7 +156,7 @@ dataset:
                   data_type: string
 ```
 
-### How do I reference an array field?
+### Reference an array
 
 Generally, reference an array field as if it is any other field. You cannot currently reference a specific index in an array field, 
 but you can point a field to an array field, and we would search for matches within that array.
@@ -255,7 +245,7 @@ dataset:
                   data_type: string
 ```
 
-## How does array querying work?
+## Query an array
 
 There are some assumptions made with array querying that may or may not fit with how your data is structured.  If an array
 is an entrypoint into a collection (in other words, one collection references its array field), there is ambiguity around how
@@ -272,7 +262,7 @@ arrays should be considered.
    2. This can be overridden by specifying `return_all_elements: true` on an entrypoint array field, in which case, the query will return the entire array and/or mask the entire array.
 4.  Individual array elements are masked, not the entire array, e.g. ["MASKED", "MASKED", "MASKED"]
 
-### Can I see a more detailed example of a query traversal with complex objects?
+### Example query traversal
 
 This is an example traversal created from our test `postgres_example` and `mongo_test` datasets.
 Multiple collections are point to or from complex objects and arrays.  See the `mongo_example_test_dataset.yml` for more information.

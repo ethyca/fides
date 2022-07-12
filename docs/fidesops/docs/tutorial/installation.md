@@ -25,7 +25,7 @@ marketplace where users can buy and sell products.
 
 ## Install fidesops in our test app
 
-We need to install fidesops in the test app, add a PostgreSQL database (for storing Fidesops resources)
+We need to install fidesops in the test app, add a PostgreSQL database (for storing fidesops resources)
 and a Redis cache (for *temporarily* storing incoming PII). You'll notice that a postgres container has already been set 
 up for you, and `fidesctl` is installed (although we won't dive into that tool here). In the Flask App's docker-compose file, 
 add both a container for `redis` and `fidesops` services beneath the fidesctl `service`:

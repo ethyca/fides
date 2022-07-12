@@ -1,36 +1,16 @@
-# How-To: Execute Privacy Requests
-
-In this section we'll cover:
-
-
-- What is a Privacy Request?
-- How does a Privacy Request work in conjunction with a policy?
-- How can I submit a Privacy Request?
-- How can I approve/deny a Privacy Request? 
-- How do I monitor Privacy Requests as they execute?
-- How can I restart a failed request?
-- How can I integrate the Privacy Request flow into my existing support tools?
-- Specifying encryption of access request results 
-- Decrypting access request results
-
-Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
-
+# Execute Privacy Requests
 ## What is a Privacy Request?
 
 A Privacy Request represents a request to perform an action on a user's identity data. The Request object itself identifies the user by email address, phone number, social security number, or other identifiable information. The data that will be affected and how it's affected is described in a Policy object that's associated with the Request.
 
-For more information on Policies, see [How-To: Configure Policies](policies.md#rule-attributes).
+For more information on policies, see the [Configuring Policies](policies.md#rule-attributes) guide.
 
 
-## How do I submit a Privacy Request?
+## Submit a Privacy Request
 
-You submit a Privacy Request by calling the  **Submit a Privacy Request** operation. Here, 
-we submit  a request to apply the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` and the phone number `+1 (123) 456 7891`.
-Privacy Requests are executed immediately by default. This setting may be changed in the fidesops.toml configuration file.
+You submit a Privacy Request by calling the **Submit a Privacy Request** operation. Here, we submit a request to apply the `a-demo-policy` Policy to all target data in the [Identity Graph](../glossary.md) that can be generated from the email address `identity@example.com` and the phone number `+1 (123) 456 7891`. Privacy Requests are executed immediately by default. This setting may be changed in the `fidesops.toml` configuration file.
 
-`POST /api/v1/privacy-request`
-
-```json
+```json title="<code>POST /api/v1/privacy-request</code>"
 [
   {
     "external_id": "a-user-defined-id",
@@ -60,7 +40,7 @@ Privacy Requests are executed immediately by default. This setting may be change
 A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 
-## How can I approve or deny a Privacy Request?
+## Approve and deny Privacy Requests
 
 Privacy Requests are executed immediately by default. To review Privacy Requests before they are executed, set the `REQUIRE_MANUAL_REQUEST_APPROVAL` variable in your `fidesops.toml` to `TRUE`.
 
@@ -87,17 +67,17 @@ An optional denial reason can be provided when denying a Privacy Request:
 }
 ```
 
-## How do I monitor Privacy Requests as they execute?
+## Monitor Privacy Requests
 Privacy Requests can be monitored at any time throughout their execution by submitting any of the following requests:
 
 `GET api/v1/privacy-request?request_id=<privacy_request_id>`
 
 `GET api/v1/privacy-request?external_id=<external_id>`
 
-For more detailed examples and further Privacy Request filtering in Fidesops please see [How-To: Report on Privacy Requests](reporting.md).
+For more detailed examples and further Privacy Request filtering in fidesops, see [Reporting on Privacy Requests](reporting.md).
 
 
-## How can I restart a failed Privacy Request?
+## Restart failed Privacy Requests
 To restart a failed Privacy Request from the failed collection, submit a request to:
 
 `POST /api/v1/privacy-request/<privacy_request_id>/retry`
@@ -105,17 +85,13 @@ To restart a failed Privacy Request from the failed collection, submit a request
 with an empty request body.  
 
 
-## How can I integrate the Privacy Request flow into my existing support tools?
+## Integrate the Privacy Request flow into existing support tools
 
-Alongside generic API interoperability, Fidesops provides a direct integration with the OneTrust's DSAR automation flow.
+Alongside generic API interoperability, fidesops provides a direct integration with the OneTrust's [DSAR automation](onetrust.md) flow.
 
-* Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [How-To: Authenticate with OAuth](oauth.md) for more information.
+* **Generic API interoperability**: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [authenticating with OAuth](oauth.md) for more information.
 
-* OneTrust: Fidesops can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
-
-- Generic API interoperability: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. Please see [How-To: Authenticate with OAuth](oauth.md) for more information.
-- OneTrust: Fidesops can be configured to act as (or as part of) the fulfilment layer in OneTrust's Data Subject Request automation flow. Please see [How-To: Configure OneTrust Integration](onetrust.md) for more information.
-
+* **OneTrust**: fidesops can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. See the [OneTrust integration guide](onetrust.md) for more information.
 
 ## Encryption
 
@@ -124,8 +100,7 @@ We will use the supplied encryption_key to encrypt the contents of your JSON and
 When converted to bytes, your encryption_key must be 16 bytes long.  The data we return will have the nonce concatenated 
 to the encrypted data.
 
-POST /privacy-request
-```json
+```json title="<code>POST /privacy-request</code>"
 [
     {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -137,7 +112,7 @@ POST /privacy-request
 
 ```
 
-## Decrypting your access request results
+## Decrypt access request results
 
 If you specified an encryption key, we encrypted the access result data using your key and an internally-generated `nonce` with an AES 
 256 algorithm in GCM mode.  The return value is a 12-byte nonce plus the encrypted data that is all b64encoded together.

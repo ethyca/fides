@@ -39,6 +39,6 @@ Selecting the three dots menu `[...]` beside a datastore's connection status wil
 
 ![datastore options](../img/admin_ui/datastore_options.png)
 
-Selecting either Disable or Delete will display a warning to confirm the action. Deleted datastores will have their connection information removed entirely from Fidesops, while Disabled datastores may be enabled again from the same menu at a later date.
+Selecting either Disable or Delete will display a warning to confirm the action. Deleted datastores will have their connection information removed entirely from fidesops, while Disabled datastores may be enabled again from the same menu at a later date.
 
 ![delete datastore](../img/admin_ui/delete_datastore.png)

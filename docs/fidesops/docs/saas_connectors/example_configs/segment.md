@@ -13,16 +13,16 @@ Fidesops uses the following Segment endpoints to retrieve and delete Personally 
 |[Regulations](https://segment.com/docs/privacy/user-deletion-and-suppression/#overview) | Yes | Yes |
 
 ## Connection Settings
-Fidesops provides as [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+Fidesops provides a [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
 
-**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `MASKING_STRICT` variable in your `fidesops.toml` file is set to `FALSE`. 
 
 ## Example Segment Configuration
 ```yaml
 saas_config:
   fides_key: segment_connector_example
   name: Segment SaaS Config
-  description: A sample schema representing the Segment connector for Fidesops
+  description: A sample schema representing the Segment connector for fidesops
   version: 0.0.1
 
   connector_params:

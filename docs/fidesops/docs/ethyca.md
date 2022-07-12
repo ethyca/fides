@@ -4,7 +4,7 @@ The mission of Ethyca is to make Internet-scale technology respectful and ethica
 
 ## What is Fides?
 
-Fides is a universally understandable, open-source language that can be used to describe privacy within tech infrastructure. Our existing tools ([Fidesctl](https://github.com/ethyca/fides/) and [Fidesops](https://github.com/ethyca/fidesops/)) use this language to power a low friction set of developer tools that integrate with your existing CI pipelines, making privacy a feature of your tech stack. With Fides, we hope everyone can build better tools for privacy in the next decade and beyond. 
+Fides is a universally understandable, open-source language that can be used to describe privacy within tech infrastructure. Our existing tools ([fidesctl](https://github.com/ethyca/fides/) and [fidesops](https://github.com/ethyca/fidesops/)) use this language to power a low friction set of developer tools that integrate with your existing CI pipelines, making privacy a feature of your tech stack. With Fides, we hope everyone can build better tools for privacy in the next decade and beyond. 
 
 ## What we Believe
 
