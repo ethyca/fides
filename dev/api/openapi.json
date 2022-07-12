@@ -5,14 +5,14 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/api/v1/data_category/": {
+    "/api/v1/data_category": {
       "get": {
         "tags": [
           "DataCategory"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_category__get",
+        "operationId": "List_api_v1_data_category_get",
         "parameters": [
           {
             "required": false,
@@ -31,7 +31,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Data Category  Get",
+                  "title": "Response List Api V1 Data Category Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataCategory"
@@ -58,7 +58,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_data_category__put",
+        "operationId": "update_api_v1_data_category_put",
         "parameters": [
           {
             "required": false,
@@ -110,7 +110,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_data_category__post",
+        "operationId": "create_api_v1_data_category_post",
         "parameters": [
           {
             "required": false,
@@ -332,14 +332,14 @@
         }
       }
     },
-    "/api/v1/data_qualifier/": {
+    "/api/v1/data_qualifier": {
       "get": {
         "tags": [
           "DataQualifier"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_qualifier__get",
+        "operationId": "List_api_v1_data_qualifier_get",
         "parameters": [
           {
             "required": false,
@@ -358,7 +358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Data Qualifier  Get",
+                  "title": "Response List Api V1 Data Qualifier Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataQualifier"
@@ -385,7 +385,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_data_qualifier__put",
+        "operationId": "update_api_v1_data_qualifier_put",
         "parameters": [
           {
             "required": false,
@@ -437,7 +437,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_data_qualifier__post",
+        "operationId": "create_api_v1_data_qualifier_post",
         "parameters": [
           {
             "required": false,
@@ -659,14 +659,14 @@
         }
       }
     },
-    "/api/v1/data_subject/": {
+    "/api/v1/data_subject": {
       "get": {
         "tags": [
           "DataSubject"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_subject__get",
+        "operationId": "List_api_v1_data_subject_get",
         "parameters": [
           {
             "required": false,
@@ -685,7 +685,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Data Subject  Get",
+                  "title": "Response List Api V1 Data Subject Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataSubject"
@@ -712,7 +712,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_data_subject__put",
+        "operationId": "update_api_v1_data_subject_put",
         "parameters": [
           {
             "required": false,
@@ -764,7 +764,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_data_subject__post",
+        "operationId": "create_api_v1_data_subject_post",
         "parameters": [
           {
             "required": false,
@@ -986,14 +986,14 @@
         }
       }
     },
-    "/api/v1/data_use/": {
+    "/api/v1/data_use": {
       "get": {
         "tags": [
           "DataUse"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_data_use__get",
+        "operationId": "List_api_v1_data_use_get",
         "parameters": [
           {
             "required": false,
@@ -1012,7 +1012,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Data Use  Get",
+                  "title": "Response List Api V1 Data Use Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/DataUse"
@@ -1039,7 +1039,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_data_use__put",
+        "operationId": "update_api_v1_data_use_put",
         "parameters": [
           {
             "required": false,
@@ -1091,7 +1091,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_data_use__post",
+        "operationId": "create_api_v1_data_use_post",
         "parameters": [
           {
             "required": false,
@@ -1313,14 +1313,14 @@
         }
       }
     },
-    "/api/v1/dataset/": {
+    "/api/v1/dataset": {
       "get": {
         "tags": [
           "Dataset"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_dataset__get",
+        "operationId": "List_api_v1_dataset_get",
         "parameters": [
           {
             "required": false,
@@ -1339,7 +1339,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Dataset  Get",
+                  "title": "Response List Api V1 Dataset Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Dataset"
@@ -1366,7 +1366,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_dataset__put",
+        "operationId": "update_api_v1_dataset_put",
         "parameters": [
           {
             "required": false,
@@ -1418,7 +1418,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_dataset__post",
+        "operationId": "create_api_v1_dataset_post",
         "parameters": [
           {
             "required": false,
@@ -1640,14 +1640,14 @@
         }
       }
     },
-    "/api/v1/organization/": {
+    "/api/v1/organization": {
       "get": {
         "tags": [
           "Organization"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_organization__get",
+        "operationId": "List_api_v1_organization_get",
         "parameters": [
           {
             "required": false,
@@ -1666,7 +1666,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Organization  Get",
+                  "title": "Response List Api V1 Organization Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Organization"
@@ -1693,7 +1693,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_organization__put",
+        "operationId": "update_api_v1_organization_put",
         "parameters": [
           {
             "required": false,
@@ -1745,7 +1745,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_organization__post",
+        "operationId": "create_api_v1_organization_post",
         "parameters": [
           {
             "required": false,
@@ -1967,14 +1967,14 @@
         }
       }
     },
-    "/api/v1/policy/": {
+    "/api/v1/policy": {
       "get": {
         "tags": [
           "Policy"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_policy__get",
+        "operationId": "List_api_v1_policy_get",
         "parameters": [
           {
             "required": false,
@@ -1993,7 +1993,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Policy  Get",
+                  "title": "Response List Api V1 Policy Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Policy"
@@ -2020,7 +2020,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_policy__put",
+        "operationId": "update_api_v1_policy_put",
         "parameters": [
           {
             "required": false,
@@ -2072,7 +2072,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_policy__post",
+        "operationId": "create_api_v1_policy_post",
         "parameters": [
           {
             "required": false,
@@ -2294,14 +2294,14 @@
         }
       }
     },
-    "/api/v1/registry/": {
+    "/api/v1/registry": {
       "get": {
         "tags": [
           "Registry"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_registry__get",
+        "operationId": "List_api_v1_registry_get",
         "parameters": [
           {
             "required": false,
@@ -2320,7 +2320,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Registry  Get",
+                  "title": "Response List Api V1 Registry Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Registry"
@@ -2347,7 +2347,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_registry__put",
+        "operationId": "update_api_v1_registry_put",
         "parameters": [
           {
             "required": false,
@@ -2399,7 +2399,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_registry__post",
+        "operationId": "create_api_v1_registry_post",
         "parameters": [
           {
             "required": false,
@@ -2621,14 +2621,14 @@
         }
       }
     },
-    "/api/v1/system/": {
+    "/api/v1/system": {
       "get": {
         "tags": [
           "System"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_system__get",
+        "operationId": "List_api_v1_system_get",
         "parameters": [
           {
             "required": false,
@@ -2647,7 +2647,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 System  Get",
+                  "title": "Response List Api V1 System Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/System"
@@ -2674,7 +2674,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_system__put",
+        "operationId": "update_api_v1_system_put",
         "parameters": [
           {
             "required": false,
@@ -2726,7 +2726,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_system__post",
+        "operationId": "create_api_v1_system_post",
         "parameters": [
           {
             "required": false,
@@ -2948,14 +2948,14 @@
         }
       }
     },
-    "/api/v1/evaluation/": {
+    "/api/v1/evaluation": {
       "get": {
         "tags": [
           "Evaluation"
         ],
         "summary": "List",
         "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_evaluation__get",
+        "operationId": "List_api_v1_evaluation_get",
         "parameters": [
           {
             "required": false,
@@ -2974,7 +2974,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Evaluation  Get",
+                  "title": "Response List Api V1 Evaluation Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Evaluation"
@@ -3001,7 +3001,7 @@
         ],
         "summary": "Update",
         "description": "Update a resource by its fides_key.",
-        "operationId": "update_api_v1_evaluation__put",
+        "operationId": "update_api_v1_evaluation_put",
         "parameters": [
           {
             "required": false,
@@ -3053,7 +3053,7 @@
         ],
         "summary": "Create",
         "description": "Create a resource.",
-        "operationId": "create_api_v1_evaluation__post",
+        "operationId": "create_api_v1_evaluation_post",
         "parameters": [
           {
             "required": false,
@@ -3428,62 +3428,31 @@
         }
       }
     },
-    "/view/evaluations": {
-      "get": {
+    "/api/v1/admin/db/{action}": {
+      "post": {
         "tags": [
-          "View"
+          "Admin",
+          "Admin"
         ],
-        "summary": "Evaluation View",
-        "description": "Returns an html document with a list of evaluations",
-        "operationId": "evaluation_view_view_evaluations_get",
+        "summary": "Db Action",
+        "description": "Initiate one of the enumerated DBActions.",
+        "operationId": "db_action_api_v1_admin_db__action__post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/DBActions"
+            },
+            "name": "action",
+            "in": "path"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/generate/": {
-      "post": {
-        "tags": [
-          "Generate"
-        ],
-        "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
-        "operationId": "generate_api_v1_generate__post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GenerateRequestPayload"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GenerateResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": "Unable to generate resources."
-                }
               }
             }
           },
@@ -3614,19 +3583,19 @@
         }
       }
     },
-    "/api/v1/validate/": {
+    "/api/v1/generate": {
       "post": {
         "tags": [
-          "Validate"
+          "Generate"
         ],
-        "summary": "Validate",
-        "description": "Endpoint used to validate different resource targets.",
-        "operationId": "validate_api_v1_validate__post",
+        "summary": "Generate",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "operationId": "generate_api_v1_generate_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ValidateRequest"
+                "$ref": "#/components/schemas/GenerateRequestPayload"
               }
             }
           },
@@ -3638,7 +3607,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidateResponse"
+                  "$ref": "#/components/schemas/GenerateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unable to generate resources."
                 }
               }
             }
@@ -3701,30 +3680,32 @@
         }
       }
     },
-    "/api/v1/admin/db/{action}": {
+    "/api/v1/validate": {
       "post": {
         "tags": [
-          "Admin"
+          "Validate"
         ],
-        "summary": "Db Action",
-        "description": "Initiate one of the enumerated DBActions.",
-        "operationId": "db_action_api_v1_admin_db__action__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/DBActions"
-            },
-            "name": "action",
-            "in": "path"
-          }
-        ],
+        "summary": "Validate",
+        "description": "Endpoint used to validate different resource targets.",
+        "operationId": "validate_api_v1_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateResponse"
+                }
               }
             }
           },
@@ -3735,6 +3716,26 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/view/evaluations": {
+      "get": {
+        "tags": [
+          "View"
+        ],
+        "summary": "Evaluation View",
+        "description": "Returns an html document with a list of evaluations",
+        "operationId": "evaluation_view_view_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
