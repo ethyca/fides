@@ -37,6 +37,7 @@ The types of changes are:
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+* The "catch-all" route now applies to front-end asset requests only [#890](https://github.com/ethyca/fides/pull/890)
 
 ### Docs
 
