@@ -1219,7 +1219,7 @@ class TestGetExecutionLogs:
     def test_get_execution_logs_unauthenticated(
         self, api_client: TestClient, privacy_request, url
     ):
-        response = api_client.get(url + "/", headers={})
+        response = api_client.get(url, headers={})
         assert 401 == response.status_code
 
     def test_get_execution_logs_wrong_scope(

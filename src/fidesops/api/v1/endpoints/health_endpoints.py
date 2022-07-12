@@ -2,7 +2,6 @@ import logging
 from typing import Dict, Optional, Union
 
 from alembic import migration, script
-from fastapi import APIRouter
 from redis.exceptions import ResponseError
 from sqlalchemy import create_engine
 
@@ -10,6 +9,7 @@ from fidesops.api.v1.urn_registry import HEALTH
 from fidesops.common_exceptions import RedisConnectionError
 from fidesops.core.config import config
 from fidesops.db.database import get_alembic_config
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import get_cache
 
 router = APIRouter(tags=["Public"])

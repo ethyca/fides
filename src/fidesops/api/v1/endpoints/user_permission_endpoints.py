@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from fidesops.schemas.user_permission import (
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)

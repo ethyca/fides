@@ -66,7 +66,7 @@ The `fidesops.toml` file should specify the following variables:
 |---|---|---|---|---|---|
 |`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
 | Admin UI Variables|---|---|---|---|---|
-|`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the `/static` file directory is mounted to serve the Admin UI
+|`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
 
 ## An example `fidesops.toml` configuration file
 

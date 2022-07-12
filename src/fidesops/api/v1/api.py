@@ -1,5 +1,3 @@
-from fastapi import APIRouter
-
 from fidesops.api.v1.endpoints import (
     config_endpoints,
     connection_endpoints,
@@ -18,6 +16,7 @@ from fidesops.api.v1.endpoints import (
     user_endpoints,
     user_permission_endpoints,
 )
+from fidesops.util.api_router import APIRouter
 
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)

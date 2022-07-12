@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Depends, HTTPException
 from fastapi.params import Security
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -38,6 +38,7 @@ from fidesops.service.authentication.authentication_strategy_factory import get_
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)

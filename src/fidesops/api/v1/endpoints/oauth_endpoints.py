@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Request, Security
+from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
@@ -46,6 +46,7 @@ from fidesops.service.authentication.authentication_strategy_factory import get_
 from fidesops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)

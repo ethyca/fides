@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -40,6 +40,7 @@ from fidesops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.oauth_util import verify_oauth_client
 

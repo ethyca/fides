@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import Depends, HTTPException, Security
 from fideslib.cryptography.cryptographic_util import b64_str_to_str
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
@@ -18,6 +18,7 @@ from fidesops.api.v1 import urn_registry as urls
 from fidesops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
 from fidesops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.core.config import config
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 import logging
 import secrets
 
-from fastapi import APIRouter, Security
+from fastapi import Security
 
 from fidesops.api.v1.scope_registry import ENCRYPTION_EXEC
 from fidesops.api.v1.urn_registry import (
@@ -18,6 +18,7 @@ from fidesops.schemas.encryption_request import (
     AesEncryptionResponse,
 )
 from fidesops.util import cryptographic_util
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt as aes_gcm_decrypt,

@@ -2,7 +2,7 @@ import logging
 from typing import List
 
 import yaml
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -50,6 +50,7 @@ from fidesops.schemas.dataset import (
     ValidateDatasetResponse,
 )
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.util.saas_util import merge_datasets
 

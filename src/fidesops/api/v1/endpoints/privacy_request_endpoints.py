@@ -7,7 +7,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Union
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -83,6 +83,7 @@ from fidesops.service.privacy_request.request_service import (
 )
 from fidesops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fidesops.task.task_resources import TaskResources
+from fidesops.util.api_router import APIRouter
 from fidesops.util.cache import FidesopsRedis
 from fidesops.util.collection_util import Row
 from fidesops.util.oauth_util import verify_callback_oauth, verify_oauth_client
