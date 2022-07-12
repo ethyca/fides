@@ -307,19 +307,87 @@ describe("Dataset", () => {
     });
 
     it("Can create a dataset by connecting to a database", () => {
-      // mock generate
-      // mock post
-      // verify need something in the URL box
-      // create
-      // check post payload
+      const connectionString =
+        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
+      cy.intercept("POST", "/api/v1/generate", {
+        fixture: "generate_dataset.json",
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("connect-db-btn").click();
+      cy.getByTestId("input-url").type(connectionString);
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate").then((interception) => {
+        expect(
+          interception.request.body.generate.config.connection_string
+        ).to.eql(connectionString);
+      });
+      cy.wait("@postDataset").then((interception) => {
+        // should be whatever is in the generate fixture
+        expect(interception.request.body.fides_key).to.eql("public");
+      });
+      // should navigate to the created dataset
+      cy.getByTestId("toast-success-msg");
+      cy.url().should("contain", `dataset/demo_users_dataset`);
     });
 
-    it("Can render errors when connecting to a database", () => {
-      // mock generate with error payload
-      // render error properly
-      // mock generate with good payload
-      // mock post with error payload
-      // render error properly
+    it.only("Can render errors when connecting to a database", () => {
+      // Update error after #892 when backend gives better errors than 500
+      cy.intercept("POST", "/api/v1/generate", {
+        statusCode: 500,
+        body: {
+          status: "PARSING_ERROR",
+          originalStatus: 500,
+          data: "Internal Server Error",
+          error: "SyntaxError: Unexpected token I in JSON at position 0",
+        },
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("connect-db-btn").click();
+
+      // verify need something in the URL box
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-url").should("contain", "required");
+
+      // first try generate with error payload but POST with valid payload
+      cy.getByTestId("input-url").type("invalid url");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate");
+      cy.getByTestId("error-url").should("contain", "error");
+
+      // now switch to good generate payload but bad POST payload
+      cy.intercept("POST", "/api/v1/generate", {
+        fixture: "generate_dataset.json",
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", {
+        statusCode: 422,
+        body: {
+          detail: [
+            {
+              loc: ["body", "fides_key"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+            {
+              loc: ["body", "collections"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+          ],
+        },
+      }).as("postDataset");
+      cy.getByTestId("input-url").type(
+        "valid url that will cause post to fail"
+      );
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate");
+      cy.wait("@postDataset");
+      cy.getByTestId("error-url").should("contain", "field required");
     });
   });
 

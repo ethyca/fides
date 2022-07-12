@@ -76,7 +76,11 @@ export const CustomTextInput = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      {isInvalid ? (
+        <FormErrorMessage data-testid={`error-${field.name}`}>
+          {meta.error}
+        </FormErrorMessage>
+      ) : null}
     </FormControl>
   );
 };
