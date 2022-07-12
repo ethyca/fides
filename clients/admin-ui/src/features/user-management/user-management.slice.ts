@@ -9,6 +9,7 @@ import { utf8ToB64 } from "../common/utils";
 import {
   User,
   UserPasswordUpdate,
+  UserPermissions,
   UserPermissionsResponse,
   UserPermissionsUpdate,
   UserResponse,
@@ -97,11 +98,11 @@ export const userApi = createApi({
       }),
       providesTags: () => ["User"],
     }),
-    getUserById: build.query<object, string>({
+    getUserById: build.query<User, string>({
       query: (id) => ({ url: `user/${id}` }),
       providesTags: ["User"],
     }),
-    getUserPermissions: build.query<object, string>({
+    getUserPermissions: build.query<UserPermissions, string>({
       query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ["User"],
     }),
