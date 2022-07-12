@@ -4,13 +4,14 @@ API endpoints for displaying hierarchical data representations.
 from enum import Enum
 from typing import Union
 
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 from fastapi.responses import HTMLResponse
 from fideslang import model_map
 
 from fidesapi.routes.crud import list_resource
 from fidesapi.routes.util import API_PREFIX, get_resource_type
 from fidesapi.sql_models import sql_model_map
+from fidesapi.utils.api_router import APIRouter
 from fidesctl.core import visualize
 
 # pylint: disable=redefined-outer-name,cell-var-from-loop

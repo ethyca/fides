@@ -2,8 +2,9 @@ from functools import update_wrapper
 from pathlib import Path
 from typing import Any, Callable
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import HTTPException, status
 
+from fidesapi.utils.api_router import APIRouter
 from fidesctl.core.utils import API_PREFIX as _API_PREFIX
 
 API_PREFIX = _API_PREFIX

@@ -20,7 +20,7 @@ The types of changes are:
 ### Added
 
 * Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
-* Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
+* Add datasets via database connection [#834](https://github.com/ethyca/fides/pull/834) [#889](https://github.com/ethyca/fides/pull/889)
 * Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
@@ -50,7 +50,8 @@ The types of changes are:
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
-* Fixed an M1-related SQLAlchemy bug [816](https://github.com/ethyca/fides/pull/891)
+* Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
+* Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
