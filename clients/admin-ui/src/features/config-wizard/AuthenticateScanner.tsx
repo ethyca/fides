@@ -1,19 +1,20 @@
 import React from "react";
 
+import { ValidTargets } from "~/types/api";
+
 import AuthenticateAwsForm from "./AuthenticateAwsForm";
-import { Infrastructure } from "./types";
 
 // TODO(#577)
 const AuthenticateOktaForm = () => null;
 
 interface Props {
-  infrastructure?: Infrastructure;
+  infrastructure?: ValidTargets;
 }
 
-const AuthenticateScanner = ({ infrastructure = "aws" }: Props) => (
+const AuthenticateScanner = ({ infrastructure = ValidTargets.AWS }: Props) => (
   <>
-    {infrastructure === "aws" ? <AuthenticateAwsForm /> : null}
-    {infrastructure === "okta" ? <AuthenticateOktaForm /> : null}
+    {infrastructure === ValidTargets.AWS ? <AuthenticateAwsForm /> : null}
+    {infrastructure === ValidTargets.OKTA ? <AuthenticateOktaForm /> : null}
   </>
 );
 

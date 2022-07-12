@@ -61,6 +61,7 @@ const EditDrawer = ({
                 icon={<TrashCanSolidIcon />}
                 size="xs"
                 onClick={onDeleteOpen}
+                data-testid="delete-btn"
               />
             </DrawerHeader>
             <DrawerBody>

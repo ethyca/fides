@@ -13,7 +13,7 @@ See the [Prerequisites and Dependencies](../installation/prerequisites_dependenc
 The next step is to install fidesctl via [`pipx`](https://pypa.github.io/pipx/) with the required extras:
 
 ```sh
-pipx install "fidesctl[webserver]"
+pipx install fidesctl
 ```
 
 For more information on pipx, installing fidesctl, and other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
