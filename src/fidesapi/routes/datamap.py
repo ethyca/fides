@@ -3,7 +3,7 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict
 
-from fastapi import APIRouter, Response, status
+from fastapi import Response, status
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
@@ -11,6 +11,7 @@ from pandas import DataFrame
 from fidesapi.routes.crud import get_resource, list_resource
 from fidesapi.routes.util import API_PREFIX
 from fidesapi.sql_models import sql_model_map
+from fidesapi.utils.api_router import APIRouter
 from fidesapi.utils.errors import DatabaseUnavailableError, NotFoundError
 from fidesctl.core.export import build_joined_dataframe
 from fidesctl.core.export_helpers import DATAMAP_COLUMNS

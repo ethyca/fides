@@ -8,7 +8,7 @@ generated programmatically for each resource.
 
 from typing import Dict, List
 
-from fastapi import APIRouter, Response, status
+from fastapi import Response, status
 from fideslang import model_map
 
 from fidesapi.database.crud import (
@@ -21,6 +21,7 @@ from fidesapi.database.crud import (
 )
 from fidesapi.routes.util import API_PREFIX, get_resource_type
 from fidesapi.sql_models import sql_model_map
+from fidesapi.utils.api_router import APIRouter
 
 # CRUD Endpoints
 routers = []

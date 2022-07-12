@@ -134,3 +134,13 @@ def get_db_health(database_url: str) -> str:
         error_type = get_full_exception_name(error)
         log.error(f"Unable to reach the database: {error_type}: {error}")
         return "unhealthy"
+
+
+async def configure_db(database_url: str) -> None:
+    "Set up the db to be used by the app."
+    try:
+        create_db_if_not_exists(database_url)
+        await init_db(database_url)
+    except Exception as error:  # pylint: disable=broad-except
+        error_type = get_full_exception_name(error)
+        log.error(f"Unable to configure database: {error_type}: {error}")
