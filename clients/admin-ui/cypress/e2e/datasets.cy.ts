@@ -234,6 +234,95 @@ describe("Dataset", () => {
     });
   });
 
+  describe("Creating datasets", () => {
+    it("Can render the create dataset page", () => {
+      cy.visit("/dataset");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.url().should("contain", "/dataset/new");
+      cy.getByTestId("upload-yaml-btn");
+      cy.getByTestId("connect-db-btn");
+    });
+
+    it("Can create a dataset via yaml", () => {
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("upload-yaml-btn").click();
+      cy.fixture("dataset.json").then((dataset) => {
+        const key = dataset.fides_key;
+        const datasetAsString = JSON.stringify(dataset);
+        // Cypress doesn't have a native "paste" command, so instead do change the value directly
+        // (.type() is too slow, even with 0 delay)
+        cy.getByTestId("input-datasetYaml")
+          .click()
+          .invoke("val", datasetAsString)
+          .trigger("change");
+        // type just one space character to make sure the text field triggers Formik's handlers
+        cy.getByTestId("input-datasetYaml").type(" ");
+
+        cy.getByTestId("create-dataset-btn").click();
+        cy.wait("@postDataset").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql(dataset);
+        });
+
+        // should navigate to the created dataset
+        cy.getByTestId("toast-success-msg");
+        cy.url().should("contain", `dataset/${key}`);
+      });
+    });
+
+    it("Can render errors in yaml", () => {
+      cy.intercept("POST", "/api/v1/dataset", {
+        statusCode: 422,
+        body: {
+          detail: [
+            {
+              loc: ["body", "fides_key"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+            {
+              loc: ["body", "collections"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+          ],
+        },
+      }).as("postDataset");
+      cy.visit("/dataset/new");
+      cy.getByTestId("upload-yaml-btn").click();
+      // type something that isn't yaml
+      cy.getByTestId("input-datasetYaml").type("invalid: invalid: invalid");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-datasetYaml").should("contain", "Could not parse");
+
+      // type something that is valid yaml and let backend render an error
+      cy.getByTestId("input-datasetYaml")
+        .clear()
+        .type("valid yaml that is not a dataset");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-datasetYaml").should("contain", "field required");
+    });
+
+    it("Can create a dataset by connecting to a database", () => {
+      // mock generate
+      // mock post
+      // verify need something in the URL box
+      // create
+      // check post payload
+    });
+
+    it("Can render errors when connecting to a database", () => {
+      // mock generate with error payload
+      // render error properly
+      // mock generate with good payload
+      // mock post with error payload
+      // render error properly
+    });
+  });
+
   describe("Data category checkbox tree", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
