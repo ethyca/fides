@@ -41,7 +41,6 @@ The types of changes are:
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
-* Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ### Docs
@@ -53,6 +52,8 @@ The types of changes are:
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
+* Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
+* Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
