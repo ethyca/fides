@@ -7,7 +7,12 @@ import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
-from fidesctl.cli.utils import check_server, send_init_analytics, with_analytics
+from fidesctl.cli.utils import (
+    FIDESCTL_ASCII_ART,
+    check_server,
+    send_init_analytics,
+    with_analytics,
+)
 from fidesctl.core.utils import echo_green
 
 
@@ -45,7 +50,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         "cli": {"server_protocol", "server_host", "server_port", "analytics_id"},
         "user": {"analytics_opt_out"},
     }
-
+    click.echo(FIDESCTL_ASCII_ART)
     click.echo("Initializing Fidesctl...")
     separate()
 
