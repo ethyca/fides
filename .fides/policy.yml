@@ -27,7 +27,6 @@ policy:
     data_categories:
       matches: ANY
       values:
-      - account
       - user
     data_uses:
       matches: ANY

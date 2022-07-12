@@ -88,6 +88,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: tags
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
   - name: data_qualifiers
     description: null
     data_categories: null
@@ -144,6 +151,13 @@ dataset:
       retention: null
       fields: null
     - name: updated_at
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
       description: null
       data_categories:
       - system.operations
@@ -215,6 +229,13 @@ dataset:
       retention: null
       fields: null
     - name: updated_at
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
       description: null
       data_categories:
       - system.operations
@@ -319,6 +340,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: tags
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
   - name: datasets
     description: null
     data_categories: null
@@ -385,7 +413,7 @@ dataset:
       description: Encrypted contact information for a joint controller (name, address,
         email, phone)
       data_categories:
-      - user.provided.identifiable.contact
+      - user.contact
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: End of joint controller agreement.
       fields: null
@@ -449,6 +477,13 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -526,7 +561,7 @@ dataset:
       description: Encrypted contact information for the controller (name, address,
         email, phone)
       data_categories:
-      - user.provided.identifiable.contact
+      - user.contact
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: 1 Year post-employment
       fields: null
@@ -541,7 +576,7 @@ dataset:
       description: Encrypted contact information for the Data Protection Officer (name,
         address, email, phone)
       data_categories:
-      - user.provided.identifiable.contact
+      - user.contact
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: 1 Year post-employment
       fields: null
@@ -598,7 +633,7 @@ dataset:
       description: Encrypted contact information for the representative (name, address,
         email, phone)
       data_categories:
-      - user.provided.identifiable.contact
+      - user.contact
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: 1 Year post-employment
       fields: null
@@ -611,6 +646,13 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -678,6 +720,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: tags
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
   - name: registries
     description: null
     data_categories: null
@@ -728,6 +777,13 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -800,7 +856,7 @@ dataset:
       description: Encrypted contact information for a joint controller (name, address,
         email, phone)
       data_categories:
-      - user.provided.identifiable.contact
+      - user.contact
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: End of joint controller agreement.
       fields: null
@@ -862,6 +918,13 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
