@@ -9,7 +9,7 @@ interface Props {
 }
 
 const HorizontalStepper = ({ activeStep, steps }: Props) => (
-  <Stack alignItems="flex-start" direction={["row"]} ml="100px" w="100%">
+  <Stack alignItems="flex-start" direction={["row"]} w="100%">
     {steps.map((step) => (
       <React.Fragment key={step.number}>
         {activeStep && activeStep === step.number ? (

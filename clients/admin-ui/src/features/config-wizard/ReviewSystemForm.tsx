@@ -15,20 +15,28 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import type { NextPage } from "next";
 import React from "react";
 
-import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
-import { useGetOrganizationByFidesKeyQuery } from "./organization.slice";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  DEFAULT_ORGANIZATION_FIDES_KEY,
+  useGetOrganizationByFidesKeyQuery,
+} from "~/features/organization";
 
-const ReviewSystemForm: NextPage<{
-  handleChangeReviewStep: Function;
-  handleCancelSetup: Function;
-  systemFidesKey: string;
-}> = ({ handleCancelSetup, handleChangeReviewStep, systemFidesKey }) => {
+import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
+import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
+
+const ReviewSystemForm = ({
+  handleCancelSetup,
+}: {
+  handleCancelSetup: () => void;
+}) => {
+  const systemFidesKey = useAppSelector(selectSystemFidesKey);
+  const dispatch = useAppDispatch();
+
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    "default_organization"
+    DEFAULT_ORGANIZATION_FIDES_KEY
   );
 
   const initialValues = {
@@ -42,7 +50,7 @@ const ReviewSystemForm: NextPage<{
   };
 
   const handleSubmit = () => {
-    handleChangeReviewStep(3);
+    dispatch(changeReviewStep());
   };
 
   return (
@@ -52,7 +60,7 @@ const ReviewSystemForm: NextPage<{
       onSubmit={handleSubmit}
     >
       <Form>
-        <Stack ml="100px" spacing={10}>
+        <Stack spacing={10}>
           <Heading as="h3" size="lg">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
             Review {existingOrg?.name}

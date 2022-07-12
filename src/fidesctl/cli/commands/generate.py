@@ -10,6 +10,7 @@ from fidesctl.cli.options import (
     include_null_flag,
     okta_org_url_option,
     okta_token_option,
+    organization_fides_key_option,
 )
 from fidesctl.cli.utils import (
     handle_aws_credentials_options,
@@ -139,6 +140,7 @@ def generate_system(ctx: click.Context) -> None:
 @okta_org_url_option
 @okta_token_option
 @include_null_flag
+@organization_fides_key_option
 @with_analytics
 def generate_system_okta(
     ctx: click.Context,
@@ -147,6 +149,7 @@ def generate_system_okta(
     token: str,
     org_url: str,
     include_null: bool,
+    org_key: str,
 ) -> None:
     """
     Generates systems for your Okta applications. Connect to an Okta admin
@@ -157,8 +160,9 @@ def generate_system_okta(
     This is a one-time operation that does not track the state of the okta resources.
     It will need to be run again if the tracked resources change.
     """
+    config = ctx.obj["CONFIG"]
     okta_config = handle_okta_credentials_options(
-        fides_config=ctx.obj["CONFIG"],
+        fides_config=config,
         token=token,
         org_url=org_url,
         credentials_id=credentials_id,
@@ -168,6 +172,9 @@ def generate_system_okta(
         okta_config=okta_config,
         file_name=output_filename,
         include_null=include_null,
+        organization_key=org_key,
+        url=config.cli.server_url,
+        headers=config.user.request_headers,
     )
 
 
@@ -179,13 +186,13 @@ def generate_system_okta(
 @aws_secret_access_key_option
 @aws_region_option
 @include_null_flag
-@click.option("-o", "--organization", type=str, default="default_organization")
+@organization_fides_key_option
 @with_analytics
 def generate_system_aws(
     ctx: click.Context,
     output_filename: str,
     include_null: bool,
-    organization: str,
+    org_key: str,
     credentials_id: str,
     access_key_id: str,
     secret_access_key: str,
@@ -213,7 +220,7 @@ def generate_system_aws(
     _system.generate_system_aws(
         file_name=output_filename,
         include_null=include_null,
-        organization_key=organization,
+        organization_key=org_key,
         aws_config=aws_config,
         url=config.cli.server_url,
         headers=config.user.request_headers,

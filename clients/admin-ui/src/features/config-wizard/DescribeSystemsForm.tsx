@@ -2,10 +2,11 @@ import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import type { NextPage } from "next";
 import React, { useState } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 
 import {
   CustomCreatableMultiSelect,
@@ -15,20 +16,17 @@ import {
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { useCreateSystemMutation } from "../system/system.slice";
 import { System } from "../system/types";
+import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
 type FormValues = Partial<System>;
 
-const DescribeSystemsForm: NextPage<{
-  handleChangeStep: Function;
-  handleChangeReviewStep: Function;
-  handleCancelSetup: Function;
-  handleSystemFidesKey: Function;
-}> = ({
+const DescribeSystemsForm = ({
   handleCancelSetup,
-  handleChangeStep,
-  handleChangeReviewStep,
-  handleSystemFidesKey,
+}: {
+  handleCancelSetup: () => void;
 }) => {
+  const dispatch = useAppDispatch();
+
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +36,7 @@ const DescribeSystemsForm: NextPage<{
     description: "",
     fides_key: "",
     name: "",
-    organization_fides_key: "default_organization",
+    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
     tags: [],
     system_type: "",
   };
@@ -48,7 +46,7 @@ const DescribeSystemsForm: NextPage<{
       description: values.description,
       fides_key: values.fides_key,
       name: values.name,
-      organization_fides_key: "default_organization",
+      organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       privacy_declarations: [
         {
           name: "string",
@@ -82,9 +80,8 @@ const DescribeSystemsForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleSystemFidesKey(values.fides_key);
-        handleChangeReviewStep(1);
-        handleChangeStep(4);
+        dispatch(setSystemFidesKey(values.fides_key ?? ""));
+        dispatch(changeReviewStep());
       }
     };
 
@@ -104,7 +101,7 @@ const DescribeSystemsForm: NextPage<{
     >
       {({ values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Describe your system
@@ -213,9 +210,9 @@ const DescribeSystemsForm: NextPage<{
               </Button>
               <Button
                 type="submit"
-                colorScheme="primary"
+                variant="primary"
                 size="sm"
-                disabled={
+                isDisabled={
                   !values.name || !values.description || !values.system_type
                 }
                 isLoading={isLoading}

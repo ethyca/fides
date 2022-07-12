@@ -42,11 +42,9 @@ const Setup = ({ wizardStep }: Props) => {
           <div>Let&apos;s get started!</div>
           <Stack direction={["column", "row"]} spacing="24px">
             <Button
-              bg="primary.800"
-              _hover={{ bg: "primary.400" }}
-              _active={{ bg: "primary.500" }}
-              colorScheme="primary"
+              variant="primary"
               onClick={() => wizardStep(true)}
+              data-testid="guided-setup-btn"
             >
               Guided Setup (Recommended)
             </Button>

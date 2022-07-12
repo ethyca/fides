@@ -19,10 +19,9 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -56,16 +55,18 @@ import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
 } from "../system/system.slice";
+import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
 
 type FormValues = Partial<PrivacyDeclaration>;
 
-const PrivacyDeclarationForm: NextPage<{
-  handleChangeReviewStep: Function;
-  handleCancelSetup: Function;
-  systemFidesKey: string;
-}> = ({ handleCancelSetup, handleChangeReviewStep, systemFidesKey }) => {
+const PrivacyDeclarationForm = ({
+  handleCancelSetup,
+}: {
+  handleCancelSetup: () => void;
+}) => {
+  const systemFidesKey = useAppSelector(selectSystemFidesKey);
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<any>(
     existingSystem && existingSystem?.privacy_declarations
@@ -80,10 +81,10 @@ const PrivacyDeclarationForm: NextPage<{
   const { data: dataQualifier } = useGetDataQualifierQuery();
   const { data: dataUse } = useGetDataUseQuery();
 
-  const allDataCategories = useSelector(selectDataCategories);
-  const allDataSubjects = useSelector(selectDataSubjects);
-  const allDataUses = useSelector(selectDataUse);
-  const allDataQualifiers = useSelector(selectDataQualifier);
+  const allDataCategories = useAppSelector(selectDataCategories);
+  const allDataSubjects = useAppSelector(selectDataSubjects);
+  const allDataUses = useAppSelector(selectDataUse);
+  const allDataQualifiers = useAppSelector(selectDataQualifier);
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
@@ -141,6 +142,7 @@ const PrivacyDeclarationForm: NextPage<{
 
     const systemBodyWithDeclaration = {
       description: existingSystem?.description,
+      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
@@ -166,7 +168,7 @@ const PrivacyDeclarationForm: NextPage<{
         });
       } else {
         toast.closeAll();
-        handleChangeReviewStep(2);
+        dispatch(changeReviewStep());
       }
     };
 
@@ -208,7 +210,7 @@ const PrivacyDeclarationForm: NextPage<{
     >
       {({ resetForm, values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Privacy Declaration for {existingSystem?.name}

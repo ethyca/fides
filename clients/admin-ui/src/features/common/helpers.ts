@@ -2,6 +2,10 @@
  * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
  */
 
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { YAMLException } from "js-yaml";
+
 // generic error of the structure we expect from the Fides backend
 interface ResponseError {
   data: {
@@ -17,6 +21,17 @@ interface ErrorDetail {
 interface ValidationError {
   data: {
     detail: ErrorDetail[];
+  };
+}
+
+interface ConflictError {
+  data: {
+    status: 409;
+    detail: {
+      error: string;
+      resource_type: string;
+      fides_key: string;
+    };
   };
 }
 
@@ -43,4 +58,34 @@ export function isErrorWithDetailArray(
     "data" in error &&
     Array.isArray((error as any).data.detail)
   );
+}
+
+export function isConflictError(error: unknown): error is ConflictError {
+  return (
+    typeof error === "object" &&
+    error != null &&
+    "data" in error &&
+    (error as any).status === 409
+  );
+}
+
+export function isYamlException(error: unknown): error is YAMLException {
+  return (
+    typeof error === "object" &&
+    error != null &&
+    "name" in error &&
+    (error as any).name === "YAMLException"
+  );
+}
+
+export function getErrorMessage(error: FetchBaseQueryError | SerializedError) {
+  let errorMsg = "An unexpected error occurred. Please try again.";
+  if (isErrorWithDetail(error)) {
+    errorMsg = error.data.detail;
+  } else if (isErrorWithDetailArray(error)) {
+    errorMsg = `${error.data.detail[0].msg}: ${error.data.detail[0].loc}`;
+  } else if (isConflictError(error)) {
+    errorMsg = `${error.data.detail.error} (${error.data.detail.fides_key})`;
+  }
+  return errorMsg;
 }

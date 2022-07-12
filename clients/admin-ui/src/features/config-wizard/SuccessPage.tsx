@@ -14,20 +14,25 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import type { NextPage } from "next";
 import React from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import {
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
 
-const SuccessPage: NextPage<{
-  handleChangeStep: Function;
-  handleChangeReviewStep: Function;
-  systemFidesKey: string;
-}> = ({ handleChangeStep, handleChangeReviewStep, systemFidesKey }) => {
+import {
+  changeReviewStep,
+  changeStep,
+  selectSystemFidesKey,
+} from "./config-wizard.slice";
+
+const SuccessPage = () => {
+  const systemFidesKey = useAppSelector(selectSystemFidesKey);
+  const dispatch = useAppDispatch();
+
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const filteredSystems = allRegisteredSystems?.filter(
@@ -36,7 +41,7 @@ const SuccessPage: NextPage<{
 
   return (
     <chakra.form w="100%">
-      <Stack ml="100px" spacing={10}>
+      <Stack spacing={10}>
         <Heading as="h3" color="green.500" size="lg">
           <Badge
             fontSize="16px"
@@ -82,8 +87,8 @@ const SuccessPage: NextPage<{
         <Box>
           <Button
             onClick={() => {
-              handleChangeStep(4);
-              handleChangeReviewStep(5);
+              dispatch(changeStep(5));
+              dispatch(changeReviewStep(1));
             }}
             mr={2}
             size="sm"
@@ -93,7 +98,7 @@ const SuccessPage: NextPage<{
           </Button>
           <Button
             onClick={() => {
-              handleChangeStep(5);
+              dispatch(changeStep());
             }}
             colorScheme="primary"
             size="sm"

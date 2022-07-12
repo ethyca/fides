@@ -13,32 +13,32 @@ DATAMAP_TEMPLATE = join(
     "fides_datamap_template.xlsx",
 )
 
-DATAMAP_COLUMNS = [
-    "dataset.name",
-    "system.name",
-    "system.administrating_department",
-    "system.privacy_declaration.data_use.name",
-    "system.joint_controller",
-    "system.privacy_declaration.data_subjects.name",
-    "unioned_data_categories",
-    "system.privacy_declaration.data_use.recipients",
-    "system.link_to_processor_contract",
-    "third_country_combined",
-    "system.third_country_safeguards",
-    "dataset.retention",
-    "organization.link_to_security_policy",
-    "system.data_responsibility_title",
-    "system.privacy_declaration.data_use.legal_basis",
-    "system.privacy_declaration.data_use.special_category",
-    "system.privacy_declaration.data_use.legitimate_interest",
-    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment",
-    "system.privacy_declaration.data_subjects.rights_available",
-    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling",
-    "dataset.name",
-    "system.data_protection_impact_assessment.is_required",
-    "system.data_protection_impact_assessment.progress",
-    "system.data_protection_impact_assessment.link",
-]
+DATAMAP_COLUMNS = {
+    "dataset.name": "Fides Dataset",
+    "system.name": "Fides System",
+    "system.administrating_department": "Department or Business Function",
+    "system.privacy_declaration.data_use.name": "Purpose of Processing",
+    "system.joint_controller": "Joint Controller",
+    "system.privacy_declaration.data_subjects.name": "Categories of Individuals",
+    "unioned_data_categories": "Categories of Personal Data (Fides Taxonomy)",
+    "system.privacy_declaration.data_use.recipients": "Categories of Recipients",
+    "system.link_to_processor_contract": "Link to Contract with Processor",
+    "third_country_combined": "Third Country Transfers",
+    "system.third_country_safeguards": "Safeguards for Exceptional Transfers of Personal Data",
+    "dataset.retention": "Retention Schedule",
+    "organization.link_to_security_policy": "General Description of Security Measures",
+    "system.data_responsibility_title": "Role or Responsibility",
+    "system.privacy_declaration.data_use.legal_basis": "Article 6 lawful basis for processing personal data",
+    "system.privacy_declaration.data_use.special_category": "Article 9 condition for processing special category data",
+    "system.privacy_declaration.data_use.legitimate_interest": "Legitimate interests for the processing (if applicable)",
+    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "Link to record of legitimate interests assessment (if applicable)",
+    "system.privacy_declaration.data_subjects.rights_available": "Rights available to individuals",
+    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "Existence of automated decision-making, including profiling (if applicable)",
+    "dataset.source_name": "The source of the personal data (if applicable)",
+    "system.data_protection_impact_assessment.is_required": "Data Protection Impact Assessment required?",
+    "system.data_protection_impact_assessment.progress": "Data Protection Impact Assessment progress",
+    "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
+}
 
 
 def export_to_csv(
@@ -131,7 +131,7 @@ def export_datamap_to_excel(
             index=False,
             header=False,
             startrow=9,
-            columns=DATAMAP_COLUMNS,
+            columns=list(DATAMAP_COLUMNS.keys()),
         )
 
     return filename
