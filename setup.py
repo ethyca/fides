@@ -46,6 +46,7 @@ setup(
     python_requires=">=3.8, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
+    include_package_data=True,
     author="Ethyca, Inc.",
     author_email="fidesteam@ethyca.com",
     license="Apache License 2.0",
