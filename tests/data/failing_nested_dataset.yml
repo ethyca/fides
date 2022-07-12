@@ -27,7 +27,7 @@ system:
     privacy_declarations:
       - name: Mesaure usage of users
         data_categories:
-          - user.derived
+          - user
         data_use: improve.system
         data_subjects:
           - customer
@@ -45,7 +45,7 @@ policy:
         data_categories:
           matches: OTHER
           values:
-            - user.derived
+            - user
         data_uses:
           matches: OTHER
           values:

@@ -33,7 +33,7 @@ def test_sample_system_taxonomy() -> Generator:
                             "account.contact.email",
                             "account.contact.name",
                         ],
-                        data_use="provide.system",
+                        data_use="provide.service",
                         data_qualifier="aggregated.anonymized",
                         data_subjects=["customer"],
                         dataset_references=["users_dataset"],
@@ -43,7 +43,7 @@ def test_sample_system_taxonomy() -> Generator:
         ],
         "data_subject": [DataSubject(fides_key="customer", name="customer")],
         "data_use": [
-            DataUse(fides_key="provide.system", name="System", parent_key="provide")
+            DataUse(fides_key="provide.service", name="System", parent_key="provide")
         ],
     }
 
