@@ -1,8 +1,8 @@
-# How-To: Connect to SaaS Applications
+# Connect to SaaS Applications
 
 ## What is a SaaS connection?
 
-A SaaS (Software as a Service) connection is a connection type within Fidesops that allows a user to connect to a SaaS application (e.g., Mailchimp, Stripe, Slack, etc.) and execute data access and erasure requests against that application. These connections use functionality introduced in earlier sections ([ConnectionConfigs](/guides/database_connectors.md#creating-a-connectionconfig-object) and [Datasets](/guides/datasets.md)) but also use a new [SaaS configuration](saas_config.md) specification to define how to connect to specific SaaS applications.
+A SaaS (Software as a Service) connection is a connection type within fidesops that allows a user to connect to a SaaS application (e.g., Mailchimp, Stripe, Slack, etc.) and execute data access and erasure requests against that application. These connections use functionality introduced in earlier sections ([ConnectionConfigs](/guides/database_connectors.md#creating-a-connectionconfig-object) and [Datasets](/guides/datasets.md)) but also use a new [SaaS configuration](saas_config.md) specification to define how to connect to specific SaaS applications.
 
 ## Supported SaaS applications
 
@@ -45,7 +45,7 @@ PATCH api/v1/connection/{saas_key}/saas_config
     "fides_key": "mailchimp_connector_example",
     "name": "Mailchimp SaaS Config",
     "type": "mailchimp",
-    "description": "A sample schema representing the Mailchimp connector for Fidesops"
+    "description": "A sample schema representing the Mailchimp connector for fidesops"
     ...
 ```
 3. Configure the secrets. The SaaS config must already defined to provide validation for the secrets.
@@ -65,7 +65,7 @@ PUT api/v1/connection/{saas_key}/dataset
   {
     "fides_key":"mailchimp_connector_example",
     "name":"Mailchimp Dataset",
-    "description":"A sample dataset representing the Mailchimp connector for Fidesops",
+    "description":"A sample dataset representing the Mailchimp connector for fidesops",
     "collections":[
       {
         "name":"messages"

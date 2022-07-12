@@ -1,16 +1,6 @@
-# How-To: Configure Data Masking Strategies
+# Configure Data Masking
 
-In this section we'll cover:
-
-- What is data masking?
-- Why might you want to mask personally identifiable information rather than delete?
-- How do you use fidesops as a masking service only?
-- How do you configure masking strategies for your fidesops policies?
-- What are the current supported masking strategies in fidesops?
-- How do you create your own masking strategies?
-
-
-## Data masking basics 
+## What is data masking?
 
 Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally 
 identifiable information.)
@@ -19,9 +9,8 @@ For example, if a customer requests that your remove all information associated 
 `test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and 
 their associated address with another random string `2ab6jghdg37uhkaz3hpyavpss1dvg2`.
 
-It's important to remember that masking != anonymization. Since records are not deleted, a masked dataset is (at best)
-pseudonymized in most cases, and (at worst) may still be identifiable if the masking is reversible or easy to predict,
-which is a common mistake!
+It's important to remember that masking does not equal anonymization. Since records are not deleted, a masked dataset is (at best)
+pseudonymized in most cases, and (at worst) may still be identifiable if the masking is reversible or easy to predict.
 
 In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
 of masking strategies for different purposes when used directly as an API including HMAC, Hash, AES encryption, string rewrite, random string rewrite, and null rewrite.
@@ -49,9 +38,9 @@ Other reasons to mask instead of delete include legal requirements that have you
 If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the 
 value(s) you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
 
-Example: `PUT /masking/mask`
+### Masking example
 
-```json
+```json title="<code>PUT /masking/mask</code>"
      {
         "values": ["test@example.com"],
         "masking_strategy": {
@@ -66,9 +55,7 @@ Example: `PUT /masking/mask`
     }
 ```
 
-`Response 200 OK`
-
-```json
+```json title="<code>Response 200 OK</code>"
     {
         "plain": ["test@example.com"],
         "masked_value": ["idkeaotbrub346ycbmpo@masked.com"]
@@ -77,7 +64,7 @@ Example: `PUT /masking/mask`
 
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
-See [Masking values API docs](/fidesops/api#operations-tag-Masking) on how to use fidesops to as a masking service .
+See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use fidesops to as a masking service.
 
 
 ## Configuration
@@ -87,9 +74,7 @@ Erasure requests will mask data with the chosen masking strategy.
 To configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
 that captures that strategy for the Policy.
 
-Issue a PATCH request to `/policy/policy_key/rule`:
-
-```json
+```json title="<code>PATCH /policy/policy_key/rule</code>"
     [{
         "name": "Global erasure rule",
         "action_type": "erasure",
@@ -107,9 +92,9 @@ Issue a PATCH request to `/policy/policy_key/rule`:
 
 ```
 
-## Supported Masking Strategies and Associated Configuration options
+## Supported masking strategies
 
-### Null Rewrite
+### Null rewrite
 
 Masks the input value with a null value.
 
@@ -117,7 +102,7 @@ Masks the input value with a null value.
 
 No config needed.
 
-### String Rewrite
+### String rewrite
 
 Masks the input value with a default string value.
 
@@ -141,7 +126,7 @@ Masks the data by hashing the input before returning it. The hash is determinist
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-### Random String Rewrite
+### Random string rewrite
 
 Masks the input value with a random string of a specified length.
 
@@ -153,7 +138,7 @@ Masks the input value with a random string of a specified length.
 - `format_preservation` (optional): `Dict` with the following key/vals:
     - `suffix`: `str` that specifies suffix to append to masked value
 
-### AES Encrypt
+### AES encrypt
 
 Masks the data using AES encryption before returning it. The AES encryption strategy is deterministic such that the same input will return the same output within the context of the same privacy request. This is not the case when the masking service is called as a standalone service, outside the context of a privacy request.
 
@@ -262,7 +247,7 @@ any defaults that should be applied in their absence. All configuration classes 
 `MaskingConfiguration` class.
 
 
-### Integrating with the Masking Strategy Factory
+### Integrate the masking strategy factory
 
 In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
 

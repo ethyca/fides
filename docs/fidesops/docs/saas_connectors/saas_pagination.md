@@ -1,8 +1,8 @@
 # SaaS Pagination
 
-These pagination strategies allow Fidesops to incrementally retrieve content from SaaS APIs. APIs can vary in the way subsequent pages are accessed so these configurable options aim to cover a majority of common use cases.
+These pagination strategies allow fidesops to incrementally retrieve content from SaaS APIs. APIs can vary in the way subsequent pages are accessed so these configurable options aim to cover a majority of common use cases.
 
-## Supported Strategies
+## Supported strategies
 - `offset`: Iterates through the available pages by incrementing the value of a query param.
 - `link`: Uses links returned in the headers or the body to get to the next page.
 - `cursor`: Uses a value from the last-retrieved object to use as a query param pointing to the next set of results.
@@ -10,7 +10,7 @@ These pagination strategies allow Fidesops to incrementally retrieve content fro
 ### Offset
 This strategy can be used to iterate through pages, or to define the offset for a batch of results. In either case, this strategy increments the specified query param by the `increment_by` value until no more results are returned or the `limit` is reached.
 
-#### Configuration Details
+#### Configuration details
 - `incremental_param` (_str_): The query param to increment the value for.
 - `increment_by` (_int_): The value to increment the `incremental_param` after each set of results.
 - `limit` (_str_): The max value the `incremental_param` can reach.
@@ -29,7 +29,7 @@ pagination:
 ### Link
 This strategy is used when the link to the next page is provided as part of the API response. The link is read from the headers or the body and used to get the next page of results.
 
-#### Configuration Details
+#### Configuration details
 - `source` (_str_): The location to get the link from, can be either `headers` or `body`.
 - `path` (_str_): The expression used to refer to the location of the link within the headers or the body.
 

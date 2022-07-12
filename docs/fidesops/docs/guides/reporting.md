@@ -1,31 +1,17 @@
-# How-To: Report on Privacy Requests
-
-In this section we'll cover:
-
-- How to check the high-level status of your privacy requests
-- How to get more detailed execution logs of collections and fields that were potentially affected as part of your privacy request.
-- How to download all privacy requests as a CSV
-- How to view details on resuming/restarting a request
-
-Take me directly to [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
-
-
+# Report on Privacy Requests
 ## Overview
 
 The reporting feature allows you to fetch information about privacy requests. You can opt for high-level status 
 information, or get more detailed information about the status of the requests on each of your collections.
 
 
-## High-level Status
+## View high-level statuses
 
-
-This request displays concise, high-level information for all your PrivacyRequests including their status and related timestamps.
+This request displays concise, high-level information for all your privacy requests including their status and related timestamps.
 
 Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
-`GET api/v1/privacy-request`
-
-```json
+```json title="<code>GET api/v1/privacy-request</code>"
 {
     "items": [
         {
@@ -42,56 +28,64 @@ Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_requ
 }
 ```
 
-### Single Privacy Request
+### View a single privacy request
 
 Use the `id` query param to view the high level status of a single privacy request.
 
-`GET api/v1/privacy-request?request_id=<privacy_request_id>`
+```
+GET api/v1/privacy-request?request_id=<privacy_request_id>
+```
 
 If an `external_id` was provided at request creation, we can also track the privacy request using:
 
-`GET api/v1/privacy-request?external_id=<external_id>`
+```
+GET api/v1/privacy-request?external_id=<external_id>
+```
 
-Please note: These parameters will return matching Privacy Requests based on startswith matches.
+Please note: These parameters will return matching privacy requests based on `startswith` matches.
 
-### Privacy Request Filtering Options
+### Filtering options
 
 Use the following query params to further filter your privacy requests.  Filters can be chained, for example, 
 
-`GET api/v1/privacy-request?created_gt=2021-10-01&created_lt=2021-10-05&status=pending`
+```
+GET api/v1/privacy-request?created_gt=2021-10-01&created_lt=2021-10-05&status=pending
+```
 
-- id
+- `id`
 - status (one of `in_processing`, `pending`, `paused`, `complete`, or `error`)
-- created_lt
-- created_gt
-- started_lt
-- started_gt
-- completed_lt
-- completed_gt
-- errored_lt
-- errored_gt
+- `created_lt`
+- `created_gt`
+- `started_lt`
+- `started_gt`
+- `completed_lt`
+- `completed_gt`
+- `errored_lt`
+- `errored_gt`
 
 You can filter for multiple statuses by repeating the status query param:
 
-`GET api/v1/privacy-request?status=paused&status=complete`
+```
+GET api/v1/privacy-request?status=paused&status=complete
+```
 
 
 
-## View All Privacy Request Logs
+## View privacy request logs
 
-To view all the execution logs for a Privacy Request, visit `/api/v1/privacy-request/{privacy_request_id}/logs`.
+To view all the execution logs for a privacy request, visit `/api/v1/privacy-request/{privacy_request_id}/logs`.
 Embedded logs in the previous endpoints are truncated at 50 logs.
 
 Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
 
 
-## View A Privacy Request's Identity Data
+## View a request's identity data
 
-Use the optional `include_identities` query param to include all identity data that was submitted for the Privacy Request. Due to the nature of how Fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable.
+Use the optional `include_identities` query param to include all identity data that was submitted for the Privacy Request. Due to the nature of how fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable.
 
 If the identity data fetched by `include_identities` has expired, an empty JSON dictionary will be returned.
 
-## View Individual Privacy Request Log Details
+## View individual request log details
 
 Use the `verbose` query param to see more details about individual collections visited as part of the Privacy Request along
 with individual statuses. Individual collection statuses include `in_processing`, `retrying`, `complete` or `error`.
@@ -104,9 +98,7 @@ logs for `my-postgres-db` (when the `order` collection is starting and finishing
 that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
 are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
 
-`GET api/v1/privacy-request?request_id={privacy_request_id}&verbose=True`
-
-```json
+```json title="<code>GET api/v1/privacy-request?request_id={privacy_request_id}&verbose=True</code>"
 {
     "items": [
         {
@@ -179,24 +171,27 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
 
 
 ```
-## Downloading all privacy requests as a CSV 
+## Download all privacy requests as a CSV 
 
 
 To get all privacy requests in CSV format, use the `download_csv` query param:
 
-`GET api/v1/privacy-request/?download_csv=True`
 
-```csv
+```csv title="<code>GET api/v1/privacy-request/?download_csv=True</code>"
 Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/denied
 2022-03-14 16:53:28.869258+00:00,{'email': 'customer-1@example.com'},my_primary_policy,complete,fid_16ffde2f-613b-4f79-bbae-41420b0f836b,2022-03-14 16:54:08.804283+00:00
 ```
 
-## Details to resume a privacy request
+## Paused or failed request details
 
 A privacy request may pause when manual input is needed from the user, or it might fail for various reason on a specific collection.  
-Details to resume or retry that privacy request can be accessed via the `GET api/v1/privacy-request?request_id=<privacy_request_id>` endpoint.
 
-### Paused Access Request Example
+To retrieve information to resume or retry a privacy request, the following endpoint is available:
+ ```
+ GET api/v1/privacy-request?request_id=<privacy_request_id>
+ ```
+
+### Paused access request example
 
 The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `stopped_collection_details` key, we can see that the request
 paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  The `action_needed.locators` field shows the user they should
@@ -242,7 +237,7 @@ guides for more information on resuming a paused access request.
 }
 ```
 
-### Paused Erasure Request Example
+### Paused erasure request example
 
 The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `stopped_collection_details` shows us that the request
 paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
@@ -286,7 +281,7 @@ guides for more information on resuming a paused erasure request.
 
 ```
 
-### Failed Request Example
+### Failed request example
 
 The below request is an `error` state because something failed in the `erasure` step of the `postgres_dataset:payment_card` collection.  
 After troubleshooting the issues with your postgres connection, you would resume the request with a POST to the `resume_endpoint`.

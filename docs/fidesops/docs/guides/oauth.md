@@ -1,19 +1,15 @@
-# How-To: Authenticate with OAuth
+# Authenticate with OAuth
 
-In this section we'll cover:
-
-- How to use the root client
-- Creating additional OAuth clients using the root client
-- Authorizing your client with scopes
-- Creating OAuth tokens
-
-When you invoke a Fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must include a _scope_ that gives you permission to take an action on the API. For example, let's say you want to create a new Policy by calling `PATCH /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
+When you invoke a fidesops API, you must pass an _access token_ as the value of the `Authorization` header. Furthermore, the token must include a _scope_ that gives you permission to take an action on the API. For example, let's say you want to create a new Policy by calling `PATCH /api/v1/policy`. The token that you pass to the `Authorization` header must include the `policy:create_or_update` scope.
 
 This document explains how to craft a properly-scoped access token.
 
-## Getting Started
+## Create the root client
 
-First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes, so it can call any of the Fidesops APIs.
+!!! info "Note"
+    The fidesops [Postman collection](../postman/using_postman.md) includes several example requests to assist in set up and configuration.
+
+First, create an access token for the "root" client, included in the deployment by default. The root client's token is all-powerful: It contains all scopes, so it can call any of the fidesops APIs.
 
 To create the root token, you pass the `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` environment variables (which are automatically defined in your system) to the `POST /api/v1/oauth/token` endpoint. You also set the `grant_type` parameter to `client_credentials`:
 
@@ -25,7 +21,7 @@ curl \
   -d grant_type=client_credentials
 ```
 
-You'll notice that there's no `Authorization` header. This is the only Fidesops API that doesn't require an access token.
+You'll notice that there's no `Authorization` header. This is the only fidesops API that doesn't require an access token.
 
 If the `token` call is successful, the response will return the root client's access token in the `access_token` property:
 
@@ -39,11 +35,11 @@ Content-Type: application/json
 }
 ```
 
-## Creating Additional Clients
+## Create additional clients
 
 Because the root client's token is all-powerful, it can create new clients and new client ID/client secret pairs which can be used to create additional access tokens. 
 
-!!! Note "Pro Tip"
+!!! info "Note"
     For general best practices, we recommend creating a client with scope `CLIENT_CREATE` to create any new clients. This will help to reduce the utilization of the all-scopes root client.
 
 To create the client ID/secret pair, call `POST /api/v1/oauth/client`:
@@ -57,7 +53,7 @@ curl \
 ```
 
 For this call, we have to populate the `Authorization` header. Notice that the header's value is formed  as `Bearer <token>`. We also have to declare the request's `Content-Type` to be `application/json`.
-### Authorize your Client with Scopes
+### Authorize a client with scopes
 
 To add scopes to the client, the body of your request must contain an array of scope tokens. 
 
@@ -74,16 +70,16 @@ Content-Type: application/json
   "client_secret" : "<new_client_secret>",
 }
 ```
-## Create Access Token
+## Create an access token
 You then create a new access token by calling [`POST /api/v1/oauth/token`](/fidesops/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
 
-In the above example, your new access token only lets the client read policies and rules -- the client nor create other clients, nor write policies, nor perform other operations using Fidesops APIs.
+In the above example, your new access token only lets the client read policies and rules -- the client cannot create other clients, write policies, or perform other operations using fidesops APIs.
 
-### Access Token Expiration
+### Access token expiration
 
 By default, access tokens expire after 11520 minutes (8 days). To specify a different expiration time (in minutes) set the `OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` environment variable.
 
-If you call a Fidesops API with an expired token, the call returns `401`.
+If you call a fidesops API with an expired token, the call returns `401`.
 
 
 ### Other OAuth Calls

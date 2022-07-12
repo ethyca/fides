@@ -1,5 +1,5 @@
-# Debugging Fidesops in IntelliJ IDEA Ultimate
-This guide will show how to use the IntelliJ debugger with Fidesops running in Docker. 
+# Debugging fidesops in IntelliJ IDEA Ultimate
+This guide will show how to use the IntelliJ debugger with fidesops running in Docker. 
 The setup for PyCharm Professional should be very similar.
 
 ## Prerequisites
@@ -42,11 +42,11 @@ See screenshots below:
 
 ### Run/Debug Configuration
 
-Set up a Run/Debug Configuration so that breakpoints can be hit in the Fidesops sourcecode. 
+Set up a Run/Debug Configuration so that breakpoints can be hit in the f sourcecode. 
 
 Go to: **Run/Debug Configurations** -> **+** -> **Python**
 
-- To debug Fidesops, debug the `<path on your machine>/src/fidesops/main.py` script
+- To debug fidesops, debug the `<path on your machine>/src/fidesops/main.py` script
 - Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
 - Add `FIDESOPS__CONFIG_PATH=/fidesops` to **Environment variables**
 
@@ -58,7 +58,7 @@ See screenshot below:
 
 Now the IDE is ready to debug the source code. Click the debug button for **main** *(setup in the previous section)*.
 
-Try firing a http request to Fidesops from Postman or Curl and hit a break point. 
+Try firing a http request to fidesops from Postman or Curl and hit a break point. 
 
 There is a postman collection in this repo: `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
 

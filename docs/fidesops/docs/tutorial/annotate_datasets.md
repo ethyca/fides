@@ -2,11 +2,8 @@
 
 ## Annotate Datasets with fidesops_meta
 
-For more detailed information, [see the Datasets Guide](../guides/datasets.md).
+Next, fidesops needs to know how to traverse through our Flask App's database tables. For more detailed information, [see the Datasets Guide](../guides/datasets.md).
 
----
-
-Next, fidesops needs to know how to traverse through our Flask App's database tables. 
 We should upload a YAML file that describes our Flask App's database in a language that Fides understands.
 
 See `fidesdemo/fides_resources/flaskr_postgres_dataset.yml` where we've already annotated the tables and fields in our Postgres
@@ -26,7 +23,7 @@ and use that to look up the `seller_id`.
         direction: from
 ```
 
-Similarly, add a `fidesops_meta` attribute to `flaskr_postgres_dataset.purchases.buyer_id`  Fidesops will be able
+Similarly, add a `fidesops_meta` attribute to `flaskr_postgres_dataset.purchases.buyer_id`. Fidesops will be able
 to take the user `id` and use that to look up purchases by `buyer_id`.
 
 ```yaml
@@ -40,7 +37,7 @@ to take the user `id` and use that to look up purchases by `buyer_id`.
         direction: from
 ```
 
-Lastly, annotate `flaskr_postgres_dataset.users.email` field.   This is our entry point: Fidesops will first look up
+Lastly, annotate `flaskr_postgres_dataset.users.email` field. This is our entry point: fidesops will first look up
 the user by `email`, and from there, travel through other tables linked to `user`. 
 
 ```yaml
@@ -51,14 +48,11 @@ the user by `email`, and from there, travel through other tables linked to `user
     identity: email
 ```
 
-## Upload this Dataset to Fidesops
+## Upload this Dataset to fidesops
 
-For more detailed information, [see the Datasets Guide](../guides/datasets.md).
-
----
 We need to create a method that takes the Dataset we've just annotated and upload it to fidesops:
 
-### Define helper method
+### Define a helper method
 
 ```python
 def create_dataset(connection_key, yaml_path, access_token):
@@ -82,9 +76,9 @@ def create_dataset(connection_key, yaml_path, access_token):
     return response.json()
 ```
 
-### Call helper method to create a dataset
+### Call the helper method to create a dataset
 
-Our connection_key is the `flaskr_postgres` ConnectionConfig we created in the previous step,
+Our `connection_key` is the `flaskr_postgres` ConnectionConfig we created in the previous step,
 and we're also passing in our completed YAML file:
 
 ```python

@@ -3,24 +3,21 @@
 
 ## See a Privacy Request in Action 
 
-For more detailed information, [see the Privacy Request Guide](../guides/privacy_requests.md).
-
----
-
 To summarize so far, we have:
 
-
-    1) Created a client for authentication
-    2) Created a connection from fidesops to our Flask App's Postgres Database
-    3) Uploaded an annotated Dataset to fidesops so it knows how to traverse through the Flask App's tables
-    4) Defined where to upload our user data after we've retrieved it from the Flask App
-    5) Defined Policies describing what data we're looking for and what to do with that data.
+  1. Created a client for authentication
+  2. Created a connection from fidesops to our Flask App's Postgres Database
+  3. Uploaded an annotated Dataset to fidesops so it knows how to traverse through the Flask App's tables
+  4. Defined where to upload our user data after we've retrieved it from the Flask App
+  5. Defined Policies describing what data we're looking for and what to do with that data.
 
 For our last step, we'll write a method that will let us create a Privacy Request.  We need to specify the
 Policy we want applied to that Privacy Request, as well as the starting identity of the user we'll need
-to locate the remaining user information:
+to locate the remaining user information.
 
-### Define helper method
+For more detailed information, [see the Privacy Request Guide](../guides/privacy_requests.md).
+
+### Define a helper method
 
 ```python
 def create_privacy_request(email, policy_key):
@@ -45,7 +42,7 @@ def create_privacy_request(email, policy_key):
     return response.json()
 ```
 
-### Call helper method to run Privacy Request
+### Call the helper method to run the Privacy Request
 
 This will create a request to fetch for all user data with category `user.provided.identifiable` associated 
 with email `user@example.com` and save it to our local Storage destination, by specifying the email and the Policy.
@@ -62,7 +59,7 @@ if __name__ == "__main__":
     )
 ```
 
-## Execute our Privacy Request
+## Execute the Privacy Request
 
 In your terminal, within the `fidesdemo` directory, we'll run our script to execute the Privacy Request:
 
@@ -70,7 +67,7 @@ In your terminal, within the `fidesdemo` directory, we'll run our script to exec
 python3 flaskr/fidesops.py
 ```
 
-```bash
+```bash title="Success statuses"
 INFO:__main__:Creating access token. Status 200
 INFO:__main__:Creating Oauth Client. Status 200
 INFO:__main__:Adding scopes to oauth client. Status 200

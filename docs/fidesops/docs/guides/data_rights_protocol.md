@@ -74,7 +74,7 @@ The current status of an existing privacy request may be returned via the `/stat
 
 ### Data Rights
 
-All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to Fidesops version.
+All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to fidesops version.
 
 ```json title="<code>GET /api/v1/drp/data-rights</code>"
 {

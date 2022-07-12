@@ -2,11 +2,7 @@
 
 ## Creating a Postgres ConnectionConfig
 
-For more detailed information, [see the Database Connectors Guide](../guides/database_connectors.md).
-
----
-
-Next, we need to create a ConnectionConfig so fidesops can connect to our Flask App's database.
+Next, we need to create a ConnectionConfig so fidesops can connect to our Flask App's database. For more detailed information, [see the Database Connectors Guide](../guides/database_connectors.md).
 
 Let's add a method that hits the PATCH `connection` endpoint, and creates a ConnectionConfig for a `postgres` database:
 
@@ -58,7 +54,6 @@ def configure_postgres_connection(
     )
     logger.info(f"Updating PostgreSQL Secrets. Status {response.status_code}.")
     return response.json()
-
 ```
 
 ### Call helper methods to connect to Postgres
@@ -66,8 +61,8 @@ def configure_postgres_connection(
 Add calls for our new methods, to create a Postgres ConnectionConfig called `flaskr_postgres`, and 
 then update that connection's secrets with individual URI components.  This will encrypt and save the URI components 
 and also attempt to make a test connection to our Flask App's Postgres Database.
-```python
 
+```python
 if __name__ == "__main__":
     ...
     # Connect to our PostgreSQL database

@@ -5,7 +5,7 @@
 
 To view a list of all available connection types, visit `GET /api/v1/connection_type`.
 This endpoint can be filtered with a `search` query param and is subject to change.  We include
-database options and third party API services with which Fidesops can communicate.
+database options and third party API services with which fidesops can communicate.
 
 ```json title="<code>GET /api/v1/connection_type</code>"
 {

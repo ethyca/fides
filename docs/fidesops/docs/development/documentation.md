@@ -1,7 +1,5 @@
 # Documentation
 
----
-
 Documentation is incredibly important to Fides, both for explaining its concepts to general audiences and describing its usage to developers.
 
 ## Concepts
@@ -14,7 +12,7 @@ To write concept docs, add Markdown files to the `docs/fidesops/docs/` directory
 
 ### Capitalization
 
-Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides" and "Fidesops".
+Concepts that refer to proper nouns or are trademarked should always be capitalized, including "Fides". Fides tools, such as "fidesops" and "fidesctl" should always be lowercase.
 
 Other Fides terms, like "Data Category" or "System", should also be capitalized to be clear about the fact that a Fides resource is being referenced.
 

@@ -51,7 +51,7 @@ Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture
 
 Fidesops uses `pytest` for unit testing. As with other `make` commands, you have the option to run `pytest` in command-line or in application shell:
 
-1. In shell: Once in the Fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root Fidesops directory:
+1. In shell: Once in the fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root fidesops directory:
 
 ```bash
 cd fidesops

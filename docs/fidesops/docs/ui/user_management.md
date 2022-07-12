@@ -39,7 +39,7 @@ Existing users can be edited by selecting the "Edit" button from the side of the
 
 ## Managing Users from the API 
 
-Fidesops provides several user-related endpoints for managing access to the control panel. Example requests are included in the Fidesops [Postman Collection](./../postman/using_postman.md).
+Fidesops provides several user-related endpoints for managing access to the control panel. Example requests are included in the fidesops [Postman collection](./../postman/using_postman.md).
 
 
 ### User and Endpoint Scopes

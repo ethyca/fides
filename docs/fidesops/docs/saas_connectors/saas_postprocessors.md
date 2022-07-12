@@ -28,7 +28,7 @@ endpoints:
 
 Note: Order matters as it's defined in the config. In the above example, unwrap will be run first, then the output of unwrap will be used in the filter strategy.
 
-### For Update/Delete/GDPR endpoints
+### Format subsequent requests
 
 Post-processors can format the results of your access requests for use in subsequent update or delete statements.
 
@@ -64,7 +64,7 @@ update:
 
 Filters object or array given field name and value. Value can reference a dynamic identity passed in through the request OR be a hard-coded value.
 
-#### Configuration Details
+#### Configuration details
 
 `strategy`: filter
 
@@ -121,7 +121,7 @@ Result:
     }
 ]
 ```
-By default this filter is exact and case-sensitive.
+By default, this filter is exact and case-sensitive.
 
 Post-Processor Config:
 ```yaml
@@ -182,7 +182,7 @@ Note: Type casting is not supported at this time. We currently only support filt
 
 Given a path to a dict/list, returns the dict/list at that location.
 
-#### Configuration Details
+#### Configuration details
 
 `strategy`: unwrap
 

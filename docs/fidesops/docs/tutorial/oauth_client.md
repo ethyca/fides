@@ -2,19 +2,13 @@
 
 ## Creating our Oauth Client
 
-For more detailed information, [see the Oauth Guide](../guides/oauth.md).
-
----
-
-Our first step is to create an Oauth Client that we can use to authenticate all of our requests.
+Our first step is to create an Oauth Client that we can use to authenticate all of our requests. For more detailed information, [see the Oauth Guide](../guides/oauth.md).
 
 Add a method to our Python script that will call the fidesops API to create a token given a `client_id` and a `client_secret`:
 
-
 ### Define helper methods
-`fidesdemo/flaskr/fidesops.py`
 
-```python
+```python title="<code>fidesdemo/flaskr/fidesops.py</code>"
 def get_access_token(client_id, client_secret):
     """
     Authorize with fidesops via OAuth. Returns a valid access token if successful.
@@ -29,22 +23,15 @@ def get_access_token(client_id, client_secret):
     return response.json()["access_token"]
 ```
 
-Add another method that will both create a client and assign scopes to that client. It's also useful to define a helper method to build 
-Oauth headers at this point:
+Add another method that will both create a client and assign scopes to that client. It's also useful to define a helper method to build Oauth headers at this point:
 
-`fidesdemo/flaskr/fidesops.py`
-
-```python
-...
+```python title="<code>fidesdemo/flaskr/fidesops.py</code>"
 def oauth_headers(access_token):
     """Return valid authorization headers given the provided OAuth access token"""
     return {"Authorization": f"Bearer {access_token}"}
 ```
 
 ```python
-...
-
-
 def create_oauth_client(access_token):
     """
     Create a new OAuth client in fidesops.Returns the response JSON if successful.
@@ -82,7 +69,7 @@ def create_oauth_client(access_token):
 
 ```
 
-### Call helper methods to create Oauth token
+### Call helper methods to create an Oauth token
 
 Update our script to call our new functions to create a token for the `root` client, and then use that token to create a *new* client 
 with all the scopes.  Finally, we create another token for the new client, and that's what we'll use to 
