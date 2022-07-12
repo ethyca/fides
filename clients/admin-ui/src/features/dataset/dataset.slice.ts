@@ -3,6 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
 import type { AppState } from "~/app/store";
+import { GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 import { FidesKey } from "../common/fides-types";
 import { Dataset } from "./types";
@@ -72,6 +73,13 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
+    generateDataset: build.mutation<GenerateResponse, GenerateRequestPayload>({
+      query: (payload) => ({
+        url: `generate/`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -81,6 +89,7 @@ export const {
   useUpdateDatasetMutation,
   useCreateDatasetMutation,
   useDeleteDatasetMutation,
+  useGenerateDatasetMutation,
 } = datasetApi;
 
 export const datasetSlice = createSlice({
