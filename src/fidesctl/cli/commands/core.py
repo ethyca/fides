@@ -142,6 +142,9 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 def sync(ctx: click.Context, manifests_dir: str) -> None:
     """
     Update local resource files by their fides_key to match their server versions.
+    
+    Alternatively, with the "--all" flag all resources from the server will be pulled
+    down into local files.
 
     Aborts the sync if there are unstaged or untracked files in the manifests dir.
     """
