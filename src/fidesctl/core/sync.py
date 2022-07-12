@@ -1,22 +1,25 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
-from typing import Dict
+from typing import Dict, List
 
 import yaml
 from fideslang.manifests import load_yaml_into_dict
 
 from fidesctl.cli.utils import echo_green, print_divider
-from fidesctl.core.api_helpers import get_server_resource
+from fidesctl.core.api_helpers import get_server_resource, list_server_resources
 from fidesctl.core.utils import get_manifest_list
 
 
 def sync_existing_resources(
     manifests_dir: str, url: str, headers: Dict[str, str]
-) -> bool:
+) -> List[str]:
     """
     Update all of the pre-existing local resources to match their
     state on the server.
     """
     manifest_path_list = get_manifest_list(manifests_dir)
+    # Store and return the keys of resources that get synced here.
+    existing_keys: List[str] = []
+
     print_divider()
     for manifest_path in manifest_path_list:
         print(f"Syncing file: '{manifest_path}'...")
@@ -29,6 +32,8 @@ def sync_existing_resources(
 
             for resource in resource_list:
                 fides_key = resource["fides_key"]
+                existing_keys.append(fides_key)
+
                 server_resource = get_server_resource(
                     url, resource_type, fides_key, headers, raw=True
                 )
@@ -48,20 +53,31 @@ def sync_existing_resources(
         echo_green(f"Updated manifest file written out to: '{manifest_path}'")
         print_divider()
 
-    return True
+    return existing_keys
 
 
 def sync_missing_resources(
-    manifests_dir: str, url: str, headers: Dict[str, str]
+    manifest_path: str, url: str, headers: Dict[str, str], existing_keys: List[str]
 ) -> bool:
     """
-    Write resources out locally that currently only exist on the server.
+    Writes all "system", "dataset" and "policy" resources out locally
+    that currently only exist on the server.
     """
+
+    print(existing_keys)
+    manifest_file = 
+    resources_to_sync = ["system", "dataset", "policies"]
+    resource_dict = {
+        resource: list_server_resources(url, headers, resource, existing_keys)
+        for resource in resources_to_sync
+    }
+
+    # Write out the resources in a file
     return True
 
 
 def sync(
-    manifests_dir: str, url: str, headers: Dict[str, str], sync_all: bool = False
+    manifests_dir: str, manifest_path: str, url: str, headers: Dict[str, str], sync_all: bool = False
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
@@ -70,9 +86,9 @@ def sync(
     If the 'all' flag is passed, additionally pull all other server resources
     into local files as well.
     """
-    sync_existing_resources(manifests_dir, url, headers)
+    existing_keys = sync_existing_resources(manifests_dir, url, headers)
 
     if sync_all:
-        sync_missing_resources(manifests_dir, url, headers)
+        sync_missing_resources(manifest_path, url, headers, existing_keys)
 
     echo_green("Sync complete.")
