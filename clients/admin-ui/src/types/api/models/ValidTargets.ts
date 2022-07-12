@@ -7,5 +7,6 @@
  */
 export enum ValidTargets {
   AWS = 'aws',
+  DB = 'db',
   OKTA = 'okta',
 }
