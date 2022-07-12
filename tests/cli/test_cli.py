@@ -1,11 +1,11 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
 from pathlib import PosixPath
-from shutil import copytree
 from typing import Generator
 
 import pytest
 from click.testing import CliRunner
+from git.repo import Repo
 from py._path.local import LocalPath
 
 from fidesctl.cli import cli
@@ -102,12 +102,18 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 def test_sync(
     test_config_path: str, test_cli_runner: CliRunner, tmp_path: PosixPath
 ) -> None:
-    copytree("demo_resources", tmp_path, dirs_exist_ok=True)
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "sync", str(tmp_path)]
-    )
+    """
+    Due to the fact that this command checks the real git status, a pytest
+    tmp_dir can't be used. Consequently a real directory must be tested against
+    and then reset.
+    """
+    test_dir = "demo_resources/"
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "sync", test_dir])
     print(result.output)
     assert result.exit_code == 0
+
+    git_session = Repo().git()
+    git_session.checkout("HEAD", test_dir)
 
 
 @pytest.mark.integration

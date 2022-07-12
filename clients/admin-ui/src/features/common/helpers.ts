@@ -78,25 +78,14 @@ export function isYamlException(error: unknown): error is YAMLException {
   );
 }
 
-type RTKReturnType =
-  | {
-      data: any;
-    }
-  | {
-      error: FetchBaseQueryError | SerializedError;
-    };
-export function getErrorFromResult(result: RTKReturnType) {
-  if ("error" in result) {
-    const { error } = result;
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = `${error.data.detail[0].msg}: ${error.data.detail[0].loc}`;
-    } else if (isConflictError(error)) {
-      errorMsg = `${error.data.detail.error} (${error.data.detail.fides_key})`;
-    }
-    return errorMsg;
+export function getErrorMessage(error: FetchBaseQueryError | SerializedError) {
+  let errorMsg = "An unexpected error occurred. Please try again.";
+  if (isErrorWithDetail(error)) {
+    errorMsg = error.data.detail;
+  } else if (isErrorWithDetailArray(error)) {
+    errorMsg = `${error.data.detail[0].msg}: ${error.data.detail[0].loc}`;
+  } else if (isConflictError(error)) {
+    errorMsg = `${error.data.detail.error} (${error.data.detail.fides_key})`;
   }
-  return null;
+  return errorMsg;
 }

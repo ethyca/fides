@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+import os
 from pathlib import PosixPath
 from typing import Generator
 
@@ -90,3 +91,25 @@ def test_sanitize_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
 )
 def test_check_fides_key(fides_key: str, sanitized_fides_key: str) -> None:
     assert sanitized_fides_key == utils.check_fides_key(fides_key)
+
+
+@pytest.mark.unit
+class TestGitIsDirty:
+    """
+    These tests can't use the standard pytest tmpdir
+    because the files need to be within the git repo
+    to be properly tested.
+
+    They will therefore also break if the real dir
+    used for testing is deleted.
+    """
+
+    def test_not_dirty(self) -> None:
+        assert not utils.git_is_dirty("tests/data/example_sql/")
+
+    def test_new_file_is_dirty(self) -> None:
+        test_file = "tests/data/example_sql/new_file.txt"
+        with open(test_file, "w") as file:
+            file.write("test file")
+        assert utils.git_is_dirty()
+        os.remove(test_file)
