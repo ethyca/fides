@@ -18,7 +18,10 @@ import { Form, Formik } from "formik";
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { useGetOrganizationByFidesKeyQuery } from "~/features/organization";
+import {
+  DEFAULT_ORGANIZATION_FIDES_KEY,
+  useGetOrganizationByFidesKeyQuery,
+} from "~/features/organization";
 
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
@@ -33,7 +36,7 @@ const ReviewSystemForm = ({
 
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    "default_organization"
+    DEFAULT_ORGANIZATION_FIDES_KEY
   );
 
   const initialValues = {
@@ -57,7 +60,7 @@ const ReviewSystemForm = ({
       onSubmit={handleSubmit}
     >
       <Form>
-        <Stack ml="100px" spacing={10}>
+        <Stack spacing={10}>
           <Heading as="h3" size="lg">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
             Review {existingOrg?.name}

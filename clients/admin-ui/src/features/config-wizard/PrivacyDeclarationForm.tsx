@@ -142,6 +142,7 @@ const PrivacyDeclarationForm = ({
 
     const systemBodyWithDeclaration = {
       description: existingSystem?.description,
+      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
@@ -209,7 +210,7 @@ const PrivacyDeclarationForm = ({
     >
       {({ resetForm, values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Privacy Declaration for {existingSystem?.name}
