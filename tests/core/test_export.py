@@ -30,8 +30,8 @@ def test_sample_system_taxonomy() -> Generator:
                     PrivacyDeclaration(
                         name="privacy_declaration_1",
                         data_categories=[
-                            "account.contact.email",
-                            "account.contact.name",
+                            "user.contact.email",
+                            "user.contact.name",
                         ],
                         data_use="provide.service",
                         data_qualifier="aggregated.anonymized",

@@ -39,7 +39,7 @@ The fides key of the organization to which this Data Category belongs.
 
 ## Top Level Data Categories
 
-There are three top-level categories:
+There are two top-level categories:
 
 | Label     | Parent Key    | Description                                           |
 | ---       | ---           | ---                                                   |

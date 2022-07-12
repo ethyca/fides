@@ -110,7 +110,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
                     privacy_declarations=[
                         PrivacyDeclaration(
                             name="privacy_declaration_1",
-                            data_categories=["account.contact.email"],
+                            data_categories=["user.contact.email"],
                             data_use="provide.service",
                             data_qualifier="aggregated.anonymized",
                             data_subjects=["customer"],
@@ -128,7 +128,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
         category.fides_key for category in result_taxonomy.data_category
     ]
     assert sorted(populated_categories) == sorted(
-        ["account.contact.email", "account.contact", "account"]
+        ["user.contact.email", "user.contact", "user"]
     )
 
     populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
