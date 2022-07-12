@@ -36,6 +36,7 @@ The types of changes are:
 * Fixed `check-migrations` Make command [#806](https://github.com/ethyca/fidesops/pull/806)
 * Fix issue requiring separate install of snowflake-connector-python [#807](https://github.com/ethyca/fidesops/pull/807)
 * [User Management] Create new user gives HTTP 422 Unprocessable Entity exception [#832] (https://github.com/ethyca/fidesops/pull/833)
+* [User Management] Refactored New and Edit user pages to reduce duplicate code [#839]https://github.com/ethyca/fidesops/pull/839
 
 ### Docs
 * Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)

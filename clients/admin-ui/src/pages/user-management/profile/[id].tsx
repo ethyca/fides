@@ -1,48 +1,50 @@
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-} from "@fidesui/react";
-import type { NextPage } from "next";
-import Link from "next/link";
+import { Spinner } from "@fidesui/react";
+import { useRouter } from "next/router";
 import React from "react";
 
-import { USER_MANAGEMENT_ROUTE } from "../../../constants";
-import ProtectedRoute from "../../../features/auth/ProtectedRoute";
-import NavBar from "../../../features/common/NavBar";
 import EditUserForm from "../../../features/user-management/EditUserForm";
+import {
+  useGetUserByIdQuery,
+  useGetUserPermissionsQuery,
+} from "../../../features/user-management/user-management.slice";
+import UserManagementLayout from "../../../features/user-management/UserManagementLayout";
 
-const Profile: NextPage = () => (
-  <ProtectedRoute>
-    <div>
-      <NavBar />
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            User Management
-            <Box mt={2} mb={7}>
-              <Breadcrumb fontWeight="medium" fontSize="sm">
-                <BreadcrumbItem>
-                  <Link href={USER_MANAGEMENT_ROUTE} passHref>
-                    <BreadcrumbLink href={USER_MANAGEMENT_ROUTE}>
-                      User Management
-                    </BreadcrumbLink>
-                  </Link>
-                </BreadcrumbItem>
+const Profile = () => {
+  const router = useRouter();
+  let profileId = "";
+  if (router.query.id) {
+    profileId = Array.isArray(router.query.id)
+      ? router.query.id[0]
+      : router.query.id;
+  } else {
+    profileId = "";
+  }
+  const { data: existingUser, isLoading: isLoadingUser } =
+    useGetUserByIdQuery(profileId);
+  const { data: userPermissions, isLoading: isLoadingPermissions } =
+    useGetUserPermissionsQuery(profileId);
 
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="#">Edit User</BreadcrumbLink>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Box>
-          </Heading>
-          <EditUserForm />
-        </Box>
-      </main>
-    </div>
-  </ProtectedRoute>
-);
+  if (isLoadingUser || isLoadingPermissions) {
+    return (
+      <UserManagementLayout title="Edit User">
+        <Spinner />
+      </UserManagementLayout>
+    );
+  }
+
+  if (existingUser == null || userPermissions == null) {
+    return (
+      <UserManagementLayout title="Edit User">
+        Could not find profile ID.
+      </UserManagementLayout>
+    );
+  }
+
+  return (
+    <UserManagementLayout title="Edit User">
+      <EditUserForm user={existingUser} permissions={userPermissions} />
+    </UserManagementLayout>
+  );
+};
 
 export default Profile;

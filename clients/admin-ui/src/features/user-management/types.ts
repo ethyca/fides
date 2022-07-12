@@ -1,5 +1,5 @@
 export interface User {
-  id?: string;
+  id: string;
   first_name?: string;
   last_name?: string;
   username?: string;
@@ -30,7 +30,7 @@ export interface UserPasswordUpdate {
 
 export interface UserPermissionsUpdate {
   id: string | null;
-  scopes: never[];
+  scopes: string[];
 }
 
 export interface UserPermissionsResponse {
@@ -49,4 +49,10 @@ export type CreateUserError = {
   detail: {
     msg: string;
   }[];
+};
+
+export type UserPermissions = {
+  id: string;
+  scopes: string[];
+  user_id: string;
 };
