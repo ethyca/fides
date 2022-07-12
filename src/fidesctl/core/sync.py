@@ -9,14 +9,14 @@ from fidesctl.core.api_helpers import get_server_resource
 from fidesctl.core.utils import get_manifest_list
 
 
-def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
+def sync_existing_resources(
+    manifests_dir: str, url: str, headers: Dict[str, str]
+) -> bool:
     """
-    If a resource in a local file has a matching resource on the server,
-    write out the server version into the local file.
+    Update all of the pre-existing local resources to match their
+    state on the server.
     """
-
     manifest_path_list = get_manifest_list(manifests_dir)
-
     print_divider()
     for manifest_path in manifest_path_list:
         print(f"Syncing file: '{manifest_path}'...")
@@ -47,5 +47,32 @@ def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:
             yaml.dump(updated_manifest, manifest_file, sort_keys=False, indent=2)
         echo_green(f"Updated manifest file written out to: '{manifest_path}'")
         print_divider()
+
+    return True
+
+
+def sync_missing_resources(
+    manifests_dir: str, url: str, headers: Dict[str, str]
+) -> bool:
+    """
+    Write resources out locally that currently only exist on the server.
+    """
+    return True
+
+
+def sync(
+    manifests_dir: str, url: str, headers: Dict[str, str], sync_all: bool = False
+) -> None:
+    """
+    If a resource in a local file has a matching resource on the server,
+    write out the server version into the local file.
+
+    If the 'all' flag is passed, additionally pull all other server resources
+    into local files as well.
+    """
+    sync_existing_resources(manifests_dir, url, headers)
+
+    if sync_all:
+        sync_missing_resources(manifests_dir, url, headers)
 
     echo_green("Sync complete.")
