@@ -16,22 +16,27 @@ import React, { useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
+  DEFAULT_ORGANIZATION_FIDES_KEY,
+  Organization,
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "~/features/organization";
 
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
-import { changeStep } from "./config-wizard.slice";
+import { changeStep, setOrganization } from "./config-wizard.slice";
 
 const useOrganizationInfoForm = () => {
   const dispatch = useAppDispatch();
-  const handleSuccess = () => dispatch(changeStep());
+  const handleSuccess = (organization: Organization) => {
+    dispatch(setOrganization(organization));
+    dispatch(changeStep());
+  };
 
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    "default_organization"
+    DEFAULT_ORGANIZATION_FIDES_KEY
   );
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
@@ -44,8 +49,8 @@ const useOrganizationInfoForm = () => {
       const organizationBody = {
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
-        fides_key: existingOrg?.fides_key ?? "default_organization",
-        organization_fides_key: "default_organization",
+        fides_key: existingOrg?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY,
+        organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       };
 
       setIsLoading(true);
@@ -70,7 +75,7 @@ const useOrganizationInfoForm = () => {
           return;
         }
         toast.closeAll();
-        handleSuccess();
+        handleSuccess(organizationBody);
       } else {
         const updateOrganizationResult = await updateOrganization(
           organizationBody
@@ -91,7 +96,7 @@ const useOrganizationInfoForm = () => {
           return;
         }
         toast.closeAll();
-        handleSuccess();
+        handleSuccess(organizationBody);
       }
 
       setIsLoading(false);
@@ -130,8 +135,12 @@ const OrganizationInfoForm = () => {
   } = useOrganizationInfoForm();
 
   return (
-    <chakra.form onSubmit={handleSubmit} w="100%">
-      <Stack ml="100px" spacing={10}>
+    <chakra.form
+      onSubmit={handleSubmit}
+      w="100%"
+      data-testid="organization-info-form"
+    >
+      <Stack spacing={10}>
         <Heading as="h3" size="lg">
           Tell us about your business
         </Heading>
@@ -164,6 +173,7 @@ const OrganizationInfoForm = () => {
                 isInvalid={touched.name && Boolean(errors.name)}
                 minW="65%"
                 w="65%"
+                data-testid="input-name"
               />
               <Tooltip
                 fontSize="md"
@@ -186,6 +196,7 @@ const OrganizationInfoForm = () => {
                 isInvalid={touched.description && Boolean(errors.description)}
                 minW="65%"
                 w="65%"
+                data-testid="input-description"
               />
               <Tooltip
                 fontSize="md"
@@ -203,6 +214,7 @@ const OrganizationInfoForm = () => {
           variant="primary"
           isDisabled={!values.name || !values.description}
           isLoading={isLoading}
+          data-testid="submit-btn"
         >
           Save and Continue
         </Button>

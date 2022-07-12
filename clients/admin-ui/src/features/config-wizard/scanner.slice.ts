@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { ScannerGenerateParams, ScannerGenerateResponse } from "./types";
+import { GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 export const scannerApi = createApi({
   reducerPath: "scannerApi",
@@ -8,9 +8,9 @@ export const scannerApi = createApi({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
   endpoints: (build) => ({
-    generate: build.mutation<ScannerGenerateResponse, ScannerGenerateParams>({
+    generate: build.mutation<GenerateResponse, GenerateRequestPayload>({
       query: (body) => ({
-        url: `generate/`,
+        url: `generate`,
         method: "POST",
         body,
       }),
