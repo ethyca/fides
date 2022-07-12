@@ -2664,7 +2664,11 @@ under the stated threshold.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-sync">fidesctl sync</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
+
+Aborts the sync if there are unstaged or untracked files in the manifests dir.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl sync [OPTIONS] [MANIFESTS_DIR]
