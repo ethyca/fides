@@ -18,6 +18,10 @@ depends_on = None
 
 
 def upgrade():
+    del sql_model_map["client_detail"]
+    del sql_model_map["fides_user"]
+    del sql_model_map["fides_user_permissionis"]
+
     for model in sql_model_map.values():
         op.add_column(
             model.__tablename__,
@@ -40,6 +44,10 @@ def upgrade():
 
 
 def downgrade():
+    del sql_model_map["client_detail"]
+    del sql_model_map["fides_user"]
+    del sql_model_map["fides_user_permissionis"]
+
     for model in sql_model_map.values():
         op.drop_column(model.__tablename__, "created_at")
         op.drop_column(model.__tablename__, "updated_at")
