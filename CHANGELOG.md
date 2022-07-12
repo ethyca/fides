@@ -35,9 +35,11 @@ The types of changes are:
 ### Changed
 
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ### Docs
 
@@ -48,10 +50,6 @@ The types of changes are:
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
-
-### Changed
-
-* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
