@@ -1,12 +1,12 @@
 import logging
 from typing import Any, Dict
 
-from fastapi import APIRouter
 from fastapi.params import Security
 
 from fidesops.api.v1 import scope_registry as scopes
 from fidesops.api.v1 import urn_registry as urls
 from fidesops.core.config import censored_config
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)

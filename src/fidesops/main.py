@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -6,7 +7,8 @@ from typing import Callable, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
-from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import HTTPException
+from fastapi.responses import FileResponse
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
@@ -14,6 +16,7 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
+from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.analytics import (
     accessed_through_local_host,
@@ -123,22 +126,42 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
+WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
+WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
-@app.on_event("startup")
-async def create_webapp_dir_if_not_exists() -> None:
-    """Creates the webapp directory if it doesn't exist."""
-    if config.admin_ui.ENABLED:
-        WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
-        WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
+if config.admin_ui.ENABLED:
+
+    @app.on_event("startup")
+    def check_if_admin_ui_index_exists() -> None:
         if not WEBAPP_INDEX.is_file():
             WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-            with open(  # pylint: disable=W1514
-                WEBAPP_DIRECTORY / "index.html", "w"
-            ) as index_file:
-                index_file.write("<h1>Privacy is a Human Right!</h1>")
+            with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+                heading = "<h1>No src/fidesops/build/static/index.html found</h1>"
+                help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
+                index_file.write(f"{heading}{help_message}")
+                logger.info(
+                    "No Admin UI files are bundled in the docker image. Creating diagnostic help index.html"
+                )
 
-        app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
-        logger.info("Mounted static file directory...")
+    @app.get("/", response_class=FileResponse)
+    def read_index() -> FileResponse:
+        """Returns index.html file"""
+        return FileResponse(WEBAPP_INDEX)
+
+    @app.get("/{catchall:path}", response_class=FileResponse)
+    def read_ui_files(request: Request) -> FileResponse:
+        """Return requested UI  file or return index.html file if requested file doesn't exist"""
+        path: str = request.path_params["catchall"]
+        if V1_URL_PREFIX in "/" + path:
+            raise HTTPException(status_code=HTTP_404_NOT_FOUND)
+
+        path = path + ".html" if path.find(".") == -1 else path
+        file = WEBAPP_DIRECTORY / path
+
+        if os.path.exists(file):
+            return FileResponse(file)
+
+        return FileResponse(WEBAPP_INDEX)
 
 
 def start_webserver() -> None:

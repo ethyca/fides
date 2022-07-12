@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, Security
+from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -29,6 +29,7 @@ from fidesops.models.policy import (
 from fidesops.schemas import policy_webhooks as schemas
 from fidesops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fidesops.schemas.shared_schemas import FidesOpsKey
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Policy Webhooks"], prefix=urls.V1_URL_PREFIX)

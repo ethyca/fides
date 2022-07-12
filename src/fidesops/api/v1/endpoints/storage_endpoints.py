@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, Security
+from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -51,6 +51,7 @@ from fidesops.schemas.storage.storage_secrets_docs_only import possible_storage_
 from fidesops.service.storage.storage_authenticator_service import secrets_are_valid
 from fidesops.service.storage.storage_uploader_service import upload
 from fidesops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.util.api_router import APIRouter
 from fidesops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)

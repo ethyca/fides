@@ -1,8 +1,6 @@
 import { UserPrivileges } from "./features/user-management/types";
 
 export const BASE_API_URN = "/api/v1";
-export const BASE_ASSET_URN =
-  process.env.NODE_ENV === "development" ? "" : "/static";
 const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   ? process.env.NEXT_PUBLIC_FIDESOPS_API
   : "";
