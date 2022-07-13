@@ -297,7 +297,6 @@ def handle_aws_credentials_options(
 def handle_bigquery_config_options(
     fides_config: FidesctlConfig,
     dataset: str,
-    # keyfile_credentials: KeyfileCreds,
     keyfile_path: str,
     credentials_id: str,
 ) -> Optional[BigQueryConfig]:
@@ -305,11 +304,12 @@ def handle_bigquery_config_options(
     Handles the connections options for passing a keyfile, dictionary, or credentials-id.
     """
     bigquery_config = None
+
+    if keyfile_path and credentials_id:
+        raise click.UsageError(
+            "Illegal usage: keyfile-path and credentials-id cannot be used together"
+        )
     if keyfile_path:
-        if credentials_id:
-            raise click.UsageError(
-                "Illegal usage: keyfile-path and credentials-id cannot be used together"
-            )
         with open(keyfile_path, "r", encoding="utf-8") as credential_file:
             bigquery_config = BigQueryConfig(
                 **{

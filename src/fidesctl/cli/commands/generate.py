@@ -19,7 +19,6 @@ from fidesctl.cli.utils import (
     handle_okta_credentials_options,
     with_analytics,
 )
-from fidesctl.connectors.bigquery import get_bigquery_engine
 from fidesctl.core import dataset as _dataset
 from fidesctl.core import system as _system
 
@@ -117,9 +116,8 @@ def generate_dataset_bigquery(
         credentials_id=credentials_id,
     )
 
-    bigquery_engine = get_bigquery_engine(bigquery_config)
-    bigquery_schemas = _dataset.get_db_schemas(engine=bigquery_engine)
-    bigquery_datasets = _dataset.create_db_datasets(db_schemas=bigquery_schemas)
+    bigquery_datasets = _dataset.generate_bigquery_datasets(bigquery_config)
+
     _dataset.write_dataset_manifest(
         file_name=output_filename, include_null=include_null, datasets=bigquery_datasets
     )

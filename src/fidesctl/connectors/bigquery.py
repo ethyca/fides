@@ -14,10 +14,11 @@ def get_bigquery_engine(bigquery_config: BigQueryConfig) -> Engine:
         f"bigquery://{project_id}/{dataset}",
         credentials_info=bigquery_config.keyfile_creds.dict(),
     )
+    validate_bigquery_engine(engine)
     return engine
 
 
-def validate_bigquery_engine(bigquery_config: BigQueryConfig) -> None:
+def validate_bigquery_engine(engine: Engine) -> None:
     """
     Tests the BigQuery engine by calling the schema inspection
 
@@ -25,7 +26,6 @@ def validate_bigquery_engine(bigquery_config: BigQueryConfig) -> None:
     """
     from google.api_core.exceptions import ClientError
 
-    engine = get_bigquery_engine(bigquery_config)
     inspector = inspect(engine)
     try:
         inspector.get_schema_names()
