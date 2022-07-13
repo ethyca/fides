@@ -92,7 +92,7 @@ def get_config_aws_credentials(
 def get_config_bigquery_credentials(
     dataset: str, credentials_config: Dict[str, Dict], credentials_id: str
 ) -> Optional[BigQueryConfig]:
-    credentials_dict = credentials_config.get(credentials_id, None)
+    credentials_dict = credentials_config.get(credentials_id)
     parsed_credentials = (
         KeyfileCreds.parse_obj(credentials_dict) if credentials_dict else None
     )

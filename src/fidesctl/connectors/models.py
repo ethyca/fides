@@ -17,7 +17,7 @@ class AWSConfig(BaseModel):
 
 
 class KeyfileCreds(BaseModel):
-    """The model that holds BigQuery keyfile key/vals"""
+    """The model for BigQuery credential keyfiles."""
 
     type: Optional[str] = None
     project_id: str
