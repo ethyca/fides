@@ -640,7 +640,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
         assert (
             resp["items"][0]["identity"]
-            == succeeded_privacy_request.get_cached_identity_data()
+            == succeeded_privacy_request.get_persisted_identity()
         )
 
         assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
@@ -710,22 +710,25 @@ class TestGetPrivacyRequests:
         api_client,
         url,
         generate_auth_header,
-        privacy_request,
+        policy,
     ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+                "id": "test_internal_id_1",
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        privacy_request = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        new_request_id = "test_internal_id_1"
         response = api_client.get(
-            url + f"?request_id={new_request_id}", headers=auth_header
-        )
-        assert response.status_code == status.HTTP_200_OK
-        resp = response.json()
-        assert len(resp["items"]) == 0
-
-        privacy_request.id = new_request_id
-        privacy_request.save(db)
-
-        response = api_client.get(
-            url + f"?request_id={new_request_id}", headers=auth_header
+            url + f"?request_id={privacy_request.id}",
+            headers=auth_header,
         )
         assert response.status_code == status.HTTP_200_OK
         resp = response.json()
@@ -1080,8 +1083,13 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.approved
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE = "+1 234 567 8910"
         privacy_request.cache_identity(
-            {"email": "email@example.com", "phone_number": "111-111-1111"}
+            {
+                "email": TEST_EMAIL,
+                "phone_number": TEST_PHONE,
+            }
         )
         privacy_request.save(db)
 
@@ -1102,8 +1110,8 @@ class TestGetPrivacyRequests:
         first_row = next(csv_file)
         assert parse(first_row["Time received"], ignoretz=True) == created_at
         assert ast.literal_eval(first_row["Subject identity"]) == {
-            "email": "email@example.com",
-            "phone_number": "111-111-1111",
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE,
         }
         assert first_row["Policy key"] == "example_access_request_policy"
         assert first_row["Request status"] == "approved"

@@ -255,7 +255,7 @@ def privacy_request_csv_download(
         csv_file.writerow(
             [
                 pr.created_at,
-                pr.get_cached_identity_data(),
+                pr.get_persisted_identity().dict(),
                 pr.policy.key if pr.policy else None,
                 pr.status.value if pr.status else None,
                 pr.reviewed_by,
@@ -509,7 +509,7 @@ def get_request_status(
         # Conditionally include the cached identity data in the response if
         # it is explicitly requested
         for item in paginated.items:  # type: ignore
-            item.identity = item.get_cached_identity_data()
+            item.identity = item.get_persisted_identity().dict()
             attach_resume_instructions(item)
     else:
         for item in paginated.items:  # type: ignore
@@ -635,6 +635,8 @@ def resume_privacy_request(
 ) -> PrivacyRequestResponse:
     """Resume running a privacy request after it was paused by a Pre-Execution webhook"""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+    # We don't want to persist derived identities because they have not been provided
+    # by the end user
     privacy_request.cache_identity(webhook_callback.derived_identity)  # type: ignore
 
     if privacy_request.status != PrivacyRequestStatus.paused:

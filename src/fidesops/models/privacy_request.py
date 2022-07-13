@@ -482,6 +482,8 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             logger.info(
                 f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
             )
+            # Don't persist derived identities because they aren't provided directly
+            # by the end user
             self.cache_identity(response_body.derived_identity)
 
         # Pause execution if instructed

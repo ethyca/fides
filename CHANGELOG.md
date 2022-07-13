@@ -29,11 +29,11 @@ The types of changes are:
 * Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
 
 ### Changed
-* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
-* Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
 * Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)
 * Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
 * Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
+* Return identity data from application DB, instead of cache [#860](https://github.com/ethyca/fidesops/pull/860)
+* Update admin ui to be served from the root route `/` [#720](https://github.com/ethyca/fidesops/pull/720)
 
 ### Developer Experience
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
@@ -43,6 +43,8 @@ The types of changes are:
 * Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
 * Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
 * Reorganize docs and standardize formatting [#858](https://github.com/ethyca/fidesops/pull/858)
+* Changed wording on Admin UI login page [#774](https://github.com/ethyca/fidesops/pull/774)
+* Fixed typos in Admin UI [#774](https://github.com/ethyca/fidesops/pull/774)
 
 ### Fixed
 * Resolve issue with MyPy seeing files in fidesops as missing imports [#719](https://github.com/ethyca/fidesops/pull/719)
@@ -53,11 +55,6 @@ The types of changes are:
 * [User Management] Refactored New and Edit user pages to reduce duplicate code [#839]https://github.com/ethyca/fidesops/pull/839
 * Fix error when there are no scopes in `ClientDetail` [#830](https://github.com/ethyca/fidesops/pull/830)
 
-### Docs
-* Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
-* Fix publish_docs CI action [#818](https://github.com/ethyca/fidesops/pull/818)
-* Bump fideslib to handle base64 encoded password [#820](https://github.com/ethyca/fidesops/pull/820)
-* Stop masking uvicorn logs by default [#831](https://github.com/ethyca/fidesops/pull/831)
 
 ## [1.6.1](https://github.com/ethyca/fidesops/compare/1.6.0...1.6.1)
 
