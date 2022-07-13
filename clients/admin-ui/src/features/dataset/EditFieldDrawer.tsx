@@ -1,6 +1,8 @@
 import { Text } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
+import { DatasetField } from "~/types/api";
+
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,
@@ -10,7 +12,6 @@ import {
 import EditCollectionOrFieldForm from "./EditCollectionOrFieldForm";
 import EditDrawer from "./EditDrawer";
 import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
-import { DatasetField } from "./types";
 
 interface Props {
   field: DatasetField;

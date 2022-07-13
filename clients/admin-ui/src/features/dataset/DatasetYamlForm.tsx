@@ -3,11 +3,12 @@ import { Form, Formik, FormikHelpers } from "formik";
 import yaml from "js-yaml";
 import { useRouter } from "next/router";
 
+import { Dataset } from "~/types/api";
+
 import { CustomTextArea } from "../common/form/inputs";
 import { getErrorMessage, isYamlException } from "../common/helpers";
 import { successToastParams } from "../common/toast";
 import { setActiveDataset, useCreateDatasetMutation } from "./dataset.slice";
-import { Dataset } from "./types";
 
 const initialValues = { datasetYaml: "" };
 type FormValues = typeof initialValues;

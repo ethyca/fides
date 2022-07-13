@@ -1,9 +1,10 @@
 import {
+  DataResponsibilityTitle,
   Dataset,
   DatasetCollection,
   DatasetField,
-} from "~/features/dataset/types";
-import { System } from "~/features/system/types";
+  System,
+} from "~/types/api";
 
 /**
  * Returns a mock system object. Can override default values by
@@ -12,7 +13,7 @@ import { System } from "~/features/system/types";
 export const mockSystem = (partialSystem?: Partial<System>): System => {
   const system: System = {
     system_type: "Service",
-    data_responsibility_title: "Controller",
+    data_responsibility_title: DataResponsibilityTitle.CONTROLLER,
     privacy_declarations: [],
     data_protection_impact_assessment: { is_required: true },
     fides_key: "analytics_system",

@@ -5,7 +5,12 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-import { GenerateResponse, GenerateTypes, ValidTargets } from "~/types/api";
+import {
+  Dataset,
+  GenerateResponse,
+  GenerateTypes,
+  ValidTargets,
+} from "~/types/api";
 
 import { CustomTextInput } from "../common/form/inputs";
 import { getErrorMessage } from "../common/helpers";
@@ -15,7 +20,6 @@ import {
   useCreateDatasetMutation,
   useGenerateDatasetMutation,
 } from "./dataset.slice";
-import { Dataset } from "./types";
 
 const initialValues = { url: "" };
 

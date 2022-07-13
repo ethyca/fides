@@ -1,6 +1,8 @@
 import { Text, useToast } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
+import { DatasetCollection } from "~/types/api";
+
 import { errorToastParams, successToastParams } from "../common/toast";
 import {
   selectActiveCollectionIndex,
@@ -14,7 +16,6 @@ import {
   getUpdatedDatasetFromCollection,
   removeCollectionFromDataset,
 } from "./helpers";
-import { DatasetCollection } from "./types";
 
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
