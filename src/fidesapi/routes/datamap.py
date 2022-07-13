@@ -46,7 +46,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
                             "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
                             "dataset.source_name": "N/A",
                             "third_country_combined": "GBR, USA, CAN",
-                            "unioned_data_categories": "user.provided.identifiable.contact",
+                            "unioned_data_categories": "user.contact",
                             "dataset.retention": "N/A",
                             "system.joint_controller": "",
                             "system.third_country_safeguards": "",

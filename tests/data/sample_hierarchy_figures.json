@@ -3,14 +3,14 @@
     {
       "hoverinfo": "skip",
       "labels": [
-        "account",
-        "account.contact",
-        "account.contact.city"
+        "user",
+        "user.contact",
+        "user.contact.address"
       ],
       "parents": [
         null,
-        "account",
-        "account.contact"
+        "user",
+        "user.contact"
       ],
       "type": "sunburst"
     },
@@ -33,9 +33,9 @@
       "node": {
         "color": "blue",
         "label": [
-          "account",
-          "account.contact",
-          "account.contact.city"
+          "user",
+          "user.contact",
+          "user.contact.address"
         ],
         "line": {
           "color": "black",
@@ -52,14 +52,14 @@
     {
       "hoverinfo": "skip",
       "labels": [
-        "account",
-        "account.contact",
-        "account.contact.city"
+        "user",
+        "user.contact",
+        "user.contact.address"
       ],
       "parents": [
         null,
-        "account",
-        "account.contact"
+        "user",
+        "user.contact"
       ],
       "type": "icicle",
       "visible": false

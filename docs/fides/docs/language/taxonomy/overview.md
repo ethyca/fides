@@ -14,7 +14,7 @@ Learn more about [Data Categories in the taxonomy reference now](data_categories
 ### 2. Data Uses
 Data Uses are labels that describe how, or for what purpose(s) a component of your system is using data.
 
-Data Uses are also hierarchical with natural inheritance, meaning you can easily describe what you're using data for either coarsely (e.g. `provide.system.operations`) or with more precision using subcategories (e.g. `provide.system.operations.support.optimization`).
+Data Uses are also hierarchical with natural inheritance, meaning you can easily describe what you're using data for either coarsely (e.g. `provide.service.operations`) or with more precision using subcategories (e.g. `provide.service.operations.support.optimization`).
 
 Learn more about [Data Uses in the taxonomy reference now](data_uses.md).
 
@@ -33,7 +33,7 @@ Learn more about [Data Subjects in the taxonomy reference now](data_subjects.md)
 
 
 ### 4. Data Qualifiers
-Data Qualifiers describe the degree of identification of the given data. Think of this as a spectrum: on one end is completely anonymous data, i.e. it is impossible to identify an individual from it, and on the other end is data that specifically identifies an individual. 
+Data Qualifiers describe the degree of identification of the given data. Think of this as a spectrum: on one end is completely anonymous data, i.e. it is impossible to identify an individual from it, and on the other end is data that specifically identifies an individual.
 
 Along this spectrum are labels that describe the degree of identification that a given data might provide, such as:
 
@@ -44,7 +44,7 @@ Along this spectrum are labels that describe the degree of identification that a
 Learn more about [Data Qualifiers in the taxonomy reference now](data_qualifiers.md).
 
 ### Extensibility & Interopability
-The Fides language is designed to support common privacy compliance regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944. 
+The Fides language is designed to support common privacy compliance regulations and standards out of the box, these include GDPR, CCPA, LGPD and ISO 19944.
 
 You can extend the taxonomy to support your organization's needs. If you do this, we recommend extending from the existing categories to ensure interopability inside and outside your organization.
 

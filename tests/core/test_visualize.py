@@ -14,25 +14,25 @@ from fidesctl.core import visualize
 def sample_categories_list() -> List:
     return [
         {
-            "fides_key": "account",
+            "fides_key": "user",
             "organization_fides_key": "default_organization",
-            "name": "Account Data",
-            "description": "Data related to a system account.",
+            "name": "User Data",
+            "description": "Data related to a user.",
             "parent_key": None,
         },
         {
-            "fides_key": "account.contact",
+            "fides_key": "user.contact",
             "organization_fides_key": "default_organization",
-            "name": "Account Contact Data",
-            "description": "Contact data related to a system account.",
-            "parent_key": "account",
+            "name": "User Contact Data",
+            "description": "Contact data related to a user.",
+            "parent_key": "user",
         },
         {
-            "fides_key": "account.contact.city",
+            "fides_key": "user.contact.address",
             "organization_fides_key": "default_organization",
-            "name": "Account City",
-            "description": "Account's city level address data.",
-            "parent_key": "account.contact",
+            "name": "User Address",
+            "description": "User address data.",
+            "parent_key": "user.contact",
         },
     ]
 
@@ -49,7 +49,7 @@ def test_hierarchy_figures(sample_categories_list: List) -> None:
 
 @pytest.mark.unit
 def test_convert_categories_to_nested_dict(sample_categories_list: List) -> None:
-    expected_conversion: Dict = {"account": {"contact": {"city": {}}}}
+    expected_conversion: Dict = {"user": {"contact": {"address": {}}}}
     assert (
         visualize.convert_categories_to_nested_dict(sample_categories_list)
         == expected_conversion
@@ -58,7 +58,7 @@ def test_convert_categories_to_nested_dict(sample_categories_list: List) -> None
 
 @pytest.mark.unit
 def test_nested_categories_to_html_list(sample_categories_list: List) -> None:
-    expected_html_list = "<h2>Fides Data Category Hierarchy</h2>\n   <li>account</li>\n   <ul>\n      <li>contact</li>\n      <ul>\n         <li>city</li>\n         <ul>\n\n         </ul>\n      </ul>\n   </ul>"
+    expected_html_list = "<h2>Fides Data Category Hierarchy</h2>\n   <li>user</li>\n   <ul>\n      <li>contact</li>\n      <ul>\n         <li>address</li>\n         <ul>\n\n         </ul>\n      </ul>\n   </ul>"
     assert (
         visualize.nested_categories_to_html_list(
             sample_categories_list, resource_type="data_category"
