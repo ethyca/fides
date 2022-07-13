@@ -12,7 +12,7 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
@@ -37,18 +37,6 @@ const DataCategoryDropdown = ({
     () => transformDataCategoriesToNodes(dataCategories),
     [dataCategories]
   );
-
-  const [internalChecked, setInternalChecked] = useState(checked);
-
-  useEffect(() => {
-    // make sure this stays up to date with the parent `checked` since this is not the only
-    // component that can control which items are checked
-    setInternalChecked(checked);
-  }, [checked]);
-
-  const handleClear = () => {
-    setInternalChecked([]);
-  };
 
   return (
     <Menu closeOnSelect>
@@ -82,7 +70,7 @@ const DataCategoryDropdown = ({
                   as={Button}
                   variant="outline"
                   size="xs"
-                  onClick={handleClear}
+                  onClick={() => onChecked([])}
                   mr={2}
                   width="auto"
                   closeOnSelect={false}
@@ -97,7 +85,6 @@ const DataCategoryDropdown = ({
                   colorScheme="primary"
                   color="white"
                   _hover={{ backgroundColor: "primary.600" }}
-                  onClick={() => onChecked(internalChecked)}
                   width="auto"
                   data-testid="done-btn"
                 >
@@ -110,8 +97,8 @@ const DataCategoryDropdown = ({
           <Box px={2}>
             <CheckboxTree
               nodes={dataCategoryNodes}
-              selected={internalChecked}
-              onSelected={setInternalChecked}
+              selected={checked}
+              onSelected={onChecked}
             />
           </Box>
         </Box>
