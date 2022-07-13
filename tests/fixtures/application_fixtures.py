@@ -32,6 +32,7 @@ from fidesops.models.policy import (
 )
 from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.models.storage import ResponseFormat, StorageConfig
+from fidesops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
@@ -772,10 +773,18 @@ def _create_privacy_request_for_policy(
             microsecond=393185,
             tzinfo=timezone.utc,
         )
-    return PrivacyRequest.create(
+    pr = PrivacyRequest.create(
         db=db,
         data=data,
     )
+    pr.persist_identity(
+        db=db,
+        identity=PrivacyRequestIdentity(
+            email="test@example.com",
+            phone_number="+1 234 567 8910",
+        ),
+    )
+    return pr
 
 
 @pytest.fixture(scope="function")
@@ -839,7 +848,12 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
             "client_id": policy.client_id,
         },
     )
-    pr.cache_identity({"email": "email@example.com"})
+    identity_kwargs = {"email": "email@example.com"}
+    pr.cache_identity(identity_kwargs)
+    pr.persist_identity(
+        db=db,
+        identity=PrivacyRequestIdentity(**identity_kwargs),
+    )
     yield pr
     pr.delete(db)
 

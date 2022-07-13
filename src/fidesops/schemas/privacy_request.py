@@ -135,7 +135,7 @@ class PrivacyRequestResponse(BaseSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, str]]
+    identity: Optional[Dict[str, Optional[str]]]
     policy: PolicySchema
     stopped_collection_details: Optional[StoppedCollectionDetails] = None
     resume_endpoint: Optional[str]
