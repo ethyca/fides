@@ -7,13 +7,15 @@ import { selectToken } from "../auth";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import {
   ConnectionType,
+  DisabledStatus,
+  SystemType,
+  TestingStatus,
+} from "./constants";
+import {
   DatastoreConnection,
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
-  DisabledStatus,
-  SystemType,
-  TestingStatus,
 } from "./types";
 
 function mapFiltersToSearchParams({

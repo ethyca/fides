@@ -1,4 +1,11 @@
-import { Button, Flex, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import {
+  Button,
+  Center,
+  Flex,
+  SimpleGrid,
+  Spinner,
+  Text,
+} from "@fidesui/react";
 import debounce from "lodash.debounce";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -73,7 +80,11 @@ const ConnectionGrid: React.FC = () => {
     handlePreviousPage,
   } = useConnectionGrid();
   if (isUninitialized || isLoading || isFetching) {
-    return <Spinner />;
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
   }
 
   if (isInitialRenderEmpty.current) {
