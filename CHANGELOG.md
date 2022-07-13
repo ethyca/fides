@@ -21,12 +21,13 @@ The types of changes are:
 ### Added
 * [Admin UI] Update Subject Request status filter to be a multiselect dropdown [#513](https://github.com/ethyca/fidesops/pull/764)
 * Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
-* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
-* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
-* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
-* Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
+* [Datastore Management] Include Icon with datastore connection (FE)[#671](https://github.com/ethyca/fidesops/pull/845)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
+* Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
 * Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
+* Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
+* Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
+* Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
 
 ### Changed
 * Update clipboard icon in Admin UI [#838](https://github.com/ethyca/fidesops/pull/838)

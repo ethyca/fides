@@ -3,6 +3,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Center,
   Heading,
   Spinner,
   Text,
@@ -44,7 +45,11 @@ const SubjectRequestDetails: NextPage = () => {
     );
 
   if (isLoading || isUninitialized) {
-    body = <Spinner />;
+    body = (
+      <Center>
+        <Spinner />
+      </Center>
+    );
   }
 
   return (

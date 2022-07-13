@@ -13,8 +13,8 @@ import { useDispatch } from "react-redux";
 import { useOutsideClick } from "../common/hooks";
 import { ArrowDownLineIcon } from "../common/Icon";
 import { capitalize } from "../common/utils";
+import { ConnectionType } from "./constants";
 import { setConnectionType } from "./datastore-connection.slice";
-import { ConnectionType } from "./types";
 
 type ConnectionCheckboxProps = {
   datastore: string;

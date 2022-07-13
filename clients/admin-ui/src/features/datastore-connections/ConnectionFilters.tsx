@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { SearchLineIcon } from "../common/Icon";
 import SystemTypeMenu from "./ConnectionDropdown";
 import ConnectionStatusMenu from "./ConnectionStatusMenu";
+import { DisabledStatus, SystemType, TestingStatus } from "./constants";
 import {
   selectDatastoreConnectionFilters,
   setDisabledStatus,
@@ -12,7 +13,6 @@ import {
   setSystemType,
   setTestingStatus,
 } from "./datastore-connection.slice";
-import { DisabledStatus, SystemType, TestingStatus } from "./types";
 
 const useConstantFilters = () => {
   const filters = useSelector(selectDatastoreConnectionFilters);

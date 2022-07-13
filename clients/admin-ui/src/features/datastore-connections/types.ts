@@ -1,38 +1,12 @@
-export enum ConnectionType {
-  POSTGRES = "postgres",
-  MONGODB = "mongodb",
-  MYSQL = "mysql",
-  HTTPS = "https",
-  SAAS = "saas",
-  REDSHIFT = "redshift",
-  SNOWFLAKE = "snowflake",
-  MSSQL = "mssql",
-  MARIADB = "mariadb",
-  BIGQUERY = "bigquery",
-  MANUAL = "manual",
-}
-
-export enum SystemType {
-  SAAS = "saas",
-  DATABASE = "database",
-  MANUAL = "manual",
-}
-
-export enum TestingStatus {
-  PASSED = "passed",
-  FAILED = "failed",
-  UNTESTED = "untested",
-}
-
-export enum AccessLevel {
-  READ = "read",
-  WRITE = "write",
-}
-
-export enum DisabledStatus {
-  ACTIVE = "active",
-  DISABLED = "disabled",
-}
+import {
+  AccessLevel,
+  ConnectionTestStatus,
+  ConnectionType,
+  DisabledStatus,
+  SaasType,
+  SystemType,
+  TestingStatus,
+} from "./constants";
 
 export type DatastoreConnection = {
   name: string;
@@ -45,13 +19,7 @@ export type DatastoreConnection = {
   updated_at?: string;
   last_test_timestamp: string;
   last_test_succeeded: boolean;
-};
-
-export type DatastoreConnectionResponse = {
-  items: DatastoreConnection[];
-  total: number;
-  page: number;
-  size: number;
+  saas_config?: SaasConfig;
 };
 
 export type DatastoreConnectionParams = {
@@ -64,11 +32,12 @@ export type DatastoreConnectionParams = {
   size: number;
 };
 
-export enum ConnectionTestStatus {
-  SUCCEEDED = "succeeded",
-  FAILED = "failed",
-  SKIPPED = "skipped",
-}
+export type DatastoreConnectionResponse = {
+  items: DatastoreConnection[];
+  total: number;
+  page: number;
+  size: number;
+};
 
 export type DatastoreConnectionStatus = {
   msg: string;
@@ -76,10 +45,14 @@ export type DatastoreConnectionStatus = {
   failure_reason?: string;
 };
 
-export interface DatastoreConnectionUpdate {
+export type DatastoreConnectionUpdate = {
   name: string;
   key: string;
   disabled: boolean;
   connection_type: ConnectionType;
   access: AccessLevel;
-}
+};
+
+export type SaasConfig = {
+  type: SaasType;
+};

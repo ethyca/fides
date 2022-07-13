@@ -11,6 +11,16 @@ const theme = extendTheme({
       },
     },
   },
+  components: {
+    Spinner: {
+      baseStyle: {
+        color: "secondary.500",
+      },
+      defaultProps: {
+        size: "xl",
+      },
+    },
+  },
 });
 
 export default theme;
