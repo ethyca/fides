@@ -2,9 +2,9 @@
 
 As an alternative to manually creating resource files like in our [tutorial](../tutorial/dataset.md), it is possible to generate these files using the `generate` CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.
 
-Once you have created your resources you will need to keep them up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. 
+Once you have created your resources you will need to keep them up to date. The `scan` command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met.
 
-The `scan` and `generate` commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. 
+The `scan` and `generate` commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage.
 
 ## Working With a Database
 
@@ -12,7 +12,7 @@ The `generate` command can connect to a database and automatically generate reso
 
 ### Providing Credentials
 
-Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config. 
+Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config.
 
 #### Command Options
 A connection string can be supplied using the `connection-string` option:
@@ -32,7 +32,7 @@ A connection string can also be defined within your fides config under the crede
 my_database_credentials = {connection_string="<my_connection_string>"}
 ```
 
-Your command can then reference the key defined in your config. 
+Your command can then reference the key defined in your config.
 ```sh
 ...
 --credentials-id "my_database_credentials"
@@ -134,10 +134,10 @@ The `generate` command can connect to an AWS account and automatically generate 
 
 ### Providing Credentials
 
-AWS credentials can be provided through command options, environment variables or the fides config. 
+AWS credentials can be provided through command options, environment variables or the fides config.
 
 #### Command Options
-Credentials can be directly supplied in your command using the `access_key_id`, `secret_access_key`, and `region` options. 
+Credentials can be directly supplied in your command using the `access_key_id`, `secret_access_key`, and `region` options.
 ```sh
 ...
 --access_key_id "<my_access_key_id>"
@@ -168,7 +168,7 @@ Credentials can be defined within your [fides config](../installation/configurat
 my_aws_credentials = {aws_access_key_id="<my_aws_access_key_id>", aws_secret_access_key="<my_aws_secret_access_key>", region_name="us-east-1"}
 ```
 
-Your command can then reference the key defined in your config. 
+Your command can then reference the key defined in your config.
 ```sh
 ...
 --credentials-id "my_aws_credentials"
@@ -231,7 +231,7 @@ resource_filters:
   value: 'arn::rds:::db:'
 ```
 
-Any ARN field can be wildcarded by leaving it empty. 
+Any ARN field can be wildcarded by leaving it empty.
 ### Generating Systems
 
 Once credentials have been configured we can invoke the `generate system aws` command:
@@ -271,14 +271,14 @@ Resource coverage: 100%
 ```
 ## Working With an Okta Account
 
-The `generate` command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with. 
+The `generate` command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with.
 
 ### Providing Credentials
 
-Okta credentials can be provided through command options, environment variables or the fides config. 
+Okta credentials can be provided through command options, environment variables or the fides config.
 
 #### Command Options
-Credentials can be directly supplied in your command using the `org-url` and `token` options. 
+Credentials can be directly supplied in your command using the `org-url` and `token` options.
 ```sh
 ...
 --token "<my_okta_client_token>"
@@ -308,7 +308,7 @@ Credentials can be defined within your [fides config](../installation/configurat
 my_okta_credentials = {orgUrl="<my_okta_org_url>" token="<my_okta_client_token>"}
 ```
 
-Your command can then reference the key defined in your config. 
+Your command can then reference the key defined in your config.
 ```sh
 ...
 --credentials-id "my_okta_credentials"
@@ -324,7 +324,7 @@ export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>
 
 Once credentials have been configured we can invoke the `generate system okta` command:
 ```sh
-./venv/bin/fidesctl generate system okta 
+./venv/bin/fidesctl generate system okta
   fides_resources/okta_systems.yml
 ```
 
@@ -366,4 +366,75 @@ Successfully scanned the following systems:
 	google(id=0oa4jekd00tpvn5hN5d7)
 
 Resource coverage: 100%
+```
+
+## Working With a GCP Account
+
+The `generate` command can connect to a GCP account and automatically generate resource YAML files based on tracked resources. Currently, generating datasets from BigQuery is supported.
+
+### Providing Credentials
+
+GCP credentials can be generated via a [service account keyfile](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating) which can be passed as a command option or the fides config. You will need to set project specific credentials for access rights, but datasets can be passed explicitly at runtime.
+
+#### Command Options
+
+The path to the keyfile can be directly supplied in your command using the `keyfile_path` option.
+```sh
+...
+--keyfile-path "/path/to/keyfile.json"
+...
+```
+
+#### Fides Config
+Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
+
+```sh
+my_gcp_credentials = {type = "service_account", project_id = "<my_project_id>", private_key_id = "<my_private_key_id>", private_key = "<my_private_key>", client_email = "<my_client_email>", client_id = "<my_client_id>", auth_uri = "https://accounts.google.com/o/oauth2/auth", token_uri = "https://oauth2.googleapis.com/token", auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs", client_x509_cert_url = "<my_cert_url>"}
+```
+
+Your command can then reference the key defined in your config.
+```sh
+...
+--credentials-id "my_gcp_credentials"
+...
+```
+
+It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+```sh
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
+export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
+```
+
+### Generating a Dataset
+
+Once credentials have been configured, the `generate dataset gcp bigquery` command can take both a configuration option and a dataset name to create the resource file.
+
+```sh
+./venv/bin/fidesctl generate dataset gcp bigquery \
+  <dataset_name> --keyfile-path ".fides/creds/bigquery.json" \
+  <output_file_name>
+```
+
+The result is a resource file with a dataset that represents the bigquery dataset defined in your account.
+
+```yaml
+dataset:
+- fides_key: my_bigquery_dataset
+  organization_fides_key: default_organization
+  name: bigquery dataset
+  description: 'Fides Generated Description for Schema: BigQuery'
+  data_categories: []
+  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  retention: No retention or erasure policy
+  collections:
+  - name: table
+    description: 'Fides Generated Description for Table: table'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: column
+      description: 'Fides Generated Description for Column: column'
+      data_categories: []
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+...
 ```
