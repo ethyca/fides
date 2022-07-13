@@ -59,8 +59,8 @@ const DescribeSystemsForm = ({
         },
       ],
       system_type: values.system_type,
-      // @ts-ignore this will be fixed after updating to fideslang 1.1.0 (#865)
-      meta: { tags: values.tags?.toString() },
+      // QUESTION(allisonking): should this be using the system tags now in fideslang 1.1.0?
+      meta: { tags: values.tags?.toString() ?? "" },
     };
 
     const handleResult = (
