@@ -74,7 +74,7 @@ const DataCategoryDropdown = ({
                   mr={2}
                   width="auto"
                   closeOnSelect={false}
-                  data-testid="clear-btn"
+                  data-testid="data-category-clear-btn"
                 >
                   Clear
                 </MenuItem>
@@ -86,7 +86,7 @@ const DataCategoryDropdown = ({
                   color="white"
                   _hover={{ backgroundColor: "primary.600" }}
                   width="auto"
-                  data-testid="done-btn"
+                  data-testid="data-category-done-btn"
                 >
                   Done
                 </MenuItem>

@@ -64,7 +64,7 @@ const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
                   variant="outline"
                   size="xs"
                   onClick={handleClear}
-                  data-testid="clear-btn"
+                  data-testid="column-clear-btn"
                 >
                   Clear
                 </Button>
@@ -72,7 +72,7 @@ const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
                   size="xs"
                   colorScheme="primary"
                   onClick={onClose}
-                  data-testid="done-btn"
+                  data-testid="column-done-btn"
                 >
                   Done
                 </Button>

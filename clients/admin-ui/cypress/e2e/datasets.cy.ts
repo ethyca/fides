@@ -63,7 +63,7 @@ describe("Dataset", () => {
       cy.getByTestId(`column-${columnNames[0]}`).should("not.exist");
 
       // check we can clear all columns
-      cy.getByTestId("clear-btn").click();
+      cy.getByTestId("column-clear-btn").click();
       columnNames.forEach((c) => {
         cy.getByTestId(`column-${c}`).should("not.exist");
       });
@@ -73,7 +73,7 @@ describe("Dataset", () => {
       cy.getByTestId(`column-${columnNames[1]}`);
 
       // clicking 'done' should close the modal
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("column-done-btn").click();
       cy.getByTestId(`checkbox-${columnNames[0]}`).should("not.be.visible");
     });
 
@@ -305,7 +305,7 @@ describe("Dataset", () => {
         "not.have.attr",
         "data-indeterminate"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
         "user.derived.identifiable.unique_id"
@@ -323,7 +323,7 @@ describe("Dataset", () => {
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Telemetry Data").click();
       cy.getByTestId("checkbox-Account Data").click();
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "contain",
         "user.derived.identifiable.unique_id"
@@ -377,7 +377,7 @@ describe("Dataset", () => {
         "have.attr",
         "data-disabled"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       const expectedSelected = [
         "account.contact",
         "account.payment",
@@ -397,19 +397,19 @@ describe("Dataset", () => {
         "have.attr",
         "data-checked"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "contain",
         "user.derived.identifiable.unique_id"
       );
       cy.getByTestId("selected-categories").should("contain", "account");
       cy.getByTestId("data-category-dropdown").click();
-      cy.getByTestId("clear-btn").click();
+      cy.getByTestId("data-category-clear-btn").click();
       cy.get("[data-testid='checkbox-Account Data'] > span").should(
         "not.have.attr",
         "data-checked"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
         "user.derived.identifiable.unique_id"
