@@ -53,16 +53,27 @@ const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
             rightIcon={<ArrowDownLineIcon />}
             variant="outline"
             fontWeight="normal"
+            data-testid="column-dropdown"
           >
             Columns
           </MenuButton>
           <MenuList>
             <Box px={2}>
               <Box display="flex" justifyContent="space-between" mb={2}>
-                <Button variant="outline" size="xs" onClick={handleClear}>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={handleClear}
+                  data-testid="clear-btn"
+                >
                   Clear
                 </Button>
-                <Button size="xs" colorScheme="primary" onClick={onClose}>
+                <Button
+                  size="xs"
+                  colorScheme="primary"
+                  onClick={onClose}
+                  data-testid="done-btn"
+                >
                   Done
                 </Button>
               </Box>
@@ -80,6 +91,7 @@ const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
                         _hover={{ bg: "gray.100" }}
                         isChecked={isChecked}
                         onChange={() => handleChange(column)}
+                        data-testid={`checkbox-${column.name}`}
                       >
                         {column.name}
                       </Checkbox>
