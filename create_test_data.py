@@ -11,8 +11,6 @@ from sqlalchemy import orm
 
 from fidesops.core.config import config
 from fidesops.db.database import init_db
-from fidesops.db.session import get_db_session
-from fidesops.models.client import ClientDetail
 from fidesops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
