@@ -139,13 +139,13 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @click.pass_context
 @manifests_dir_argument
 @click.option(
-    "--sync-all",
-    "-a",
-    is_flag=True,
-    help="Pulls all resources from the server, regardless of if they already exist locally.",
+    "--sync-new",
+    "-s",
+    default="new_manifests.yml",
+    help="Pulls all new resources from the server into this file.",
 )
 @with_analytics
-def sync(ctx: click.Context, manifests_dir: str, sync_all: bool = False) -> None:
+def sync(ctx: click.Context, manifests_dir: str, sync_new: str) -> None:
     """
     Update local resource files by their fides_key to match their server versions.
 
@@ -167,5 +167,5 @@ def sync(ctx: click.Context, manifests_dir: str, sync_all: bool = False) -> None
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.request_headers,
-        sync_all=sync_all,
+        sync_new=sync_new,
     )

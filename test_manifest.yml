@@ -1,0 +1,290 @@
+system:
+- !!python/object:fideslang.models.System
+  __dict__:
+    fides_key: demo_analytics_system
+    organization_fides_key: default_organization
+    name: Demo Analytics System
+    description: A system used for analyzing customer behaviour.
+    registry_id: null
+    meta: null
+    fidesctl_meta: null
+    system_type: Service
+    data_responsibility_title: Controller
+    privacy_declarations:
+    - !!python/object:fideslang.models.PrivacyDeclaration
+      __dict__:
+        name: Analyze customer behaviour for improvements.
+        data_categories:
+        - user.provided.identifiable.contact
+        - user.derived.identifiable.device.cookie_id
+        data_use: improve.system
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_subjects:
+        - customer
+        dataset_references:
+        - demo_users_dataset
+      __fields_set__: !!set
+        data_qualifier: null
+        name: null
+        data_subjects: null
+        data_categories: null
+        dataset_references: null
+        data_use: null
+      __private_attribute_values__: {}
+    system_dependencies: null
+    joint_controller: null
+    third_country_transfers:
+    - USA
+    - CAN
+    administrating_department: Engineering
+    data_protection_impact_assessment: !!python/object:fideslang.models.DataProtectionImpactAssessment
+      __dict__:
+        is_required: true
+        progress: Complete
+        link: !!python/object/new:pydantic.networks.AnyUrl
+          args:
+          - https://example.org/analytics_system_data_protection_impact_assessment
+          state: !!python/tuple
+          - null
+          - scheme: https
+            user: null
+            password: null
+            host: example.org
+            tld: org
+            host_type: domain
+            port: null
+            path: /analytics_system_data_protection_impact_assessment
+            query: null
+            fragment: null
+      __fields_set__: !!set
+        link: null
+        progress: null
+        is_required: null
+      __private_attribute_values__: {}
+  __fields_set__: !!set
+    name: null
+    fidesctl_meta: null
+    organization_fides_key: null
+    fides_key: null
+    system_dependencies: null
+    privacy_declarations: null
+    third_country_transfers: null
+    data_protection_impact_assessment: null
+    system_type: null
+    meta: null
+    description: null
+    joint_controller: null
+    data_responsibility_title: null
+    administrating_department: null
+    registry_id: null
+  __private_attribute_values__: {}
+- !!python/object:fideslang.models.System
+  __dict__:
+    fides_key: demo_marketing_system
+    organization_fides_key: default_organization
+    name: Demo Marketing System
+    description: Collect data about our users for marketing.
+    registry_id: null
+    meta: null
+    fidesctl_meta: null
+    system_type: Service
+    data_responsibility_title: Processor
+    privacy_declarations:
+    - !!python/object:fideslang.models.PrivacyDeclaration
+      __dict__:
+        name: Collect data for marketing
+        data_categories:
+        - user.derived.identifiable.device.cookie_id
+        data_use: advertising
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_subjects:
+        - customer
+        dataset_references: null
+      __fields_set__: !!set
+        data_qualifier: null
+        name: null
+        data_subjects: null
+        data_categories: null
+        dataset_references: null
+        data_use: null
+      __private_attribute_values__: {}
+    system_dependencies: null
+    joint_controller: null
+    third_country_transfers: null
+    administrating_department: Marketing
+    data_protection_impact_assessment: !!python/object:fideslang.models.DataProtectionImpactAssessment
+      __dict__:
+        is_required: false
+        progress: null
+        link: null
+      __fields_set__: !!set
+        link: null
+        progress: null
+        is_required: null
+      __private_attribute_values__: {}
+  __fields_set__: !!set
+    name: null
+    fidesctl_meta: null
+    organization_fides_key: null
+    fides_key: null
+    system_dependencies: null
+    privacy_declarations: null
+    third_country_transfers: null
+    data_protection_impact_assessment: null
+    system_type: null
+    meta: null
+    description: null
+    joint_controller: null
+    data_responsibility_title: null
+    administrating_department: null
+    registry_id: null
+  __private_attribute_values__: {}
+dataset:
+- !!python/object:fideslang.models.Dataset
+  __dict__:
+    fides_key: demo_users_dataset
+    organization_fides_key: default_organization
+    name: Demo Users Dataset
+    description: Data collected about users for our analytics system.
+    meta: null
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fidesctl_meta: null
+    joint_controller: null
+    retention: 30 days after account deletion
+    third_country_transfers:
+    - GBR
+    - CAN
+    collections:
+    - !!python/object:fideslang.models.DatasetCollection
+      __dict__:
+        name: users
+        description: User information
+        data_categories: []
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        retention: null
+        fields:
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: created_at
+            description: User's creation timestamp
+            data_categories:
+            - system.operations
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: null
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: email
+            description: User's Email
+            data_categories:
+            - user.provided.identifiable.contact.email
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: Account termination
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: first_name
+            description: User's first name
+            data_categories:
+            - user.provided.identifiable.name
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: Account termination
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: food_preference
+            description: User's favorite food
+            data_categories: []
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: null
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: state
+            description: User's State
+            data_categories:
+            - user.provided.identifiable.contact.state
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: null
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+        - !!python/object:fideslang.models.DatasetField
+          __dict__:
+            name: uuid
+            description: User's unique ID
+            data_categories:
+            - user.derived.identifiable.unique_id
+            data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+            retention: null
+            fields: null
+          __fields_set__: !!set
+            data_qualifier: null
+            name: null
+            retention: null
+            data_categories: null
+            fields: null
+            description: null
+          __private_attribute_values__: {}
+      __fields_set__: !!set
+        data_qualifier: null
+        name: null
+        retention: null
+        data_categories: null
+        fields: null
+        description: null
+      __private_attribute_values__: {}
+  __fields_set__: !!set
+    data_qualifier: null
+    name: null
+    retention: null
+    data_categories: null
+    fidesctl_meta: null
+    organization_fides_key: null
+    fides_key: null
+    collections: null
+    third_country_transfers: null
+    meta: null
+    description: null
+    joint_controller: null
+  __private_attribute_values__: {}
+policies: []

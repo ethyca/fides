@@ -2,11 +2,21 @@
 from typing import Dict, List
 
 import yaml
-from fideslang.manifests import load_yaml_into_dict
 
 from fidesctl.cli.utils import echo_green, print_divider
 from fidesctl.core.api_helpers import get_server_resource, list_server_resources
 from fidesctl.core.utils import get_manifest_list
+from fideslang.manifests import load_yaml_into_dict
+from fideslang import FidesModel
+
+
+def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
+    """
+    Write a manifest file out.
+    """
+    with open(manifest_path, "w") as manifest_file:
+        yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
+    echo_green(f"Updated manifest file written out to: '{manifest_path}'")
 
 
 def sync_existing_resources(
@@ -47,10 +57,7 @@ def sync_existing_resources(
                     updated_resource_list.append(resource)
 
             updated_manifest[resource_type] = updated_resource_list
-
-        with open(manifest_path, "w") as manifest_file:
-            yaml.dump(updated_manifest, manifest_file, sort_keys=False, indent=2)
-        echo_green(f"Updated manifest file written out to: '{manifest_path}'")
+            write_manifest_file(manifest_path, updated_manifest)
         print_divider()
 
     return existing_keys
@@ -65,19 +72,22 @@ def sync_missing_resources(
     """
 
     print(existing_keys)
-    manifest_file = 
     resources_to_sync = ["system", "dataset", "policies"]
-    resource_dict = {
+    resource_manifest: Dict[str, List[FidesModel]] = {
         resource: list_server_resources(url, headers, resource, existing_keys)
         for resource in resources_to_sync
     }
 
     # Write out the resources in a file
+    write_manifest_file(manifest_path, resource_manifest)
     return True
 
 
 def sync(
-    manifests_dir: str, manifest_path: str, url: str, headers: Dict[str, str], sync_all: bool = False
+    manifests_dir: str,
+    url: str,
+    headers: Dict[str, str],
+    sync_new: str,
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
@@ -88,7 +98,7 @@ def sync(
     """
     existing_keys = sync_existing_resources(manifests_dir, url, headers)
 
-    if sync_all:
-        sync_missing_resources(manifest_path, url, headers, existing_keys)
+    if sync_new:
+        sync_missing_resources(sync_new, url, headers, existing_keys)
 
     echo_green("Sync complete.")
