@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+import { System } from "~/types/api";
 
 import {
   CustomCreatableMultiSelect,
@@ -15,7 +16,6 @@ import {
 } from "../common/form/inputs";
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { useCreateSystemMutation } from "../system/system.slice";
-import { System } from "../system/types";
 import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
 type FormValues = Partial<System>;
@@ -59,6 +59,7 @@ const DescribeSystemsForm = ({
         },
       ],
       system_type: values.system_type,
+      // @ts-ignore this will be fixed after updating to fideslang 1.1.0 (#865)
       meta: { tags: values.tags?.toString() },
     };
 

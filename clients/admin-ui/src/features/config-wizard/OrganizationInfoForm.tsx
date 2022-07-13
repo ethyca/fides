@@ -17,11 +17,11 @@ import { useAppDispatch } from "~/app/hooks";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
-  Organization,
   useCreateOrganizationMutation,
   useGetOrganizationByFidesKeyQuery,
   useUpdateOrganizationMutation,
 } from "~/features/organization";
+import { Organization } from "~/types/api";
 
 import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { changeStep, setOrganization } from "./config-wizard.slice";

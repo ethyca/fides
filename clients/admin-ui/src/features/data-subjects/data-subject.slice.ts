@@ -2,8 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { AppState } from "~/app/store";
-
-import { DataSubject } from "./types";
+import { DataSubject } from "~/types/api";
 
 export interface State {
   dataSubjects: DataSubject[];

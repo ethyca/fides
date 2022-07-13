@@ -38,12 +38,12 @@ import {
   setDataUse,
   useGetDataUseQuery,
 } from "~/features/data-use/data-use.slice";
-import { PrivacyDeclaration } from "~/features/system/types";
 import {
   selectDataCategories,
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
+import { PrivacyDeclaration } from "~/types/api";
 
 import {
   CustomMultiSelect,
