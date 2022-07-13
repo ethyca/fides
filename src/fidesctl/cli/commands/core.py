@@ -1,4 +1,6 @@
 """Contains all of the core CLI commands for Fidesctl."""
+from typing import Optional
+
 import click
 
 from fidesctl.cli.options import (
@@ -141,11 +143,11 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @click.option(
     "--sync-new",
     "-s",
-    default="new_manifests.yml",
+    default=None,
     help="Pulls all new resources from the server into this file.",
 )
 @with_analytics
-def sync(ctx: click.Context, manifests_dir: str, sync_new: str) -> None:
+def sync(ctx: click.Context, manifests_dir: str, sync_new: Optional[str]) -> None:
     """
     Update local resource files by their fides_key to match their server versions.
 

@@ -1,5 +1,5 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import yaml
 
@@ -71,15 +71,22 @@ def sync_missing_resources(
     that currently only exist on the server.
     """
 
-    print(existing_keys)
+    print(f"Writing out new resources to file: '{manifest_path}'...")
     resources_to_sync = ["system", "dataset", "policies"]
-    resource_manifest: Dict[str, List[FidesModel]] = {
-        resource: list_server_resources(url, headers, resource, existing_keys)
+    resource_manifest = {
+        resource: list_server_resources(
+            url=url,
+            headers=headers,
+            resource_type=resource,
+            exclude_keys=existing_keys,
+            raw=True,
+        )
         for resource in resources_to_sync
     }
 
     # Write out the resources in a file
     write_manifest_file(manifest_path, resource_manifest)
+    print_divider()
     return True
 
 
@@ -87,11 +94,11 @@ def sync(
     manifests_dir: str,
     url: str,
     headers: Dict[str, str],
-    sync_new: str,
+    sync_new: Optional[str],
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
-    write out the server version into the local file.
+    write the server version into the local file.
 
     If the 'all' flag is passed, additionally pull all other server resources
     into local files as well.
