@@ -25,9 +25,9 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
-  selectDataQualifier,
-  setDataQualifier,
-  useGetDataQualifierQuery,
+  selectDataQualifiers,
+  setDataQualifiers,
+  useGetAllDataQualifiersQuery,
 } from "~/features/data-qualifier/data-qualifier.slice";
 import {
   selectDataSubjects,
@@ -78,20 +78,20 @@ const PrivacyDeclarationForm = ({
 
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
   const { data: dataSubjects } = useGetAllDataSubjectsQuery();
-  const { data: dataQualifier } = useGetDataQualifierQuery();
+  const { data: dataQualifiers } = useGetAllDataQualifiersQuery();
   const { data: dataUses } = useGetAllDataUsesQuery();
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
-  const allDataQualifiers = useAppSelector(selectDataQualifier);
+  const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
     dispatch(setDataUses(dataUses ?? []));
-    dispatch(setDataQualifier(dataQualifier ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifier]);
+    dispatch(setDataQualifiers(dataQualifiers ?? []));
+  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
   useEffect(() => {}, [formDeclarations]);
 
