@@ -6,5 +6,8 @@ export default defineConfig({
     baseUrl: "http://localhost:3000",
   },
   defaultCommandTimeout: 5000,
-  retries: 3,
+  retries: {
+    runMode: 3,
+    openMode: 0,
+  },
 });

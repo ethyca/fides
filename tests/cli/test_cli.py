@@ -34,7 +34,7 @@ def test_webserver() -> None:
     This is specifically meant to catch when the webserver command breaks,
     without spinning up an additional instance.
     """
-    from fidesapi.main import start_webserver  # pylint: disable=unused-import
+    from fidesctl.api.main import start_webserver  # pylint: disable=unused-import
 
     assert True
 
@@ -127,7 +127,7 @@ def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
 def test_get(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "get", "data_category", "user.provided.identifiable"],
+        ["-f", test_config_path, "get", "data_category", "user"],
     )
     print(result.output)
     assert result.exit_code == 0

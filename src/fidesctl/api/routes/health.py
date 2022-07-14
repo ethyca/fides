@@ -3,9 +3,9 @@ from typing import Dict
 from fastapi import HTTPException, status
 
 import fidesctl
-from fidesapi.database.database import get_db_health
-from fidesapi.routes.util import API_PREFIX
-from fidesapi.utils.api_router import APIRouter
+from fidesctl.api.database.database import get_db_health
+from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.core.config import FidesctlConfig, get_config
 
 CONFIG: FidesctlConfig = get_config()
