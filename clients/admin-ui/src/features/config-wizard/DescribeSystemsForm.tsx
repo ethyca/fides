@@ -59,8 +59,7 @@ const DescribeSystemsForm = ({
         },
       ],
       system_type: values.system_type,
-      // QUESTION(allisonking): should this be using the system tags now in fideslang 1.1.0?
-      meta: { tags: values.tags?.toString() ?? "" },
+      tags: values.tags,
     };
 
     const handleResult = (
@@ -183,7 +182,7 @@ const DescribeSystemsForm = ({
                   id="tags"
                   name="tags"
                   label="System Tags"
-                  options={initialValues.tags.map((s: any) => ({
+                  options={initialValues.tags.map((s) => ({
                     value: s,
                     label: s,
                   }))}
