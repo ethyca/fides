@@ -14,6 +14,7 @@ import { useFormik } from "formik";
 import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { QuestionIcon } from "~/features/common/Icon";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -23,7 +24,6 @@ import {
 } from "~/features/organization";
 import { Organization } from "~/types/api";
 
-import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { changeStep, setOrganization } from "./config-wizard.slice";
 
 const useOrganizationInfoForm = () => {
@@ -60,14 +60,9 @@ const useOrganizationInfoForm = () => {
           organizationBody
         );
 
-        if ("error" in createOrganizationResult) {
-          let errorMsg = "An unexpected error occurred. Please try again.";
-          if (isErrorWithDetail(createOrganizationResult.error)) {
-            errorMsg = createOrganizationResult.error.data.detail;
-          } else if (isErrorWithDetailArray(createOrganizationResult.error)) {
-            const { error } = createOrganizationResult;
-            errorMsg = error.data.detail[0].msg;
-          }
+        if (isErrorResult(createOrganizationResult)) {
+          const errorMsg = getErrorMessage(createOrganizationResult.error);
+
           toast({
             status: "error",
             description: errorMsg,
@@ -81,14 +76,9 @@ const useOrganizationInfoForm = () => {
           organizationBody
         );
 
-        if ("error" in updateOrganizationResult) {
-          let errorMsg = "An unexpected error occurred. Please try again.";
-          if (isErrorWithDetail(updateOrganizationResult.error)) {
-            errorMsg = updateOrganizationResult.error.data.detail;
-          } else if (isErrorWithDetailArray(updateOrganizationResult.error)) {
-            const { error } = updateOrganizationResult;
-            errorMsg = error.data.detail[0].msg;
-          }
+        if (isErrorResult(updateOrganizationResult)) {
+          const errorMsg = getErrorMessage(updateOrganizationResult.error);
+
           toast({
             status: "error",
             description: errorMsg,

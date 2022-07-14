@@ -34,7 +34,7 @@ def test_webserver() -> None:
     This is specifically meant to catch when the webserver command breaks,
     without spinning up an additional instance.
     """
-    from fidesapi.main import start_webserver  # pylint: disable=unused-import
+    from fidesctl.api.main import start_webserver  # pylint: disable=unused-import
 
     assert True
 

@@ -32,10 +32,13 @@ The types of changes are:
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Standardized API error parsing under `~/types/errors`
 
 ### Changed
 
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Moved all files from `fidesapi` to `fidesctl/api` [#885](https://github.com/ethyca/fides/pull/885)
 * Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view

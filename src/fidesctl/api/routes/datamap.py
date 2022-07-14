@@ -8,11 +8,11 @@ from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
 
-from fidesapi.routes.crud import get_resource, list_resource
-from fidesapi.routes.util import API_PREFIX
-from fidesapi.sql_models import sql_model_map
-from fidesapi.utils.api_router import APIRouter
-from fidesapi.utils.errors import DatabaseUnavailableError, NotFoundError
+from fidesctl.api.routes.crud import get_resource, list_resource
+from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.sql_models import sql_model_map
+from fidesctl.api.utils.api_router import APIRouter
+from fidesctl.api.utils.errors import DatabaseUnavailableError, NotFoundError
 from fidesctl.core.export import build_joined_dataframe
 from fidesctl.core.export_helpers import DATAMAP_COLUMNS
 

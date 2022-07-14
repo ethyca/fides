@@ -15,6 +15,7 @@ import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { isErrorResult } from "~/features/common/helpers";
 import {
   Dataset,
   GenerateResponse,
@@ -74,7 +75,7 @@ const AuthenticateAwsForm = () => {
   const [generate, { isLoading }] = useGenerateMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    const response = await generate({
+    const result = await generate({
       organization_key: organizationKey,
       generate: {
         config: values,
@@ -83,10 +84,10 @@ const AuthenticateAwsForm = () => {
       },
     });
 
-    if ("error" in response) {
-      handleError(response.error);
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      handleResults(response.data.generate_results);
+      handleResults(result.data.generate_results);
     }
   };
 
