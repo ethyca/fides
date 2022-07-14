@@ -35,9 +35,9 @@ import {
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
 import {
-  selectDataUse,
-  setDataUse,
-  useGetDataUseQuery,
+  selectDataUses,
+  setDataUses,
+  useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import { PrivacyDeclaration } from "~/features/system/types";
 import {
@@ -79,19 +79,19 @@ const PrivacyDeclarationForm = ({
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
   const { data: dataSubjects } = useGetAllDataSubjectsQuery();
   const { data: dataQualifier } = useGetDataQualifierQuery();
-  const { data: dataUse } = useGetDataUseQuery();
+  const { data: dataUses } = useGetAllDataUsesQuery();
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
-  const allDataUses = useAppSelector(selectDataUse);
+  const allDataUses = useAppSelector(selectDataUses);
   const allDataQualifiers = useAppSelector(selectDataQualifier);
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
-    dispatch(setDataUse(dataUse ?? []));
+    dispatch(setDataUses(dataUses ?? []));
     dispatch(setDataQualifier(dataQualifier ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
+  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifier]);
 
   useEffect(() => {}, [formDeclarations]);
 
@@ -327,7 +327,7 @@ const PrivacyDeclarationForm = ({
                 label="Data use"
                 name="data_use"
                 size="md"
-                options={allDataUses?.map((data: any) => ({
+                options={allDataUses.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -346,7 +346,7 @@ const PrivacyDeclarationForm = ({
                 name="data_subjects"
                 label="Data subjects"
                 size="md"
-                options={allDataSubjects?.map((data: any) => ({
+                options={allDataSubjects.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -366,7 +366,7 @@ const PrivacyDeclarationForm = ({
                 label="Data qualifier"
                 name="data_qualifier"
                 size="md"
-                options={allDataQualifiers?.map((data: any) => ({
+                options={allDataQualifiers.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
