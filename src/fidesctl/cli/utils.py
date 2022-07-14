@@ -317,13 +317,15 @@ def handle_bigquery_config_options(
                     "keyfile_creds": json.load(credential_file),
                 }
             )
-    if credentials_id:
+    elif credentials_id:
         bigquery_config = get_config_bigquery_credentials(
             dataset=dataset,
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, bigquery_config)
+    else:
+        raise click.UsageError("Illegal usage: No connection configuration provided")
     return bigquery_config
 
 
