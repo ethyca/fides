@@ -1,7 +1,9 @@
 import { Text, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
 
-import { errorToastParams, successToastParams } from "../common/toast";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+
 import {
   setActiveDataset,
   useDeleteDatasetMutation,
@@ -28,13 +30,8 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     const updatedDataset = { ...dataset, ...values };
     try {
       const result = await updateDataset(updatedDataset);
-      // TODO: we should systematically coerce errors into their types (#803)
-      if ("error" in result && "data" in result.error) {
-        if ("data" in result.error) {
-          toast(errorToastParams(result.error.data as string));
-        } else {
-          toast(errorToastParams("An unknown error occurred"));
-        }
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
       } else {
         toast(successToastParams("Successfully modified dataset"));
       }
@@ -47,13 +44,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const handleDelete = async () => {
     const { fides_key: fidesKey } = dataset;
     const result = await deleteDataset(fidesKey);
-    // TODO: we should systematically coerce errors into their types (#803)
-    if ("error" in result && "data" in result.error) {
-      if ("data" in result.error) {
-        toast(errorToastParams(result.error.data as string));
-      } else {
-        toast(errorToastParams("An unknown error occurred"));
-      }
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       toast(successToastParams("Successfully deleted dataset"));
     }
