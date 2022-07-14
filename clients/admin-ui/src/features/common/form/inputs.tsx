@@ -45,7 +45,11 @@ export const CustomTextInput = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      {isInvalid ? (
+        <FormErrorMessage data-testid={`error-${field.name}`}>
+          {meta.error}
+        </FormErrorMessage>
+      ) : null}
     </FormControl>
   );
 };
@@ -334,8 +338,18 @@ export const CustomTextArea = ({
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
-      <Textarea {...field} size="sm" mb={2} {...textAreaProps} />
-      {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
+      <Textarea
+        {...field}
+        size="sm"
+        mb={2}
+        {...textAreaProps}
+        data-testid={`input-${field.name}`}
+      />
+      {isInvalid ? (
+        <FormErrorMessage data-testid={`error-${field.name}`}>
+          {meta.error}
+        </FormErrorMessage>
+      ) : null}
     </FormControl>
   );
 };
