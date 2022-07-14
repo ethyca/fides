@@ -1,6 +1,6 @@
-import { Spinner, Text } from "@fidesui/react";
-
 import { useGetAllDataSubjectsQuery } from "~/features/data-subjects/data-subject.slice";
+
+import TaxonomyTabContent from "./TaxonomyTabContent";
 
 const useDataSubjects = () => {
   const { data, isLoading } = useGetAllDataSubjectsQuery();
@@ -13,21 +13,7 @@ const useDataSubjects = () => {
 
 const DataSubjectsTab = () => {
   const { isLoading, dataSubjects } = useDataSubjects();
-  if (isLoading) {
-    return <Spinner />;
-  }
-  if (!dataSubjects) {
-    return <Text>Could not find data subjects.</Text>;
-  }
-
-  // TODO: Build actual component, just render data simply for now (#853)
-  return (
-    <>
-      {dataSubjects.map((ds) => (
-        <Text key={ds.fides_key}>{ds.name}</Text>
-      ))}
-    </>
-  );
+  return <TaxonomyTabContent isLoading={isLoading} data={dataSubjects} />;
 };
 
 export default DataSubjectsTab;

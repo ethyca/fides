@@ -1,6 +1,5 @@
-import { Spinner, Text } from "@fidesui/react";
-
 import { useGetAllDataCategoriesQuery } from "./data-categories.slice";
+import TaxonomyTabContent from "./TaxonomyTabContent";
 
 const useDataCategories = () => {
   const { data, isLoading } = useGetAllDataCategoriesQuery();
@@ -13,21 +12,7 @@ const useDataCategories = () => {
 
 const DataCategoriesTab = () => {
   const { isLoading, dataCategories } = useDataCategories();
-  if (isLoading) {
-    return <Spinner />;
-  }
-  if (!dataCategories) {
-    return <Text>Could not find data categories.</Text>;
-  }
-
-  // TODO: Build actual component, just render data simply for now (#853)
-  return (
-    <>
-      {dataCategories.map((dc) => (
-        <Text key={dc.fides_key}>{dc.name}</Text>
-      ))}
-    </>
-  );
+  return <TaxonomyTabContent isLoading={isLoading} data={dataCategories} />;
 };
 
 export default DataCategoriesTab;

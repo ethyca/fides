@@ -1,6 +1,6 @@
-import { Spinner, Text } from "@fidesui/react";
-
 import { useGetAllDataQualifiersQuery } from "~/features/data-qualifier/data-qualifier.slice";
+
+import TaxonomyTabContent from "./TaxonomyTabContent";
 
 const useDataQualifiers = () => {
   const { data, isLoading } = useGetAllDataQualifiersQuery();
@@ -13,21 +13,7 @@ const useDataQualifiers = () => {
 
 const IdentifiabilityTab = () => {
   const { isLoading, dataQualifiers } = useDataQualifiers();
-  if (isLoading) {
-    return <Spinner />;
-  }
-  if (!dataQualifiers) {
-    return <Text>Could not find data categories.</Text>;
-  }
-
-  // TODO: Build actual component, just render data simply for now (#853)
-  return (
-    <>
-      {dataQualifiers.map((dq) => (
-        <Text key={dq.fides_key}>{dq.name}</Text>
-      ))}
-    </>
-  );
+  return <TaxonomyTabContent isLoading={isLoading} data={dataQualifiers} />;
 };
 
 export default IdentifiabilityTab;
