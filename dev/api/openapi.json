@@ -3539,7 +3539,7 @@
                     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
                     "dataset.source_name": "N/A",
                     "third_country_combined": "GBR, USA, CAN",
-                    "unioned_data_categories": "user.provided.identifiable.contact",
+                    "unioned_data_categories": "user.contact",
                     "dataset.retention": "N/A",
                     "system.joint_controller": "",
                     "system.third_country_safeguards": "",
@@ -3864,6 +3864,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -3928,6 +3935,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -3975,6 +3989,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4063,6 +4084,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4154,6 +4182,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4558,6 +4593,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -4655,6 +4697,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4834,6 +4883,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -4914,6 +4970,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
