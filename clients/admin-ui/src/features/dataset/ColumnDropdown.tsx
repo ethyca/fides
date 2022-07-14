@@ -8,6 +8,7 @@ import {
   MenuList,
   Stack,
 } from "@fidesui/react";
+import { useMemo } from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
 
@@ -19,29 +20,22 @@ interface Props {
   onChange: (columns: ColumnMetadata[]) => void;
 }
 const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
+  const nameToColumnInfo = useMemo(() => {
+    const info = new Map<string, boolean>();
+    allColumns.forEach((c) => info.set(c.name, true));
+    return info;
+  }, [allColumns]);
+
   const handleClear = () => {
+    nameToColumnInfo.forEach((value, key) => nameToColumnInfo.set(key, false));
     onChange([]);
   };
 
   const handleChange = (column: ColumnMetadata) => {
-    let newColumns: ColumnMetadata[] = [];
-    if (selectedColumns.filter((col) => col.name === column.name).length > 0) {
-      // remove from selected columns
-      newColumns = selectedColumns.filter((col) => col.name !== column.name);
-    } else {
-      newColumns = [...selectedColumns, column];
-    }
-
-    // we want to keep the sort order the same based off of all columns, so that the
-    // table columns don't go jumping around
-    const allColumnNames = allColumns.map((c) => c.name);
-    const sortedSelected = newColumns
-      .slice()
-      .sort(
-        (a, b) =>
-          allColumnNames.indexOf(a.name) - allColumnNames.indexOf(b.name)
-      );
-    onChange(sortedSelected);
+    // Toggle the column
+    const prevInfo = nameToColumnInfo.get(column.name) ?? false;
+    nameToColumnInfo.set(column.name, !prevInfo);
+    onChange(allColumns.filter((c) => nameToColumnInfo.get(c.name)));
   };
 
   return (
