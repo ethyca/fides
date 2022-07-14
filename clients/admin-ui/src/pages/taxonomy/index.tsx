@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from "@fidesui/react";
+import { Heading, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
@@ -13,9 +13,7 @@ const DataSets: NextPage = () => (
     <Text size="sm" mb={4}>
       Placeholder instruction
     </Text>
-    <Box>
-      <TaxonomyTabs />
-    </Box>
+    <TaxonomyTabs />
   </Layout>
 );
 export default DataSets;

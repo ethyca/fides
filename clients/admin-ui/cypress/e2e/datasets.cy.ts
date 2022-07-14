@@ -7,7 +7,7 @@ describe("Dataset", () => {
       "getDataset"
     );
     cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_category.json",
+      fixture: "data_categories.json",
     }).as("getDataCategory");
   });
 

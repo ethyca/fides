@@ -1,0 +1,42 @@
+[
+  {
+    "fides_key": "aggregated",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Aggregated Data",
+    "description": "Statistical data that does not contain individually identifying information but includes information about groups of individuals that renders individual identification impossible.",
+    "parent_key": null
+  },
+  {
+    "fides_key": "aggregated.anonymized",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Anonymized Data",
+    "description": "Data where all attributes have been sufficiently altered that the individaul cannot be reidentified by this data or in combination with other datasets.",
+    "parent_key": "aggregated"
+  },
+  {
+    "fides_key": "aggregated.anonymized.unlinked_pseudonymized",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Unlinked Pseudonymized Data",
+    "description": "Data for which all identifiers have been substituted with unrelated values and linkages broken such that it may not be reversed, even by the party that performed the pseudonymization.",
+    "parent_key": "aggregated.anonymized"
+  },
+  {
+    "fides_key": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Pseudonymized Data",
+    "description": "Data for which all identifiers have been substituted with unrelated values, rendering the individual unidentifiable and cannot be reasonably reversed other than by the party that performed the pseudonymization.",
+    "parent_key": "aggregated.anonymized.unlinked_pseudonymized"
+  },
+  {
+    "fides_key": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Identified Data",
+    "description": "Data that directly identifies an individual.",
+    "parent_key": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized"
+  }
+]
