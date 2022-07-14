@@ -12,6 +12,7 @@ import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
 from fideslang.validation import FidesValidationError
+from git.repo import Repo
 from sqlalchemy.engine import Engine
 
 logger = logging.getLogger("server_api")
@@ -19,7 +20,7 @@ logger = logging.getLogger("server_api")
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
 
-# This duplicates a constant in `fidesapi/routes/utils.py`
+# This duplicates a constant in `fidesctl/api/routes/utils.py`
 # To avoid import errors
 API_PREFIX = "/api/v1"
 
@@ -117,3 +118,17 @@ def sanitize_fides_key(proposed_fides_key: str) -> str:
     """
     sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", proposed_fides_key)
     return sanitized_fides_key
+
+
+def git_is_dirty(dir_to_check: str = ".") -> bool:
+    """
+    Checks to see if the local repo has unstaged changes.
+    Can also specify a directory to check.
+    """
+    repo = Repo()
+    git_session = repo.git()
+
+    dirty_phrases = ["Changes not staged for commit:", "Untracked files:"]
+    git_status = git_session.status(dir_to_check).split("\n")
+    is_dirty = any(phrase in git_status for phrase in dirty_phrases)
+    return is_dirty

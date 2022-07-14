@@ -26,13 +26,13 @@ dataset:
     - name: email
       description: User's Email
       data_categories:
-      - user.provided.identifiable.contact.email
+      - user.contact.email
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: Account termination
     - name: first_name
       description: User's first name
       data_categories:
-      - user.provided.identifiable.name
+      - user.name
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: Account termination
     - name: food_preference
@@ -42,10 +42,10 @@ dataset:
     - name: state
       description: User's State
       data_categories:
-      - user.provided.identifiable.contact.state
+      - user.contact.address.state
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: uuid
       description: User's unique ID
       data_categories:
-      - user.derived.identifiable.unique_id
+      - user.unique_id
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

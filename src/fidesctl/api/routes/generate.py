@@ -9,14 +9,14 @@ from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
 
-from fidesapi.routes.crud import get_resource
-from fidesapi.routes.util import (
+from fidesctl.api.routes.crud import get_resource
+from fidesctl.api.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_okta_connector,
 )
-from fidesapi.sql_models import sql_model_map
-from fidesapi.utils.api_router import APIRouter
+from fidesctl.api.sql_models import sql_model_map
+from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,

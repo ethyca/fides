@@ -20,7 +20,7 @@ system:
           - user.provided.identifiable
           - user.derived.identifiable
           - system.operations
-        data_use: provide.system.operations
+        data_use: provide.service.operations
         data_subjects:
           - customer
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

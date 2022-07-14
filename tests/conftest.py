@@ -8,7 +8,7 @@ import yaml
 from fideslang import models
 from starlette.testclient import TestClient
 
-from fidesapi import main
+from fidesctl.api import main
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -74,8 +74,8 @@ def resources_dict() -> Generator:
     ] = {
         "data_category": models.DataCategory(
             organization_fides_key=1,
-            fides_key="user.provided.identifiable.custom",
-            parent_key="user.provided.identifiable",
+            fides_key="user.custom",
+            parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
@@ -103,16 +103,14 @@ def resources_dict() -> Generator:
                             name="First_Name",
                             description="A First Name Field",
                             path="another.path",
-                            data_categories=["user.provided.identifiable.name"],
+                            data_categories=["user.name"],
                             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                         models.DatasetField(
                             name="Email",
                             description="User's Email",
                             path="another.another.path",
-                            data_categories=[
-                                "user.provided.identifiable.contact.email"
-                            ],
+                            data_categories=["user.contact.email"],
                             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
                         ),
                     ],
@@ -150,7 +148,7 @@ def resources_dict() -> Generator:
         "policy_rule": models.PolicyRule(
             name="Test Policy",
             data_categories=models.PrivacyRule(matches="NONE", values=[]),
-            data_uses=models.PrivacyRule(matches="NONE", values=["provide.system"]),
+            data_uses=models.PrivacyRule(matches="NONE", values=["provide.service"]),
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
             data_qualifier="aggregated.anonymized.unlinked_pseudonymized.pseudonymized",
         ),

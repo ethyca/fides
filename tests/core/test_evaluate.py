@@ -110,8 +110,8 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
                     privacy_declarations=[
                         PrivacyDeclaration(
                             name="privacy_declaration_1",
-                            data_categories=["account.contact.email"],
-                            data_use="provide.system",
+                            data_categories=["user.contact.email"],
+                            data_use="provide.service",
                             data_qualifier="aggregated.anonymized",
                             data_subjects=["customer"],
                         )
@@ -128,11 +128,11 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
         category.fides_key for category in result_taxonomy.data_category
     ]
     assert sorted(populated_categories) == sorted(
-        ["account.contact.email", "account.contact", "account"]
+        ["user.contact.email", "user.contact", "user"]
     )
 
     populated_data_uses = [data_use.fides_key for data_use in result_taxonomy.data_use]
-    assert sorted(populated_data_uses) == sorted(["provide.system", "provide"])
+    assert sorted(populated_data_uses) == sorted(["provide.service", "provide"])
 
     populated_qualifiers = [
         data_qualifier.fides_key for data_qualifier in result_taxonomy.data_qualifier
@@ -166,7 +166,7 @@ def test_populate_referenced_keys_fails_missing_keys(
                             PrivacyDeclaration(
                                 name="privacy_declaration_1",
                                 data_categories=["missing.category"],
-                                data_use="provide.system",
+                                data_use="provide.service",
                                 data_qualifier="aggregated.anonymized",
                                 data_subjects=["customer"],
                             )
@@ -207,8 +207,8 @@ def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
         headers=test_config.user.request_headers,
         dehydrated_taxonomy=dehydrated_taxonomy,
         missing_resource_keys={
-            "user.provided.identifiable.credentials",
-            "user.provided",
+            "user.credentials",
+            "user",
         },
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
