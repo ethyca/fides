@@ -6,13 +6,13 @@ dataset:
       - name: users
         description: User's information
             data_categories:
-              - user.provided.identifiable.political_opinion
+              - user.political_opinion
             data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
         fields:
           - name: First_Name
             description: A First Name Field
             data_categories:
-              - user.provided.identifiable.name
+              - user.name
             data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 
 system:
@@ -23,7 +23,7 @@ system:
     privacy_declarations:
       - name: Share Political Opinions
         data_categories:
-          - user.provided.identifiable
+          - user
         data_use: advertising
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         data_subjects:
@@ -42,7 +42,7 @@ policy:
         data_categories:
           matches: ANY
           values:
-            - user.provided.identifiable.political_opinion
+            - user.political_opinion
         data_uses:
           matches: ANY
           values:

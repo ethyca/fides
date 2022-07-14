@@ -22,6 +22,7 @@ import { Form, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifier,
@@ -50,7 +51,6 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -142,6 +142,7 @@ const PrivacyDeclarationForm = ({
 
     const systemBodyWithDeclaration = {
       description: existingSystem?.description,
+      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
       fides_key: existingSystem?.fides_key ?? "default_organization",
       name: existingSystem?.name,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
@@ -152,15 +153,12 @@ const PrivacyDeclarationForm = ({
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
-      if ("error" in result) {
-        let errorMsg =
-          "An unexpected error occurred while creating system. Please try again.";
-        if (isErrorWithDetail(result.error)) {
-          errorMsg = result.error.data.detail;
-        } else if (isErrorWithDetailArray(result.error)) {
-          const { error } = result;
-          errorMsg = error.data.detail[0].msg;
-        }
+      if (isErrorResult(result)) {
+        const errorMsg = getErrorMessage(
+          result.error,
+          "An unexpected error occurred while updating the system. Please try again."
+        );
+
         toast({
           status: "error",
           description: errorMsg,
@@ -209,7 +207,7 @@ const PrivacyDeclarationForm = ({
     >
       {({ resetForm, values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Privacy Declaration for {existingSystem?.name}

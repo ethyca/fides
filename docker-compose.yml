@@ -29,6 +29,7 @@ services:
       FIDESCTL_TEST_MODE: "True"
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
+      FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
       FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
 
   fidesctl-ui:

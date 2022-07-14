@@ -21,20 +21,22 @@ from .commands.util import init, status, webserver
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, init, parse, view, webserver]
+LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMAND_DICT = {
+    command.name or str(command): command for command in LOCAL_COMMANDS
+}
 API_COMMANDS = [
     annotate,
     apply,
     database,
     delete,
     export,
-    generate,
     get,
     ls,
-    scan,
     status,
     sync,
 ]
+API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status"]
@@ -70,14 +72,12 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
-    for command in LOCAL_COMMANDS:
-        cli.add_command(command)
+    # Dyanmically add commands to the CLI
+    cli.commands = LOCAL_COMMAND_DICT
 
-    # If local_mode is enabled, don't add unsupported commands
     if not (local or config.cli.local_mode):
         config.cli.local_mode = False
-        for command in API_COMMANDS:
-            cli.add_command(command)
+        cli.commands = {**cli.commands, **API_COMMAND_DICT}
     else:
         config.cli.local_mode = True
 
@@ -107,9 +107,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
             )
 
 
-# This is a special section used for auto-generating the CLI docs
-# This has to be done due to the dynamic way in which commands are added for the real CLI group
-cli_docs = cli
-
+# Add all commands here before dynamically checking them in the CLI
 for cli_command in ALL_COMMANDS:
-    cli_docs.add_command(cli_command)
+    cli.add_command(cli_command)

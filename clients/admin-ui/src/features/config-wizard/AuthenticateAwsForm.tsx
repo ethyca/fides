@@ -13,19 +13,35 @@ import { Form, Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { isErrorResult } from "~/features/common/helpers";
+import {
+  Dataset,
+  GenerateResponse,
+  GenerateTypes,
+  System,
+  ValidTargets,
+} from "~/types/api";
+
+import {
+  changeStep,
+  selectOrganizationFidesKey,
+  setSystemsForReview,
+} from "./config-wizard.slice";
 import {
   AWS_REGION_OPTIONS,
   DOCS_URL_AWS_PERMISSIONS,
   DOCS_URL_IAM_POLICY,
 } from "./constants";
 import { useGenerateMutation } from "./scanner.slice";
-import { ScannerGenerateResponse } from "./types";
 
 // TODO: There should just be a theme/variant for blue links.
 const DocsLink = (props: React.ComponentProps<typeof Link>) => (
   <Link isExternal color="complimentary.500" {...props} />
 );
+
+const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   aws_access_key_id: "",
@@ -42,32 +58,36 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const AuthenticateAwsForm = () => {
-  // TODO: The organization key needs to come from the shared wizard state.
-  const organizationKey = "default_organization";
-  // TODO: These callbacks need to write to some shared wizard state so that that the data  passed
-  // through the wizard (in addition to the step number).
-  const handleResults: (
-    results: ScannerGenerateResponse["generate_results"]
-  ) => void = () => {};
+  const organizationKey = useAppSelector(selectOrganizationFidesKey);
+  const dispatch = useAppDispatch();
+
+  const handleResults = (results: GenerateResponse["generate_results"]) => {
+    const systems: System[] = (results ?? []).filter(isSystem);
+    dispatch(setSystemsForReview(systems));
+    dispatch(changeStep());
+  };
+  // TODO(#864): Show detailed error log.
   const handleError: (error: unknown) => void = () => {};
-  const handleCancel = () => {};
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
 
   const [generate, { isLoading }] = useGenerateMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    const response = await generate({
+    const result = await generate({
       organization_key: organizationKey,
       generate: {
         config: values,
-        target: "aws",
-        type: "systems",
+        target: ValidTargets.AWS,
+        type: GenerateTypes.SYSTEMS,
       },
     });
 
-    if ("error" in response) {
-      handleError(response.error);
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      handleResults(response.data.generate_results);
+      handleResults(result.data.generate_results);
     }
   };
 
@@ -78,8 +98,8 @@ const AuthenticateAwsForm = () => {
       onSubmit={handleSubmit}
     >
       {({ isValid, dirty }) => (
-        <Form>
-          <Stack ml="100px" spacing={10}>
+        <Form data-testid="authenticate-aws-form">
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               Add a system
             </Heading>
@@ -152,6 +172,7 @@ const AuthenticateAwsForm = () => {
                 variant="primary"
                 isDisabled={!dirty || !isValid}
                 isLoading={isLoading}
+                data-testid="submit-btn"
               >
                 Save and Continue
               </Button>

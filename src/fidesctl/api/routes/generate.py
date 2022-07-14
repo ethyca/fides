@@ -4,7 +4,7 @@ Contains all of the endpoints required to manage generating resources.
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import HTTPException, Response, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
@@ -16,6 +16,7 @@ from fidesctl.api.routes.util import (
     route_requires_okta_connector,
 )
 from fidesctl.api.sql_models import sql_model_map
+from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,

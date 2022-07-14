@@ -4,7 +4,7 @@ import React from "react";
 
 const ViewYourDataMapPage: NextPage<{}> = () => (
   <chakra.form w="100%">
-    <Stack ml="100px" spacing={10}>
+    <Stack spacing={10}>
       <Heading as="h3" size="lg">
         View your Data Map!
       </Heading>

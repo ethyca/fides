@@ -40,6 +40,7 @@
     "js-yaml": "^4.1.0",
     "lodash.debounce": "^4.0.8",
     "msw": "^0.43.0",
+    "narrow-minded": "^1.1.1",
     "next": "12.1.0",
     "next-auth": "^4.9.0",
     "next-redux-wrapper": "^7.0.5",

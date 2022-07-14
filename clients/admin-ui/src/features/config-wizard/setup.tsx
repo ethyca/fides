@@ -41,7 +41,11 @@ const Setup = ({ wizardStep }: Props) => {
           </div>
           <div>Let&apos;s get started!</div>
           <Stack direction={["column", "row"]} spacing="24px">
-            <Button variant="primary" onClick={() => wizardStep(true)}>
+            <Button
+              variant="primary"
+              onClick={() => wizardStep(true)}
+              data-testid="guided-setup-btn"
+            >
               Guided Setup (Recommended)
             </Button>
             <Button

@@ -1,0 +1,66 @@
+{
+  "generate_results": [
+    {
+      "fides_key": "example-postgres-cluster",
+      "organization_fides_key": "default_organization",
+      "name": "example-postgres-cluster",
+      "description": "Fides Generated Description for RDS Cluster: example-postgres-cluster",
+      "registry_id": null,
+      "meta": null,
+      "fidesctl_meta": {
+        "resource_id": "arn:aws:rds:us-east-2:123456789012:cluster:example-postgres-cluster",
+        "endpoint_address": "example-postgres-cluster.cluster-123456789012.us-east-2.rds.amazonaws.com",
+        "endpoint_port": "5432"
+      },
+      "system_type": "rds_cluster",
+      "data_responsibility_title": "Controller",
+      "privacy_declarations": [],
+      "system_dependencies": null,
+      "joint_controller": null,
+      "third_country_transfers": null,
+      "administrating_department": "Not defined",
+      "data_protection_impact_assessment": {
+        "is_required": false,
+        "progress": null,
+        "link": null
+      }
+    },
+    {
+      "fides_key": "example-system-1",
+      "organization_fides_key": "default_organization",
+      "name": "example-system-1",
+      "description": "Fides Generated Description for example-system-1",
+      "registry_id": null,
+      "meta": null,
+      "fidesctl_meta": {
+        "resource_id": "example-system-1:resource_id",
+        "endpoint_address": "example-system-1:resource_id",
+        "endpoint_port": "5432"
+      },
+      "system_type": "example-system-1:system_type"
+    },
+    {
+      "fides_key": "example-system-2",
+      "organization_fides_key": "default_organization",
+      "name": "example-system-2",
+      "description": "Fides Generated Description for example-system-2",
+      "registry_id": null,
+      "meta": null,
+      "fidesctl_meta": {
+        "resource_id": "example-system-2:resource_id",
+        "endpoint_address": "example-system-2:resource_id",
+        "endpoint_port": "5432"
+      },
+      "system_type": "example-system-2:system_type"
+    },
+    {
+      "fides_key": "example-system-without-meta",
+      "organization_fides_key": "default_organization",
+      "name": "example-system-without-meta",
+      "description": "Fides Generated Description for system lacking metadata",
+      "registry_id": null,
+      "meta": null,
+      "system_type": "example-system-1:system_type"
+    }
+  ]
+}

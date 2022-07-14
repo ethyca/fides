@@ -5,14 +5,15 @@ import { Form, Formik } from "formik";
 import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { QuestionIcon } from "~/features/common/Icon";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 
 import {
   CustomCreatableMultiSelect,
   CustomCreatableSingleSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import { isErrorWithDetail, isErrorWithDetailArray } from "../common/helpers";
 import { useCreateSystemMutation } from "../system/system.slice";
 import { System } from "../system/types";
 import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
@@ -35,7 +36,7 @@ const DescribeSystemsForm = ({
     description: "",
     fides_key: "",
     name: "",
-    organization_fides_key: "default_organization",
+    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
     tags: [],
     system_type: "",
   };
@@ -45,7 +46,7 @@ const DescribeSystemsForm = ({
       description: values.description,
       fides_key: values.fides_key,
       name: values.name,
-      organization_fides_key: "default_organization",
+      organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       privacy_declarations: [
         {
           name: "string",
@@ -64,15 +65,12 @@ const DescribeSystemsForm = ({
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
-      if ("error" in result) {
-        let errorMsg =
-          "An unexpected error occurred while creating system. Please try again.";
-        if (isErrorWithDetail(result.error)) {
-          errorMsg = result.error.data.detail;
-        } else if (isErrorWithDetailArray(result.error)) {
-          const { error } = result;
-          errorMsg = error.data.detail[0].msg;
-        }
+      if (isErrorResult(result)) {
+        const errorMsg = getErrorMessage(
+          result.error,
+          "An unexpected error occurred while creating the system. Please try again."
+        );
+
         toast({
           status: "error",
           description: errorMsg,
@@ -100,7 +98,7 @@ const DescribeSystemsForm = ({
     >
       {({ values }) => (
         <Form>
-          <Stack ml="100px" spacing={10}>
+          <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
               Describe your system
