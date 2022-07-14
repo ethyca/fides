@@ -6,16 +6,20 @@ import {
   Button,
   Heading,
   HStack,
-  Link,
   Stack,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
-import { isErrorResult } from "~/features/common/helpers";
+import {
+  isErrorResult,
+  ParsedError,
+  parseError,
+} from "~/features/common/helpers";
 import {
   Dataset,
   GenerateResponse,
@@ -23,6 +27,7 @@ import {
   System,
   ValidTargets,
 } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors";
 
 import {
   changeStep,
@@ -35,11 +40,7 @@ import {
   DOCS_URL_IAM_POLICY,
 } from "./constants";
 import { useGenerateMutation } from "./scanner.slice";
-
-// TODO: There should just be a theme/variant for blue links.
-const DocsLink = (props: React.ComponentProps<typeof Link>) => (
-  <Link isExternal color="complimentary.500" {...props} />
-);
+import ScannerError from "./ScannerError";
 
 const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
@@ -69,13 +70,20 @@ const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
 
+  const [scannerError, setScannerError] = useState<ParsedError>();
+
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
     dispatch(changeStep());
   };
-  // TODO(#864): Show detailed error log.
-  const handleError: (error: unknown) => void = () => {};
+  const handleError = (error: RTKErrorResult["error"]) => {
+    const parsedError = parseError(error, {
+      status: 500,
+      message: "Our system encountered a problem while connecting to AWS.",
+    });
+    setScannerError(parsedError);
+  };
   const handleCancel = () => {
     dispatch(changeStep(2));
   };
@@ -83,6 +91,8 @@ const AuthenticateAwsForm = () => {
   const [generate, { isLoading }] = useGenerateMutation();
 
   const handleSubmit = async (values: FormValues) => {
+    setScannerError(undefined);
+
     const result = await generate({
       organization_key: organizationKey,
       generate: {
@@ -108,45 +118,51 @@ const AuthenticateAwsForm = () => {
       {({ isValid, dirty }) => (
         <Form data-testid="authenticate-aws-form">
           <Stack spacing={10}>
-            <Heading as="h3" size="lg">
-              Add a system
-            </Heading>
-            <Accordion allowToggle border="transparent">
-              <AccordionItem>
-                {({ isExpanded }) => (
-                  <>
-                    <h2>
-                      The scanner can be connected to your cloud infrastructure
-                      provider to automatically scan and create a list of all
-                      systems that may contain personal data.
-                      <AccordionButton
-                        display="inline"
-                        padding="0px"
-                        ml="5px"
-                        width="auto"
-                        color="complimentary.500"
-                      >
-                        {isExpanded ? `(show less)` : `(show more)`}
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel padding="0px" mt="20px">
-                      In order to run the scanner, please provide credentials
-                      for authenticating to AWS. Please note, the credentials
-                      must have the{" "}
-                      <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
-                        minimum permissions listed in the support documentation
-                        here
-                      </DocsLink>
-                      . You can{" "}
-                      <DocsLink href={DOCS_URL_IAM_POLICY}>
-                        copy the sample IAM policy here
-                      </DocsLink>
-                      .
-                    </AccordionPanel>
-                  </>
-                )}
-              </AccordionItem>
-            </Accordion>
+            {!scannerError ? (
+              <>
+                <Heading size="lg">Add a system</Heading>
+                <Accordion allowToggle border="transparent">
+                  <AccordionItem>
+                    {({ isExpanded }) => (
+                      <>
+                        <h2>
+                          The scanner can be connected to your cloud
+                          infrastructure provider to automatically scan and
+                          create a list of all systems that may contain personal
+                          data.
+                          <AccordionButton
+                            display="inline"
+                            padding="0px"
+                            ml="5px"
+                            width="auto"
+                            color="complimentary.500"
+                          >
+                            {isExpanded ? `(show less)` : `(show more)`}
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel padding="0px" mt="20px">
+                          In order to run the scanner, please provide
+                          credentials for authenticating to AWS. Please note,
+                          the credentials must have the{" "}
+                          <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
+                            minimum permissions listed in the support
+                            documentation here
+                          </DocsLink>
+                          . You can{" "}
+                          <DocsLink href={DOCS_URL_IAM_POLICY}>
+                            copy the sample IAM policy here
+                          </DocsLink>
+                          .
+                        </AccordionPanel>
+                      </>
+                    )}
+                  </AccordionItem>
+                </Accordion>
+              </>
+            ) : (
+              <ScannerError error={scannerError} />
+            )}
+
             <Stack>
               <CustomTextInput
                 name="aws_access_key_id"
