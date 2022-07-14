@@ -18,7 +18,7 @@ def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
     echo_green(f"Updated manifest file written out to: '{manifest_path}'")
 
 
-def sync_existing_resources(
+def pull_existing_resources(
     manifests_dir: str, url: str, headers: Dict[str, str]
 ) -> List[str]:
     """
@@ -26,12 +26,12 @@ def sync_existing_resources(
     state on the server.
     """
     manifest_path_list = get_manifest_list(manifests_dir)
-    # Store and return the keys of resources that get synced here.
+    # Store and return the keys of resources that get pulled here.
     existing_keys: List[str] = []
 
     print_divider()
     for manifest_path in manifest_path_list:
-        print(f"Syncing file: '{manifest_path}'...")
+        print(f"Pulling file: '{manifest_path}'...")
         manifest = load_yaml_into_dict(manifest_path)
         updated_manifest = {}
 
@@ -62,7 +62,7 @@ def sync_existing_resources(
     return existing_keys
 
 
-def sync_missing_resources(
+def pull_missing_resources(
     manifest_path: str, url: str, headers: Dict[str, str], existing_keys: List[str]
 ) -> bool:
     """
@@ -71,7 +71,7 @@ def sync_missing_resources(
     """
 
     print(f"Writing out new resources to file: '{manifest_path}'...")
-    resources_to_sync = ["system", "dataset", "policies"]
+    resources_to_pull = ["system", "dataset", "policies"]
     resource_manifest = {
         resource: list_server_resources(
             url=url,
@@ -80,7 +80,7 @@ def sync_missing_resources(
             exclude_keys=existing_keys,
             raw=True,
         )
-        for resource in resources_to_sync
+        for resource in resources_to_pull
     }
 
     # Write out the resources in a file
@@ -89,11 +89,11 @@ def sync_missing_resources(
     return True
 
 
-def sync(
+def pull(
     manifests_dir: str,
     url: str,
     headers: Dict[str, str],
-    sync_new: Optional[str],
+    all_resources: Optional[str],
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
@@ -102,9 +102,14 @@ def sync(
     If the 'all' flag is passed, additionally pull all other server resources
     into local files as well.
     """
-    existing_keys = sync_existing_resources(manifests_dir, url, headers)
+    existing_keys = pull_existing_resources(manifests_dir, url, headers)
 
-    if sync_new:
-        sync_missing_resources(sync_new, url, headers, existing_keys)
+    if all_resources:
+        pull_missing_resources(
+            manifest_path=all_resources,
+            url=url,
+            headers=headers,
+            existing_keys=existing_keys,
+        )
 
-    echo_green("Sync complete.")
+    echo_green("Pull complete.")

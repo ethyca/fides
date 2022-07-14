@@ -99,7 +99,7 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 
 
 @pytest.mark.integration
-def test_sync(
+def test_pull(
     test_config_path: str, test_cli_runner: CliRunner, tmp_path: PosixPath
 ) -> None:
     """
@@ -108,7 +108,7 @@ def test_sync(
     and then reset.
     """
     test_dir = "demo_resources/"
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "sync", test_dir])
+    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "pull", test_dir])
     print(result.output)
     assert result.exit_code == 0
 

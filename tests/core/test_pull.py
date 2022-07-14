@@ -1,3 +1,3 @@
-def test_sync() -> None:
+def test_pull() -> None:
     """Placeholder test."""
     assert 1
