@@ -310,7 +310,7 @@ describe("Dataset", () => {
       const connectionString =
         "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
       cy.intercept("POST", "/api/v1/generate", {
-        fixture: "generate_dataset.json",
+        fixture: "generate/dataset.json",
       }).as("postGenerate");
       cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
         "postDataset"
@@ -333,7 +333,7 @@ describe("Dataset", () => {
       cy.url().should("contain", `dataset/demo_users_dataset`);
     });
 
-    it.only("Can render errors when connecting to a database", () => {
+    it("Can render errors when connecting to a database", () => {
       // Update error after #892 when backend gives better errors than 500
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 500,
@@ -362,7 +362,7 @@ describe("Dataset", () => {
 
       // now switch to good generate payload but bad POST payload
       cy.intercept("POST", "/api/v1/generate", {
-        fixture: "generate_dataset.json",
+        fixture: "generate/dataset.json",
       }).as("postGenerate");
       cy.intercept("POST", "/api/v1/dataset", {
         statusCode: 422,
