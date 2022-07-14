@@ -12,7 +12,7 @@ from fidesctl.api.routes.util import (
     route_requires_aws_connector,
     route_requires_okta_connector,
 )
-from fidesapi.utils.api_router import APIRouter
+from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
