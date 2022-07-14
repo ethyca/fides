@@ -68,7 +68,7 @@ const NavBar = () => {
           <NavLink title="Systems" href="/system" disabled />
           <NavLink title="Datasets" href="/dataset" />
           <NavLink title="Policies" href="/policy" disabled />
-          <NavLink title="Taxonomy" href="/taxonomy" disabled />
+          <NavLink title="Taxonomy" href="/taxonomy" />
           <NavLink title="User Management" href="/user-management" disabled />
           {/* This is a temporary link to the config wizard while it's still in progress */}
           <NavLink title="Config Wizard" href="/config-wizard" />
