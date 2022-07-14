@@ -9,7 +9,7 @@ describe("Config Wizard", () => {
     }).as("updateOrganization");
 
     cy.intercept("POST", "/api/v1/generate", {
-      fixture: "generate.json",
+      fixture: "generate/system.json",
     }).as("postGenerate");
   });
 
