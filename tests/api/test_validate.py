@@ -5,8 +5,8 @@ from os import getenv
 import pytest
 from starlette.testclient import TestClient
 
-from fidesapi.routes.util import API_PREFIX
-from fidesapi.routes.validate import ValidateResponse
+from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.routes.validate import ValidateResponse
 from fidesctl.core.config import FidesctlConfig
 
 EXTERNAL_CONFIG_BODY = {

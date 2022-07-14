@@ -11,7 +11,7 @@ from typing import Dict, List
 from fastapi import Response, status
 from fideslang import model_map
 
-from fidesapi.database.crud import (
+from fidesctl.api.database.crud import (
     create_resource,
     delete_resource,
     get_resource,
@@ -19,9 +19,9 @@ from fidesapi.database.crud import (
     update_resource,
     upsert_resources,
 )
-from fidesapi.routes.util import API_PREFIX, get_resource_type
-from fidesapi.sql_models import sql_model_map
-from fidesapi.utils.api_router import APIRouter
+from fidesctl.api.routes.util import API_PREFIX, get_resource_type
+from fidesctl.api.sql_models import sql_model_map
+from fidesctl.api.utils.api_router import APIRouter
 
 # CRUD Endpoints
 routers = []
