@@ -1541,66 +1541,66 @@ You're not viewing the latest version.
 <table>
 <thead>
 <tr>
-<th align="center">Name</th>
-<th align="center">Type</th>
-<th align="center">Default</th>
-<th align="center">Description</th>
+<th style="text-align: center;">Name</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center">database_user</td>
-<td align="center">String</td>
-<td align="center">postgres</td>
-<td align="center">The username of the Postgres account.</td>
+<td style="text-align: center;">database_user</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">postgres</td>
+<td style="text-align: center;">The username of the Postgres account.</td>
 </tr>
 <tr>
-<td align="center">database_password</td>
-<td align="center">String</td>
-<td align="center">fidesctl</td>
-<td align="center">The password of the Postgres account.</td>
+<td style="text-align: center;">database_password</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">fidesctl</td>
+<td style="text-align: center;">The password of the Postgres account.</td>
 </tr>
 <tr>
-<td align="center">database_host</td>
-<td align="center">String</td>
-<td align="center">fidesctl-db</td>
-<td align="center">The hostname of the Postgres database server.</td>
+<td style="text-align: center;">database_host</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">fidesctl-db</td>
+<td style="text-align: center;">The hostname of the Postgres database server.</td>
 </tr>
 <tr>
-<td align="center">database_port</td>
-<td align="center">String</td>
-<td align="center">5432</td>
-<td align="center">The port of the Postgres database server.</td>
+<td style="text-align: center;">database_port</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">5432</td>
+<td style="text-align: center;">The port of the Postgres database server.</td>
 </tr>
 <tr>
-<td align="center">database_name</td>
-<td align="center">String</td>
-<td align="center">fidesctl</td>
-<td align="center">The name of the Postgres database.</td>
+<td style="text-align: center;">database_name</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">fidesctl</td>
+<td style="text-align: center;">The name of the Postgres database.</td>
 </tr>
 <tr>
-<td align="center">test_database_name</td>
-<td align="center">String</td>
-<td align="center">""</td>
-<td align="center">Used instead of the <code>database_name</code> when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
+<td style="text-align: center;">test_database_name</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">Used instead of the <code>database_name</code> when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
 </tr>
 <tr>
-<td align="center">log_destination</td>
-<td align="center">String</td>
-<td align="center">""</td>
-<td align="center">The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced.</td>
+<td style="text-align: center;">log_destination</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced.</td>
 </tr>
 <tr>
-<td align="center">log_level</td>
-<td align="center">Enum (String)</td>
-<td align="center">INFO</td>
-<td align="center">The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive).</td>
+<td style="text-align: center;">log_level</td>
+<td style="text-align: center;">Enum (String)</td>
+<td style="text-align: center;">INFO</td>
+<td style="text-align: center;">The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive).</td>
 </tr>
 <tr>
-<td align="center">log_serialization</td>
-<td align="center">Enum (String)</td>
-<td align="center">""</td>
-<td align="center">The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive).</td>
+<td style="text-align: center;">log_serialization</td>
+<td style="text-align: center;">Enum (String)</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive).</td>
 </tr>
 </tbody>
 </table>
@@ -1609,42 +1609,42 @@ You're not viewing the latest version.
 <table>
 <thead>
 <tr>
-<th align="center">Name</th>
-<th align="center">Type</th>
-<th align="center">Default</th>
-<th align="center">Description</th>
+<th style="text-align: center;">Name</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center">local_mode</td>
-<td align="center">Boolean</td>
-<td align="center">False</td>
-<td align="center">When set to <code>True</code>, forbids the fidesctl CLI from making calls to the fidesctl webserver.</td>
+<td style="text-align: center;">local_mode</td>
+<td style="text-align: center;">Boolean</td>
+<td style="text-align: center;">False</td>
+<td style="text-align: center;">When set to <code>True</code>, forbids the fidesctl CLI from making calls to the fidesctl webserver.</td>
 </tr>
 <tr>
-<td align="center">server_host</td>
-<td align="center">String</td>
-<td align="center">localhost</td>
-<td align="center">The hostname of the fidesctl webserver.</td>
+<td style="text-align: center;">server_host</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">localhost</td>
+<td style="text-align: center;">The hostname of the fidesctl webserver.</td>
 </tr>
 <tr>
-<td align="center">server_protocol</td>
-<td align="center">String</td>
-<td align="center">http</td>
-<td align="center">The protocol used by the fidesctl webserver.</td>
+<td style="text-align: center;">server_protocol</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">http</td>
+<td style="text-align: center;">The protocol used by the fidesctl webserver.</td>
 </tr>
 <tr>
-<td align="center">server_port</td>
-<td align="center">Integer</td>
-<td align="center"></td>
-<td align="center">The optional port of the fidesctl webserver.</td>
+<td style="text-align: center;">server_port</td>
+<td style="text-align: center;">Integer</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">The optional port of the fidesctl webserver.</td>
 </tr>
 <tr>
-<td align="center">analytics_id</td>
-<td align="center">String</td>
-<td align="center">""</td>
-<td align="center">A fully anonymized unique identifier that is automatically generated by the application and stored in the toml file.</td>
+<td style="text-align: center;">analytics_id</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">A fully anonymized unique identifier that is automatically generated by the application and stored in the toml file.</td>
 </tr>
 </tbody>
 </table>
@@ -1653,24 +1653,24 @@ You're not viewing the latest version.
 <table>
 <thead>
 <tr>
-<th align="center">Name</th>
-<th align="center">Type</th>
-<th align="center">Default</th>
-<th align="center">Description</th>
+<th style="text-align: center;">Name</th>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="center">encryption_key</td>
-<td align="center">String</td>
-<td align="center">""</td>
-<td align="center">An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.</td>
+<td style="text-align: center;">encryption_key</td>
+<td style="text-align: center;">String</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">An arbitrary string used to encrypt the user data stored in the database. Encryption is implemented using PGP.</td>
 </tr>
 <tr>
-<td align="center">analytics_opt_out</td>
-<td align="center">Boolean</td>
-<td align="center">""</td>
-<td align="center">When set to <code>true</code>, prevents sending anonymous analytics data to Ethyca.</td>
+<td style="text-align: center;">analytics_opt_out</td>
+<td style="text-align: center;">Boolean</td>
+<td style="text-align: center;">""</td>
+<td style="text-align: center;">When set to <code>true</code>, prevents sending anonymous analytics data to Ethyca.</td>
 </tr>
 </tbody>
 </table>

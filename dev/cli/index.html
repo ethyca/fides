@@ -1292,6 +1292,26 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp" class="md-nav__link">
+    gcp
+  </a>
+  
+    <nav class="md-nav" aria-label="gcp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp-bigquery" class="md-nav__link">
+    bigquery
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1890,6 +1910,26 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp" class="md-nav__link">
+    gcp
+  </a>
+  
+    <nav class="md-nav" aria-label="gcp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp-bigquery" class="md-nav__link">
+    bigquery
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2346,6 +2386,42 @@ It will need to be run again if the database schema changes.
                             database
   --include-null            Includes attributes that would otherwise be null.
   --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h5 id="fidesctl-generate-dataset-gcp">fidesctl generate dataset gcp</h5>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl Dataset resources for Google Cloud Platform
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset gcp [OPTIONS] COMMAND [ARGS]...
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h6 id="fidesctl-generate-dataset-gcp-bigquery">fidesctl generate dataset gcp bigquery</h6>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a BigQuery dataset directly via a SQLAlchemy connection and
+generate a dataset manifest file that consists of every schema/table/field.
+A path to a google authorization keyfile can be supplied as an option, or a
+credentials reference to fidesctl config.
+
+This is a one-time operation that does not track the state of the dataset.
+It will need to be run again if the dataset schema changes.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset gcp bigquery [OPTIONS] DATASET_NAME OUTPUT_FILENAME
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
+  --keyfile-path TEXT
+  --include-null         Includes attributes that would otherwise be null.
+  --help                 Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fidesctl-generate-system">fidesctl generate system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl System resources
