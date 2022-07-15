@@ -99,21 +99,42 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 
 
 @pytest.mark.integration
-def test_pull(
-    test_config_path: str, test_cli_runner: CliRunner, tmp_path: PosixPath
-) -> None:
-    """
-    Due to the fact that this command checks the real git status, a pytest
-    tmp_dir can't be used. Consequently a real directory must be tested against
-    and then reset.
-    """
-    test_dir = "demo_resources/"
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "pull", test_dir])
-    print(result.output)
-    assert result.exit_code == 0
+class TestPull:
+    def test_pull(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+        tmp_path: PosixPath,
+        git_reset: None,
+    ) -> None:
+        """
+        Due to the fact that this command checks the real git status, a pytest
+        tmp_dir can't be used. Consequently a real directory must be tested against
+        and then reset.
+        """
+        test_dir = "demo_resources/"
+        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "pull", test_dir])
+        print(result.output)
+        assert result.exit_code == 0
 
-    git_session = Repo().git()
-    git_session.checkout("HEAD", test_dir)
+    def test_pull_all(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+        tmp_path: PosixPath,
+        git_reset: None,
+    ) -> None:
+        """
+        Due to the fact that this command checks the real git status, a pytest
+        tmp_dir can't be used. Consequently a real directory must be tested against
+        and then reset.
+        """
+        test_dir = "demo_resources/"
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "pull", test_dir, "-a", "test_resources.yml"]
+        )
+        print(result.output)
+        assert result.exit_code == 0
 
 
 @pytest.mark.integration

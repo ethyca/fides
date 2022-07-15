@@ -5,6 +5,7 @@ from typing import Dict, Generator, Union
 
 import pytest
 import yaml
+from git.repo import Repo
 from fideslang import models
 from starlette.testclient import TestClient
 
@@ -14,6 +15,16 @@ from fidesctl.core.config import FidesctlConfig, get_config
 
 TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
+
+
+@pytest.fixture(scope="function")
+def git_reset() -> None:
+    """This fixture is used to reset the repo files to HEAD."""
+
+    # Yield here so that the reset happens after the tests run
+    yield
+    git_session = Repo().git()
+    git_session.checkout("HEAD", test_dir)
 
 
 @pytest.fixture(scope="session")
