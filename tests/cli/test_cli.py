@@ -1,5 +1,7 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from base64 import b64decode
+from json import dump, loads
 from pathlib import PosixPath
 from typing import Generator
 
@@ -708,6 +710,87 @@ def test_scan_system_okta_input_credentials_id(
             "okta_1",
             "--coverage-threshold",
             "0",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_generate_dataset_bigquery_credentials_id(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
+
+    tmp_output_file = tmpdir.join("dataset.yml")
+    config_data = os.getenv("BIGQUERY_CONFIG", "")
+    config_data_decoded = loads(b64decode(config_data.encode("utf-8")).decode("utf-8"))
+    os.environ["FIDESCTL__CREDENTIALS__BIGQUERY_1__PROJECT_ID"] = config_data_decoded[
+        "project_id"
+    ]
+    os.environ[
+        "FIDESCTL__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY_ID"
+    ] = config_data_decoded["private_key_id"]
+    os.environ["FIDESCTL__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY"] = config_data_decoded[
+        "private_key"
+    ]
+    os.environ["FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_EMAIL"] = config_data_decoded[
+        "client_email"
+    ]
+    os.environ["FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_ID"] = config_data_decoded[
+        "client_id"
+    ]
+    os.environ[
+        "FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_X509_CERT_URL"
+    ] = config_data_decoded["client_x509_cert_url"]
+    dataset_name = "fidesopstest"
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "dataset",
+            "gcp",
+            "bigquery",
+            dataset_name,
+            f"{tmp_output_file}",
+            "--credentials-id",
+            "bigquery_1",
+        ],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.external
+def test_generate_dataset_bigquery_keyfile_path(
+    test_config_path: str,
+    test_cli_runner: CliRunner,
+    tmpdir: LocalPath,
+) -> None:
+
+    tmp_output_file = tmpdir.join("dataset.yml")
+    tmp_keyfile = tmpdir.join("bigquery.json")
+    config_data = os.getenv("BIGQUERY_CONFIG", "")
+    config_data_decoded = loads(b64decode(config_data.encode("utf-8")).decode("utf-8"))
+    with open(tmp_keyfile, "w", encoding="utf-8") as keyfile:
+        dump(config_data_decoded, keyfile)
+    dataset_name = "fidesopstest"
+    result = test_cli_runner.invoke(
+        cli,
+        [
+            "-f",
+            test_config_path,
+            "generate",
+            "dataset",
+            "gcp",
+            "bigquery",
+            dataset_name,
+            f"{tmp_output_file}",
+            "--keyfile-path",
+            f"{tmp_keyfile}",
         ],
     )
     print(result.output)
