@@ -124,6 +124,38 @@ export const MOCK_DATA_CATEGORIES = [
   },
 ];
 
+export const MOCK_DATA_SUBJECTS = [
+  {
+    fides_key: "anonymous_user",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Anonymous User",
+    description:
+      "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
+    rights: null,
+    automated_decisions_or_profiling: null,
+  },
+  {
+    fides_key: "citizen_voter",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Citizen Voter",
+    description: "An individual registered to voter with a state or authority.",
+    rights: null,
+    automated_decisions_or_profiling: null,
+  },
+  {
+    fides_key: "commuter",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Commuter",
+    description:
+      "An individual that is traveling or transiting in the context of location tracking.",
+    rights: null,
+    automated_decisions_or_profiling: null,
+  },
+];
+
 export const mockDatasetField = (
   partialField?: Partial<DatasetField>
 ): DatasetField => {

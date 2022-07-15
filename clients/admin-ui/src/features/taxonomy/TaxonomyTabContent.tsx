@@ -1,10 +1,6 @@
 import { Spinner, Text } from "@fidesui/react";
 
-interface TaxonomyEntity {
-  fides_key: string;
-  name?: string;
-  description?: string;
-}
+import { TaxonomyEntity } from "./types";
 
 interface Props {
   isLoading: boolean;
