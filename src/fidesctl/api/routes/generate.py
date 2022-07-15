@@ -25,6 +25,7 @@ from fidesctl.connectors.models import (
 )
 from fidesctl.core.dataset import generate_db_datasets
 from fidesctl.core.system import generate_aws_systems, generate_okta_systems
+from fidesctl.core.utils import validate_db_engine
 
 
 class ValidTargets(str, Enum):
@@ -159,6 +160,17 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
+    from fidesctl.connectors.aws import validate_credentials
+
+    log.info("Validating AWS credentials")
+    try:
+        validate_credentials(aws_config)
+    except ConnectorAuthFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
+
     log.info("Generating systems from AWS")
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
@@ -172,6 +184,16 @@ async def generate_okta(
     """
     Returns a list of Systems found in Okta.
     """
+    from fidesctl.connectors.okta import validate_credentials
+
+    log.info("Validating Okta credentials")
+    try:
+        validate_credentials(okta_config)
+    except ConnectorAuthFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
     log.info("Generating systems from Okta")
     okta_systems = await generate_okta_systems(
         organization=organization, okta_config=okta_config
@@ -183,6 +205,14 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     """
     Returns a list of datasets found in a database.
     """
+    log.info("Validating database credentials")
+    try:
+        validate_db_engine(db_config.connection_string)
+    except ConnectorAuthFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
     log.info("Generating datasets from database")
     db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
 

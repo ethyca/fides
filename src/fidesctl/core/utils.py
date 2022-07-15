@@ -14,6 +14,9 @@ from fideslang.models import DatasetField, FidesModel
 from fideslang.validation import FidesValidationError
 from git.repo import Repo
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
+
+from fidesctl.connectors.models import ConnectorAuthFailureException
 
 logger = logging.getLogger("server_api")
 
@@ -38,6 +41,18 @@ def check_response(response: requests.Response) -> requests.Response:
         raise json_error
     else:
         return response
+
+
+def validate_db_engine(connection_string: str) -> None:
+    """
+    Use SQLAlchemy to create a DB engine.
+    """
+    try:
+        engine = sqlalchemy.create_engine(connection_string)
+        with engine.begin() as connection:
+            connection.execute("SELECT 1")
+    except SQLAlchemyError as error:
+        raise ConnectorAuthFailureException(error)
 
 
 def get_db_engine(connection_string: str) -> Engine:
