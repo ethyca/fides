@@ -17,10 +17,15 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.2...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
 ### Added
 * ...
+
+
+## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
+### Added
+* Adds `COMPOSE_SERVICE_NAME` to `Makefile` [#884](https://github.com/ethyca/fidesops/pull/884)
 
 ## [1.6.2](https://github.com/ethyca/fidesops/compare/1.6.1...1.6.2)
 ### Added
