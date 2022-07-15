@@ -27,8 +27,8 @@ class FidesctlConfig(BaseModel):
     cli: CLISettings = CLISettings()
     user: UserSettings = UserSettings()
     credentials: Dict[str, Dict] = dict()
-    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
-    security: FidesctlSecuritySettings = FidesctlSecuritySettings()
+    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings.default()
+    security: FidesctlSecuritySettings = FidesctlSecuritySettings.default()
     logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
 
 

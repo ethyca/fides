@@ -8,13 +8,16 @@ from pydantic import Field, PostgresDsn, validator
 class FidesctlDatabaseSettings(DatabaseSettings):
     """Configuration settings for Postgres."""
 
-    def __init__(self) -> None:
-        self.user = "postgres"
-        self.password = Field("fidesctl", exclude=True)
-        self.server = "fidesctl-db"
-        self.port = "5432"
-        self.db = "fidesctl"
-        self.test_db = "fidesctl_test"
+    @staticmethod
+    def default() -> "FidesctlDatabaseSettings":
+        return FidesctlDatabaseSettings(
+            user="postgres",
+            password="fidesctl",
+            server="fidesctl-db",
+            port="5432",
+            db="fidesctl",
+            test_db="fidesctl_test",
+        )
 
     async_database_uri: Optional[PostgresDsn]
     sync_database_uri: Optional[PostgresDsn]
