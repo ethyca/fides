@@ -10,7 +10,6 @@ on:
 env:
   DOCKER_USER: ethycaci
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-  TAG: ${{ github.event.release.tag_name }}
 
 jobs:
   push-fidesctl:
@@ -35,6 +34,12 @@ jobs:
       - name: Push Fidesctl Dev Tag
         run: nox -s "push(dev)"
 
+      - name: Check Prod Tag
+        id: check-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo ::set-output name=match::true
+          fi
       - name: Push Fidesctl Prod Tags
-        if: ${{ env.TAG }}
+        if: steps.check-tag.outputs.match == 'true'
         run: nox -s "push(prod)"
