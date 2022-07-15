@@ -26,6 +26,20 @@ export const isErrorResult = (result: RTKResult): result is RTKErrorResult =>
   "error" in result;
 
 /**
+ * Use this predicate on the `error` property of an RTK query result to find out if the request
+ * returned an error that could not be parsed as JSON. For example, a 500 "Internal Server Error".
+ */
+export const isParsingError = (
+  error: RTKErrorResult["error"]
+): error is FetchBaseQueryError & { status: "PARSING_ERROR" } =>
+  narrow(
+    {
+      status: "string",
+    },
+    error
+  ) && error.status === "PARSING_ERROR";
+
+/**
  * This type is more specific than RTK's FetchBaseQueryError:
  *  - The status must be a number (HTTP code) and not one of RTK's special strings.
  *  - It must contain a `data` object, which will (probably) contain a `detail` property.
