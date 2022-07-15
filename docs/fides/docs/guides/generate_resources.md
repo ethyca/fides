@@ -388,8 +388,18 @@ The path to the keyfile can be directly supplied in your command using the `keyf
 #### Fides Config
 Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
 
-```sh
-my_gcp_credentials = {type = "service_account", project_id = "<my_project_id>", private_key_id = "<my_private_key_id>", private_key = "<my_private_key>", client_email = "<my_client_email>", client_id = "<my_client_id>", auth_uri = "https://accounts.google.com/o/oauth2/auth", token_uri = "https://oauth2.googleapis.com/token", auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs", client_x509_cert_url = "<my_cert_url>"}
+```toml
+[credentials.bigquery_1]
+type = "service_account"
+project_id = "<my_project_id>"
+private_key_id = "<my_private_key_id>"
+private_key = "<my_private_key>"
+client_email = "<my_client_email>"
+client_id = "<my_client_id>"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "<my_cert_url>"
 ```
 
 Your command can then reference the key defined in your config.
@@ -401,8 +411,8 @@ Your command can then reference the key defined in your config.
 
 It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
-export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
+export FIDESCTL__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY="<my_private_key>"
+export FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_ID="<my_client_id>"
 ```
 
 ### Generating a Dataset
