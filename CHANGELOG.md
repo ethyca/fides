@@ -32,6 +32,7 @@ The types of changes are:
 * Pull CLI command has a flag to pull missing files from the server [#895](https://github.com/ethyca/fides/pull/895)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
+* Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 * Standardized API error parsing under `~/types/errors`
 

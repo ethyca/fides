@@ -4,7 +4,13 @@
 import os
 from typing import Dict, Optional
 
-from fidesctl.connectors.models import AWSConfig, DatabaseConfig, OktaConfig
+from fidesctl.connectors.models import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    KeyfileCreds,
+    OktaConfig,
+)
 
 CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
 NESTED_KEY_DELIMITER = "__"
@@ -80,4 +86,19 @@ def get_config_aws_credentials(
 ) -> Optional[AWSConfig]:
     credentials_dict = credentials_config.get(credentials_id, None)
     parsed_config = AWSConfig.parse_obj(credentials_dict) if credentials_dict else None
+    return parsed_config
+
+
+def get_config_bigquery_credentials(
+    dataset: str, credentials_config: Dict[str, Dict], credentials_id: str
+) -> Optional[BigQueryConfig]:
+    credentials_dict = credentials_config.get(credentials_id)
+    parsed_credentials = (
+        KeyfileCreds.parse_obj(credentials_dict) if credentials_dict else None
+    )
+    parsed_config = (
+        BigQueryConfig(dataset=dataset, keyfile_creds=parsed_credentials)
+        if parsed_credentials
+        else None
+    )
     return parsed_config
