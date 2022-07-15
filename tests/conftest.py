@@ -5,7 +5,6 @@ from typing import Dict, Generator, Union
 
 import pytest
 import yaml
-from git.repo import Repo
 from fideslang import models
 from starlette.testclient import TestClient
 
