@@ -14,6 +14,9 @@ from fidesctl.core.utils import echo_red
 from .api_settings import APISettings
 from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
+from .database_settings import FidesctlDatabaseSettings
+from .logging_settings import FidesctlLoggingSettings
+from .security_settings import FidesctlSecuritySettings
 from .user_settings import UserSettings
 
 
@@ -24,6 +27,9 @@ class FidesctlConfig(BaseModel):
     cli: CLISettings = CLISettings()
     user: UserSettings = UserSettings()
     credentials: Dict[str, Dict] = dict()
+    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
+    security: FidesctlSecuritySettings = FidesctlSecuritySettings()
+    logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
 
 
 def get_config(config_path: str = "") -> FidesctlConfig:

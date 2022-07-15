@@ -1,10 +1,13 @@
-[api]
-database_user = "postgres"
-database_password = "fidesctl"
-database_host = "localhost"
-database_port = "5432"
-database_name = "fidesctl"
-test_database_name = "fidesctl_test"
+[database]
+server="fidesctl-db"
+user="postgres"
+password="fidesctl"
+port="5432"
+db="fidesctl"
+test_db="fidesctl_test"
+
+[logging]
+level = "INFO"
 
 [cli]
 server_host = "localhost"
@@ -12,3 +15,10 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
+
+[security]
+app_encryption_key = "atestencryptionkeythatisvalidlen"
+cors_origins = [ "http://test.com", "https://test.com",]
+oauth_root_client_id = "testrootclientid"
+oauth_root_client_secret = "testrootclientsecret"
+drp_jwt_secret = "testdrpsecret"

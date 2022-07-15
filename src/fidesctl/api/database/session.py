@@ -7,7 +7,7 @@ from fidesctl.core.config import get_config
 
 config = get_config()
 engine = create_async_engine(
-    config.api.async_database_url,
+    config.database.async_database_uri,
     echo=False,
 )
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

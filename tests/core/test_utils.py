@@ -40,7 +40,7 @@ def test_nested_collection_fields() -> Generator:
 
 @pytest.mark.unit
 def test_get_db_engine() -> None:
-    conn_str = get_config().api.sync_database_url
+    conn_str = get_config().database.sync_database_uri
     engine = utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 

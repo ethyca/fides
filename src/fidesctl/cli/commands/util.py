@@ -31,16 +31,18 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     config = ctx.obj["CONFIG"]
 
     included_values = {
-        "api": {
-            "database_user",
-            "database_password",
-            "database_host",
-            "database_port",
-            "database_name",
-            "test_database_name",
-            "log_level",
-            "log_destination",
-            "log_serialization",
+        "database": {
+            "server",
+            "user",
+            "password",
+            "port",
+            "db",
+            "test_db",
+        },
+        "logging": {
+            "level",
+            "destination",
+            "serialization",
         },
         "cli": {"server_protocol", "server_host", "server_port", "analytics_id"},
         "user": {"analytics_opt_out"},

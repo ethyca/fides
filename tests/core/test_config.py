@@ -4,7 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from fidesctl.core.config import APISettings, get_config
+from fidesctl.core.config import get_config
+from fidesctl.core.config.database_settings import FidesctlDatabaseSettings
+from src.fidesctl.core.config import database_settings
 
 
 # Unit
@@ -66,21 +68,32 @@ def test_config_from_env_vars() -> None:
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "False"
-    api_settings = APISettings(
-        test_database_name="test_database_url", database_name="database_url"
+    database_settings = FidesctlDatabaseSettings(
+        user="postgres",
+        password="fidesctl",
+        server="fidesctl-db",
+        port="5432",
+        db="database",
+        test_db="test_database",
     )
     assert (
-        api_settings.database_url == "postgres:fidesctl@fidesctl-db:5432/database_url"
+        database_settings.async_database_uri
+        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/database"
     )
 
 
 @pytest.mark.unit
 def test_database_url_test_mode_enabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "True"
-    api_settings = APISettings(
-        test_database_name="test_database_url", database_name="database_url"
+    database_settings = FidesctlDatabaseSettings(
+        user="postgres",
+        password="fidesctl",
+        server="fidesctl-db",
+        port="5432",
+        db="database",
+        test_db="test_database",
     )
     assert (
-        api_settings.database_url
-        == "postgres:fidesctl@fidesctl-db:5432/test_database_url"
+        database_settings.async_database_uri
+        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/test_database"
     )
