@@ -71,7 +71,7 @@ def pull_missing_resources(
     """
 
     print(f"Writing out new resources to file: '{manifest_path}'...")
-    resources_to_pull = ["system", "dataset", "policies"]
+    resources_to_pull = ["system", "dataset", "policy"]
     resource_manifest = {
         resource: list_server_resources(
             url=url,

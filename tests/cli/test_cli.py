@@ -1,6 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
-from pathlib import PosixPath
 from typing import Generator
 
 import pytest
@@ -11,6 +10,13 @@ from py._path.local import LocalPath
 from fidesctl.cli import cli
 
 OKTA_URL = "https://dev-78908748.okta.com"
+
+
+def git_reset(change_dir: str) -> None:
+    """This fixture is used to reset the repo files to HEAD."""
+
+    git_session = Repo().git()
+    git_session.checkout("HEAD", change_dir)
 
 
 @pytest.fixture()
@@ -104,16 +110,15 @@ class TestPull:
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
-        tmp_path: PosixPath,
-        git_reset: None,
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
         tmp_dir can't be used. Consequently a real directory must be tested against
         and then reset.
         """
-        test_dir = "demo_resources/"
+        test_dir = ".fides/"
         result = test_cli_runner.invoke(cli, ["-f", test_config_path, "pull", test_dir])
+        git_reset(test_dir)
         print(result.output)
         assert result.exit_code == 0
 
@@ -121,18 +126,27 @@ class TestPull:
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
-        tmp_path: PosixPath,
-        git_reset: None,
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
         tmp_dir can't be used. Consequently a real directory must be tested against
         and then reset.
         """
-        test_dir = "demo_resources/"
+        test_dir = ".fides/"
+        test_file = ".fides/test_resources.yml"
         result = test_cli_runner.invoke(
-            cli, ["-f", test_config_path, "pull", test_dir, "-a", "test_resources.yml"]
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "pull",
+                test_dir,
+                "-a",
+                ".fides/test_resources.yml",
+            ],
         )
+        git_reset(test_dir)
+        os.remove(test_file)
         print(result.output)
         assert result.exit_code == 0
 

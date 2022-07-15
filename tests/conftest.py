@@ -17,16 +17,6 @@ TEST_CONFIG_PATH = "tests/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
 
 
-@pytest.fixture(scope="function")
-def git_reset() -> None:
-    """This fixture is used to reset the repo files to HEAD."""
-
-    # Yield here so that the reset happens after the tests run
-    yield
-    git_session = Repo().git()
-    git_session.checkout("HEAD", test_dir)
-
-
 @pytest.fixture(scope="session")
 def test_config_path() -> Generator:
     yield TEST_CONFIG_PATH
