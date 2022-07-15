@@ -52,8 +52,16 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
-  aws_access_key_id: Yup.string().required().label("Access Key ID"),
-  aws_secret_access_key: Yup.string().required().label("Secret"),
+  aws_access_key_id: Yup.string()
+    .required()
+    .trim()
+    .matches(/^\w+$/, "Cannot contain spaces or special characters")
+    .label("Access Key ID"),
+  aws_secret_access_key: Yup.string()
+    .required()
+    .trim()
+    .matches(/^[^\s]+$/, "Cannot contain spaces")
+    .label("Secret"),
   region_name: Yup.string().required().label("Default Region"),
 });
 
