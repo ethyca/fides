@@ -38,7 +38,8 @@ The types of changes are:
 
 ### Developer Experience
 * Replace user authentication routes with fideslib routes [#811](https://github.com/ethyca/fidesops/pull/811)
-* Reduce docker image size [846](https://github.com/ethyca/fidesops/pull/846)
+* Reduce docker image size [#846](https://github.com/ethyca/fidesops/pull/846)
+* Load Celery config overrides from a dedicated `celery.toml` [#821](https://github.com/ethyca/fidesops/pull/821)
 
 ### Docs
 * Backend UI deployment [#827](https://github.com/ethyca/fidesops/pull/827)
