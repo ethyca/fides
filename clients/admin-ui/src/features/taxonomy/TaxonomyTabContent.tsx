@@ -1,5 +1,8 @@
-import { Spinner, Text } from "@fidesui/react";
+import { Box, Center, Spinner, Text } from "@fidesui/react";
+import { useMemo } from "react";
 
+import AccordionTree from "../common/AccordionTree";
+import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyEntity } from "./types";
 
 interface Props {
@@ -7,20 +10,28 @@ interface Props {
   data: TaxonomyEntity[] | undefined;
 }
 const TaxonomyTabContent = ({ isLoading, data }: Props) => {
+  const taxonomyNodes = useMemo(() => {
+    if (data) {
+      return transformTaxonomyEntityToNodes(data);
+    }
+    return null;
+  }, [data]);
+
   if (isLoading) {
-    return <Spinner />;
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
   }
-  if (!data) {
+  if (!taxonomyNodes) {
     return <Text>Could not find data.</Text>;
   }
 
-  // TODO: Build actual component, just render data simply for now (#853)
   return (
-    <>
-      {data.map((d) => (
-        <Text key={d.fides_key}>{d.name}</Text>
-      ))}
-    </>
+    <Box w={{ base: "100%", lg: "50%" }}>
+      <AccordionTree nodes={taxonomyNodes} />
+    </Box>
   );
 };
 
