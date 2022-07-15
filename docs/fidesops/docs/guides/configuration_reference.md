@@ -51,15 +51,14 @@ The `fidesops.toml` file should specify the following variables:
 |`TASK_RETRY_BACKOFF` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
 |`REQUIRE_MANUAL_REQUEST_APPROVAL` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`MASKING_STRICT` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If MASKING_STRICT is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If MASKING_STRICT is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting MASKING_STRICT to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
-|`CELERY_BROKER_URL` | `FIDESOPS__EXECUTION__CELERY_BROKER_URL` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to maintain ordered queues of tasks.
-|`CELERY_RESULT_BACKEND` | `FIDESOPS__EXECUTION__RESULT_BACKEND` | str | redis://:testpassword@redis:6379/1 | N/A | The datastore to put results from asynchronously processed tasks.
-|`WORKER_ENABLED` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | Whether fidesops is running with a dedicated worker to process privacy requests asynchronously.
-|---|---|---|---|---|---|
-|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience
+|`CELERY_CONFIG_PATH` | `FIDESOPS__EXECUTION__CELERY_CONFIG_PATH` | string | data/config/celery.toml | N/A | An optional override for the [Celery](#celery-configuration) configuration file path.
+|`WORKER_ENABLED` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | By default, fidesops uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `WORKER_ENABLED` to `False` will run the worker on the same node as the webserver.
+|Analytics |---|---|---|---|---|
+|`ANALYTICS_OPT_OUT` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
 | Admin UI Variables|---|---|---|---|---|
 |`ENABLED` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
 
-## An example `fidesops.toml` configuration file
+### An example `fidesops.toml` configuration file
 
 ```
 PORT=8080
@@ -94,8 +93,7 @@ TASK_RETRY_DELAY=20
 TASK_RETRY_BACKOFF=2
 REQUIRE_MANUAL_REQUEST_APPROVAL=true
 MASKING_STRICT=true
-CELERY_BROKER_URL="redis://:testpassword@redis:6379/1"
-CELERY_RESULT_BACKEND="redis://:testpassword@redis:6379/1"
+CELERY_CONFIG_PATH="data/config/celery.toml"
 WORKER_ENABLED=true
 
 
@@ -108,7 +106,7 @@ ENABLED = true
 
 Please note: The configuration is case-sensitive, so the variables must be specified in UPPERCASE.
 
-## Additional environment variables
+### Additional environment variables
 
  ENV Variable | Default | Description |
 |---|---|---|
@@ -119,6 +117,25 @@ Please note: The configuration is case-sensitive, so the variables must be speci
 | `FIDESOPS__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 | `TESTING` | False | This variable does not need to be set - Pytest will set it to True when running unit tests, so we run against the test database. |
 
+## Celery configuration
+
+Fidesops uses [Celery](https://docs.celeryq.dev/en/stable/index.html) for asynchronous task management. 
+
+The `celery.toml` file provided contains a brief configuration reference for managing Celery variables. By default, fidesops will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate `CELERY_CONFIG_PATH` in your `fidesops.toml`.
+
+For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings) documentation.
+
+```sh title="Example <code>celery.toml</code>"
+default_queue_name = "fidesops"
+broker_url = "redis://:testpassword@redis:6379/1"
+result_backend = "redis://:testpassword@redis:6379/1"
+```
+
+ Celery Variable | Example | Description |
+|---|---|---|
+| `default_queue_name` | `fidesops` | A name to use for your Celery task queue. |
+| `broker_url` | redis://:testpassword@redis:6379/1  | The datastore to use as a [Celery broker](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/), which maintains an ordered list of asynchronous tasks to execute. If not specified, fidesops will default to the `CONNECTION_URL` or Redis config values specified in your `fidesops.toml`.
+| `result_backend` | redis://:testpassword@redis:6379/1 | The [backend datastore](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/) where Celery will store results from asynchronously processed tasks. If not specified, fidesops will default to the `CONNECTION_URL` or Redis config values specified in your `fidesops.toml`.
 
 ## Reporting a running application's configuration
 
