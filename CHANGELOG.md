@@ -27,11 +27,13 @@ The types of changes are:
 * CustomInput type "password" with show/hide icon.
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 
 ### Changed
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+* Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
 
 ### Fixed
 
