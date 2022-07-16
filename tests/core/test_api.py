@@ -5,6 +5,7 @@ from typing import Dict
 
 import pytest
 import requests
+from fideslang import model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
@@ -12,7 +13,6 @@ from fidesctl.api.routes import health
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import API_PREFIX
-from fideslang import model_list, parse
 
 
 # Helper Functions
