@@ -135,20 +135,90 @@ def upgrade():
     op.create_index(
         op.f("ix_fidesuserpermissions_id"), "fidesuserpermissions", ["id"], unique=False
     )
-    op.drop_index("ix_data_categories_id", table_name="data_categories")
-    op.create_index(
-        op.f("ix_data_categories_id"), "data_categories", ["id"], unique=False
+
+    # data_categories
+    op.execute("DROP SEQUENCE data_categories_id_seq CASCADE")
+    op.execute(
+        "ALTER TABLE data_categories DROP CONSTRAINT data_categories_pkey CASCADE"
     )
-    op.drop_index("ix_data_qualifiers_id", table_name="data_qualifiers")
-    op.create_index(
-        op.f("ix_data_qualifiers_id"), "data_qualifiers", ["id"], unique=False
+    op.alter_column(
+        table_name="data_categories",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
     )
-    op.drop_index("ix_data_subjects_id", table_name="data_subjects")
-    op.create_index(op.f("ix_data_subjects_id"), "data_subjects", ["id"], unique=False)
-    op.drop_index("ix_data_uses_id", table_name="data_uses")
-    op.create_index(op.f("ix_data_uses_id"), "data_uses", ["id"], unique=False)
-    op.drop_index("ix_datasets_id", table_name="datasets")
-    op.create_index(op.f("ix_datasets_id"), "datasets", ["id"], unique=False)
+    op.create_primary_key(
+        table_name="data_categories",
+        constraint_name="data_categories_pkey",
+        columns=["id"],
+    )
+
+    # data_qualifiers
+    op.execute("DROP SEQUENCE data_qualifiers_id_seq CASCADE")
+    op.execute(
+        "ALTER TABLE data_qualifiers DROP CONSTRAINT data_qualifiers_pkey CASCADE"
+    )
+    op.alter_column(
+        table_name="data_qualifiers",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_qualifiers",
+        constraint_name="data_qualifiers_pkey",
+        columns=["id"],
+    )
+
+    # data_subjects
+    op.execute("DROP SEQUENCE data_subjects_id_seq CASCADE")
+    op.execute("ALTER TABLE data_subjects DROP CONSTRAINT data_subjects_pkey CASCADE")
+    op.alter_column(
+        table_name="data_subjects",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_subjects",
+        constraint_name="data_subjects_pkey",
+        columns=["id"],
+    )
+
+    # data_uses
+    op.execute("DROP SEQUENCE data_uses_id_seq CASCADE")
+    op.execute("ALTER TABLE data_uses DROP CONSTRAINT data_uses_pkey CASCADE")
+    op.alter_column(
+        table_name="data_uses",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_uses", constraint_name="data_uses_pkey", columns=["id"]
+    )
+
+    # datasets
+    op.execute("DROP SEQUENCE datasets_id_seq CASCADE")
+    op.execute("ALTER TABLE datasets DROP CONSTRAINT datasets_pkey CASCADE")
+    op.alter_column(
+        table_name="datasets",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="datasets",
+        constraint_name="data_sets_pkey",
+        columns=["id"],
+    )
+
+    # evaluations
     op.add_column(
         "evaluations",
         sa.Column(
@@ -167,43 +237,233 @@ def upgrade():
             nullable=True,
         ),
     )
-    op.drop_index("ix_evaluations_id", table_name="evaluations")
-    op.create_index(op.f("ix_evaluations_id"), "evaluations", ["id"], unique=False)
-    op.drop_index("ix_organizations_id", table_name="organizations")
-    op.create_index(op.f("ix_organizations_id"), "organizations", ["id"], unique=False)
-    op.drop_index("ix_policies_id", table_name="policies")
-    op.create_index(op.f("ix_policies_id"), "policies", ["id"], unique=False)
-    op.drop_index("ix_registries_id", table_name="registries")
-    op.create_index(op.f("ix_registries_id"), "registries", ["id"], unique=False)
-    op.drop_index("ix_systems_id", table_name="systems")
-    op.create_index(op.f("ix_systems_id"), "systems", ["id"], unique=False)
+    op.execute("DROP SEQUENCE evaluations_id_seq CASCADE")
+    op.execute("ALTER TABLE evaluations DROP CONSTRAINT evaluations_pkey CASCADE")
+    op.alter_column(
+        table_name="evaluations",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="evaluations",
+        constraint_name="evaluations_pkey",
+        columns=["id"],
+    )
+
+    # organizations
+    op.execute("DROP SEQUENCE organizations_id_seq CASCADE")
+    op.execute("ALTER TABLE organizations DROP CONSTRAINT organizations_pkey CASCADE")
+    op.alter_column(
+        table_name="organizations",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="organizations", constraint_name="organizations_pkey", columns=["id"]
+    )
+
+    # policies
+    op.execute("DROP SEQUENCE policies_id_seq CASCADE")
+    op.execute("ALTER TABLE policies DROP CONSTRAINT policies_pkey CASCADE")
+    op.alter_column(
+        table_name="policies",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="policies", constraint_name="policies_pkey", columns=["id"]
+    )
+
+    # registries
+    op.execute("DROP SEQUENCE registries_id_seq CASCADE")
+    op.execute("ALTER TABLE registries DROP CONSTRAINT registries_pkey CASCADE")
+    op.alter_column(
+        table_name="registries",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="registries", constraint_name="registries_pkey", columns=["id"]
+    )
+
+    # systems
+    op.execute("DROP SEQUENCE systems_id_seq CASCADE")
+    op.execute("ALTER TABLE systems DROP CONSTRAINT systems_pkey CASCADE")
+    op.alter_column(
+        table_name="systems",
+        column_name="id",
+        existing_type=sa.Integer,
+        type_=sa.String(255),
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="systems", constraint_name="systems_pkey", columns=["id"]
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_index(op.f("ix_systems_id"), table_name="systems")
-    op.create_index("ix_systems_id", "systems", ["id"], unique=False)
-    op.drop_index(op.f("ix_registries_id"), table_name="registries")
-    op.create_index("ix_registries_id", "registries", ["id"], unique=False)
-    op.drop_index(op.f("ix_policies_id"), table_name="policies")
-    op.create_index("ix_policies_id", "policies", ["id"], unique=False)
-    op.drop_index(op.f("ix_organizations_id"), table_name="organizations")
-    op.create_index("ix_organizations_id", "organizations", ["id"], unique=False)
-    op.drop_index(op.f("ix_evaluations_id"), table_name="evaluations")
-    op.create_index("ix_evaluations_id", "evaluations", ["id"], unique=False)
+
+    # systems
+    op.execute("ALTER TABLE systems DROP CONSTRAINT systems_pkey CASCADE")
+    op.execute("CREATE SEQUENCE systems_id_seq")
+    op.alter_column(
+        table_name="systems",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="systems", constraint_name="systems_pkey", columns=["id"]
+    )
+
+    # registries
+    op.execute("ALTER TABLE registries DROP CONSTRAINT registries_pkey CASCADE")
+    op.execute("CREATE SEQUENCE registries_id_seq")
+    op.alter_column(
+        table_name="registries",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="registries", constraint_name="registries_pkey", columns=["id"]
+    )
+
+    # policies
+
+    op.execute("ALTER TABLE policies DROP CONSTRAINT policies_pkey CASCADE")
+    op.execute("CREATE SEQUENCE policies_id_seq")
+    op.alter_column(
+        table_name="policies",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="policies", constraint_name="policies_pkey", columns=["id"]
+    )
+
+    # organizations
+    op.execute("ALTER TABLE organizations DROP CONSTRAINT organizations_pkey CASCADE")
+    op.execute("CREATE SEQUENCE policies_id_seq")
+    op.alter_column(
+        table_name="organizations",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="organizations", constraint_name="organizations_pkey", columns=["id"]
+    )
+
+    # evaluations
+    op.execute("ALTER TABLE evaluations DROP CONSTRAINT evaluations_pkey CASCADE")
+    op.execute("CREATE SEQUENCE policies_id_seq")
+    op.alter_column(
+        table_name="evaluations",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="evaluations", constraint_name="evaluations_pkey", columns=["id"]
+    )
     op.drop_column("evaluations", "updated_at")
     op.drop_column("evaluations", "created_at")
-    op.drop_index(op.f("ix_datasets_id"), table_name="datasets")
-    op.create_index("ix_datasets_id", "datasets", ["id"], unique=False)
-    op.drop_index(op.f("ix_data_uses_id"), table_name="data_uses")
-    op.create_index("ix_data_uses_id", "data_uses", ["id"], unique=False)
-    op.drop_index(op.f("ix_data_subjects_id"), table_name="data_subjects")
-    op.create_index("ix_data_subjects_id", "data_subjects", ["id"], unique=False)
-    op.drop_index(op.f("ix_data_qualifiers_id"), table_name="data_qualifiers")
-    op.create_index("ix_data_qualifiers_id", "data_qualifiers", ["id"], unique=False)
-    op.drop_index(op.f("ix_data_categories_id"), table_name="data_categories")
-    op.create_index("ix_data_categories_id", "data_categories", ["id"], unique=False)
+
+    # datasets
+    op.execute("ALTER TABLE datasets DROP CONSTRAINT datasets_pkey CASCADE")
+    op.execute("CREATE SEQUENCE datasets_id_seq")
+    op.alter_column(
+        table_name="datasets",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="datasets", constraint_name="datasets_pkey", columns=["id"]
+    )
+
+    # data_uses
+    op.execute("ALTER TABLE data_uses DROP CONSTRAINT data_uses_pkey CASCADE")
+    op.execute("CREATE SEQUENCE data_uses_id_seq")
+    op.alter_column(
+        table_name="data_uses",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_uses", constraint_name="data_uses_pkey", columns=["id"]
+    )
+
+    # data_subjects
+    op.execute("ALTER TABLE data_subjects DROP CONSTRAINT data_subjects_pkey CASCADE")
+    op.execute("CREATE SEQUENCE data_uses_id_seq")
+    op.alter_column(
+        table_name="data_subjects",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_subjects", constraint_name="data_subjects_pkey", columns=["id"]
+    )
+
+    # data_qualifiers
+    op.execute(
+        "ALTER TABLE data_qualifiers DROP CONSTRAINT data_qualifiers_pkey CASCADE"
+    )
+    op.execute("CREATE SEQUENCE data_uses_id_seq")
+    op.alter_column(
+        table_name="data_qualifiers",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_qualifiers",
+        constraint_name="data_qualifiers_pkey",
+        columns=["id"],
+    )
+
+    # data_categories
+    op.execute(
+        "ALTER TABLE data_categories DROP CONSTRAINT data_categories_pkey CASCADE"
+    )
+    op.execute("CREATE SEQUENCE data_categories_id_seq")
+    op.alter_column(
+        table_name="data_categories",
+        column_name="id",
+        existing_type=sa.String(255),
+        type_=sa.Integer,
+        nullable=False,
+    )
+    op.create_primary_key(
+        table_name="data_categories",
+        constraint_name="data_categories_pkey",
+        columns=["id"],
+    )
+
     op.drop_index(op.f("ix_fidesuserpermissions_id"), table_name="fidesuserpermissions")
     op.drop_table("fidesuserpermissions")
     op.drop_index(op.f("ix_client_id"), table_name="client")

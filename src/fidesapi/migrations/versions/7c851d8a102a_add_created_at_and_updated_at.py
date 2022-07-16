@@ -18,36 +18,38 @@ depends_on = None
 
 
 def upgrade():
-    del sql_model_map["client_detail"]
-    del sql_model_map["fides_user"]
-    del sql_model_map["fides_user_permissionis"]
-
-    for model in sql_model_map.values():
-        op.add_column(
-            model.__tablename__,
-            Column(
-                "created_at",
-                DateTime(timezone=True),
-                server_default=text("now()"),
-                nullable=True,
-            ),
-        )
-        op.add_column(
-            model.__tablename__,
-            Column(
-                "updated_at",
-                DateTime(timezone=True),
-                server_default=text("now()"),
-                nullable=True,
-            ),
-        )
+    for k, model in sql_model_map.items():
+        if k not in (
+            "client_detail",
+            "fides_user",
+            "fides_user_permissions",
+        ):
+            op.add_column(
+                model.__tablename__,
+                Column(
+                    "created_at",
+                    DateTime(timezone=True),
+                    server_default=text("now()"),
+                    nullable=True,
+                ),
+            )
+            op.add_column(
+                model.__tablename__,
+                Column(
+                    "updated_at",
+                    DateTime(timezone=True),
+                    server_default=text("now()"),
+                    nullable=True,
+                ),
+            )
 
 
 def downgrade():
-    del sql_model_map["client_detail"]
-    del sql_model_map["fides_user"]
-    del sql_model_map["fides_user_permissionis"]
-
-    for model in sql_model_map.values():
-        op.drop_column(model.__tablename__, "created_at")
-        op.drop_column(model.__tablename__, "updated_at")
+    for k, model in sql_model_map.items():
+        if k not in (
+            "client_detail",
+            "fides_user",
+            "fides_user_permissions",
+        ):
+            op.drop_column(model.__tablename__, "created_at")
+            op.drop_column(model.__tablename__, "updated_at")

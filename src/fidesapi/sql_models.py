@@ -228,7 +228,7 @@ sql_model_map: Dict = {
     "data_use": DataUse,
     "dataset": Dataset,
     "fides_user": FidesUser,
-    "fides_user_permissionis": FidesUserPermissions,
+    "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,
