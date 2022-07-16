@@ -14,22 +14,12 @@ dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
 # Human-Readable/Reusable Extras
 # Add these to `optional-requirements.txt` as well
-mysql_connector = "pymysql==1.0.0"
 mssql_connector = "pyodbc==4.0.32"
-snowflake_connector = "snowflake-sqlalchemy==1.3.4"
-redshift_connector = "sqlalchemy-redshift==0.8.8"
-aws_connector = "boto3==1.20.54"
 okta_connector = "okta==2.5.0"
-bigquery_connector = "sqlalchemy-bigquery==1.4.4"
 
 extras = {
-    "aws": [aws_connector],
-    "mysql": [mysql_connector],
     "mssql": [mssql_connector],
     "okta": [okta_connector],
-    "snowflake": [snowflake_connector],
-    "redshift": [redshift_connector],
-    "bigquery": [bigquery_connector],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(
