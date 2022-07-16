@@ -231,7 +231,7 @@ def test_find_uncategorized_dataset_fields_missing_collection() -> None:
 @pytest.mark.unit
 def test_unsupported_dialect_error() -> None:
     test_url = "foo+psycopg2://fidesdb:fidesdb@fidesdb:5432/fidesdb"
-    with pytest.raises(SystemExit):
+    with pytest.raises(Exception):
         _dataset.generate_dataset_db(test_url, "test_file.yml", False)
 
 

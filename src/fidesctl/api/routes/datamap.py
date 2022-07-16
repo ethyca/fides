@@ -3,15 +3,16 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict, List
 
-from fastapi import APIRouter, Response, status
+from fastapi import Response, status
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
 
-from fidesapi.routes.crud import get_resource, list_resource
-from fidesapi.routes.util import API_PREFIX
-from fidesapi.sql_models import sql_model_map
-from fidesapi.utils.errors import DatabaseUnavailableError, NotFoundError
+from fidesctl.api.routes.crud import get_resource, list_resource
+from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.sql_models import sql_model_map
+from fidesctl.api.utils.api_router import APIRouter
+from fidesctl.api.utils.errors import DatabaseUnavailableError, NotFoundError
 from fidesctl.core.export import build_joined_dataframe
 from fidesctl.core.export_helpers import DATAMAP_COLUMNS
 
@@ -45,7 +46,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
                             "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
                             "dataset.source_name": "N/A",
                             "third_country_combined": "GBR, USA, CAN",
-                            "unioned_data_categories": "user.provided.identifiable.contact",
+                            "unioned_data_categories": "user.contact",
                             "dataset.retention": "N/A",
                             "system.joint_controller": "",
                             "system.third_country_safeguards": "",

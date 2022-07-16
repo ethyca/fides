@@ -19,6 +19,7 @@ import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
+import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
@@ -50,7 +51,7 @@ const ConfigWizardWalkthrough = () => {
       <Stack direction={["column", "row"]}>
         <Stack bg="white" height="100vh" maxW="60%">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
-            <Box>
+            <Box flexShrink={0}>
               <Stepper
                 activeStep={step}
                 setActiveStep={(s) => dispatch(changeStep(s))}
@@ -60,6 +61,7 @@ const ConfigWizardWalkthrough = () => {
             {step === 1 ? <OrganizationInfoForm /> : null}
             {step === 2 ? <AddSystemForm /> : null}
             {step === 3 ? <AuthenticateScanner /> : null}
+            {step === 4 ? <ScanResultsForm /> : null}
             {step === 5 ? (
               <Stack direction="column">
                 {reviewStep <= 3 ? (

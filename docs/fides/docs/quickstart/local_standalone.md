@@ -2,7 +2,7 @@
 
 This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
 
-In standalone mode most CLI commands will not work as they require webserver connectivity for persistence, and so those commands are not available. Crucially though, the core evaluation functionality is still present. To run in standalone mode, use one of the following methods:
+To run in standalone mode, use one of the following methods:
 
 ```sh title="CLI flag"
 fidesctl --local <subcommand>
@@ -21,13 +21,13 @@ See the Python section of the [Prerequisites and Dependencies](../installation/p
 
 ## Fidesctl Installation
 
-The next step is to install fidesctl via pip:
+The next step is to install fidesctl via [`pipx`](https://pypa.github.io/pipx/):
 
 ```sh
-pip install fidesctl
+pipx install fidesctl
 ```
 
-For more information on installing fidesctl with pip, as well as the other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
+For more information on pipx, installing fidesctl, and other potential extras, see the [Installation from PyPI](../installation/pypi.md) guide.
 
 ## Verifying the Installation
 

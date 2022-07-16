@@ -4,17 +4,21 @@ This page describes installations using the `fidesctl` package [published on PyP
 
 ## Basic Installation
 
+The Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) over `pip` for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
+  
 To install Fidesctl, run:
 
-`pip install fidesctl`
-
-With the default installation fidesctl is designed to be as lightweight as possible. It ships with the ability to do most things you would do via the standalone CLI, such as `evaluate` and `parse` without the need to run a webserver. For interacting directly with databases and running the webserver, see the optional dependencies below.
+`pipx install fidesctl`
 
 ## Installing Optional Dependencies
 
 Fidesctl ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:
 
-`pip install "fidesctl[extra_1, extra_2]"`
+`pipx install "fidesctl[extra_1]"`
+
+or
+
+`pipx install "fidesctl[extra_1, extra_2]"`
 
 The optional dependencies are as follows:
 
@@ -25,8 +29,7 @@ The optional dependencies are as follows:
 * `postgres`: includes the Postgres database connector.
 * `redshift`: includes the Redshift database connector.
 * `snowflake`: includes the Snowflake database connector.
-* `webserver`: includes FastAPI and the Postgres database connector. Enables `fidesctl webserver`.
 
 **NOTE:** When installing database adapters there may be other dependencies, such as the [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) file that usually requires a Postgres installation or the [Microsoft ODBC Driver for SQL Server](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server)
 
-**Apple M1 users of MSSQL:** Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: https://github.com/mkleehammer/pyodbc/issues/846
+**Apple M1 users of MSSQL:** Known issues around connecting to MSSQL exist today, please reference the following issue for potential solutions: <https://github.com/mkleehammer/pyodbc/issues/846>

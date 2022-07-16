@@ -271,3 +271,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FIDESCTL_ACCESS_KEY }}
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
           AWS_DEFAULT_REGION: us-east-1
+          BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}

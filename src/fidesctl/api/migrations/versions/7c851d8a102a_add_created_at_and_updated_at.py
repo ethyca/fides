@@ -8,7 +8,7 @@ Create Date: 2021-12-16 12:20:03.801089
 from alembic import op
 from sqlalchemy import Column, DateTime, text
 
-from fidesapi.sql_models import sql_model_map
+from fidesctl.api.sql_models import sql_model_map
 
 # revision identifiers, used by Alembic.
 revision = "7c851d8a102a"

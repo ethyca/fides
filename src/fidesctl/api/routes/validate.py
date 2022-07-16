@@ -4,14 +4,15 @@ Contains all of the endpoints required to validate credentials.
 from enum import Enum
 from typing import Callable, Dict, Union
 
-from fastapi import APIRouter, Response, status
+from fastapi import Response, status
 from pydantic import BaseModel
 
-from fidesapi.routes.util import (
+from fidesctl.api.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_okta_connector,
 )
+from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,

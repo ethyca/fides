@@ -6,26 +6,43 @@ import {
   Button,
   Heading,
   HStack,
-  Link,
   Stack,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import {
+  isErrorResult,
+  ParsedError,
+  parseError,
+} from "~/features/common/helpers";
+import {
+  Dataset,
+  GenerateResponse,
+  GenerateTypes,
+  System,
+  ValidTargets,
+} from "~/types/api";
+import { RTKErrorResult } from "~/types/errors";
+
+import {
+  changeStep,
+  selectOrganizationFidesKey,
+  setSystemsForReview,
+} from "./config-wizard.slice";
 import {
   AWS_REGION_OPTIONS,
   DOCS_URL_AWS_PERMISSIONS,
   DOCS_URL_IAM_POLICY,
 } from "./constants";
 import { useGenerateMutation } from "./scanner.slice";
-import { ScannerGenerateResponse } from "./types";
+import ScannerError from "./ScannerError";
 
-// TODO: There should just be a theme/variant for blue links.
-const DocsLink = (props: React.ComponentProps<typeof Link>) => (
-  <Link isExternal color="complimentary.500" {...props} />
-);
+const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   aws_access_key_id: "",
@@ -36,38 +53,59 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
-  aws_access_key_id: Yup.string().required().label("Access Key ID"),
-  aws_secret_access_key: Yup.string().required().label("Secret"),
+  aws_access_key_id: Yup.string()
+    .required()
+    .trim()
+    .matches(/^\w+$/, "Cannot contain spaces or special characters")
+    .label("Access Key ID"),
+  aws_secret_access_key: Yup.string()
+    .required()
+    .trim()
+    .matches(/^[^\s]+$/, "Cannot contain spaces")
+    .label("Secret"),
   region_name: Yup.string().required().label("Default Region"),
 });
 
 const AuthenticateAwsForm = () => {
-  // TODO: The organization key needs to come from the shared wizard state.
-  const organizationKey = "default_organization";
-  // TODO: These callbacks need to write to some shared wizard state so that that the data  passed
-  // through the wizard (in addition to the step number).
-  const handleResults: (
-    results: ScannerGenerateResponse["generate_results"]
-  ) => void = () => {};
-  const handleError: (error: unknown) => void = () => {};
-  const handleCancel = () => {};
+  const organizationKey = useAppSelector(selectOrganizationFidesKey);
+  const dispatch = useAppDispatch();
+
+  const [scannerError, setScannerError] = useState<ParsedError>();
+
+  const handleResults = (results: GenerateResponse["generate_results"]) => {
+    const systems: System[] = (results ?? []).filter(isSystem);
+    dispatch(setSystemsForReview(systems));
+    dispatch(changeStep());
+  };
+  const handleError = (error: RTKErrorResult["error"]) => {
+    const parsedError = parseError(error, {
+      status: 500,
+      message: "Our system encountered a problem while connecting to AWS.",
+    });
+    setScannerError(parsedError);
+  };
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
 
   const [generate, { isLoading }] = useGenerateMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    const response = await generate({
+    setScannerError(undefined);
+
+    const result = await generate({
       organization_key: organizationKey,
       generate: {
         config: values,
-        target: "aws",
-        type: "systems",
+        target: ValidTargets.AWS,
+        type: GenerateTypes.SYSTEMS,
       },
     });
 
-    if ("error" in response) {
-      handleError(response.error);
+    if (isErrorResult(result)) {
+      handleError(result.error);
     } else {
-      handleResults(response.data.generate_results);
+      handleResults(result.data.generate_results);
     }
   };
 
@@ -78,47 +116,53 @@ const AuthenticateAwsForm = () => {
       onSubmit={handleSubmit}
     >
       {({ isValid, dirty }) => (
-        <Form>
-          <Stack ml="100px" spacing={10}>
-            <Heading as="h3" size="lg">
-              Add a system
-            </Heading>
-            <Accordion allowToggle border="transparent">
-              <AccordionItem>
-                {({ isExpanded }) => (
-                  <>
-                    <h2>
-                      The scanner can be connected to your cloud infrastructure
-                      provider to automatically scan and create a list of all
-                      systems that may contain personal data.
-                      <AccordionButton
-                        display="inline"
-                        padding="0px"
-                        ml="5px"
-                        width="auto"
-                        color="complimentary.500"
-                      >
-                        {isExpanded ? `(show less)` : `(show more)`}
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel padding="0px" mt="20px">
-                      In order to run the scanner, please provide credentials
-                      for authenticating to AWS. Please note, the credentials
-                      must have the{" "}
-                      <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
-                        minimum permissions listed in the support documentation
-                        here
-                      </DocsLink>
-                      . You can{" "}
-                      <DocsLink href={DOCS_URL_IAM_POLICY}>
-                        copy the sample IAM policy here
-                      </DocsLink>
-                      .
-                    </AccordionPanel>
-                  </>
-                )}
-              </AccordionItem>
-            </Accordion>
+        <Form data-testid="authenticate-aws-form">
+          <Stack spacing={10}>
+            {!scannerError ? (
+              <>
+                <Heading size="lg">Add a system</Heading>
+                <Accordion allowToggle border="transparent">
+                  <AccordionItem>
+                    {({ isExpanded }) => (
+                      <>
+                        <h2>
+                          The scanner can be connected to your cloud
+                          infrastructure provider to automatically scan and
+                          create a list of all systems that may contain personal
+                          data.
+                          <AccordionButton
+                            display="inline"
+                            padding="0px"
+                            ml="5px"
+                            width="auto"
+                            color="complimentary.500"
+                          >
+                            {isExpanded ? `(show less)` : `(show more)`}
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel padding="0px" mt="20px">
+                          In order to run the scanner, please provide
+                          credentials for authenticating to AWS. Please note,
+                          the credentials must have the{" "}
+                          <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
+                            minimum permissions listed in the support
+                            documentation here
+                          </DocsLink>
+                          . You can{" "}
+                          <DocsLink href={DOCS_URL_IAM_POLICY}>
+                            copy the sample IAM policy here
+                          </DocsLink>
+                          .
+                        </AccordionPanel>
+                      </>
+                    )}
+                  </AccordionItem>
+                </Accordion>
+              </>
+            ) : (
+              <ScannerError error={scannerError} />
+            )}
+
             <Stack>
               <CustomTextInput
                 name="aws_access_key_id"
@@ -152,6 +196,7 @@ const AuthenticateAwsForm = () => {
                 variant="primary"
                 isDisabled={!dirty || !isValid}
                 isLoading={isLoading}
+                data-testid="submit-btn"
               >
                 Save and Continue
               </Button>

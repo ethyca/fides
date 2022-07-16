@@ -1,5 +1,5 @@
 """
-Defines the logging format to be used throughout the fidesapi server code.
+Defines the logging format to be used throughout the API server code.
 """
 # pylint: disable=eval-used,no-member
 
@@ -13,7 +13,7 @@ from loguru import logger
 
 class FidesAPIHandler(logging.Handler):
     """
-    The logging.Handler used by the fidesapi logger.
+    The logging.Handler used by the api logger.
     """
 
     def __init__(

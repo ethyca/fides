@@ -12,6 +12,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
 const NewDataset: NextPage = () => {
@@ -47,10 +48,18 @@ const NewDataset: NextPage = () => {
             variant="outline"
             onClick={() => setGenerateMethod("yaml")}
             isActive={generateMethod === "yaml"}
+            data-testid="upload-yaml-btn"
           >
             Upload a new dataset YAML
           </Button>
-          <Button size="sm" mr={2} variant="outline">
+          <Button
+            size="sm"
+            mr={2}
+            variant="outline"
+            onClick={() => setGenerateMethod("database")}
+            isActive={generateMethod === "database"}
+            data-testid="connect-db-btn"
+          >
             Connect a database using a connection URL
           </Button>
           <Button size="sm" variant="outline" disabled>
@@ -59,6 +68,7 @@ const NewDataset: NextPage = () => {
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
           {generateMethod === "yaml" ? <DatasetYamlForm /> : null}
+          {generateMethod === "database" ? <DatabaseConnectForm /> : null}
         </Box>
       </Stack>
     </Layout>

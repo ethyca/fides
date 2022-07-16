@@ -23,9 +23,10 @@ Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easi
 
 ### System Requirements
 
-1. [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
-2. [Python](https://www.python.org/downloads/) (3.8+)
-3. [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
+* **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
+* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
+* [Python](https://www.python.org/downloads/) (3.8+)
+* [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
 

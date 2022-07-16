@@ -2,7 +2,7 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fidesapi.routes.util import API_PREFIX
+from fidesctl.api.routes.util import API_PREFIX
 from fidesctl.core.config import FidesctlConfig
 
 

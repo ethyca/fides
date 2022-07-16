@@ -22,6 +22,7 @@ export type System = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
+  tags?: Array<string>;
   /**
    * Human-Readable name for this resource.
    */

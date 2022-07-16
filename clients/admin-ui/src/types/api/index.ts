@@ -4,6 +4,7 @@
 
 export type { AWSConfig } from './models/AWSConfig';
 export type { ContactDetails } from './models/ContactDetails';
+export type { DatabaseConfig } from './models/DatabaseConfig';
 export type { DataCategory } from './models/DataCategory';
 export type { DataProtectionImpactAssessment } from './models/DataProtectionImpactAssessment';
 export type { DataQualifier } from './models/DataQualifier';

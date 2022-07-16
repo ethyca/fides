@@ -4,7 +4,7 @@ import yaml from "js-yaml";
 import { useRouter } from "next/router";
 
 import { CustomTextArea } from "../common/form/inputs";
-import { getErrorFromResult, isYamlException } from "../common/helpers";
+import { getErrorMessage, isYamlException } from "../common/helpers";
 import { successToastParams } from "../common/toast";
 import { setActiveDataset, useCreateDatasetMutation } from "./dataset.slice";
 import { Dataset } from "./types";
@@ -44,9 +44,9 @@ const DatasetYamlForm = () => {
     }
 
     const result = await createDataset(dataset);
-    const error = getErrorFromResult(result);
-    if (error) {
-      setErrors({ datasetYaml: error });
+    if ("error" in result) {
+      const errorMessage = getErrorMessage(result.error);
+      setErrors({ datasetYaml: errorMessage });
     } else if ("data" in result) {
       toast(successToastParams("Successfully loaded new dataset YAML"));
       setActiveDataset(result.data);
@@ -104,6 +104,7 @@ const DatasetYamlForm = () => {
             colorScheme="primary"
             type="submit"
             disabled={isSubmitting}
+            data-testid="create-dataset-btn"
           >
             Create dataset
           </Button>

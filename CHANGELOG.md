@@ -18,31 +18,49 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
 ### Added
-* Add datasets via YAML in the UI [#708](https://github.com/ethyca/fides/issues/708)
-* Add delete confirmation when deleting a field or collection from a dataset [808](https://github.com/ethyca/fides/issues/808)
+
+* Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
+* Add datasets via database connection [#834](https://github.com/ethyca/fides/pull/834) [#889](https://github.com/ethyca/fides/pull/889)
+* Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
 * Add ability to delete datasets from the UI
 * Initial configuration wizard UI view
   * System scanning step: AWS credentials form and initial `generate` API usage.
+  * System scanning results: AWS systems are stored and can be selected for review
 * Added Cypress for testing [713](https://github.com/ethyca/fides/pull/833)
 * CustomInput type "password" with show/hide icon.
+* Sync CLI command now checks for untracked/unstaged files in the manifests dir [#869](https://github.com/ethyca/fides/pull/869)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
+* Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
+* Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 * Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
+* Standardized API error parsing under `~/types/errors`
 
 ### Changed
+
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Moved all files from `fidesapi` to `fidesctl/api` [#885](https://github.com/ethyca/fides/pull/885)
+* Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
+* Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
 * Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
+* Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+
+### Docs
+
+* recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
 
 ### Fixed
 
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
-
-### Changed
-* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
+* Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
+* Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
@@ -100,7 +118,7 @@ The types of changes are:
 
 * Replaced all references to `make` with `nox` [#547](https://github.com/ethyca/fides/pull/547)
 * Removed config/schemas page [#613](https://github.com/ethyca/fides/issues/613)
-* Dataset UI and config wizard docs added (https://github.com/ethyca/fides/pull/697)
+* Dataset UI and config wizard docs added (<https://github.com/ethyca/fides/pull/697>)
 * The fides README now walks through generating a datamap [#746](https://github.com/ethyca/fides/pull/746)
 
 ### Fixed

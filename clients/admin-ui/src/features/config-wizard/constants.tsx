@@ -49,6 +49,7 @@ export const DOCS_URL_AWS_PERMISSIONS =
   "https://ethyca.github.io/fides/guides/generate_resources/#required-permissions";
 export const DOCS_URL_IAM_POLICY =
   "https://ethyca.github.io/fides/guides/generate_resources/#sample-iam-policy";
+export const DOCS_URL_ISSUES = "https://github.com/ethyca/fides/issues";
 
 // Source: https://docs.aws.amazon.com/general/latest/gr/rande.html
 export const AWS_REGION_OPTIONS = [

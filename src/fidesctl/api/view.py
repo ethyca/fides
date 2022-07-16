@@ -1,11 +1,11 @@
 """
 Contains api endpoints for fides web pages
 """
-from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from fidesapi.routes.crud import list_resource
-from fidesapi.sql_models import Evaluation
+from fidesctl.api.routes.crud import list_resource
+from fidesctl.api.sql_models import Evaluation
+from fidesctl.api.utils.api_router import APIRouter
 
 router = APIRouter(
     tags=["View"],
