@@ -5,6 +5,7 @@ and related workflows.
 import argparse
 import subprocess
 import sys
+from time import sleep
 from typing import List
 
 DOCKER_WAIT = 5
@@ -62,11 +63,14 @@ def run_infrastructure(
         _run_cmd_or_err(
             f'docker-compose {path} build --build-arg SKIP_MSSQL_INSTALLATION="true"'
         )
+    else:
+        _run_cmd_or_err(f"docker-compose {path} build")
+
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f'echo "sleeping for: {DOCKER_WAIT} while infrastructure loads"')
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
-    _run_cmd_or_err(f"sleep {wait}")
+    print(f"Sleeping for: {wait} while infrastructure loads...")
+    sleep(wait)
 
     seed_initial_data(
         datastores,
@@ -128,7 +132,7 @@ def get_path_for_datastores(datastores: List[str]) -> str:
         _run_cmd_or_err(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:
             # We only need to locate the docker-compose file if the datastore runs in Docker
-            path += f" -f docker-compose.integration-{datastore}.yml"
+            path += f" -f docker/docker-compose.integration-{datastore}.yml"
         elif datastore not in EXTERNAL_DATASTORES:
             # If the specified datastore is not known to us
             _run_cmd_or_err(f'echo "Datastore {datastore} is currently not supported"')
@@ -154,7 +158,7 @@ def _run_quickstart(
     """
     _run_cmd_or_err(f'echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python quickstart.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/quickstart.py")
 
 
 def _run_create_superuser(
@@ -166,7 +170,7 @@ def _run_create_superuser(
     """
     _run_cmd_or_err(f'echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python create_superuser.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_superuser.py")
 
 
 def _run_create_test_data(
@@ -176,9 +180,9 @@ def _run_create_test_data(
     """
     Invokes the Fidesops create_user_and_client command
     """
-    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err('echo "Running create test data..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {image_name} python create_test_data.py")
+    _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_test_data.py")
 
 
 def _open_shell(

@@ -11,7 +11,7 @@ def mssql_setup():
     Initial connection must be done to the master database.
     """
     engine = sqlalchemy.create_engine(MASTER_MSSQL_URL)
-    with open("data/sql/mssql_example.sql", "r") as query_file:
+    with open("./docker/sample_data/mssql_example.sql", "r") as query_file:
         queries = [query for query in query_file.read().splitlines() if query != ""]
     for query in queries:
         engine.execute(sqlalchemy.sql.text(query))

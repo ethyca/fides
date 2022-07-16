@@ -213,7 +213,7 @@ def postgres_integration_db(postgres_integration_session):
         # we should drop the DB this way instead
         drop_database(postgres_integration_session.bind.url)
     create_database(postgres_integration_session.bind.url)
-    with open("./data/sql/postgres_example.sql", "r") as query_file:
+    with open("./docker/sample_data/postgres_example.sql", "r") as query_file:
         lines = query_file.read().splitlines()
         filtered = [line for line in lines if not line.startswith("--")]
         queries = " ".join(filtered).split(";")

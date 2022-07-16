@@ -1,3 +1,6 @@
+##############
+## Frontend ##
+##############
 FROM node:16 as frontend
 
 WORKDIR /fidesops/clients/admin-ui
@@ -7,9 +10,11 @@ RUN npm install
 RUN npm run export
 
 
+#############
+## Backend ##
+#############
 FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
 
-ARG SKIP_MSSQL_INSTALLATION
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -27,6 +32,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
+ARG SKIP_MSSQL_INSTALLATION
 RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
 
 # SQL Server (MS SQL)
@@ -54,12 +60,25 @@ COPY . /fidesops
 WORKDIR /fidesops
 RUN pip install -e .
 
-# Make a static files directory
-RUN mkdir -p /fidesops/src/fidesops/build/static/
-# Copy frontend build over
-COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
-
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
+
+############
+## Worker ##
+############
+FROM backend as worker
+CMD [ "fidesops", "worker" ]
+
+#################
+## Application ##
+#################
+## Set the image up to be the application
+FROM backend as app
+
+# Make a static files directory
+RUN mkdir -p /fidesops/src/fidesops/build/static/
+
+# Copy frontend build over
+COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
 
 CMD [ "fidesops", "webserver" ]

@@ -1,8 +1,4 @@
 services:
-  webserver:
-    depends_on:
-      - mysql_example
-
   mysql_example:
     image: mysql
     platform: linux/amd64
@@ -18,5 +14,7 @@ services:
       - 3307
     ports:
       - "3307:3306"
+    # Because we're using the "-f" flag from a parent directory, this relative path needs
+    # to be from the parent directory as well
     volumes:
-      - ./data/sql/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql
+      - ./docker/sample_data/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql

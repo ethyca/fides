@@ -1,8 +1,4 @@
 services:
-  webserver:
-    depends_on:
-      - mssql_example
-
   mssql_example:
     image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
     ports:
