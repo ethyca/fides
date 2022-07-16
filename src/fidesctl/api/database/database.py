@@ -6,6 +6,7 @@ from os import path
 from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
+from fideslang import DEFAULT_TAXONOMY
 from fideslib.db.base import Base
 from loguru import logger as log
 from sqlalchemy import create_engine
@@ -18,7 +19,6 @@ from fidesctl.api.utils.errors import (
     get_full_exception_name,
 )
 from fidesctl.core.utils import get_db_engine
-from fideslang import DEFAULT_TAXONOMY
 
 from .crud import create_resource, upsert_resources
 
