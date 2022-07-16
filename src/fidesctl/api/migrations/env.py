@@ -24,7 +24,7 @@ setup_fidesapi_logger(
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from fidesapi.sql_models import Base
+from fidesctl.api.sql_models import Base
 
 target_metadata = Base.metadata
 
