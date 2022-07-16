@@ -3,7 +3,7 @@ services:
     container_name: webserver
     build:
       context: .
-      dockerfile: Dockerfile.app
+      target: app
     depends_on:
       - db
       - redis
@@ -58,6 +58,23 @@ services:
       - 6379
     ports:
       - "0.0.0.0:6379:6379"
+
+  worker:
+    container_name: worker
+    build:
+      context: .
+      target: worker
+    command: fidesops worker
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    volumes:
+      - type: bind
+        source: ./
+        target: /fidesops
+        read_only: False
+      - /fidesops/src/fidesops.egg-info
 
   docs:
     build:

@@ -1,3 +1,8 @@
+import sys
+
+# This is a hacky workaround to test the scripts in a subdir
+sys.path.insert(0, "scripts")
+
 from unittest import mock
 
 import pytest

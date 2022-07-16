@@ -48,10 +48,18 @@ server: compose-build
 	@docker-compose up
 
 server-with-worker: compose-build
-	@docker-compose -f docker-compose.yml -f docker-compose.worker.yml up
+	@docker-compose up worker -d
+	@docker-compose run \
+	-e FIDESOPS__EXECUTION__WORKER_ENABLED=True \
+	webserver
 
 server-no-db: compose-build
-	@docker-compose -f docker-compose.no-db.yml up
+	@docker-compose run \
+	-e FIDESOPS__DATABASE__ENABLED=false \
+    -e FIDESOPS__REDIS__ENABLED=false \
+	--no-deps \
+	--service-ports \
+	webserver	
 
 server-shell: compose-build
 	@docker-compose run $(COMPOSE_SERVICE_NAME) /bin/bash
@@ -59,24 +67,24 @@ server-shell: compose-build
 integration-shell:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --open_shell --datastores $(datastores)
+		python scripts/run_infrastructure.py --open_shell --datastores $(datastores)
 
 integration-env:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --run_application --datastores $(datastores)
+		python scripts/run_infrastructure.py --run_application --datastores $(datastores)
 
 quickstart:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores mongodb postgres --run_quickstart
+		python scripts/run_infrastructure.py --datastores mongodb postgres --run_quickstart
 
 ####################
 # Docker
 ####################
 
 docker-build:
-	docker build --tag $(IMAGE) -f Dockerfile.app .
+	docker build --tag $(IMAGE) .
 
 docker-push:
 	docker tag $(IMAGE) $(IMAGE_LATEST)
@@ -140,7 +148,7 @@ pytest: compose-build
 pytest-integration:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --run_tests --analytics_opt_out --datastores $(datastores)
+		python scripts/run_infrastructure.py --run_tests --analytics_opt_out --datastores $(datastores)
 	@make teardown
 
 # These tests connect to external third-party test databases
@@ -201,13 +209,22 @@ isort:
 .PHONY: teardown
 teardown:
 	@echo "Tearing down the dev environment..."
-	@docker-compose down --remove-orphans
+	@docker-compose \
+	-f docker-compose.yml \
+	-f docker/docker-compose.integration-mariadb.yml \
+	-f docker/docker-compose.integration-mongodb.yml \
+	-f docker/docker-compose.integration-mssql.yml \
+	-f docker/docker-compose.integration-mysql.yml \
+	-f docker/docker-compose.integration-postgres.yml \
+	down \
+	--volumes \
+	--remove-orphans
 	@echo "Teardown complete"
 
 .PHONY: docs-build
 docs-build: compose-build
 	@docker-compose run --rm $(COMPOSE_SERVICE_NAME) \
-	python generate_openapi.py ./docs/fidesops/docs/api/openapi.json
+	python scripts/generate_openapi.py ./docs/fidesops/docs/api/openapi.json
 
 .PHONY: docs-serve
 docs-serve: docs-build
@@ -222,9 +239,9 @@ docs-serve: docs-build
 user:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores postgres --run_create_superuser
+		python scripts/run_infrastructure.py --datastores postgres --run_create_superuser
 
 test-data:
 	@virtualenv -p python3 fidesops_test_dispatch; \
 		source fidesops_test_dispatch/bin/activate; \
-		python run_infrastructure.py --datastores postgres --run_create_test_data
+		python scripts/run_infrastructure.py --datastores postgres --run_create_test_data

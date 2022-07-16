@@ -1,8 +1,4 @@
 services:
-  webserver:
-    depends_on:
-      - mariadb_example
-
   mariadb_example:
     image: mariadb
     platform: linux/amd64
@@ -18,5 +14,7 @@ services:
       - 3306
     ports:
       - "3306:3306"
+    # Because we're using the "-f" flag from a parent directory, this relative path needs
+    # to be from the parent directory as well
     volumes:
-      - ./data/sql/mariadb_example_schema.sql:/docker-entrypoint-initdb.d/mariadb_example_schema.sql
+      - ./docker/sample_data/mariadb_example_schema.sql:/docker-entrypoint-initdb.d/mariadb_example_schema.sql

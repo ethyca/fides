@@ -1,8 +1,4 @@
 services:
-  webserver:
-    depends_on:
-      - postgres_example
-
   postgres_example:
     command:
       [

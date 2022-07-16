@@ -1,8 +1,4 @@
 services:
-  webserver:
-    depends_on:
-      - mongodb_example
-
   mongodb_example:
     image: mongo:5.0.3
     environment:
@@ -13,5 +9,7 @@ services:
       - 27017
     ports:
       - "27017:27017"
+    # Because we're using the "-f" flag from a parent directory, this relative path needs
+    # to be from the parent directory as well
     volumes:
-      - ./data/nosql/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./docker/sample_data/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
