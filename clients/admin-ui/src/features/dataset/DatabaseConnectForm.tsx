@@ -106,6 +106,7 @@ const DatabaseConnectForm = () => {
               type="submit"
               disabled={isSubmitting}
               mr="2"
+              data-testid="create-dataset-btn"
             >
               Create dataset
             </Button>

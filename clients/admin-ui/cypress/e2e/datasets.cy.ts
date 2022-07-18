@@ -7,7 +7,7 @@ describe("Dataset", () => {
       "getDataset"
     );
     cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_category.json",
+      fixture: "data_categories.json",
     }).as("getDataCategory");
   });
 
@@ -46,6 +46,35 @@ describe("Dataset", () => {
     it("Can navigate to edit a dataset via URL", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("dataset-fields-table");
+    });
+
+    it("Can choose different columns to view", () => {
+      const columnNames = [
+        "Field Name",
+        "Description",
+        "Personal Data Categories",
+        "Identifiability",
+      ];
+      cy.visit("/dataset/demo_users_dataset");
+      // check we can remove a column
+      cy.getByTestId(`column-${columnNames[0]}`);
+      cy.getByTestId("column-dropdown").click();
+      cy.getByTestId(`checkbox-${columnNames[0]}`).click();
+      cy.getByTestId(`column-${columnNames[0]}`).should("not.exist");
+
+      // check we can clear all columns
+      cy.getByTestId("column-clear-btn").click();
+      columnNames.forEach((c) => {
+        cy.getByTestId(`column-${c}`).should("not.exist");
+      });
+
+      // check we can add a column back
+      cy.getByTestId(`checkbox-${columnNames[1]}`).click();
+      cy.getByTestId(`column-${columnNames[1]}`);
+
+      // clicking 'done' should close the modal
+      cy.getByTestId("column-done-btn").click();
+      cy.getByTestId(`checkbox-${columnNames[0]}`).should("not.be.visible");
     });
 
     it("Can choose a different collection", () => {
@@ -234,6 +263,163 @@ describe("Dataset", () => {
     });
   });
 
+  describe("Creating datasets", () => {
+    it("Can render the create dataset page", () => {
+      cy.visit("/dataset");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.url().should("contain", "/dataset/new");
+      cy.getByTestId("upload-yaml-btn");
+      cy.getByTestId("connect-db-btn");
+    });
+
+    it("Can create a dataset via yaml", () => {
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("upload-yaml-btn").click();
+      cy.fixture("dataset.json").then((dataset) => {
+        const key = dataset.fides_key;
+        const datasetAsString = JSON.stringify(dataset);
+        // Cypress doesn't have a native "paste" command, so instead do change the value directly
+        // (.type() is too slow, even with 0 delay)
+        cy.getByTestId("input-datasetYaml")
+          .click()
+          .invoke("val", datasetAsString)
+          .trigger("change");
+        // type just one space character to make sure the text field triggers Formik's handlers
+        cy.getByTestId("input-datasetYaml").type(" ");
+
+        cy.getByTestId("create-dataset-btn").click();
+        cy.wait("@postDataset").then((interception) => {
+          const { body } = interception.request;
+          expect(body).to.eql(dataset);
+        });
+
+        // should navigate to the created dataset
+        cy.getByTestId("toast-success-msg");
+        cy.url().should("contain", `dataset/${key}`);
+      });
+    });
+
+    it("Can render errors in yaml", () => {
+      cy.intercept("POST", "/api/v1/dataset", {
+        statusCode: 422,
+        body: {
+          detail: [
+            {
+              loc: ["body", "fides_key"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+            {
+              loc: ["body", "collections"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+          ],
+        },
+      }).as("postDataset");
+      cy.visit("/dataset/new");
+      cy.getByTestId("upload-yaml-btn").click();
+      // type something that isn't yaml
+      cy.getByTestId("input-datasetYaml").type("invalid: invalid: invalid");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-datasetYaml").should("contain", "Could not parse");
+
+      // type something that is valid yaml and let backend render an error
+      cy.getByTestId("input-datasetYaml")
+        .clear()
+        .type("valid yaml that is not a dataset");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-datasetYaml").should("contain", "field required");
+    });
+
+    it("Can create a dataset by connecting to a database", () => {
+      const connectionString =
+        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
+      cy.intercept("POST", "/api/v1/generate", {
+        fixture: "generate/dataset.json",
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("connect-db-btn").click();
+      cy.getByTestId("input-url").type(connectionString);
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate").then((interception) => {
+        expect(
+          interception.request.body.generate.config.connection_string
+        ).to.eql(connectionString);
+      });
+      cy.wait("@postDataset").then((interception) => {
+        // should be whatever is in the generate fixture
+        expect(interception.request.body.fides_key).to.eql("public");
+      });
+      // should navigate to the created dataset
+      cy.getByTestId("toast-success-msg");
+      cy.url().should("contain", `dataset/demo_users_dataset`);
+    });
+
+    it("Can render errors when connecting to a database", () => {
+      // Update error after #892 when backend gives better errors than 500
+      cy.intercept("POST", "/api/v1/generate", {
+        statusCode: 500,
+        body: {
+          status: "PARSING_ERROR",
+          originalStatus: 500,
+          data: "Internal Server Error",
+          error: "SyntaxError: Unexpected token I in JSON at position 0",
+        },
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+        "postDataset"
+      );
+      cy.visit("/dataset/new");
+      cy.getByTestId("connect-db-btn").click();
+
+      // verify need something in the URL box
+      cy.getByTestId("create-dataset-btn").click();
+      cy.getByTestId("error-url").should("contain", "required");
+
+      // first try generate with error payload but POST with valid payload
+      cy.getByTestId("input-url").type("invalid url");
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate");
+      cy.getByTestId("error-url").should("contain", "error");
+
+      // now switch to good generate payload but bad POST payload
+      cy.intercept("POST", "/api/v1/generate", {
+        fixture: "generate/dataset.json",
+      }).as("postGenerate");
+      cy.intercept("POST", "/api/v1/dataset", {
+        statusCode: 422,
+        body: {
+          detail: [
+            {
+              loc: ["body", "fides_key"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+            {
+              loc: ["body", "collections"],
+              msg: "field required",
+              type: "value_error.missing",
+            },
+          ],
+        },
+      }).as("postDataset");
+      cy.getByTestId("input-url").type(
+        "valid url that will cause post to fail"
+      );
+      cy.getByTestId("create-dataset-btn").click();
+      cy.wait("@postGenerate");
+      cy.wait("@postDataset");
+      cy.getByTestId("error-url").should("contain", "field required");
+    });
+  });
+
   describe("Data category checkbox tree", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
@@ -276,7 +462,7 @@ describe("Dataset", () => {
         "not.have.attr",
         "data-indeterminate"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
         "user.derived.identifiable.unique_id"
@@ -294,7 +480,7 @@ describe("Dataset", () => {
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Telemetry Data").click();
       cy.getByTestId("checkbox-Account Data").click();
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "contain",
         "user.derived.identifiable.unique_id"
@@ -348,7 +534,7 @@ describe("Dataset", () => {
         "have.attr",
         "data-disabled"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       const expectedSelected = [
         "account.contact",
         "account.payment",
@@ -368,19 +554,19 @@ describe("Dataset", () => {
         "have.attr",
         "data-checked"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "contain",
         "user.derived.identifiable.unique_id"
       );
       cy.getByTestId("selected-categories").should("contain", "account");
       cy.getByTestId("data-category-dropdown").click();
-      cy.getByTestId("clear-btn").click();
+      cy.getByTestId("data-category-clear-btn").click();
       cy.get("[data-testid='checkbox-Account Data'] > span").should(
         "not.have.attr",
         "data-checked"
       );
-      cy.getByTestId("done-btn").click();
+      cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
         "user.derived.identifiable.unique_id"

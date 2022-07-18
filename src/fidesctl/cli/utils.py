@@ -7,7 +7,7 @@ from functools import update_wrapper
 from importlib.metadata import version
 from os import getenv
 from platform import system
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
 
 import click
 import requests
@@ -22,11 +22,12 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesctl.connectors.models import AWSConfig, OktaConfig
+from fidesctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.config.credentials_settings import (
     get_config_aws_credentials,
+    get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
@@ -232,10 +233,7 @@ def handle_database_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if not database_credentials:
-            raise click.UsageError(
-                f"credentials-id {credentials_id} does not exist in fides config"
-            )
+        _validate_credentials_id_exists(credentials_id, database_credentials)
         actual_connection_string = database_credentials.connection_string
     return actual_connection_string
 
@@ -263,10 +261,7 @@ def handle_okta_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if not okta_config:
-            raise click.UsageError(
-                f"credentials-id {credentials_id} does not exist in fides config"
-            )
+        _validate_credentials_id_exists(credentials_id, okta_config)
     return okta_config
 
 
@@ -302,8 +297,50 @@ def handle_aws_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if not aws_config:
-            raise click.UsageError(
-                f"credentials-id {credentials_id} does not exist in fides config"
-            )
+        _validate_credentials_id_exists(credentials_id, aws_config)
     return aws_config
+
+
+def handle_bigquery_config_options(
+    fides_config: FidesctlConfig,
+    dataset: str,
+    keyfile_path: str,
+    credentials_id: str,
+) -> Optional[BigQueryConfig]:
+    """
+    Handles the connections options for passing a keyfile, dictionary, or credentials-id.
+    """
+    bigquery_config = None
+
+    if keyfile_path and credentials_id:
+        raise click.UsageError(
+            "Illegal usage: keyfile-path and credentials-id cannot be used together"
+        )
+    if keyfile_path:
+        with open(keyfile_path, "r", encoding="utf-8") as credential_file:
+            bigquery_config = BigQueryConfig(
+                **{
+                    "dataset": dataset,
+                    "keyfile_creds": json.load(credential_file),
+                }
+            )
+    elif credentials_id:
+        bigquery_config = get_config_bigquery_credentials(
+            dataset=dataset,
+            credentials_config=fides_config.credentials,
+            credentials_id=credentials_id,
+        )
+        _validate_credentials_id_exists(credentials_id, bigquery_config)
+    else:
+        raise click.UsageError("Illegal usage: No connection configuration provided")
+    return bigquery_config
+
+
+def _validate_credentials_id_exists(
+    credentials_id: str,
+    credentials_config: Union[OktaConfig, BigQueryConfig, AWSConfig],
+) -> None:
+    if not credentials_config:
+        raise click.UsageError(
+            f"credentials-id {credentials_id} does not exist in fides config"
+        )

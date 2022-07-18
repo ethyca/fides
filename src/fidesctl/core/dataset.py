@@ -7,6 +7,8 @@ from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 
+from fidesctl.connectors.bigquery import get_bigquery_engine
+from fidesctl.connectors.models import BigQueryConfig
 from fidesctl.core.api_helpers import list_server_resources
 from fidesctl.core.parse import parse
 
@@ -302,3 +304,13 @@ def generate_dataset_db(
         file_name=file_name, include_null=include_null, datasets=db_datasets
     )
     return file_name
+
+
+def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]:
+    """
+    Given a BigQuery config, extract all tables/fields and generate corresponding datasets.
+    """
+    bigquery_engine = get_bigquery_engine(bigquery_config)
+    bigquery_schemas = get_db_schemas(engine=bigquery_engine)
+    bigquery_datasets = create_db_datasets(db_schemas=bigquery_schemas)
+    return bigquery_datasets
