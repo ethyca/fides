@@ -3,10 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
 import type { AppState } from "~/app/store";
-import { GenerateRequestPayload, GenerateResponse } from "~/types/api";
-
-import { FidesKey } from "../common/fides-types";
-import { Dataset } from "./types";
+import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 export interface State {
   datasets: Dataset[];
@@ -39,7 +36,7 @@ export const datasetApi = createApi({
       query: () => ({ url: `dataset/` }),
       providesTags: () => ["Datasets"],
     }),
-    getDatasetByKey: build.query<Dataset, FidesKey>({
+    getDatasetByKey: build.query<Dataset, string>({
       query: (key) => ({ url: `dataset/${key}` }),
       providesTags: () => ["Dataset"],
     }),
@@ -65,7 +62,7 @@ export const datasetApi = createApi({
       }),
       invalidatesTags: ["Datasets"],
     }),
-    deleteDataset: build.mutation<DatasetDeleteResponse, FidesKey>({
+    deleteDataset: build.mutation<DatasetDeleteResponse, string>({
       query: (key) => ({
         url: `dataset/${key}`,
         params: { resource_type: "dataset" },

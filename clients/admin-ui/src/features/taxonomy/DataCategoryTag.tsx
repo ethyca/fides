@@ -1,9 +1,7 @@
 import { Tag, TagCloseButton, TagLabel } from "@fidesui/react";
 
-import { FidesKey } from "~/features/common/fides-types";
-
 interface Props {
-  name: FidesKey;
+  name: string;
   onClose?: () => void;
 }
 const DataCategoryTag = ({ name, onClose }: Props) => {

@@ -1,10 +1,9 @@
 import { Tag } from "@fidesui/react";
 
-import { FidesKey } from "~/features/common/fides-types";
 import { DATA_QUALIFIERS } from "~/features/dataset/constants";
 
 interface Props {
-  dataQualifierName: FidesKey;
+  dataQualifierName: string;
 }
 const IdentifiabilityTag = ({ dataQualifierName }: Props) => {
   const qualifiers = DATA_QUALIFIERS.filter(

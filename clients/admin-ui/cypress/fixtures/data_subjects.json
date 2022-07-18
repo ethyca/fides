@@ -1,0 +1,137 @@
+[
+  {
+    "fides_key": "anonymous_user",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Anonymous User",
+    "description": "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "citizen_voter",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Citizen Voter",
+    "description": "An individual registered to voter with a state or authority.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "commuter",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Commuter",
+    "description": "An individual that is traveling or transiting in the context of location tracking.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "consultant",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Consultant",
+    "description": "An individual employed in a consultative/temporary capacity by the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "customer",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Customer",
+    "description": "An individual or other organization that purchases goods or services from the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "employee",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Employee",
+    "description": "An individual employed by the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "job_applicant",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Job Applicant",
+    "description": "An individual applying for employment to the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "next_of_kin",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Next of Kin",
+    "description": "A relative of any other individual subject where such a relationship is known.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "passenger",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Passenger",
+    "description": "An individual traveling on some means of provided transport.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "patient",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Patient",
+    "description": "An individual identified for the purposes of any medical care.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "prospect",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Prospect",
+    "description": "An individual or organization to whom an organization is selling goods or services.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "shareholder",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Shareholder",
+    "description": "An individual or organization that holds equity in the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "supplier_vendor",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Supplier/Vendor",
+    "description": "An individual or organization that provides services or goods to the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "trainee",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Trainee",
+    "description": "An individual undergoing training by the organization.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  },
+  {
+    "fides_key": "visitor",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Visitor",
+    "description": "An individual visiting a location.",
+    "rights": null,
+    "automated_decisions_or_profiling": null
+  }
+]
