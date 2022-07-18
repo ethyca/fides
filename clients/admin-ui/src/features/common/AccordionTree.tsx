@@ -14,9 +14,9 @@ import { Fragment, useState } from "react";
 import { TreeNode } from "./types";
 
 const ActionButtons = () => (
-  <ButtonGroup size="xs" isAttached variant="outline">
-    <Button>Edit</Button>
-    <Button>Delete</Button>
+  <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
+    <Button data-testid="edit-btn">Edit</Button>
+    <Button data-testid="delete-btn">Delete</Button>
   </ButtonGroup>
 );
 
@@ -46,20 +46,18 @@ const AccordionTree = ({ nodes }: Props) => {
 
     if (node.children.length === 0) {
       return (
-        <Box
-          pl={9}
-          py={2}
-          {...itemProps}
-          display="flex"
-          justifyContent="space-between"
-        >
+        <Box pl={9} py={2} {...itemProps} data-testid={`item-${node.label}`}>
           <Text>{node.label}</Text>
           {hoverNode?.value === node.value ? <ActionButtons /> : null}
         </Box>
       );
     }
     return (
-      <AccordionItem py={0} border="none">
+      <AccordionItem
+        py={0}
+        border="none"
+        data-testid={`accordion-item-${node.label}`}
+      >
         <Box {...itemProps}>
           <AccordionButton _expanded={{ color: "complimentary.500" }}>
             <AccordionIcon />
