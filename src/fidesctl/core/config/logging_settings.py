@@ -18,15 +18,6 @@ class FidesctlLoggingSettings(FidesSettings):
     level: Union[int, str] = ""
     serialization: str = ""
 
-    @staticmethod
-    def default() -> "FidesctlLoggingSettings":
-        """Returns config object with default values set."""
-        return FidesctlLoggingSettings(
-            level="INFO",
-            destination="",
-            serialization="",
-        )
-
     @validator("destination", pre=True)
     def get_destination(cls: FidesSettings, value: str) -> str:
         """

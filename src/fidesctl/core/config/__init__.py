@@ -22,12 +22,12 @@ from .user_settings import FidesctlUserSettings
 class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    cli: FidesctlCLISettings = FidesctlCLISettings.default()
-    user: FidesctlUserSettings = FidesctlUserSettings.default()
+    cli: FidesctlCLISettings = FidesctlCLISettings()
+    user: FidesctlUserSettings = FidesctlUserSettings()
     credentials: Dict[str, Dict] = dict()
-    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings.default()
-    security: FidesctlSecuritySettings = FidesctlSecuritySettings.default()
-    logging: FidesctlLoggingSettings = FidesctlLoggingSettings.default()
+    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
+    security: FidesctlSecuritySettings = FidesctlSecuritySettings()
+    logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
 
 
 def get_config(config_path: str = "") -> FidesctlConfig:

@@ -20,16 +20,6 @@ class FidesctlUserSettings(FidesSettings):
     encryption_key: str = "test_encryption_key"
     analytics_opt_out: Optional[bool]
 
-    @staticmethod
-    def default() -> "FidesctlUserSettings":
-        """Returns config object with default values set."""
-        return FidesctlUserSettings(
-            user_id="1",
-            api_key="test_api_key",
-            request_headers=dict(),
-            encryption_key="test_encryption_key",
-        )
-
     # Automatically generate the request_headers on object creation
     @validator("request_headers", pre=True, always=True)
     def get_request_headers(
