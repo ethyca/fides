@@ -35,6 +35,7 @@ The types of changes are:
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 * Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 * Standardized API error parsing under `~/types/errors`
+* Added taxonomy page to UI [#902](https://github.com/ethyca/fides/pull/902)
 
 ### Changed
 

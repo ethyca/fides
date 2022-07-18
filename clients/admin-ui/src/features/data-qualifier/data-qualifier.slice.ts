@@ -20,28 +20,28 @@ export const dataQualifierApi = createApi({
   }),
   tagTypes: ["Data Qualifier"],
   endpoints: (build) => ({
-    getDataQualifier: build.query<DataQualifier, void>({
+    getAllDataQualifiers: build.query<DataQualifier[], void>({
       query: () => ({ url: `data_qualifier/` }),
       providesTags: () => ["Data Qualifier"],
     }),
   }),
 });
 
-export const { useGetDataQualifierQuery } = dataQualifierApi;
+export const { useGetAllDataQualifiersQuery } = dataQualifierApi;
 
 export const dataQualifierSlice = createSlice({
   name: "dataQualifier",
   initialState,
   reducers: {
-    setDataQualifier: (state, action: PayloadAction<any>) => ({
+    setDataQualifiers: (state, action: PayloadAction<any>) => ({
       ...state,
       dataQualifier: action.payload,
     }),
   },
 });
 
-export const { setDataQualifier } = dataQualifierSlice.actions;
-export const selectDataQualifier = (state: AppState) =>
+export const { setDataQualifiers } = dataQualifierSlice.actions;
+export const selectDataQualifiers = (state: AppState) =>
   state.dataQualifier.dataQualifier;
 
 export const { reducer } = dataQualifierSlice;
