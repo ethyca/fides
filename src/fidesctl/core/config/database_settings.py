@@ -1,8 +1,12 @@
+"""This module handles finding and parsing fides configuration files."""
+
+# pylint: disable=C0115,C0116, E0213
+
 import os
 from typing import Dict, Optional
 
 from fideslib.core.config import DatabaseSettings
-from pydantic import Field, PostgresDsn, validator
+from pydantic import PostgresDsn, validator
 
 
 class FidesctlDatabaseSettings(DatabaseSettings):
@@ -10,6 +14,7 @@ class FidesctlDatabaseSettings(DatabaseSettings):
 
     @staticmethod
     def default() -> "FidesctlDatabaseSettings":
+        """Returns config object with default values set."""
         return FidesctlDatabaseSettings(
             user="postgres",
             password="fidesctl",
@@ -25,11 +30,11 @@ class FidesctlDatabaseSettings(DatabaseSettings):
     @validator("sync_database_uri", pre=True)
     @classmethod
     def assemble_sync_database_uri(
-        cls, v: Optional[str], values: Dict[str, str]
+        cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(v, str):
-            return v
+        if isinstance(value, str):
+            return value
 
         db_name = (
             values["test_db"]
@@ -48,11 +53,11 @@ class FidesctlDatabaseSettings(DatabaseSettings):
     @validator("async_database_uri", pre=True)
     @classmethod
     def assemble_async_database_uri(
-        cls, v: Optional[str], values: Dict[str, str]
+        cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(v, str):
-            return v
+        if isinstance(value, str):
+            return value
 
         db_name = (
             values["test_db"]

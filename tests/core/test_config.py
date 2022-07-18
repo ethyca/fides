@@ -6,7 +6,6 @@ import pytest
 
 from fidesctl.core.config import get_config
 from fidesctl.core.config.database_settings import FidesctlDatabaseSettings
-from src.fidesctl.core.config import database_settings
 
 
 # Unit
