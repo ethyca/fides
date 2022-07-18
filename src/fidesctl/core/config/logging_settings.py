@@ -32,7 +32,7 @@ class FidesctlLoggingSettings(FidesSettings):
         Ensures that the string-form of a valid logging._Level is
         always returned.
         """
-        if os.getenv("FIDESCTL_TEST_MODE") == "True":
+        if os.getenv("FIDESCTL_TEST_MODE").lower() == "true":
             return getLevelName(DEBUG)
 
         if isinstance(value, str):
