@@ -48,6 +48,7 @@ const NewDataset: NextPage = () => {
             variant="outline"
             onClick={() => setGenerateMethod("yaml")}
             isActive={generateMethod === "yaml"}
+            data-testid="upload-yaml-btn"
           >
             Upload a new dataset YAML
           </Button>
@@ -57,6 +58,7 @@ const NewDataset: NextPage = () => {
             variant="outline"
             onClick={() => setGenerateMethod("database")}
             isActive={generateMethod === "database"}
+            data-testid="connect-db-btn"
           >
             Connect a database using a connection URL
           </Button>

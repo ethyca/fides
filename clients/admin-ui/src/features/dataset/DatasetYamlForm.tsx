@@ -104,6 +104,7 @@ const DatasetYamlForm = () => {
             colorScheme="primary"
             type="submit"
             disabled={isSubmitting}
+            data-testid="create-dataset-btn"
           >
             Create dataset
           </Button>

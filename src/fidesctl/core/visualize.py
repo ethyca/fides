@@ -34,7 +34,8 @@ def hierarchy_figures(
     fides_key_dict = {}
 
     # build assets/relationships for figures
-    for i, category in enumerate(categories):
+    sorted_categories = sorted(categories, key=lambda i: i[FIDES_KEY_NAME])
+    for i, category in enumerate(sorted_categories):
         # get sunburst labels and parents
         labels.append(category[FIDES_KEY_NAME])
         parents.append(category[FIDES_PARENT_NAME])

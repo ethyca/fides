@@ -1,5 +1,4 @@
 """Contains the generate group of CLI commands for Fidesctl."""
-
 import click
 
 from fidesctl.cli.options import (
@@ -15,6 +14,7 @@ from fidesctl.cli.options import (
 )
 from fidesctl.cli.utils import (
     handle_aws_credentials_options,
+    handle_bigquery_config_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
     with_analytics,
@@ -72,6 +72,54 @@ def generate_dataset_db(
         connection_string=actual_connection_string,
         file_name=output_filename,
         include_null=include_null,
+    )
+
+
+@generate_dataset.group(name="gcp")
+@click.pass_context
+def generate_dataset_gcp(ctx: click.Context) -> None:
+    """
+    Generate fidesctl Dataset resources for Google Cloud Platform
+    """
+
+
+@generate_dataset_gcp.command(name="bigquery")
+@click.pass_context
+@click.argument("dataset_name", type=str)
+@click.argument("output_filename", type=str)
+@credentials_id_option
+@click.option("--keyfile-path", type=str)
+@include_null_flag
+@with_analytics
+def generate_dataset_bigquery(
+    ctx: click.Context,
+    dataset_name: str,
+    output_filename: str,
+    keyfile_path: str,
+    credentials_id: str,
+    include_null: bool,
+) -> None:
+    """
+    Connect to a BigQuery dataset directly via a SQLAlchemy connection and
+    generate a dataset manifest file that consists of every schema/table/field.
+    A path to a google authorization keyfile can be supplied as an option, or a
+    credentials reference to fidesctl config.
+
+    This is a one-time operation that does not track the state of the dataset.
+    It will need to be run again if the dataset schema changes.
+    """
+
+    bigquery_config = handle_bigquery_config_options(
+        fides_config=ctx.obj["CONFIG"],
+        dataset=dataset_name,
+        keyfile_path=keyfile_path,
+        credentials_id=credentials_id,
+    )
+
+    bigquery_datasets = _dataset.generate_bigquery_datasets(bigquery_config)
+
+    _dataset.write_dataset_manifest(
+        file_name=output_filename, include_null=include_null, datasets=bigquery_datasets
     )
 
 

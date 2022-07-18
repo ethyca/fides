@@ -93,13 +93,13 @@ Below is a reference for all subclasses of `account`, `system` and `user` to ass
 
 ### Provide Data Uses
 
-| Label                                          | Parent Key                        | Description                                                                                          |
-| ---                                            | ---                               | ---                                                                                                  |
-|`system`                                        |`provide`                          |The source system, product, service or application being provided to the user.                                                                                                     |
-|`provide.system.operations`                     |`provide.system`                   |Use of specified data categories to operate and protect the system in order to provide the service.                                                                                |
-|`provide.system.operations.support`             |`provide.system.operations`        |Use of specified data categories to provide support for operation and protection of the system in order to provide the service.                                                    |
-|`provide.system.operations.support.optimization`|`provide.system.operations.support`|Use of specified data categories to optimize and improve support operations in order to provide the service.                                                                       |
-|`provide.system.upgrades`                       |`provide.system`                   |Offer upgrades or upsales such as increased capacity for the service based on monitoring of service usage.                                                                         |
+| Label                                           | Parent Key                         | Description                                                                                          |
+| ---                                             | ---                                | ---                                                                                                  |
+|`system`                                         |`provide`                           |The source system, product, service or application being provided to the user.                                                                                                     |
+|`provide.service.operations`                     |`provide.service`                   |Use of specified data categories to operate and protect the system in order to provide the service.                                                                                |
+|`provide.service.operations.support`             |`provide.service.operations`        |Use of specified data categories to provide support for operation and protection of the system in order to provide the service.                                                    |
+|`provide.service.operations.support.optimization`|`provide.service.operations.support`|Use of specified data categories to optimize and improve support operations in order to provide the service.                                                                       |
+|`provide.service.upgrades`                       |`provide.service`                   |Offer upgrades or upsales such as increased capacity for the service based on monitoring of service usage.                                                                         |
 
 ### Improve Data Uses
 

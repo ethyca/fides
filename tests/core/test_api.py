@@ -9,7 +9,7 @@ from fideslang import model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
-from fidesapi.routes import health
+from fidesctl.api.routes import health
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig
 from fidesctl.core.utils import API_PREFIX

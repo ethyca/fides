@@ -198,6 +198,8 @@ def pytest_external(session: nox.Session) -> None:
         "AWS_DEFAULT_REGION",
         "-e",
         "OKTA_CLIENT_TOKEN",
+        "-e",
+        "BIGQUERY_CONFIG",
         "--rm",
         CI_ARGS,
         IMAGE_NAME,

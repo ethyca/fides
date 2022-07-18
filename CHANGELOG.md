@@ -31,16 +31,22 @@ The types of changes are:
 * Sync CLI command now checks for untracked/unstaged files in the manifests dir [#869](https://github.com/ethyca/fides/pull/869)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
+* Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
+* Standardized API error parsing under `~/types/errors`
 
 ### Changed
 
 * Updated the `datamap` endpoint to return human-readable column names as the first response item [#779](https://github.com/ethyca/fides/pull/779)
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Moved all files from `fidesapi` to `fidesctl/api` [#885](https://github.com/ethyca/fides/pull/885)
 * Moved `scan` and `generate` to the list of commands that can be run in local mode [#841](https://github.com/ethyca/fides/pull/841)
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
-* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
+* Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ### Docs
@@ -55,6 +61,7 @@ The types of changes are:
 * Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
 * Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
 * Dataset field columns show all columns by default in the UI [#898](https://github.com/ethyca/fides/pull/898)
+* Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 

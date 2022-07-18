@@ -1,91 +1,71 @@
-/**
- * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
- */
-
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { YAMLException } from "js-yaml";
+import { narrow } from "narrow-minded";
 
-// generic error of the structure we expect from the Fides backend
-interface ResponseError {
-  data: {
-    detail: string;
-  };
-}
+import {
+  isAlreadyExistsErrorData,
+  isAPIError,
+  isDetailStringErrorData,
+  isHTTPValidationErrorData,
+  isParsingError,
+  RTKErrorResult,
+} from "~/types/errors/api";
 
-interface ErrorDetail {
-  loc: string[];
-  msg: string;
-  type: string;
-}
-interface ValidationError {
-  data: {
-    detail: ErrorDetail[];
-  };
-}
+export { isErrorResult } from "~/types/errors/api";
 
-interface ConflictError {
-  data: {
-    status: 409;
-    detail: {
-      error: string;
-      resource_type: string;
-      fides_key: string;
-    };
-  };
-}
+export const isYamlException = (error: unknown): error is YAMLException =>
+  narrow({ name: "string" }, error) && error.name === "YAMLException";
 
-/**
- * Custom type predicate to see if the error has details as returned by the Fides API
- * @param error
- * @returns
- */
-export function isErrorWithDetail(error: unknown): error is ResponseError {
-  return (
-    typeof error === "object" &&
-    error != null &&
-    "data" in error &&
-    typeof (error as any).data.detail === "string"
-  );
-}
+const DEFAULT_ERROR_MESSAGE = "An unexpected error occurred. Please try again.";
 
-export function isErrorWithDetailArray(
-  error: unknown
-): error is ValidationError {
-  return (
-    typeof error === "object" &&
-    error != null &&
-    "data" in error &&
-    Array.isArray((error as any).data.detail)
-  );
-}
-
-export function isConflictError(error: unknown): error is ConflictError {
-  return (
-    typeof error === "object" &&
-    error != null &&
-    "data" in error &&
-    (error as any).status === 409
-  );
-}
-
-export function isYamlException(error: unknown): error is YAMLException {
-  return (
-    typeof error === "object" &&
-    error != null &&
-    "name" in error &&
-    (error as any).name === "YAMLException"
-  );
-}
-
-export function getErrorMessage(error: FetchBaseQueryError | SerializedError) {
-  let errorMsg = "An unexpected error occurred. Please try again.";
-  if (isErrorWithDetail(error)) {
-    errorMsg = error.data.detail;
-  } else if (isErrorWithDetailArray(error)) {
-    errorMsg = `${error.data.detail[0].msg}: ${error.data.detail[0].loc}`;
-  } else if (isConflictError(error)) {
-    errorMsg = `${error.data.detail.error} (${error.data.detail.fides_key})`;
+export const getErrorMessage = (
+  error: RTKErrorResult["error"],
+  defaultMsg = DEFAULT_ERROR_MESSAGE
+) => {
+  if (isAPIError(error)) {
+    if (isDetailStringErrorData(error.data)) {
+      return error.data.detail;
+    }
+    if (isHTTPValidationErrorData(error.data)) {
+      const firstError = error.data.detail?.[0];
+      return `${firstError?.msg}: ${firstError?.loc}`;
+    }
+    if (error.status === 409 && isAlreadyExistsErrorData(error.data)) {
+      return `${error.data.detail.error} (${error.data.detail.fides_key})`;
+    }
   }
-  return errorMsg;
+
+  return defaultMsg;
+};
+
+export interface ParsedError {
+  status: number;
+  message: string;
 }
+
+export const parseError = (
+  error: RTKErrorResult["error"],
+  defaultError = {
+    status: 500,
+    message: DEFAULT_ERROR_MESSAGE,
+  }
+): ParsedError => {
+  if (isParsingError(error)) {
+    // This case is known to come up for Internal Server Errors which cannot be parsed as JSON.
+    // Ticket #892 will fix the ones produced by the generate endpoint.
+    return {
+      status: error.originalStatus,
+      message: error.data,
+    };
+  }
+
+  if (isAPIError(error)) {
+    const { status } = error;
+
+    return {
+      status,
+      message: getErrorMessage(error, defaultError.message),
+    };
+  }
+
+  return defaultError;
+};

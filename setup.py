@@ -20,6 +20,7 @@ snowflake_connector = "snowflake-sqlalchemy==1.3.4"
 redshift_connector = "sqlalchemy-redshift==0.8.8"
 aws_connector = "boto3==1.20.54"
 okta_connector = "okta==2.5.0"
+bigquery_connector = "sqlalchemy-bigquery==1.4.4"
 
 extras = {
     "aws": [aws_connector],
@@ -28,6 +29,7 @@ extras = {
     "okta": [okta_connector],
     "snowflake": [snowflake_connector],
     "redshift": [redshift_connector],
+    "bigquery": [bigquery_connector],
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(
@@ -46,7 +48,6 @@ setup(
     python_requires=">=3.8, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    package_data={"fidesapi": ["alembic.ini"]},
     include_package_data=True,
     author="Ethyca, Inc.",
     author_email="fidesteam@ethyca.com",
