@@ -44,7 +44,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
-    entry_points={"console_scripts": ["fidesctl=fidesctl.cli:cli"]},
+    entry_points={"console_scripts": ["fidesctl=fidesctl.cli:cli","fides=fidesctl.cli:cli]},
     python_requires=">=3.8, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
