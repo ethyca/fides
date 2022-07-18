@@ -26,7 +26,7 @@ def accessed_through_local_host(hostname: Optional[str]) -> bool:
 
 
 analytics_client = AnalyticsClient(
-    client_id=config.root_user.ANALYTICS_ID,
+    client_id=config.root_user.analytics_id,
     developer_mode=config.dev_mode,
     extra_data=None,
     os=system(),
@@ -36,7 +36,7 @@ analytics_client = AnalyticsClient(
 
 
 def send_analytics_event(event: AnalyticsEvent) -> None:
-    if config.root_user.ANALYTICS_OPT_OUT:
+    if config.root_user.analytics_opt_out:
         return
     try:
         analytics_client.send(event)

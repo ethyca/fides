@@ -148,7 +148,7 @@ class TestCreatePrivacyRequest:
         api_client: TestClient,
         policy,
     ):
-        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = True
+        config.execution.require_manual_request_approval = True
 
         data = [
             {
@@ -166,7 +166,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
         assert not run_access_request_mock.called
 
-        config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL = False
+        config.execution.require_manual_request_approval = False
 
     @mock.patch(
         "fidesops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -1609,7 +1609,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1710,7 +1710,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1761,7 +1761,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
@@ -1817,7 +1817,7 @@ class TestResumePrivacyRequest:
         auth_header = {
             "Authorization": "Bearer "
             + generate_jwe(
-                json.dumps({"unexpected": "format"}), config.security.APP_ENCRYPTION_KEY
+                json.dumps({"unexpected": "format"}), config.security.app_encryption_key
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1845,7 +1845,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1869,7 +1869,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})

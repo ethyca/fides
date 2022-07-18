@@ -10,7 +10,7 @@ from fidesops.util.logger import NotPii
 logger = get_task_logger(__name__)
 
 
-def _create_celery(config_path: str = config.execution.CELERY_CONFIG_PATH) -> Celery:
+def _create_celery(config_path: str = config.execution.celery_config_path) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -19,8 +19,8 @@ def _create_celery(config_path: str = config.execution.CELERY_CONFIG_PATH) -> Ce
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
-        "broker_url": config.redis.CONNECTION_URL,
-        "result_backend": config.redis.CONNECTION_URL,
+        "broker_url": config.redis.connection_url,
+        "result_backend": config.redis.connection_url,
     }
 
     try:

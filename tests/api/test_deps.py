@@ -7,13 +7,13 @@ from fidesops.core import config
 
 @pytest.fixture
 def mock_config():
-    db_enabled = config.config.database.ENABLED
-    redis_enabled = config.config.redis.ENABLED
-    config.config.database.ENABLED = False
-    config.config.redis.ENABLED = False
+    db_enabled = config.config.database.enabled
+    redis_enabled = config.config.redis.enabled
+    config.config.database.enabled = False
+    config.config.redis.enabled = False
     yield
-    config.config.database.ENABLED = db_enabled
-    config.config.redis.ENABLED = redis_enabled
+    config.config.database.enabled = db_enabled
+    config.config.redis.enabled = redis_enabled
 
 
 @pytest.mark.usefixtures("mock_config")

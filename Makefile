@@ -36,7 +36,7 @@ init-db: compose-build
 	python -c "\
 	from fidesops.db.database import init_db; \
 	from fidesops.core.config import config; \
-	init_db(config.database.SQLALCHEMY_DATABASE_URI);"
+	init_db(config.database.sqlalchemy_database_uri);"
 
 reset-db:
 	@echo "Resetting and re-initializing the application db..."
@@ -112,7 +112,7 @@ check-migrations: compose-build
 	python -c "\
 	from fidesops.db.database import check_missing_migrations; \
 	from fidesops.core.config import config; \
-	check_missing_migrations(config.database.SQLALCHEMY_DATABASE_URI);"
+	check_missing_migrations(config.database.sqlalchemy_database_uri);"
 	@make teardown
 
 isort-ci:

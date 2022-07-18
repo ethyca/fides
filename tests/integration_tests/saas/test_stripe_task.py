@@ -1072,7 +1072,7 @@ def test_stripe_erasure_request_task(
     )
 
     # Run erasure with masking_strict = False so both update and delete actions can be used
-    config.execution.MASKING_STRICT = False
+    config.execution.masking_strict = False
 
     x = graph_task.run_erasure(
         privacy_request,
@@ -1170,4 +1170,4 @@ def test_stripe_erasure_request_task(
     assert subscriptions == []
 
     # reset
-    config.execution.MASKING_STRICT = True
+    config.execution.masking_strict = True

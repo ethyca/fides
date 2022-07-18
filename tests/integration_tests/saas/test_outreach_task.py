@@ -97,7 +97,7 @@ def test_outreach_erasure_request_task(
     outreach_create_erasure_data,
 ) -> None:
     """Full erasure request based on the Outreach SaaS config"""
-    config.execution.MASKING_STRICT = False  # Allow Delete
+    config.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_outreach_erasure_request_task_{random.randint(0, 1000)}"
@@ -142,4 +142,4 @@ def test_outreach_erasure_request_task(
     # cannot verify success immediately as this can take days, weeks to process
     assert x == {f"{dataset_name}:prospects": 1, f"{dataset_name}:recipients": 1}
 
-    config.execution.MASKING_STRICT = True
+    config.execution.masking_strict = True

@@ -58,12 +58,12 @@ def retry(
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def result(*args: Any, **kwargs: Any) -> List[Optional[Row]]:
-            func_delay = config.execution.TASK_RETRY_DELAY
+            func_delay = config.execution.task_retry_delay
             method_name = func.__name__
             self = args[0]
 
             raised_ex: Optional[Union[BaseException, Exception]] = None
-            for attempt in range(config.execution.TASK_RETRY_COUNT + 1):
+            for attempt in range(config.execution.task_retry_count + 1):
                 try:
                     self.skip_if_disabled()
                     # Create ExecutionLog with status in_processing or retrying
@@ -88,7 +88,7 @@ def retry(
                     self.log_skipped(action_type, exc)
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
-                    func_delay *= config.execution.TASK_RETRY_BACKOFF
+                    func_delay *= config.execution.task_retry_backoff
                     logger.warning(
                         f"Retrying {method_name} {self.traversal_node.address} in {func_delay} seconds..."
                     )

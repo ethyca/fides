@@ -229,8 +229,8 @@ class TestDeleteUser:
 
         client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=user.id,
         )
@@ -242,7 +242,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -278,8 +278,8 @@ class TestDeleteUser:
 
         user_client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=other_user.id,
         )
@@ -297,7 +297,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -692,7 +692,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, config.security.APP_ENCRYPTION_KEY)
+            extract_payload(token, config.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
         assert token_data["scopes"] == [
@@ -733,7 +733,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, config.security.APP_ENCRYPTION_KEY)
+            extract_payload(token, config.security.app_encryption_key)
         )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
@@ -761,7 +761,7 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -793,7 +793,7 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code

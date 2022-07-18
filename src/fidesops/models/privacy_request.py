@@ -120,7 +120,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), config.security.APP_ENCRYPTION_KEY)
+    return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -575,7 +575,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
@@ -590,7 +590,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         encoding: str = "UTF-8",
     ) -> tuple[str, str]:
         """Utility function to hash a user's password with a generated salt"""
-        SALT = "a-salt"
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
         hashed_value = hash_with_salt(
             value.encode(encoding),
             SALT.encode(encoding),

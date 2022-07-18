@@ -28,7 +28,7 @@ class FidesopsRedis(Redis):
 
     def set_with_autoexpire(self, key: str, value: RedisValue) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
-        return self.set(key, value, ex=config.redis.DEFAULT_TTL_SECONDS)
+        return self.set(key, value, ex=config.redis.default_ttl_seconds)
 
     def get_keys_by_prefix(self, prefix: str, chunk_size: int = 1000) -> List[str]:
         """Retrieve all keys that match a given prefix."""
@@ -95,14 +95,14 @@ def get_cache() -> FidesopsRedis:
     global _connection  # pylint: disable=W0603
     if _connection is None:
         _connection = FidesopsRedis(
-            charset=config.redis.CHARSET,
-            decode_responses=config.redis.DECODE_RESPONSES,
-            host=config.redis.HOST,
-            port=config.redis.PORT,
-            db=config.redis.DB_INDEX,
-            password=config.redis.PASSWORD,
-            ssl=config.redis.SSL,
-            ssl_cert_reqs=config.redis.SSL_CERT_REQS,
+            charset=config.redis.charset,
+            decode_responses=config.redis.decode_responses,
+            host=config.redis.host,
+            port=config.redis.port,
+            db=config.redis.db_index,
+            password=config.redis.password,
+            ssl=config.redis.ssl,
+            ssl_cert_reqs=config.redis.ssl_cert_reqs,
         )
 
     connected = _connection.ping()

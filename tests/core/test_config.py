@@ -13,9 +13,9 @@ def test_config_from_default() -> None:
     "Test building a config from default local TOML"
     config = get_config(FidesopsConfig)
 
-    assert config.database.SERVER == "db"
-    assert config.redis.HOST == "redis"
-    assert config.security.APP_ENCRYPTION_KEY == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+    assert config.database.server == "db"
+    assert config.redis.host == "redis"
+    assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
 @patch.dict(
@@ -28,10 +28,10 @@ def test_config_from_default() -> None:
 def test_config_from_path() -> None:
     """Test reading config using the FIDESOPS__CONFIG_PATH option."""
     config = get_config(FidesopsConfig)
-    assert config.database.SERVER == "testserver"
-    assert config.redis.HOST == "testredis"
-    assert config.security.APP_ENCRYPTION_KEY == "atestencryptionkeythatisvalidlen"
-    assert config.admin_ui.ENABLED == True
+    assert config.database.server == "testserver"
+    assert config.redis.host == "testredis"
+    assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
+    assert config.admin_ui.enabled == True
 
 
 @patch.dict(
@@ -45,9 +45,9 @@ def test_config_from_path() -> None:
 def test_config_from_env_vars() -> None:
     """Test overriding config using ENV vars."""
     config = get_config(FidesopsConfig)
-    assert config.database.SERVER == "envserver"
-    assert config.redis.HOST == "envhost"
-    assert config.security.APP_ENCRYPTION_KEY == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+    assert config.database.server == "envserver"
+    assert config.redis.host == "envhost"
+    assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
 def test_config_app_encryption_key_validation() -> None:
@@ -62,7 +62,7 @@ def test_config_app_encryption_key_validation() -> None:
         clear=True,
     ):
         config = get_config(FidesopsConfig)
-        assert config.security.APP_ENCRYPTION_KEY == app_encryption_key
+        assert config.security.app_encryption_key == app_encryption_key
 
 
 @pytest.mark.parametrize(
@@ -104,7 +104,7 @@ def test_config_log_level(log_level, expected_log_level):
         clear=True,
     ):
         config = get_config(FidesopsConfig)
-        assert config.security.LOG_LEVEL == expected_log_level
+        assert config.security.log_level == expected_log_level
 
 
 def test_config_log_level_invalid():

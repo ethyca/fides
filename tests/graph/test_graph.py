@@ -70,9 +70,9 @@ def test_retry_decorator(privacy_request, policy):
         CollectionAddress("postgres_example", "payment_card")
     ]
 
-    config.execution.TASK_RETRY_COUNT = 5
-    config.execution.TASK_RETRY_DELAY = 0.1
-    config.execution.TASK_RETRY_BACKOFF = 0.01
+    config.execution.task_retry_count = 5
+    config.execution.task_retry_delay = 0.1
+    config.execution.task_retry_backoff = 0.01
 
     class TestRetryDecorator:
         def __init__(self):

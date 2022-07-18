@@ -5,6 +5,7 @@ import pydash
 import pytest
 import requests
 from fideslib.core.config import load_toml
+from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -14,7 +15,6 @@ from fidesops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util import cryptographic_util
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 

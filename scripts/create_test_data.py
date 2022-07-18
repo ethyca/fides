@@ -201,7 +201,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    init_db(config.database.SQLALCHEMY_DATABASE_URI)
+    init_db(config.database.sqlalchemy_database_uri)
     session_local = get_db_session(config)
     with session_local() as session:
         create_test_data(session)

@@ -65,7 +65,7 @@ def create_drp_privacy_request(
     a corresponding Fidesops PrivacyRequest
     """
 
-    jwt_key: str = config.security.DRP_JWT_SECRET
+    jwt_key: str = config.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

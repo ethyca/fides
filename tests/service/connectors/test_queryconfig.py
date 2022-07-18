@@ -924,14 +924,14 @@ class TestSaaSQueryConfig:
             method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
         # Delete endpoint not used because MASKING_STRICT is True
-        assert config.execution.MASKING_STRICT is True
+        assert config.execution.masking_strict is True
 
         query_config = SaaSQueryConfig(conversations, endpoints, {})
         saas_request = query_config.get_masking_request()
         assert saas_request is None
 
         # Override MASKING_STRICT to False
-        config.execution.MASKING_STRICT = False
+        config.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
         saas_request: SaaSRequest = query_config.get_masking_request()
@@ -950,5 +950,5 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "PUT"
 
         # Reset
-        config.execution.MASKING_STRICT = True
+        config.execution.masking_strict = True
         del endpoints["conversations"].requests["delete"]

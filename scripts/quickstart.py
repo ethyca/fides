@@ -540,8 +540,8 @@ if __name__ == "__main__":
     input()
 
     root_token = get_access_token(
-        client_id=config.security.OAUTH_ROOT_CLIENT_ID,
-        client_secret=config.security.OAUTH_ROOT_CLIENT_SECRET,
+        client_id=config.security.oauth_root_client_id,
+        client_secret=config.security.oauth_root_client_secret,
     )
     root_oauth_header = {"Authorization": f"Bearer {root_token}"}
     client = create_oauth_client()

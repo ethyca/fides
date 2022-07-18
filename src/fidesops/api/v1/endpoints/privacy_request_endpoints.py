@@ -128,7 +128,7 @@ def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
-    if not config.redis.ENABLED:
+    if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
@@ -193,7 +193,7 @@ def create_privacy_request(
                 None,
             )
 
-            if not config.execution.REQUIRE_MANUAL_REQUEST_APPROVAL:
+            if not config.execution.require_manual_request_approval:
                 queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:

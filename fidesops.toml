@@ -1,43 +1,43 @@
-PORT = 8080
+port = 8080
 
 [database]
-SERVER = "db"
-USER = "postgres"
-PASSWORD = "216f4b49bea5da4f84f05288258471852c3e325cd336821097e1e65ff92b528a"
-DB = "app"
-TEST_DB = "test"
-ENABLED = true
+server = "db"
+user = "postgres"
+password = "216f4b49bea5da4f84f05288258471852c3e325cd336821097e1e65ff92b528a"
+db = "app"
+test_db = "test"
+enabled = true
 
 [redis]
-HOST = "redis"
-PASSWORD = "testpassword"
-PORT = 6379
-CHARSET = "utf8"
-DEFAULT_TTL_SECONDS = 604800
-DB_INDEX = 0
-ENABLED = true
-SSL = false
-SSL_CERT_REQS = "required"
+host = "redis"
+password = "testpassword"
+port = 6379
+charset = "utf8"
+default_ttl_seconds = 604800
+db_index = 0
+enabled = true
+ssl = false
+ssl_cert_reqs = "required"
 
 [security]
-APP_ENCRYPTION_KEY = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
-CORS_ORIGINS = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
-ENCODING = "UTF-8"
-OAUTH_ROOT_CLIENT_ID = "fidesopsadmin"
-OAUTH_ROOT_CLIENT_SECRET = "fidesopsadminsecret"
-DRP_JWT_SECRET = "secret"
-LOG_LEVEL = "INFO"
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
+encoding = "UTF-8"
+oauth_root_client_id = "fidesopsadmin"
+oauth_root_client_secret = "fidesopsadminsecret"
+drp_jwt_secret = "secret"
+log_level = "INFO"
 
 [execution]
-MASKING_STRICT = true
-REQUIRE_MANUAL_REQUEST_APPROVAL = false
-TASK_RETRY_COUNT = 0
-TASK_RETRY_DELAY = 1
-TASK_RETRY_BACKOFF = 1
-WORKER_ENABLED = false
+masking_strict = true
+require_manual_request_approval = false
+task_retry_count = 0
+task_retry_delay = 1
+task_retry_backoff = 1
+worker_enabled = false
 
 [root_user]
-ANALYTICS_OPT_OUT = false
+analytics_opt_out = false
 
 [admin_ui]
-ENABLED = true
+enabled = true

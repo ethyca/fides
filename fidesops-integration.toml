@@ -1,23 +1,23 @@
 [postgres_example]
-SERVER="postgres_example"
-USER="postgres"
-PASSWORD="postgres"
-DB="postgres_example"
-PORT= 5432
+server="postgres_example"
+user="postgres"
+password="postgres"
+db="postgres_example"
+port= 5432
 
 [mongodb_example]
-SERVER= "mongodb_example"
-USER="mongo_user"
-PASSWORD="mongo_pass"
-DB="mongo_test"
-PORT=27017
+server= "mongodb_example"
+user="mongo_user"
+password="mongo_pass"
+db="mongo_test"
+port=27017
 
 [mysql_example]
-SERVER="mysql_example"
-USER="mysql_user"
-PASSWORD="mysql_pw"
-DB="mysql_example"
-PORT=3306
+server="mysql_example"
+user="mysql_user"
+password="mysql_pw"
+db="mysql_example"
+port=3306
 
 [redshift]
 external_uri=""
@@ -32,15 +32,15 @@ dataset=""
 [bigquery.keyfile_creds]
 
 [mssql_example]
-SERVER="mssql_example"
-USER="sa"
-PASSWORD="Mssql_pw1"
-DB="mssql_example"
-PORT=1433
+server="mssql_example"
+user="sa"
+password="Mssql_pw1"
+db="mssql_example"
+port=1433
 
 [mariadb_example]
-SERVER="mariadb_example"
-USER="mariadb_user"
-PASSWORD="mariadb_pw"
-DB="mariadb_example"
-PORT=3306
+server="mariadb_example"
+user="mariadb_user"
+password="mariadb_pw"
+db="mariadb_example"
+port=3306

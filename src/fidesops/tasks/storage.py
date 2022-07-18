@@ -12,12 +12,12 @@ from typing import Any, Dict, Union
 import pandas as pd
 import requests
 from botocore.exceptions import ClientError, ParamValidationError
+from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fidesops.core.config import config
 from fidesops.models.storage import ResponseFormat
 from fidesops.schemas.storage.storage import StorageSecrets
 from fidesops.util.cache import get_cache, get_encryption_cache_key
-from fidesops.util.cryptographic_util import bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
@@ -40,16 +40,16 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         encryption_attr="key",
     )
     if isinstance(data, bytes):
-        data = data.decode(config.security.ENCODING)
+        data = data.decode(config.security.encoding)
 
     encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
     bytes_encryption_key: bytes = encryption_key.encode(
-        encoding=config.security.ENCODING
+        encoding=config.security.encoding
     )
-    nonce: bytes = secrets.token_bytes(config.security.AES_GCM_NONCE_LENGTH)
+    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
     return bytes_to_b64_str(
         nonce
@@ -73,7 +73,7 @@ def write_to_in_memory_buffer(
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
-                config.security.ENCODING
+                config.security.encoding
             )
         )
 
@@ -83,7 +83,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=config.security.ENCODING)
+                df.to_csv(buffer, index=False, encoding=config.security.encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",

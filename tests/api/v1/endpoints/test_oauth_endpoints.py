@@ -60,7 +60,7 @@ class TestCreateClient:
         # Build auth header without client
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
 
         response = api_client.post(url, headers=auth_header)
@@ -76,7 +76,7 @@ class TestCreateClient:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
@@ -380,8 +380,8 @@ class TestAcquireAccessToken:
     def test_invalid_client_secret(self, db, url, api_client):
         new_client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
         )
         response = api_client.post(
             url, data={"client_id": new_client.id, "secret": "badsecret"}
@@ -392,8 +392,8 @@ class TestAcquireAccessToken:
 
     def test_get_access_token_root_client(self, url, api_client):
         data = {
-            "client_id": config.security.OAUTH_ROOT_CLIENT_ID,
-            "client_secret": config.security.OAUTH_ROOT_CLIENT_SECRET,
+            "client_id": config.security.oauth_root_client_id,
+            "client_secret": config.security.oauth_root_client_secret,
         }
 
         response = api_client.post(url, data=data)
@@ -401,12 +401,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == SCOPE_REGISTRY
@@ -415,8 +415,8 @@ class TestAcquireAccessToken:
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
         )
 
         data = {
@@ -429,12 +429,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.APP_ENCRYPTION_KEY))[
+            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == []

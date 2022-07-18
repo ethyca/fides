@@ -163,8 +163,8 @@ class TestEditUserPermissions:
 
         ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[PRIVACY_REQUEST_READ],
             user_id=user.id,
         )
