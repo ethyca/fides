@@ -9,6 +9,9 @@ from typing import Callable
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fideslib.oauth.api.deps import get_db as lib_get_db
+from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
+from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from loguru import logger as log
 from uvicorn import Config, Server
 
@@ -39,6 +42,7 @@ ROUTERS = (
         health.router,
         validate.router,
         view.router,
+        user_router,
     ]
 )
 
@@ -51,6 +55,8 @@ def configure_routes() -> None:
 
 # Configure the routes here so we can generate the openapi json file
 configure_routes()
+app.dependency_overrides[lib_get_db] = get_db
+app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 
 @app.on_event("startup")
