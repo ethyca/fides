@@ -8,7 +8,6 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
 
-import { FidesKey } from "../common/fides-types";
 import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";
 import {
@@ -30,7 +29,7 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Identifiability", attribute: "data_qualifier" },
 ];
 
-const useDataset = (key: FidesKey) => {
+const useDataset = (key: string) => {
   const { data, isLoading } = useGetDatasetByKeyQuery(key);
 
   return {
@@ -40,7 +39,7 @@ const useDataset = (key: FidesKey) => {
 };
 
 interface Props {
-  fidesKey: FidesKey;
+  fidesKey: string;
 }
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {

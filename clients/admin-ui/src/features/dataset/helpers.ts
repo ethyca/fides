@@ -9,7 +9,7 @@
  * use that instead.
  */
 
-import { Dataset, DatasetCollection, DatasetField } from "./types";
+import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 export const getUpdatedDatasetFromCollection = (
   dataset: Dataset,

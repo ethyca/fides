@@ -1,6 +1,6 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 
-import { System } from "./types";
+import { System } from "~/types/api";
 
 interface Props {
   systems: System[] | undefined;
