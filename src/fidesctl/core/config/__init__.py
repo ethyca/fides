@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
 
-from .api_settings import APISettings
 from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import FidesctlDatabaseSettings
@@ -23,7 +22,6 @@ from .user_settings import UserSettings
 class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    api: APISettings = APISettings()
     cli: CLISettings = CLISettings()
     user: UserSettings = UserSettings()
     credentials: Dict[str, Dict] = dict()
