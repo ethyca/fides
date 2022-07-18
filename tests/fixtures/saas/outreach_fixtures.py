@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
@@ -17,32 +16,33 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("outreach")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def outreach_secrets():
     return {
-        "domain": pydash.get(saas_config, "outreach.domain")
-        or os.environ.get("OUTREACH_DOMAIN"),
+        "domain": pydash.get(saas_config, "outreach.domain") or secrets["domain"],
         "requester_email": pydash.get(saas_config, "outreach.requester_email")
-        or os.environ.get("OUTREACH_REQUESTER_EMAIL"),
+        or secrets["requester_email"],
         "client_id": pydash.get(saas_config, "outreach.client_id")
-        or os.environ.get("OUTREACH_CLIENT_ID"),
+        or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "outreach.client_secret")
-        or os.environ.get("OUTREACH_CLIENT_SECRET"),
+        or secrets["client_secret"],
         "redirect_uri": pydash.get(saas_config, "outreach.redirect_uri")
-        or os.environ.get("OUTREACH_REDIRECT_URI"),
+        or secrets["redirect_uri"],
         "page_size": pydash.get(saas_config, "outreach.page_size")
-        or os.environ.get("OUTREACH_PAGE_SIZE"),
+        or secrets["page_size"],
     }
 
 
 @pytest.fixture(scope="session")
 def outreach_identity_email():
-    return pydash.get(saas_config, "outreach.identity_email") or os.environ.get(
-        "OUTREACH_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "outreach.identity_email") or secrets["identity_email"]
     )
 
 

@@ -118,7 +118,8 @@ class TestSaasConnector:
         assert response_body == unwrapped
 
 
-@pytest.mark.unit_saas
+@pytest.mark.integration_saas
+@pytest.mark.integration_segment
 class TestSaaSConnectorMethods:
     def test_create_client_from_request(
         self, db: Session, segment_connection_config, segment_dataset_config

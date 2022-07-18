@@ -1,4 +1,3 @@
-import os
 import random
 import time
 from typing import Any, Dict, Generator
@@ -20,36 +19,37 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
 from tests.test_helpers.saas_test_utils import poll_for_existence
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("segment")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def segment_secrets():
     return {
-        "domain": pydash.get(saas_config, "segment.domain")
-        or os.environ.get("SEGMENT_DOMAIN"),
+        "domain": pydash.get(saas_config, "segment.domain") or secrets["domain"],
         "personas_domain": pydash.get(saas_config, "segment.personas_domain")
-        or os.environ.get("SEGMENT_PERSONAS_DOMAIN"),
+        or secrets["personas_domain"],
         "workspace": pydash.get(saas_config, "segment.workspace")
-        or os.environ.get("SEGMENT_WORKSPACE"),
+        or secrets["workspace"],
         "access_token": pydash.get(saas_config, "segment.access_token")
-        or os.environ.get("SEGMENT_ACCESS_TOKEN"),
+        or secrets["access_token"],
         "namespace_id": pydash.get(saas_config, "segment.namespace_id")
-        or os.environ.get("SEGMENT_NAMESPACE_ID"),
+        or secrets["namespace_id"],
         "access_secret": pydash.get(saas_config, "segment.access_secret")
-        or os.environ.get("SEGMENT_ACCESS_SECRET"),
+        or secrets["access_secret"],
         "api_domain": pydash.get(saas_config, "segment.api_domain")
-        or os.environ.get("SEGMENT_API_DOMAIN"),
+        or secrets["api_domain"],
         "user_token": pydash.get(saas_config, "segment.user_token")
-        or os.environ.get("SEGMENT_USER_TOKEN"),
+        or secrets["user_token"],
     }
 
 
 @pytest.fixture(scope="session")
 def segment_identity_email():
-    return pydash.get(saas_config, "segment.identity_email") or os.environ.get(
-        "SEGMENT_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "segment.identity_email") or secrets["identity_email"]
     )
 
 

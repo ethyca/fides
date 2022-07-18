@@ -45,6 +45,7 @@ The types of changes are:
 * Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
 * Erasure support for Zendesk [#775](https://github.com/ethyca/fidesops/pull/775)
 * Adds endpoint to get the secrets required for different connectors [#795](https://github.com/ethyca/fidesops/pull/795)
+* Adds Vault for secrets management [#688](https://github.com/ethyca/fidesops/pull/869)
 
 ### Changed
 
