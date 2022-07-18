@@ -11,23 +11,23 @@ from pydantic import BaseModel
 from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
 
-from .cli_settings import CLISettings
+from .cli_settings import FidesctlCLISettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import FidesctlDatabaseSettings
 from .logging_settings import FidesctlLoggingSettings
 from .security_settings import FidesctlSecuritySettings
-from .user_settings import UserSettings
+from .user_settings import FidesctlUserSettings
 
 
 class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    cli: CLISettings = CLISettings()
-    user: UserSettings = UserSettings()
+    cli: FidesctlCLISettings = FidesctlCLISettings.default()
+    user: FidesctlUserSettings = FidesctlUserSettings.default()
     credentials: Dict[str, Dict] = dict()
     database: FidesctlDatabaseSettings = FidesctlDatabaseSettings.default()
     security: FidesctlSecuritySettings = FidesctlSecuritySettings.default()
-    logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
+    logging: FidesctlLoggingSettings = FidesctlLoggingSettings.default()
 
 
 def get_config(config_path: str = "") -> FidesctlConfig:

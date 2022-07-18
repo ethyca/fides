@@ -9,16 +9,26 @@ from .fides_settings import FidesSettings
 # pylint: disable=C0115,C0116, E0213
 
 
-class CLISettings(FidesSettings):
+class FidesctlCLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    local_mode: bool = False
-    analytics_id: str = generate_client_id(FIDESCTL_CLI)
+    local_mode: bool
+    analytics_id: str
 
-    server_protocol: str = "http"
-    server_host: str = "localhost"
+    server_protocol: str
+    server_host: str
     server_port: Optional[int]
     server_url: Optional[AnyHttpUrl]
+
+    @staticmethod
+    def default() -> "FidesctlCLISettings":
+        """Returns config object with default values set."""
+        return FidesctlCLISettings(
+            local_mode=False,
+            analytics_id=generate_client_id(FIDESCTL_CLI),
+            server_protocol="http",
+            server_host="localhost",
+        )
 
     @validator("server_url", always=True)
     def get_server_url(cls: FidesSettings, value: str, values: Dict) -> str:

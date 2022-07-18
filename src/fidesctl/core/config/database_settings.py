@@ -12,6 +12,9 @@ from pydantic import PostgresDsn, validator
 class FidesctlDatabaseSettings(DatabaseSettings):
     """Configuration settings for Postgres."""
 
+    async_database_uri: Optional[PostgresDsn]
+    sync_database_uri: Optional[PostgresDsn]
+
     @staticmethod
     def default() -> "FidesctlDatabaseSettings":
         """Returns config object with default values set."""
@@ -23,9 +26,6 @@ class FidesctlDatabaseSettings(DatabaseSettings):
             db="fidesctl",
             test_db="fidesctl_test",
         )
-
-    async_database_uri: Optional[PostgresDsn]
-    sync_database_uri: Optional[PostgresDsn]
 
     @validator("sync_database_uri", pre=True)
     @classmethod
