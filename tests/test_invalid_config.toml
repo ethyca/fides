@@ -6,12 +6,8 @@ port="5432"
 db="fidesctl"
 test_db="fidesctl_test"
 
-[security]
-app_encryption_key = "atestencryptionkeythatisvalidlen"
-cors_origins = [ "http://test.com", "https://test.com",]
-oauth_root_client_id = "testrootclientid"
-oauth_root_client_secret = "testrootclientsecret"
-drp_jwt_secret = "testdrpsecret"
+[logging]
+level = "INFO"
 
 [cli]
 server_host = "http://invalid"

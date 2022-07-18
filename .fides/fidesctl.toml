@@ -15,10 +15,3 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
-
-[security]
-app_encryption_key = "atestencryptionkeythatisvalidlen"
-cors_origins = [ "http://test.com", "https://test.com",]
-oauth_root_client_id = "testrootclientid"
-oauth_root_client_secret = "testrootclientsecret"
-drp_jwt_secret = "testdrpsecret"
