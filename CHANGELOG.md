@@ -37,6 +37,7 @@ The types of changes are:
 * Add support for multiple statuses to be selected for filtering subject requests [#660](https://github.com/ethyca/fidesops/pull/802)
 * [Datastore Management] Include Icon with datastore connection (FE)[#671](https://github.com/ethyca/fidesops/pull/845)
 * Store provided identity data in the privacy request table [#743](https://github.com/ethyca/fidesops/pull/834)
+* [Datastore Management] Keep datastore cards in 1/3 screen pattern [#745](https://github.com/ethyca/fidesops/pull/873)
 * Adds SaaS connection type to SaaS yaml config [748](https://github.com/ethyca/fidesops/pull/748)
 * Adds exact match identity search to the privacy request status endpoint [#765](https://github.com/ethyca/fidesops/pull/847/)
 * Adds endpoint to get available connectors (database and saas) [#768](https://github.com/ethyca/fidesops/pull/768)
