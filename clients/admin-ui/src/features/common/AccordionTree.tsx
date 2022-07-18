@@ -42,6 +42,9 @@ const AccordionTree = ({ nodes }: Props) => {
       onMouseEnter: () => {
         setHoverNode(node);
       },
+      onMouseLeave: () => {
+        setHoverNode(undefined);
+      },
     };
 
     if (node.children.length === 0) {
