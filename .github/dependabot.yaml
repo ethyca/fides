@@ -4,15 +4,31 @@ updates:
   directory: "/"
   schedule:
     interval: "weekly"
+  labels:
+    - dependencies
+    - python
+    - dependabot
 - package-ecosystem: npm
   directory: '/clients/admin-ui'
   schedule:
     interval: weekly
+  labels:
+    - dependencies
+    - javascript
+    - dependabot
 - package-ecosystem: npm
   directory: '/clients/privacy-center'
   schedule:
     interval: weekly
+  labels:
+    - dependencies
+    - javascript
+    - dependabot
 - package-ecosystem: github-actions
   directory: '/'
   schedule:
     interval: weekly
+  labels:
+    - dependencies
+    - github_actions
+    - dependabot
