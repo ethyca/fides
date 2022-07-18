@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
@@ -17,29 +16,27 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("stripe")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def stripe_secrets():
     return {
-        "domain": pydash.get(saas_config, "stripe.domain")
-        or os.environ.get("STRIPE_DOMAIN"),
-        "api_key": pydash.get(saas_config, "stripe.api_key")
-        or os.environ.get("STRIPE_API_KEY"),
+        "domain": pydash.get(saas_config, "stripe.domain") or secrets["domain"],
+        "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
-        or os.environ.get("STRIPE_PAYMENT_TYPES"),
+        or secrets["payment_types"],
         "page_size": pydash.get(saas_config, "stripe.page_size")
-        or os.environ.get("STRIPE_PAGE_SIZE"),
+        or secrets["page_size"],
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def stripe_identity_email():
-    return pydash.get(saas_config, "stripe.identity_email") or os.environ.get(
-        "STRIPE_IDENTITY_EMAIL"
-    )
+    return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture(scope="function")

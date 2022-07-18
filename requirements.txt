@@ -12,6 +12,7 @@ fastapi[all]==0.78.0
 fideslang==1.0.0
 fideslib==3.0.0
 fideslog==1.2.1
+hvac==0.11.2
 multidimensional_urlencode==0.0.4
 pandas==1.3.3
 passlib[bcrypt]==1.7.4

@@ -1,5 +1,4 @@
 import json
-import os
 from typing import Any, Dict, Generator
 
 import pydash
@@ -18,26 +17,26 @@ from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.service.connectors.saas_connector import SaaSConnector
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("mailchimp")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def mailchimp_secrets():
     return {
-        "domain": pydash.get(saas_config, "mailchimp.domain")
-        or os.environ.get("MAILCHIMP_DOMAIN"),
+        "domain": pydash.get(saas_config, "mailchimp.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "mailchimp.username")
-        or os.environ.get("MAILCHIMP_USERNAME"),
-        "api_key": pydash.get(saas_config, "mailchimp.api_key")
-        or os.environ.get("MAILCHIMP_API_KEY"),
+        or secrets["username"],
+        "api_key": pydash.get(saas_config, "mailchimp.api_key") or secrets["api_key"],
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def mailchimp_identity_email():
-    return pydash.get(saas_config, "mailchimp.identity_email") or os.environ.get(
-        "MAILCHIMP_IDENTITY_EMAIL"
+    return (
+        pydash.get(saas_config, "mailchimp.identity_email") or secrets["identity_email"]
     )
 
 

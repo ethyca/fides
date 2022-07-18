@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Generator
 
 import pydash
@@ -15,35 +14,34 @@ from fidesops.models.connectionconfig import (
 from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.util.saas_util import load_config
 from tests.fixtures.application_fixtures import load_dataset
+from tests.test_helpers.vault_client import get_secrets
 
 saas_config = load_toml(["saas_config.toml"])
+secrets = get_secrets("sentry")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def sentry_secrets():
     return {
-        "domain": pydash.get(saas_config, "sentry.domain")
-        or os.environ.get("SENTRY_DOMAIN"),
+        "domain": pydash.get(saas_config, "sentry.domain") or secrets["sentry.domain"],
         "access_token": pydash.get(saas_config, "sentry.access_token")
-        or os.environ.get("SENTRY_ACCESS_TOKEN"),
+        or secrets["access_token"],
         "erasure_access_token": pydash.get(saas_config, "sentry.erasure_access_token")
-        or os.environ.get("SENTRY_ERASURE_TOKEN"),
+        or secrets["erasure_access_token"],
         "erasure_identity_email": pydash.get(
             saas_config, "sentry.erasure_identity_email"
         )
-        or os.environ.get("SENTRY_ERASURE_IDENTITY"),
+        or secrets["erasure_identity_email"],
         "user_id_erasure": pydash.get(saas_config, "sentry.user_id_erasure")
-        or os.environ.get("SENTRY_USER_ID"),
+        or secrets["user_id_erasure"],
         "issue_url": pydash.get(saas_config, "sentry.issue_url")
-        or os.environ.get("SENTRY_ISSUE_URL"),
+        or secrets["issue_url"],
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def sentry_identity_email():
-    return pydash.get(saas_config, "sentry.identity_email") or os.environ.get(
-        "SENTRY_IDENTITY_EMAIL"
-    )
+    return pydash.get(saas_config, "sentry.identity_email") or secrets["identity_email"]
 
 
 @pytest.fixture

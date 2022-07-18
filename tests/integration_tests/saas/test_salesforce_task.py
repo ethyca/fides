@@ -11,7 +11,7 @@ from tests.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_saas
+@pytest.mark.integration_salesforce
 def test_salesforce_connection_test(salesforce_connection_config) -> None:
     get_connector(salesforce_connection_config).test_connection()
 
