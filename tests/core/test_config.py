@@ -30,7 +30,7 @@ def test_get_config() -> None:
 @pytest.mark.unit
 def test_default_config() -> None:
     "Test building a config from default values."
-    os.environ["FIDESCTL_CONFIG_PATH"] = ""
+    os.environ["FIDES__CONFIG_PATH"] = ""
     config = get_config()
     os.chdir("/fides")
 

@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, Union
 
 from click import echo
@@ -15,7 +16,11 @@ def get_config_from_file(
     """
 
     try:
-        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
+        config_path = (
+            os.path.join(config_path_override, "fidesctl.toml")
+            if config_path_override
+            else load_file(file_names=["fidesctl.toml"])
+        )
     except FileNotFoundError as error:
         raise error
 
@@ -42,7 +47,11 @@ def update_config_file(  # type: ignore
     """
 
     try:
-        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
+        config_path = (
+            os.path.join(config_path_override, "fidesctl.toml")
+            if config_path_override
+            else load_file(file_names=["fidesctl.toml"])
+        )
     except FileNotFoundError as error:
         raise error
 

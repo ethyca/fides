@@ -45,6 +45,7 @@ The types of changes are:
   * Refactored step & form results management to use Redux Toolkit slice.
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
 
 ### Docs
 

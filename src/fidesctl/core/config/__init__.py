@@ -2,6 +2,7 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
+import os
 from typing import Dict
 
 import toml
@@ -40,7 +41,7 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
 
     try:
         settings = (
-            toml.load(config_path_override)
+            toml.load(os.path.join(config_path_override, "fidesctl.toml"))
             if config_path_override
             else load_toml(file_names=["fidesctl.toml"])
         )
