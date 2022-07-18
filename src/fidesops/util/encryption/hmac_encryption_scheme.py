@@ -56,7 +56,7 @@ def _hmac_sha512(value: str, hmac_key: str, salt: str) -> hmac.HMAC:
 
 def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> hmac.HMAC:
     return hmac.new(
-        key=hmac_key.encode(config.security.ENCODING),
-        msg=(value + salt).encode(config.security.ENCODING),
+        key=hmac_key.encode(config.security.encoding),
+        msg=(value + salt).encode(config.security.encoding),
         digestmod=hashing_alg,
     )

@@ -10,8 +10,8 @@ class TestClientModel:
     def test_create_client_and_secret(self, db: Session) -> None:
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
         )
 
         assert new_client.hashed_secret is not None
@@ -26,13 +26,13 @@ class TestClientModel:
     def test_get_client(self, db: Session, oauth_client) -> None:
         client = ClientDetail.get(
             db,
-            object_id=config.security.OAUTH_ROOT_CLIENT_ID,
+            object_id=config.security.oauth_root_client_id,
             config=config,
             scopes=SCOPE_REGISTRY,
         )
 
         hashed_access_key = hash_with_salt(
-            config.security.OAUTH_ROOT_CLIENT_SECRET.encode(config.security.ENCODING),
+            config.security.oauth_root_client_secret.encode(config.security.ENCODING),
             client.salt.encode(config.security.ENCODING),
         )
 
@@ -47,8 +47,8 @@ class TestClientModel:
     def test_credentials_valid(self, db: Session) -> None:
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
-            config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-            config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
         )
 
         assert new_client.credentials_valid("this-is-not-the-right-secret") is False

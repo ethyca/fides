@@ -9,7 +9,7 @@ from fidesops.util.cache import get_cache as get_redis_connection
 
 def get_db() -> Generator:
     """Return our database session"""
-    if not config.database.ENABLED:
+    if not config.database.enabled:
         raise FunctionalityNotConfigured(
             "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
         )
@@ -23,7 +23,7 @@ def get_db() -> Generator:
 
 def get_cache() -> Generator:
     """Return a connection to our redis cache"""
-    if not config.redis.ENABLED:
+    if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )

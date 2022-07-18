@@ -66,7 +66,7 @@ class PrivacyRequestCreate(BaseSchema):
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:
-            verify_encryption_key(value.encode(config.security.ENCODING))
+            verify_encryption_key(value.encode(config.security.encoding))
         return value
 
 

@@ -10,18 +10,18 @@ from fidesops.core import config
 
 @pytest.fixture
 def mock_config_db_disabled():
-    db_enabled = config.config.database.ENABLED
-    config.config.database.ENABLED = False
+    db_enabled = config.config.database.enabled
+    config.config.database.enabled = False
     yield
-    config.config.database.ENABLED = db_enabled
+    config.config.database.enabled = db_enabled
 
 
 @pytest.fixture
 def mock_config_redis_disabled():
-    redis_enabled = config.config.redis.ENABLED
-    config.config.redis.ENABLED = False
+    redis_enabled = config.config.redis.enabled
+    config.config.redis.enabled = False
     yield
-    config.config.redis.ENABLED = redis_enabled
+    config.config.redis.enabled = redis_enabled
 
 
 class TestExceptionHandlers:

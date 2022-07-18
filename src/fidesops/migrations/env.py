@@ -41,9 +41,9 @@ def get_url():
     the URL will point at the test database.
     """
 
-    database_uri = fides_config.database.SQLALCHEMY_DATABASE_URI
+    database_uri = fides_config.database.sqlalchemy_database_uri
     if fides_config.is_test_mode:
-        database_uri = fides_config.database.SQLALCHEMY_TEST_DATABASE_URI
+        database_uri = fides_config.database.sqlalchemy_test_database_uri
     return database_uri
 
 

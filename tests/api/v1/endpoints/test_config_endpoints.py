@@ -32,9 +32,9 @@ class TestGetConnections:
                 security_keys.difference(
                     set(
                         [
-                            "CORS_ORIGINS",
-                            "ENCODING",
-                            "OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES",
+                            "cors_origins",
+                            "encoding",
+                            "oauth_access_token_expire_minutes",
                         ]
                     )
                 )

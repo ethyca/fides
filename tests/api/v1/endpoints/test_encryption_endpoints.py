@@ -3,6 +3,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from starlette.testclient import TestClient
 
 from fidesops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
@@ -13,7 +14,6 @@ from fidesops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from fidesops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
@@ -113,7 +113,7 @@ class TestAESEncrypt:
         assert response.status_code == 200
         decrypted = decrypt(
             encrypted_value,
-            key.encode(config.security.ENCODING),
+            key.encode(config.security.encoding),
             nonce,
         )
         assert decrypted == plain_val
@@ -154,7 +154,7 @@ class TestAESDecrypt:
         nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
         encrypted_data = encrypt_verify_secret_length(
-            orig_data, key.encode(config.security.ENCODING), nonce
+            orig_data, key.encode(config.security.encoding), nonce
         )
 
         request = {

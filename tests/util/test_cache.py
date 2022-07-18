@@ -18,8 +18,8 @@ def test_cache_set_with_autoexpire(cache: FidesopsRedis) -> None:
     ttl_range = list(
         range(
             # Let's give this a 3 second buffer time to still pass
-            config.redis.DEFAULT_TTL_SECONDS - 2,
-            config.redis.DEFAULT_TTL_SECONDS + 1,
+            config.redis.default_ttl_seconds - 2,
+            config.redis.default_ttl_seconds + 1,
         )
     )
     cache.set_with_autoexpire(key, value)

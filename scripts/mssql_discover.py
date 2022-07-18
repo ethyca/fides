@@ -1,14 +1,8 @@
-import sqlalchemy
-
 # This file is not committed to the repo, please create secrets.py with the required
 # variables in the same dir as this file before running this script
-from secrets import (
-    USER,
-    PASS,
-    IP,
-    PORT,
-    DB,
-)
+from secrets import DB, IP, PASS, PORT, USER
+
+import sqlalchemy
 
 MASTER_MSSQL_URL = f"mssql+pyodbc://{USER}:{PASS}@{IP}:{PORT}/{DB}?driver=ODBC+Driver+17+for+SQL+Server"
 

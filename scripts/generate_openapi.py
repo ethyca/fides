@@ -11,7 +11,6 @@ import sys
 
 from fidesops.main import app
 
-
 if __name__ == "__main__":
     outfile_path = "openapi.json"
 

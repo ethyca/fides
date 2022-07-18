@@ -55,8 +55,8 @@ def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Applying migrations...")
     assert config.is_test_mode
-    if config.database.ENABLED:
-        init_db(config.database.SQLALCHEMY_TEST_DATABASE_URI)
+    if config.database.enabled:
+        init_db(config.database.sqlalchemy_test_database_uri)
     logger.debug("Migrations successfully applied")
 
 
@@ -66,7 +66,7 @@ def db() -> Generator:
     # Create the test DB enginge
     assert config.is_test_mode
     engine = get_db_engine(
-        database_uri=config.database.SQLALCHEMY_TEST_DATABASE_URI,
+        database_uri=config.database.sqlalchemy_test_database_uri,
     )
 
     logger.debug(f"Configuring database at: {engine.url}")
@@ -153,7 +153,7 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
 
 
@@ -171,7 +171,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.APP_ENCRYPTION_KEY)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
@@ -221,7 +221,7 @@ def run_privacy_request_task(celery_session_app):
 @pytest.fixture(autouse=True, scope="session")
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
-    original_value = config.root_user.ANALYTICS_OPT_OUT
-    config.root_user.ANALYTICS_OPT_OUT = True
+    original_value = config.root_user.analytics_opt_out
+    config.root_user.analytics_opt_out = True
     yield
-    config.root_user.ANALYTICS_OPT_OUT = original_value
+    config.root_user.analytics_opt_out = original_value

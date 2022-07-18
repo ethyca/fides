@@ -70,7 +70,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         gdpr_delete: Optional[SaaSRequest] = None
         delete: Optional[SaaSRequest] = None
 
-        if not config.execution.MASKING_STRICT:
+        if not config.execution.masking_strict:
             gdpr_delete = self.data_protection_request
             delete = self.get_request_by_action("delete")
 

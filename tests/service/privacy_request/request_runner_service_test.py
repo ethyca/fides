@@ -1390,7 +1390,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-        config.redis.DEFAULT_TTL_SECONDS = (
+        config.redis.default_ttl_seconds = (
             1  # Set redis cache to expire very quickly for testing purposes
         )
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(

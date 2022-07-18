@@ -24,14 +24,14 @@ logging.getLogger("alembic").setLevel(logging.WARNING)
 def health_check() -> Dict[str, Union[bool, str]]:
     return {
         "webserver": "healthy",
-        "database": get_db_health(config.database.SQLALCHEMY_DATABASE_URI),
+        "database": get_db_health(config.database.sqlalchemy_database_uri),
         "cache": get_cache_health(),
     }
 
 
 def get_db_health(database_url: Optional[str]) -> str:
     """Checks if the db is reachable and up to date in alembic migrations"""
-    if not database_url or not config.database.ENABLED:
+    if not database_url or not config.database.enabled:
         return "no db configured"
     try:
         engine = create_engine(database_url)
@@ -52,7 +52,7 @@ def get_db_health(database_url: Optional[str]) -> str:
 
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
-    if not config.redis.ENABLED:
+    if not config.redis.enabled:
         return "no cache configured"
     try:
         get_cache()

@@ -2,9 +2,9 @@ import base64
 from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fidesops.core.config import config
-from fidesops.util.cryptographic_util import bytes_to_b64_str
 
 
 def encrypt_to_bytes_verify_secrets_length(
@@ -23,7 +23,7 @@ def _encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> b
     if plain_value is None:
         raise ValueError("plain_value cannot be null")
     gcm = AESGCM(key)
-    value_bytes = plain_value.encode(config.security.ENCODING)
+    value_bytes = plain_value.encode(config.security.encoding)
     encrypted_bytes = gcm.encrypt(nonce, value_bytes, nonce)
     return encrypted_bytes
 
@@ -51,13 +51,13 @@ def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:
 
     encrypted_combined: bytes = base64.b64decode(encrypted_value)
     # Separate the nonce out as the first 12 characters of the combined message
-    nonce: bytes = encrypted_combined[0 : config.security.AES_GCM_NONCE_LENGTH]
+    nonce: bytes = encrypted_combined[0 : config.security.aes_gcm_nonce_length]
     encrypted_message: bytes = encrypted_combined[
-        config.security.AES_GCM_NONCE_LENGTH :
+        config.security.aes_gcm_nonce_length :
     ]
 
     decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
-    decrypted_str = decrypted_bytes.decode(config.security.ENCODING)
+    decrypted_str = decrypted_bytes.decode(config.security.encoding)
     return decrypted_str
 
 
@@ -69,19 +69,19 @@ def decrypt(encrypted_value: str, key: bytes, nonce: bytes) -> str:
     gcm = AESGCM(key)
     encrypted_bytes = base64.b64decode(encrypted_value)
     decrypted_bytes = gcm.decrypt(nonce, encrypted_bytes, nonce)
-    decrypted_str = decrypted_bytes.decode(config.security.ENCODING)
+    decrypted_str = decrypted_bytes.decode(config.security.encoding)
     return decrypted_str
 
 
 def verify_nonce(nonce: bytes) -> None:
-    if len(nonce) != config.security.AES_GCM_NONCE_LENGTH:
+    if len(nonce) != config.security.aes_gcm_nonce_length:
         raise ValueError(
-            f"Nonce must be {config.security.AES_GCM_NONCE_LENGTH} bytes long"
+            f"Nonce must be {config.security.aes_gcm_nonce_length} bytes long"
         )
 
 
 def verify_encryption_key(key: bytes) -> None:
-    if len(key) != config.security.AES_ENCRYPTION_KEY_LENGTH:
+    if len(key) != config.security.aes_encryption_key_length:
         raise ValueError(
-            f"Encryption key must be {config.security.AES_ENCRYPTION_KEY_LENGTH} bytes long"
+            f"Encryption key must be {config.security.aes_encryption_key_length} bytes long"
         )

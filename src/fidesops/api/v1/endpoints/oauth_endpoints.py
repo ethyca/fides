@@ -90,7 +90,7 @@ async def acquire_access_token(
 
     logger.info("Creating access token")
     access_code = client_detail.create_access_code_jwe(
-        config.security.APP_ENCRYPTION_KEY
+        config.security.app_encryption_key
     )
     return AccessToken(access_token=access_code)
 
@@ -115,8 +115,8 @@ def create_client(
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
-        config.security.OAUTH_CLIENT_ID_LENGTH_BYTES,
-        config.security.OAUTH_CLIENT_SECRET_LENGTH_BYTES,
+        config.security.oauth_client_id_length_bytes,
+        config.security.oauth_client_secret_length_bytes,
         scopes=scopes,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)

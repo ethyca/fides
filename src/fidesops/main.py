@@ -36,17 +36,17 @@ from fidesops.util.cache import get_cache
 from fidesops.util.logger import get_fides_log_record_factory
 from fidesops.util.oauth_util import get_db, verify_oauth_client
 
-logging.basicConfig(level=config.security.LOG_LEVEL)
+logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fidesops", openapi_url=f"{V1_URL_PREFIX}/openapi.json")
 
 # Set all CORS enabled origins
-if config.security.CORS_ORIGINS:
+if config.security.cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in config.security.CORS_ORIGINS],
+        allow_origins=[str(origin) for origin in config.security.cors_origins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -101,7 +101,7 @@ def prepare_and_log_request(
     """
 
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
-    if config.root_user.ANALYTICS_OPT_OUT:
+    if config.root_user.analytics_opt_out:
         return
     send_analytics_event(
         AnalyticsEvent(
@@ -129,7 +129,7 @@ for handler in ExceptionHandlers.get_handlers():
 WEBAPP_DIRECTORY = Path("src/fidesops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
-if config.admin_ui.ENABLED:
+if config.admin_ui.enabled:
 
     @app.on_event("startup")
     def check_if_admin_ui_index_exists() -> None:
@@ -175,15 +175,15 @@ def start_webserver() -> None:
         )
         config.log_all_config_values()
 
-    if config.database.ENABLED:
+    if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
-            init_db(config.database.SQLALCHEMY_DATABASE_URI)
+            init_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
             logger.error(f"Connection to database failed: {error}")
             return
 
-    if config.redis.ENABLED:
+    if config.redis.enabled:
         logger.info("Running Redis connection test...")
         try:
             get_cache()
@@ -193,7 +193,7 @@ def start_webserver() -> None:
 
     scheduler.start()
 
-    if config.database.ENABLED:
+    if config.database.enabled:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
@@ -205,7 +205,7 @@ def start_webserver() -> None:
         )
     )
 
-    if not config.execution.WORKER_ENABLED:
+    if not config.execution.worker_enabled:
         logger.info("Starting worker...")
         subprocess.Popen(["fidesops", "worker"])
 
@@ -213,7 +213,7 @@ def start_webserver() -> None:
     uvicorn.run(
         "fidesops.main:app",
         host="0.0.0.0",
-        port=config.PORT,
+        port=config.port,
         log_config=None,
         reload=config.hot_reloading,
     )

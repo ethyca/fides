@@ -60,7 +60,7 @@ def is_callback_token_expired(issued_at: datetime | None) -> bool:
 
     return (
         datetime.now() - issued_at
-    ).total_seconds() / 60.0 > config.execution.PRIVACY_REQUEST_DELAY_TIMEOUT
+    ).total_seconds() / 60.0 > config.execution.privacy_request_delay_timeout
 
 
 def verify_callback_oauth(
@@ -80,7 +80,7 @@ def verify_callback_oauth(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, config.security.APP_ENCRYPTION_KEY)
+        extract_payload(authorization, config.security.app_encryption_key)
     )
     try:
         token = WebhookJWE(**token_data)
@@ -118,7 +118,7 @@ async def verify_oauth_client(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, config.security.APP_ENCRYPTION_KEY)
+        extract_payload(authorization, config.security.app_encryption_key)
     )
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
@@ -127,7 +127,7 @@ async def verify_oauth_client(
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        config.security.OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES,
+        config.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 

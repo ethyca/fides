@@ -33,14 +33,14 @@ class FidesopsDatabaseSettings(DatabaseSettings):
 class ExecutionSettings(FidesSettings):
     """Configuration settings for execution."""
 
-    PRIVACY_REQUEST_DELAY_TIMEOUT: int = 3600
-    TASK_RETRY_COUNT: int
-    TASK_RETRY_DELAY: int  # In seconds
-    TASK_RETRY_BACKOFF: int
-    REQUIRE_MANUAL_REQUEST_APPROVAL: bool = False
-    MASKING_STRICT: bool = True
-    WORKER_ENABLED: bool = True
-    CELERY_CONFIG_PATH: Optional[str] = "celery.toml"
+    privacy_request_delay_timeout: int = 3600
+    task_retry_count: int
+    task_retry_delay: int  # In seconds
+    task_retry_backoff: int
+    require_manual_request_approval: bool = False
+    masking_strict: bool = True
+    worker_enabled: bool = True
+    celery_config_path: Optional[str] = "celery.toml"
 
     class Config:
         env_prefix = "FIDESOPS__EXECUTION__"
@@ -49,20 +49,20 @@ class ExecutionSettings(FidesSettings):
 class RedisSettings(FidesSettings):
     """Configuration settings for Redis."""
 
-    HOST: str
-    PORT: int = 6379
-    USER: Optional[str] = ""
-    PASSWORD: str
-    CHARSET: str = "utf8"
-    DECODE_RESPONSES: bool = True
-    DEFAULT_TTL_SECONDS: int = 604800
-    DB_INDEX: Optional[int]
-    ENABLED: bool = True
-    SSL: bool = False
-    SSL_CERT_REQS: Optional[str] = "required"
-    CONNECTION_URL: Optional[str] = None
+    host: str
+    port: int = 6379
+    user: Optional[str] = ""
+    password: str
+    charset: str = "utf8"
+    decode_responses: bool = True
+    default_ttl_seconds: int = 604800
+    db_index: Optional[int]
+    enabled: bool = True
+    ssl: bool = False
+    ssl_cert_reqs: Optional[str] = "required"
+    connection_url: Optional[str] = None
 
-    @validator("CONNECTION_URL", pre=True)
+    @validator("connection_url", pre=True)
     @classmethod
     def assemble_connection_url(
         cls,
@@ -74,7 +74,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{values.get('USER', '')}:{values['PASSWORD']}@{values['HOST']}:{values['PORT']}/{values.get('DB_INDEX', '')}"
+        return f"redis://{values.get('user', '')}:{values['password']}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -83,9 +83,9 @@ class RedisSettings(FidesSettings):
 class FidesopsSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
-    LOG_LEVEL: str = "INFO"
+    log_level: str = "INFO"
 
-    @validator("LOG_LEVEL", pre=True)
+    @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LOG_LEVEL is a valid value."""
         valid_values = [
@@ -113,10 +113,10 @@ class FidesopsSecuritySettings(SecuritySettings):
 class RootUserSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    ANALYTICS_OPT_OUT: Optional[bool]
-    ANALYTICS_ID: Optional[str]
+    analytics_opt_out: Optional[bool]
+    analytics_id: Optional[str]
 
-    @validator("ANALYTICS_ID", pre=True)
+    @validator("analytics_id", pre=True)
     def populate_analytics_id(cls, v: Optional[str]) -> str:
         """
         Populates the appropriate value for analytics id based on config
@@ -128,7 +128,7 @@ class RootUserSettings(FidesSettings):
         update_obj: Dict[str, Dict] = {}
         client_id: str = generate_client_id(FIDESOPS)
         logger.debug("analytics client id generated")
-        update_obj.update(root_user={"ANALYTICS_ID": client_id})
+        update_obj.update(root_user={"analytics_id": client_id})
         update_config_file(update_obj)
         return client_id
 
@@ -139,7 +139,7 @@ class RootUserSettings(FidesSettings):
 class AdminUiSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    ENABLED: bool
+    enabled: bool
 
     class Config:
         env_prefix = "FIDESOPS__ADMIN_UI__"
@@ -155,7 +155,7 @@ class FidesopsConfig(FidesSettings):
     root_user: RootUserSettings
     admin_ui: AdminUiSettings
 
-    PORT: int
+    port: int
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"
@@ -190,30 +190,30 @@ class FidesopsConfig(FidesSettings):
 
 CONFIG_KEY_ALLOWLIST = {
     "database": [
-        "SERVER",
-        "USER",
-        "PORT",
-        "DB",
-        "TEST_DB",
+        "server",
+        "user",
+        "port",
+        "db",
+        "test_db",
     ],
     "redis": [
-        "HOST",
-        "PORT",
-        "CHARSET",
-        "DECODE_RESPONSES",
-        "DEFAULT_TTL_SECONDS",
-        "DB_INDEX",
+        "host",
+        "port",
+        "charset",
+        "decode_responses",
+        "default_ttl_seconds",
+        "db_index",
     ],
     "security": [
-        "CORS_ORIGINS",
-        "ENCODING",
-        "OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES",
+        "cors_origins",
+        "encoding",
+        "oauth_access_token_expire_minutes",
     ],
     "execution": [
-        "TASK_RETRY_COUNT",
-        "TASK_RETRY_DELAY",
-        "TASK_RETRY_BACKOFF",
-        "REQUIRE_MANUAL_REQUEST_APPROVAL",
+        "task_retry_count",
+        "task_retry_delay",
+        "task_retry_backoff",
+        "require_manual_request_approval",
     ],
 }
 

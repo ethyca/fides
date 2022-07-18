@@ -278,7 +278,7 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
         id=privacy_request.id,
         replace_existing=True,
         trigger="date",
-        run_date=(datetime.now() + timedelta(seconds=config.redis.DEFAULT_TTL_SECONDS)),
+        run_date=(datetime.now() + timedelta(seconds=config.redis.default_ttl_seconds)),
     )
 
 

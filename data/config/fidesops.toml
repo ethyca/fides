@@ -1,40 +1,40 @@
-PORT = 8080
+port = 8080
 
 [database]
-SERVER = "testserver"
-USER = "testuser"
-PASSWORD = "testpassword"
-DB = "testdb"
-TEST_DB = "test_testdb"
-ENABLED = true
+server = "testserver"
+user = "testuser"
+password = "testpassword"
+db = "testdb"
+test_db = "test_testdb"
+enabled = true
 
 [redis]
-HOST = "testredis"
-PASSWORD = "testpassword"
-PORT = 1234
-CHARSET = "utf8"
-DEFAULT_TTL_SECONDS = 1000
-DB_INDEX = 0
-ENABLED = true
+host = "testredis"
+password = "testpassword"
+port = 1234
+charset = "utf8"
+default_ttl_seconds = 1000
+db_index = 0
+enabled = true
 
 [security]
-APP_ENCRYPTION_KEY = "atestencryptionkeythatisvalidlen"
-CORS_ORIGINS = [ "http://test.com", "https://test.com",]
-OAUTH_ROOT_CLIENT_ID = "testrootclientid"
-OAUTH_ROOT_CLIENT_SECRET = "testrootclientsecret"
-DRP_JWT_SECRET = "testdrpsecret"
-LOG_LEVEL = "DEBUG"
+app_encryption_key = "atestencryptionkeythatisvalidlen"
+cors_origins = [ "http://test.com", "https://test.com",]
+oauth_root_client_id = "testrootclientid"
+oauth_root_client_secret = "testrootclientsecret"
+drp_jwt_secret = "testdrpsecret"
+log_level = "DEBUG"
 
 [execution]
-TASK_RETRY_COUNT = 0
-TASK_RETRY_DELAY = 1
-TASK_RETRY_BACKOFF = 1
-REQUIRE_MANUAL_REQUEST_APPROVAL = false
-MASKING_STRICT = true
+task_retry_count = 0
+task_retry_delay = 1
+task_retry_backoff = 1
+require_manual_request_approval = false
+masking_strict = true
 
 [root_user]
-ANALYTICS_OPT_OUT = true
-ANALYTICS_ID = "internal"
+analytics_opt_out = true
+analytics_id = "internal"
 
 [admin_ui]
-ENABLED = true
+enabled = true

@@ -226,7 +226,7 @@ class Rule(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.APP_ENCRYPTION_KEY,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

@@ -18,9 +18,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
 
-### Added
+### Breaking Changes
 
-* ...
+* Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
+
+
 
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)

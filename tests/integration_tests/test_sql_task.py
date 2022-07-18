@@ -956,9 +956,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.TASK_RETRY_COUNT = 1
-        config.execution.TASK_RETRY_DELAY = 0.1
-        config.execution.TASK_RETRY_BACKOFF = 0.01
+        config.execution.task_retry_count = 1
+        config.execution.task_retry_delay = 0.1
+        config.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
@@ -1007,9 +1007,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.TASK_RETRY_COUNT = 2
-        config.execution.TASK_RETRY_DELAY = 0.1
-        config.execution.TASK_RETRY_BACKOFF = 0.01
+        config.execution.task_retry_count = 2
+        config.execution.task_retry_delay = 0.1
+        config.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)

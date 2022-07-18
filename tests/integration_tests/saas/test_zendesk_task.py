@@ -187,7 +187,7 @@ def test_zendesk_erasure_request_task(
     zendesk_create_erasure_data,
 ) -> None:
     """Full erasure request based on the zendesk SaaS config"""
-    config.execution.MASKING_STRICT = False  # Allow Delete
+    config.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_zendesk_erasure_request_task_{random.randint(0, 1000)}"
@@ -332,4 +332,4 @@ def test_zendesk_erasure_request_task(
         # Since ticket is deleted, it won't be available so response is 404
         assert response.status_code == 404
 
-    config.execution.MASKING_STRICT = True
+    config.execution.masking_strict = True
