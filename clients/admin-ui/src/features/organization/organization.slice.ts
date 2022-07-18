@@ -4,8 +4,6 @@ import { HYDRATE } from "next-redux-wrapper";
 
 import { Organization } from "~/types/api";
 
-import { OrganizationResponse } from "./types";
-
 // Organization API
 export const organizationApi = createApi({
   reducerPath: "organizationApi",
@@ -15,10 +13,7 @@ export const organizationApi = createApi({
   }),
   tagTypes: ["Organization"],
   endpoints: (build) => ({
-    createOrganization: build.mutation<
-      OrganizationResponse,
-      Partial<Organization>
-    >({
+    createOrganization: build.mutation<Organization, Partial<Organization>>({
       query: (body) => ({
         url: `organization/`,
         method: "POST",
