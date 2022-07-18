@@ -33,6 +33,7 @@ The types of changes are:
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
 * Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 * Standardized API error parsing under `~/types/errors`
 
 ### Changed
@@ -44,6 +45,7 @@ The types of changes are:
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+* Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
