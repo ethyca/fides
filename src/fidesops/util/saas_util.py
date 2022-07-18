@@ -193,7 +193,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
         placeholders = re.findall("<([^<>]+)>", value)
         for placeholder in placeholders:
             placeholder_value = param_values.get(placeholder)
-            if placeholder_value:
+            if placeholder_value is not None:
                 value = value.replace(f"<{placeholder}>", str(placeholder_value))
             else:
                 return None

@@ -262,6 +262,14 @@ class TestAssignPlaceholders:
     def test_single_placeholder_with_string_value(self):
         assert assign_placeholders("<access_key>", {"access_key": "123"}) == "123"
 
+    def test_single_placeholder_with_empty_string_value(self):
+        assert (
+            assign_placeholders(
+                "{<masked_object_fields>}", {"masked_object_fields": ""}
+            )
+            == "{}"
+        )
+
     def test_single_placeholder_with_int_value(self):
         assert assign_placeholders("<page_size>", {"page_size": 10}) == "10"
 
