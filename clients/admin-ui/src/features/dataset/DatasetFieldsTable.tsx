@@ -37,7 +37,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
         <Thead>
           <Tr>
             {columns.map((c) => (
-              <Th key={c.name} pl={0}>
+              <Th key={c.name} pl={0} data-testid={`column-${c.name}`}>
                 {c.name}
               </Th>
             ))}

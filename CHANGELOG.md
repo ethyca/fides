@@ -60,6 +60,7 @@ The types of changes are:
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 * Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
 * Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
+* Dataset field columns show all columns by default in the UI [#898](https://github.com/ethyca/fides/pull/898)
 * Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
