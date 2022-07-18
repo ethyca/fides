@@ -12,11 +12,11 @@ from .fides_settings import FidesSettings
 class FidesctlCLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
-    local_mode: bool
-    analytics_id: str
+    local_mode: bool = False
+    analytics_id: str = generate_client_id(FIDESCTL_CLI)
 
-    server_protocol: str
-    server_host: str
+    server_protocol: str = "http"
+    server_host: str = "localhost"
     server_port: Optional[int]
     server_url: Optional[AnyHttpUrl]
 

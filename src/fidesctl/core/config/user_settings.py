@@ -14,10 +14,10 @@ from .fides_settings import FidesSettings
 class FidesctlUserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
-    user_id: str
-    api_key: str
-    request_headers: Dict[str, str]
-    encryption_key: str
+    user_id: str = "1"
+    api_key: str = "test_api_key"
+    request_headers: Dict[str, str] = dict()
+    encryption_key: str = "test_encryption_key"
     analytics_opt_out: Optional[bool]
 
     @staticmethod
