@@ -20,16 +20,6 @@ class FidesctlCLISettings(FidesSettings):
     server_port: Optional[int]
     server_url: Optional[AnyHttpUrl]
 
-    @staticmethod
-    def default() -> "FidesctlCLISettings":
-        """Returns config object with default values set."""
-        return FidesctlCLISettings(
-            local_mode=False,
-            analytics_id=generate_client_id(FIDESCTL_CLI),
-            server_protocol="http",
-            server_host="localhost",
-        )
-
     @validator("server_url", always=True)
     def get_server_url(cls: FidesSettings, value: str, values: Dict) -> str:
         "Create the server_url."

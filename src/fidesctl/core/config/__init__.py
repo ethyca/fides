@@ -2,13 +2,12 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
-
 from typing import Dict
 
 import toml
+from fideslib.core.config import load_toml
 from pydantic import BaseModel
 
-from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
 
 from .cli_settings import FidesctlCLISettings
@@ -30,7 +29,7 @@ class FidesctlConfig(BaseModel):
     logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
 
 
-def get_config(config_path: str = "") -> FidesctlConfig:
+def get_config(config_path_override: str = "") -> FidesctlConfig:
     """
     Attempt to load user-defined configuration.
 
@@ -40,8 +39,11 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     """
 
     try:
-        file_location = get_config_path(config_path)
-        settings = toml.load(file_location)
+        settings = (
+            toml.load(config_path_override)
+            if config_path_override
+            else load_toml(file_names=["fidesctl.toml"])
+        )
 
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
@@ -55,7 +57,7 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     except FileNotFoundError:
         echo_red("No config file found")
     except IOError:
-        echo_red(f"Error reading config file from {file_location}")
+        echo_red("Error reading config file from")
 
     fidesctl_config = FidesctlConfig()
     print("Using default configuration values.")

@@ -41,7 +41,7 @@ def test_default_config() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDESCTL_CONFIG_PATH": "",
+        "FIDES__CONFIG_PATH": "/fides/.fides/",
         "FIDESCTL__USER__USER_ID": "2",
         "FIDESCTL__CLI__SERVER_HOST": "test",
         "FIDESCTL__CLI__SERVER_PORT": "8080",
@@ -53,7 +53,6 @@ def test_default_config() -> None:
 def test_config_from_env_vars() -> None:
     "Test building a config from env vars."
     config = get_config()
-    os.chdir("/fides")
 
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"

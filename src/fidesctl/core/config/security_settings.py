@@ -1,15 +1,11 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, Optional
+from typing import Dict
 
-from pydantic import (
-    root_validator,
-)
 from fideslib.core.config import SecuritySettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-
-injectself = lambda f: lambda self: eval(f.func_code, dict(self=self))
+from pydantic import root_validator
 
 
 class FidesctlSecuritySettings(SecuritySettings):
