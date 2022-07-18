@@ -106,14 +106,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   const { getConnectorDisplayName, getImageSrc } = useConnectionGridItem();
 
   return (
-    <Box
-      width="100%"
-      height={136}
-      border="1px"
-      borderColor="blackAlpha.300"
-      boxSizing="border-box"
-      p="18px 16px 16px 16px"
-    >
+    <Box width="100%" height={136} p="18px 16px 16px 16px">
       <Flex justifyContent="center" alignItems="center">
         <Image
           boxSize="32px"
