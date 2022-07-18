@@ -49,6 +49,19 @@ saas_config:
                 - dataset: salesforce_connector_example
                   field: contact_list.Id
                   direction: from
+        update:
+          method: PATCH
+          path: /services/data/v54.0/sobjects/Contact/<contact_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: contact_id
+              references:
+                - dataset: salesforce_connector_example
+                  field: contacts.Id
+                  direction: from
     - name: case_list
       requests:
         read:
@@ -75,6 +88,19 @@ saas_config:
                 - dataset: salesforce_connector_example
                   field: case_list.Id
                   direction: from
+        update:
+          method: PATCH
+          path: /services/data/v54.0/sobjects/Case/<case_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: case_id
+              references:
+                - dataset: salesforce_connector_example
+                  field: cases.Id
+                  direction: from
     - name: lead_list
       requests:
         read:
@@ -98,6 +124,19 @@ saas_config:
                 - dataset: salesforce_connector_example
                   field: lead_list.Id
                   direction: from
+        update:
+          method: PATCH
+          path: /services/data/v54.0/sobjects/Lead/<lead_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: lead_id
+              references:
+                - dataset: salesforce_connector_example
+                  field: leads.Id
+                  direction: from
     - name: accounts
       requests:
         read:
@@ -108,6 +147,19 @@ saas_config:
               references:
                 - dataset: salesforce_connector_example
                   field: contacts.AccountId
+        update:
+          method: PATCH
+          path: /services/data/v54.0/sobjects/Account/<account_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: account_id
+              references:
+                - dataset: salesforce_connector_example
+                  field: accounts.Id
+                  direction: from
     - name: campaign_member_list
       requests:
         read:
@@ -130,4 +182,17 @@ saas_config:
               references:
                 - dataset: salesforce_connector_example
                   field: campaign_member_list.Id
+                  direction: from
+        update:
+          method: PATCH
+          path: /services/data/v54.0/sobjects/CampaignMember/<campaign_member_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: campaign_member_id
+              references:
+                - dataset: salesforce_connector_example
+                  field: campaign_members.Id
                   direction: from

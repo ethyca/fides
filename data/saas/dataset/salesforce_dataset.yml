@@ -35,6 +35,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: IsDeleted
             data_categories: [system.operations]
             fidesops_meta:
@@ -63,6 +64,7 @@ dataset:
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: OtherStreet
             data_categories: [user.provided.identifiable.contact.street]
             fidesops_meta:
@@ -281,6 +283,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: IsDeleted
             data_categories: [system.operations]
             fidesops_meta:
@@ -443,6 +446,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: IsDeleted
             data_categories: [system.operations]
             fidesops_meta:
@@ -467,6 +471,7 @@ dataset:
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: Title
             data_categories: [system.operations]
             fidesops_meta:
@@ -673,6 +678,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: IsDeleted
             data_categories: [system.operations]
             fidesops_meta:
@@ -723,14 +729,17 @@ dataset:
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: FirstName
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: LastName
             data_categories: [user.provided.identifiable.name]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: Title
             data_categories: [system.operations]
             fidesops_meta:
@@ -823,6 +832,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: IsDeleted
             data_categories: [system.operations]
             fidesops_meta:
