@@ -253,3 +253,8 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
         with open(f"{nested_manifest_dir}/{manifest}.yml", "w") as manifest_file:
             yaml.dump(test_manifests[manifest], manifest_file)
     return manifest_dir
+
+
+@pytest.fixture(autouse=True)
+def clear_get_config_cache() -> None:
+    get_config.cache_clear()
