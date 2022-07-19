@@ -1,7 +1,6 @@
-fidesctl/api/src/main/resources/application.conf
 docs/fides/docs/api/openapi.json
 docs/fides/docs/schemas/config_schema.json
-fidesctl/api/build/static
+fidesc/api/ctl/build/static
 
 ## generic files to ignore
 *~

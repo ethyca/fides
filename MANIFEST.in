@@ -2,5 +2,5 @@ include LICENSE
 include requirements.txt
 include dev-requirements.txt
 include versioneer.py
-include src/fidesctl/api/alembic.ini
+include src/fidesctl/api/ctl/alembic.ini
 include src/fidesctl/templates/fides_datamap_template.xlsx
