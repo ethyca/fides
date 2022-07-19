@@ -223,7 +223,9 @@ def test_get_evaluation_policies_with_key_found_local() -> None:
     local_policy_1 = Policy(fides_key="fides_key_1", rules=[])
     local_policy_2 = Policy(fides_key="fides_key_2", rules=[])
     get_server_resource_mock = MagicMock(return_value=server_policy)
-    with patch("fidesctl.core.evaluate.get_server_resource", get_server_resource_mock):
+    with patch(
+        "fidesctl.ctl.core.evaluate.get_server_resource", get_server_resource_mock
+    ):
         policies = evaluate.get_evaluation_policies(
             local_policies=[local_policy_1, local_policy_2],
             evaluate_fides_key="fides_key_1",
@@ -244,7 +246,9 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
     server_policy = Policy(fides_key="fides_key_1", rules=[])
     local_policy = Policy(fides_key="fides_key_2", rules=[])
     get_server_resource_mock = MagicMock(return_value=server_policy)
-    with patch("fidesctl.core.evaluate.get_server_resource", get_server_resource_mock):
+    with patch(
+        "fidesctl.ctl.core.evaluate.get_server_resource", get_server_resource_mock
+    ):
         policies = evaluate.get_evaluation_policies(
             local_policies=[local_policy],
             evaluate_fides_key="fides_key_1",
@@ -273,7 +277,8 @@ def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> Non
         return_value=[server_policy_1, server_policy_2]
     )
     with patch(
-        "fidesctl.core.evaluate.get_all_server_policies", get_all_server_policies_mock
+        "fidesctl.ctl.core.evaluate.get_all_server_policies",
+        get_all_server_policies_mock,
     ):
         policies = evaluate.get_evaluation_policies(
             local_policies=[local_policy_1, local_policy_2],
