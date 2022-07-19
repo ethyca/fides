@@ -2,7 +2,6 @@ import { DataCategory } from "~/types/api";
 
 import { DataCategoryNode } from "./types";
 
-// eslint-disable-next-line import/prefer-default-export
 export const transformDataCategoriesToNodes = (
   categories: DataCategory[],
   parentKey?: string
