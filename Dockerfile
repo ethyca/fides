@@ -94,7 +94,7 @@ ENV RUNNING_IN_DOCKER=TRUE
 RUN mkdir -p src/fides/api/ctl/build/static
 
 EXPOSE 8080
-CMD ["fides", "webserver"]
+CMD ["fidesctl", "webserver"]
 
 ###################################
 ## Application Development Setup ##
