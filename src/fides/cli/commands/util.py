@@ -112,6 +112,6 @@ def webserver(ctx: click.Context) -> None:
     Starts the fidesctl API server using Uvicorn on port 8080.
     """
     # This has to be here to avoid a circular dependency
-    from fides.api.ctl.main import start_webserver
+    from fides.api.main import start_webserver
 
     start_webserver()

@@ -2,12 +2,12 @@
 
 ---
 
-Changes to fidesctl could require a change to the database model. This includes scenarios where you want to persist a new field or replace an existing field. Changes made to the fidesctl database are done through alembic migration scripts. Migrations can be found in the following direcotry: `fidesctl/src/fidesctl/api/migrations/versions`
+Changes to fidesctl could require a change to the database model. This includes scenarios where you want to persist a new field or replace an existing field. Changes made to the fidesctl database are done through alembic migration scripts. Migrations can be found in the following direcotry: `src/fides/api/ctl/migrations/versions`
 
 To create a new migration we use the `alembic revision` command:
 
 ```bash
-cd fidesctl/src/fidesctl/api
+cd /src/fides/api/ctl/
 alembic revision --autogenerate -m "migration message"
 ```
 
