@@ -1,4 +1,4 @@
-"""Fides"""
+"""Fides CLI"""
 
 from ._version import get_versions
 
