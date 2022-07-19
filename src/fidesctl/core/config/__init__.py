@@ -3,6 +3,7 @@ This module is responsible for combining all of the different
 config sections into a single config.
 """
 
+from functools import lru_cache
 from typing import Dict
 
 import toml
@@ -26,6 +27,7 @@ class FidesctlConfig(BaseModel):
     credentials: Dict[str, Dict] = dict()
 
 
+@lru_cache(maxsize=1)
 def get_config(config_path: str = "") -> FidesctlConfig:
     """
     Attempt to load user-defined configuration.

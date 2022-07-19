@@ -26,6 +26,36 @@ def test_get_config() -> None:
     )
 
 
+@patch.dict(
+    os.environ,
+    {"FIDESCTL_CONFIG_PATH": ""},
+    clear=True,
+)
+@pytest.mark.unit
+def test_get_config_cache() -> None:
+    "Test lru cache hits."
+    config = get_config()
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 0
+    assert cache_info.misses == 1
+
+    config = get_config()
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 1
+    assert cache_info.misses == 1
+
+    config = get_config("tests/test_config.toml")
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 1
+    assert cache_info.misses == 2
+
+
 @pytest.mark.unit
 def test_default_config() -> None:
     "Test building a config from default values."
