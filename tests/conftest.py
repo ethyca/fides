@@ -42,6 +42,7 @@ from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
+from .fixtures.saas.sendgrid_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
