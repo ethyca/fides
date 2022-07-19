@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
+  BoxProps,
   Button,
   ButtonGroup,
   Text,
@@ -28,16 +29,16 @@ const AccordionTree = ({ nodes }: Props) => {
   /**
    * Recursive function to generate the accordion tree
    */
-  const createTree = (node: TreeNode) => {
+  const createTree = (node: TreeNode, level: number = 0) => {
     // some nodes render as AccordionItems and some as just Boxes, but
     // we want to keep their styling similar, so pass them the same props
-    const itemProps = {
-      // TODO: these borders are cut a little short, need to figure out CSS
+    const itemProps: BoxProps = {
       borderBottom: "1px solid",
       borderColor: "gray.200",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      pl: level * 3,
       _hover: { bg: "gray.50" },
       onMouseEnter: () => {
         setHoverNode(node);
@@ -49,29 +50,39 @@ const AccordionTree = ({ nodes }: Props) => {
 
     if (node.children.length === 0) {
       return (
-        <Box pl={9} py={2} {...itemProps} data-testid={`item-${node.label}`}>
-          <Text>{node.label}</Text>
+        <Box py={2} {...itemProps} data-testid={`item-${node.label}`}>
+          <Text
+            pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
+          >
+            {node.label}
+          </Text>
           {hoverNode?.value === node.value ? <ActionButtons /> : null}
         </Box>
       );
     }
     return (
       <AccordionItem
-        py={0}
+        p={0}
         border="none"
         data-testid={`accordion-item-${node.label}`}
       >
         <Box {...itemProps}>
-          <AccordionButton _expanded={{ color: "complimentary.500" }}>
+          <AccordionButton
+            _expanded={{ color: "complimentary.500" }}
+            _hover={{ bg: "gray.50" }}
+            pl={0}
+          >
             <AccordionIcon />
             {node.label}
           </AccordionButton>
           {hoverNode?.value === node.value ? <ActionButtons /> : null}
         </Box>
 
-        <AccordionPanel py={0} pr={0}>
+        <AccordionPanel p={0}>
           {node.children.map((childNode) => (
-            <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
+            <Fragment key={childNode.value}>
+              {createTree(childNode, level + 1)}
+            </Fragment>
           ))}
         </AccordionPanel>
       </AccordionItem>
