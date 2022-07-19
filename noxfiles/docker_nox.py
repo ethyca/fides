@@ -69,4 +69,4 @@ def push(session: nox.Session, tag: str) -> None:
     # Only push the tagged version if its for prod
     # Example: "ethyca/fidesctl:1.7.0"
     if tag == "prod":
-        session.run("docker", "push", IMAGE, external=True)
+        session.run("docker", "push", f"{IMAGE}:{get_current_tag()}", external=True)

@@ -21,3 +21,14 @@ analytics_opt_out = true
 postgres_1 = {connection_string="postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"}
 okta_1 = {orgUrl="https://dev-78908748.okta.com", token="redacted_override_in_tests"}
 aws_1 = {aws_access_key_id="redacted_id_override_in_tests", aws_secret_access_key="redacted_override_in_tests", region_name="us-east-1"}
+[credentials.bigquery_1]
+type = "service_account"
+project_id = "redacted_id_override_in_tests"
+private_key_id = "redacted_id_override_in_tests"
+private_key = "redacted_id_override_in_tests"
+client_email = "redacted_id_override_in_tests"
+client_id = "redacted_id_override_in_tests"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "redacted_url_override_in_tests"

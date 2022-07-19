@@ -24,9 +24,9 @@ setup_fidesapi_logger(
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from fidesctl.api.sql_models import SqlAlchemyBase
+from fidesctl.api.sql_models import Base
 
-target_metadata = SqlAlchemyBase.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

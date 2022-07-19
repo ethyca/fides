@@ -2,15 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { AppState } from "~/app/store";
-
-import { DataUse } from "./types";
+import { DataUse } from "~/types/api";
 
 export interface State {
-  dataUse: DataUse[];
+  dataUses: DataUse[];
 }
 
 const initialState: State = {
-  dataUse: [],
+  dataUses: [],
 };
 
 export const dataUseApi = createApi({
@@ -18,29 +17,29 @@ export const dataUseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Data Use"],
+  tagTypes: ["Data Uses"],
   endpoints: (build) => ({
-    getDataUse: build.query<DataUse, void>({
+    getAllDataUses: build.query<DataUse[], void>({
       query: () => ({ url: `data_use/` }),
-      providesTags: () => ["Data Use"],
+      providesTags: () => ["Data Uses"],
     }),
   }),
 });
 
-export const { useGetDataUseQuery } = dataUseApi;
+export const { useGetAllDataUsesQuery } = dataUseApi;
 
 export const dataUseSlice = createSlice({
   name: "dataUse",
   initialState,
   reducers: {
-    setDataUse: (state, action: PayloadAction<any>) => ({
+    setDataUses: (state, action: PayloadAction<any>) => ({
       ...state,
-      dataUse: action.payload,
+      dataUses: action.payload,
     }),
   },
 });
 
-export const { setDataUse } = dataUseSlice.actions;
-export const selectDataUse = (state: AppState) => state.dataUse.dataUse;
+export const { setDataUses } = dataUseSlice.actions;
+export const selectDataUses = (state: AppState) => state.dataUse.dataUses;
 
 export const { reducer } = dataUseSlice;

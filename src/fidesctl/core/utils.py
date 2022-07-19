@@ -20,10 +20,6 @@ logger = logging.getLogger("server_api")
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
 
-# This duplicates a constant in `fidesctl/api/routes/utils.py`
-# To avoid import errors
-API_PREFIX = "/api/v1"
-
 
 def check_response(response: requests.Response) -> requests.Response:
     """

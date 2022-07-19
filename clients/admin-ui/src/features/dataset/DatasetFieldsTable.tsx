@@ -2,11 +2,13 @@ import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { DatasetField } from "~/types/api";
+
 import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
 import { selectActiveFieldIndex, setActiveFieldIndex } from "./dataset.slice";
 import EditFieldDrawer from "./EditFieldDrawer";
-import { ColumnMetadata, DatasetField } from "./types";
+import { ColumnMetadata } from "./types";
 
 interface Props {
   fields: DatasetField[];
@@ -37,7 +39,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
         <Thead>
           <Tr>
             {columns.map((c) => (
-              <Th key={c.name} pl={0}>
+              <Th key={c.name} pl={0} data-testid={`column-${c.name}`}>
                 {c.name}
               </Th>
             ))}

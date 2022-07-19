@@ -4,8 +4,8 @@ import pytest
 from requests_mock import Mocker
 
 import fidesctl.cli.utils as utils
+from fidesctl.api.routes.util import API_PREFIX
 from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.utils import API_PREFIX
 
 
 @pytest.mark.unit
@@ -285,3 +285,30 @@ class TestHandleAWSCredentialsOptions:
             "aws_secret_access_key": input_access_key,
             "region_name": input_region,
         }
+
+
+@pytest.mark.unit
+class TestHandleBigQueryCredentialsOptions:
+    def test_multiple_config_options_raises(
+        self,
+        test_config: FidesctlConfig,
+    ) -> None:
+        with pytest.raises(click.UsageError):
+            utils.handle_bigquery_config_options(
+                fides_config=test_config,
+                dataset="dataset",
+                keyfile_path="path/to/keyfile.json",
+                credentials_id="bigquery_1",
+            )
+
+    def test_missing_credential_id(
+        self,
+        test_config: FidesctlConfig,
+    ) -> None:
+        with pytest.raises(click.UsageError):
+            utils.handle_bigquery_config_options(
+                fides_config=test_config,
+                dataset="dataset",
+                keyfile_path="",
+                credentials_id="UNKNOWN",
+            )
