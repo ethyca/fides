@@ -8,8 +8,8 @@ from fides.cli.options import (
     output_directory_option,
 )
 from fides.cli.utils import with_analytics
-from fides.core import export as _export
-from fides.core import parse as _parse
+from fides.ctl.core import export as _export
+from fides.ctl.core import parse as _parse
 
 
 @click.group(name="export")

@@ -7,7 +7,7 @@ from typing import Dict, List
 
 import pytest
 
-from fides.core import visualize
+from fides.ctl.core import visualize
 
 
 @pytest.fixture

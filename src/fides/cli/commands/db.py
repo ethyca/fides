@@ -3,8 +3,8 @@ import click
 
 from fides.cli.options import yes_flag
 from fides.cli.utils import handle_cli_response, with_analytics
-from fides.core import api as _api
-from fides.core.utils import echo_red
+from fides.ctl.core import api as _api
+from fides.ctl.core.utils import echo_red
 
 
 @click.group(name="db")

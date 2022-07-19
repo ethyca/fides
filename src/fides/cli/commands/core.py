@@ -8,12 +8,12 @@ from fides.cli.options import (
     verbose_flag,
 )
 from fides.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
-from fides.core import apply as _apply
-from fides.core import audit as _audit
-from fides.core import evaluate as _evaluate
-from fides.core import parse as _parse
-from fides.core import sync as _sync
-from fides.core.utils import git_is_dirty
+from fides.ctl.core import apply as _apply
+from fides.ctl.core import audit as _audit
+from fides.ctl.core import evaluate as _evaluate
+from fides.ctl.core import parse as _parse
+from fides.ctl.core import sync as _sync
+from fides.ctl.core.utils import git_is_dirty
 
 
 @click.command()

@@ -4,7 +4,7 @@ import click
 
 from fides.cli.options import fides_key_argument, resource_type_argument
 from fides.cli.utils import handle_cli_response, with_analytics
-from fides.core import api as _api
+from fides.ctl.core import api as _api
 
 
 @click.command()

@@ -4,8 +4,8 @@ import pytest
 from requests_mock import Mocker
 
 import fides.cli.utils as utils
-from fides.api.routes.util import API_PREFIX
-from fides.core.config import FidesctlConfig
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.ctl.core.config import FidesctlConfig
 
 
 @pytest.mark.unit
