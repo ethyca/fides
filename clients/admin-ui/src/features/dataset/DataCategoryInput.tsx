@@ -14,12 +14,13 @@ import {
 } from "@fidesui/react";
 import { useMemo } from "react";
 
+import { DataCategory } from "~/types/api";
+
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
 import QuestionTooltip from "../common/QuestionTooltip";
 import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import { transformDataCategoriesToNodes } from "../taxonomy/helpers";
-import { DataCategory } from "../taxonomy/types";
 
 interface Props {
   dataCategories: DataCategory[];

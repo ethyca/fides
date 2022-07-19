@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { Dataset } from "~/types/api";
 
 import {
   setActiveDataset,
@@ -11,7 +12,6 @@ import {
 } from "./dataset.slice";
 import EditDatasetForm from "./EditDatasetForm";
 import EditDrawer from "./EditDrawer";
-import { Dataset } from "./types";
 
 const DESCRIPTION =
   "A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. Provide additional context to this dataset by filling out the fields below.";

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
+import { Dataset } from "~/types/api";
 
 import {
   CustomMultiSelect,
@@ -13,7 +14,6 @@ import {
 } from "../common/form/inputs";
 import { DATA_QUALIFIERS, DATASET } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
-import { Dataset } from "./types";
 
 const DATA_QUALIFIERS_OPTIONS = DATA_QUALIFIERS.map((qualifier) => ({
   label: qualifier.label,

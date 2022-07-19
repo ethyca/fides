@@ -8,6 +8,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { QuestionIcon } from "~/features/common/Icon";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+import { System } from "~/types/api";
 
 import {
   CustomCreatableMultiSelect,
@@ -15,7 +16,6 @@ import {
   CustomTextInput,
 } from "../common/form/inputs";
 import { useCreateSystemMutation } from "../system/system.slice";
-import { System } from "../system/types";
 import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
 type FormValues = Partial<System>;
@@ -59,7 +59,7 @@ const DescribeSystemsForm = ({
         },
       ],
       system_type: values.system_type,
-      meta: { tags: values.tags?.toString() },
+      tags: values.tags,
     };
 
     const handleResult = (
@@ -182,7 +182,7 @@ const DescribeSystemsForm = ({
                   id="tags"
                   name="tags"
                   label="System Tags"
-                  options={initialValues.tags.map((s: any) => ({
+                  options={initialValues.tags.map((s) => ({
                     value: s,
                     label: s,
                   }))}

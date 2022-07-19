@@ -1,40 +1,12 @@
-import os
-from errno import ENOENT
 from typing import Any, Dict, Union
 
 from click import echo
+from fideslib.core.config import load_file
 from toml import dump, load
 
 
-def get_config_path(config_path: str) -> str:
-    """
-    Attempt to read config file from:
-    a) passed in configuration, if it exists
-    b) env var FIDESCTL_CONFIG_PATH
-    b) local directory
-    c) home directory
-
-    Returns the path of the first configuration file found.
-    """
-
-    default_file_name = ".fides/fidesctl.toml"
-
-    possible_config_locations = [
-        config_path,
-        os.getenv("FIDESCTL_CONFIG_PATH", ""),
-        os.path.join(os.curdir, default_file_name),
-        os.path.join(os.path.expanduser("~"), default_file_name),
-    ]
-
-    for file_location in possible_config_locations:
-        if file_location != "" and os.path.isfile(file_location):
-            return file_location
-
-    raise FileNotFoundError(ENOENT, os.strerror(ENOENT), config_path)
-
-
 def get_config_from_file(
-    config_path: str,
+    config_path_override: str,
     section: str,
     option: str,
 ) -> Union[str, bool, int, None]:
@@ -43,7 +15,7 @@ def get_config_from_file(
     """
 
     try:
-        config_path = get_config_path(config_path)
+        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
     except FileNotFoundError as error:
         raise error
 
@@ -60,7 +32,7 @@ def get_config_from_file(
 
 def update_config_file(  # type: ignore
     updates: Dict[str, Dict[str, Any]],
-    config_path: str,
+    config_path_override: str,
 ) -> None:
     """
     Overwrite the existing config file with a new version that includes the desired `updates`.
@@ -70,7 +42,7 @@ def update_config_file(  # type: ignore
     """
 
     try:
-        config_path = get_config_path(config_path)
+        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
     except FileNotFoundError as error:
         raise error
 

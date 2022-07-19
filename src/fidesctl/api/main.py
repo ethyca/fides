@@ -76,13 +76,13 @@ async def create_webapp_dir_if_not_exists() -> None:
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     setup_logging(
-        CONFIG.api.log_level,
-        serialize=CONFIG.api.log_serialization,
-        desination=CONFIG.api.log_destination,
+        CONFIG.logging.level,
+        serialize=CONFIG.logging.serialization,
+        desination=CONFIG.logging.destination,
     )
 
-    log.bind(api_config=CONFIG.api.json()).debug("Configuration options in use")
-    await configure_db(CONFIG.api.sync_database_url)
+    log.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
+    await configure_db(CONFIG.database.sync_database_uri)
 
 
 @app.middleware("http")

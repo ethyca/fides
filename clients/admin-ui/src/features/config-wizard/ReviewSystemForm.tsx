@@ -45,7 +45,7 @@ const ReviewSystemForm = ({
     system_key: existingSystem?.fides_key ?? "",
     system_description: existingSystem?.description ?? "",
     system_type: existingSystem?.system_type ?? "",
-    meta: existingSystem?.meta ?? { tags: "" },
+    tags: existingSystem?.tags ?? [],
     privacy_declarations: existingSystem?.privacy_declarations ?? [],
   };
 
@@ -88,17 +88,16 @@ const ReviewSystemForm = ({
             </HStack>
             <HStack>
               <FormLabel>System tags:</FormLabel>
-              {initialValues.meta.tags &&
-                initialValues?.meta?.tags.split(",").map((tag) => (
-                  <Tag
-                    background="primary.400"
-                    color="white"
-                    key={tag}
-                    width="fit-content"
-                  >
-                    {tag}
-                  </Tag>
-                ))}
+              {initialValues.tags.map((tag) => (
+                <Tag
+                  background="primary.400"
+                  color="white"
+                  key={tag}
+                  width="fit-content"
+                >
+                  {tag}
+                </Tag>
+              ))}
             </HStack>
             <FormLabel>Privacy declarations:</FormLabel>
             {initialValues.privacy_declarations.length > 0

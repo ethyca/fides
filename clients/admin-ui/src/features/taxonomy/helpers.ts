@@ -1,10 +1,10 @@
-import { FidesKey } from "../common/fides-types";
-import { DataCategory, DataCategoryNode } from "./types";
+import { DataCategory } from "~/types/api";
 
-// eslint-disable-next-line import/prefer-default-export
+import { DataCategoryNode } from "./types";
+
 export const transformDataCategoriesToNodes = (
   categories: DataCategory[],
-  parentKey?: FidesKey
+  parentKey?: string
 ): DataCategoryNode[] => {
   const keyToCompare = parentKey ?? null;
   const thisLevel = categories.filter(
