@@ -37,6 +37,7 @@ The types of changes are:
 * Standardized API error parsing under `~/types/errors`
 * Added taxonomy page to UI [#902](https://github.com/ethyca/fides/pull/902)
 * Add lru cache to get_config [927](https://github.com/ethyca/fides/pull/927)
+* `fides` is now an alias for `fidesctl` as a CLI entrypoint [#926](https://github.com/ethyca/fides/pull/926)
 
 ### Changed
 
