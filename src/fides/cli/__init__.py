@@ -48,7 +48,7 @@ APP = fides.__name__
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
-    name="fidesctl",
+    name="fides",
 )
 @click.version_option(version=VERSION)
 @click.option(
