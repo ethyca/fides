@@ -12,9 +12,9 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fides.api.ctl import view
-from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.routes import (
+from fides.api import view
+from fides.api.database.database import configure_db
+from fides.api.routes import (
     admin,
     crud,
     datamap,
@@ -23,9 +23,9 @@ from fides.api.ctl.routes import (
     validate,
     visualize,
 )
-from fides.api.ctl.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
-from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.api.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fides.api.utils.logger import setup as setup_logging
+from fides.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()

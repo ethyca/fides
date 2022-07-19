@@ -22,18 +22,18 @@ from fideslog.sdk.python.utils import (
 )
 
 import fides
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesctlConfig
-from fides.ctl.core.config.credentials_settings import (
+from fides.api.routes.util import API_PREFIX
+from fides.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fides.core import api as _api
+from fides.core.config import FidesctlConfig
+from fides.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.ctl.core.config.utils import get_config_from_file, update_config_file
-from fides.ctl.core.utils import check_response, echo_green, echo_red
+from fides.core.config.utils import get_config_from_file, update_config_file
+from fides.core.utils import check_response, echo_green, echo_red
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:

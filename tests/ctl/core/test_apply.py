@@ -5,7 +5,7 @@ from typing import Dict, Generator, List
 import fideslang as models
 import pytest
 
-from fides.ctl.core.apply import get_orphan_datasets, sort_create_update
+from fides.core.apply import get_orphan_datasets, sort_create_update
 
 
 # Helpers

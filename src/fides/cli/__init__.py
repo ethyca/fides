@@ -8,7 +8,7 @@ from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
 from fides.cli.utils import check_and_update_analytics_config, check_server
-from fides.ctl.core.config import get_config
+from fides.core.config import get_config
 
 from .commands.annotate import annotate
 from .commands.core import apply, evaluate, parse, sync

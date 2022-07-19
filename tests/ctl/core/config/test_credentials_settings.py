@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from fides.ctl.core.config.credentials_settings import merge_credentials_environment
+from fides.core.config.credentials_settings import merge_credentials_environment
 
 
 @pytest.mark.unit
