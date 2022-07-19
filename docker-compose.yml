@@ -27,6 +27,7 @@ services:
         read_only: False
     environment:
       FIDESCTL_TEST_MODE: "True"
+      FIDES__CONFIG_PATH: "/fides/.fides/"
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
       FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}

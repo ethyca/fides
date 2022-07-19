@@ -12,17 +12,18 @@ After initializing fidesctl, a default configuration file will be generated and 
 
 
 ```toml title="fidesctl.toml"
-[api]
-database_user = "postgres"
-database_password = "fidesctl"
-database_host = "fidesctl-db"
-database_port = "5432"
-database_name = "fidesctl"
+[database]
+server="fidesctl-db"
+user="postgres"
+password="fidesctl"
+port="5432"
+db="fidesctl"
+test_db="fidesctl_test"
 
-# Logging
-log_destination = ""
-log_level = INFO
-log_serialization = ""
+[logging]
+level = "INFO"
+destination = ""
+serialization = ""
 
 [cli]
 local_mode = False
@@ -38,19 +39,21 @@ analytics_opt_out = false
 
 To better describe the various configuration options, the following tables describe each available option, grouped by section:
 
-=== "API Section"
+=== "Database Section"
 
     | Name | Type | Default | Description |
     | :----: | :----: | :-------: | :-----------: |
-    | database_user | String | postgres | The username of the Postgres account. |
-    | database_password | String | fidesctl | The password of the Postgres account. |
-    | database_host | String | fidesctl-db | The hostname of the Postgres database server. |
-    | database_port | String | 5432 | The port of the Postgres database server. |
-    | database_name | String | fidesctl | The name of the Postgres database. |
-    | test_database_name | String | ""| Used instead of the `database_name` when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
-    | log_destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
-    | log_level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
-    | log_serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
+    | user | String | postgres | The username of the Postgres account. |
+    | password | String | fidesctl | The password of the Postgres account. |
+    | server | String | fidesctl-db | The hostname of the Postgres database server. |
+    | port | String | 5432 | The port of the Postgres database server. |
+    | db | String | fidesctl | The name of the Postgres database. |
+    | test_db | String | ""| Used instead of the `db` config when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
+
+=== "Logging Section"
+    | destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
+    | level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
+    | serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
 
 === "CLI Section"
 
@@ -86,9 +89,12 @@ The credentials section uses custom keys which can be referenced in certain comm
 By default fidesctl will look for a `fidesctl.toml` configuration file in the following places:
 
 1. At the path specified using the config file argument passed through the CLI
-1. At the path specified by the `FIDESCTL_CONFIG_PATH` environment variable
-1. In a `.fides` directory within the current working directory
-1. In a `.fides` directory within the user's home directory
+1. At the path specified by the `FIDES__CONFIG_PATH` environment variable
+1. In the current working directory
+1. In the parent working directory
+1. Two directories up from the current working directory
+1. The parent directory followed by /.fides
+1. The user's home (~) directory
 
 ## Environment Variables
 

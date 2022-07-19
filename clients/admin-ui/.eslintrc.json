@@ -46,6 +46,8 @@
           "^draft"
         ]
       }
-    ]
+    ],
+    // Default exports are slightly preferred for component files, but this rule has too many false positives.
+    "import/prefer-default-export": "off"
   }
 }

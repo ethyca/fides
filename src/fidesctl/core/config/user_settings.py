@@ -11,7 +11,7 @@ from fidesctl.core.utils import generate_request_headers
 from .fides_settings import FidesSettings
 
 
-class UserSettings(FidesSettings):
+class FidesctlUserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
     user_id: str = "1"

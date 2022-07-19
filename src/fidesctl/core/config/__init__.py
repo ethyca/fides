@@ -2,33 +2,36 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
-
 from functools import lru_cache
 from typing import Dict
 
 import toml
+from fideslib.core.config import load_toml
 from pydantic import BaseModel
 
-from fidesctl.core.config.utils import get_config_path
 from fidesctl.core.utils import echo_red
 
-from .api_settings import APISettings
-from .cli_settings import CLISettings
+from .cli_settings import FidesctlCLISettings
 from .credentials_settings import merge_credentials_environment
-from .user_settings import UserSettings
+from .database_settings import FidesctlDatabaseSettings
+from .logging_settings import FidesctlLoggingSettings
+from .security_settings import FidesctlSecuritySettings
+from .user_settings import FidesctlUserSettings
 
 
 class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    api: APISettings = APISettings()
-    cli: CLISettings = CLISettings()
-    user: UserSettings = UserSettings()
+    cli: FidesctlCLISettings = FidesctlCLISettings()
+    user: FidesctlUserSettings = FidesctlUserSettings()
     credentials: Dict[str, Dict] = dict()
+    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
+    security: FidesctlSecuritySettings = FidesctlSecuritySettings()
+    logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
 
 
 @lru_cache(maxsize=1)
-def get_config(config_path: str = "") -> FidesctlConfig:
+def get_config(config_path_override: str = "") -> FidesctlConfig:
     """
     Attempt to load user-defined configuration.
 
@@ -38,8 +41,11 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     """
 
     try:
-        file_location = get_config_path(config_path)
-        settings = toml.load(file_location)
+        settings = (
+            toml.load(config_path_override)
+            if config_path_override
+            else load_toml(file_names=["fidesctl.toml"])
+        )
 
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
@@ -53,7 +59,7 @@ def get_config(config_path: str = "") -> FidesctlConfig:
     except FileNotFoundError:
         echo_red("No config file found")
     except IOError:
-        echo_red(f"Error reading config file from {file_location}")
+        echo_red("Error reading config file")
 
     fidesctl_config = FidesctlConfig()
     print("Using default configuration values.")

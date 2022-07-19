@@ -50,6 +50,11 @@ The types of changes are:
 * Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
+
+### Developer Experience
+
+* Remove `API_PREFIX` from fidesctl/core/utils.py and change references to `API_PREFIX` in fidesctl/api/reoutes/util.py [922](https://github.com/ethyca/fides/pull/922)
 
 ### Docs
 

@@ -1,10 +1,13 @@
-[api]
-database_user = "postgres"
-database_password = "fidesctl"
-database_host = "localhost"
-database_port = "5432"
-database_name = "fidesctl"
-test_database_name = "fidesctl_test"
+[database]
+server="fidesctl-db"
+user="postgres"
+password="fidesctl"
+port="5432"
+db="fidesctl"
+test_db="fidesctl_test"
+
+[logging]
+level = "INFO"
 
 [cli]
 server_host = "localhost"

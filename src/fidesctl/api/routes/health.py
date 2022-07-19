@@ -45,7 +45,7 @@ router = APIRouter(prefix=API_PREFIX, tags=["Health"])
 )
 async def health() -> Dict:
     "Confirm that the API is running and healthy."
-    database_health = get_db_health(CONFIG.api.sync_database_url)
+    database_health = get_db_health(CONFIG.database.sync_database_uri)
     response = {
         "status": "healthy",
         "version": str(fidesctl.__version__),
