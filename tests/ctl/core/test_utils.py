@@ -105,10 +105,10 @@ class TestGitIsDirty:
     """
 
     def test_not_dirty(self) -> None:
-        assert not utils.git_is_dirty("tests/data/example_sql/")
+        assert not utils.git_is_dirty("tests/ctl/data/example_sql/")
 
     def test_new_file_is_dirty(self) -> None:
-        test_file = "tests/data/example_sql/new_file.txt"
+        test_file = "tests/ctl/data/example_sql/new_file.txt"
         with open(test_file, "w") as file:
             file.write("test file")
         assert utils.git_is_dirty()

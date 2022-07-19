@@ -152,7 +152,7 @@ def test_evaluate_with_declaration_pass(
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/passing_declaration_taxonomy.yml",
+            "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -182,7 +182,7 @@ def test_local_evaluate(
             "-f",
             test_invalid_config_path,
             "evaluate",
-            "tests/data/passing_declaration_taxonomy.yml",
+            "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -219,7 +219,7 @@ def test_evaluate_with_key_pass(
             "evaluate",
             "-k",
             "primary_privacy_policy",
-            "tests/data/passing_declaration_taxonomy.yml",
+            "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -236,7 +236,7 @@ def test_evaluate_with_declaration_failed(
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/failing_declaration_taxonomy.yml",
+            "tests/ctl/data/failing_declaration_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -249,7 +249,12 @@ def test_evaluate_with_dataset_failed(
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
-        ["-f", test_config_path, "evaluate", "tests/data/failing_dataset_taxonomy.yml"],
+        [
+            "-f",
+            test_config_path,
+            "evaluate",
+            "tests/ctl/data/failing_dataset_taxonomy.yml",
+        ],
     )
     print(result.output)
     assert result.exit_code == 1
@@ -265,7 +270,7 @@ def test_evaluate_with_dataset_field_failed(
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/failing_dataset_collection_taxonomy.yml",
+            "tests/ctl/data/failing_dataset_collection_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -282,7 +287,7 @@ def test_evaluate_with_dataset_collection_failed(
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/failing_dataset_field_taxonomy.yml",
+            "tests/ctl/data/failing_dataset_field_taxonomy.yml",
         ],
     )
     print(result.output)
@@ -330,7 +335,7 @@ def test_nested_field_fails_evaluation(
             "-f",
             test_config_path,
             "evaluate",
-            "tests/data/failing_nested_dataset.yml",
+            "tests/ctl/data/failing_nested_dataset.yml",
         ],
     )
     print(result.output)

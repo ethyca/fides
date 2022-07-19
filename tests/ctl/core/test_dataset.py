@@ -264,7 +264,7 @@ TEST_DATABASE_PARAMETERS = {
     "postgresql": {
         "url": POSTGRES_URL,
         "setup_url": POSTGRES_URL,
-        "init_script_path": "tests/data/example_sql/postgres_example.sql",
+        "init_script_path": "tests/ctl/data/example_sql/postgres_example.sql",
         "is_external": False,
         "expected_collection": {
             "public": {
@@ -276,7 +276,7 @@ TEST_DATABASE_PARAMETERS = {
     "mysql": {
         "url": MYSQL_URL,
         "setup_url": MYSQL_URL,
-        "init_script_path": "tests/data/example_sql/mysql_example.sql",
+        "init_script_path": "tests/ctl/data/example_sql/mysql_example.sql",
         "is_external": False,
         "expected_collection": {
             "mysql_example": {
@@ -288,7 +288,7 @@ TEST_DATABASE_PARAMETERS = {
     "mssql": {
         "url": MSSQL_URL,
         "setup_url": MASTER_MSSQL_URL,
-        "init_script_path": "tests/data/example_sql/sqlserver_example.sql",
+        "init_script_path": "tests/ctl/data/example_sql/sqlserver_example.sql",
         "is_external": False,
         "expected_collection": {
             "dbo": {
@@ -300,7 +300,7 @@ TEST_DATABASE_PARAMETERS = {
     "snowflake": {
         "url": SNOWFLAKE_URL,
         "setup_url": SNOWFLAKE_URL,
-        "init_script_path": "tests/data/example_sql/snowflake_example.sql",
+        "init_script_path": "tests/ctl/data/example_sql/snowflake_example.sql",
         "is_external": True,
         "expected_collection": {
             "public": {
@@ -312,7 +312,7 @@ TEST_DATABASE_PARAMETERS = {
     "redshift": {
         "url": REDSHIFT_URL,
         "setup_url": REDSHIFT_URL,
-        "init_script_path": "tests/data/example_sql/redshift_example.sql",
+        "init_script_path": "tests/ctl/data/example_sql/redshift_example.sql",
         "is_external": True,
         "expected_collection": {
             "public": {

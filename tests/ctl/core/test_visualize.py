@@ -39,7 +39,7 @@ def sample_categories_list() -> List:
 
 @pytest.mark.unit
 def test_hierarchy_figures(sample_categories_list: List) -> None:
-    with open("tests/data/sample_hierarchy_figures.json", "r") as sample_hierarchy:
+    with open("tests/ctl/data/sample_hierarchy_figures.json", "r") as sample_hierarchy:
         expected_sample_hierarchy_figures = json.load(sample_hierarchy)
     hierarchy_figures = visualize.hierarchy_figures(
         sample_categories_list, resource_type="data_category", json_out=True
