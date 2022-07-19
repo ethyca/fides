@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Added
 * Erasure support for Salesforce [#888](https://github.com/ethyca/fidesops/pull/888)
+* Access and erasure support for Sendgrid contacts endpoint [#883](https://github.com/ethyca/fidesops/pull/883)
 
 ### Breaking Changes
 

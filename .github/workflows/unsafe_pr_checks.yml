@@ -23,7 +23,6 @@ jobs:
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: make pytest-integration-external
 
-
   External-SaaS-Connectors:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')

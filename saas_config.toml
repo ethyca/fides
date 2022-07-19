@@ -43,6 +43,11 @@ access_secret = ""
 user_token = ""
 identity_email = ""
 
+[sendgrid]
+domain = ""
+api_key = ""
+identity_email = ""
+
 [outreach]
 domain = ""
 client_id = ""

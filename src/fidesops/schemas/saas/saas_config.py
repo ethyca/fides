@@ -190,6 +190,7 @@ class SaaSType(Enum):
     stripe = "stripe"
     zendesk = "zendesk"
     custom = "custom"
+    sendgrid = "sendgrid"
 
 
 class SaaSConfig(BaseModel):
