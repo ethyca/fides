@@ -13,8 +13,8 @@ from fidesctl.api.ctl.routes.util import API_PREFIX
 from fidesctl.api.ctl.sql_models import sql_model_map
 from fidesctl.api.ctl.utils.api_router import APIRouter
 from fidesctl.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
-from fidesctl.core.export import build_joined_dataframe
-from fidesctl.core.export_helpers import DATAMAP_COLUMNS
+from fidesctl.ctl.core.export import build_joined_dataframe
+from fidesctl.ctl.core.export_helpers import DATAMAP_COLUMNS
 
 router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 

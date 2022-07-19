@@ -12,7 +12,7 @@ from fidesctl.api.ctl.routes.crud import list_resource
 from fidesctl.api.ctl.routes.util import API_PREFIX, get_resource_type
 from fidesctl.api.ctl.sql_models import sql_model_map
 from fidesctl.api.ctl.utils.api_router import APIRouter
-from fidesctl.core import visualize
+from fidesctl.ctl.core import visualize
 
 # pylint: disable=redefined-outer-name,cell-var-from-loop
 

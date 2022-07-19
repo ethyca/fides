@@ -23,7 +23,7 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
 CONFIG: FidesctlConfig = get_config()
 

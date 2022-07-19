@@ -25,7 +25,7 @@ from fidesctl.api.ctl.routes import (
 )
 from fidesctl.api.ctl.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
 from fidesctl.api.ctl.utils.logger import setup as setup_logging
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()

@@ -11,8 +11,8 @@ from starlette.testclient import TestClient
 
 from fidesctl.api.ctl.routes import health
 from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.core import api as _api
-from fidesctl.core.config import FidesctlConfig
+from fidesctl.ctl.core import api as _api
+from fidesctl.ctl.core.config import FidesctlConfig
 
 
 # Helper Functions

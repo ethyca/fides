@@ -17,14 +17,14 @@ from fidesctl.api.ctl.routes.util import (
 )
 from fidesctl.api.ctl.sql_models import sql_model_map
 from fidesctl.api.ctl.utils.api_router import APIRouter
-from fidesctl.connectors.models import (
+from fidesctl.ctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
     DatabaseConfig,
     OktaConfig,
 )
-from fidesctl.core.dataset import generate_db_datasets
-from fidesctl.core.system import generate_aws_systems, generate_okta_systems
+from fidesctl.ctl.core.dataset import generate_db_datasets
+from fidesctl.ctl.core.system import generate_aws_systems, generate_okta_systems
 
 
 class ValidTargets(str, Enum):

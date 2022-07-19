@@ -8,10 +8,10 @@ from fideslang.models import Organization, System
 from pydantic import AnyHttpUrl
 
 from fidesctl.cli.utils import handle_cli_response
-from fidesctl.connectors.models import AWSConfig, OktaConfig
-from fidesctl.core import api
-from fidesctl.core.api_helpers import get_server_resource, get_server_resources
-from fidesctl.core.parse import parse
+from fidesctl.ctl.connectors.models import AWSConfig, OktaConfig
+from fidesctl.ctl.core import api
+from fidesctl.ctl.core.api_helpers import get_server_resource, get_server_resources
+from fidesctl.ctl.core.parse import parse
 
 from .filters import filter_aws_systems
 from .utils import echo_green, echo_red

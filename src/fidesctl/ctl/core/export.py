@@ -7,12 +7,12 @@ from typing import Dict, List, Tuple
 import pandas as pd
 from fideslang.models import ContactDetails
 
-from fidesctl.core.api_helpers import (
+from fidesctl.ctl.core.api_helpers import (
     get_server_resource,
     get_server_resources,
     list_server_resources,
 )
-from fidesctl.core.export_helpers import (
+from fidesctl.ctl.core.export_helpers import (
     convert_tuple_to_string,
     export_datamap_to_excel,
     export_to_csv,
@@ -22,7 +22,7 @@ from fidesctl.core.export_helpers import (
     get_formatted_data_protection_impact_assessment,
     union_data_categories_in_joined_dataframe,
 )
-from fidesctl.core.utils import echo_green, get_all_level_fields
+from fidesctl.ctl.core.utils import echo_green, get_all_level_fields
 
 
 def generate_dataset_records(

@@ -7,9 +7,9 @@ from deepdiff import DeepDiff
 from fideslang import FidesModel, Taxonomy
 
 from fidesctl.cli.utils import handle_cli_response
-from fidesctl.core import api
-from fidesctl.core.api_helpers import get_server_resources
-from fidesctl.core.utils import echo_green, echo_red
+from fidesctl.ctl.core import api
+from fidesctl.ctl.core.api_helpers import get_server_resources
+from fidesctl.ctl.core.utils import echo_green, echo_red
 
 
 def sort_create_update(

@@ -8,7 +8,7 @@ from okta.client import Client as OktaClient
 from okta.exceptions import OktaAPIException
 from okta.models import Application as OktaApplication
 
-from fidesctl.connectors.models import (
+from fidesctl.ctl.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
     OktaConfig,

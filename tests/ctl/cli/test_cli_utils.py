@@ -5,7 +5,7 @@ from requests_mock import Mocker
 
 import fidesctl.cli.utils as utils
 from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.core.config import FidesctlConfig
+from fidesctl.ctl.core.config import FidesctlConfig
 
 
 @pytest.mark.unit

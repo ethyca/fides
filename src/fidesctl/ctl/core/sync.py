@@ -5,8 +5,8 @@ import yaml
 from fideslang.manifests import load_yaml_into_dict
 
 from fidesctl.cli.utils import echo_green, print_divider
-from fidesctl.core.api_helpers import get_server_resource
-from fidesctl.core.utils import get_manifest_list
+from fidesctl.ctl.core.api_helpers import get_server_resource
+from fidesctl.ctl.core.utils import get_manifest_list
 
 
 def sync(manifests_dir: str, url: str, headers: Dict[str, str]) -> None:

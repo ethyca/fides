@@ -18,7 +18,7 @@ from fidesctl.api.ctl.utils.errors import (
     QueryError,
     get_full_exception_name,
 )
-from fidesctl.core.utils import get_db_engine
+from fidesctl.ctl.core.utils import get_db_engine
 
 from .crud import create_resource, upsert_resources
 

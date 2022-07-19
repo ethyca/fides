@@ -6,7 +6,7 @@ import fidesctl
 from fidesctl.api.ctl.database.database import get_db_health
 from fidesctl.api.ctl.routes.util import API_PREFIX
 from fidesctl.api.ctl.utils.api_router import APIRouter
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
 CONFIG: FidesctlConfig = get_config()
 

@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
-from fidesctl.core.config import get_config
-from fidesctl.core.config.database_settings import FidesctlDatabaseSettings
+from fidesctl.ctl.core.config import get_config
+from fidesctl.ctl.core.config.database_settings import FidesctlDatabaseSettings
 
 
 # Unit

@@ -3,7 +3,7 @@ from fideslang import Taxonomy
 from fideslang.manifests import ingest_manifests
 from fideslang.parse import load_manifests_into_taxonomy
 
-from fidesctl.core.utils import echo_green
+from fidesctl.ctl.core.utils import echo_green
 
 
 def parse(manifests_dir: str) -> Taxonomy:

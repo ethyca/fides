@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 from fideslang.models import System, SystemMetadata
 
-from fidesctl.connectors.models import (
+from fidesctl.ctl.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,

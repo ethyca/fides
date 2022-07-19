@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Dict, Generator, List, Optional
 import pytest
 from fideslang import FidesModel, model_list
 
-from fidesctl.core import api as _api
-from fidesctl.core import api_helpers as _api_helpers
-from fidesctl.core.config import FidesctlConfig
+from fidesctl.ctl.core import api as _api
+from fidesctl.ctl.core import api_helpers as _api_helpers
+from fidesctl.ctl.core.config import FidesctlConfig
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work
