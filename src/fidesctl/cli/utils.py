@@ -22,7 +22,7 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.ctl.routes.util import API_PREFIX
 from fidesctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fidesctl.core import api as _api
 from fidesctl.core.config import FidesctlConfig

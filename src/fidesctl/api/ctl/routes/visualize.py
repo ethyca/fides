@@ -8,10 +8,10 @@ from fastapi import HTTPException
 from fastapi.responses import HTMLResponse
 from fideslang import model_map
 
-from fidesctl.api.routes.crud import list_resource
-from fidesctl.api.routes.util import API_PREFIX, get_resource_type
-from fidesctl.api.sql_models import sql_model_map
-from fidesctl.api.utils.api_router import APIRouter
+from fidesctl.api.ctl.routes.crud import list_resource
+from fidesctl.api.ctl.routes.util import API_PREFIX, get_resource_type
+from fidesctl.api.ctl.sql_models import sql_model_map
+from fidesctl.api.ctl.utils.api_router import APIRouter
 from fidesctl.core import visualize
 
 # pylint: disable=redefined-outer-name,cell-var-from-loop

@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import requests
 
-from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.ctl.routes.util import API_PREFIX
 
 
 def generate_resource_url(

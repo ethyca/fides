@@ -4,7 +4,7 @@ import pytest
 from requests_mock import Mocker
 
 import fidesctl.cli.utils as utils
-from fidesctl.api.routes.util import API_PREFIX
+from fidesctl.api.ctl.routes.util import API_PREFIX
 from fidesctl.core.config import FidesctlConfig
 
 

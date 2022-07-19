@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 from fastapi import HTTPException, status
 
-from fidesctl.api.utils.api_router import APIRouter
+from fidesctl.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
 WEBAPP_DIRECTORY = Path("src/fidesctl/api/build/static")

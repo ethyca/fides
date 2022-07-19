@@ -13,8 +13,8 @@ from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
-from fidesctl.api.database.session import async_session
-from fidesctl.api.utils import errors
+from fidesctl.api.ctl.database.session import async_session
+from fidesctl.api.ctl.utils import errors
 
 
 # CRUD Functions

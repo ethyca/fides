@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import Dict
 
-from fidesctl.api.database import database
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.utils.api_router import APIRouter
+from fidesctl.api.ctl.database import database
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.api.ctl.utils.api_router import APIRouter
 from fidesctl.core.config import FidesctlConfig, get_config
 
 CONFIG: FidesctlConfig = get_config()
