@@ -1,0 +1,3 @@
+[console_scripts]
+fides = fidesctl.cli:cli
+fidesctl = fidesctl.cli:cli

@@ -101,7 +101,7 @@ def xenon(session: nox.Session) -> None:
             "--max-modules B",
             "--max-average A",
             "--ignore 'data, docs'",
-            "--exclude src/fides/_version.py",
+            "--exclude src/fidesctl/_version.py",
         )
     session.run(*run_command, external=True)
 
@@ -111,7 +111,7 @@ def xenon(session: nox.Session) -> None:
 def check_install(session: nox.Session) -> None:
     """Check that fidesctl is installed."""
     session.install(".")
-    run_command = ("fides", *(WITH_TEST_CONFIG), "--version")
+    run_command = ("fidesctl", *(WITH_TEST_CONFIG), "--version")
     session.run(*run_command)
 
 
@@ -121,7 +121,7 @@ def fidesctl(session: nox.Session) -> None:
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
     else:
-        run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
+        run_command = ("fidesctl", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
@@ -133,7 +133,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     sleep(10)
     run_command = (
         *RUN,
-        "fides",
+        "fidesctl",
         *(WITH_TEST_CONFIG),
         "scan",
         "dataset",
