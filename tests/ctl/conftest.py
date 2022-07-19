@@ -12,8 +12,8 @@ from fidesctl.api import main
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
 
-TEST_CONFIG_PATH = "tests/test_config.toml"
-TEST_INVALID_CONFIG_PATH = "tests/test_invalid_config.toml"
+TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
+TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 
 
 @pytest.fixture(scope="session")
