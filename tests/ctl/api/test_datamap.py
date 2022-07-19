@@ -2,8 +2,8 @@
 import pytest
 from starlette.testclient import TestClient
 
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.core.config import FidesctlConfig
+from fides.api.routes.util import API_PREFIX
+from fides.core.config import FidesctlConfig
 
 
 @pytest.mark.integration

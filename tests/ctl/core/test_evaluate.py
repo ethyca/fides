@@ -18,8 +18,8 @@ from fideslang.models import (
     Taxonomy,
 )
 
-from fidesctl.core import evaluate
-from fidesctl.core.config import FidesctlConfig
+from fides.core import evaluate
+from fides.core.config import FidesctlConfig
 
 
 # Helpers

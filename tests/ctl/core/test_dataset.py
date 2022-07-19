@@ -9,9 +9,9 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 
-from fidesctl.core import api
-from fidesctl.core import dataset as _dataset
-from fidesctl.core.config import FidesctlConfig
+from fides.core import api
+from fides.core import dataset as _dataset
+from fides.core.config import FidesctlConfig
 
 
 def create_server_datasets(

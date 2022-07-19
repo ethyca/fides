@@ -6,8 +6,8 @@ from typing import Generator
 import pytest
 from fideslang.models import DatasetCollection, DatasetField
 
-from fidesctl.core import utils
-from fidesctl.core.config import get_config
+from fides.core import utils
+from fides.core.config import get_config
 
 
 @pytest.fixture()

@@ -13,7 +13,7 @@ from fideslang.models import (
 )
 from py._path.local import LocalPath
 
-from fidesctl.core import export_helpers
+from fides.core import export_helpers
 
 
 @pytest.fixture()

@@ -10,7 +10,7 @@ from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
 
-from fidesctl.cli import cli
+from fides.cli import cli
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -36,7 +36,7 @@ def test_webserver() -> None:
     This is specifically meant to catch when the webserver command breaks,
     without spinning up an additional instance.
     """
-    from fidesctl.api.main import start_webserver  # pylint: disable=unused-import
+    from fides.api.main import start_webserver  # pylint: disable=unused-import
 
     assert True
 

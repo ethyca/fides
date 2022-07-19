@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from fidesctl.core.config import APISettings, get_config
+from fides.core.config import APISettings, get_config
 
 
 # Unit

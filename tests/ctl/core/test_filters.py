@@ -10,7 +10,7 @@ from fideslang.models import (
     SystemMetadata,
 )
 
-from fidesctl.core import filters as _filters
+from fides.core import filters as _filters
 
 
 @pytest.fixture()

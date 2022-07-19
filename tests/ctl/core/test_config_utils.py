@@ -6,8 +6,8 @@ import pytest
 from py._path.local import LocalPath
 from toml import dump, load
 
-from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.config.utils import update_config_file
+from fides.core.config import FidesctlConfig
+from fides.core.config.utils import update_config_file
 
 
 @pytest.fixture

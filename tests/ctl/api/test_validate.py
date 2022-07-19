@@ -5,9 +5,9 @@ from os import getenv
 import pytest
 from starlette.testclient import TestClient
 
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.routes.validate import ValidateResponse
-from fidesctl.core.config import FidesctlConfig
+from fides.api.routes.util import API_PREFIX
+from fides.api.routes.validate import ValidateResponse
+from fides.core.config import FidesctlConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
