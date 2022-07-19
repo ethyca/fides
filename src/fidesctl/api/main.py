@@ -17,6 +17,7 @@ from uvicorn import Config, Server
 
 from fidesctl.api import view
 from fidesctl.api.database.database import configure_db
+from fidesctl.api.deps import get_db, verify_oauth_client
 from fidesctl.api.routes import (
     admin,
     crud,
