@@ -9,7 +9,7 @@ from fideslang.models import DataSubject, DataSubjectRightsEnum, DataUse
 
 DATAMAP_TEMPLATE = join(
     dirname(__file__),
-    "../templates",
+    "../../templates",
     "fides_datamap_template.xlsx",
 )
 
