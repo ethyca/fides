@@ -101,7 +101,7 @@ async def validate_aws(aws_config: AWSConfig) -> None:
     Validates that given aws credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fidesctl.connectors.aws as aws_connector
+    import fidesctl.ctl.connectors.aws as aws_connector
 
     aws_connector.validate_credentials(aws_config=aws_config)
 
@@ -112,6 +112,6 @@ async def validate_okta(okta_config: OktaConfig) -> None:
     Validates that given okta credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fidesctl.connectors.okta as okta_connector
+    import fidesctl.ctl.connectors.okta as okta_connector
 
     await okta_connector.validate_credentials(okta_config=okta_config)

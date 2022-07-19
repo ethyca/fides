@@ -7,7 +7,7 @@ from fideslang.models import System, SystemMetadata
 from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
-import fidesctl.connectors.okta as okta_connector
+import fidesctl.ctl.connectors.okta as okta_connector
 from fidesctl.ctl.connectors.models import OktaConfig
 from fidesctl.ctl.core.config import FidesctlConfig
 

@@ -31,7 +31,7 @@ def route_requires_aws_connector(func: Callable) -> Callable:
 
     def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
         try:
-            import fidesctl.connectors.aws  # pylint: disable=unused-import
+            import fidesctl.ctl.connectors.aws  # pylint: disable=unused-import
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -50,7 +50,7 @@ def route_requires_okta_connector(func: Callable) -> Callable:
 
     def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
         try:
-            import fidesctl.connectors.okta  # pylint: disable=unused-import
+            import fidesctl.ctl.connectors.okta  # pylint: disable=unused-import
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

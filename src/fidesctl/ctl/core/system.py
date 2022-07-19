@@ -23,7 +23,7 @@ def generate_redshift_systems(
     """
     Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
     """
-    import fidesctl.connectors.aws as aws_connector
+    import fidesctl.ctl.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
     describe_clusters = aws_connector.describe_redshift_clusters(client=client)
@@ -39,7 +39,7 @@ def generate_rds_systems(
     """
     Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
     """
-    import fidesctl.connectors.aws as aws_connector
+    import fidesctl.ctl.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="rds", aws_config=aws_config)
     describe_clusters = aws_connector.describe_rds_clusters(client=client)
@@ -162,7 +162,7 @@ async def generate_okta_systems(
     applications and returns the corresponding systems.
     """
 
-    import fidesctl.connectors.okta as okta_connector
+    import fidesctl.ctl.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
     okta_applications = await okta_connector.list_okta_applications(
@@ -433,7 +433,7 @@ def scan_system_okta(
 def _check_okta_connector_import() -> None:
     "Validate okta can be imported"
     try:
-        import fidesctl.connectors.okta  # pylint: disable=unused-import
+        import fidesctl.ctl.connectors.okta  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[okta]"')
         raise SystemExit
@@ -442,7 +442,7 @@ def _check_okta_connector_import() -> None:
 def _check_aws_connector_import() -> None:
     "Validates boto3 is installed and can be imported"
     try:
-        import fidesctl.connectors.aws  # pylint: disable=unused-import
+        import fidesctl.ctl.connectors.aws  # pylint: disable=unused-import
     except ModuleNotFoundError:
         echo_red('Packages not found, try: pip install "fidesctl[aws]"')
         raise SystemExit
