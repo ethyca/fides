@@ -7,9 +7,9 @@ from fideslang.models import System, SystemMetadata
 from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
-import fides.connectors.okta as okta_connector
-from fides.connectors.models import OktaConfig
-from fides.core.config import FidesctlConfig
+import fidesctl.connectors.okta as okta_connector
+from fidesctl.connectors.models import OktaConfig
+from fidesctl.core.config import FidesctlConfig
 
 
 @pytest.fixture()

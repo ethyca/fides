@@ -8,9 +8,9 @@ import yaml
 from fideslang import models
 from starlette.testclient import TestClient
 
-from fides.api import main
-from fides.core import api
-from fides.core.config import FidesctlConfig, get_config
+from fidesctl.api import main
+from fidesctl.core import api
+from fidesctl.core.config import FidesctlConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"

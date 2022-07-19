@@ -10,7 +10,7 @@ from fideslang.models import (
     Organization,
 )
 
-from fides.core import audit
+from fidesctl.core import audit
 
 
 @pytest.fixture

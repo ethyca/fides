@@ -6,10 +6,10 @@ import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
-from fides.connectors.models import OktaConfig
-from fides.core import api
-from fides.core import system as _system
-from fides.core.config import FidesctlConfig
+from fidesctl.connectors.models import OktaConfig
+from fidesctl.core import api
+from fidesctl.core import system as _system
+from fidesctl.core.config import FidesctlConfig
 
 
 def create_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
