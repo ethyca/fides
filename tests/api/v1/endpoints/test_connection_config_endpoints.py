@@ -470,6 +470,7 @@ class TestGetConnections:
             "connection_type",
             "access",
             "updated_at",
+            "saas_config",
             "name",
             "last_test_timestamp",
             "last_test_succeeded",
@@ -612,6 +613,7 @@ class TestGetConnections:
         assert len(items) == 1
         assert items[0]["connection_type"] == "saas"
         assert items[0]["key"] == stripe_connection_config.key
+        assert items[0]["saas_config"]["type"] == "stripe"
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         items = resp.json()["items"]
@@ -725,6 +727,7 @@ class TestGetConnection:
             "created_at",
             "disabled",
             "description",
+            "saas_config",
         }
 
         assert response_body["key"] == "my_postgres_db_1"

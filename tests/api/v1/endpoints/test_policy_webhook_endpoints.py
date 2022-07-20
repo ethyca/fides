@@ -35,6 +35,7 @@ def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict
         "last_test_succeeded": None,
         "disabled": False,
         "description": None,
+        "saas_config": None,
     }
 
 

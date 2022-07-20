@@ -6,6 +6,7 @@ from pydantic import BaseModel, Extra
 
 from fidesops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.schemas.saas.saas_config import SaaSConfigBase
 from fidesops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -69,6 +70,7 @@ class ConnectionConfigurationResponse(BaseModel):
     disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime]
     last_test_succeeded: Optional[bool]
+    saas_config: Optional[SaaSConfigBase]
 
     class Config:
         """Set orm_mode to support mapping to ConnectionConfig"""
