@@ -414,7 +414,6 @@ def test_update_different_users_names(
         test_config=test_config,
     )
 
-    print(f"{URL}/{user.id}")
     response = test_client.put(
         f"{URL}/{user.id}",
         headers=auth_header,
@@ -472,6 +471,7 @@ def test_update_different_user_password(
     auth_header = generate_auth_header_for_user(
         user=application_user, scopes=[USER_PASSWORD_RESET], test_config=test_config
     )
+    print(f"{user.client.__dict__=}")
     response = test_client.post(
         f"{URL}/{user.id}/reset-password",
         headers=auth_header,
@@ -555,7 +555,6 @@ def test_login_user_does_not_exist(test_client: TestClient) -> None:
         "password": str_to_b64_str("idonotknowmypassword"),
     }
     response = test_client.post(LOGIN_URL, headers={}, json=body)
-    print(response.json())
     assert response.status_code == HTTP_404_NOT_FOUND
 
 
@@ -718,5 +717,5 @@ def test_logout(
     assert client_search is None
 
     # Gets AuthorizationError - client does not exist, this token can't be used anymore
-    response = test_client.post(LOGIN_URL, headers=auth_header, json={})
+    response = test_client.post(LOGOUT_URL, headers=auth_header, json={})
     assert response.status_code == HTTP_403_FORBIDDEN

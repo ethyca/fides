@@ -12,7 +12,7 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
-from fideslib.oauth.scopes import SCOPES
+from fideslib.oauth.scopes import SCOPES, USER_PASSWORD_RESET
 from sqlalchemy.orm import Session
 
 from fidesctl.api.database.session import sync_session
@@ -74,6 +74,9 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
+
+    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
+    SCOPES.append(USER_PASSWORD_RESET)
     client = ClientDetail.get(db, object_id=client_id, config=config, scopes=SCOPES)
 
     if not client:
