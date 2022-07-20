@@ -90,15 +90,18 @@ dataset:
                     fidesops_meta:
                       data_type: string
                   - name: zip
-                    data_categories: [user.provided.identifiable.contact.postal_code]
+                    data_categories:
+                      [user.provided.identifiable.contact.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.provided.identifiable.contact.country]
+                    data_categories:
+                      [user.provided.identifiable.contact.country]
                     fidesops_meta:
                       data_type: string
               - name: PHONE
-                data_categories: [user.provided.identifiable.contact.phone_number]
+                data_categories:
+                  [user.provided.identifiable.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: BIRTHDAY
@@ -154,9 +157,9 @@ dataset:
       - name: projects
         fields:
           - name: id
-            data_categories: [ system.operations ]
+            data_categories: [system.operations]
           - name: slug
-            data_categories: [ system.operations ]
+            data_categories: [system.operations]
           - name: organization
             fields:
               - name: slug
@@ -165,21 +168,21 @@ dataset:
       - name: users
         fields:
           - name: id
-            data_categories: [ system.operations ]
+            data_categories: [system.operations]
           - name: name
-            data_categories: [ user.provided.identifiable.name ]
+            data_categories: [user.provided.identifiable.name]
           - name: user
             fields:
               - name: username
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [user.provided.identifiable.name]
               - name: email
-                data_categories: [ user.provided.identifiable.contact.email ]
+                data_categories: [user.provided.identifiable.contact.email]
               - name: name
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [user.provided.identifiable.name]
               - name: ipAddress
-                data_categories: [ user.derived.identifiable.device.ip_address ]
+                data_categories: [user.derived.identifiable.device.ip_address]
           - name: email
-            data_categories: [ user.provided.identifiable.contact.email ]
+            data_categories: [user.provided.identifiable.contact.email]
       - name: customer
         fields:
           - name: id
@@ -201,3 +204,9 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               read_only: True
+      - name: data_management
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
