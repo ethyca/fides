@@ -36,6 +36,7 @@ The types of changes are:
 * Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 * Standardized API error parsing under `~/types/errors`
 * Added taxonomy page to UI [#902](https://github.com/ethyca/fides/pull/902)
+* Add user auth routes [https://github.com/ethyca/fides/pull/929](929)
 
 ### Changed
 
