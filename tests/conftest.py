@@ -1,9 +1,13 @@
-# pylint: disable=missing-docstring, redefined-outer-name
+# pylint: disable=invalid-name, missing-docstring, redefined-outer-name
+
 """Common fixtures to be used across tests."""
+
+from __future__ import annotations
+
 import json
 import os
 from datetime import datetime
-from typing import Dict, Generator, Union
+from typing import Any, Dict, Generator, Union
 from uuid import uuid4
 
 import pytest
@@ -17,7 +21,6 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
@@ -279,7 +282,7 @@ def db() -> Generator:
 
 
 @pytest.fixture
-def oauth_client(db):
+def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes."""
     client = ClientDetail(
         hashed_secret="thisisatest",
@@ -295,7 +298,9 @@ def oauth_client(db):
 
 
 @pytest.fixture
-def auth_header(request, oauth_client, test_config) -> Dict[str, str]:
+def auth_header(  # type: ignore
+    request: Any, oauth_client: ClientDetail, test_config: FidesctlConfig
+) -> Dict[str, str]:
     client_id = oauth_client.id
 
     payload = {
@@ -309,7 +314,7 @@ def auth_header(request, oauth_client, test_config) -> Dict[str, str]:
 
 
 def generate_auth_header_for_user(
-    user: FidesUser, scopes, test_config: FidesctlConfig
+    user: FidesUser, scopes: list[str], test_config: FidesctlConfig
 ) -> Dict[str, str]:
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -321,7 +326,7 @@ def generate_auth_header_for_user(
 
 
 @pytest.fixture
-def user(db: Session) -> None:
+def user(db: Session) -> Generator:
     user = FidesUser.create(
         db=db,
         data={
@@ -352,7 +357,7 @@ def user(db: Session) -> None:
 
 
 @pytest.fixture
-def user_no_client(db: Session) -> None:
+def user_no_client(db: Session) -> Generator:
     user = FidesUser.create(
         db=db,
         data={
@@ -370,7 +375,7 @@ def user_no_client(db: Session) -> None:
 
 
 @pytest.fixture
-def application_user(db, oauth_client) -> FidesUser:
+def application_user(db: Session, oauth_client: ClientDetail) -> FidesUser:
     unique_username = f"user-{uuid4()}"
     user = FidesUser.create(
         db=db,

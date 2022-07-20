@@ -1,13 +1,10 @@
 from fastapi import Depends, HTTPException, Security
-from fideslib.core.config import get_config
 from fideslib.cryptography.cryptographic_util import b64_str_to_str
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.api import urn_registry
 from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
 from fideslib.oauth.scopes import USER_PASSWORD_RESET, USER_UPDATE
-
-# from fidesops.util.oauth_util import get_current_user, verify_oauth_client
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -18,9 +15,8 @@ from starlette.status import (
 
 from fidesctl.api.deps import get_current_user, get_db, verify_oauth_client
 from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.sql_models import FidesUser
 from fidesctl.api.utils.api_router import APIRouter
-from fidesctl.core.config import FidesctlConfig
+from fidesctl.core.config import FidesctlConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=f"{API_PREFIX}")
 
@@ -47,7 +43,7 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
 )
 def update_user(
     *,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db),  # pylint: disable=invalid-name
     user_id: str,
     data: UserUpdate,
 ) -> FidesUser:
@@ -73,10 +69,11 @@ def update_user(
 )
 def update_user_password(
     *,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db),  # pylint: disable=invalid-name
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserPasswordReset,
+    config: FidesctlConfig = Depends(get_config),
 ) -> FidesUser:
     """
     Update a user's password given a `user_id`. By default this is limited to users
@@ -106,7 +103,7 @@ def user_logout(
         verify_oauth_client,
         scopes=[],
     ),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db),  # pylint: disable=invalid-name
 ) -> None:
     """logout the user by deleting its client"""
 

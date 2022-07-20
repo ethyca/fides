@@ -1,3 +1,7 @@
+# pylint: disable=invalid-name, missing-docstring, redefined-outer-name, too-many-locals
+
+from __future__ import annotations
+
 import json
 from datetime import datetime
 
@@ -21,6 +25,7 @@ from fideslib.oauth.scopes import (
     USER_READ,
     USER_UPDATE,
 )
+from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -47,7 +52,9 @@ page_size = Params().size
 
 @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_create_user(test_client: TestClient, auth_header, db) -> None:
+def test_create_user(
+    test_client: TestClient, auth_header: dict[str, str], db: Session
+) -> None:
     body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
 
     response = test_client.post(URL, headers=auth_header, json=body)
@@ -61,7 +68,9 @@ def test_create_user(test_client: TestClient, auth_header, db) -> None:
 
 @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_create_user_with_name(db, test_client: TestClient, auth_header) -> None:
+def test_create_user_with_name(
+    db: Session, test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     body = {
         "username": "test_user",
         "password": str_to_b64_str("TestP@ssword9"),
@@ -88,7 +97,9 @@ def test_create_user_not_authenticated(test_client: TestClient) -> None:
 @pytest.mark.usefixtures("db")
 @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
 @pytest.mark.integration
-def test_create_user_wrong_scope(test_client: TestClient, auth_header) -> None:
+def test_create_user_wrong_scope(
+    test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     response = test_client.post(URL, headers=auth_header, json={})
     assert HTTP_403_FORBIDDEN == response.status_code
 
@@ -96,7 +107,9 @@ def test_create_user_wrong_scope(test_client: TestClient, auth_header) -> None:
 @pytest.mark.usefixtures("db")
 @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_create_user_bad_username(test_client: TestClient, auth_header) -> None:
+def test_create_user_bad_username(
+    test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     body = {
         "username": "spaces in name",
         "password": str_to_b64_str("TestP@ssword9"),
@@ -119,7 +132,7 @@ def test_create_user_bad_username(test_client: TestClient, auth_header) -> None:
 @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
 @pytest.mark.integration
 def test_create_user_bad_password(
-    password: str, expected: str, test_client: TestClient, auth_header
+    password: str, expected: str, test_client: TestClient, auth_header: dict[str, str]
 ) -> None:
     body = {"username": "test_user", "password": str_to_b64_str(password)}
     response = test_client.post(URL, headers=auth_header, json=body)
@@ -129,7 +142,9 @@ def test_create_user_bad_password(
 
 @pytest.mark.parametrize("auth_header", [[USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_username_exists(test_client: TestClient, auth_header, db) -> None:
+def test_username_exists(
+    test_client: TestClient, auth_header: dict[str, str], db: Session
+) -> None:
     body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
     user = FidesUser.create(db=db, data=body)
 
@@ -150,16 +165,12 @@ def test_delete_user_not_authenticated(
     assert HTTP_401_UNAUTHORIZED == response.status_code
 
 
-def test_delete_user_not_authenticated(test_client: TestClient, user) -> None:
-    url = f"{URL}/{user.id}"
-    response = test_client.delete(url, headers={})
-    assert HTTP_401_UNAUTHORIZED == response.status_code
-
-
 @pytest.mark.usefixtures("db")
-@pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
+@pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
 @pytest.mark.integration
-def test_create_user_wrong_scope(test_client: TestClient, auth_header, user):
+def test_delete_user_not_admin_root_or_self(
+    test_client: TestClient, auth_header: dict[str, str], user: FidesUser
+) -> None:
     url = f"{URL}/{user.id}"
     response = test_client.delete(url, headers=auth_header)
     assert HTTP_403_FORBIDDEN == response.status_code
@@ -168,16 +179,9 @@ def test_create_user_wrong_scope(test_client: TestClient, auth_header, user):
 @pytest.mark.usefixtures("db")
 @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
 @pytest.mark.integration
-def test_delete_user_not_admin_root_or_self(test_client: TestClient, auth_header, user):
-    url = f"{URL}/{user.id}"
-    response = test_client.delete(url, headers=auth_header)
-    assert HTTP_403_FORBIDDEN == response.status_code
-
-
-@pytest.mark.usefixtures("db")
-@pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
-@pytest.mark.integration
-def test_delete_nonexistent_user(test_client: TestClient, auth_header, user):
+def test_delete_nonexistent_user(
+    test_client: TestClient, auth_header: dict[str, str], user: FidesUser
+) -> None:
     url = f"{URL}/nonexistent_user"
     response = test_client.delete(url, headers=auth_header)
     assert HTTP_404_NOT_FOUND == response.status_code
@@ -186,7 +190,10 @@ def test_delete_nonexistent_user(test_client: TestClient, auth_header, user):
 @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
 @pytest.mark.integration
 def test_delete_self(
-    test_client: TestClient, db, auth_header, test_config: FidesctlConfig
+    test_client: TestClient,
+    db: Session,
+    auth_header: dict[str, str],
+    test_config: FidesctlConfig,
 ) -> None:
     user = FidesUser.create(
         db=db,
@@ -248,7 +255,9 @@ def test_get_users_not_authenticated(test_client: TestClient) -> None:
 @pytest.mark.usefixtures("db")
 @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
 @pytest.mark.integration
-def test_get_users_wrong_scope(test_client: TestClient, auth_header) -> None:
+def test_get_users_wrong_scope(
+    test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     resp = test_client.get(URL, headers=auth_header)
     assert resp.status_code == HTTP_403_FORBIDDEN
 
@@ -256,7 +265,9 @@ def test_get_users_wrong_scope(test_client: TestClient, auth_header) -> None:
 @pytest.mark.usefixtures("db")
 @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
 @pytest.mark.integration
-def test_get_users_no_users(test_client: TestClient, auth_header) -> None:
+def test_get_users_no_users(
+    test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     response = test_client.get(URL, headers=auth_header)
     assert response.status_code == HTTP_200_OK
     assert len(response.json()["items"]) == 0
@@ -267,7 +278,9 @@ def test_get_users_no_users(test_client: TestClient, auth_header) -> None:
 
 @pytest.mark.parametrize("auth_header", [[USER_READ, USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_get_users(test_client: TestClient, auth_header, db):
+def test_get_users(
+    test_client: TestClient, auth_header: dict[str, str], db: Session
+) -> None:
     saved_users = []
     total_users = 25
     for i in range(total_users):
@@ -302,7 +315,9 @@ def test_get_users(test_client: TestClient, auth_header, db):
 
 @pytest.mark.parametrize("auth_header", [[USER_READ, USER_CREATE]], indirect=True)
 @pytest.mark.integration
-def test_get_filtered_users(test_client: TestClient, auth_header, db):
+def test_get_filtered_users(
+    test_client: TestClient, auth_header: dict[str, str], db: Session
+) -> None:
     saved_users = []
     total_users = 50
     for i in range(total_users):
@@ -350,7 +365,7 @@ def test_get_user_not_authenticated(test_client: TestClient, user: FidesUser) ->
 @pytest.mark.parametrize("auth_header", [[USER_DELETE]], indirect=True)
 @pytest.mark.integration
 def test_get_user_wrong_scope(
-    test_client: TestClient, auth_header, user: FidesUser
+    test_client: TestClient, auth_header: dict[str, str], user: FidesUser
 ) -> None:
     url = f"{URL}/{user.id}"
     response = test_client.get(url, headers=auth_header)
@@ -359,7 +374,9 @@ def test_get_user_wrong_scope(
 
 @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
 @pytest.mark.integration
-def test_get_user_does_not_exist(test_client: TestClient, auth_header) -> None:
+def test_get_user_does_not_exist(
+    test_client: TestClient, auth_header: dict[str, str]
+) -> None:
     response = test_client.get(f"{URL}/this_is_a_nonexistent_key", headers=auth_header)
     assert response.status_code == HTTP_404_NOT_FOUND
 
@@ -367,7 +384,7 @@ def test_get_user_does_not_exist(test_client: TestClient, auth_header) -> None:
 @pytest.mark.parametrize("auth_header", [[USER_READ]], indirect=True)
 @pytest.mark.integration
 def test_get_user(
-    test_client: TestClient, auth_header, application_user: FidesUser
+    test_client: TestClient, auth_header: dict[str, str], application_user: FidesUser
 ) -> None:
     response = test_client.get(
         f"{URL}/{application_user.id}",
@@ -383,7 +400,10 @@ def test_get_user(
 
 @pytest.mark.integration
 def test_update_different_users_names(
-    test_client: TestClient, user: FidesUser, application_user: FidesUser, test_config
+    test_client: TestClient,
+    user: FidesUser,
+    application_user: FidesUser,
+    test_config: FidesctlConfig,
 ) -> None:
     new_first_name = "another"
     new_last_name = "name"
@@ -413,7 +433,7 @@ def test_update_different_users_names(
 
 @pytest.mark.integration
 def test_update_user_names(
-    test_client: TestClient, application_user: FidesUser, test_config
+    test_client: TestClient, application_user: FidesUser, test_config: FidesctlConfig
 ) -> None:
     new_first_name = "another"
     new_last_name = "name"
@@ -441,10 +461,10 @@ def test_update_user_names(
 @pytest.mark.integration
 def test_update_different_user_password(
     test_client: TestClient,
-    db,
+    db: Session,
     user: FidesUser,
     application_user: FidesUser,
-    test_config,
+    test_config: FidesctlConfig,
 ) -> None:
     old_password = "oldpassword"
     new_password = "newpassword"
@@ -473,7 +493,10 @@ def test_update_different_user_password(
 
 @pytest.mark.integration
 def test_update_user_password_invalid(
-    test_client: TestClient, db, application_user: FidesUser, test_config
+    test_client: TestClient,
+    db: Session,
+    application_user: FidesUser,
+    test_config: FidesctlConfig,
 ) -> None:
     old_password = "oldpassword"
     new_password = "newpassword"
@@ -500,7 +523,10 @@ def test_update_user_password_invalid(
 
 @pytest.mark.integration
 def test_update_user_password(
-    test_client: TestClient, db, application_user: FidesUser, test_config
+    test_client: TestClient,
+    db: Session,
+    application_user: FidesUser,
+    test_config: FidesctlConfig,
 ) -> None:
     old_password = "oldpassword"
     new_password = "newpassword"
@@ -545,16 +571,16 @@ def test_bad_login(user: FidesUser, test_client: TestClient) -> None:
 
 @pytest.mark.integration
 def test_login_creates_client(
-    db, test_config, user_no_client: FidesUser, test_client: TestClient
+    db: Session,
+    test_config: FidesctlConfig,
+    user_no_client: FidesUser,
+    test_client: TestClient,
 ) -> None:
-    # Delete existing client for test purposes
-    # user.client.delete(db)
     body = {
         "username": user_no_client.username,
         "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
     }
 
-    # assert user.client is None
     assert user_no_client.permissions is not None
     response = test_client.post(LOGIN_URL, headers={}, json=body)
     assert response.status_code == HTTP_200_OK
@@ -579,7 +605,7 @@ def test_login_creates_client(
 
 @pytest.mark.integration
 def test_login_updates_last_login_date(
-    db, user: FidesUser, test_client: TestClient
+    db: Session, user: FidesUser, test_client: TestClient
 ) -> None:
     body = {
         "username": user.username,
@@ -595,8 +621,8 @@ def test_login_updates_last_login_date(
 
 @pytest.mark.integration
 def test_login_uses_existing_client(
-    db, test_config, user: FidesUser, test_client: TestClient
-):
+    db: Session, test_config: FidesctlConfig, user: FidesUser, test_client: TestClient
+) -> None:
     body = {
         "username": user.username,
         "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
@@ -626,7 +652,7 @@ def test_login_uses_existing_client(
 
 @pytest.mark.integration
 def test_user_not_deleted_on_logout(
-    db, test_client: TestClient, user: FidesUser, test_config
+    db: Session, test_client: TestClient, user: FidesUser, test_config: FidesctlConfig
 ) -> None:
     user_id = user.id
     client_id = user.client.id
@@ -677,7 +703,12 @@ def test_user_not_deleted_on_logout(
 
 @pytest.mark.parametrize("auth_header", [[STORAGE_READ]], indirect=True)
 @pytest.mark.integration
-def test_logout(db, test_client: TestClient, auth_header, oauth_client) -> None:
+def test_logout(
+    db: Session,
+    test_client: TestClient,
+    auth_header: dict[str, str],
+    oauth_client: ClientDetail,
+) -> None:
     oauth_client_id = oauth_client.id
     response = test_client.post(LOGOUT_URL, headers=auth_header, json={})
     assert HTTP_204_NO_CONTENT == response.status_code

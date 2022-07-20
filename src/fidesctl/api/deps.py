@@ -29,13 +29,13 @@ def get_db() -> Generator:
     """Return our database session"""
 
     try:
-        db = sync_session()
+        db = sync_session()  # pylint: disable=invalid-name
         yield db
     finally:
         db.close()
 
 
-async def verify_oauth_client(
+async def verify_oauth_client(  # pylint: disable=invalid-name
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
@@ -86,7 +86,7 @@ async def verify_oauth_client(
     return client
 
 
-async def get_current_user(
+async def get_current_user(  # pylint: disable=invalid-name
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
