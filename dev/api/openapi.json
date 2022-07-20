@@ -3589,7 +3589,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate_post",
         "requestBody": {
           "content": {
@@ -3803,6 +3803,23 @@
           }
         },
         "description": "The model for the connection config for AWS"
+      },
+      "BigQueryConfig": {
+        "title": "BigQueryConfig",
+        "required": [
+          "keyfile_creds"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "keyfile_creds": {
+            "$ref": "#/components/schemas/KeyfileCreds"
+          }
+        },
+        "description": "The model for the connection config for BigQuery"
       },
       "ContactDetails": {
         "title": "ContactDetails",
@@ -4446,6 +4463,9 @@
               },
               {
                 "$ref": "#/components/schemas/DatabaseConfig"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryConfig"
               }
             ]
           },
@@ -4529,6 +4549,56 @@
         ],
         "type": "string",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
+      },
+      "KeyfileCreds": {
+        "title": "KeyfileCreds",
+        "required": [
+          "project_id"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "private_key_id": {
+            "title": "Private Key Id",
+            "type": "string"
+          },
+          "private_key": {
+            "title": "Private Key",
+            "type": "string"
+          },
+          "client_email": {
+            "title": "Client Email",
+            "type": "string"
+          },
+          "client_id": {
+            "title": "Client Id",
+            "type": "string"
+          },
+          "auth_uri": {
+            "title": "Auth Uri",
+            "type": "string"
+          },
+          "token_uri": {
+            "title": "Token Uri",
+            "type": "string"
+          },
+          "auth_provider_x509_cert_url": {
+            "title": "Auth Provider X509 Cert Url",
+            "type": "string"
+          },
+          "client_x509_cert_url": {
+            "title": "Client X509 Cert Url",
+            "type": "string"
+          }
+        },
+        "description": "The model for BigQuery credential keyfiles."
       },
       "LegalBasisEnum": {
         "title": "LegalBasisEnum",
@@ -5106,7 +5176,8 @@
         "enum": [
           "aws",
           "db",
-          "okta"
+          "okta",
+          "bigquery"
         ],
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"
@@ -5124,6 +5195,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AWSConfig"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryConfig"
               },
               {
                 "$ref": "#/components/schemas/OktaConfig"
@@ -5200,7 +5274,8 @@
         "title": "ValidationTarget",
         "enum": [
           "aws",
-          "okta"
+          "okta",
+          "bigquery"
         ],
         "type": "string",
         "description": "Allowed targets for the validate endpoint"
