@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from typing import Generator
 
 from fastapi import Depends, Security
@@ -8,16 +9,15 @@ from fideslib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.db.session import get_db_session
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from fideslib.oauth.scopes import SCOPES
 from sqlalchemy.orm import Session
 
+from fidesctl.api.database.session import sync_session
 from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.sql_models import ClientDetail
-from fidesctl.api.utils.errors import FunctionalityNotConfigured
+from fidesctl.api.sql_models import ClientDetail, FidesUser
 from fidesctl.core.config import get_config
 
 oauth2_scheme = OAuth2ClientCredentialsBearer(
@@ -28,15 +28,8 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 def get_db() -> Generator:
     """Return our database session"""
 
-    config = get_config()
-
-    if not config.database.enabled:
-        raise FunctionalityNotConfigured(
-            "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
-        )
     try:
-        SessionLocal = get_db_session(config)
-        db = SessionLocal()
+        db = sync_session()
         yield db
     finally:
         db.close()
@@ -91,3 +84,17 @@ async def verify_oauth_client(
         # to the associated oauth client, this token is not valid
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
+
+
+async def get_current_user(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> FidesUser:
+    """A wrapper around verify_oauth_client that returns that client's user if one exsits."""
+    client = await verify_oauth_client(
+        security_scopes=security_scopes,
+        authorization=authorization,
+        db=db,
+    )
+    return client.user

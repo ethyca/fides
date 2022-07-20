@@ -1,5 +1,5 @@
 [database]
-server="localhost"
+server="fidesctl-db"
 user="postgres"
 password="fidesctl"
 port="5432"
