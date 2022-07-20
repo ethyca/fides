@@ -13,17 +13,19 @@ from fidesctl.api.routes.crud import get_resource
 from fidesctl.api.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
+    route_requires_bigquery_connector,
     route_requires_okta_connector,
 )
 from fidesctl.api.sql_models import sql_model_map
 from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
+    BigQueryConfig,
     ConnectorAuthFailureException,
     DatabaseConfig,
     OktaConfig,
 )
-from fidesctl.core.dataset import generate_db_datasets
+from fidesctl.core.dataset import generate_bigquery_datasets, generate_db_datasets
 from fidesctl.core.system import generate_aws_systems, generate_okta_systems
 
 
@@ -35,6 +37,7 @@ class ValidTargets(str, Enum):
     AWS = "aws"
     DB = "db"
     OKTA = "okta"
+    BIGQUERY = "bigquery"
 
 
 class GenerateTypes(str, Enum):
@@ -52,7 +55,7 @@ class Generate(BaseModel):
     Defines attributes for generating resources included in a request.
     """
 
-    config: Union[AWSConfig, OktaConfig, DatabaseConfig]
+    config: Union[AWSConfig, OktaConfig, DatabaseConfig, BigQueryConfig]
     target: ValidTargets
     type: GenerateTypes
 
@@ -68,6 +71,7 @@ class Generate(BaseModel):
             ("aws", "systems"),
             ("okta", "systems"),
             ("db", "datasets"),
+            ("bigquery", "datasets"),
         ]
         if target_type not in valid_target_types:
             raise ValueError("Target and Type are not a valid match")
@@ -119,6 +123,7 @@ async def generate(
     * AWS: Systems
     * Okta: Systems
     * DB: Datasets
+    * BigQuery: Datasets
 
     In the future, this will include options for other Systems & Datasets,
     examples include:
@@ -143,6 +148,10 @@ async def generate(
             generate_results = await generate_okta(
                 okta_config=generate_request_payload.generate.config,
                 organization=organization,
+            )
+        elif generate_request_payload.generate.target.lower() == "bigquery":
+            generate_results = generate_bigquery(
+                bigquery_config=generate_request_payload.generate.config,
             )
     except ConnectorAuthFailureException as error:
         raise HTTPException(
@@ -187,3 +196,13 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
 
     return [i.dict(exclude_none=True) for i in db_datasets]
+
+
+@route_requires_bigquery_connector
+def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
+    """
+    Returns a list of datasets found in a BigQuery dataset
+    """
+    log.info("Generating datasets from BigQuery")
+    bigquery_datasets = generate_bigquery_datasets(bigquery_config)
+    return [i.dict(exclude_none=True) for i in bigquery_datasets]

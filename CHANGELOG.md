@@ -31,12 +31,13 @@ The types of changes are:
 * Sync CLI command now checks for untracked/unstaged files in the manifests dir [#869](https://github.com/ethyca/fides/pull/869)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
+* Add BigQuery support for the `generate` command and `/generate` endpoint [#814](https://github.com/ethyca/fides/pull/814) & [#917](https://github.com/ethyca/fides/pull/917)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 * Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 * Standardized API error parsing under `~/types/errors`
 * Added taxonomy page to UI [#902](https://github.com/ethyca/fides/pull/902)
   * Added a nested accordion component for displaying taxonomy data [#910](https://github.com/ethyca/fides/pull/910)
+* Add lru cache to get_config [927](https://github.com/ethyca/fides/pull/927)
 
 ### Changed
 
