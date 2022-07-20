@@ -183,3 +183,21 @@ saas_config:
             {
               <all_object_fields>
             }
+    - name: data_management
+      requests:
+        read:
+          method: GET
+          path: /v1/privacy_request/<privacy_request_id>
+          param_values:
+            - name: placeholder
+              identity: email
+        update:
+          method: POST
+          path: /v1/privacy_request/
+          param_values:
+            - name: placeholder
+              identity: email
+          body: |
+            {
+              "unique_id": "<privacy_request_id>"
+            }

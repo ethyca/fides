@@ -33,12 +33,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
         data_protection_request: Optional[SaaSRequest] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
         self.endpoints = endpoints
         self.secrets = secrets
         self.data_protection_request = data_protection_request
+        self.privacy_request = privacy_request
         self.action: Optional[str] = None
 
     def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
@@ -152,6 +154,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     self.secrets, param_value.connector_param
                 )
 
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
+
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
             self.action, self.collection_name, current_request, param_values  # type: ignore
@@ -191,6 +196,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 param_values[param_value.name] = pydash.get(
                     self.secrets, param_value.connector_param
                 )
+
+        if self.privacy_request:
+            param_values["privacy_request_id"] = self.privacy_request.id
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
