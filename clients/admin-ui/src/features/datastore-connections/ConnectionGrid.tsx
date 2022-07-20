@@ -129,7 +129,7 @@ const ConnectionGrid: React.FC = () => {
   }
 
   const columns = 3;
-  const chunks = chunk(data!.items, columns);
+  const chunks = chunk(data!?.items, columns);
 
   return (
     <>
@@ -156,7 +156,7 @@ const ConnectionGrid: React.FC = () => {
       <PaginationFooter
         page={page}
         size={size}
-        total={data!.total}
+        total={data!?.total}
         handleNextPage={handleNextPage}
         handlePreviousPage={handlePreviousPage}
       />

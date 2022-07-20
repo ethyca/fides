@@ -10,7 +10,7 @@ import {
 } from "@fidesui/react";
 import React, { useState } from "react";
 
-export type DropdownCheckboxListProps = {
+type MultiSelectDropdownListProps = {
   /**
    * List of default item values
    */
@@ -20,30 +20,25 @@ export type DropdownCheckboxListProps = {
    */
   items: Map<string, boolean>;
   /**
-   * Minimum width of an element
-   */
-  minWidth?: string;
-  /**
    * Event handler invoked when user item selections are applied
    */
   onSelection: (items: Map<string, boolean>) => void;
 };
 
-const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
+const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
   defaultValues,
   items,
-  minWidth,
   onSelection,
 }) => {
   const [pendingItems, setPendingItems] = useState(items);
 
   // Listeners
-  const changeHandler = (values: string[]) => {
+  const handleChange = (values: string[]) => {
     // Copy items
     const temp = new Map(pendingItems);
 
     // Uncheck all items
-    temp.forEach((value, key) => {
+    temp.forEach((_value, key) => {
       temp.set(key, false);
     });
 
@@ -54,16 +49,16 @@ const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
 
     setPendingItems(temp);
   };
-  const clearHandler = () => {
+  const handleClear = () => {
     setPendingItems(items);
     onSelection(new Map<string, boolean>());
   };
-  const doneHandler = () => {
+  const handleDone = () => {
     onSelection(pendingItems);
   };
 
   return (
-    <MenuList lineHeight="1rem" minWidth={minWidth} p="0">
+    <MenuList lineHeight="1rem" p="0">
       <Flex
         borderBottom="1px"
         borderColor="gray.200"
@@ -73,12 +68,12 @@ const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
           bg: "none",
         }}
       >
-        <Button onClick={clearHandler} size="xs" variant="outline">
+        <Button onClick={handleClear} size="xs" variant="outline">
           Clear
         </Button>
         <Spacer />
         <Button
-          onClick={doneHandler}
+          onClick={handleDone}
           size="xs"
           backgroundColor="primary.800"
           color="white"
@@ -90,7 +85,7 @@ const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
       <CheckboxGroup
         colorScheme="purple"
         defaultValue={defaultValues}
-        onChange={changeHandler}
+        onChange={handleChange}
       >
         {[...items].sort().map(([key]) => (
           <MenuItem
@@ -119,4 +114,4 @@ const DropdownCheckboxList: React.FC<DropdownCheckboxListProps> = ({
   );
 };
 
-export default DropdownCheckboxList;
+export default MultiSelectDropdownList;
