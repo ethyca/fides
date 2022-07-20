@@ -1,9 +1,9 @@
-import { transformDataCategoriesToNodes } from "~/features/taxonomy/helpers";
-import { MOCK_DATA_CATEGORIES } from "~/mocks/data";
+import { transformTaxonomyEntityToNodes } from "~/features/taxonomy/helpers";
+import { MOCK_DATA_CATEGORIES, MOCK_DATA_SUBJECTS } from "~/mocks/data";
 
 describe("data category transform", () => {
   it("should convert a list of dot strings to nodes", () => {
-    const nodes = transformDataCategoriesToNodes(MOCK_DATA_CATEGORIES);
+    const nodes = transformTaxonomyEntityToNodes(MOCK_DATA_CATEGORIES);
     expect(nodes).toEqual([
       {
         children: [
@@ -88,6 +88,33 @@ describe("data category transform", () => {
           "Data related to the user of the system, either provided directly or derived based on their usage.",
         label: "User Data",
         value: "user",
+      },
+    ]);
+  });
+
+  it("should handle items without parent keys as just a flat list", () => {
+    const nodes = transformTaxonomyEntityToNodes(MOCK_DATA_SUBJECTS);
+    expect(nodes).toEqual([
+      {
+        label: "Anonymous User",
+        value: "anonymous_user",
+        description:
+          "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
+        children: [],
+      },
+      {
+        label: "Citizen Voter",
+        value: "citizen_voter",
+        description:
+          "An individual registered to voter with a state or authority.",
+        children: [],
+      },
+      {
+        label: "Commuter",
+        value: "commuter",
+        description:
+          "An individual that is traveling or transiting in the context of location tracking.",
+        children: [],
       },
     ]);
   });

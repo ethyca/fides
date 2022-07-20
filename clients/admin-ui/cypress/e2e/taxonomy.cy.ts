@@ -25,8 +25,10 @@ describe("Taxonomy management page", () => {
   });
 
   describe("Can view data", () => {
-    it("Can navigate between tabs and load data", () => {
+    beforeEach(() => {
       cy.visit("/taxonomy");
+    });
+    it("Can navigate between tabs and load data", () => {
       cy.getByTestId("tab-Data Uses").click();
       cy.wait("@getDataUses");
       cy.getByTestId("tab-Data Subjects").click();
@@ -35,6 +37,34 @@ describe("Taxonomy management page", () => {
       cy.wait("@getDataQualifiers");
       cy.getByTestId("tab-Data Categories").click();
       cy.wait("@getDataCategories");
+    });
+
+    it("Can open up accordion to see taxonomy entities", () => {
+      // should only see the 3 root level taxonomy
+      cy.getByTestId("accordion-item-Account Data").should("be.visible");
+      cy.getByTestId("accordion-item-System Data").should("be.visible");
+      cy.getByTestId("accordion-item-User Data").should("be.visible");
+      cy.getByTestId("accordion-item-Payment Data").should("not.be.visible");
+
+      // clicking should open up accordions to render more items visible
+      cy.getByTestId("accordion-item-Account Data").click();
+      cy.getByTestId("accordion-item-Payment Data").should("be.visible");
+      cy.getByTestId("accordion-item-Payment Data").click();
+      cy.getByTestId("item-Account Payment Financial Account Number").should(
+        "be.visible"
+      );
+    });
+
+    it("Can render accordion elements on flat structures", () => {
+      cy.getByTestId("tab-Data Subjects").click();
+      cy.getByTestId("item-Anonymous User").should("be.visible");
+      cy.getByTestId("item-Shareholder").should("be.visible");
+    });
+
+    it("Can render action buttons on hover", () => {
+      cy.getByTestId("action-btns").should("not.exist");
+      cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
+      cy.getByTestId("action-btns").should("exist");
     });
   });
 });

@@ -1,22 +1,28 @@
-import { DataCategory } from "~/types/api";
+import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
-import { DataCategoryNode } from "./types";
-
-export const transformDataCategoriesToNodes = (
-  categories: DataCategory[],
+export const transformTaxonomyEntityToNodes = (
+  entities: TaxonomyEntity[],
   parentKey?: string
-): DataCategoryNode[] => {
-  const keyToCompare = parentKey ?? null;
-  const thisLevel = categories.filter(
-    (category) => category.parent_key === keyToCompare
-  );
-  const nodes = thisLevel.map((thisLevelCategory) => {
-    const thisLevelKey = thisLevelCategory.fides_key;
+): TaxonomyEntityNode[] => {
+  let thisLevel: TaxonomyEntity[];
+  // handle the case where there are no parent keys, i.e. should just be a flat list (data subjects)
+  if (
+    parentKey == null &&
+    entities.every((entity) => entity.parent_key === undefined)
+  ) {
+    thisLevel = entities;
+  } else {
+    // handle the case where we have a nested tree structure
+    const keyToCompare = parentKey ?? null;
+    thisLevel = entities.filter((entity) => entity.parent_key === keyToCompare);
+  }
+  const nodes = thisLevel.map((thisLevelEntity) => {
+    const thisLevelKey = thisLevelEntity.fides_key;
     return {
-      value: thisLevelCategory.fides_key,
-      label: thisLevelCategory.name ?? thisLevelCategory.fides_key,
-      description: thisLevelCategory.description,
-      children: transformDataCategoriesToNodes(categories, thisLevelKey),
+      value: thisLevelEntity.fides_key,
+      label: thisLevelEntity.name ?? thisLevelEntity.fides_key,
+      description: thisLevelEntity.description,
+      children: transformTaxonomyEntityToNodes(entities, thisLevelKey),
     };
   });
   return nodes;
