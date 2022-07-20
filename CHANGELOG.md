@@ -29,7 +29,8 @@ The types of changes are:
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
-
+### Added
+* Adds saas config base info to connection config responses [#904](https://github.com/ethyca/fidesops/pull/904)
 
 
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
