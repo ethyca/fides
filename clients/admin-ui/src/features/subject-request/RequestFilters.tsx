@@ -9,11 +9,11 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "../auth";
-import DropdownCheckbox from "../common/DropdownCheckbox/DropdownCheckbox";
 import {
   CloseSolidIcon,
   DownloadSolidIcon,
@@ -37,6 +37,7 @@ const useRequestFilters = () => {
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
   const toast = useToast();
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestId(event.target.value));
   const handleStatusChange = useCallback(
@@ -77,32 +78,6 @@ const useRequestFilters = () => {
       });
     }
   };
-
-  return {
-    handleSearchChange,
-    handleStatusChange,
-    handleFromChange,
-    handleToChange,
-    handleClearAllFilters,
-    handleDownloadClick,
-    ...filters,
-  };
-};
-
-const RequestFilters: React.FC = () => {
-  const {
-    handleSearchChange,
-    handleStatusChange,
-    handleFromChange,
-    handleToChange,
-    handleClearAllFilters,
-    handleDownloadClick,
-    id,
-    from,
-    status,
-    to,
-  } = useRequestFilters();
-
   const loadStatusList = (values: string[]): Map<string, boolean> => {
     const list = new Map<string, boolean>();
     SubjectRequestStatusMap.forEach((value, key) => {
@@ -116,21 +91,53 @@ const RequestFilters: React.FC = () => {
   };
 
   // Load the status list
-  const statusList = useMemo(() => loadStatusList(status || []), [status]);
+  const statusList = useMemo(
+    () => loadStatusList(filters.status || []),
+    [filters.status]
+  );
 
   // Filter the selected status list
   const selectedStatusList = new Map(
     [...statusList].filter(([, v]) => v === true)
   );
 
+  return {
+    handleSearchChange,
+    handleStatusChange,
+    handleFromChange,
+    handleToChange,
+    handleClearAllFilters,
+    handleDownloadClick,
+    loadStatusList,
+    ...filters,
+    selectedStatusList,
+    statusList,
+  };
+};
+
+const RequestFilters: React.FC = () => {
+  const {
+    handleSearchChange,
+    handleStatusChange,
+    handleFromChange,
+    handleToChange,
+    handleClearAllFilters,
+    handleDownloadClick,
+    id,
+    from,
+    selectedStatusList,
+    statusList,
+    to,
+  } = useRequestFilters();
+
   return (
     <Stack direction="row" spacing={4} mb={6}>
-      <DropdownCheckbox
+      <MultiSelectDropdown
+        label="Select Status"
         list={statusList}
         selectedList={selectedStatusList}
-        minWidth="144px"
+        width="144px"
         onChange={handleStatusChange}
-        title="Select Status"
         tooltipPlacement="top"
       />
       <InputGroup size="sm">
