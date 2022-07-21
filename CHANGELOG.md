@@ -53,6 +53,7 @@ The types of changes are:
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 * Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
+* Replicated the error response handling from the `/validate` endpoint to the `/generate` endpoint [#911](https://github.com/ethyca/fides/pull/911)
 
 ### Developer Experience
 
