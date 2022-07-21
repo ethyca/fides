@@ -285,9 +285,6 @@ def db() -> Generator:
 def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes."""
 
-    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
-    SCOPES.append(USER_PASSWORD_RESET)
-
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
@@ -338,9 +335,6 @@ def user(db: Session) -> Generator:
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
-
-    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
-    SCOPES.append(USER_PASSWORD_RESET)
 
     client = ClientDetail(
         hashed_secret="thisisatest",

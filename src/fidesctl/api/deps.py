@@ -74,9 +74,6 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
-
-    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
-    SCOPES.append(USER_PASSWORD_RESET)
     client = ClientDetail.get(db, object_id=client_id, config=config, scopes=SCOPES)
 
     if not client:
