@@ -39,6 +39,7 @@ The types of changes are:
   * Added a nested accordion component for displaying taxonomy data [#910](https://github.com/ethyca/fides/pull/910)
 * Add lru cache to get_config [927](https://github.com/ethyca/fides/pull/927)
 * Add user auth routes [929](https://github.com/ethyca/fides/pull/929)
+* Bump fideslib to 3.0.1 and remove patch code[931](https://github.com/ethyca/fides/pull/931)
 
 ### Changed
 
