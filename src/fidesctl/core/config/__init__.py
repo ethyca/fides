@@ -18,6 +18,8 @@ from .logging_settings import FidesctlLoggingSettings
 from .security_settings import FidesctlSecuritySettings
 from .user_settings import FidesctlUserSettings
 
+DEFAULT_CONFIG_PATH = ".fides/fidesctl.toml"
+
 
 class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
@@ -44,7 +46,7 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
         settings = (
             toml.load(config_path_override)
             if config_path_override
-            else load_toml(file_names=["fidesctl.toml"])
+            else load_toml(file_names=[DEFAULT_CONFIG_PATH])
         )
 
         # credentials specific logic for populating environment variable configs.
