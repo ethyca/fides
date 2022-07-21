@@ -7,7 +7,8 @@ from fastapi import HTTPException, status
 from fidesctl.api.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
-WEBAPP_DIRECTORY = Path("src/fidesctl/api/build/static")
+FRONTEND_BUILD_DIRECTORY = Path("src/ui-build/static")
+WEBAPP_DIRECTORY = FRONTEND_BUILD_DIRECTORY / "admin"
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 
