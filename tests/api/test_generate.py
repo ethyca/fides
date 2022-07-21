@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from json import dumps
+from base64 import b64decode
+from json import dumps, loads
 from os import getenv
 
 import pytest
@@ -15,6 +16,12 @@ EXTERNAL_CONFIG_BODY = {
         "aws_access_key_id": getenv("AWS_ACCESS_KEY_ID", ""),
         "aws_secret_access_key": getenv("AWS_SECRET_ACCESS_KEY", ""),
     },
+    "bigquery": {
+        "dataset": "fidesopstest",
+        "keyfile_creds": loads(
+            b64decode(getenv("BIGQUERY_CONFIG", "e30=").encode("utf-8")).decode("utf-8")
+        ),
+    },
     "db": {
         "connection_string": "postgresql+psycopg2://postgres:postgres@postgres-test:5432/postgres_example?"
     },
@@ -28,7 +35,12 @@ EXTERNAL_CONFIG_BODY = {
 @pytest.mark.external
 @pytest.mark.parametrize(
     "generate_type, generate_target",
-    [("systems", "aws"), ("systems", "okta"), ("datasets", "db")],
+    [
+        ("systems", "aws"),
+        ("systems", "okta"),
+        ("datasets", "db"),
+        ("datasets", "bigquery"),
+    ],
 )
 def test_generate(
     test_config: FidesctlConfig,

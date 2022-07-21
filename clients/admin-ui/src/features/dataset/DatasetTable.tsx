@@ -1,8 +1,9 @@
 import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { Dataset } from "~/types/api";
+
 import { selectActiveDataset, setActiveDataset } from "./dataset.slice";
-import { Dataset } from "./types";
 
 interface Props {
   datasets: Dataset[] | undefined;

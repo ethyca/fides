@@ -1,16 +1,17 @@
 import { Box, Heading, SimpleGrid, Text } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
+import { DataCategory } from "~/types/api";
+
 import CheckboxTree from "../common/CheckboxTree";
-import { transformDataCategoriesToNodes } from "./helpers";
-import { DataCategory } from "./types";
+import { transformTaxonomyEntityToNodes } from "./helpers";
 
 interface Props {
   dataCategories: DataCategory[];
 }
 const DataCategoryChecklist = ({ dataCategories }: Props) => {
   const nodes = useMemo(
-    () => transformDataCategoriesToNodes(dataCategories),
+    () => transformTaxonomyEntityToNodes(dataCategories),
     [dataCategories]
   );
   const [checked, setChecked] = useState<string[]>([]);

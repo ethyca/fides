@@ -1,14 +1,33 @@
-# pylint: disable=missing-docstring, redefined-outer-name
+# pylint: disable=invalid-name, missing-docstring, redefined-outer-name
+
 """Common fixtures to be used across tests."""
+
+from __future__ import annotations
+
+import json
 import os
-from typing import Dict, Generator, Union
+from datetime import datetime
+from typing import Any, Dict, Generator, Union
+from uuid import uuid4
 
 import pytest
 import yaml
 from fideslang import models
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fideslib.models.client import ClientDetail
+from fideslib.oauth.jwt import generate_jwe
+from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES, USER_PASSWORD_RESET
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fidesctl.api import main
+from fidesctl.api.database.session import sync_session
+from fidesctl.api.sql_models import FidesUser, FidesUserPermissions
 from fidesctl.core import api
 from fidesctl.core.config import FidesctlConfig, get_config
 
@@ -253,3 +272,134 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
         with open(f"{nested_manifest_dir}/{manifest}.yml", "w") as manifest_file:
             yaml.dump(test_manifests[manifest], manifest_file)
     return manifest_dir
+
+
+@pytest.fixture
+def db() -> Generator:
+    session = sync_session()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def oauth_client(db: Session) -> Generator:
+    """Return a client for authentication purposes."""
+
+    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
+    SCOPES.append(USER_PASSWORD_RESET)
+
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=SCOPES,
+        fides_key="test_client",
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
+@pytest.fixture
+def auth_header(  # type: ignore
+    request: Any, oauth_client: ClientDetail, test_config: FidesctlConfig
+) -> Dict[str, str]:
+    client_id = oauth_client.id
+
+    payload = {
+        JWE_PAYLOAD_SCOPES: request.param,
+        JWE_PAYLOAD_CLIENT_ID: client_id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
+
+    return {"Authorization": f"Bearer {jwe}"}
+
+
+def generate_auth_header_for_user(
+    user: FidesUser, scopes: list[str], test_config: FidesctlConfig
+) -> Dict[str, str]:
+    payload = {
+        JWE_PAYLOAD_SCOPES: scopes,
+        JWE_PAYLOAD_CLIENT_ID: user.client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
+@pytest.fixture
+def user(db: Session) -> Generator:
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fidesops_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+
+    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
+    SCOPES.append(USER_PASSWORD_RESET)
+
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=SCOPES,
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield user
+    try:
+        user.delete(db)
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture
+def user_no_client(db: Session) -> Generator:
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_fidesops_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+        },
+    )
+
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
+    )
+
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def application_user(db: Session, oauth_client: ClientDetail) -> FidesUser:
+    unique_username = f"user-{uuid4()}"
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": unique_username,
+            "password": "test_password",
+            "first_name": "Test",
+            "last_name": "User",
+        },
+    )
+    oauth_client.user_id = user.id
+    oauth_client.save(db=db)
+    yield user
+    user.delete(db=db)
+
+
+@pytest.fixture(autouse=True)
+def clear_get_config_cache() -> None:
+    get_config.cache_clear()

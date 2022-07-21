@@ -6,12 +6,13 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
+from fideslib.db.base import Base, ClientDetail, FidesUser, FidesUserPermissions
+from fideslib.db.base_class import FidesBase as FideslibBase
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,
     JSON,
     Column,
-    Integer,
     String,
     Text,
     TypeDecorator,
@@ -19,7 +20,6 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -28,15 +28,7 @@ from fidesctl.core.config import FidesctlConfig, get_config
 CONFIG: FidesctlConfig = get_config()
 
 
-class SqlModelBase:
-    """
-    This is the base class used to describe columns that every object should have.
-    """
-
-    id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True)
-
-
-class FidesBase(SqlModelBase):
+class FidesBase(FideslibBase):
     """
     The base SQL model for all top-level Fides Resources.
     """
@@ -52,9 +44,6 @@ class FidesBase(SqlModelBase):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
-
-SqlAlchemyBase = declarative_base(cls=SqlModelBase)
 
 
 class PGEncryptedString(TypeDecorator):
@@ -97,7 +86,7 @@ class PGEncryptedString(TypeDecorator):
 
 
 # Privacy Types
-class DataCategory(SqlAlchemyBase, FidesBase):
+class DataCategory(Base, FidesBase):
     """
     The SQL model for the DataCategory resource.
     """
@@ -107,7 +96,7 @@ class DataCategory(SqlAlchemyBase, FidesBase):
     parent_key = Column(Text)
 
 
-class DataQualifier(SqlAlchemyBase, FidesBase):
+class DataQualifier(Base, FidesBase):
     """
     The SQL model for the DataQualifier resource.
     """
@@ -117,7 +106,7 @@ class DataQualifier(SqlAlchemyBase, FidesBase):
     parent_key = Column(Text)
 
 
-class DataSubject(SqlAlchemyBase, FidesBase):
+class DataSubject(Base, FidesBase):
     """
     The SQL model for the DataSubject resource.
     """
@@ -127,7 +116,7 @@ class DataSubject(SqlAlchemyBase, FidesBase):
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
 
 
-class DataUse(SqlAlchemyBase, FidesBase):
+class DataUse(Base, FidesBase):
     """
     The SQL model for the DataUse resource.
     """
@@ -143,7 +132,7 @@ class DataUse(SqlAlchemyBase, FidesBase):
 
 
 # Dataset
-class Dataset(SqlAlchemyBase, FidesBase):
+class Dataset(Base, FidesBase):
     """
     The SQL model for the Dataset resource.
     """
@@ -161,7 +150,7 @@ class Dataset(SqlAlchemyBase, FidesBase):
 
 
 # Evaluation
-class Evaluation(SqlAlchemyBase):
+class Evaluation(Base):
     """
     The SQL model for the Evaluation resource.
     """
@@ -175,7 +164,7 @@ class Evaluation(SqlAlchemyBase):
 
 
 # Organization
-class Organization(SqlAlchemyBase, FidesBase):
+class Organization(Base, FidesBase):
     """
     The SQL model for the Organization resource.
     """
@@ -192,7 +181,7 @@ class Organization(SqlAlchemyBase, FidesBase):
 
 
 # Policy
-class Policy(SqlAlchemyBase, FidesBase):
+class Policy(Base, FidesBase):
     """
     The SQL model for the Policy resource.
     """
@@ -203,7 +192,7 @@ class Policy(SqlAlchemyBase, FidesBase):
 
 
 # Registry
-class Registry(SqlAlchemyBase, FidesBase):
+class Registry(Base, FidesBase):
     """
     The SQL model for the Registry resource.
     """
@@ -212,7 +201,7 @@ class Registry(SqlAlchemyBase, FidesBase):
 
 
 # System
-class System(SqlAlchemyBase, FidesBase):
+class System(Base, FidesBase):
     """
     The SQL model for the system resource.
     """
@@ -233,11 +222,14 @@ class System(SqlAlchemyBase, FidesBase):
 
 
 sql_model_map: Dict = {
+    "client_detail": ClientDetail,
     "data_category": DataCategory,
     "data_qualifier": DataQualifier,
     "data_subject": DataSubject,
     "data_use": DataUse,
     "dataset": Dataset,
+    "fides_user": FidesUser,
+    "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
     "policy": Policy,
     "registry": Registry,

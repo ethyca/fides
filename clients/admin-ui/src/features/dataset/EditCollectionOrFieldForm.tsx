@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
+import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
-import { DatasetCollection, DatasetField } from "./types";
 
 const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
   value: dq.key,

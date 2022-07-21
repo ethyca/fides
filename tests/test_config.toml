@@ -1,13 +1,17 @@
+[database]
+server="fidesctl-db"
+user="postgres"
+password="fidesctl"
+port="5432"
+db="fidesctl"
+test_db="fidesctl_test"
+
+[logging]
+level = "INFO"
+
 [cli]
 server_host = "fidesctl"
 server_port = 8080
-
-[api]
-database_user = "postgres"
-database_password = "fidesctl"
-database_host = "fidesctl-db"
-database_port = "5432"
-test_database_name = "fidesctl_test"
 
 [user]
 analytics_opt_out = true

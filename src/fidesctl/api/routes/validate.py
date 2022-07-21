@@ -10,11 +10,13 @@ from pydantic import BaseModel
 from fidesctl.api.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
+    route_requires_bigquery_connector,
     route_requires_okta_connector,
 )
 from fidesctl.api.utils.api_router import APIRouter
 from fidesctl.connectors.models import (
     AWSConfig,
+    BigQueryConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
     OktaConfig,
@@ -28,6 +30,7 @@ class ValidationTarget(str, Enum):
 
     AWS = "aws"
     OKTA = "okta"
+    BIGQUERY = "bigquery"
 
 
 class ValidateRequest(BaseModel):
@@ -35,7 +38,7 @@ class ValidateRequest(BaseModel):
     Validate endpoint request object
     """
 
-    config: Union[AWSConfig, OktaConfig]
+    config: Union[AWSConfig, BigQueryConfig, OktaConfig]
     target: ValidationTarget
 
 
@@ -73,6 +76,7 @@ async def validate(
     """
     validate_function_map: Dict[ValidationTarget, Callable] = {
         ValidationTarget.AWS: validate_aws,
+        ValidationTarget.BIGQUERY: validate_bigquery,
         ValidationTarget.OKTA: validate_okta,
     }
     validate_function = validate_function_map[validate_request_payload.target]
@@ -104,6 +108,18 @@ async def validate_aws(aws_config: AWSConfig) -> None:
     import fidesctl.connectors.aws as aws_connector
 
     aws_connector.validate_credentials(aws_config=aws_config)
+
+
+@route_requires_bigquery_connector
+async def validate_bigquery(bigquery_config: BigQueryConfig) -> None:
+    """
+    Validates that given GCP BigQuery credentials are valid. Dependency
+    exception is raised if failure occurs.
+    """
+    import fidesctl.connectors.bigquery as bigquery_connector
+
+    bigquery_engine = bigquery_connector.get_bigquery_engine(bigquery_config)
+    bigquery_connector.validate_bigquery_engine(bigquery_engine)
 
 
 @route_requires_okta_connector

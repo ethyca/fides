@@ -15,18 +15,18 @@ fidesctl_config = get_config()
 # This line sets up loggers basically.
 fileConfig(alembic_config.config_file_name)
 setup_fidesapi_logger(
-    fidesctl_config.api.log_level,
-    serialize=fidesctl_config.api.log_serialization,
-    desination=fidesctl_config.api.log_destination,
+    fidesctl_config.logging.level,
+    serialize=fidesctl_config.logging.serialization,
+    desination=fidesctl_config.logging.destination,
 )
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from fidesctl.api.sql_models import SqlAlchemyBase
+from fidesctl.api.sql_models import Base
 
-target_metadata = SqlAlchemyBase.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -46,7 +46,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = fidesctl_config.api.sync_database_url
+    url = fidesctl_config.database.sync_database_uri
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -66,7 +66,7 @@ def run_migrations_online():
 
     """
     configuration = alembic_config.get_section(alembic_config.config_ini_section)
-    configuration["sqlalchemy.url"] = fidesctl_config.api.sync_database_url
+    configuration["sqlalchemy.url"] = fidesctl_config.database.sync_database_uri
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

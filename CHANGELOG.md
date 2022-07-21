@@ -31,9 +31,14 @@ The types of changes are:
 * Sync CLI command now checks for untracked/unstaged files in the manifests dir [#869](https://github.com/ethyca/fides/pull/869)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Add BigQuery support for the `generate` cli command [#814](https://github.com/ethyca/fides/pull/814)
+* Add BigQuery support for the `generate` command and `/generate` endpoint [#814](https://github.com/ethyca/fides/pull/814) & [#917](https://github.com/ethyca/fides/pull/917)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added user auth tables [915](https://github.com/ethyca/fides/pull/915)
 * Standardized API error parsing under `~/types/errors`
+* Added taxonomy page to UI [#902](https://github.com/ethyca/fides/pull/902)
+  * Added a nested accordion component for displaying taxonomy data [#910](https://github.com/ethyca/fides/pull/910)
+* Add lru cache to get_config [927](https://github.com/ethyca/fides/pull/927)
+* Add user auth routes [929](https://github.com/ethyca/fides/pull/929)
 
 ### Changed
 
@@ -44,8 +49,14 @@ The types of changes are:
 * Webserver dependencies now come as a standard part of the package [#881](https://github.com/ethyca/fides/pull/881)
 * Initial configuration wizard UI view
   * Refactored step & form results management to use Redux Toolkit slice.
+* Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+* Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
+
+### Developer Experience
+
+* Remove `API_PREFIX` from fidesctl/core/utils.py and change references to `API_PREFIX` in fidesctl/api/reoutes/util.py [922](https://github.com/ethyca/fides/pull/922)
 
 ### Docs
 
@@ -58,6 +69,7 @@ The types of changes are:
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
 * Fixed an M1-related SQLAlchemy bug [#816](https://github.com/ethyca/fides/pull/891)
 * Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
+* Dataset field columns show all columns by default in the UI [#898](https://github.com/ethyca/fides/pull/898)
 * Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23

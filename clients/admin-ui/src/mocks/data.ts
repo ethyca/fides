@@ -1,9 +1,10 @@
 import {
+  DataResponsibilityTitle,
   Dataset,
   DatasetCollection,
   DatasetField,
-} from "~/features/dataset/types";
-import { System } from "~/features/system/types";
+  System,
+} from "~/types/api";
 
 /**
  * Returns a mock system object. Can override default values by
@@ -12,7 +13,7 @@ import { System } from "~/features/system/types";
 export const mockSystem = (partialSystem?: Partial<System>): System => {
   const system: System = {
     system_type: "Service",
-    data_responsibility_title: "Controller",
+    data_responsibility_title: DataResponsibilityTitle.CONTROLLER,
     privacy_declarations: [],
     data_protection_impact_assessment: { is_required: true },
     fides_key: "analytics_system",
@@ -120,6 +121,38 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Provided Identifiable Data",
     organization_fides_key: "default_organization",
     parent_key: "user.provided",
+  },
+];
+
+export const MOCK_DATA_SUBJECTS = [
+  {
+    fides_key: "anonymous_user",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Anonymous User",
+    description:
+      "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
+    rights: null,
+    automated_decisions_or_profiling: null,
+  },
+  {
+    fides_key: "citizen_voter",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Citizen Voter",
+    description: "An individual registered to voter with a state or authority.",
+    rights: null,
+    automated_decisions_or_profiling: null,
+  },
+  {
+    fides_key: "commuter",
+    organization_fides_key: "default_organization",
+    tags: null,
+    name: "Commuter",
+    description:
+      "An individual that is traveling or transiting in the context of location tracking.",
+    rights: null,
+    automated_decisions_or_profiling: null,
   },
 ];
 

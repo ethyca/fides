@@ -25,9 +25,9 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
-  selectDataQualifier,
-  setDataQualifier,
-  useGetDataQualifierQuery,
+  selectDataQualifiers,
+  setDataQualifiers,
+  useGetAllDataQualifiersQuery,
 } from "~/features/data-qualifier/data-qualifier.slice";
 import {
   selectDataSubjects,
@@ -35,16 +35,16 @@ import {
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
 import {
-  selectDataUse,
-  setDataUse,
-  useGetDataUseQuery,
+  selectDataUses,
+  setDataUses,
+  useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
-import { PrivacyDeclaration } from "~/features/system/types";
 import {
   selectDataCategories,
   setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/data-categories.slice";
+import { PrivacyDeclaration } from "~/types/api";
 
 import {
   CustomMultiSelect,
@@ -78,20 +78,20 @@ const PrivacyDeclarationForm = ({
 
   const { data: dataCategories } = useGetAllDataCategoriesQuery();
   const { data: dataSubjects } = useGetAllDataSubjectsQuery();
-  const { data: dataQualifier } = useGetDataQualifierQuery();
-  const { data: dataUse } = useGetDataUseQuery();
+  const { data: dataQualifiers } = useGetAllDataQualifiersQuery();
+  const { data: dataUses } = useGetAllDataUsesQuery();
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
-  const allDataUses = useAppSelector(selectDataUse);
-  const allDataQualifiers = useAppSelector(selectDataQualifier);
+  const allDataUses = useAppSelector(selectDataUses);
+  const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
   useEffect(() => {
     dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
-    dispatch(setDataUse(dataUse ?? []));
-    dispatch(setDataQualifier(dataQualifier ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUse, dataQualifier]);
+    dispatch(setDataUses(dataUses ?? []));
+    dispatch(setDataQualifiers(dataQualifiers ?? []));
+  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
   useEffect(() => {}, [formDeclarations]);
 
@@ -327,7 +327,7 @@ const PrivacyDeclarationForm = ({
                 label="Data use"
                 name="data_use"
                 size="md"
-                options={allDataUses?.map((data: any) => ({
+                options={allDataUses.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -346,7 +346,7 @@ const PrivacyDeclarationForm = ({
                 name="data_subjects"
                 label="Data subjects"
                 size="md"
-                options={allDataSubjects?.map((data: any) => ({
+                options={allDataSubjects.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
@@ -366,7 +366,7 @@ const PrivacyDeclarationForm = ({
                 label="Data qualifier"
                 name="data_qualifier"
                 size="md"
-                options={allDataQualifiers?.map((data: any) => ({
+                options={allDataQualifiers.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}

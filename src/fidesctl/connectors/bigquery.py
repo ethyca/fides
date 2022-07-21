@@ -1,3 +1,5 @@
+from json import loads
+
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine import Engine
 
@@ -30,4 +32,4 @@ def validate_bigquery_engine(engine: Engine) -> None:
     try:
         inspector.get_schema_names()
     except ClientError as error:
-        raise ConnectorFailureException(error.message)
+        raise ConnectorFailureException(loads(error.response.text)["error"]["message"])

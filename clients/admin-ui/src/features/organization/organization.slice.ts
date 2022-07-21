@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
-import { Organization, OrganizationResponse } from "./types";
+import { Organization } from "~/types/api";
 
 // Organization API
 export const organizationApi = createApi({
@@ -13,10 +13,7 @@ export const organizationApi = createApi({
   }),
   tagTypes: ["Organization"],
   endpoints: (build) => ({
-    createOrganization: build.mutation<
-      OrganizationResponse,
-      Partial<Organization>
-    >({
+    createOrganization: build.mutation<Organization, Partial<Organization>>({
       query: (body) => ({
         url: `organization/`,
         method: "POST",

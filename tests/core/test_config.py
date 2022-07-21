@@ -4,7 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
-from fidesctl.core.config import APISettings, get_config
+from fidesctl.core.config import get_config
+from fidesctl.core.config.database_settings import FidesctlDatabaseSettings
 
 
 # Unit
@@ -26,10 +27,40 @@ def test_get_config() -> None:
     )
 
 
+@patch.dict(
+    os.environ,
+    {"FIDESCTL_CONFIG_PATH": ""},
+    clear=True,
+)
+@pytest.mark.unit
+def test_get_config_cache() -> None:
+    "Test lru cache hits."
+    config = get_config()
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 0
+    assert cache_info.misses == 1
+
+    config = get_config()
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 1
+    assert cache_info.misses == 1
+
+    config = get_config("tests/test_config.toml")
+    cache_info = get_config.cache_info()
+    assert config.user.user_id == "1"
+    assert config.user.api_key == "test_api_key"
+    assert cache_info.hits == 1
+    assert cache_info.misses == 2
+
+
 @pytest.mark.unit
 def test_default_config() -> None:
     "Test building a config from default values."
-    os.environ["FIDESCTL_CONFIG_PATH"] = ""
+    os.environ["FIDES__CONFIG_PATH"] = ""
     config = get_config()
     os.chdir("/fides")
 
@@ -40,7 +71,7 @@ def test_default_config() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDESCTL_CONFIG_PATH": "",
+        "FIDES__CONFIG_PATH": "/fides/.fides/",
         "FIDESCTL__USER__USER_ID": "2",
         "FIDESCTL__CLI__SERVER_HOST": "test",
         "FIDESCTL__CLI__SERVER_PORT": "8080",
@@ -52,7 +83,6 @@ def test_default_config() -> None:
 def test_config_from_env_vars() -> None:
     "Test building a config from env vars."
     config = get_config()
-    os.chdir("/fides")
 
     assert config.user.user_id == "2"
     assert config.user.api_key == "test_api_key"
@@ -66,21 +96,32 @@ def test_config_from_env_vars() -> None:
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "False"
-    api_settings = APISettings(
-        test_database_name="test_database_url", database_name="database_url"
+    database_settings = FidesctlDatabaseSettings(
+        user="postgres",
+        password="fidesctl",
+        server="fidesctl-db",
+        port="5432",
+        db="database",
+        test_db="test_database",
     )
     assert (
-        api_settings.database_url == "postgres:fidesctl@fidesctl-db:5432/database_url"
+        database_settings.async_database_uri
+        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/database"
     )
 
 
 @pytest.mark.unit
 def test_database_url_test_mode_enabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "True"
-    api_settings = APISettings(
-        test_database_name="test_database_url", database_name="database_url"
+    database_settings = FidesctlDatabaseSettings(
+        user="postgres",
+        password="fidesctl",
+        server="fidesctl-db",
+        port="5432",
+        db="database",
+        test_db="test_database",
     )
     assert (
-        api_settings.database_url
-        == "postgres:fidesctl@fidesctl-db:5432/test_database_url"
+        database_settings.async_database_uri
+        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/test_database"
     )
