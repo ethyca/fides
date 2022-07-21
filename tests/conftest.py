@@ -20,7 +20,7 @@ from fideslib.cryptography.schemas.jwt import (
 )
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES, USER_PASSWORD_RESET
+from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
@@ -285,9 +285,6 @@ def db() -> Generator:
 def oauth_client(db: Session) -> Generator:
     """Return a client for authentication purposes."""
 
-    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
-    SCOPES.append(USER_PASSWORD_RESET)
-
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
@@ -338,9 +335,6 @@ def user(db: Session) -> Generator:
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
         },
     )
-
-    # Temporary fix until https://github.com/ethyca/fideslib/issues/54 is resolved
-    SCOPES.append(USER_PASSWORD_RESET)
 
     client = ClientDetail(
         hashed_secret="thisisatest",
