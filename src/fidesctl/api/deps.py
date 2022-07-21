@@ -12,7 +12,7 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
-from fideslib.oauth.scopes import SCOPES, USER_PASSWORD_RESET
+from fideslib.oauth.scopes import SCOPES
 from sqlalchemy.orm import Session
 
 from fidesctl.api.database.session import sync_session
