@@ -20,7 +20,7 @@ from fideslib.cryptography.schemas.jwt import (
 )
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES, USER_PASSWORD_RESET
+from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
