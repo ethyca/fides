@@ -47,12 +47,12 @@ def setup():
                 "connection_type": ConnectionType.mariadb,
                 "access": AccessLevel.write,
                 "secrets": {
-                    "host": pydash.get(integration_config, "mariadb_example.SERVER"),
-                    "port": pydash.get(integration_config, "mariadb_example.PORT"),
-                    "dbname": pydash.get(integration_config, "mariadb_example.DB"),
-                    "username": pydash.get(integration_config, "mariadb_example.USER"),
+                    "host": pydash.get(integration_config, "mariadb_example.server"),
+                    "port": pydash.get(integration_config, "mariadb_example.port"),
+                    "dbname": pydash.get(integration_config, "mariadb_example.db"),
+                    "username": pydash.get(integration_config, "mariadb_example.user"),
                     "password": pydash.get(
-                        integration_config, "mariadb_example.PASSWORD"
+                        integration_config, "mariadb_example.password"
                     ),
                 },
             },

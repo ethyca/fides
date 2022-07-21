@@ -31,12 +31,12 @@ def setup():
                 "connection_type": ConnectionType.postgres,
                 "access": AccessLevel.write,
                 "secrets": {
-                    "host": pydash.get(integration_config, "postgres_example.SERVER"),
-                    "port": pydash.get(integration_config, "postgres_example.PORT"),
-                    "dbname": pydash.get(integration_config, "postgres_example.DB"),
-                    "username": pydash.get(integration_config, "postgres_example.USER"),
+                    "host": pydash.get(integration_config, "postgres_example.server"),
+                    "port": pydash.get(integration_config, "postgres_example.port"),
+                    "dbname": pydash.get(integration_config, "postgres_example.db"),
+                    "username": pydash.get(integration_config, "postgres_example.user"),
                     "password": pydash.get(
-                        integration_config, "postgres_example.PASSWORD"
+                        integration_config, "postgres_example.password"
                     ),
                 },
             },
