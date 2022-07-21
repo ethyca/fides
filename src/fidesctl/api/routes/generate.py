@@ -22,6 +22,7 @@ from fidesctl.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
+    ConnectorFailureException,
     DatabaseConfig,
     OktaConfig,
 )
@@ -234,5 +235,11 @@ def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
     Returns a list of datasets found in a BigQuery dataset
     """
     log.info("Generating datasets from BigQuery")
-    bigquery_datasets = generate_bigquery_datasets(bigquery_config)
+    try:
+        bigquery_datasets = generate_bigquery_datasets(bigquery_config)
+    except ConnectorFailureException as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        )
     return [i.dict(exclude_none=True) for i in bigquery_datasets]
