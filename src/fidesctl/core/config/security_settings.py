@@ -15,6 +15,7 @@ class FidesctlSecuritySettings(SecuritySettings):
     app_encryption_key: str = "atestencryptionkeythatisvalidlen"
     drp_jwt_secret: str = "testdrpsecret"
     oauth_root_client_id: str = "testrootclientid"
+    encoding: str = "UTF-8"
 
     @root_validator(pre=True)
     @classmethod
