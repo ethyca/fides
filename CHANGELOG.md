@@ -72,6 +72,7 @@ The types of changes are:
 * Endpoints now work with or without a trailing slash. [#886](https://github.com/ethyca/fides/pull/886)
 * Dataset field columns show all columns by default in the UI [#898](https://github.com/ethyca/fides/pull/898)
 * Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
+* Fixed the missing `.fides./` directory when locating the default config [#933](https://github.com/ethyca/fides/pull/933)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 

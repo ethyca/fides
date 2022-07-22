@@ -4,6 +4,8 @@ from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
 
+from fidesctl.core.config import DEFAULT_CONFIG_PATH
+
 
 def get_config_from_file(
     config_path_override: str,
@@ -15,7 +17,9 @@ def get_config_from_file(
     """
 
     try:
-        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
+        config_path = config_path_override or load_file(
+            file_names=[DEFAULT_CONFIG_PATH]
+        )
     except FileNotFoundError as error:
         raise error
 
@@ -42,7 +46,9 @@ def update_config_file(  # type: ignore
     """
 
     try:
-        config_path = config_path_override or load_file(file_names=["fidesctl.toml"])
+        config_path = config_path_override or load_file(
+            file_names=[DEFAULT_CONFIG_PATH]
+        )
     except FileNotFoundError as error:
         raise error
 
