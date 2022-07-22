@@ -192,7 +192,7 @@ clean:
 compose-build:
 	@echo "Tearing down the docker compose images, network, etc..."
 	@docker-compose down --remove-orphans
-	@docker-compose build --build-arg REQUIRE_MSSQL="true"
+	@docker-compose build --build-arg SKIP_MSSQL_INSTALLATION="false"
 
 .PHONY: isort
 isort:

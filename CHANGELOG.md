@@ -34,6 +34,10 @@ The types of changes are:
 ### Docs
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 
+### Fixed
+
+* Correct build arg variable name [925](https://github.com/ethyca/fidesops/pull/925)
+
 ## [1.6.3](https://github.com/ethyca/fidesops/compare/1.6.2...1.6.3)
 
 ### Added
