@@ -25,7 +25,7 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
-from fidesops.util.saas_util import assign_placeholders
+from fidesops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request  # type: ignore
-        prepared_request: SaaSRequestParams = SaaSRequestParams(
-            method=test_request.method, path=test_request.path
+        prepared_request = map_param_values(
+            "test",
+            f"{self.configuration.name}",
+            test_request,
+            self.configuration.secrets,  # type: ignore
         )
         client: AuthenticatedClient = self.create_client_from_request(test_request)
         client.send(prepared_request)
