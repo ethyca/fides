@@ -52,6 +52,24 @@ def generate_rds_systems(
     return rds_systems
 
 
+def generate_resource_tagging_systems(
+    organization_key: str, aws_config: Optional[AWSConfig]
+) -> List[System]:
+    """
+    Fetches AWS Resources from the resource tagging api and returns the transformed Sytem representations.
+    """
+    import fidesctl.connectors.aws as aws_connector
+
+    client = aws_connector.get_aws_client(
+        service="resourcegroupstaggingapi", aws_config=aws_config
+    )
+    resource_arns = aws_connector.get_tagging_resources(client=client)
+    resource_tagging_systems = aws_connector.create_resource_tagging_systems(
+        resource_arns=resource_arns, organization_key=organization_key
+    )
+    return resource_tagging_systems
+
+
 def get_organization(
     organization_key: str,
     manifest_organizations: List[Organization],
@@ -95,7 +113,11 @@ def generate_aws_systems(
 
     Returns a list of systems with any filters applied
     """
-    generate_system_functions = [generate_redshift_systems, generate_rds_systems]
+    generate_system_functions = [
+        generate_redshift_systems,
+        generate_rds_systems,
+        generate_resource_tagging_systems,
+    ]
 
     aws_systems = [
         found_system

@@ -82,6 +82,20 @@ def describe_rds_instances(client: Any) -> Dict[str, List[Dict]]:  # type: ignor
     return describe_instances
 
 
+@handle_common_aws_errors
+def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
+    """
+    Returns a list of resource arns given a resourcegroupstaggingapi boto3 client.
+    """
+    paginator = client.get_paginator("get_resources")
+    found_arns = [
+        resource["ResourceARN"]
+        for page in paginator.paginate()
+        for resource in page["ResourceTagMappingList"]
+    ]
+    return found_arns
+
+
 def create_redshift_systems(
     describe_clusters: Dict[str, List[Dict]], organization_key: str
 ) -> List[System]:
@@ -162,3 +176,82 @@ def create_rds_systems(
         if not instance.get("DBClusterIdentifier")
     ]
     return rds_cluster_systems + rds_instances_systems
+
+
+# "arn:aws:redshift:us-east-1:910934740016:namespace:a3f04b4e-b044-4ba5-9aa9-57cddac54305"
+#'arn:aws:dynamodb:us-east-1:658462651023:table/user
+def create_resource_tagging_systems(
+    resource_arns: List[str],
+    organization_key: str,
+) -> List[System]:
+    """
+    Given a list of resource arns, build a list of systems object which represents
+    each resource.
+    """
+    resource_generators = {
+        "dynamodb": create_tagging_dynamodb_system,
+        "s3": create_tagging_s3_system,
+    }
+    systems = []
+    for arn in resource_arns:
+        arn_split = arn.split(":")
+        arn_resource_type = arn_split[2]
+        resource_generator = resource_generators.get(arn_resource_type)
+        if resource_generator:
+            generated_system = resource_generator(arn, organization_key)
+            if generated_system:
+                systems.append(generated_system)
+    return systems
+
+
+def create_tagging_dynamodb_system(
+    arn: str,
+    organization_key: str,
+) -> Optional[System]:
+    """
+    Given an AWS arn for a dynamodb resource, returns a System representation
+    if System is desired.
+    """
+    arn_split = arn.split(":")
+    resource_name = arn_split[5]
+
+    if resource_name.startswith("table/"):
+        table_name = resource_name[len("table/") :]
+        system = System(
+            fides_key=table_name,
+            name=table_name,
+            description=f"Fides Generated Description for DynamoDb table: {table_name}",
+            system_type="dynamodb_table",
+            organization_fides_key=organization_key,
+            fidesctl_meta=SystemMetadata(
+                resource_id=arn,
+            ),
+            privacy_declarations=[],
+        )
+    return system
+
+
+def create_tagging_s3_system(
+    arn: str,
+    organization_key: str,
+) -> Optional[System]:
+    """
+    Given an AWS arn for a s3 resource, returns a System representation
+    if System is desired.
+    """
+    arn_split = arn.split(":")
+    resource_name = arn_split[5]
+
+    bucket_name = resource_name.split("/")[0]
+    system = System(
+        fides_key=bucket_name,
+        name=bucket_name,
+        description=f"Fides Generated Description for S3 bucket: {bucket_name}",
+        system_type="dynamodb_table",
+        organization_fides_key=organization_key,
+        fidesctl_meta=SystemMetadata(
+            resource_id=arn,
+        ),
+        privacy_declarations=[],
+    )
+    return system
