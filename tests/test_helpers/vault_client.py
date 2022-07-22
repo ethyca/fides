@@ -32,9 +32,14 @@ def get_secrets(connector: str) -> Optional[Dict[str, Any]]:
     """Returns a map of secrets for the given connector."""
     if not _client:
         return
-    secrets = _client.secrets.kv.v2.read_secret_version(
-        mount_point=_environment, path=connector
-    )
-    secrets_map = secrets["data"]["data"]
-    logger.info(f'Loading secrets for {connector}: {", ".join(secrets_map.keys())}')
+
+    secrets_map = {}
+    try:
+        secrets = _client.secrets.kv.v2.read_secret_version(
+            mount_point=_environment, path=connector
+        )
+        secrets_map = secrets["data"]["data"]
+        logger.info(f'Loading secrets for {connector}: {", ".join(secrets_map.keys())}')
+    except Exception as exc:
+        logger.error(f"Error retrieving secrets for {connector}: {type(exc).__name__}")
     return secrets_map

@@ -181,6 +181,7 @@ class SaaSType(Enum):
     Enum to store saas connection type in Fidesops
     """
 
+    adobe_campaign = "adobe_campaign"
     mailchimp = "mailchimp"
     hubspot = "hubspot"
     outreach = "outreach"
