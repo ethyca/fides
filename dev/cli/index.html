@@ -1378,6 +1378,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-pull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -1440,13 +1447,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-status" class="md-nav__link">
     status
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidesctl-sync" class="md-nav__link">
-    sync
   </a>
   
 </li>
@@ -1996,6 +1996,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-pull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -2058,13 +2065,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-status" class="md-nav__link">
     status
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidesctl-sync" class="md-nav__link">
-    sync
   </a>
   
 </li>
@@ -2572,6 +2572,29 @@ If the taxonomy is invalid, this command prints the error messages and triggers 
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -v, --verbose  Enable verbose output.
   --help         Show this message and exit.
 </code></pre></div></td></tr></table></div>
+<h3 id="fidesctl-pull">fidesctl pull</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
+
+Alternatively, with the &quot;--all&quot; flag all resources from the server will be pulled
+down into a local file.
+
+The pull is aborted if there are unstaged or untracked files in the manifests dir.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl pull [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources TEXT  Pulls all locally missing resources from the
+                            server into this file.
+  --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-scan">fidesctl scan</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan external resource coverage against fidesctl resources
 </code></pre></div></td></tr></table></div>
@@ -2735,19 +2758,6 @@ under the stated threshold.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl status [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fidesctl-sync">fidesctl sync</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
-
-Aborts the sync if there are unstaged or untracked files in the manifests dir.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl sync [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
