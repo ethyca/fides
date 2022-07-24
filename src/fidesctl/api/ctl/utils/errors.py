@@ -64,3 +64,7 @@ def get_full_exception_name(exception: Exception) -> str:
     if module is None or module == str.__class__.__module__:
         return exception.__class__.__name__
     return module + "." + exception.__class__.__name__
+
+
+class FunctionalityNotConfigured(Exception):
+    """Custom exception for when invoked functionality is unavailable due to configuration."""

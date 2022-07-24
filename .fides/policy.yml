@@ -1,6 +1,7 @@
 policy:
 - fides_key: fidesctl_policy
   organization_fides_key: default_organization
+  tags: null
   name: Fidesctl Policy
   description: The main privacy policy for Fidesctl.
   rules:
@@ -20,6 +21,7 @@ policy:
     data_qualifier: aggregated
 - fides_key: data_sharing_policy
   organization_fides_key: default_organization
+  tags: null
   name: Data Sharing
   description: The privacy policy that governs sharing of data with third parties.
   rules:

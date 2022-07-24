@@ -35,6 +35,15 @@ from fidesctl.ctl.core.config.credentials_settings import (
 from fidesctl.ctl.core.config.utils import get_config_from_file, update_config_file
 from fidesctl.ctl.core.utils import check_response, echo_green, echo_red
 
+FIDESCTL_ASCII_ART = """
+███████╗██╗██████╗ ███████╗███████╗ ██████╗████████╗██╗     
+██╔════╝██║██╔══██╗██╔════╝██╔════╝██╔════╝╚══██╔══╝██║     
+█████╗  ██║██║  ██║█████╗  ███████╗██║        ██║   ██║     
+██╔══╝  ██║██║  ██║██╔══╝  ╚════██║██║        ██║   ██║     
+██║     ██║██████╔╝███████╗███████║╚██████╗   ██║   ███████╗
+╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝                                                      
+"""
+
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""

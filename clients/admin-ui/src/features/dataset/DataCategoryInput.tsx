@@ -20,7 +20,7 @@ import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
 import QuestionTooltip from "../common/QuestionTooltip";
 import DataCategoryTag from "../taxonomy/DataCategoryTag";
-import { transformDataCategoriesToNodes } from "../taxonomy/helpers";
+import { transformTaxonomyEntityToNodes } from "../taxonomy/helpers";
 
 interface Props {
   dataCategories: DataCategory[];
@@ -35,7 +35,7 @@ const DataCategoryDropdown = ({
   onChecked,
 }: Omit<Props, "tooltip">) => {
   const dataCategoryNodes = useMemo(
-    () => transformDataCategoriesToNodes(dataCategories),
+    () => transformTaxonomyEntityToNodes(dataCategories),
     [dataCategories]
   );
 
