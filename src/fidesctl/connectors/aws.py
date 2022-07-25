@@ -178,8 +178,6 @@ def create_rds_systems(
     return rds_cluster_systems + rds_instances_systems
 
 
-# "arn:aws:redshift:us-east-1:910934740016:namespace:a3f04b4e-b044-4ba5-9aa9-57cddac54305"
-#'arn:aws:dynamodb:us-east-1:658462651023:table/user
 def create_resource_tagging_systems(
     resource_arns: List[str],
     organization_key: str,
@@ -247,7 +245,7 @@ def create_tagging_s3_system(
         fides_key=bucket_name,
         name=bucket_name,
         description=f"Fides Generated Description for S3 bucket: {bucket_name}",
-        system_type="dynamodb_table",
+        system_type="s3_bucket",
         organization_fides_key=organization_key,
         fidesctl_meta=SystemMetadata(
             resource_id=arn,
