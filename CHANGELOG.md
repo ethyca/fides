@@ -26,6 +26,7 @@ The types of changes are:
 
 ### Changed
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
+* Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 
 ### Breaking Changes
 
