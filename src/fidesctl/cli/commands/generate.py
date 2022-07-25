@@ -19,8 +19,8 @@ from fidesctl.cli.utils import (
     handle_okta_credentials_options,
     with_analytics,
 )
-from fidesctl.core import dataset as _dataset
-from fidesctl.core import system as _system
+from fidesctl.ctl.core import dataset as _dataset
+from fidesctl.ctl.core import system as _system
 
 
 @click.group(name="generate")

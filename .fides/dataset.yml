@@ -1,6 +1,7 @@
 dataset:
 - fides_key: public
   organization_fides_key: default_organization
+  tags: null
   name: public
   description: The dataset responsible for storing all of the data related to a fidesctl
     instance.
@@ -198,14 +199,14 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
+    - name: tags
       description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
+    - name: updated_at
       description: null
       data_categories:
       - system.operations
@@ -267,14 +268,14 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
+    - name: tags
       description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
+    - name: updated_at
       description: null
       data_categories:
       - system.operations
@@ -345,14 +346,14 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
+    - name: tags
       description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
+    - name: updated_at
       description: null
       data_categories:
       - system.operations
@@ -450,14 +451,14 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
+    - name: tags
       description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
+    - name: updated_at
       description: null
       data_categories:
       - system.operations
@@ -585,6 +586,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: tags
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
     - name: third_country_transfers
       description: null
       data_categories:
@@ -594,13 +602,6 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      retention: null
-      fields: null
-    - name: tags
-      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -878,15 +879,15 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
-      description: The timestamp of when the row was last updated
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
-      description: null
+    - name: updated_at
+      description: The timestamp of when the row was last updated
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -947,15 +948,15 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
-      description: The timestamp of when the row was last updated
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
-      description: null
+    - name: updated_at
+      description: The timestamp of when the row was last updated
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1009,15 +1010,15 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: updated_at
-      description: The timestamp of when the row was last updated
+    - name: tags
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
-    - name: tags
-      description: null
+    - name: updated_at
+      description: The timestamp of when the row was last updated
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1143,6 +1144,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: tags
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
     - name: third_country_transfers
       description: null
       data_categories:
@@ -1152,13 +1160,6 @@ dataset:
       fields: null
     - name: updated_at
       description: The timestamp of when the row was last updated
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-      retention: null
-      fields: null
-    - name: tags
-      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

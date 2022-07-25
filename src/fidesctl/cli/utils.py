@@ -22,18 +22,27 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
-from fidesctl.core import api as _api
-from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.config.credentials_settings import (
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fidesctl.ctl.core import api as _api
+from fidesctl.ctl.core.config import FidesctlConfig
+from fidesctl.ctl.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fidesctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.core.utils import check_response, echo_green, echo_red
+from fidesctl.ctl.core.config.utils import get_config_from_file, update_config_file
+from fidesctl.ctl.core.utils import check_response, echo_green, echo_red
+
+FIDESCTL_ASCII_ART = """
+███████╗██╗██████╗ ███████╗███████╗ ██████╗████████╗██╗     
+██╔════╝██║██╔══██╗██╔════╝██╔════╝██╔════╝╚══██╔══╝██║     
+█████╗  ██║██║  ██║█████╗  ███████╗██║        ██║   ██║     
+██╔══╝  ██║██║  ██║██╔══╝  ╚════██║██║        ██║   ██║     
+██║     ██║██████╔╝███████╗███████║╚██████╗   ██║   ███████╗
+╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝                                                      
+"""
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
