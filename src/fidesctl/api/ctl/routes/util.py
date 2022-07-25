@@ -69,7 +69,7 @@ def route_requires_bigquery_connector(func: Callable) -> Callable:
 
     def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
         try:
-            import fidesctl.connectors.bigquery  # pylint: disable=unused-import
+            import fidesctl.ctl.connectors.bigquery  # pylint: disable=unused-import
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

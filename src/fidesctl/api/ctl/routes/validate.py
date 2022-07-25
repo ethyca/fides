@@ -116,7 +116,7 @@ async def validate_bigquery(bigquery_config: BigQueryConfig) -> None:
     Validates that given GCP BigQuery credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fidesctl.connectors.bigquery as bigquery_connector
+    import fidesctl.ctl.connectors.bigquery as bigquery_connector
 
     bigquery_engine = bigquery_connector.get_bigquery_engine(bigquery_config)
     bigquery_connector.validate_bigquery_engine(bigquery_engine)
