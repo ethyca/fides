@@ -1,7 +1,43 @@
 import pathlib
+import subprocess
+from distutils.cmd import Command
 
 import versioneer
 from setuptools import find_packages, setup
+from setuptools.command.build_py import build_py
+
+
+class NPMExportCommand(Command):
+    """Custom command to export our frontend UI"""
+
+    description = "build the UI via npm"
+    user_options = [("client-name=", None, "name of client to export")]
+
+    def initialize_options(self) -> None:
+        """Set default values for options. We only have the admin-ui
+        right now, so set that as the default."""
+        self.client_name = "admin-ui"
+
+    def finalize_options(self) -> None:
+        """Post-process options"""
+        return
+
+    def run(self) -> None:
+        """Run npm export"""
+        directory = f"clients/{self.client_name}"
+        install_command = "npm install"
+        build_command = "npm run prod-export"
+        subprocess.check_call(install_command.split(" "), cwd=directory)
+        subprocess.check_call(build_command.split(" "), cwd=directory)
+
+
+class BuildPyCommand(build_py):
+    """Extend the default build_py command to also call our custom npm export command"""
+
+    def run(self) -> None:
+        self.run_command("npm_export")
+        build_py.run(self)
+
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
@@ -36,15 +72,21 @@ extras["all"] = sum(
     [value for key, value in extras.items() if key not in dangerous_extras], []
 )
 
+versioneer_cmdclass = versioneer.get_cmdclass()
+npm_export_cmdclass = {"npm_export": NPMExportCommand}
+build_py_cmdclass = {"build_py": BuildPyCommand}
+
 setup(
     name="fidesctl",
     version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    cmdclass={**versioneer_cmdclass, **npm_export_cmdclass, **build_py_cmdclass},
     description="CLI for Fides",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
-    entry_points={"console_scripts": ["fidesctl=fidesctl.cli:cli","fides=fidesctl.cli:cli"]},
+    entry_points={
+        "console_scripts": ["fidesctl=fidesctl.cli:cli", "fides=fidesctl.cli:cli"]
+    },
     python_requires=">=3.8, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
