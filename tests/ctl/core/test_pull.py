@@ -1,8 +1,8 @@
 import pytest
 from git.repo import Repo
 
-from fidesctl.core.config import FidesctlConfig
-from fidesctl.core.pull import pull_existing_resources
+from fidesctl.ctl.core.config import FidesctlConfig
+from fidesctl.ctl.core.pull import pull_existing_resources
 
 
 def git_reset(change_dir: str) -> None:

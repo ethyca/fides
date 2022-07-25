@@ -4,7 +4,7 @@ from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
 
-from fidesctl.core.config import DEFAULT_CONFIG_PATH
+from fidesctl.ctl.core.config import DEFAULT_CONFIG_PATH
 
 
 def get_config_from_file(

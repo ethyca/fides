@@ -15,10 +15,10 @@ from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from fideslib.oauth.scopes import SCOPES
 from sqlalchemy.orm import Session
 
-from fidesctl.api.database.session import sync_session
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.sql_models import ClientDetail, FidesUser
-from fidesctl.core.config import get_config
+from fidesctl.api.ctl.database.session import sync_session
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.api.ctl.sql_models import ClientDetail, FidesUser
+from fidesctl.ctl.core.config import get_config
 
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(f"{API_PREFIX}/oauth/token"),

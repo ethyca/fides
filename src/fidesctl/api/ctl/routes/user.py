@@ -13,10 +13,10 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fidesctl.api.deps import get_current_user, get_db, verify_oauth_client
-from fidesctl.api.routes.util import API_PREFIX
-from fidesctl.api.utils.api_router import APIRouter
-from fidesctl.core.config import FidesctlConfig, get_config
+from fidesctl.api.ctl.deps import get_current_user, get_db, verify_oauth_client
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.api.ctl.utils.api_router import APIRouter
+from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=f"{API_PREFIX}")
 
