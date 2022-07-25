@@ -8,10 +8,10 @@ from fideslog.sdk.python.client import AnalyticsClient
 
 import fidesctl
 from fidesctl.cli.utils import check_and_update_analytics_config, check_server
-from fidesctl.core.config import get_config
+from fidesctl.ctl.core.config import get_config
 
 from .commands.annotate import annotate
-from .commands.core import apply, evaluate, parse, sync
+from .commands.core import apply, evaluate, parse, pull
 from .commands.crud import delete, get, ls
 from .commands.db import database
 from .commands.export import export
@@ -34,7 +34,7 @@ API_COMMANDS = [
     get,
     ls,
     status,
-    sync,
+    pull,
 ]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS

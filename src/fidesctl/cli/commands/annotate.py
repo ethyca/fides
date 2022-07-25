@@ -3,7 +3,7 @@
 import click
 
 from fidesctl.cli.utils import with_analytics
-from fidesctl.core import annotate_dataset as _annotate_dataset
+from fidesctl.ctl.core import annotate_dataset as _annotate_dataset
 
 
 @click.group(name="annotate")

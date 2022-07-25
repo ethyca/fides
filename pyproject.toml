@@ -78,9 +78,8 @@ good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
 [tool.pytest.ini_options]
 testpaths="tests"
 log_level = "DEBUG"
-addopts = ["--cov=fidesctl.core",
+addopts = ["--cov=fidesctl.ctl.core",
             "--cov=fidesctl.cli",
-            "--cov=fideslang",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",
