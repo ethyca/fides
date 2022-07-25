@@ -19,7 +19,6 @@ The types of changes are:
 
 ## [1.7.1](https://github.com/ethyca/fides/compare/1.6.1...1.7.1) - 2022-07-28
 ### Added
-
 * Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
 * Add datasets via database connection [#834](https://github.com/ethyca/fides/pull/834) [#889](https://github.com/ethyca/fides/pull/889)
 * Add delete confirmation when deleting a field or collection from a dataset [#809](https://github.com/ethyca/fides/pull/809)
@@ -30,12 +29,16 @@ The types of changes are:
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
 * Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
+### Changed
+* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
+
+### Developer Experience
+* When releases are published, dispatch a repository webhook event to ethyca/fidesctl-plus [#938](https://github.com/ethyca/fides/pull/938)
 
 ### Docs
 * recommend/replace pip installs with pipx [#874](https://github.com/ethyca/fides/pull/874)
 
 ### Fixed
-
 * CustomSelect input tooltips appear next to selector instead of wrapping to a new row.
 * Datasets without the `third_country_transfer` will not cause the editing dataset form to not render.
 * Fixed a build issue causing an `unknown` version of `fidesctl` to be installed in published Docker images [#836](https://github.com/ethyca/fides/pull/836)
@@ -44,8 +47,6 @@ The types of changes are:
 * Dataset field columns show all columns by default in the UI [#898](https://github.com/ethyca/fides/pull/898)
 * Fixed the `tag` specific GitHub Action workflows for Docker and publishing docs. [#901](https://github.com/ethyca/fides/pull/901)
 
-### Changed
-* Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 
 ## [1.7.0](https://github.com/ethyca/fides/compare/1.6.1...1.7.0) - 2022-06-23
 
