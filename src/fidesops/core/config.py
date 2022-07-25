@@ -139,7 +139,7 @@ class RootUserSettings(FidesSettings):
 class AdminUiSettings(FidesSettings):
     """Configuration settings for Analytics variables."""
 
-    enabled: bool
+    enabled: bool = True
 
     class Config:
         env_prefix = "FIDESOPS__ADMIN_UI__"
