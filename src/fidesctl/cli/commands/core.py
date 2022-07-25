@@ -1,4 +1,6 @@
 """Contains all of the core CLI commands for Fidesctl."""
+from typing import Optional
+
 import click
 
 from fidesctl.cli.options import (
@@ -8,12 +10,12 @@ from fidesctl.cli.options import (
     verbose_flag,
 )
 from fidesctl.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
-from fidesctl.core import apply as _apply
-from fidesctl.core import audit as _audit
-from fidesctl.core import evaluate as _evaluate
-from fidesctl.core import parse as _parse
-from fidesctl.core import sync as _sync
-from fidesctl.core.utils import git_is_dirty
+from fidesctl.ctl.core import apply as _apply
+from fidesctl.ctl.core import audit as _audit
+from fidesctl.ctl.core import evaluate as _evaluate
+from fidesctl.ctl.core import parse as _parse
+from fidesctl.ctl.core import pull as _pull
+from fidesctl.ctl.core.utils import git_is_dirty
 
 
 @click.command()
@@ -138,24 +140,34 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
 @click.command()
 @click.pass_context
 @manifests_dir_argument
+@click.option(
+    "--all-resources",
+    "-a",
+    default=None,
+    help="Pulls all locally missing resources from the server into this file.",
+)
 @with_analytics
-def sync(ctx: click.Context, manifests_dir: str) -> None:
+def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
     """
     Update local resource files by their fides_key to match their server versions.
 
-    Aborts the sync if there are unstaged or untracked files in the manifests dir.
+    Alternatively, with the "--all" flag all resources from the server will be pulled
+    down into a local file.
+
+    The pull is aborted if there are unstaged or untracked files in the manifests dir.
     """
 
     config = ctx.obj["CONFIG"]
-    # Do this to validate the manifests since they won't get parsed during the sync process
+    # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
     if git_is_dirty(manifests_dir):
         echo_red(
-            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting sync!"
+            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
         )
         raise SystemExit(1)
-    _sync.sync(
+    _pull.pull(
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.request_headers,
+        all_resources=all_resources,
     )

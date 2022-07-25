@@ -16,7 +16,7 @@ def get_current_tag() -> str:
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
-WITH_TEST_CONFIG = ("-f", "tests/test_config.toml")
+WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
 # Image Names & Tags
 REGISTRY = "ethyca"

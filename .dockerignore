@@ -2,6 +2,7 @@
 build/
 dist/
 src/fidesctl.egg-info/
+src/ui-build/
 
 # Ignore Python-Specific Files
 .mypy_cache/
