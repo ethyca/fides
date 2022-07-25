@@ -13,7 +13,7 @@ from fidesctl.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fidesctl.core.utils import echo_green
+from fidesctl.ctl.core.utils import echo_green
 
 
 @click.command()
