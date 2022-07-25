@@ -57,6 +57,7 @@ The types of changes are:
 * Remove the `obscure` requirement from the `generate` endpoint [#819](https://github.com/ethyca/fides/pull/819)
 * Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
 * Replicated the error response handling from the `/validate` endpoint to the `/generate` endpoint [#911](https://github.com/ethyca/fides/pull/911)
+* Moved frontend static files to `src/ui-build/static` [#934](https://github.com/ethyca/fides/pull/934)
 
 ### Developer Experience
 
