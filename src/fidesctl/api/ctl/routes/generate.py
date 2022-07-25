@@ -170,7 +170,7 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
-    from fidesctl.connectors.aws import validate_credentials
+    from fidesctl.ctl.connectors.aws import validate_credentials
 
     log.info("Validating AWS credentials")
     try:
@@ -194,7 +194,7 @@ async def generate_okta(
     """
     Returns a list of Systems found in Okta.
     """
-    from fidesctl.connectors.okta import validate_credentials
+    from fidesctl.ctl.connectors.okta import validate_credentials
 
     log.info("Validating Okta credentials")
     try:

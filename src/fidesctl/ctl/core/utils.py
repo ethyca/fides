@@ -16,7 +16,7 @@ from git.repo import Repo
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from fidesctl.connectors.models import ConnectorAuthFailureException
+from fidesctl.ctl.connectors.models import ConnectorAuthFailureException
 
 logger = logging.getLogger("server_api")
 
