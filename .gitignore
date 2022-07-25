@@ -1,6 +1,6 @@
 docs/fides/docs/api/openapi.json
 docs/fides/docs/schemas/config_schema.json
-fidesctl/api/ctl/build/static
+ui-build/
 
 ## generic files to ignore
 *~
