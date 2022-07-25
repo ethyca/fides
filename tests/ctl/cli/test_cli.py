@@ -764,7 +764,7 @@ def test_generate_dataset_bigquery_credentials_id(
 ) -> None:
 
     tmp_output_file = tmpdir.join("dataset.yml")
-    config_data = os.getenv("BIGQUERY_CONFIG", "")
+    config_data = os.getenv("BIGQUERY_CONFIG", "e30=")
     config_data_decoded = loads(b64decode(config_data.encode("utf-8")).decode("utf-8"))
     os.environ["FIDESCTL__CREDENTIALS__BIGQUERY_1__PROJECT_ID"] = config_data_decoded[
         "project_id"
@@ -813,7 +813,7 @@ def test_generate_dataset_bigquery_keyfile_path(
 
     tmp_output_file = tmpdir.join("dataset.yml")
     tmp_keyfile = tmpdir.join("bigquery.json")
-    config_data = os.getenv("BIGQUERY_CONFIG", "")
+    config_data = os.getenv("BIGQUERY_CONFIG", "e30=")
     config_data_decoded = loads(b64decode(config_data.encode("utf-8")).decode("utf-8"))
     with open(tmp_keyfile, "w", encoding="utf-8") as keyfile:
         dump(config_data_decoded, keyfile)
