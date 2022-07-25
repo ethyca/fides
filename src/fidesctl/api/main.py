@@ -1,14 +1,14 @@
 """
 Contains the code that sets up the API.
 """
+import pkgutil
 from datetime import datetime
 from logging import WARNING
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
@@ -65,16 +65,26 @@ app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 
-@app.on_event("startup")
-async def create_webapp_dir_if_not_exists() -> None:
-    """Creates the webapp directory if it doesn't exist."""
+def get_ui_file(path: Path) -> Optional[Path]:
+    """There are 3 cases to handle when trying to get index.html
+    1. We are in a package environment so need to get the index.html that is packaged
+    2. We are in a development environment where index.html lives in src/
+    3. There is no index.html yet (clean repo)
+    """
 
-    if not WEBAPP_INDEX.is_file():
-        WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-        with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
-            index_file.write("<h1>Privacy is a Human Right!</h1>")
+    # TODO: test in the actual package environment!!
+    loader = pkgutil.get_loader("fidesctl")  # the name of our package
+    if loader:
+        filename = loader.get_filename()
+        root_folder = Path(filename).parent.parent.parent
+        return root_folder / path
+    return None
 
-    app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
+
+def get_index_response() -> Response:
+    placeholder = "<h1>Privacy is a Human Right!</h1>"
+    index = get_ui_file(WEBAPP_INDEX)
+    return FileResponse(index) if index else Response(placeholder)
 
 
 @app.on_event("startup")
@@ -111,19 +121,21 @@ def read_index() -> Response:
     """
     Return an index.html at the root path
     """
-    return FileResponse(WEBAPP_INDEX)
+
+    return get_index_response()
 
 
-@app.get("/{catchall:path}", response_class=FileResponse, tags=["Default"])
-def read_other_paths(request: Request) -> FileResponse:
+@app.get("/{catchall:path}", response_class=Response, tags=["Default"])
+def read_other_paths(request: Request) -> Response:
     """
     Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
     file = WEBAPP_DIRECTORY / Path(path)
-    if file.exists():
-        return FileResponse(file)
+    ui_file = get_ui_file(file)
+    if ui_file and ui_file.exists():
+        return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
@@ -132,7 +144,7 @@ def read_other_paths(request: Request) -> FileResponse:
         )
 
     # otherwise return the index
-    return FileResponse(WEBAPP_INDEX)
+    return get_index_response()
 
 
 def start_webserver() -> None:
