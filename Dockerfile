@@ -13,7 +13,7 @@ RUN npm run export
 #############
 ## Backend ##
 #############
-FROM --platform=linux/amd64 python:3.9.13-slim-buster as backend
+FROM --platform=linux/amd64 python:3.9.13-slim-bullseye as backend
 
 
 # Install auxiliary software
@@ -21,7 +21,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
     make \
-    ipython \
     vim \
     curl \
     g++ \
@@ -39,7 +38,7 @@ RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
 # https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get install -y --no-install-recommends apt-transport-https && apt-get clean && rm -rf /var/lib/apt/lists/* ; fi
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - ; fi
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list ; fi
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list ; fi
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get update ; fi
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-recommends install \
