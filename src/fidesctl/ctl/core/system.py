@@ -21,7 +21,7 @@ def generate_redshift_systems(
     organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
-    Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
+    Fetches Redshift clusters from AWS and returns the transformed System representations.
     """
     import fidesctl.ctl.connectors.aws as aws_connector
 
@@ -37,7 +37,7 @@ def generate_rds_systems(
     organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
-    Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
+    Fetches RDS clusters and instances from AWS and returns the transformed System representations.
     """
     import fidesctl.ctl.connectors.aws as aws_connector
 
@@ -56,9 +56,9 @@ def generate_resource_tagging_systems(
     organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
-    Fetches AWS Resources from the resource tagging api and returns the transformed Sytem representations.
+    Fetches AWS Resources from the resource tagging api and returns the transformed System representations.
     """
-    import fidesctl.connectors.aws as aws_connector
+    import fidesctl.ctl.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(
         service="resourcegroupstaggingapi", aws_config=aws_config
