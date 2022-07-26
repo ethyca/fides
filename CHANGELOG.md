@@ -33,6 +33,7 @@ The types of changes are:
 * Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
+* Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
 
 ### Breaking Changes
 
