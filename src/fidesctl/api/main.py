@@ -29,7 +29,7 @@ from fidesctl.api.ctl.routes import (
     validate,
     visualize,
 )
-from fidesctl.api.ctl.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fidesctl.api.ctl.routes.util import ADMIN_UI_DIRECTORY, API_PREFIX
 from fidesctl.api.ctl.utils.logger import setup as setup_logging
 from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
@@ -65,26 +65,23 @@ app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 
-def get_ui_file(path: Path) -> Optional[Path]:
-    """There are 3 cases to handle when trying to get index.html
-    1. We are in a package environment so need to get the index.html that is packaged
-    2. We are in a development environment where index.html lives in src/
-    3. There is no index.html yet (clean repo)
-    """
+def get_ui_file(path: str) -> Optional[Path]:
+    """Return a path to a UI file within the package"""
 
     # TODO: test in the actual package environment!!
-    loader = pkgutil.get_loader("fidesctl")  # the name of our package
+    loader = pkgutil.get_loader(__package__)
     if loader:
+        # will yield [...]/src/fidesctl/api/__init__.py
         filename = loader.get_filename()
-        root_folder = Path(filename).parent.parent.parent
-        return root_folder / path
+        fidesctl_folder = Path(filename).parent.parent
+        return fidesctl_folder / ADMIN_UI_DIRECTORY / path
     return None
 
 
 def get_index_response() -> Response:
     placeholder = "<h1>Privacy is a Human Right!</h1>"
-    index = get_ui_file(WEBAPP_INDEX)
-    return FileResponse(index) if index else Response(placeholder)
+    index = get_ui_file("index.html")
+    return FileResponse(index) if index and index.exists() else Response(placeholder)
 
 
 @app.on_event("startup")
@@ -132,8 +129,7 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
-    file = WEBAPP_DIRECTORY / Path(path)
-    ui_file = get_ui_file(file)
+    ui_file = get_ui_file(path)
     if ui_file and ui_file.exists():
         return FileResponse(ui_file)
 
