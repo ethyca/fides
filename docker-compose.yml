@@ -3,7 +3,7 @@ services:
     container_name: webserver
     build:
       context: .
-      target: app
+      target: dev
     depends_on:
       - db
       - redis
@@ -63,7 +63,7 @@ services:
     container_name: worker
     build:
       context: .
-      target: worker
+      target: dev
     command: fidesops worker
     depends_on:
       redis:

@@ -2,6 +2,7 @@
 This file invokes a command used to setup infrastructure for use in testing Fidesops
 and related workflows.
 """
+# pylint: disable=inconsistent-return-statements
 import argparse
 import subprocess
 import sys
@@ -10,11 +11,11 @@ from typing import List
 
 DOCKER_WAIT = 5
 DOCKERFILE_DATASTORES = [
+    "mssql",
     "postgres",
     "mysql",
     "mongodb",
     "mariadb",
-    "mssql",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": ["SNOWFLAKE_TEST_URI"],
@@ -46,7 +47,7 @@ def run_infrastructure(
 
     if len(datastores) == 0:
         _run_cmd_or_err(
-            f'echo "no datastores specified, configuring infrastructure for all datastores"'
+            'echo "no datastores specified, configuring infrastructure for all datastores"'
         )
         datastores = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
     else:
@@ -81,13 +82,13 @@ def run_infrastructure(
     if open_shell:
         return _open_shell(path, IMAGE_NAME)
 
-    elif run_application:
+    if run_application:
         return _run_application(path)
 
-    elif run_quickstart:
+    if run_quickstart:
         return _run_quickstart(path, IMAGE_NAME)
 
-    elif run_tests:
+    if run_tests:
         # Now run the tests
         return _run_tests(
             datastores,
@@ -96,10 +97,10 @@ def run_infrastructure(
             analytics_opt_out=analytics_opt_out,
         )
 
-    elif run_create_superuser:
+    if run_create_superuser:
         return _run_create_superuser(path, IMAGE_NAME)
 
-    elif run_create_test_data:
+    if run_create_test_data:
         return _run_create_test_data(path, IMAGE_NAME)
 
 
@@ -156,7 +157,7 @@ def _run_quickstart(
     """
     Invokes the Fidesops command line quickstart
     """
-    _run_cmd_or_err(f'echo "Running the quickstart..."')
+    _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python scripts/quickstart.py")
 
@@ -168,7 +169,7 @@ def _run_create_superuser(
     """
     Invokes the Fidesops create_user_and_client command
     """
-    _run_cmd_or_err(f'echo "Running create superuser..."')
+    _run_cmd_or_err('echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker exec -it {image_name} python scripts/create_superuser.py")
 
@@ -200,7 +201,7 @@ def _run_application(docker_compose_path: str) -> None:
     """
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
-    _run_cmd_or_err(f'echo "Running application"')
+    _run_cmd_or_err('echo "Running application"')
     _run_cmd_or_err(f"docker-compose {docker_compose_path} up")
 
 
@@ -251,7 +252,7 @@ def _run_tests(
 
     # Now tear down the infrastructure
     _run_cmd_or_err(f"docker-compose {docker_compose_path} down --remove-orphans")
-    _run_cmd_or_err(f'echo "fin."')
+    _run_cmd_or_err('echo "fin."')
 
 
 if __name__ == "__main__":
@@ -292,17 +293,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-su",
-        "--run_create_superuser",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "-td",
-        "--run_create_test_data",
-        action="store_true",
-    )
-    parser.add_argument(
         "-a",
         "--analytics_opt_out",
         action="store_true",
@@ -317,7 +307,5 @@ if __name__ == "__main__":
         run_application=config_args.run_application,
         run_quickstart=config_args.run_quickstart,
         run_tests=config_args.run_tests,
-        run_create_superuser=config_args.run_create_superuser,
-        run_create_test_data=config_args.run_create_test_data,
         analytics_opt_out=config_args.analytics_opt_out,
     )

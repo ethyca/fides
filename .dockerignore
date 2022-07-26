@@ -1,25 +1,44 @@
-.idea
-.vscode
-.DS_Store
-.git
-.mypy_cache
-.github
-.pytest_cache
-.python-version
+# Ignore existing build artifacts
+build/
+dist/
+src/fidesctl.egg-info/
+src/ui-build/
 
-clients/admin-ui/node_modules
-clients/admin-ui/.next
-clients/privacy-center/node_modules
-clients/privacy-center/.next
-
-.venv
-venv/
-env/
-
+# Ignore Python-Specific Files
+.mypy_cache/
+.nox/
+.pytest_cache/
 __pycache__/
+.coverage
 **.*.pyc
 **.*.pyo
 **.*.pyd
 
-Dockerfile
-docker-compose*
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Editors
+.vscode/
+.idea/
+
+# Ignore the docs
+docs/
+
+# Ignore dev files
+.github/
+.devcontainer/
+node_modules/
+clients/admin-ui/node_modules
+clients/admin-ui/.next
+clients/privacy-center/.next
+.DS_Store
+
+# Ignore cypress artifacts
+videos/
+screenshots/

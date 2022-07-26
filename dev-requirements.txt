@@ -1,7 +1,9 @@
 black==22.6.0
 Faker==13.15.1
+GitPython==3.1
 isort
 mypy==0.971
+nox==2022.1.7
 packaging==21.3
 pdbpp
 pre-commit==2.20.0
@@ -15,3 +17,4 @@ types-redis==4.3.4
 types-toml==0.10.7
 types-ujson==5.4.0
 types-urllib3==1.26.15
+xenon==0.9.0
