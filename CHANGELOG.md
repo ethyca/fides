@@ -42,6 +42,7 @@ The types of changes are:
 * `fides` is now an alias for `fidesctl` as a CLI entrypoint [#926](https://github.com/ethyca/fides/pull/926)
 * Add user auth routes [929](https://github.com/ethyca/fides/pull/929)
 * Bump fideslib to 3.0.1 and remove patch code[931](https://github.com/ethyca/fides/pull/931)
+* Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 
 ### Changed
 
