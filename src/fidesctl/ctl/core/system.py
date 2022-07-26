@@ -158,7 +158,6 @@ def generate_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and extract tracked resource to write a System manifest with.
-    Tracked resources: [Redshift, RDS]
     """
     _check_aws_connector_import()
 
@@ -365,7 +364,6 @@ def scan_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and compares tracked resources to existing systems.
-    Tracked resources: [Redshift, RDS]
     """
 
     _check_aws_connector_import()

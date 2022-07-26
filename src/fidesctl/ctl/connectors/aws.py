@@ -58,7 +58,7 @@ def validate_credentials(aws_config: Optional[AWSConfig]) -> None:
 @handle_common_aws_errors
 def describe_redshift_clusters(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
     """
-    Returns describe_clusters response given a redshift boto3 client.
+    Returns describe_clusters response given a 'redshift' boto3 client.
     """
     describe_clusters = client.describe_clusters()
     return describe_clusters
@@ -76,7 +76,7 @@ def describe_rds_clusters(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
 @handle_common_aws_errors
 def describe_rds_instances(client: Any) -> Dict[str, List[Dict]]:  # type: ignore
     """
-    Returns describe_db_instances response given a rds boto3 client.
+    Returns describe_db_instances response given a 'rds' boto3 client.
     """
     describe_instances = client.describe_db_instances()
     return describe_instances
@@ -85,7 +85,7 @@ def describe_rds_instances(client: Any) -> Dict[str, List[Dict]]:  # type: ignor
 @handle_common_aws_errors
 def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
     """
-    Returns a list of resource arns given a resourcegroupstaggingapi boto3 client.
+    Returns a list of resource arns given a 'resourcegroupstaggingapi' boto3 client.
     """
     paginator = client.get_paginator("get_resources")
     found_arns = [
@@ -208,7 +208,7 @@ def create_tagging_dynamodb_system(
 ) -> Optional[System]:
     """
     Given an AWS arn for a dynamodb resource, returns a System representation
-    if System is desired.
+    for dynamodb tables.
     """
     arn_split = arn.split(":")
     resource_name = arn_split[5]
@@ -235,7 +235,7 @@ def create_tagging_s3_system(
 ) -> Optional[System]:
     """
     Given an AWS arn for a s3 resource, returns a System representation
-    if System is desired.
+    for s3 buckets.
     """
     arn_split = arn.split(":")
     resource_name = arn_split[5]

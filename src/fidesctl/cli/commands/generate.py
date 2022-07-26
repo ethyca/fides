@@ -201,7 +201,7 @@ def generate_system_aws(
     tracked resource.
     Credentials can be supplied as options, a credentials
     reference to fidesctl config, or boto3 environment configuration.
-    Tracked resources: [Redshift, RDS]
+    Tracked resources: [Redshift, RDS, DynamoDb, S3]
 
     This is a one-time operation that does not track the state of the aws resources.
     It will need to be run again if the tracked resources change.
