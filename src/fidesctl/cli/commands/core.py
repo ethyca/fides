@@ -18,7 +18,7 @@ from fidesctl.ctl.core import pull as _pull
 from fidesctl.ctl.core.utils import git_is_dirty
 
 
-@click.command()
+@click.command(deprecated=True)
 @click.pass_context
 @dry_flag
 @click.option(
@@ -31,6 +31,7 @@ from fidesctl.ctl.core.utils import git_is_dirty
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Validate local manifest files and persist any changes via the API server.
+    Deprecated in favor of `fidesctl push` command.
     """
 
     config = ctx.obj["CONFIG"]
@@ -42,6 +43,23 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
         dry=dry,
         diff=diff,
     )
+
+
+@click.command()
+@click.pass_context
+@dry_flag
+@click.option(
+    "--diff",
+    is_flag=True,
+    help="Include any changes between server and local resources in the command output",
+)
+@manifests_dir_argument
+@with_analytics
+def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
+    """
+    Validate local manifest files and persist any changes via the API server.
+    """
+    apply(ctx=ctx, dry=dry, diff=diff, manifests_dir=manifests_dir)
 
 
 @click.command()
