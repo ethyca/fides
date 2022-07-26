@@ -39,6 +39,10 @@ The types of changes are:
 
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
+### Developer Experience
+
+* Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
+
 ### Docs
 
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
