@@ -13,5 +13,5 @@ requests-mock==1.9.3
 types-PyYAML==6.0.9
 types-redis==4.3.4
 types-toml==0.10.7
-types-ujson==5.2.0
+types-ujson==5.4.0
 types-urllib3==1.26.15
