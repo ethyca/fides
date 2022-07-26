@@ -81,7 +81,7 @@ def get_ui_file(path: str) -> Optional[Path]:
 def get_index_response() -> Response:
     placeholder = "<h1>Privacy is a Human Right!</h1>"
     index = get_ui_file("index.html")
-    return FileResponse(index) if index and index.exists() else Response(placeholder)
+    return FileResponse(index) if index and index.is_file() else Response(placeholder)
 
 
 @app.on_event("startup")
@@ -130,7 +130,7 @@ def read_other_paths(request: Request) -> Response:
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
     ui_file = get_ui_file(path)
-    if ui_file and ui_file.exists():
+    if ui_file and ui_file.is_file():
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
