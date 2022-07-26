@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { addCommonHeaders } from "common/CommonHeaders";
 
 import type { RootState } from "../../app/store";
 import { BASE_API_URN, BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
-import { addCommonHeaders } from "../common/CommonHeaders";
 import {
   DenyPrivacyRequest,
   PrivacyRequest,
@@ -95,6 +95,13 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
+    retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/retry`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
   }),
 });
 
@@ -102,6 +109,7 @@ export const {
   useGetAllPrivacyRequestsQuery,
   useApproveRequestMutation,
   useDenyRequestMutation,
+  useRetryMutation,
 } = privacyRequestApi;
 
 export const requestCSVDownload = async ({

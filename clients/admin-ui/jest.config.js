@@ -20,6 +20,11 @@ module.exports = {
     // Handle module aliases
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^common/(.*)$": "<rootDir>/src/features/common/$1",
+    "^datastore-connections/(.*)$":
+      "<rootDir>/src/features/datastore-connections/$1",
+    "^privacy-requests/(.*)$": "<rootDir>/src/features/privacy-requests/$1",
+    "^subject-request/(.*)$": "<rootDir>/src/features/subject-request/$1",
+    "^user-management/(.*)$": "<rootDir>/src/features/user-management/$1",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],

@@ -13,7 +13,11 @@
     "moduleResolution": "node",
     "noEmit": true,
     "paths": {
-      "common/*": ["src/features/common/*"]
+      "common/*": ["src/features/common/*"],
+      "datastore-connections/*": ["src/features/datastore-connections/*"],
+      "privacy-requests/*": ["src/features/privacy-requests/*"],
+      "subject-request/*": ["src/features/subject-request/*"],
+      "user-management/*": ["src/features/user-management/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
