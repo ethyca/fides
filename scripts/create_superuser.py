@@ -45,7 +45,9 @@ def collect_username_and_password(db: Session) -> UserCreate:
     username = get_username("Enter your username: ")
     first_name = get_input("Enter your first name: ")
     last_name = get_input("Enter your last name: ")
-    password = get_password("Enter your password: ")
+    password = get_password(
+        "Enter your password(minimum 8 characters, including 1 number, capital letter and symbol): "
+    )
     verify_pass = get_password("Enter your password again: ")
 
     if password != verify_pass:
