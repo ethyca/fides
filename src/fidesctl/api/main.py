@@ -67,8 +67,6 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 def get_ui_file(path: str) -> Optional[Path]:
     """Return a path to a UI file within the package"""
-
-    # TODO: test in the actual package environment!!
     loader = pkgutil.get_loader(__package__)
     if loader:
         # will yield [...]/src/fidesctl/api/__init__.py
