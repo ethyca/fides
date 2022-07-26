@@ -91,7 +91,7 @@ ENV PYTHONUNBUFFERED=TRUE
 ENV RUNNING_IN_DOCKER=TRUE
 
 # Make a static files directory
-RUN mkdir -p src/ui-build/static/admin
+RUN mkdir -p src/fidesctl/ui-build/static/admin
 
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
@@ -116,4 +116,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesctl-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/ui-build/static/admin/
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesctl/ui-build/static/admin/

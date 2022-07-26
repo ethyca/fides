@@ -1,5 +1,4 @@
 from functools import update_wrapper
-from pathlib import Path
 from typing import Any, Callable
 
 from fastapi import HTTPException, status
@@ -7,9 +6,7 @@ from fastapi import HTTPException, status
 from fidesctl.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
-FRONTEND_BUILD_DIRECTORY = Path("src/ui-build/static")
-WEBAPP_DIRECTORY = FRONTEND_BUILD_DIRECTORY / "admin"
-WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
+ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
 def get_resource_type(router: APIRouter) -> str:
