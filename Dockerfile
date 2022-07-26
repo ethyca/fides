@@ -11,11 +11,8 @@ FROM node:16 as frontend
 WORKDIR /fides/clients/admin-ui
 
 # install node modules
-COPY clients/admin-ui/ .
+COPY clients/admin-ui/package.json .
 RUN npm install
-
-# Build the frontend static files
-RUN npm run export
 
 #######################
 ## Tool Installation ##
@@ -111,9 +108,10 @@ RUN pip install -e ".[all,mssql]"
 
 FROM builder as prod
 
-# Install without a symlink
-RUN python setup.py sdist
-RUN pip install dist/fidesctl-*.tar.gz
+# Install node in order for the wheel to compile the frontend
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get install -y nodejs rsync
 
-# Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesctl/ui-build/static/admin/
+# Install without a symlink
+RUN python setup.py bdist_wheel 
+RUN pip install dist/fidesctl-*.whl
