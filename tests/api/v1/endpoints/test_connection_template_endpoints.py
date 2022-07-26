@@ -1,5 +1,6 @@
+from typing import List
+
 import pytest
-from fastapi_pagination import Params
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
@@ -9,6 +10,12 @@ from fidesops.api.v1.urn_registry import (
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
+from fidesops.models.connectionconfig import ConnectionType
+from fidesops.schemas.connection_configuration.connection_config import (
+    ConnectionSystemTypeMap,
+    SystemType,
+)
+from fidesops.schemas.saas.saas_config import SaaSType
 
 
 class TestGetConnections:
@@ -34,18 +41,21 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()
         assert resp.status_code == 200
-        assert "items" in data
-        assert "total" in data
-        assert "page" in data
-        assert data["size"] == Params().size
+        assert len(data) == 18
 
-        assert "postgres" in data["items"]
-        assert "stripe" in data["items"]
+        assert {
+            "identifier": ConnectionType.postgres.value,
+            "type": SystemType.database.value,
+        } in data
+        assert {
+            "identifier": SaaSType.stripe.value,
+            "type": SystemType.saas.value,
+        } in data
 
-        assert "saas" not in data["items"]
-        assert "https" not in data["items"]
-        assert "custom" not in data["items"]
-        assert "manual" not in data["items"]
+        assert "saas" not in [item["identifier"] for item in data]
+        assert "https" not in [item["identifier"] for item in data]
+        assert "custom" not in [item["identifier"] for item in data]
+        assert "manual" not in [item["identifier"] for item in data]
 
     def test_search_connection_types(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -53,14 +63,60 @@ class TestGetConnections:
         resp = api_client.get(url + "?search=str", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 1
-        assert data["items"][0] == "stripe"
+        assert len(data) == 1
+        assert data[0] == {
+            "identifier": SaaSType.stripe.value,
+            "type": SystemType.saas.value,
+        }
 
         resp = api_client.get(url + "?search=re", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()
-        assert data["total"] == 3
-        assert data["items"] == ["outreach", "postgres", "redshift"]
+        assert len(data) == 3
+        assert data == [
+            {
+                "identifier": ConnectionType.postgres.value,
+                "type": SystemType.database.value,
+            },
+            {
+                "identifier": ConnectionType.redshift.value,
+                "type": SystemType.database.value,
+            },
+            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+        ]
+
+    def test_search_system_type(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
+        assert resp.status_code == 422
+
+        resp = api_client.get(url + "?system_type=saas", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 10
+
+        resp = api_client.get(url + "?system_type=database", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 8
+
+    def test_search_system_type_and_connection_type(
+        self, api_client, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?search=str&system_type=saas", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+
+        resp = api_client.get(
+            url + "?search=re&system_type=database", headers=auth_header
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 2
 
 
 class TestGetConnectionSecretSchema:

@@ -1,10 +1,8 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Security
-from fastapi_pagination import Page, Params, paginate
-from fastapi_pagination.bases import AbstractPage
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.api.v1.scope_registry import CONNECTION_TYPE_READ
@@ -18,6 +16,10 @@ from fidesops.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_validators,
 )
+from fidesops.schemas.connection_configuration.connection_config import (
+    ConnectionSystemTypeMap,
+    SystemType,
+)
 from fidesops.schemas.saas.saas_config import SaaSConfig, SaaSType
 from fidesops.util.oauth_util import verify_oauth_client
 from fidesops.util.saas_util import load_config
@@ -27,41 +29,63 @@ router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
 
 
-def get_connection_types(search: Optional[str] = None) -> List[str]:
+def get_connection_types(
+    search: Optional[str] = None, system_type: Optional[SystemType] = None
+) -> List[ConnectionSystemTypeMap]:
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search in elem if search else True
 
-    database_types: List[str] = [
-        conn_type.value
-        for conn_type in ConnectionType
-        if conn_type
-        not in [ConnectionType.saas, ConnectionType.https, ConnectionType.manual]
-        and is_match(conn_type.value)
-    ]
-    saas_types: List[str] = [
-        saas_type.value
-        for saas_type in SaaSType
-        if saas_type != SaaSType.custom and is_match(saas_type.value)
-    ]
-    connection_types: List[str] = sorted(database_types + saas_types)
+    connection_system_types: List[ConnectionSystemTypeMap] = []
+    if system_type == SystemType.database or system_type is None:
+        database_types: List[str] = sorted(
+            [
+                conn_type.value
+                for conn_type in ConnectionType
+                if conn_type
+                not in [
+                    ConnectionType.saas,
+                    ConnectionType.https,
+                    ConnectionType.manual,
+                ]
+                and is_match(conn_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(identifier=item, type=SystemType.database)
+                for item in database_types
+            ]
+        )
+    if system_type == SystemType.saas or system_type is None:
+        saas_types: List[str] = sorted(
+            [
+                saas_type.value
+                for saas_type in SaaSType
+                if saas_type != SaaSType.custom and is_match(saas_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(identifier=item, type=SystemType.saas)
+                for item in saas_types
+            ]
+        )
 
-    return connection_types
+    return connection_system_types
 
 
 @router.get(
     CONNECTION_TYPES,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_TYPE_READ])],
-    response_model=Page[str],
+    response_model=List[ConnectionSystemTypeMap],
 )
 def get_all_connection_types(
-    *, params: Params = Depends(), search: Optional[str] = None
-) -> AbstractPage[str]:
+    *, search: Optional[str] = None, system_type: Optional[SystemType] = None
+) -> List[ConnectionSystemTypeMap]:
     """Returns a list of connection options in Fidesops - includes only database and saas options here."""
 
-    connection_types: List[str] = get_connection_types(search)
-
-    return paginate(connection_types, params)
+    return get_connection_types(search, system_type)
 
 
 @router.get(
@@ -76,8 +100,8 @@ def get_connection_type_secret_schema(
     Note that this endpoint should never return actual secrets, we return the *types* of secret fields needed
     to authenticate.
     """
-    connection_types: List[str] = get_connection_types()
-    if connection_type not in connection_types:
+    connection_system_types: List[ConnectionSystemTypeMap] = get_connection_types()
+    if not any(item.identifier == connection_type for item in connection_system_types):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No connection type found with name '{connection_type}'.",
