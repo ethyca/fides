@@ -59,7 +59,16 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Validate local manifest files and persist any changes via the API server.
     """
-    apply(ctx=ctx, dry=dry, diff=diff, manifests_dir=manifests_dir)
+
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _apply.apply(
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.request_headers,
+        dry=dry,
+        diff=diff,
+    )
 
 
 @click.command()
