@@ -11,8 +11,11 @@ FROM node:16 as frontend
 WORKDIR /fides/clients/admin-ui
 
 # install node modules
-COPY clients/admin-ui/package.json .
+COPY clients/admin-ui/ .
 RUN npm install
+
+# Build the frontend static files
+RUN npm run export
 
 #######################
 ## Tool Installation ##
@@ -108,9 +111,8 @@ RUN pip install -e ".[all,mssql]"
 
 FROM builder as prod
 
-# Install node in order for the wheel to compile the frontend
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-RUN apt-get install -y nodejs rsync
+# Copy frontend build over in order to be available in wheel package
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/ui-build/static/admin/
 
 # Install without a symlink
 RUN python setup.py bdist_wheel 
