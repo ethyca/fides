@@ -82,6 +82,7 @@ def test_sql_erasure_ignores_collections_without_pk(
         graph,
         [integration_postgres_config],
         {"email": seed_email},
+        db,
     )
     v = graph_task.run_erasure(
         privacy_request,
@@ -90,6 +91,7 @@ def test_sql_erasure_ignores_collections_without_pk(
         [integration_postgres_config],
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     logs = (
@@ -179,6 +181,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "customer-1@example.com"},
+        db,
     )
     customer = access_request_data["postgres_example:customer"][0]
     composite_pk_test = access_request_data["postgres_example:composite_pk_test"][0]
@@ -194,6 +197,7 @@ def test_composite_key_erasure(
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert erasure == {
@@ -210,6 +214,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert access_request_data == {
@@ -237,12 +242,13 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    access_request_data = graph_task.run_access_request(
+    graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
         [integration_postgres_config],
         {"email": seed_email},
+        db,
     )
     v = graph_task.run_erasure(
         privacy_request,
@@ -251,6 +257,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
         [integration_postgres_config],
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert v == {
@@ -280,6 +287,7 @@ def test_postgres_access_request_task(
         integration_db_graph("postgres_example"),
         [integration_postgres_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert_rows_match(
@@ -368,6 +376,7 @@ def test_mssql_access_request_task(
         integration_db_graph("my_mssql_db_1"),
         [connection_config_mssql],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert_rows_match(
@@ -456,6 +465,7 @@ def test_mysql_access_request_task(
         integration_db_graph("my_mysql_db_1"),
         [connection_config_mysql],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert_rows_match(
@@ -543,6 +553,7 @@ def test_mariadb_access_request_task(
         integration_db_graph("my_maria_db_1"),
         [connection_config_mariadb],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert_rows_match(
@@ -654,6 +665,7 @@ def test_filter_on_data_categories(
         dataset_graph,
         [postgres_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     target_categories = {target.data_category for target in rule.targets}
@@ -805,6 +817,7 @@ def test_access_erasure_type_conversion(
         DatasetGraph(dataset),
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
+        db,
     )
 
     employee = access_request_data["postgres_example:employee"][0]
@@ -821,6 +834,7 @@ def test_access_erasure_type_conversion(
         [integration_postgres_config],
         {"email": "employee-1@example.com"},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert erasure == {
@@ -969,12 +983,13 @@ class TestRetryIntegration:
 
         # Call run_access_request with an email that isn't in the database
         with pytest.raises(Exception) as exc:
-            access_request_results = graph_task.run_access_request(
+            graph_task.run_access_request(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
                 [integration_postgres_config],
                 {"email": "customer-5@example.com"},
+                db,
             )
 
         execution_logs = db.query(ExecutionLog).filter_by(
@@ -1039,6 +1054,7 @@ class TestRetryIntegration:
                     "postgres_example_test_dataset:order_item": [],
                     "postgres_example_test_dataset:product": [],
                 },
+                db,
             )
 
         execution_logs = db.query(ExecutionLog).filter_by(

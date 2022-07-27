@@ -40,6 +40,7 @@ def test_zendesk_access_request_task(
         graph,
         [zendesk_connection_config],
         {"email": zendesk_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -207,6 +208,7 @@ def test_zendesk_erasure_request_task(
         graph,
         [zendesk_connection_config],
         {"email": zendesk_erasure_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -301,6 +303,7 @@ def test_zendesk_erasure_request_task(
         [zendesk_connection_config],
         {"email": zendesk_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert x == {

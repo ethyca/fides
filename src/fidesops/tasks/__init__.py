@@ -48,7 +48,7 @@ celery_app = _create_celery()
 
 def start_worker() -> None:
     logger.info("Running Celery worker...")
-    celery_app.worker_main(argv=["worker", "--loglevel=info"])
+    celery_app.worker_main(argv=["worker", "--loglevel=info", "--concurrency=2"])
 
 
 if __name__ == "__main__":

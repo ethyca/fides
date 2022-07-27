@@ -39,6 +39,7 @@ def test_postgres_with_manual_input_access_request_task(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -69,6 +70,7 @@ def test_postgres_with_manual_input_access_request_task(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -100,6 +102,7 @@ def test_postgres_with_manual_input_access_request_task(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
+        db,
     )
     # Manual filing cabinet data returned
     assert_rows_match(
@@ -217,6 +220,7 @@ def test_postgres_with_manual_input_access_request_task(
 @pytest.mark.usefixtures("postgres_integration_db")
 def test_no_manual_input_found(
     policy,
+    db,
     integration_postgres_config,
     integration_manual_config,
 ) -> None:
@@ -233,6 +237,7 @@ def test_no_manual_input_found(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -256,6 +261,7 @@ def test_no_manual_input_found(
             postgres_and_manual_nodes("postgres_example", "manual_example"),
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -277,6 +283,7 @@ def test_no_manual_input_found(
         postgres_and_manual_nodes("postgres_example", "manual_example"),
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     # No filing cabinet data or storage unit data found
@@ -396,6 +403,7 @@ def test_collections_with_manual_erasure_confirmation(
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
             cached_data_for_erasures,
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -425,6 +433,7 @@ def test_collections_with_manual_erasure_confirmation(
             [integration_postgres_config, integration_manual_config],
             {"email": "customer-1@example.com"},
             cached_data_for_erasures,
+            db,
         )
 
     paused_details = privacy_request.get_paused_collection_details()
@@ -452,6 +461,7 @@ def test_collections_with_manual_erasure_confirmation(
         [integration_postgres_config, integration_manual_config],
         {"email": "customer-1@example.com"},
         cached_data_for_erasures,
+        db,
     )
 
     assert v == {

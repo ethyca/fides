@@ -40,6 +40,7 @@ def test_outreach_access_request_task(
         graph,
         [outreach_connection_config],
         {"email": outreach_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -115,6 +116,7 @@ def test_outreach_erasure_request_task(
         graph,
         [outreach_connection_config],
         {"email": outreach_erasure_identity_email},
+        db,
     )
 
     # verify staged data is available for erasure
@@ -136,6 +138,7 @@ def test_outreach_erasure_request_task(
         [outreach_connection_config],
         {"email": outreach_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # Assert erasure request made to prospects and recipients

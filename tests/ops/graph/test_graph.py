@@ -59,7 +59,7 @@ class TestNode:
         assert node.contains_field(lambda f: f.identity == "ssn")
 
 
-def test_retry_decorator(privacy_request, policy):
+def test_retry_decorator(privacy_request, policy, db):
     input_data = {"test": "data"}
     graph: DatasetGraph = integration_db_graph("postgres_example")
     traversal = Traversal(graph, {"email": "X"})
@@ -81,7 +81,7 @@ def test_retry_decorator(privacy_request, policy):
             self.start_logged = 0
             self.retry_logged = 0
             self.end_called_with = ()
-            self.resources = TaskResources(privacy_request, policy, [])
+            self.resources = TaskResources(privacy_request, policy, [], db)
 
         def log_end(self, action_type: ActionType, exc: Optional[str] = None):
             self.end_called_with = (action_type, exc)

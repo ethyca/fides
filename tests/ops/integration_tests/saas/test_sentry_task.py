@@ -43,6 +43,7 @@ def test_sentry_access_request_task(
         graph,
         [sentry_connection_config],
         {"email": sentry_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -288,6 +289,7 @@ def test_sentry_erasure_request_task(
         graph,
         [sentry_connection_config],
         {"email": erasure_email},
+        db,
     )
 
     assert_rows_match(
@@ -369,6 +371,7 @@ def test_sentry_erasure_request_task(
         [sentry_connection_config],
         {"email": erasure_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # Masking request only issued to "issues" endpoint
