@@ -157,7 +157,7 @@ def scan_system_aws(
     Connect to an aws account and compares tracked resources to existing systems.
     Credentials can be supplied as options, a credentials reference to fidesctl
     config, or boto3 environment configuration.
-    Tracked resources: [Redshift, RDS]
+    Tracked resources: [Redshift, RDS, DynamoDb, S3]
 
     Outputs missing resources and has a non-zero exit if coverage is
     under the stated threshold.
