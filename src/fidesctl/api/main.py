@@ -1,11 +1,9 @@
 """
 Contains the code that sets up the API.
 """
-import importlib.util
 from datetime import datetime
 from logging import WARNING
-from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -29,7 +27,8 @@ from fidesctl.api.ctl.routes import (
     validate,
     visualize,
 )
-from fidesctl.api.ctl.routes.util import ADMIN_UI_DIRECTORY, API_PREFIX
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
 from fidesctl.api.ctl.utils.logger import setup as setup_logging
 from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
@@ -63,22 +62,6 @@ configure_routes()
 app.dependency_overrides[lib_get_config] = get_config
 app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
-
-
-def get_ui_file(path: str) -> Optional[Path]:
-    """Return a path to a UI file within the package"""
-    spec = importlib.util.find_spec("fidesctl")
-    if spec is None:
-        return None
-    return Path(spec.origin).parent / ADMIN_UI_DIRECTORY / path if spec.origin else None
-
-
-def get_index_as_response() -> Response:
-    """Get just the frontend index file as a FileResponse.
-    If it does not exist, return a placeholder."""
-    placeholder = "<h1>Privacy is a Human Right!</h1>"
-    index = get_ui_file("index.html")
-    return FileResponse(index) if index and index.is_file() else Response(placeholder)
 
 
 @app.on_event("startup")
@@ -116,7 +99,7 @@ def read_index() -> Response:
     Return an index.html at the root path
     """
 
-    return get_index_as_response()
+    return get_admin_index_as_response()
 
 
 @app.get("/{catchall:path}", response_class=Response, tags=["Default"])
@@ -126,7 +109,7 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
-    ui_file = get_ui_file(path)
+    ui_file = get_path_to_admin_ui_file(path)
     if ui_file and ui_file.is_file():
         return FileResponse(ui_file)
 
@@ -137,7 +120,7 @@ def read_other_paths(request: Request) -> Response:
         )
 
     # otherwise return the index
-    return get_index_as_response()
+    return get_admin_index_as_response()
 
 
 def start_webserver() -> None:
