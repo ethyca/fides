@@ -201,7 +201,8 @@ These permissions can be supplied in an IAM policy:
             "Action": [
                 "redshift:DescribeClusters",
                 "rds:DescribeDBInstances",
-                "rds:DescribeDBClusters"
+                "rds:DescribeDBClusters",
+                "tag:GetResources",
             ],
             "Resource": "*"
         }
