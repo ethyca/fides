@@ -7,10 +7,10 @@ To follow along, ensure you have the Fides repository cloned and fidesctl instal
 
 First, ensure `fidesctl` is running with `nox -s dev`.
 
-To apply and export the provided `demo_resources`, run the following commands:
+To push and export the provided `demo_resources`, run the following commands:
 
-```sh title="Apply and Export Defaults"
-fidesctl apply demo_resources/
+```sh title="Push and Export Defaults"
+fidesctl push demo_resources/
 fidesctl export datamap --output-dir demo_resources/
 ```
 
@@ -271,7 +271,7 @@ system:
         automated_decisions_or_profiling: true
 ```
 
-Running `fidesctl apply demo_resources/` will apply your changes.
+Running `fidesctl push demo_resources/` will push your changes.
 
 Now, auditing this resource with `fidesctl evaluate demo_resources --audit` will show the Demo Marketing System issues are resolved:
 ```bash
@@ -307,8 +307,8 @@ automated_decisions_or_profiling for potential_customer in Demo Marketing System
 
 Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:
 
-```sh title="Apply and Export Defaults"
-$ fidesctl apply demo_resources/
+```sh title="Push and Export Defaults"
+$ fidesctl push demo_resources/
 $ fidesctl export datamap --output_dir demo_resources/
 ```
 
