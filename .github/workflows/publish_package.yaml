@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "*"
+  # TODO: REMOVE THIS!! for testing this workflow only
+  pull_request:
+    branches:
+      - main
 
 jobs:
   upload_to_pypi:
