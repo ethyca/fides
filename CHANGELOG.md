@@ -48,6 +48,7 @@ The types of changes are:
 ### Developer Experience
 
 * Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
+* Update the way `make clean` works [#767](https://github.com/ethyca/fidesops/pull/767)
 
 ### Docs
 

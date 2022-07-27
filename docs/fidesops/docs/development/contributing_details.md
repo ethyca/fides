@@ -129,6 +129,6 @@ Occasionally when developing you'll run into issues where it's beneficial to rem
 - Stop all running containers: `docker-compose down`
 - Delete all local containers: `docker rm -f $(docker ps -a -q)`
 - Delete all local Docker volumes: `docker volume rm $(docker volume ls -q)`
-- Remove temp. files and installed dependencies: `make clean`
+- Remove temp. files, installed dependencies, all local Docker containers and all local Docker volumes: `make clean`
 - Delete all stopped containers, all networks not used by a container, all dangling images, and all build cache: `docker system prune`
 - Recreate the project: `make compose-build`
