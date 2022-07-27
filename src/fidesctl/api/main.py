@@ -1,7 +1,7 @@
 """
 Contains the code that sets up the API.
 """
-import pkgutil
+import importlib.util
 from datetime import datetime
 from logging import WARNING
 from pathlib import Path
@@ -67,16 +67,15 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 def get_ui_file(path: str) -> Optional[Path]:
     """Return a path to a UI file within the package"""
-    loader = pkgutil.get_loader(__package__)
-    if loader:
-        # will yield [...]/src/fidesctl/api/__init__.py
-        filename = loader.get_filename()
-        fidesctl_folder = Path(filename).parent.parent
-        return fidesctl_folder / ADMIN_UI_DIRECTORY / path
-    return None
+    spec = importlib.util.find_spec("fidesctl")
+    if spec is None:
+        return None
+    return Path(spec.origin).parent / ADMIN_UI_DIRECTORY / path if spec.origin else None
 
 
-def get_index_response() -> Response:
+def get_index_as_response() -> Response:
+    """Get just the frontend index file as a FileResponse.
+    If it does not exist, return a placeholder."""
     placeholder = "<h1>Privacy is a Human Right!</h1>"
     index = get_ui_file("index.html")
     return FileResponse(index) if index and index.is_file() else Response(placeholder)
@@ -117,7 +116,7 @@ def read_index() -> Response:
     Return an index.html at the root path
     """
 
-    return get_index_response()
+    return get_index_as_response()
 
 
 @app.get("/{catchall:path}", response_class=Response, tags=["Default"])
@@ -138,7 +137,7 @@ def read_other_paths(request: Request) -> Response:
         )
 
     # otherwise return the index
-    return get_index_response()
+    return get_index_as_response()
 
 
 def start_webserver() -> None:
