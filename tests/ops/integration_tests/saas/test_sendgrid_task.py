@@ -39,6 +39,7 @@ def test_sendgrid_access_request_task(
         graph,
         [sendgrid_connection_config],
         {"email": sendgrid_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -96,6 +97,7 @@ def test_sendgrid_erasure_request_task(
         graph,
         [sendgrid_connection_config],
         {"email": sendgrid_erasure_identity_email},
+        db,
     )
 
     # make sure erasure contact has expected fields
@@ -131,6 +133,7 @@ def test_sendgrid_erasure_request_task(
         [sendgrid_connection_config],
         {"email": sendgrid_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
     assert erasure == {"sendgrid_connector_example:contacts": 1}
     error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be deleted in Sendgrid"

@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set
+from typing import ContextManager, Dict, List, Optional, Set
 
+from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from pydantic import ValidationError
@@ -150,8 +151,22 @@ def queue_privacy_request(
     return task.task_id
 
 
-@celery_app.task()
+class DatabaseTask(Task):  # pylint: disable=W0223
+    _session = None
+
+    @property
+    def session(self) -> ContextManager[Session]:
+        """Creates Session once per process"""
+        if self._session is None:
+            SessionLocal = get_db_session(config)
+            self._session = SessionLocal()
+
+        return self._session
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
 def run_privacy_request(
+    self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
@@ -169,8 +184,7 @@ def run_privacy_request(
         # can't be passed into and between tasks
         from_step = PausedStep(from_step)  # type: ignore
 
-    SessionLocal = get_db_session(config)
-    with SessionLocal() as session:
+    with self.session as session:
 
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
@@ -190,7 +204,6 @@ def run_privacy_request(
                 after_webhook_id=from_webhook_id,
             )
             if not proceed:
-                session.close()
                 return
 
         policy = privacy_request.policy
@@ -217,6 +230,7 @@ def run_privacy_request(
                     graph=dataset_graph,
                     connection_configs=connection_configs,
                     identity=identity_data,
+                    session=session,
                 )
 
                 upload_access_results(
@@ -238,19 +252,18 @@ def run_privacy_request(
                     access_request_data=get_cached_data_for_erasures(
                         privacy_request.id
                     ),
+                    session=session,
                 )
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
             _log_warning(exc, config.dev_mode)
-            session.close()
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
             _log_exception(exc, config.dev_mode)
-            session.close()
             return
 
         # Run post-execution webhooks
@@ -260,14 +273,12 @@ def run_privacy_request(
             webhook_cls=PolicyPostWebhook,  # type: ignore
         )
         if not proceed:
-            session.close()
             return
 
         privacy_request.finished_processing_at = datetime.utcnow()
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=session)
         logging.info(f"Privacy request {privacy_request.id} run completed.")
-        session.close()
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:

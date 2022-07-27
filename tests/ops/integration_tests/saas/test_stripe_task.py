@@ -41,6 +41,7 @@ def test_stripe_access_request_task(
         graph,
         [stripe_connection_config],
         {"email": stripe_identity_email},
+        db,
     )
 
     # verify all collections are returned with the expected number of rows and fields
@@ -660,6 +661,7 @@ def test_stripe_erasure_request_task(
         graph,
         [stripe_connection_config],
         {"email": stripe_erasure_identity_email},
+        db,
     )
 
     # verify staged data is available for erasure
@@ -1081,6 +1083,7 @@ def test_stripe_erasure_request_task(
         [stripe_connection_config],
         {"email": stripe_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # verify masking request was issued for endpoints with both update/delete actions

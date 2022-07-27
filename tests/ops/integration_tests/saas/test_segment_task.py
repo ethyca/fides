@@ -40,6 +40,7 @@ def test_segment_saas_access_request_task(
         graph,
         [segment_connection_config],
         {"email": segment_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -168,6 +169,7 @@ def test_segment_saas_erasure_request_task(
         graph,
         [segment_connection_config],
         {"email": erasure_email},
+        db,
     )
 
     assert_rows_match(
@@ -214,6 +216,7 @@ def test_segment_saas_erasure_request_task(
         [segment_connection_config],
         {"email": erasure_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # Assert erasure request made to segment_user - cannot verify success immediately as this can take

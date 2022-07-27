@@ -110,6 +110,7 @@ def test_combined_erasure_task(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
+        db,
     )
 
     x = graph_task.run_erasure(
@@ -119,6 +120,7 @@ def test_combined_erasure_task(
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert x == {
@@ -147,6 +149,7 @@ def test_combined_erasure_task(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
+        db,
     )
 
     # Nested resource deleted
@@ -269,6 +272,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
+        db,
     )
     v = graph_task.run_erasure(
         privacy_request,
@@ -277,6 +281,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         [integration_mongodb_config],
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert v == {
@@ -289,7 +294,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
+def test_dask_mongo_task(db, integration_mongodb_config: ConnectionConfig) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 
     v = graph_task.run_access_request(
@@ -298,6 +303,7 @@ def test_dask_mongo_task(integration_mongodb_config: ConnectionConfig) -> None:
         integration_db_graph("mongo_test", integration_mongodb_config.key),
         [integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert_rows_match(
@@ -379,6 +385,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     customer = access_request_data["mongo_test:customer"][0]
@@ -395,6 +402,7 @@ def test_composite_key_erasure(
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert erasure == {"mongo_test:customer": 0, "mongo_test:composite_pk_test": 1}
@@ -408,6 +416,7 @@ def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     assert access_request_data["mongo_test:composite_pk_test"][0]["description"] is None
@@ -470,6 +479,7 @@ def test_access_erasure_type_conversion(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
+        db,
     )
 
     employee = access_request_data["mongo_test:employee"][0]
@@ -486,6 +496,7 @@ def test_access_erasure_type_conversion(
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert erasure == {"mongo_test:employee": 0, "mongo_test:type_link_test": 1}
@@ -517,6 +528,7 @@ def test_object_querying_mongo(
         dataset_graph,
         [postgres_config, integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
 
     target_categories = {
@@ -587,7 +599,7 @@ def test_object_querying_mongo(
 
 @pytest.mark.integration
 def test_get_cached_data_for_erasures(
-    integration_postgres_config, integration_mongodb_config, policy
+    integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 
@@ -602,6 +614,7 @@ def test_get_cached_data_for_erasures(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": "customer-1@example.com"},
+        db,
     )
     cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
 
@@ -659,6 +672,7 @@ def test_return_all_elements_config_access_request(
         dataset_graph,
         [postgres_config, integration_mongodb_config],
         {"phone_number": "254-344-9868", "email": "jane@gmail.com"},
+        db,
     )
 
     # Both indices in mongo_test:internal_customer_profile.customer_identifiers.derived_phone are returned from the node
@@ -680,6 +694,7 @@ def test_return_all_elements_config_access_request(
 
 @pytest.mark.integration
 def test_return_all_elements_config_erasure(
+    db,
     mongo_inserts,
     postgres_inserts,
     integration_mongodb_config,
@@ -718,6 +733,7 @@ def test_return_all_elements_config_erasure(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email, "phone_number": seed_phone},
+        db,
     )
 
     x = graph_task.run_erasure(
@@ -727,6 +743,7 @@ def test_return_all_elements_config_erasure(
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     assert x["mongo_test:internal_customer_profile"] == 1
@@ -778,6 +795,7 @@ def test_array_querying_mongo(
         dataset_graph,
         [postgres_config, integration_mongodb_config],
         {"email": "jane@example.com"},
+        db,
     )
 
     # This is a different category than was specified on the policy, this is just for testing.
@@ -985,6 +1003,7 @@ def test_array_querying_mongo(
         dataset_graph,
         [postgres_config, integration_mongodb_config],
         {"email": "customer-1@example.com"},
+        db,
     )
     filtered_identifiable = filter_data_categories(
         access_request_results,

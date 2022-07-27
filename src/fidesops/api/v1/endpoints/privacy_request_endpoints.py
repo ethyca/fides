@@ -599,7 +599,7 @@ def get_request_preview_queries(
         traversal: Traversal = Traversal(dataset_graph, identity_seed)
         queries: Dict[CollectionAddress, str] = collect_queries(
             traversal,
-            TaskResources(EMPTY_REQUEST, Policy(), connection_configs),
+            TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),
         )
         return [
             DryRunDatasetResponse(

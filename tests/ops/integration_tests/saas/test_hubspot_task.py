@@ -45,6 +45,7 @@ def test_saas_access_request_task(
         graph,
         [connection_config_hubspot],
         {"email": hubspot_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -148,11 +149,7 @@ def test_saas_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     v = graph_task.run_access_request(
-        privacy_request,
-        policy,
-        graph,
-        [connection_config_hubspot],
-        identity_kwargs,
+        privacy_request, policy, graph, [connection_config_hubspot], identity_kwargs, db
     )
 
     assert_rows_match(
@@ -173,6 +170,7 @@ def test_saas_erasure_request_task(
         [connection_config_hubspot],
         identity_kwargs,
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # Masking request only issued to "contacts" and "subscription_preferences" endpoints

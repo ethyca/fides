@@ -27,6 +27,7 @@ def test_adobe_campaign_access_request_task(
     adobe_campaign_identity_email,
     adobe_campaign_connection_config,
     adobe_campaign_dataset_config,
+    db,
 ) -> None:
     """Full access request based on the Adobe Campaign SaaS config"""
 
@@ -46,6 +47,7 @@ def test_adobe_campaign_access_request_task(
         graph,
         [adobe_campaign_connection_config],
         {"email": adobe_campaign_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -188,6 +190,7 @@ def test_adobe_campaign_saas_erasure_request_task(
         graph,
         [adobe_campaign_connection_config],
         {"email": erasure_email},
+        db,
     )
 
     assert_rows_match(
@@ -297,6 +300,7 @@ def test_adobe_campaign_saas_erasure_request_task(
         [adobe_campaign_connection_config],
         {"email": erasure_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # Assert erasure request made to adobe_campaign_user

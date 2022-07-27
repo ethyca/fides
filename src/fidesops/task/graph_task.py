@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask.threaded import get
+from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
@@ -568,10 +569,13 @@ def run_access_request(
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
+    session: Session,
 ) -> Dict[str, List[Row]]:
     """Run the access request"""
     traversal: Traversal = Traversal(graph, identity)
-    with TaskResources(privacy_request, policy, connection_configs) as resources:
+    with TaskResources(
+        privacy_request, policy, connection_configs, session
+    ) as resources:
 
         def collect_tasks_fn(
             tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
@@ -636,17 +640,20 @@ def update_erasure_mapping_from_cache(
         )
 
 
-def run_erasure(  # pylint: disable = too-many-arguments
+def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
+    session: Session,
 ) -> Dict[str, int]:
     """Run an erasure request"""
     traversal: Traversal = Traversal(graph, identity)
-    with TaskResources(privacy_request, policy, connection_configs) as resources:
+    with TaskResources(
+        privacy_request, policy, connection_configs, session
+    ) as resources:
 
         def collect_tasks_fn(
             tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]

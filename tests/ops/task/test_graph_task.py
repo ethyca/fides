@@ -40,7 +40,7 @@ def combined_traversal_node_dict(integration_mongodb_config, connection_config):
 
 
 @pytest.fixture(scope="function")
-def make_graph_task(integration_mongodb_config, connection_config):
+def make_graph_task(integration_mongodb_config, connection_config, db):
     def task(node):
         return MockMongoTask(
             node,
@@ -48,6 +48,7 @@ def make_graph_task(integration_mongodb_config, connection_config):
                 EMPTY_REQUEST,
                 Policy(),
                 [connection_config, integration_mongodb_config],
+                db,
             ),
         )
 
@@ -55,12 +56,12 @@ def make_graph_task(integration_mongodb_config, connection_config):
 
 
 class TestPreProcessInputData:
-    def test_pre_process_input_data_scalar(self) -> None:
+    def test_pre_process_input_data_scalar(self, db) -> None:
         t = sample_traversal()
         n = t.traversal_node_dict[CollectionAddress("mysql", "Address")]
 
         task = MockSqlTask(
-            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db)
         )
         customers_data = [
             {"contact_address_id": 31, "foo": "X"},
@@ -238,7 +239,7 @@ class TestPreProcessInputData:
             "fidesops_grouped_inputs": [],
         }
 
-    def test_pre_process_input_data_group_dependent_fields(self):
+    def test_pre_process_input_data_group_dependent_fields(self, db):
         """Test processing inputs where several reference fields and an identity field have
         been marked as dependent.
         """
@@ -247,7 +248,7 @@ class TestPreProcessInputData:
             CollectionAddress("mysql", "User")
         ]
         task = MockSqlTask(
-            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs)
+            n, TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db)
         )
 
         project_output = [
@@ -374,11 +375,11 @@ class TestPostProcessInputData:
         }
 
 
-def test_sql_dry_run_queries() -> None:
+def test_sql_dry_run_queries(db) -> None:
     traversal = sample_traversal()
     env = collect_queries(
         traversal,
-        TaskResources(EMPTY_REQUEST, Policy(), connection_configs),
+        TaskResources(EMPTY_REQUEST, Policy(), connection_configs, db),
     )
 
     assert (
@@ -407,7 +408,7 @@ def test_sql_dry_run_queries() -> None:
     )
 
 
-def test_mongo_dry_run_queries() -> None:
+def test_mongo_dry_run_queries(db) -> None:
     from .traversal_data import integration_db_graph
 
     traversal = Traversal(integration_db_graph("postgres"), {"email": ["x"]})
@@ -422,6 +423,7 @@ def test_mongo_dry_run_queries() -> None:
                     key="postgres", connection_type=ConnectionType.mongodb
                 ),
             ],
+            db,
         ),
     )
 

@@ -26,6 +26,7 @@ def test_salesforce_access_request_task(
     salesforce_identity_email,
     salesforce_connection_config,
     salesforce_dataset_config,
+    db,
 ) -> None:
     """Full access request based on the Salesforce SaaS config"""
 
@@ -45,6 +46,7 @@ def test_salesforce_access_request_task(
         graph,
         [salesforce_connection_config],
         {"email": salesforce_identity_email},
+        db,
     )
 
     assert_rows_match(
@@ -401,6 +403,7 @@ def test_salesforce_erasure_request_task(
         graph,
         [salesforce_connection_config],
         {"email": salesforce_erasure_identity_email},
+        db,
     )
 
     # verify staged data is available for erasure
@@ -714,6 +717,7 @@ def test_salesforce_erasure_request_task(
         [salesforce_connection_config],
         {"email": salesforce_erasure_identity_email},
         get_cached_data_for_erasures(privacy_request.id),
+        db,
     )
 
     # verify masking request was issued for endpoints with update actions
