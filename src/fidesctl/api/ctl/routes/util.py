@@ -6,7 +6,6 @@ from fastapi import HTTPException, status
 from fidesctl.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
-ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
 def get_resource_type(router: APIRouter) -> str:
