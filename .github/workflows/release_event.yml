@@ -1,0 +1,17 @@
+name: Release Dispatch Event
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  Notify-of-New-Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+          repository: ethyca/fidesops-plus
+          event-type: new-fidesops-release
+          client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
