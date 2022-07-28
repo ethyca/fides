@@ -21,7 +21,7 @@ def generate_redshift_systems(
     organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
-    Fetches Redshift clusters from AWS and returns the transformed Sytem representations.
+    Fetches Redshift clusters from AWS and returns the transformed System representations.
     """
     import fidesctl.ctl.connectors.aws as aws_connector
 
@@ -37,7 +37,7 @@ def generate_rds_systems(
     organization_key: str, aws_config: Optional[AWSConfig]
 ) -> List[System]:
     """
-    Fetches RDS clusters and instances from AWS and returns the transformed Sytem representations.
+    Fetches RDS clusters and instances from AWS and returns the transformed System representations.
     """
     import fidesctl.ctl.connectors.aws as aws_connector
 
@@ -50,6 +50,24 @@ def generate_rds_systems(
         organization_key=organization_key,
     )
     return rds_systems
+
+
+def generate_resource_tagging_systems(
+    organization_key: str, aws_config: Optional[AWSConfig]
+) -> List[System]:
+    """
+    Fetches AWS Resources from the resource tagging api and returns the transformed System representations.
+    """
+    import fidesctl.ctl.connectors.aws as aws_connector
+
+    client = aws_connector.get_aws_client(
+        service="resourcegroupstaggingapi", aws_config=aws_config
+    )
+    resource_arns = aws_connector.get_tagging_resources(client=client)
+    resource_tagging_systems = aws_connector.create_resource_tagging_systems(
+        resource_arns=resource_arns, organization_key=organization_key
+    )
+    return resource_tagging_systems
 
 
 def get_organization(
@@ -95,7 +113,11 @@ def generate_aws_systems(
 
     Returns a list of systems with any filters applied
     """
-    generate_system_functions = [generate_redshift_systems, generate_rds_systems]
+    generate_system_functions = [
+        generate_redshift_systems,
+        generate_rds_systems,
+        generate_resource_tagging_systems,
+    ]
 
     aws_systems = [
         found_system
@@ -136,7 +158,6 @@ def generate_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and extract tracked resource to write a System manifest with.
-    Tracked resources: [Redshift, RDS]
     """
     _check_aws_connector_import()
 
@@ -343,7 +364,6 @@ def scan_system_aws(
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and compares tracked resources to existing systems.
-    Tracked resources: [Redshift, RDS]
     """
 
     _check_aws_connector_import()

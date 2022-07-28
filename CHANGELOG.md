@@ -43,6 +43,7 @@ The types of changes are:
 * Add user auth routes [929](https://github.com/ethyca/fides/pull/929)
 * Bump fideslib to 3.0.1 and remove patch code[931](https://github.com/ethyca/fides/pull/931)
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
+* Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 
 ### Changed
 
