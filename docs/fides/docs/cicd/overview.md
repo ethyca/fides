@@ -20,7 +20,7 @@ Implementing Fidesctl is possible in nearly any CI pipeline, including those not
 To integrate Fidesctl with your CI pipeline, you should plan to implement at least two CI actions:
 
 1. `fidesctl evaluate --dry <resource_dir>`
-    - `evaluate --dry` checks if code changes will be accepted without applying those changes to the fidesctl server.
+    - `evaluate --dry` checks if code changes will be accepted without pushing those changes to the fidesctl server.
     - Run this against the latest commit on code changesets (pull requests, merge requests, etc).
 2. `fidesctl evaluate <resource_dir>`
     - `evaluate` synchronizes the latest changes to the fidesctl server.

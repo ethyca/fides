@@ -1,4 +1,4 @@
-"""This module handles the logic required for applying manifest files to the server."""
+"""This module handles the logic required for pushing manifest files to the server."""
 from json import loads
 from pprint import pprint
 from typing import Dict, List, Tuple
@@ -62,7 +62,7 @@ def sort_create_update(
 
 def echo_results(action: str, resource_type: str, resource_count: int) -> None:
     """
-    Echo out the results of the apply.
+    Echo out the results of the push.
     """
     echo_green(f"{action.upper()} {resource_count} {resource_type} resource(s).")
 
@@ -95,7 +95,7 @@ def get_orphan_datasets(taxonomy: Taxonomy) -> List:
     return missing_datasets
 
 
-def apply(
+def push(
     url: str,
     taxonomy: Taxonomy,
     headers: Dict[str, str],
@@ -103,7 +103,7 @@ def apply(
     diff: bool = False,
 ) -> None:
     """
-    Apply the current manifest file state to the server.
+    Push the current manifest file state to the server.
     """
 
     missing_datasets = get_orphan_datasets(taxonomy)
@@ -145,6 +145,6 @@ def apply(
             verbose=False,
         )
 
-        echo_results("applied", resource_type, len(resource_list))
+        echo_results("pushed", resource_type, len(resource_list))
 
     print("-" * 10)

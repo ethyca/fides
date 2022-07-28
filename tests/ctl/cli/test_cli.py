@@ -107,6 +107,42 @@ def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> No
 
 
 @pytest.mark.integration
+def test_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "push", "demo_resources/"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "push", "--dry", "demo_resources/"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_diff_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "push", "--diff", "demo_resources/"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_diff_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "push", "--dry", "--diff", "demo_resources/"]
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
 class TestPull:
     def test_pull(
         self,
