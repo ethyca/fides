@@ -10,11 +10,11 @@ from fidesctl.cli.options import (
     verbose_flag,
 )
 from fidesctl.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
-from fidesctl.ctl.core import push as _push
 from fidesctl.ctl.core import audit as _audit
 from fidesctl.ctl.core import evaluate as _evaluate
 from fidesctl.ctl.core import parse as _parse
 from fidesctl.ctl.core import pull as _pull
+from fidesctl.ctl.core import push as _push
 from fidesctl.ctl.core.utils import git_is_dirty
 
 
@@ -112,7 +112,7 @@ def evaluate(
         dry = True
     else:
         taxonomy = _parse.parse(manifests_dir)
-        _apply.apply(
+        _push.push(
             url=config.cli.server_url,
             taxonomy=taxonomy,
             headers=config.user.request_headers,
