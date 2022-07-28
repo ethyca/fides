@@ -15,9 +15,8 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.7.0...main)
 
-## [1.7.1](https://github.com/ethyca/fides/compare/1.6.1...1.7.1) - 2022-07-28
+## [1.7.1](https://github.com/ethyca/fides/compare/1.7.0...1.7.1) - 2022-07-28
 ### Added
 * Add datasets via YAML in the UI [#813](https://github.com/ethyca/fides/pull/813)
 * Add datasets via database connection [#834](https://github.com/ethyca/fides/pull/834) [#889](https://github.com/ethyca/fides/pull/889)
