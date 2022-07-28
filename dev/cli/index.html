@@ -1385,6 +1385,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-push" class="md-nav__link">
+    push
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -2003,6 +2010,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fidesctl-push" class="md-nav__link">
+    push
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fidesctl-scan" class="md-nav__link">
     scan
   </a>
@@ -2168,7 +2182,9 @@ You're not viewing the latest version.
   --help             Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-apply">fidesctl apply</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+Deprecated in favor of `fidesctl push` command.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl apply [OPTIONS] [MANIFESTS_DIR]
@@ -2594,6 +2610,21 @@ The pull is aborted if there are unstaged or untracked files in the manifests di
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources TEXT  Pulls all locally missing resources from the
                             server into this file.
   --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h3 id="fidesctl-push">fidesctl push</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl push [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Prevent the persistance of any changes.
+  --diff  Include any changes between server and local resources in the
+          command output
+  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-scan">fidesctl scan</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan external resource coverage against fidesctl resources
