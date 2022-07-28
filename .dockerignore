@@ -30,8 +30,8 @@ docs/
 # Ignore dev files
 .github/
 .devcontainer/
-node_modules/
+**/node_modules/
 
 # Ignore cypress artifacts
-videos/
-screenshots/
+**/videos/
+**/screenshots/

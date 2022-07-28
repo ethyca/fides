@@ -90,9 +90,6 @@ ENV PYTHONUNBUFFERED=TRUE
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=TRUE
 
-# Make a static files directory
-RUN mkdir -p src/fidesctl/ui-build/static/admin
-
 EXPOSE 8080
 CMD ["fidesctl", "webserver"]
 
@@ -112,7 +109,7 @@ RUN pip install -e ".[all,mssql]"
 FROM builder as prod
 
 # Copy frontend build over in order to be available in wheel package
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/ui-build/static/admin/
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesctl/ui-build/static/admin/
 
 # Install without a symlink
 RUN python setup.py bdist_wheel 
