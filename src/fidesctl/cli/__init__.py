@@ -11,7 +11,7 @@ from fidesctl.cli.utils import check_and_update_analytics_config, check_server
 from fidesctl.ctl.core.config import get_config
 
 from .commands.annotate import annotate
-from .commands.core import apply, evaluate, parse, pull
+from .commands.core import apply, evaluate, parse, pull, push
 from .commands.crud import delete, get, ls
 from .commands.db import database
 from .commands.export import export
@@ -25,17 +25,7 @@ LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
-API_COMMANDS = [
-    annotate,
-    apply,
-    database,
-    delete,
-    export,
-    get,
-    ls,
-    status,
-    pull,
-]
+API_COMMANDS = [annotate, apply, database, delete, export, get, ls, status, pull, push]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
