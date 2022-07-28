@@ -1,6 +1,6 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN
+from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
 from run_infrastructure import run_infrastructure
 
@@ -13,6 +13,7 @@ def dev(session: nox.Session) -> None:
     datastores = session.posargs or None
     if not datastores:
         # Run the webserver without integrations
+        session.run(*START_APP, external=True)
         session.run(*RUN, "/bin/bash", external=True)
     else:
         # Run the webserver with additional datastores
