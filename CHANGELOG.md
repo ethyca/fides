@@ -36,6 +36,7 @@ The types of changes are:
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
+* Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
 * Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
 
 ### Developer Experience
