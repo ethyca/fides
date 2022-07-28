@@ -1,7 +1,9 @@
-name: Publish to DockerHub
+name: Docker Build & Push
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "*"
 
@@ -10,7 +12,7 @@ env:
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
-  push-fidesops:
+  push-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,8 +25,21 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
-      - name: Docker Build
-        run: make docker-build
+      - name: Install Dev Requirements
+        run: pip install -r dev-requirements.txt
 
-      - name: Docker Push
-        run: make docker-push
+      - name: Build Image
+        run: nox -s "build(prod)"
+
+      - name: Push Dev Tag
+        run: nox -s "push(dev)"
+
+      - name: Check Prod Tag
+        id: check-tag
+        run: |
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo ::set-output name=match::true
+          fi
+      - name: Push Prod Tags
+        if: steps.check-tag.outputs.match == 'true'
+        run: nox -s "push(prod)"
