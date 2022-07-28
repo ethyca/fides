@@ -4,3 +4,4 @@ include dev-requirements.txt
 include versioneer.py
 include src/fidesctl/api/ctl/alembic.ini
 include src/fidesctl/templates/fides_datamap_template.xlsx
+recursive-include src/fidesctl/ui-build *

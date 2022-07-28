@@ -34,6 +34,7 @@ The types of changes are:
 * `fides` is now an alias for `fidesctl` as a CLI entrypoint [#926](https://github.com/ethyca/fides/pull/926)
 * Add user auth routes [929](https://github.com/ethyca/fides/pull/929)
 * Bump fideslib to 3.0.1 and remove patch code[931](https://github.com/ethyca/fides/pull/931)
+* Update the `fidesctl` python package to automatically serve the UI [#941](https://github.com/ethyca/fides/pull/941)
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 
@@ -49,8 +50,8 @@ The types of changes are:
 * Change `id` field in tables from an integer to a string [915](https://github.com/ethyca/fides/pull/915)
 * Update `fideslang` to `1.1.0`, simplifying the default taxonomy and adding `tags` for resources [#865](https://github.com/ethyca/fides/pull/865)
 * Merge existing configurations with `fideslib` library [#913](https://github.com/ethyca/fides/pull/913)
+* Moved frontend static files to `src/fidesctl/ui-build/static` [#934](https://github.com/ethyca/fides/pull/934)
 * Replicated the error response handling from the `/validate` endpoint to the `/generate` endpoint [#911](https://github.com/ethyca/fides/pull/911)
-* Moved frontend static files to `src/ui-build/static` [#934](https://github.com/ethyca/fides/pull/934)
 
 ### Developer Experience
 

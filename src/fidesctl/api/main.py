@@ -3,12 +3,10 @@ Contains the code that sets up the API.
 """
 from datetime import datetime
 from logging import WARNING
-from pathlib import Path
 from typing import Callable
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
@@ -29,7 +27,8 @@ from fidesctl.api.ctl.routes import (
     validate,
     visualize,
 )
-from fidesctl.api.ctl.routes.util import API_PREFIX, WEBAPP_DIRECTORY, WEBAPP_INDEX
+from fidesctl.api.ctl.routes.util import API_PREFIX
+from fidesctl.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
 from fidesctl.api.ctl.utils.logger import setup as setup_logging
 from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
@@ -66,18 +65,6 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 
 @app.on_event("startup")
-async def create_webapp_dir_if_not_exists() -> None:
-    """Creates the webapp directory if it doesn't exist."""
-
-    if not WEBAPP_INDEX.is_file():
-        WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-        with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
-            index_file.write("<h1>Privacy is a Human Right!</h1>")
-
-    app.mount("/static", StaticFiles(directory=WEBAPP_DIRECTORY), name="static")
-
-
-@app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
     setup_logging(
@@ -111,19 +98,20 @@ def read_index() -> Response:
     """
     Return an index.html at the root path
     """
-    return FileResponse(WEBAPP_INDEX)
+
+    return get_admin_index_as_response()
 
 
-@app.get("/{catchall:path}", response_class=FileResponse, tags=["Default"])
-def read_other_paths(request: Request) -> FileResponse:
+@app.get("/{catchall:path}", response_class=Response, tags=["Default"])
+def read_other_paths(request: Request) -> Response:
     """
     Return related frontend files. Adapted from https://github.com/tiangolo/fastapi/issues/130
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
-    file = WEBAPP_DIRECTORY / Path(path)
-    if file.exists():
-        return FileResponse(file)
+    ui_file = get_path_to_admin_ui_file(path)
+    if ui_file and ui_file.is_file():
+        return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
@@ -132,7 +120,7 @@ def read_other_paths(request: Request) -> FileResponse:
         )
 
     # otherwise return the index
-    return FileResponse(WEBAPP_INDEX)
+    return get_admin_index_as_response()
 
 
 def start_webserver() -> None:

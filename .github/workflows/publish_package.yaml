@@ -11,12 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install node modules
+        run: |
+          cd clients/admin-ui
+          npm install
+
+      - name: Build and export frontend files
+        run: |
+          cd clients/admin-ui
+          npm run prod-export
+
       - name: Install Twine
         run: pip install twine
 
       - name: Twine Upload
         run: |
-          python setup.py sdist 
+          python setup.py sdist bdist_wheel 
           twine upload dist/*
         env:
           TWINE_USERNAME: __token__

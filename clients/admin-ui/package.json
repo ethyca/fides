@@ -14,7 +14,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
     "export": "next build && next export",
-    "copy-export": "rsync -a --delete out/ ../../src/ui-build/static/admin/",
+    "copy-export": "mkdir -p ../../src/fidesctl/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fidesctl/ui-build/static/admin/",
     "prod-export": "npm run export && npm run copy-export",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
