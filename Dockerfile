@@ -3,8 +3,8 @@
 ##############
 FROM node:16 as frontend
 
-WORKDIR /fidesops/clients/admin-ui
-COPY clients/admin-ui/ .
+WORKDIR /fidesops/clients/ops/admin-ui
+COPY clients/ops/admin-ui/ .
 RUN npm install
 # Build the frontend static files
 RUN npm run export
@@ -93,4 +93,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesops-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
+COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/build/static/

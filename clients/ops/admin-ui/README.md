@@ -5,7 +5,7 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 ## Running Locally
 
 1. Run `make server` in top-level `fidesops` directory, then run `make user` and follow prompts to create a user. Note that password requires 8 or more characters, upper and lowercase chars, a number, and a symbol.
-2. In a new shell, `cd` into `clients/admin-ui`, then run `npm run dev`.
+2. In a new shell, `cd` into `clients/ops/admin-ui`, then run `npm run dev`.
 3. Nav to `http://localhost:3000/` and logged in using created user. The `email` field is simply the `user` that was created, not a valid email address.
 
 ## Testing Entire Request Flow

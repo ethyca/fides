@@ -1,4 +1,4 @@
-// Adapted from https://github.com/ethyca/fides/blob/main/clients/admin-ui/src/features/common/form/inputs.tsx
+// Adapted from https://github.com/ethyca/fides/blob/main/clients/ops/admin-ui/src/features/common/form/inputs.tsx
 // Should in the future consider pulling this into fidesui
 
 import {

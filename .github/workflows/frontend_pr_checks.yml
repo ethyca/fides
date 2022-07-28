@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "clients/**"
+      - "clients/ops/**"
       - ".github/workflows/frontend_pr_checks.yml"
   pull_request:
 
@@ -20,7 +20,7 @@ jobs:
         node-version: [16.x]
     defaults:
       run:
-        working-directory: clients/admin-ui
+        working-directory: clients/ops/admin-ui
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -52,7 +52,7 @@ jobs:
         node-version: [16.x]
     defaults:
       run:
-        working-directory: clients/privacy-center
+        working-directory: clients/ops/privacy-center
     steps:
       - name: Checkout
         uses: actions/checkout@v3

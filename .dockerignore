@@ -34,8 +34,8 @@ docs/
 .github/
 .devcontainer/
 node_modules/
-clients/admin-ui/node_modules
-clients/admin-ui/.next
+clients/ops/admin-ui/node_modules
+clients/ops/admin-ui/.next
 clients/privacy-center/.next
 .DS_Store
 
