@@ -10,7 +10,7 @@ from fidesctl.cli.options import (
     verbose_flag,
 )
 from fidesctl.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
-from fidesctl.ctl.core import apply as _apply
+from fidesctl.ctl.core import push as _push
 from fidesctl.ctl.core import audit as _audit
 from fidesctl.ctl.core import evaluate as _evaluate
 from fidesctl.ctl.core import parse as _parse
@@ -34,9 +34,10 @@ def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None
     Deprecated in favor of `fidesctl push` command.
     """
 
+    echo_red("Use the 'push' command instead.")
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
+    _push.push(
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,
@@ -62,7 +63,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
 
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    _apply.apply(
+    _push.push(
         url=config.cli.server_url,
         taxonomy=taxonomy,
         headers=config.user.request_headers,
