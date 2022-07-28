@@ -32,10 +32,13 @@ nav:
       - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
       - SaaS Pagination: saas_connectors/saas_pagination.md
       - Connection Examples:
+        - Adobe Campaign: saas_connectors/example_configs/adobe.md
         - Hubspot: saas_connectors/example_configs/hubspot.md
         - Mailchimp: saas_connectors/example_configs/mailchimp.md
+        - Outreach: saas_connectors/example_configs/outreach.md
         - Salesforce: saas_connectors/example_configs/salesforce.md
         - Segment: saas_connectors/example_configs/segment.md
+        - Sendgrid: saas_connectors/example_configs/sendgrid.md
         - Sentry: saas_connectors/example_configs/sentry.md
         - Stripe: saas_connectors/example_configs/stripe.md
         - Zendesk: saas_connectors/example_configs/zendesk.md
