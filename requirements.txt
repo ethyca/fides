@@ -1,4 +1,4 @@
-alembic==1.8.0
+alembic==1.8.1
 APScheduler==3.9.1
 boto3~=1.24.36
 celery[pytest]==5.2.7
