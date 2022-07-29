@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/cli/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.7">
     
     
       
@@ -2389,7 +2389,8 @@ It will need to be run again if the tracked resources change.
 <span class="normal">10</span>
 <span class="normal">11</span>
 <span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials defined within fidesctl config
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials defined within fidesctl config
   --access_key_id TEXT      Use access key id option to connect to aws.
                             Requires options --access_key_id,
                             --secret_access_key and --region
@@ -2400,7 +2401,8 @@ It will need to be run again if the tracked resources change.
                             options --access_key_id, --secret_access_key and
                             --region
   --include-null            Includes attributes that would otherwise be null.
-  -o, --organization TEXT
+  -k, --org-key TEXT        The organization_fides_key you wish to export
+                            resources for.
   --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h5 id="fidesctl-generate-system-okta">fidesctl generate system okta</h5>
@@ -2428,12 +2430,16 @@ It will need to be run again if the tracked resources change.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
   --org-url TEXT         Use org url option to connect to okta. Requires
                          options --org-url and --token
   --token TEXT           Use token option to connect to okta. Requires options
                          --org-url and --token
   --include-null         Includes attributes that would otherwise be null.
+  -k, --org-key TEXT     The organization_fides_key you wish to export
+                         resources for.
   --help                 Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-get">fidesctl get</h3>
@@ -2587,7 +2593,8 @@ under the stated threshold.
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
-<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
                                   config
   --access_key_id TEXT            Use access key id option to connect to aws.
                                   Requires options --access_key_id,
@@ -2598,7 +2605,8 @@ under the stated threshold.
   --region TEXT                   Use region option to connect to aws.
                                   Requires options --access_key_id,
                                   --secret_access_key and --region
-  -o, --organization TEXT
+  -k, --org-key TEXT              The organization_fides_key you wish to
+                                  export resources for.
   -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.
@@ -2624,20 +2632,24 @@ under the stated threshold.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl scan system okta [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials defined within fidesctl
                                   config
   --org-url TEXT                  Use org url option to connect to okta.
                                   Requires options --org-url and --token
   --token TEXT                    Use token option to connect to okta.
                                   Requires options --org-url and --token
+  -k, --org-key TEXT              The organization_fides_key you wish to
+                                  export resources for.
   -c, --coverage-threshold INTEGER RANGE
                                   [0&lt;=x&lt;=100]
   --help                          Show this message and exit.

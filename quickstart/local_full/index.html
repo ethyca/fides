@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://ethyca.github.io/fides/quickstart/local_full/">
       
       <link rel="icon" href="../../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.7">
     
     
       
@@ -1577,10 +1577,10 @@ You're not viewing the latest version.
 <h2 id="system-requirements">System Requirements</h2>
 <p>See the <a href="../../installation/prerequisites_dependencies/">Prerequisites and Dependencies</a> page for more information.</p>
 <h2 id="fidesctl-installation">Fidesctl installation</h2>
-<p>The next step is to install fidesctl via pip with the required extras:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip install <span class="s2">&quot;fidesctl[webserver]&quot;</span>
+<p>The next step is to install fidesctl via <a href="https://pypa.github.io/pipx/"><code>pipx</code></a> with the required extras:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pipx install <span class="s2">&quot;fidesctl[webserver]&quot;</span>
 </code></pre></div></td></tr></table></div>
-<p>For more information on pip installing fidesctl as well as the other potential extras, see the <a href="../../installation/pypi/">Installation from PyPI</a> guide.</p>
+<p>For more information on pipx, installing fidesctl, and other potential extras, see the <a href="../../installation/pypi/">Installation from PyPI</a> guide.</p>
 <h2 id="database-installation">Database installation</h2>
 <p>Due to environmental differences, there is no specific guide on running/configuring your own Postgres database outside of the version constraints mentioned in the <code>System Requirements</code> section above.</p>
 <p>Make sure to note your database credentials and use them to generate a <a href="https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql">SQLAlchemy Connection String</a>. This will be used in the <code>database_url</code> configuration value mentioned below.</p>
