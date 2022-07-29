@@ -7,7 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: platform.segmentapis.com
+      default_value: api.outreach.io
     - name: requester_email
       description: The email of the Outreach user to associate with each automated compliance request (data_protection_request)
     - name: client_id
@@ -24,7 +24,7 @@ saas_config:
       configuration:
         authorization_request:
           method: GET
-          path: /auth/authorize
+          path: /oauth/authorize
           query_params:
             - name: client_id
               value: <client_id>
