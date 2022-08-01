@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-  # REMOVE THIS!!! testing only
-  pull_request:
-    branches:
-      - main
 
 jobs:
   upload_to_pypi:
