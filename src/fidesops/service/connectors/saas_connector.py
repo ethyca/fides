@@ -1,6 +1,6 @@
 import logging
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pydash
 from requests import Response
@@ -24,6 +24,10 @@ from fidesops.service.processors.post_processor_strategy.post_processor_strategy
 )
 from fidesops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
+)
+from fidesops.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
 )
 from fidesops.util.saas_util import assign_placeholders, map_param_values
 
@@ -111,9 +115,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-
         # generate initial set of requests if read request is defined, otherwise raise an exception
         self.privacy_request = privacy_request
+
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
         if not read_request:
@@ -121,6 +125,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
                 f"endpoint in {self.saas_config.fides_key}"
             )
+
+        # hook for user-provided request override functions
+        if read_request.request_override:
+            return self._invoke_read_request_override(
+                read_request.request_override,
+                policy,
+                privacy_request,
+                node,
+                input_data,
+                self.secrets,
+            )
+
         prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
             input_data, policy
         )
@@ -250,6 +266,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+
+        # hook for user-provided request override functions
+        if masking_request.request_override:
+            return self._invoke_masking_request_override(
+                masking_request.request_override,
+                policy,
+                privacy_request,
+                rows,
+                query_config,
+                masking_request,
+                self.secrets,
+            )
+
         # unwrap response using data_path
         if masking_request.data_path and rows:
             unwrapped = []
@@ -268,7 +297,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             query_config.generate_update_stmt(row, policy, privacy_request)
             for row in rows
         ]
-
         rows_updated = 0
         client = self.create_client_from_request(masking_request)
         for prepared_request in prepared_requests:
@@ -309,4 +337,89 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         except JSONDecodeError:
             raise FidesopsException(
                 f"Unable to parse JSON response from {saas_request.path}"
+            )
+
+    @staticmethod
+    def _invoke_read_request_override(
+        override_function_name: str,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        node: TraversalNode,
+        input_data: Dict[str, List],
+        secrets: Any,
+    ) -> List[Row]:
+        """
+        Invokes the appropriate user-defined SaaS request override for read requests.
+
+        Contains error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[
+            ..., Union[List[Row], int]
+        ] = SaaSRequestOverrideFactory.get_override(
+            override_function_name, SaaSRequestType.READ
+        )
+        try:
+            return override_function(
+                node,
+                policy,
+                privacy_request,
+                input_data,
+                secrets,
+            )  # type: ignore
+        except Exception:
+            logger.error(
+                "Encountered error executing override access function '%s'",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(
+                f"Error executing override access function '{override_function_name}'"
+            )
+
+    @staticmethod
+    def _invoke_masking_request_override(
+        override_function_name: str,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        rows: List[Row],
+        query_config: SaaSQueryConfig,
+        masking_request: SaaSRequest,
+        secrets: Any,
+    ) -> int:
+        """
+        Invokes the appropriate user-defined SaaS request override for masking
+        (update, delete, data_protection_request) requests.
+
+        Includes the necessary data preparations for override input
+        and has error handling for uncaught exceptions coming out of the override
+        """
+        override_function: Callable[
+            ..., Union[List[Row], int]
+        ] = SaaSRequestOverrideFactory.get_override(
+            override_function_name, SaaSRequestType(query_config.action)
+        )
+        try:
+            # if using a saas override, we still need to use the core framework
+            # to generate updated (masked) parameter values, and pass these
+            # into the overridden function
+            update_param_values: List[Dict[str, Any]] = [
+                query_config.generate_update_param_values(
+                    row, policy, privacy_request, masking_request
+                )
+                for row in rows
+            ]
+            return override_function(
+                update_param_values,
+                policy,
+                privacy_request,
+                secrets,
+            )  # type: ignore
+        except Exception:
+            logger.error(
+                "Encountered error executing override mask function '%s",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(
+                f"Error executing override mask function '{override_function_name}'"
             )

@@ -166,7 +166,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         return saas_request_params
 
-    def generate_update_stmt(  # pylint: disable=R0914
+    def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> SaaSRequestParams:
         """
@@ -174,16 +174,39 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         The fields in the row are masked according to the policy and added to the request body
         if specified by the body field of the masking request.
         """
-
         current_request: SaaSRequest = self.get_masking_request()  # type: ignore
+        param_values: Dict[str, Any] = self.generate_update_param_values(
+            row, policy, request, current_request
+        )
+
+        return self.generate_update_request_params(param_values, current_request)
+
+    def generate_update_param_values(  # pylint: disable=R0914
+        self,
+        row: Row,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        saas_request: SaaSRequest,
+    ) -> Dict[str, Any]:
+        """
+        A utility that generates the update request param values
+        based on the provided inputs for the given SaaSRequest.
+
+        The update param values are returned as a `dict`. The
+        `masked_object_fields` key maps to a JSON structure that holds
+        the fields in the provided row that have been masked according
+        to provided policy. The `all_object_fields` key maps to a JSON structure
+        that holds all values, including those that have not been masked.
+        """
+
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
-        identity_data: Dict[str, Any] = request.get_cached_identity_data()
+        identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in current_request.param_values or []:
+        for param_value in saas_request.param_values or []:
             if param_value.references:
                 param_values[param_value.name] = pydash.get(
                     collection_values, param_value.references[0].field
@@ -206,7 +229,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 pydash.unset(row, field_path.string_path)
 
         # mask row values
-        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+        update_value_map: Dict[str, Any] = self.update_value_map(
+            row, policy, privacy_request
+        )
         masked_object: Dict[str, Any] = unflatten_dict(update_value_map)
 
         # map of all values including those not being masked/updated
@@ -217,16 +242,33 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             merge_dicts(all_value_map, update_value_map)
         )
 
+        param_values["masked_object_fields"] = masked_object
+        param_values["all_object_fields"] = complete_object
+
+        return param_values
+
+    def generate_update_request_params(
+        self, param_values: dict[str, Any], masking_request: SaaSRequest
+    ) -> SaaSRequestParams:
+        """
+        A utility that, based on the provided param values and masking request,
+        generates the `SaaSRequestParams` that are to be used in request execution
+        """
+
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = json.dumps(masked_object)[1:-1]
-        param_values["all_object_fields"] = json.dumps(complete_object)[1:-1]
+        param_values["masked_object_fields"] = json.dumps(
+            param_values["masked_object_fields"]
+        )[1:-1]
+        param_values["all_object_fields"] = json.dumps(
+            param_values["all_object_fields"]
+        )[1:-1]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values  # type: ignore
+            self.action, self.collection_name, masking_request, param_values  # type: ignore
         )
 
-        logger.info(f"Populated request params for {current_request.path}")
+        logger.info(f"Populated request params for {masking_request.path}")
 
         return saas_request_params
 

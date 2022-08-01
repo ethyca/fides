@@ -143,3 +143,11 @@ class NoSuchStrategyException(ValueError):
 
 class FunctionalityNotConfigured(Exception):
     """Custom exception for when invoked functionality is unavailable due to configuration."""
+
+
+class InvalidSaaSRequestOverrideException(ValueError):
+    """Exception for when a provied SaaS request override function is invalid"""
+
+
+class NoSuchSaaSRequestOverrideException(ValueError):
+    """Exception for when a requested SaaS request override function does not exist"""
