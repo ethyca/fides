@@ -159,6 +159,7 @@ class FidesopsConfig(FidesSettings):
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
     hot_reloading: bool = os.getenv("FIDESOPS__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = os.getenv("FIDESOPS__DEV_MODE", "").lower() == "true"
+    oauth_instance: Optional[str] = os.getenv("FIDESOPS__OAUTH_INSTANCE")
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True

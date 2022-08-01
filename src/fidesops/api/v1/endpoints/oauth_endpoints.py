@@ -186,7 +186,7 @@ def read_scopes() -> List[str]:
     return SCOPE_REGISTRY
 
 
-@router.post(OAUTH_CALLBACK, response_model=None)
+@router.get(OAUTH_CALLBACK, response_model=None)
 def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None:
     """
     Uses the passed in code to generate the token access request

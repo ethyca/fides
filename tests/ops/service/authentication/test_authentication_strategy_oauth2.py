@@ -166,20 +166,22 @@ class TestAddAuthentication:
 
 
 class TestAuthorizationUrl:
-    @mock.patch("fidesops.service.authentication.authentication_strategy_oauth2.uuid4")
+    @mock.patch(
+        "fidesops.service.authentication.authentication_strategy_oauth2.OAuth2AuthenticationStrategy._generate_state"
+    )
     @mock.patch(
         "fidesops.models.authentication_request.AuthenticationRequest.create_or_update"
     )
     def test_get_authorization_url(
         self,
         mock_create_or_update: Mock,
-        mock_uuid: Mock,
+        mock_state: Mock,
         db: Session,
         oauth2_connection_config,
         oauth2_configuration,
     ):
         state = "unique_value"
-        mock_uuid.return_value = state
+        mock_state.return_value = state
         auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
             "oauth2", oauth2_configuration
         )
