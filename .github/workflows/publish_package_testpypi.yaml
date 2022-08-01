@@ -1,10 +1,6 @@
 name: Publish to Test PyPI
 
 on:
-  # REMOVE THIS, JUST FOR DEBUGGING!!
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
