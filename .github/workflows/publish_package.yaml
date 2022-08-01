@@ -1,6 +1,10 @@
 name: Publish fidesctl
 
 on:
+  # REMOVE THIS, JUST FOR DEBUGGING!!
+  pull_request:
+    branches:
+      - main
   push:
     tags:
       - "*"
