@@ -1,5 +1,5 @@
 import { Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
-import debounce from "lodash.debounce";
+import { debounce } from "common/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,7 +10,7 @@ import {
   useGetAllPrivacyRequestsQuery,
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
-import { PrivacyRequest } from "./types";
+import { PrivacyRequest, PrivacyRequestParams } from "./types";
 
 interface RequestTableProps {
   requests?: PrivacyRequest[];
@@ -21,7 +21,11 @@ const useRequestTable = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
   const [cachedFilters, setCachedFilters] = useState(filters);
   const updateCachedFilters = useRef(
-    debounce((updatedFilters) => setCachedFilters(updatedFilters), 250)
+    debounce(
+      (updatedFilters: React.SetStateAction<PrivacyRequestParams>) =>
+        setCachedFilters(updatedFilters),
+      250
+    )
   );
   useEffect(() => {
     updateCachedFilters.current(filters);

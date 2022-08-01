@@ -20,6 +20,7 @@ module.exports = {
     // Handle module aliases
     "^@/components/(.*)$": "<rootDir>/components/$1",
     "^common/(.*)$": "<rootDir>/src/features/common/$1",
+    "^connection-type/(.*)$": "<rootDir>/src/features/connection-type/$1",
     "^datastore-connections/(.*)$":
       "<rootDir>/src/features/datastore-connections/$1",
     "^privacy-requests/(.*)$": "<rootDir>/src/features/privacy-requests/$1",

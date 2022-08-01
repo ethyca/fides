@@ -36,6 +36,7 @@ const UserManagementTableActions: React.FC = () => {
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
+          autoComplete="off"
           type="search"
           minWidth={200}
           placeholder="Search by Username"

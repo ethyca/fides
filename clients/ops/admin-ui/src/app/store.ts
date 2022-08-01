@@ -9,6 +9,10 @@ import {
   reducer as authReducer,
 } from "../features/auth";
 import {
+  connectionTypeApi,
+  reducer as connectionTypeReducer,
+} from "../features/connection-type";
+import {
   datastoreConnectionApi,
   reducer as datastoreConnectionReducer,
 } from "../features/datastore-connections";
@@ -30,6 +34,8 @@ const reducer = {
   [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
   datastoreConnections: datastoreConnectionReducer,
   auth: authReducer,
+  [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
+  connectionType: connectionTypeReducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -43,7 +49,8 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         privacyRequestApi.middleware,
         userApi.middleware,
         authApi.middleware,
-        datastoreConnectionApi.middleware
+        datastoreConnectionApi.middleware,
+        connectionTypeApi.middleware
       ),
     devTools: true,
     preloadedState,

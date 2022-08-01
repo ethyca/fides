@@ -145,6 +145,8 @@ const RequestFilters: React.FC = () => {
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
+          autoComplete="off"
+          autoFocus
           type="search"
           minWidth={200}
           placeholder="Search"
