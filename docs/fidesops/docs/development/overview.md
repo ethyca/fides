@@ -14,42 +14,17 @@ commands to give you different functionality.
 ### System Requirements 
 
 1. Install Docker: https://docs.docker.com/desktop/#download-and-install
-2. Install `make` locally (see Make on Homebrew (Mac), Make for Windows, or your preferred installation) 
-   1. `brew install make`
-3. [Create a fork of fidesops](https://docs.github.com/en/get-started/quickstart/fork-a-repo) 
-4. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
-5. `cd fidesops`
+2. [Create a fork of fidesops](https://docs.github.com/en/get-started/quickstart/fork-a-repo) 
+3. Clone your fork `git clone https://github.com/<your-fork-location>/fidesops.git`
+4. `cd fidesops`
 
-### Available make commands
-- `make server` - this spins up the Fastapi server and supporting resources (a Postgres database and a Redis cache), which you can visit at `http://0.0.0.0:8080`. Check out the docs at `http://0.0.0.0:8000/fidesops/`
-- `make integration-env` - spins up everything in make server, plus additional postgres, mongo, and mysql databases for you to execute privacy requests against.
-    - Try this out locally with our [fidesops Postman collection](../postman/Fidesops.postman_collection.json)
-    - `make integration-env datastores="mysql mariadb"`- brings up only mysql and mariadb datastores 
-- `make integration-shell` - spins up everything in make server, plus all Docker Compose specified datastores (Postgres, MySQL, MSSQL, Mongodb) and opens a server shell. This is most useful for running `pytest -k ...` commands within the integration shell to test connected datastores.
-- `make black`, `make mypy`, and `make pylint` - auto-formats code
-- `make check-all` - runs the CI checks locally and verifies that your code meets project standards
-- `make server-shell`-  opens a shell on the Docker container, from here you can run useful commands like:
-    - `ipython` - open a Python shell
-    - `cd src` then `alembic revision --autogenerate -m "adds enum for mysql connection type"` - auto-generates DB migration
-- `make pytest` - runs all unit tests except those that talk to integration databases
-- `make pytest-integration` - runs all integration tests, except those on external datastores.
-- `make pytest-integration datastores="postgres snowflake mssql"` - runs access integration tests for the Postgres, Snowflake and MSSQL environments. NB. This can be used to run integration tests on external datastores if those datastores are explicitly specified.
-- `make pytest-integration-external` - runs only external integration tests.
-- `make pytest-integration-erasure` - runs erasure integration tests.
-- `make reset-db` - tears down the fidesops postgres db, then recreates and re-runs migrations.
-- `make quickstart` - runs a quick, five minute quickstart that talks to the fidesops API to execute privacy requests
-- `make check-migrations` - verifies there are no un-run migrations 
-- `make docs-serve` - spins up just the docs, which you can visit at `http://0.0.0.0:8000/fidesops/`
-
-See [Makefile](https://github.com/ethyca/fidesops/blob/main/Makefile) for more options. 
-
-
+### Available `nox` commands
+An up-to-date list of build commands is available by running `nox` from within the project directory.
 #### Issues 
 
 - MSSQL: Known issues around connecting to MSSQL exist today for Apple M1 users. M1 users that wish to install `pyodbc` locally, please reference the workaround [here](https://github.com/mkleehammer/pyodbc/issues/846).
 
-- Package not found: When running `make server`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `make server-shell`,
-and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
+- Package not found: When running `nox -s dev`, if you get a `importlib.metadata.PackageNotFoundError: fidesops`, do `nox -s dev -- shell`, and then run `pip install -e .`. Verify fidesops is installed with `pip list`.
 
 
 ## Write your code

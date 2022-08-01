@@ -4,13 +4,13 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 
 ## Running Locally
 
-1. Run `make server` in top-level `fidesops` directory, then run `make user` and follow prompts to create a user. Note that password requires 8 or more characters, upper and lowercase chars, a number, and a symbol.
+1. Run `nox -s create_user` and follow prompts to create a user. Note that password requires 8 or more characters, upper and lowercase chars, a number, and a symbol.
 2. In a new shell, `cd` into `clients/ops/admin-ui`, then run `npm run dev`.
 3. Nav to `http://localhost:3000/` and logged in using created user. The `email` field is simply the `user` that was created, not a valid email address.
 
 ## Testing Entire Request Flow
 
-1. Run the `fidesops` server with `make server`.
+1. Run the `fidesops` server with `nox -s dev`.
 2. Create a policy key through the API (using the fidesops Postman collection).
 3. Configure the `clients/privacy-center` application to use that policy by adding it to the appropriate request config in `config/config.json`.
 4. Run the Privacy Request center using `npm run dev`.

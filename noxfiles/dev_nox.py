@@ -2,22 +2,29 @@
 import nox
 from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
-from run_infrastructure import run_infrastructure
+from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
 
 @nox.session()
 def dev(session: nox.Session) -> None:
-    """Spin up the entire application and open a development shell."""
+    """Spin up the application. Uses positional arguments for additional features."""
     build(session, "dev")
     session.notify("teardown")
-    datastores = session.posargs or None
+    datastores = [
+        datastore for datastore in session.posargs if datastore in ALL_DATASTORES
+    ] or None
+    open_shell = "shell" in session.posargs
     if not datastores:
-        # Run the webserver without integrations
-        session.run(*START_APP, external=True)
-        session.run(*RUN, "/bin/bash", external=True)
+        if open_shell:
+            session.run(*START_APP, external=True)
+            session.run(*RUN, "/bin/bash", external=True)
+        else:
+            session.run("docker-compose", "up", COMPOSE_SERVICE_NAME, external=True)
     else:
         # Run the webserver with additional datastores
-        run_infrastructure(open_shell=True, datastores=datastores)
+        run_infrastructure(
+            open_shell=open_shell, run_application=True, datastores=datastores
+        )
 
 
 @nox.session()

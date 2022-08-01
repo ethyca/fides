@@ -116,7 +116,7 @@ moments for the file to appear):
 ```
 
 ## Issues?
-- Is `make server` running?
+- Is `nox -s dev` running?
 - [Reference the full script here](https://github.com/ethyca/fidesdemo/blob/main/flaskr/fidesops.py) for pieces you may be missing.
     - This script has more detailed logging and error handling.
 - [Make sure your dataset is annotated properly](https://github.com/ethyca/fidesdemo/blob/main/fides_resources/flaskr_postgres_dataset.yml)

@@ -78,19 +78,19 @@ db.refresh()
 ```
 
 ### Connecting to the database
-When you run `make server` or `make server-shell`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
+When you run `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
 
 - Hostname: `localhost`
 - Port: `5432`
-- Username: see `database.USER` in `.fidesops.toml`
-- Password: see `database.PASSWORD` in `.fidesops.toml`
+- Username: see `database.user` in `.fidesops.toml`
+- Password: see `database.password` in `.fidesops.toml`
 
 
 ### Alembic migrations
 
 Some common Alembic commands are listed below. For a comprehensive guide see: https://alembic.sqlalchemy.org/en/latest/tutorial.html. 
 
-The commands will need to be run inside a shell on your Docker containers, which can be opened with `make server-shell`.
+The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev -- shell`.
 
 In the `/src/fidesops` directory:
 
@@ -129,6 +129,6 @@ Occasionally when developing you'll run into issues where it's beneficial to rem
 - Stop all running containers: `docker-compose down`
 - Delete all local containers: `docker rm -f $(docker ps -a -q)`
 - Delete all local Docker volumes: `docker volume rm $(docker volume ls -q)`
-- Remove temp. files, installed dependencies, all local Docker containers and all local Docker volumes: `make clean`
+- Remove temp. files, installed dependencies, all local Docker containers and all local Docker volumes: `nox -s clean`
 - Delete all stopped containers, all networks not used by a container, all dangling images, and all build cache: `docker system prune`
-- Recreate the project: `make compose-build`
+- Recreate the project: `nox -s "build(dev)"`

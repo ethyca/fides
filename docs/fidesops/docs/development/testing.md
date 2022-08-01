@@ -51,7 +51,7 @@ Fidesops has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture
 
 Fidesops uses `pytest` for unit testing. As with other `make` commands, you have the option to run `pytest` in command-line or in application shell:
 
-1. In shell: Once in the fidesops container shell (`make server-shell`, or `make integration-shell` if running integration tests), invoke `pytest` from the root fidesops directory:
+1. In shell: Enter the fidesops container shell using `nox -s dev -- shell`, or pass in the datastores you want to start for integration testing (i.e., `nox -s dev -- shell mssql mariadb`). You can then invoke `pytest` from the root fidesops directory:
 
 ```bash
 cd fidesops
@@ -61,7 +61,7 @@ pytest
 2. From regular command-line:
 
 ```bash
-make pytest
+nox -s pytest_unit
 ```
 
 ### Running specific tests
@@ -75,13 +75,10 @@ pytest tests/ops/integration/ -k api
 
 Other commands you may need are listed below. The full documentation can be found at: <https://docs.pytest.org/en/6.2.x/>.
 
-- Run all tests in a directory: `make pytestpath=path/to/dir/ pytest`
-- Run all tests in a file: `make pytestpath=path/to/file.py pytest`
-- Run all tests within a class within a file: `make pytestpath=path/to/file.py::ClassName pytest`
-- Run a specific test within a class within a file: `make pytestpath=path/to/file.py::ClassName::method_name pytest`
-- Run a specific test within a file: `make pytestpath=path/to/file.py::method_name pytest`
-- Run integration tests (access): `make pytest-integration`
-- Run integration tests (erasure): `make pytest-integration-erasure`
+- Run all unit tests, except those that talk to integration databases - `nox -s pytest_unit`
+- Run all integration tests, except those on external datastores - `nox -s pytest_integration`
+- Run all tests that rely on third-party databases and services - `nox -s pytest_integration_external`
+- Run all SaaS tests that rely on third-party databases and services - `nox -s pytest_saas`
 
 #### Debugging
 

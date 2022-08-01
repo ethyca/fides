@@ -5,7 +5,7 @@ To test the UI locally, clone the [FidesOps repository](https://github.com/ethyc
 
 ### Creating the root user
 
-In the top-level `fidesops` directory, run `make user`.
+In the top-level `fidesops` directory, run `nox -s create_user`.
 
 A series of prompts will walk you through creating a username and password. Passwords require 8 or more characters, upper and lowercase characters, a number, and a symbol.
 
@@ -37,7 +37,7 @@ echo NEXTAUTH_SECRET=`openssl rand -base64 32` >> .env.local
 
 ## Backend deployment
 
-Fidesops automatically serves a version of the UI when running `make server`.
+Fidesops automatically serves a version of the UI when running `nox -s dev`.
 
 To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
 
@@ -49,4 +49,4 @@ To deploy a full version of the UI from a backend, run the following from the ro
 
 This will build and place the Admin UI files into a location accessible by backend fidesops deployments.
 
-To test the UI, run `make server` from the root directory, and visit `http://0.0.0.0:8080/static/index.html`.
+To test the UI, run `nox -s dev` from the root directory, and visit `http://0.0.0.0:8080/index.html`.
