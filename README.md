@@ -16,18 +16,20 @@ _A part of the [greater Fides ecosystem](https://github.com/ethyca/fides)._
 ## :rocket: Quick Start
 If you're looking for a more detailed introduction to fidesops, we recommend following [our tutorial here](https://ethyca.github.io/fidesops/tutorial/). 
 
-Run the quickstart in your terminal to give fidesops a test drive:
+### System Requirements
 
-```
-Install Docker: https://docs.docker.com/desktop/#download-and-install
-Install Make: brew install make
-```
+- [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
+- [Python](https://www.python.org/downloads/) (3.8+)
+- [Nox](https://nox.thea.codes/en/stable/) (`pip install nox`)
+ 
+Run the quickstart in your terminal to give fidesops a test drive:
 
 ```bash
 git clone https://github.com/ethyca/fidesops.git
 cd fidesops
-make quickstart
+nox -s quickstart
 ```
+
 This runs fidesops in docker along with the necessary data stores.  It also spins up a test postgres
 database and a test mongo database to mimic your application.  This quickstart will walk you through executing privacy
 requests against your system by making a series of API requests to fidesops.

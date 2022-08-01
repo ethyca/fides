@@ -27,7 +27,7 @@ Documentation (including both concepts and API references) is built and deployed
 If you're using VS Code Dev Containers, the docs will automatically be available at `localhost:8000`, otherwise you'll need to run the following command:
 
 ```bash
-make docs-serve
+nox -s docs_serve
 ```
 
 You'll see a status update as the docs build, and then an announcement that they are available on `http://127.0.0.1:8000`.
