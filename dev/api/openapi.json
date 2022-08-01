@@ -3496,6 +3496,32 @@
                 "schema": {},
                 "example": [
                   {
+                    "dataset.name": "Fides Dataset",
+                    "system.name": "Fides System",
+                    "system.administrating_department": "Department or Business Function",
+                    "system.privacy_declaration.data_use.name": "Purpose of Processing",
+                    "system.joint_controller": "Joint Controller",
+                    "system.privacy_declaration.data_subjects.name": "Categories of Individuals",
+                    "unioned_data_categories": "Categories of Personal Data (Fides Taxonomy)",
+                    "system.privacy_declaration.data_use.recipients": "Categories of Recipients",
+                    "system.link_to_processor_contract": "Link to Contract with Processor",
+                    "third_country_combined": "Third Country Transfers",
+                    "system.third_country_safeguards": "Safeguards for Exceptional Transfers of Personal Data",
+                    "dataset.retention": "Retention Schedule",
+                    "organization.link_to_security_policy": "General Description of Security Measures",
+                    "system.data_responsibility_title": "Role or Responsibility",
+                    "system.privacy_declaration.data_use.legal_basis": "Article 6 lawful basis for processing personal data",
+                    "system.privacy_declaration.data_use.special_category": "Article 9 condition for processing special category data",
+                    "system.privacy_declaration.data_use.legitimate_interest": "Legitimate interests for the processing (if applicable)",
+                    "system.privacy_declaration.data_use.legitimate_interest_impact_assessment": "Link to record of legitimate interests assessment (if applicable)",
+                    "system.privacy_declaration.data_subjects.rights_available": "Rights available to individuals",
+                    "system.privacy_declaration.data_subjects.automated_decisions_or_profiling": "Existence of automated decision-making, including profiling (if applicable)",
+                    "dataset.source_name": "The source of the personal data (if applicable)",
+                    "system.data_protection_impact_assessment.is_required": "Data Protection Impact Assessment required?",
+                    "system.data_protection_impact_assessment.progress": "Data Protection Impact Assessment progress",
+                    "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment"
+                  },
+                  {
                     "system.name": "Demo Analytics System",
                     "system.data_responsibility_title": "Controller",
                     "system.administrating_department": "Engineering",
@@ -3511,9 +3537,9 @@
                     "system.data_protection_impact_assessment.is_required": "true",
                     "system.data_protection_impact_assessment.progress": "Complete",
                     "system.data_protection_impact_assessment.link": "https://example.org/analytics_system_data_protection_impact_assessment",
-                    "dataset.name": "N/A",
+                    "dataset.source_name": "N/A",
                     "third_country_combined": "GBR, USA, CAN",
-                    "unioned_data_categories": "user.provided.identifiable.contact",
+                    "unioned_data_categories": "user.contact",
                     "dataset.retention": "N/A",
                     "system.joint_controller": "",
                     "system.third_country_safeguards": "",
@@ -3563,7 +3589,7 @@
           "Generate"
         ],
         "summary": "Generate",
-        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
+        "description": "A multi-purpose endpoint to generate Fides resources based on existing\ninfrastructure\n\nCurrently generates Fides resources for the following:\n* AWS: Systems\n* Okta: Systems\n* DB: Datasets\n* BigQuery: Datasets\n\nIn the future, this will include options for other Systems & Datasets,\nexamples include:\n* Snowflake: Datasets\n\nAll production deployments should implement HTTPS for security purposes",
         "operationId": "generate_api_v1_generate_post",
         "requestBody": {
           "content": {
@@ -3654,6 +3680,245 @@
         }
       }
     },
+    "/api/v1/user/{user_id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User",
+        "description": "Returns a User based on an Id",
+        "operationId": "get_user_api_v1_user__user_id__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User",
+        "description": "Update a user given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "operationId": "update_user_api_v1_user__user_id__put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:update"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete User",
+        "description": "Deletes the User and associated ClientDetail if applicable.",
+        "operationId": "delete_user_api_v1_user__user_id__delete",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/user/{user_id}/reset-password": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update User Password",
+        "description": "Update a user's password given a `user_id`. By default this is limited to users\nupdating their own data.",
+        "operationId": "update_user_password_api_v1_user__user_id__reset_password_post",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "string"
+            },
+            "name": "user_id",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPasswordReset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:reset-password"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/logout": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User Logout",
+        "description": "logout the user by deleting its client",
+        "operationId": "user_logout_api_v1_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/validate": {
       "post": {
         "tags": [
@@ -3710,6 +3975,168 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Users",
+        "description": "Returns a paginated list of all users",
+        "operationId": "get_users_api_v1_user_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_UserResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:read"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create User",
+        "description": "Create a user given a username and password.",
+        "operationId": "create_user_api_v1_user_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "user:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "User Login",
+        "description": "Login the user by creating a client if it doesn't exist, and have that client\ngenerate a token.",
+        "operationId": "user_login_api_v1_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -3778,6 +4205,37 @@
         },
         "description": "The model for the connection config for AWS"
       },
+      "AccessToken": {
+        "title": "AccessToken",
+        "required": [
+          "access_token"
+        ],
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          }
+        },
+        "description": "A wrapper for the access_code returned upon successful authentication"
+      },
+      "BigQueryConfig": {
+        "title": "BigQueryConfig",
+        "required": [
+          "keyfile_creds"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "keyfile_creds": {
+            "$ref": "#/components/schemas/KeyfileCreds"
+          }
+        },
+        "description": "The model for the connection config for BigQuery"
+      },
       "ContactDetails": {
         "title": "ContactDetails",
         "type": "object",
@@ -3837,6 +4295,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -3902,6 +4367,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -3949,6 +4421,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4037,6 +4516,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4128,6 +4614,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4385,6 +4878,9 @@
               },
               {
                 "$ref": "#/components/schemas/DatabaseConfig"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryConfig"
               }
             ]
           },
@@ -4469,6 +4965,56 @@
         "type": "string",
         "description": "Determine whether or not defined rights are\nbeing included or excluded."
       },
+      "KeyfileCreds": {
+        "title": "KeyfileCreds",
+        "required": [
+          "project_id"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "private_key_id": {
+            "title": "Private Key Id",
+            "type": "string"
+          },
+          "private_key": {
+            "title": "Private Key",
+            "type": "string"
+          },
+          "client_email": {
+            "title": "Client Email",
+            "type": "string"
+          },
+          "client_id": {
+            "title": "Client Id",
+            "type": "string"
+          },
+          "auth_uri": {
+            "title": "Auth Uri",
+            "type": "string"
+          },
+          "token_uri": {
+            "title": "Token Uri",
+            "type": "string"
+          },
+          "auth_provider_x509_cert_url": {
+            "title": "Auth Provider X509 Cert Url",
+            "type": "string"
+          },
+          "client_x509_cert_url": {
+            "title": "Client X509 Cert Url",
+            "type": "string"
+          }
+        },
+        "description": "The model for BigQuery credential keyfiles."
+      },
       "LegalBasisEnum": {
         "title": "LegalBasisEnum",
         "enum": [
@@ -4531,6 +5077,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4609,6 +5162,40 @@
         },
         "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
       },
+      "Page_UserResponse_": {
+        "title": "Page[UserResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
       "Policy": {
         "title": "Policy",
         "required": [
@@ -4629,6 +5216,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -4808,6 +5402,13 @@
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
           },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "name": {
             "title": "Name",
             "type": "string",
@@ -4888,6 +5489,13 @@
             "type": "string",
             "description": "Defines the Organization that this resource belongs to.",
             "default": "default_organization"
+          },
+          "tags": {
+            "title": "Tags",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "name": {
             "title": "Name",
@@ -5012,12 +5620,157 @@
         },
         "description": "The SystemMetadata resource model.\n\nObject used to hold application specific metadata for a system"
       },
+      "UserCreate": {
+        "title": "UserCreate",
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "description": "Data required to create a FidesUser."
+      },
+      "UserCreateResponse": {
+        "title": "UserCreateResponse",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "description": "Response after creating a FidesUser"
+      },
+      "UserLogin": {
+        "title": "UserLogin",
+        "required": [
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "description": "Similar to UserCreate except we do not need the extra validation on\nusername and password."
+      },
+      "UserLoginResponse": {
+        "title": "UserLoginResponse",
+        "required": [
+          "user_data",
+          "token_data"
+        ],
+        "type": "object",
+        "properties": {
+          "user_data": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "token_data": {
+            "$ref": "#/components/schemas/AccessToken"
+          }
+        },
+        "description": "Similar to UserResponse except with an access token"
+      },
+      "UserPasswordReset": {
+        "title": "UserPasswordReset",
+        "required": [
+          "old_password",
+          "new_password"
+        ],
+        "type": "object",
+        "properties": {
+          "old_password": {
+            "title": "Old Password",
+            "type": "string"
+          },
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "description": "Contains both old and new passwords when resetting a password"
+      },
+      "UserResponse": {
+        "title": "UserResponse",
+        "required": [
+          "id",
+          "username",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "description": "Response after requesting a User"
+      },
+      "UserUpdate": {
+        "title": "UserUpdate",
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "last_name": {
+            "title": "Last Name",
+            "type": "string"
+          }
+        },
+        "description": "Data required to update a FidesopsUser"
+      },
       "ValidTargets": {
         "title": "ValidTargets",
         "enum": [
           "aws",
           "db",
-          "okta"
+          "okta",
+          "bigquery"
         ],
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"
@@ -5035,6 +5788,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AWSConfig"
+              },
+              {
+                "$ref": "#/components/schemas/BigQueryConfig"
               },
               {
                 "$ref": "#/components/schemas/OktaConfig"
@@ -5111,7 +5867,8 @@
         "title": "ValidationTarget",
         "enum": [
           "aws",
-          "okta"
+          "okta",
+          "bigquery"
         ],
         "type": "string",
         "description": "Allowed targets for the validate endpoint"
@@ -5182,6 +5939,17 @@
           }
         },
         "description": "The model for attributes which led to an evaluation violation"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2ClientCredentialsBearer": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "scopes": {},
+            "tokenUrl": "/oauth/token"
+          }
+        }
       }
     }
   }

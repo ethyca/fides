@@ -1292,6 +1292,26 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp" class="md-nav__link">
+    gcp
+  </a>
+  
+    <nav class="md-nav" aria-label="gcp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp-bigquery" class="md-nav__link">
+    bigquery
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1353,6 +1373,20 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-parse" class="md-nav__link">
     parse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-pull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-push" class="md-nav__link">
+    push
   </a>
   
 </li>
@@ -1420,13 +1454,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-status" class="md-nav__link">
     status
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidesctl-sync" class="md-nav__link">
-    sync
   </a>
   
 </li>
@@ -1890,6 +1917,26 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp" class="md-nav__link">
+    gcp
+  </a>
+  
+    <nav class="md-nav" aria-label="gcp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-generate-dataset-gcp-bigquery" class="md-nav__link">
+    bigquery
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1951,6 +1998,20 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-parse" class="md-nav__link">
     parse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-pull" class="md-nav__link">
+    pull
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fidesctl-push" class="md-nav__link">
+    push
   </a>
   
 </li>
@@ -2018,13 +2079,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#fidesctl-status" class="md-nav__link">
     status
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fidesctl-sync" class="md-nav__link">
-    sync
   </a>
   
 </li>
@@ -2128,7 +2182,9 @@ You're not viewing the latest version.
   --help             Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-apply">fidesctl apply</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+Deprecated in favor of `fidesctl push` command.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl apply [OPTIONS] [MANIFESTS_DIR]
@@ -2347,6 +2403,42 @@ It will need to be run again if the database schema changes.
   --include-null            Includes attributes that would otherwise be null.
   --help                    Show this message and exit.
 </code></pre></div></td></tr></table></div>
+<h5 id="fidesctl-generate-dataset-gcp">fidesctl generate dataset gcp</h5>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl Dataset resources for Google Cloud Platform
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset gcp [OPTIONS] COMMAND [ARGS]...
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h6 id="fidesctl-generate-dataset-gcp-bigquery">fidesctl generate dataset gcp bigquery</h6>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to a BigQuery dataset directly via a SQLAlchemy connection and
+generate a dataset manifest file that consists of every schema/table/field.
+A path to a google authorization keyfile can be supplied as an option, or a
+credentials reference to fidesctl config.
+
+This is a one-time operation that does not track the state of the dataset.
+It will need to be run again if the dataset schema changes.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl generate dataset gcp bigquery [OPTIONS] DATASET_NAME OUTPUT_FILENAME
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials defined within fidesctl config
+  --keyfile-path TEXT
+  --include-null         Includes attributes that would otherwise be null.
+  --help                 Show this message and exit.
+</code></pre></div></td></tr></table></div>
 <h4 id="fidesctl-generate-system">fidesctl generate system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate fidesctl System resources
 </code></pre></div></td></tr></table></div>
@@ -2368,7 +2460,7 @@ It will need to be run again if the database schema changes.
 tracked resource.
 Credentials can be supplied as options, a credentials
 reference to fidesctl config, or boto3 environment configuration.
-Tracked resources: [Redshift, RDS]
+Tracked resources: [Redshift, RDS, DynamoDb, S3]
 
 This is a one-time operation that does not track the state of the aws resources.
 It will need to be run again if the tracked resources change.
@@ -2496,6 +2588,44 @@ If the taxonomy is invalid, this command prints the error messages and triggers 
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -v, --verbose  Enable verbose output.
   --help         Show this message and exit.
 </code></pre></div></td></tr></table></div>
+<h3 id="fidesctl-pull">fidesctl pull</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
+
+Alternatively, with the &quot;--all&quot; flag all resources from the server will be pulled
+down into a local file.
+
+The pull is aborted if there are unstaged or untracked files in the manifests dir.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl pull [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources TEXT  Pulls all locally missing resources from the
+                            server into this file.
+  --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h3 id="fidesctl-push">fidesctl push</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Validate local manifest files and persist any changes via the API server.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl push [OPTIONS] [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Prevent the persistance of any changes.
+  --diff  Include any changes between server and local resources in the
+          command output
+  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
 <h3 id="fidesctl-scan">fidesctl scan</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan external resource coverage against fidesctl resources
 </code></pre></div></td></tr></table></div>
@@ -2570,7 +2700,7 @@ under the stated threshold.
 <span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account and compares tracked resources to existing systems.
 Credentials can be supplied as options, a credentials reference to fidesctl
 config, or boto3 environment configuration.
-Tracked resources: [Redshift, RDS]
+Tracked resources: [Redshift, RDS, DynamoDb, S3]
 
 Outputs missing resources and has a non-zero exit if coverage is
 under the stated threshold.
@@ -2659,15 +2789,6 @@ under the stated threshold.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl status [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fidesctl-sync">fidesctl sync</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files by their fides_key to match their server versions.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl sync [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
