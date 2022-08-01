@@ -41,6 +41,7 @@ from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
+from .fixtures.saas.request_override.mailchimp_override_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *

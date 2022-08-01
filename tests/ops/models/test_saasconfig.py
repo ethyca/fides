@@ -4,7 +4,8 @@ import pytest
 from pydantic import ValidationError
 
 from fidesops.graph.config import CollectionAddress, FieldAddress
-from fidesops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
+from fidesops.schemas.dataset import FidesopsDatasetReference
+from fidesops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 
 
 @pytest.mark.unit_saas
@@ -14,10 +15,66 @@ def test_saas_configs(saas_example_config) -> None:
 
 
 @pytest.mark.unit_saas
-def test_saas_request_without_method():
+def test_saas_request_without_method_or_path():
     with pytest.raises(ValidationError) as exc:
         SaaSRequest(path="/test")
-    assert "field required" in str(exc.value)
+    assert "A request must specify a method" in str(exc.value)
+
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(method="GET")
+    assert "A request must specify a path" in str(exc.value)
+
+
+@pytest.mark.unit_saas
+def test_saas_request_override():
+    """
+    Verify that valid request configs with override function
+    can be deserialized into SaaSRequest
+    """
+    SaaSRequest(request_override="test_override")
+
+    pv = ParamValue(
+        name="test_param",
+        references=[
+            FidesopsDatasetReference(
+                dataset="test_dataset", field="test_field", direction="from"
+            )
+        ],
+    )
+    SaaSRequest(request_override="test_override", param_values=[pv])
+
+    SaaSRequest(
+        request_override="test_override",
+        param_values=[pv],
+        grouped_inputs=["test_param"],
+    )
+
+
+@pytest.mark.unit_saas
+def test_saas_request_override_invalid_properties():
+    """
+    Verify that invalid request configs with override function
+    and various additional, unallowed properties are properly rejected
+    """
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(request_override="test_override", path="/test")
+    assert "Invalid properties" in str(exc.value) and "path" in str(exc.value)
+
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(request_override="test_override", method="GET")
+    assert "Invalid properties" in str(exc.value) and "method" in str(exc.value)
+
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(request_override="test_override", path="/test", method="GET")
+    assert (
+        "Invalid properties" in str(exc.value)
+        and "path" in str(exc.value)
+        and "method" in str(exc.value)
+    )
+
+    with pytest.raises(ValidationError) as exc:
+        SaaSRequest(request_override="test_override", body="testbody")
+    assert "Invalid properties" in str(exc.value) and "body" in str(exc.value)
 
 
 @pytest.mark.unit_saas
