@@ -8,6 +8,7 @@ from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import FidesopsException, OAuth2TokenException
+from fidesops.core.config import config
 from fidesops.models.authentication_request import AuthenticationRequest
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.schemas.saas.saas_config import ClientConfig, SaaSRequest
@@ -75,6 +76,24 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
         return request
+
+    @staticmethod
+    def _generate_state() -> str:
+        """
+        Generates a string value to associate the authentication request
+        with an eventual OAuth2 callback response.
+
+        If an oauth_instance name is defined then the name is added as a
+        prefix to the generated state. The state prefix can be used by a
+        proxy server to route the callback response to a specific Fidesops
+        instance. This functionality is not part of the OAuth2 specification
+        but it can be used for local testing of OAuth2 workflows.
+        """
+
+        state = str(uuid4())
+        if config.oauth_instance:
+            state = f"{config.oauth_instance}-{state}"
+        return state
 
     @staticmethod
     def _close_to_expiration(
@@ -223,7 +242,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         self._check_required_secrets(connection_config)
 
         # generate the state that will be used to link this authorization request to this connector
-        state = str(uuid4())
+        state = self._generate_state()
         AuthenticationRequest.create_or_update(
             db, data={"connection_key": connection_config.key, "state": state}
         )
