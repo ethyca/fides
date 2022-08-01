@@ -28,9 +28,14 @@ jobs:
           cd clients/admin-ui
           npm run prod-export
 
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          
       - name: Install Twine
         run: pip install twine
-
+        
       - name: Twine Upload
         run: |
           python setup.py sdist bdist_wheel 
