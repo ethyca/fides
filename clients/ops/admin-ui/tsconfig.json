@@ -14,6 +14,7 @@
     "noEmit": true,
     "paths": {
       "common/*": ["src/features/common/*"],
+      "connection-type/*": ["src/features/connection-type/*"],
       "datastore-connections/*": ["src/features/datastore-connections/*"],
       "privacy-requests/*": ["src/features/privacy-requests/*"],
       "subject-request/*": ["src/features/subject-request/*"],

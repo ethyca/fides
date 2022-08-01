@@ -7,16 +7,18 @@ import {
   MenuItem,
   MenuList,
   Text,
+  Tooltip,
 } from "@fidesui/react";
 import { useState } from "react";
 
 import { ArrowDownLineIcon } from "../Icon";
+import { ItemOption } from "./types";
 
 type SelectDropdownProps = {
   /**
    * List of key/value pair items
    */
-  list: Map<string, string>;
+  list: Map<string, ItemOption>;
   /**
    * Parent callback event handler invoked when selected value has changed
    */
@@ -25,6 +27,10 @@ type SelectDropdownProps = {
    * Placeholder
    */
   label: string;
+  /**
+   * Display the Clear button. Default value is true.
+   */
+  hasClear?: boolean;
   /**
    * Default value marked for selection
    */
@@ -36,6 +42,7 @@ type SelectDropdownProps = {
 };
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
+  hasClear = true,
   label,
   list,
   onChange,
@@ -57,7 +64,9 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
     setIsOpen(true);
   };
 
-  const selectedText = [...list].find(([, v]) => v === selectedValue)?.[0];
+  const selectedText = [...list].find(
+    ([, option]) => option.value === selectedValue
+  )?.[0];
 
   return (
     <Box>
@@ -74,9 +83,6 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
           _active={{
             bg: "none",
           }}
-          _focus={{
-            bg: "none",
-          }}
           _hover={{
             bg: "none",
           }}
@@ -85,37 +91,48 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
         </MenuButton>
         {isOpen ? (
           <MenuList lineHeight="1rem" p="0">
-            <Flex
-              borderBottom="1px"
-              borderColor="gray.200"
-              cursor="auto"
-              p="8px"
-              _focus={{
-                bg: "none",
-              }}
-            >
-              <Button onClick={handleClear} size="xs" variant="outline">
-                Clear
-              </Button>
-            </Flex>
-            {/* MenuItems are not rendered unless Menu is open */}
-            {[...list].sort().map(([key, value]) => (
-              <MenuItem
-                color={
-                  selectedValue === value ? "complimentary.500" : undefined
-                }
-                key={key}
-                onClick={() => onChange(value)}
-                paddingTop="10px"
-                paddingRight="8.5px"
-                paddingBottom="10px"
-                paddingLeft="8.5px"
-                _focus={{
-                  bg: "gray.100",
-                }}
+            {hasClear && (
+              <Flex
+                borderBottom="1px"
+                borderColor="gray.200"
+                cursor="auto"
+                p="8px"
               >
-                <Text fontSize="0.75rem">{key}</Text>
-              </MenuItem>
+                <Button onClick={handleClear} size="xs" variant="outline">
+                  Clear
+                </Button>
+              </Flex>
+            )}
+            {/* MenuItems are not rendered unless Menu is open */}
+            {[...list].sort().map(([key, option]) => (
+              <Tooltip
+                aria-label={option.toolTip}
+                hasArrow
+                label={option.toolTip}
+                key={key}
+                placement="auto-start"
+                openDelay={500}
+                shouldWrapChildren
+              >
+                <MenuItem
+                  color={
+                    selectedValue === option.value
+                      ? "complimentary.500"
+                      : undefined
+                  }
+                  isDisabled={option.isDisabled}
+                  onClick={() => onChange(option.value)}
+                  paddingTop="10px"
+                  paddingRight="8.5px"
+                  paddingBottom="10px"
+                  paddingLeft="8.5px"
+                  _focus={{
+                    bg: "gray.100",
+                  }}
+                >
+                  <Text fontSize="0.75rem">{key}</Text>
+                </MenuItem>
+              </Tooltip>
             ))}
           </MenuList>
         ) : null}

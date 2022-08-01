@@ -6,8 +6,8 @@ import { capitalize } from "../common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import {
+  CONNECTION_TYPE_LOGO_MAP,
   ConnectionType,
-  ConnectionTypeLogoMap,
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
@@ -77,7 +77,7 @@ const useConnectionGridItem = () => {
   };
 
   const getImageSrc = (data: DatastoreConnection): string => {
-    const item = [...ConnectionTypeLogoMap].find(
+    const item = [...CONNECTION_TYPE_LOGO_MAP].find(
       ([k]) =>
         (data.connection_type.toString() !== ConnectionType.SAAS &&
           data.connection_type.toString() === k) ||

@@ -1,4 +1,4 @@
-import { Input, InputGroup, InputLeftElement, Stack } from "@fidesui/react";
+import { Flex, Input, InputGroup, InputLeftElement } from "@fidesui/react";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -27,15 +27,17 @@ const useConstantFilters = () => {
 const ConnectionFilters: React.FC = () => {
   const { handleSearchChange, search } = useConstantFilters();
   return (
-    <Stack direction="row" spacing={4} mb={6}>
-      <InputGroup size="sm">
+    <Flex minWidth="max-content" alignItems="center" gap="4" mb={6}>
+      <InputGroup size="sm" minWidth="308px">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
+          autoComplete="off"
+          autoFocus
           type="search"
           minWidth={200}
-          placeholder="Search"
+          placeholder="Search datastore name or description"
           size="sm"
           borderRadius="md"
           value={search}
@@ -47,7 +49,7 @@ const ConnectionFilters: React.FC = () => {
       <SystemTypeFilter />
       <TestingStatusFilter />
       <DisabledStatusFilter />
-    </Stack>
+    </Flex>
   );
 };
 

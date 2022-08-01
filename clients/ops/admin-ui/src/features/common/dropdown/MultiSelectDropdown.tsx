@@ -112,9 +112,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
             _active={{
               bg: "none",
             }}
-            _focus={{
-              bg: "none",
-            }}
             _hover={{
               bg: "none",
             }}

@@ -59,15 +59,7 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
 
   return (
     <MenuList lineHeight="1rem" p="0">
-      <Flex
-        borderBottom="1px"
-        borderColor="gray.200"
-        cursor="auto"
-        p="8px"
-        _focus={{
-          bg: "none",
-        }}
-      >
+      <Flex borderBottom="1px" borderColor="gray.200" cursor="auto" p="8px">
         <Button onClick={handleClear} size="xs" variant="outline">
           Clear
         </Button>

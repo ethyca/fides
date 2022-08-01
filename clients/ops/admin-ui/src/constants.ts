@@ -60,6 +60,7 @@ export const INDEX_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const CONNECTION_ROUTE = "/connection";
+export const CONNECTION_TYPE_ROUTE = "/connection_type";
 
 // UI ROUTES
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
