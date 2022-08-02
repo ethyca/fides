@@ -47,7 +47,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
         ```sh
         # fides on main
-        $ git describe --abbrev=0 --tags
+        git describe --abbrev=0 --tags
 
         #=> 1.2.3
         ```
@@ -56,7 +56,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
         ```sh
         #fides on main
-        $ git checkout 1.2.3
+        git checkout 1.2.3
 
         #=> Note: switching to '1.2.3'.
         #
@@ -82,7 +82,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
     >
     > ```sh
     > # fides on main
-    > $ git checkout $(git describe --abbrev=0 --tags)
+    > git checkout $(git describe --abbrev=0 --tags)
     >
     > #=> Note: switching to '1.2.3'.
     > #
@@ -108,7 +108,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
     ```sh
     # fides on tags/1.2.3
-    $ git checkout -b release-v1.2.4
+    git checkout -b release-v1.2.4
 
     #=> Switched to a new branch 'release-v1.2.4'
     ```
@@ -119,7 +119,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
     ```sh
     # fides on release-v1.2.4
-    $ git checkout -b prepare-release-v1.2.4
+    git checkout -b prepare-release-v1.2.4
 
     #=> Switched to a new branch 'prepare-release-v1.2.4'
     ```
@@ -128,7 +128,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
     ```sh
     # fides on prepare-release-v1.2.4
-    $ git cherry-pick <commit>...
+    git cherry-pick <commit>...
     ```
 
 1. Copy the `Unreleased` section of `CHANGELOG.md` and paste above the release being patched
@@ -150,10 +150,10 @@ Occasionally it will be pertinent to create a patch release that does not contai
 
     1. Checkout the `main` branch, and update the local repository:
         ```sh
-        $ git checkout main
+        git checkout main
         #=> Switched to branch 'main'...
 
-        $ git pull
+        git pull
         ```
     1. Merge the new release tag into `main`:
         ```sh
