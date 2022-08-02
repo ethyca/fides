@@ -42,7 +42,7 @@ A full list of attributes available to set on the Privacy Request can be found i
 
 ## Approve and deny Privacy Requests
 
-Privacy Requests are executed immediately by default. To review Privacy Requests before they are executed, set the `REQUIRE_MANUAL_REQUEST_APPROVAL` variable in your `fidesops.toml` to `TRUE`.
+Privacy Requests are executed immediately by default. To review Privacy Requests before they are executed, set the `require_manual_request_approval` variable in your `fidesops.toml` to `TRUE`.
 
 To process Privacy Requests, send a list of Privacy Request IDs to the `approve` or `deny` endpoints. Both endpoints support processing requests in bulk.
 

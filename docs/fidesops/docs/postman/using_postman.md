@@ -17,7 +17,7 @@ A minimal Postman collection is included to assist in setting up your fidesops c
 
       ![Open Fidesops Variables](../img/postman_images/open_fidesops_variables.png)
 
-5. Add your `OAUTH_ROOT_CLIENT_ID` and `OAUTH_ROOT_CLIENT_SECRET` under `CURRENT VALUE`.  
+5. Add your `oauth_root_client_id` and `oauth_root_client_secret` under `CURRENT VALUE`.  
       - `fidesopsadmin` and `fidesopsadminsecret` are default configurations for testing, found in your `fidesops.toml`. Add the appropriate values for your instance if they differ.
       - **Important:** Click `Save`!
 

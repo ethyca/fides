@@ -24,7 +24,7 @@ To opt out of analytics, set either the following fidesops environment variable 
 
 | Variable | Default | Use | 
 |---|---|---|
-| `ANALYTICS_OPT_OUT` | False | Include in your `fidesops.toml` file. | 
+| `analytics_opt_out` | False | Include in your `fidesops.toml` file. | 
 | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | False | Include in your environment variables. |
 
 For more information, see the fidesops [configuration guide](../guides/configuration_reference.md).
