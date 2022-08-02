@@ -59,6 +59,7 @@ The types of changes are:
 
 * Added zendesk and salesforce connection pages [#908](https://github.com/ethyca/fidesops/pull/908)
 * Added nox command documentation [#981](https://github.com/ethyca/fidesops/pull/981)
+* Updated references to `fidesops.toml` to use lowercase values [#952](https://github.com/ethyca/fidesops/pull/952)
 
 ### Fixed
 
