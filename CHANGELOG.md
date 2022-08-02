@@ -59,6 +59,7 @@ The types of changes are:
 
 ### Docs
 
+* Minor release documentation now reflects the desired patch release process [#955](https://github.com/ethyca/fides/pull/955)
 
 ### Fixed
 
