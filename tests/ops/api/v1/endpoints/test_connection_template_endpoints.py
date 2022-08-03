@@ -39,7 +39,7 @@ class TestGetConnections:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
-        data = resp.json()
+        data = resp.json()["items"]
         assert resp.status_code == 200
         assert len(data) == 19
 
@@ -62,7 +62,7 @@ class TestGetConnections:
 
         resp = api_client.get(url + "?search=str", headers=auth_header)
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 1
         assert data[0] == {
             "identifier": SaaSType.stripe.value,
@@ -71,7 +71,7 @@ class TestGetConnections:
 
         resp = api_client.get(url + "?search=re", headers=auth_header)
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 3
         assert data == [
             {
@@ -93,12 +93,12 @@ class TestGetConnections:
 
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 11
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 8
 
     def test_search_system_type_and_connection_type(
@@ -108,14 +108,14 @@ class TestGetConnections:
 
         resp = api_client.get(url + "?search=str&system_type=saas", headers=auth_header)
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 1
 
         resp = api_client.get(
             url + "?search=re&system_type=database", headers=auth_header
         )
         assert resp.status_code == 200
-        data = resp.json()
+        data = resp.json()["items"]
         assert len(data) == 2
 
 
