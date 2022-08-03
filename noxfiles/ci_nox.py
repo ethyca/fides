@@ -1,14 +1,21 @@
 """Contains the nox sessions used during CI checks."""
 import nox
-from constants_nox import CI_ARGS, COMPOSE_SERVICE_NAME, RUN_NO_DEPS, START_APP
-from docker_nox import build
-from run_infrastructure import run_infrastructure
+from constants_nox import (
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+    IMAGE_LOCAL,
+    RUN,
+    RUN_NO_DEPS,
+    START_APP,
+)
+from run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from utils_nox import db
 
 
 @nox.session()
 def ci_suite(session: nox.Session) -> None:
     """
-    Runs all of the CI checks, except for 'pytest_external'.
+    Runs the CI check suite.
 
     Excludes external tests so that no additional secrets/tooling are required.
     """
@@ -21,6 +28,7 @@ def ci_suite(session: nox.Session) -> None:
     session.notify("mypy")
     session.notify("pylint")
     session.notify("check_install")
+    session.notify("check_migrations")
     session.notify("pytest_unit")
     session.notify("pytest_integration")
     session.notify("teardown")
@@ -82,9 +90,20 @@ def xenon(session: nox.Session) -> None:
 
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fidesops is installed."""
-    build(session, "test")
-    session.run("docker", "run", "ethyca/fidesops:local", "fidesops", external=True)
+    """Check that fidesops is installed in the container."""
+    session.run("docker", "run", IMAGE_LOCAL, "fidesops", external=True)
+
+
+@nox.session()
+def check_migrations(session: nox.Session) -> None:
+    """Check for missing migrations."""
+    db(session, "init")
+    check_migration_command = (
+        "python",
+        "-c",
+        "from fidesops.db.database import check_missing_migrations; from fidesops.core.config import config; check_missing_migrations(config.database.sqlalchemy_database_uri);",
+    )
+    session.run(*RUN, *check_migration_command, external=True)
 
 
 # Pytest
@@ -96,6 +115,7 @@ def pytest_unit(session: nox.Session) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        OPS_TEST_DIR,
         "-m",
         "not integration and not integration_external and not integration_saas",
     )
@@ -106,7 +126,12 @@ def pytest_unit(session: nox.Session) -> None:
 def pytest_integration(session: nox.Session) -> None:
     """Runs tests."""
     session.notify("teardown")
-    run_infrastructure(run_tests=True, analytics_opt_out=True, datastores=[])
+    run_infrastructure(
+        run_tests=True,
+        analytics_opt_out=True,
+        datastores=[],
+        pytest_path=OPS_TEST_DIR,
+    )
 
 
 @nox.session()
@@ -132,6 +157,7 @@ def pytest_integration_external(session: nox.Session) -> None:
         CI_ARGS,
         COMPOSE_SERVICE_NAME,
         "pytest",
+        OPS_TEST_DIR,
         "-m",
         "integration_external",
     )
@@ -157,6 +183,7 @@ def pytest_saas(session: nox.Session) -> None:
         CI_ARGS,
         COMPOSE_SERVICE_NAME,
         "pytest",
+        OPS_TEST_DIR,
         "-m",
         "integration_saas",
     )

@@ -135,7 +135,9 @@ if config.admin_ui.enabled:
     def check_if_admin_ui_index_exists() -> None:
         if not WEBAPP_INDEX.is_file():
             WEBAPP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-            with open(WEBAPP_DIRECTORY / "index.html", "w") as index_file:
+            with open(
+                WEBAPP_DIRECTORY / "index.html", "w", encoding="utf-8"
+            ) as index_file:
                 heading = "<h1>No src/fidesops/build/static/index.html found</h1>"
                 help_message = "<h2>A docker-compose.yml volume may be overwriting the built in Admin UI files</h2>"
                 index_file.write(f"{heading}{help_message}")
@@ -207,7 +209,7 @@ def start_webserver() -> None:
 
     if not config.execution.worker_enabled:
         logger.info("Starting worker...")
-        subprocess.Popen(["fidesops", "worker"])
+        subprocess.Popen(["fidesops", "worker"])  # pylint: disable=consider-using-with
 
     logger.info("Starting web server...")
     uvicorn.run(

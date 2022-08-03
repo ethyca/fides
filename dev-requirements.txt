@@ -1,13 +1,13 @@
 black==22.6.0
 Faker==13.15.1
 GitPython==3.1.27
-isort
+isort==5.10.1
 mypy==0.971
 nox==2022.1.7
 packaging==21.3
 pdbpp
 pre-commit==2.20.0
-pylint==2.6.0
+pylint==2.14.5
 pytest-cov==3.0.0
 pytest-env==0.6.2
 pytest==6.2.2
