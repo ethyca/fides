@@ -1,12 +1,13 @@
 import { Box, Flex, Text } from "@fidesui/react";
+import { GreenCheckCircle } from "common/Icon";
+import { PrivacyRequest } from "privacy-requests/types";
 import React from "react";
 
-import { GreenCheckCircle } from "../common/Icon";
-import { PrivacyRequest } from "../privacy-requests/types";
+import { EventData } from "./EventDetails";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequest;
-  setEventDetails: Function;
+  setEventDetails: (d: EventData) => void;
 };
 
 const ActivityTimeline = ({
@@ -15,11 +16,7 @@ const ActivityTimeline = ({
 }: ActivityTimelineProps) => {
   const { results } = subjectRequest;
 
-  const resultKeys = [
-    "postgres_example",
-    "postgres_example",
-    "postgres_example",
-  ];
+  const resultKeys = results ? Object.keys(results) : [];
 
   const timelineEntries = resultKeys.map((key, index) => (
     <Box key={key}>
@@ -51,7 +48,10 @@ const ActivityTimeline = ({
         ml={6}
         mb={7}
         onClick={() => {
-          setEventDetails(results![key]);
+          setEventDetails({
+            key,
+            logs: results![key],
+          });
         }}
       >
         View Details

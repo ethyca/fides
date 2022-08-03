@@ -6,8 +6,8 @@ enum TooltipText {
   COPIED = "Copied",
 }
 
-const useClipboardButton = (requestId: string) => {
-  const { onCopy } = useClipboard(requestId);
+const useClipboardButton = (copyText: string) => {
+  const { onCopy } = useClipboard(copyText);
 
   const [highlighted, setHighlighted] = useState(false);
   const [tooltipText, setTooltipText] = useState(TooltipText.COPY);
@@ -39,10 +39,10 @@ const useClipboardButton = (requestId: string) => {
 };
 
 type ClipboardButtonProps = {
-  requestId: string;
+  copyText: string;
 };
 
-const ClipboardButton = ({ requestId }: ClipboardButtonProps) => {
+const ClipboardButton = ({ copyText }: ClipboardButtonProps) => {
   const {
     tooltipText,
     highlighted,
@@ -51,7 +51,7 @@ const ClipboardButton = ({ requestId }: ClipboardButtonProps) => {
     handleMouseEnter,
     handleMouseLeave,
     setTooltipText,
-  } = useClipboardButton(requestId);
+  } = useClipboardButton(copyText);
 
   const iconColor = !highlighted ? "gray.600" : "complimentary.500";
 
