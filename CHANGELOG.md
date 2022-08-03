@@ -37,17 +37,12 @@ The types of changes are:
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
-* Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
 * Updated the python docker base image from slim-buster to slim-bullseye [928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [928](https://github.com/ethyca/fidesops/pull/928)
 * Serve admin UI by default [#906](https://github.com/ethyca/fidesops/pull/936)
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
 * Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
 * Updated the docs docker base image to be consistent with the fidesops image [949](https://github.com/ethyca/fidesops/pull/949)
-
-### Developer Experience
-
-* When releases are published, dispatch a repository webhook event to ethyca/fidesops-plus [#945](https://github.com/ethyca/fidesops/pull/945)
 
 ### Breaking Changes
 
@@ -57,6 +52,10 @@ The types of changes are:
 
 * Fix randomly failing mssql integration tests [918](https://github.com/ethyca/fidesops/pull/918)
 * Update the way `make clean` works [#767](https://github.com/ethyca/fidesops/pull/767)
+* When releases are published, dispatch a repository webhook event to ethyca/fidesops-plus [#945](https://github.com/ethyca/fidesops/pull/945)
+* Added `nox` commands to replace the `Makefile` [#919](https://github.com/ethyca/fidesops/pull/919)
+* GitHub Actions Workflows leverage `nox` commands [#966](https://github.com/ethyca/fidesops/pull/966)
+* The `docker-compose.yml` file no longer handles builds [#966](https://github.com/ethyca/fidesops/pull/966)
 
 ### Docs
 

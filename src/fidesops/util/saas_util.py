@@ -24,7 +24,7 @@ FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 def load_config(filename: str) -> Dict:
     """Loads the saas config from the yaml file"""
     yaml_file = load_file([filename])
-    with open(yaml_file, "r") as file:
+    with open(yaml_file, "r", encoding="utf-8") as file:
         return yaml.safe_load(file).get("saas_config", [])
 
 

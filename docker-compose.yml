@@ -1,9 +1,6 @@
 services:
   webserver:
-    container_name: webserver
-    build:
-      context: .
-      target: dev
+    image: ethyca/fidesops:local
     depends_on:
       - db
       - redis
@@ -60,10 +57,7 @@ services:
       - "0.0.0.0:6379:6379"
 
   worker:
-    container_name: worker
-    build:
-      context: .
-      target: dev
+    image: ethyca/fidesops:local
     command: fidesops worker
     depends_on:
       redis:
