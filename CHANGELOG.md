@@ -30,6 +30,7 @@ The types of changes are:
 * Add a Connection - Select a connector to configure (front end) [#760] (https://github.com/ethyca/fidesops/pull/987)
 * Add a Connection - Front End layout structure [#866] (https://github.com/ethyca/fidesops/pull/987)
 * Enable python function overrides for SaaS connector request execution [#986](https://github.com/ethyca/fidesops/pull/986)
+* Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 
 ### Changed
 
