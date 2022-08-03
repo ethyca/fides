@@ -78,31 +78,32 @@ Occasionally it will be pertinent to create a patch release that does not contai
         # HEAD is now at 0123abcd Commit Message
         ```
 
-    > Pro tip: This can be combined into a single command:
-    >
-    > ```sh
-    > # fides on main
-    > git checkout $(git describe --abbrev=0 --tags)
-    >
-    > #=> Note: switching to '1.2.3'.
-    > #
-    > # You are in 'detached HEAD' state. You can look around, make experimental
-    > # changes and commit them, and you can discard any commits you make in this
-    > # state without impacting any branches by switching back to a branch.
-    > #
-    > # If you want to create a new branch to retain commits you create, you may
-    > # do so (now or later) by using -c with the switch command. Example:
-    > #
-    > # git switch -c <new-branch-name>
-    > #
-    > # Or undo this operation with:
-    > #
-    > # git switch -
-    > #
-    > # Turn off this advice by setting config variable advice.detachedHead to false
-    > #
-    > # HEAD is now at 0123abcd Commit Message
-    > ```
+    !!! tip
+        This can be combined into a single command:
+
+        ```sh
+        # fides on main
+        git checkout $(git describe --abbrev=0 --tags)
+
+        #=> Note: switching to '1.2.3'.
+        #
+        # You are in 'detached HEAD' state. You can look around, make experimental
+        # changes and commit them, and you can discard any commits you make in this
+        # state without impacting any branches by switching back to a branch.
+        #
+        # If you want to create a new branch to retain commits you create, you may
+        # do so (now or later) by using -c with the switch command. Example:
+        #
+        # git switch -c <new-branch-name>
+        #
+        # Or undo this operation with:
+        #
+        # git switch -
+        #
+        # Turn off this advice by setting config variable advice.detachedHead to false
+        #
+        # HEAD is now at 0123abcd Commit Message
+        ```
 
 1. Create a new branch from the `HEAD` commit of the most recent release's tag, called `release-v<tag>`
 
@@ -146,7 +147,8 @@ Occasionally it will be pertinent to create a patch release that does not contai
 1. Publish the release
 1. Merge the new release tag into `main`
 
-    > Note: Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
+    !!! warning
+        Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
 
     1. Checkout the `main` branch, and update the local repository:
         ```sh
