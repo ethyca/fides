@@ -1,16 +1,16 @@
 import { Divider, Flex, Heading } from "@fidesui/react";
+import { PrivacyRequest } from "privacy-requests/types";
 import React, { useState } from "react";
 
-import { ExecutionLog, PrivacyRequest } from "../privacy-requests/types";
 import ActivityTimeline from "./ActivityTimeline";
-import EventDetails from "./EventDetails";
+import EventDetails, { EventData } from "./EventDetails";
 
 type EventsAndLogsProps = {
   subjectRequest: PrivacyRequest;
 };
 
 const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
-  const [eventDetails, setEventDetails] = useState<null | ExecutionLog[]>(null);
+  const [eventData, setEventData] = useState<EventData>();
 
   return (
     <>
@@ -21,9 +21,9 @@ const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
       <Flex mt={3}>
         <ActivityTimeline
           subjectRequest={subjectRequest}
-          setEventDetails={setEventDetails}
+          setEventDetails={setEventData}
         />
-        {eventDetails ? <EventDetails eventDetails={eventDetails} /> : null}
+        <EventDetails eventData={eventData} />
       </Flex>
     </>
   );

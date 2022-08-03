@@ -20,8 +20,9 @@
     "prod-export": "npm run export && npm run copy-export"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^1.1.7",
     "@chakra-ui/react": "^1.8.0",
-    "@chakra-ui/system": ">=1.0.0",
+    "@chakra-ui/system": "^1.12.1",
     "@chakra-ui/utils": "^1.10.4",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",

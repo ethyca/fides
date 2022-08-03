@@ -24,12 +24,22 @@ interface FieldsAffected {
   data_categories: string[];
 }
 
+export enum ExecutionLogStatus {
+  IN_PROCESSING = "in_processing",
+  PENDING = "pending",
+  COMPLETE = "complete",
+  ERROR = "error",
+  PAUSED = "paused",
+  RETRYING = "retrying",
+  SKIPPED = "skipped",
+}
+
 export interface ExecutionLog {
   collection_name: string;
   fields_affected: FieldsAffected[];
   message: string;
   action_type: string;
-  status: string;
+  status: ExecutionLogStatus;
   updated_at: string;
 }
 
@@ -39,9 +49,11 @@ export interface Rule {
   action_type: ActionType;
 }
 
+export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
+
 export interface PrivacyRequest {
   status: PrivacyRequestStatus;
-  results?: Record<string, ExecutionLog[]>;
+  results?: PrivacyRequestResults;
   identity: {
     email?: string;
     phone_number?: string;
