@@ -39,8 +39,8 @@ jobs:
           cd clients/admin-ui
           npm run prod-export
 
-      - name: Install Twine
-        run: pip install twine
+      - name: Install Twine and wheel
+        run: pip install twine wheel
 
       - name: Build the package
         run: python setup.py sdist bdist_wheel
