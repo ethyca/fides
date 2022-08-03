@@ -27,6 +27,7 @@ Fidesctl uses continuous delivery with a single `main` branch. All code changes 
 We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub & PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
 
 ### Major and Minor
+
 1. Open a PR that is titled the version of the release (i.e. `1.6.0`)
     * Rename the `Unreleased` section of `CHANGELOG.md` to the new version number and put a date next to it
     * Update the `compare` links for both the new version and for the new `Unreleased` section
@@ -40,7 +41,7 @@ We use GitHub’s `release` feature to tag releases that then get automatically 
 
 ### Patch
 
-Occasionally it will be pertinent to create a patch release that does not contain all of the changes made to the `main` branch since the most recent major or minor release. In order to avoid creating a release that includes changes unrelated to those that are desired, follow the below steps.
+Occasionally it might be pertinent to create a patch release that does not contain all of the changes made to the `main` branch since the most recent major or minor release. In order to avoid creating a release that includes changes unrelated to those that are desired, follow the steps below:
 
 1. Checkout the most recent release's tag
     1. To fetch the most recent tag's name, run:
@@ -78,8 +79,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
         # HEAD is now at 0123abcd Commit Message
         ```
 
-    !!! tip
-        This can be combined into a single command:
+        __Note__: This can be combined into a single command as follows:
 
         ```sh
         # fides on main
@@ -125,7 +125,7 @@ Occasionally it will be pertinent to create a patch release that does not contai
     #=> Switched to a new branch 'prepare-release-v1.2.4'
     ```
 
-1. **Optional:** Incorporate any additional specific changes required for the patch release by running:
+1. __Optional:__ Incorporate any additional specific changes required for the patch release by running:
 
     ```sh
     # fides on prepare-release-v1.2.4
@@ -147,18 +147,21 @@ Occasionally it will be pertinent to create a patch release that does not contai
 1. Publish the release
 1. Merge the new release tag into `main`
 
-    !!! warning
-        Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
+    __Warning__: Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
 
     1. Checkout the `main` branch, and update the local repository:
+
         ```sh
         git checkout main
         #=> Switched to branch 'main'...
 
         git pull
         ```
+
     1. Merge the new release tag into `main`:
+
         ```sh
         git merge tags/1.2.4
         ```
+
     1. Handle any merge conflicts, and push to the remote `main` branch
