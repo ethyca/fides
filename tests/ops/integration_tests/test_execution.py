@@ -23,6 +23,7 @@ from fidesops.models.privacy_request import (
 )
 from fidesops.schemas.dataset import FidesopsDataset
 from fidesops.task import graph_task
+from fidesops.task.graph_task import get_cached_data_for_erasures
 
 from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
@@ -641,14 +642,38 @@ def test_restart_graph_from_failure(
     integration_mongodb_config.save(db)
 
     # Rerun access request using cached results
-    graph_task.run_access_request(
-        privacy_request,
-        policy,
-        mongo_postgres_dataset_graph,
-        [integration_postgres_config, integration_mongodb_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
+    with mock.patch("fidesops.task.graph_task.fideslog_graph_rerun") as mock_log_event:
+        graph_task.run_access_request(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        # Assert analytics event created - before and after graph on rerun did not change
+        analytics_event = mock_log_event.call_args.args[0]
+        assert analytics_event.docker is True
+        assert analytics_event.event == "rerun_access_graph"
+        assert analytics_event.event_created_at is not None
+        assert analytics_event.extra_data == {
+            "prev_collection_count": 20,
+            "curr_collection_count": 20,
+            "added_collection_count": 0,
+            "removed_collection_count": 0,
+            "added_edge_count": 0,
+            "removed_edge_count": 0,
+            "already_processed_access_collection_count": 5,
+            "already_processed_erasure_collection_count": 0,
+            "skipped_added_edge_count": 0,
+            "privacy_request": privacy_request.id,
+        }
+
+        assert analytics_event.error is None
+        assert analytics_event.status_code is None
+        assert analytics_event.endpoint is None
+        assert analytics_event.local_host is False
 
     assert (
         db.query(ExecutionLog)
@@ -687,3 +712,125 @@ def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "complete"),
     ], "Mongo customer_details node reruns"
+
+
+@pytest.mark.integration
+def test_restart_graph_from_failure_during_erasure(
+    db,
+    policy,
+    example_datasets,
+    integration_postgres_config,
+    integration_mongodb_config,
+    mongo_postgres_dataset_graph,
+) -> None:
+    """Run a failed privacy request and restart from failure during the erasure portion.
+
+    An erasure request first runs an access and then an erasure request.
+    If the erasure portion fails, and we reprocess, we don't re-run the access portion currently.
+    """
+
+    privacy_request = PrivacyRequest(
+        id=f"test_postgres_access_request_task_{uuid.uuid4()}"
+    )
+
+    # Run access portion like normal
+    graph_task.run_access_request(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
+
+    # Temporarily remove the secrets from the postgres connection to prevent execution from occurring
+    saved_secrets = integration_postgres_config.secrets
+    integration_postgres_config.secrets = {}
+    integration_postgres_config.save(db)
+
+    # Attempt to run the erasure graph; execution will stop when we reach one of the mongo nodes
+    with pytest.raises(Exception) as exc:
+        graph_task.run_erasure(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            get_cached_data_for_erasures(privacy_request.id),
+            db,
+        )
+        assert exc.value.__class__ == ValidationError
+        assert (
+            exc.value.errors()[0]["msg"]
+            == "PostgreSQLSchema must be supplied a 'url' or all of: ['host']."
+        )
+
+    # Reset secrets
+    integration_postgres_config.secrets = saved_secrets
+    integration_postgres_config.save(db)
+
+    # Rerun erasure portion of request using cached results
+    with mock.patch("fidesops.task.graph_task.fideslog_graph_rerun") as mock_log_event:
+        graph_task.run_erasure(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-1@example.com"},
+            get_cached_data_for_erasures(privacy_request.id),
+            db,
+        )
+
+        # Assert analytics event created - before and after graph on rerun did not change
+        analytics_event = mock_log_event.call_args.args[0]
+        assert analytics_event.docker is True
+        assert analytics_event.event == "rerun_erasure_graph"
+        assert analytics_event.event_created_at is not None
+        assert analytics_event.extra_data == {
+            "prev_collection_count": 20,
+            "curr_collection_count": 20,
+            "added_collection_count": 0,
+            "removed_collection_count": 0,
+            "added_edge_count": 0,
+            "removed_edge_count": 0,
+            "already_processed_access_collection_count": 20,
+            "already_processed_erasure_collection_count": 9,
+            "skipped_added_edge_count": 0,
+            "privacy_request": privacy_request.id,
+        }
+
+        assert analytics_event.error is None
+        assert analytics_event.status_code is None
+        assert analytics_event.endpoint is None
+        assert analytics_event.local_host is False
+
+    assert (
+        db.query(ExecutionLog)
+        .filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        .count()
+        == 4
+    ), "Mongo customer_details collection has two access and two erasures"
+
+    address_logs = [
+        (
+            CollectionAddress(log.dataset_name, log.collection_name).value,
+            log.action_type.value,
+            log.status.value,
+        )
+        for log in db.query(ExecutionLog)
+        .filter_by(privacy_request_id=privacy_request.id, collection_name="address")
+        .order_by("created_at")
+    ]
+
+    assert address_logs == [
+        ("postgres_example_test_dataset:address", "access", "in_processing"),
+        ("postgres_example_test_dataset:address", "access", "complete"),
+        ("postgres_example_test_dataset:address", "erasure", "in_processing"),
+        ("postgres_example_test_dataset:address", "erasure", "error"),
+        ("postgres_example_test_dataset:address", "erasure", "in_processing"),
+        ("postgres_example_test_dataset:address", "erasure", "complete"),
+    ], "Postgres address collection reruns on erasure portion"

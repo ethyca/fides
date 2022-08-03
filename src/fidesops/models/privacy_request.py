@@ -30,6 +30,7 @@ from fidesops.common_exceptions import PrivacyRequestPaused
 from fidesops.core.config import config
 from fidesops.db.base_class import JSONTypeOverride
 from fidesops.graph.config import CollectionAddress
+from fidesops.graph.graph_differences import GraphRepr
 from fidesops.models.policy import (
     ActionType,
     PausedStep,
@@ -435,6 +436,19 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         value_dict: Optional[Dict[str, int]] = cache.get_encoded_objects_by_prefix(  # type: ignore
             prefix
         )
+        return list(value_dict.values())[0] if value_dict else None
+
+    def cache_access_graph(self, value: GraphRepr) -> None:
+        """Cache a representation of the graph built for the access request"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_encoded_object(f"ACCESS_GRAPH__{self.id}", value)
+
+    def get_cached_access_graph(self) -> Optional[GraphRepr]:
+        """Fetch the graph built for the access request"""
+        cache: FidesopsRedis = get_cache()
+        value_dict: Optional[
+            Dict[str, Optional[GraphRepr]]
+        ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:

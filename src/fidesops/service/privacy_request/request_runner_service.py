@@ -12,6 +12,10 @@ from sqlalchemy.orm import Session
 from fidesops import common_exceptions
 from fidesops.common_exceptions import ClientUnsuccessfulException, PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.graph.analytics_events import (
+    failed_graph_analytics_event,
+    fideslog_graph_failure,
+)
 from fidesops.graph.graph import DatasetGraph
 from fidesops.models.connectionconfig import ConnectionConfig
 from fidesops.models.datasetconfig import DatasetConfig
@@ -263,6 +267,7 @@ def run_privacy_request(
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
+            fideslog_graph_failure(failed_graph_analytics_event(privacy_request, exc))
             _log_exception(exc, config.dev_mode)
             return
 
