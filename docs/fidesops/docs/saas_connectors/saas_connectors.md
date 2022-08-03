@@ -8,14 +8,14 @@ A SaaS (Software as a Service) connection is a connection type within fidesops t
 
 The current implementation of the SaaS framework can support any SaaS application that uses these features:
 
-- Basic and bearer authentication
-- Data access via HTTP GET requests
-- Erasure via HTTP PUT requests
+- Basic auth, bearer auth, OAuth2 (Authorization Code Flow)
+- Data access via HTTP requests
+- Erasure via HTTP requests
+- Pagination based on headers and response contents
 
 The following features are planned for future releases and will allow for the configuration of broader types of connections:
 
-- OAuth 2.0 authentication
-- Pagination based on headers and response contents
+- Custom Python functions for access and erasure requests
 - Retry logic based on status codes and response contents
 
 Full [examples](https://github.com/ethyca/fidesops/tree/main/data/saas) of a valid SaaS config and Dataset are currently available for Mailchimp.
@@ -50,7 +50,7 @@ PATCH api/v1/connection/{saas_key}/saas_config
 ```
 3. Configure the secrets. The SaaS config must already defined to provide validation for the secrets.
 ```
-PUT api/v1/connection/{saas_key}/secret?verify=true
+PUT api/v1/connection/{saas_key}/secret
 
 {
   "domain": "{mailchimp_domain}",
