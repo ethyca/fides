@@ -1,8 +1,10 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
+from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination.bases import AbstractPage
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fidesops.api.v1.scope_registry import CONNECTION_TYPE_READ
@@ -78,14 +80,20 @@ def get_connection_types(
 @router.get(
     CONNECTION_TYPES,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_TYPE_READ])],
-    response_model=List[ConnectionSystemTypeMap],
+    response_model=Page[ConnectionSystemTypeMap],
 )
 def get_all_connection_types(
-    *, search: Optional[str] = None, system_type: Optional[SystemType] = None
-) -> List[ConnectionSystemTypeMap]:
+    *,
+    params: Params = Depends(),
+    search: Optional[str] = None,
+    system_type: Optional[SystemType] = None,
+) -> AbstractPage[ConnectionSystemTypeMap]:
     """Returns a list of connection options in Fidesops - includes only database and saas options here."""
 
-    return get_connection_types(search, system_type)
+    return paginate(
+        get_connection_types(search, system_type),
+        params,
+    )
 
 
 @router.get(
