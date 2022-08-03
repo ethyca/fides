@@ -1,10 +1,6 @@
 name: Publish fidesctl
 
 on:
-  # TODO: remove this!!!
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
