@@ -14,6 +14,7 @@ on:
 jobs:
   upload_to_pypi:
     runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # This is required to properly tag packages
@@ -42,7 +43,7 @@ jobs:
         run: pip install twine
 
       - name: Build the package
-        run: python setup.py sdist bdist_wheel 
+        run: python setup.py sdist bdist_wheel
 
       - name: Upload to test pypi
         run: twine upload --repository testpypi dist/*
