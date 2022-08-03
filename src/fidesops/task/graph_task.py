@@ -12,6 +12,10 @@ from sqlalchemy.orm import Session
 
 from fidesops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesops.core.config import config
+from fidesops.graph.analytics_events import (
+    fideslog_graph_rerun,
+    prepare_rerun_graph_analytics_event,
+)
 from fidesops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -21,6 +25,7 @@ from fidesops.graph.config import (
     FieldPath,
 )
 from fidesops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.graph.graph_differences import format_graph_for_caching
 from fidesops.graph.traversal import Traversal, TraversalNode
 from fidesops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fidesops.models.policy import ActionType, Policy
@@ -603,6 +608,13 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
+        fideslog_graph_rerun(
+            prepare_rerun_graph_analytics_event(
+                privacy_request, env, end_nodes, resources, ActionType.access
+            )
+        )
+        privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
+
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
@@ -663,7 +675,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
                 data[tn.address] = GraphTask(tn, resources)
 
         env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)
+        end_nodes = traversal.traverse(env, collect_tasks_fn)
 
         def termination_fn(*dependent_values: int) -> Tuple[int, ...]:
             """The dependent_values here is an int output from each task feeding in, where
@@ -679,6 +691,11 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
+        fideslog_graph_rerun(
+            prepare_rerun_graph_analytics_event(
+                privacy_request, env, end_nodes, resources, ActionType.erasure
+            )
+        )
         v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()

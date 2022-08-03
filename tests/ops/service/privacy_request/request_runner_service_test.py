@@ -1474,3 +1474,50 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.finished_processing_at is None
         assert mock_trigger_policy_webhook.call_count == 1
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@mock.patch(
+    "fidesops.service.privacy_request.request_runner_service.run_access_request"
+)
+@mock.patch("fidesops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+def test_privacy_request_log_failure(
+    _,
+    run_access_request_mock,
+    postgres_example_test_dataset_config_read_access,
+    postgres_integration_db,
+    db,
+    cache,
+    policy,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    run_privacy_request_task,
+):
+    run_access_request_mock.side_effect = KeyError("Test error")
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    with mock.patch(
+        "fidesops.service.privacy_request.request_runner_service.fideslog_graph_failure"
+    ) as mock_log_event:
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+        )
+        sent_event = mock_log_event.call_args.args[0]
+        assert sent_event.docker is True
+        assert sent_event.event == "privacy_request_execution_failure"
+        assert sent_event.event_created_at is not None
+
+        assert sent_event.local_host is False
+        assert sent_event.endpoint is None
+        assert sent_event.status_code == 500
+        assert sent_event.error == "KeyError"
+        assert sent_event.extra_data == {"privacy_request": pr.id}
