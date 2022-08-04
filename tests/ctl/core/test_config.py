@@ -15,7 +15,7 @@ from fidesctl.ctl.core.config.database_settings import FidesctlDatabaseSettings
     clear=True,
 )
 @pytest.mark.unit
-def test_get_config(test_config_path) -> None:
+def test_get_config(test_config_path: str) -> None:
     """Test that the actual config matches what the function returns."""
     config = get_config(test_config_path)
     assert config.user.user_id == "1"
@@ -34,7 +34,7 @@ def test_get_config(test_config_path) -> None:
     clear=True,
 )
 @pytest.mark.unit
-def test_get_deprecated_api_config(test_deprecated_config_path) -> None:
+def test_get_deprecated_api_config(test_deprecated_config_path: str) -> None:
     """
     Test that the deprecated API config values get written as database values.
     """
