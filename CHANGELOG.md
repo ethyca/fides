@@ -16,6 +16,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.7.1...main)
+# Prep 1.8.0 release
 
 ### Added
 
