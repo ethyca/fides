@@ -27,6 +27,7 @@ Fidesctl uses continuous delivery with a single `main` branch. All code changes 
 We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub & PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
 
 ### Major and Minor
+
 1. Open a PR that is titled the version of the release (i.e. `1.6.0`)
     * Rename the `Unreleased` section of `CHANGELOG.md` to the new version number and put a date next to it
     * Update the `compare` links for both the new version and for the new `Unreleased` section
@@ -151,14 +152,18 @@ Occasionally it will be pertinent to create a patch release that does not contai
         Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
 
     1. Checkout the `main` branch, and update the local repository:
+
         ```sh
         git checkout main
         #=> Switched to branch 'main'...
 
         git pull
         ```
+
     1. Merge the new release tag into `main`:
+
         ```sh
         git merge tags/1.2.4
+
         ```
     1. Handle any merge conflicts, and push to the remote `main` branch
