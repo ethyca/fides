@@ -41,7 +41,7 @@ We use GitHub’s `release` feature to tag releases that then get automatically 
 
 ### Patch
 
-Occasionally it will be pertinent to create a patch release that does not contain all of the changes made to the `main` branch since the most recent major or minor release. In order to avoid creating a release that includes changes unrelated to those that are desired, follow the below steps.
+It may be desired for a patch release to contain only select commits to the `main` branch since the last major or minor release. To create a release with only the desired changes, follow the steps below:
 
 1. Checkout the most recent release's tag
     1. To fetch the most recent tag's name, run:
