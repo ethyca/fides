@@ -1,6 +1,7 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
+import pprint
 import sys
 from datetime import datetime, timezone
 from functools import update_wrapper
@@ -74,7 +75,9 @@ def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     """
     Given a dict-like object and a color, pretty click echo it.
     """
-    click.secho(json.dumps(dict_object, indent=2), fg=color)
+    click.secho(
+        pprint.pformat(dict_object, indent=2, width=80, compact=True, depth=2), fg=color
+    )
 
 
 def handle_cli_response(

@@ -15,16 +15,35 @@ from fidesctl.ctl.core.config.database_settings import FidesctlDatabaseSettings
     clear=True,
 )
 @pytest.mark.unit
-def test_get_config() -> None:
+def test_get_config(test_config_path: str) -> None:
     """Test that the actual config matches what the function returns."""
-    config = get_config("tests/ctl/test_config.toml")
+    config = get_config(test_config_path)
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
+    assert config.database.user == "postgres"
     assert config.cli.server_url == "http://fidesctl:8080"
     assert (
         config.credentials["postgres_1"]["connection_string"]
         == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
     )
+
+
+@patch.dict(
+    os.environ,
+    {},
+    clear=True,
+)
+@pytest.mark.unit
+def test_get_deprecated_api_config(test_deprecated_config_path: str) -> None:
+    """
+    Test that the deprecated API config values get written as database values.
+    """
+    config = get_config(test_deprecated_config_path)
+    assert config.database.user == "postgres_deprecated"
+    assert config.database.password == "fidesctl_deprecated"
+    assert config.database.port == "5431"
+    assert config.database.db == "fidesctl_deprecated"
+    assert config.database.test_db == "fidesctl_test_deprecated"
 
 
 @patch.dict(
@@ -107,21 +126,4 @@ def test_database_url_test_mode_disabled() -> None:
     assert (
         database_settings.async_database_uri
         == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/database"
-    )
-
-
-@pytest.mark.unit
-def test_database_url_test_mode_enabled() -> None:
-    os.environ["FIDESCTL_TEST_MODE"] = "True"
-    database_settings = FidesctlDatabaseSettings(
-        user="postgres",
-        password="fidesctl",
-        server="fidesctl-db",
-        port="5432",
-        db="database",
-        test_db="test_database",
-    )
-    assert (
-        database_settings.async_database_uri
-        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/test_database"
     )
