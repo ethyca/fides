@@ -21,6 +21,14 @@ The types of changes are:
 
 ### Changed
 
+### Developer Experience
+
+* The included `docker-compose.yml` no longer references outdated ENV variables [#964](https://github.com/ethyca/fides/pull/964)
+
+### Docs
+
+* Updated references to ENV variables [#964](https://github.com/ethyca/fides/pull/964)
+
 ## [1.8.0](https://github.com/ethyca/fides/compare/1.7.1...1.8.0) - 2022-08-04
 
 ### Added
