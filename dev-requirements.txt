@@ -1,6 +1,5 @@
 black==22.3.0
-ipython
-isort
+isort==5.10.1
 GitPython==3.1
 mypy==0.910
 nox>=2022

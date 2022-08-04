@@ -6,6 +6,14 @@ port="5432"
 db="fidesctl"
 test_db="fidesctl_test"
 
+[api]
+database_user = "postgres_deprecated"
+database_password = "fidesctl_deprecated"
+database_host = "localhost_deprecated"
+database_port = "5432_deprecated"
+database_name = "fidesctl_deprecated"
+test_database_name = "fidesctl_test_deprecated"
+
 [logging]
 level = "INFO"
 
