@@ -103,7 +103,7 @@ CMD ["fidesctl", "webserver"]
 FROM builder as dev
 
 # Install fidesctl as a symlink
-RUN pip install -e ".[all,mssql]"
+RUN pip install --no-deps -e ".[all,mssql]"
 
 ##################################
 ## Production Application Setup ##
@@ -116,4 +116,4 @@ COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fidesctl/ui-build/s
 
 # Install without a symlink
 RUN python setup.py bdist_wheel 
-RUN pip install dist/fidesctl-*.whl
+RUN pip install --no-deps dist/fidesctl-*.whl
