@@ -35,9 +35,17 @@ class FidesctlConfig(BaseModel):
 def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
     """Custom logic for handling deprecated values."""
 
-    if settings.get("api"):
+    if settings.get("api") and not settings.get("database"):
         api_settings = settings.pop("api")
-        print("The API settings are there.")
+        database_settings = dict()
+        database_settings["user"] = api_settings["database_user"]
+        database_settings["password"] = api_settings["database_password"]
+        database_settings["server"] = api_settings["database_host"]
+        database_settings["port"] = api_settings["database_port"]
+        database_settings["db"] = api_settings["database_name"]
+        database_settings["test_db"] = api_settings["test_database_name"]
+        settings["database"] = database_settings
+
     return settings
 
 
@@ -60,6 +68,7 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
 
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
+        settings = handle_deprecated_fields(settings)
         config_environment_dict = settings.get("credentials", dict())
         settings["credentials"] = merge_credentials_environment(
             credentials_dict=config_environment_dict
