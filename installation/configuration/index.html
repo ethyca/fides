@@ -1513,17 +1513,19 @@ You're not viewing the latest version.
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[api]</span><span class="w"></span>
-<span class="n">database_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
-<span class="n">database_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
-<span class="n">database_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl-db&quot;</span><span class="w"></span>
-<span class="n">database_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;5432&quot;</span><span class="w"></span>
-<span class="n">database_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
+<span class="normal">22</span>
+<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[database]</span><span class="w"></span>
+<span class="n">server</span><span class="o">=</span><span class="s">&quot;fidesctl-db&quot;</span><span class="w"></span>
+<span class="n">user</span><span class="o">=</span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
+<span class="n">password</span><span class="o">=</span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
+<span class="n">port</span><span class="o">=</span><span class="s">&quot;5432&quot;</span><span class="w"></span>
+<span class="n">db</span><span class="o">=</span><span class="s">&quot;fidesctl&quot;</span><span class="w"></span>
+<span class="n">test_db</span><span class="o">=</span><span class="s">&quot;fidesctl_test&quot;</span><span class="w"></span>
 
-<span class="c1"># Logging</span><span class="w"></span>
-<span class="n">log_destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
-<span class="n">log_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">INFO</span><span class="w"></span>
-<span class="n">log_serialization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
+<span class="k">[logging]</span><span class="w"></span>
+<span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INFO&quot;</span><span class="w"></span>
+<span class="n">destination</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
+<span class="n">serialization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w"></span>
 
 <span class="k">[cli]</span><span class="w"></span>
 <span class="n">local_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">False</span><span class="w"></span>
@@ -1537,7 +1539,7 @@ You're not viewing the latest version.
 <span class="n">analytics_opt_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <p>To better describe the various configuration options, the following tables describe each available option, grouped by section:</p>
-<div class="tabbed-set" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">API Section</label><div class="tabbed-content">
+<div class="tabbed-set" data-tabs="1:5"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><label for="__tabbed_1_1">Database Section</label><div class="tabbed-content">
 <table>
 <thead>
 <tr>
@@ -1549,63 +1551,50 @@ You're not viewing the latest version.
 </thead>
 <tbody>
 <tr>
-<td align="center">database_user</td>
+<td align="center">user</td>
 <td align="center">String</td>
 <td align="center">postgres</td>
 <td align="center">The username of the Postgres account.</td>
 </tr>
 <tr>
-<td align="center">database_password</td>
+<td align="center">password</td>
 <td align="center">String</td>
 <td align="center">fidesctl</td>
 <td align="center">The password of the Postgres account.</td>
 </tr>
 <tr>
-<td align="center">database_host</td>
+<td align="center">server</td>
 <td align="center">String</td>
 <td align="center">fidesctl-db</td>
 <td align="center">The hostname of the Postgres database server.</td>
 </tr>
 <tr>
-<td align="center">database_port</td>
+<td align="center">port</td>
 <td align="center">String</td>
 <td align="center">5432</td>
 <td align="center">The port of the Postgres database server.</td>
 </tr>
 <tr>
-<td align="center">database_name</td>
+<td align="center">db</td>
 <td align="center">String</td>
 <td align="center">fidesctl</td>
 <td align="center">The name of the Postgres database.</td>
 </tr>
 <tr>
-<td align="center">test_database_name</td>
+<td align="center">test_db</td>
 <td align="center">String</td>
 <td align="center">""</td>
-<td align="center">Used instead of the <code>database_name</code> when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
-</tr>
-<tr>
-<td align="center">log_destination</td>
-<td align="center">String</td>
-<td align="center">""</td>
-<td align="center">The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced.</td>
-</tr>
-<tr>
-<td align="center">log_level</td>
-<td align="center">Enum (String)</td>
-<td align="center">INFO</td>
-<td align="center">The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive).</td>
-</tr>
-<tr>
-<td align="center">log_serialization</td>
-<td align="center">Enum (String)</td>
-<td align="center">""</td>
-<td align="center">The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive).</td>
+<td align="center">Used instead of the <code>db</code> config when the <code>FIDESCTL_TEST_MODE</code> environment variable is set to <code>True</code>, to avoid overwriting production data.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">CLI Section</label><div class="tabbed-content">
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Logging Section</label><div class="tabbed-content">
+<p>| destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced. |
+| level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive). |
+| serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive). |</p>
+</div>
+<input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">CLI Section</label><div class="tabbed-content">
 <table>
 <thead>
 <tr>
@@ -1649,7 +1638,7 @@ You're not viewing the latest version.
 </tbody>
 </table>
 </div>
-<input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">User Section</label><div class="tabbed-content">
+<input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><label for="__tabbed_1_4">User Section</label><div class="tabbed-content">
 <table>
 <thead>
 <tr>
@@ -1675,7 +1664,7 @@ You're not viewing the latest version.
 </tbody>
 </table>
 </div>
-<input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><label for="__tabbed_1_4">Credentials Section</label><div class="tabbed-content"></div>
+<input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><label for="__tabbed_1_5">Credentials Section</label><div class="tabbed-content"></div>
 </div>
 <p>The credentials section uses custom keys which can be referenced in certain commands. </p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1697,9 +1686,12 @@ You're not viewing the latest version.
 <p>By default fidesctl will look for a <code>fidesctl.toml</code> configuration file in the following places:</p>
 <ol>
 <li>At the path specified using the config file argument passed through the CLI</li>
-<li>At the path specified by the <code>FIDESCTL_CONFIG_PATH</code> environment variable</li>
-<li>In a <code>.fides</code> directory within the current working directory</li>
-<li>In a <code>.fides</code> directory within the user's home directory</li>
+<li>At the path specified by the <code>FIDES__CONFIG_PATH</code> environment variable</li>
+<li>In the current working directory</li>
+<li>In the parent working directory</li>
+<li>Two directories up from the current working directory</li>
+<li>The parent directory followed by /.fides</li>
+<li>The user's home (~) directory</li>
 </ol>
 <h2 id="environment-variables">Environment Variables</h2>
 <p>To configure environment variables for fidesctl, the following pattern is used:</p>

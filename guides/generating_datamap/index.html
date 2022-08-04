@@ -1682,9 +1682,9 @@ You're not viewing the latest version.
 <p>To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the <a href="https://github.com/ethyca/fides/#rocket-quick-start">Quick Start guide</a>.</p>
 <h2 id="export-the-demo-resources">Export the Demo Resources</h2>
 <p>First, ensure <code>fidesctl</code> is running with <code>nox -s dev</code>.</p>
-<p>To apply and export the provided <code>demo_resources</code>, run the following commands:</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl apply demo_resources/
+<p>To push and export the provided <code>demo_resources</code>, run the following commands:</p>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Push and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>fidesctl push demo_resources/
 fidesctl <span class="nb">export</span> datamap --output-dir demo_resources/
 </code></pre></div></td></tr></table></div>
 <p>This will export a data map to the <code>demo_resources/</code> directory.</p>
@@ -2097,7 +2097,7 @@ customer missing automated_decisions_or_profiling <span class="k">in</span> Demo
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Object</span><span class="w"></span>
 <span class="w">        </span><span class="nt">automated_decisions_or_profiling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
-<p>Running <code>fidesctl apply demo_resources/</code> will apply your changes.</p>
+<p>Running <code>fidesctl push demo_resources/</code> will push your changes.</p>
 <p>Now, auditing this resource with <code>fidesctl evaluate demo_resources --audit</code> will show the Demo Marketing System issues are resolved:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
@@ -2151,8 +2151,8 @@ automated_decisions_or_profiling <span class="k">for</span> potential_customer <
 </code></pre></div></td></tr></table></div></p>
 <h2 id="generate-a-ropa">Generate a RoPA</h2>
 <p>Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:</p>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Apply and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl apply demo_resources/
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Push and Export Defaults</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$ fidesctl push demo_resources/
 $ fidesctl <span class="nb">export</span> datamap --output_dir demo_resources/
 </code></pre></div></td></tr></table></div>
 <h3 id="populated-fields">Populated Fields</h3>

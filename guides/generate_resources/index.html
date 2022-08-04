@@ -771,6 +771,19 @@ You're not viewing the latest version.
     Required Permissions
   </a>
   
+    <nav class="md-nav" aria-label="Required Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sample-iam-policy" class="md-nav__link">
+    Sample IAM Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -851,6 +864,53 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#scanning-the-systems_1" class="md-nav__link">
     Scanning the Systems
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#working-with-a-gcp-account" class="md-nav__link">
+    Working With a GCP Account
+  </a>
+  
+    <nav class="md-nav" aria-label="Working With a GCP Account">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#providing-credentials_3" class="md-nav__link">
+    Providing Credentials
+  </a>
+  
+    <nav class="md-nav" aria-label="Providing Credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#command-options_3" class="md-nav__link">
+    Command Options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-config_3" class="md-nav__link">
+    Fides Config
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generating-a-dataset_1" class="md-nav__link">
+    Generating a Dataset
   </a>
   
 </li>
@@ -1732,6 +1792,19 @@ You're not viewing the latest version.
     Required Permissions
   </a>
   
+    <nav class="md-nav" aria-label="Required Permissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sample-iam-policy" class="md-nav__link">
+    Sample IAM Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1821,6 +1894,53 @@ You're not viewing the latest version.
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#working-with-a-gcp-account" class="md-nav__link">
+    Working With a GCP Account
+  </a>
+  
+    <nav class="md-nav" aria-label="Working With a GCP Account">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#providing-credentials_3" class="md-nav__link">
+    Providing Credentials
+  </a>
+  
+    <nav class="md-nav" aria-label="Providing Credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#command-options_3" class="md-nav__link">
+    Command Options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-config_3" class="md-nav__link">
+    Fides Config
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generating-a-dataset_1" class="md-nav__link">
+    Generating a Dataset
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1841,12 +1961,12 @@ You're not viewing the latest version.
 
 <h1 id="generating-resources">Generating Resources</h1>
 <p>As an alternative to manually creating resource files like in our <a href="../../tutorial/dataset/">tutorial</a>, it is possible to generate these files using the <code>generate</code> CLI command. The CLI will connect to a given resource and automatically generate a non-annotated resource YAML file in the specified location.</p>
-<p>Once you have created your resources you will need to keep them up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met. </p>
-<p>The <code>scan</code> and <code>generate</code> commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage. </p>
+<p>Once you have created your resources you will need to keep them up to date. The <code>scan</code> command is available to compare your resources and what is defined in your fidesctl server or resource files. The command will exit in error if a coverage threshold is not met.</p>
+<p>The <code>scan</code> and <code>generate</code> commands work best when used in tandem as they follow an expected resource format. The fidesctl format must be followed in order to be able to track coverage.</p>
 <h2 id="working-with-a-database">Working With a Database</h2>
 <p>The <code>generate</code> command can connect to a database and automatically generate resource YAML file based on the database schema.</p>
 <h3 id="providing-credentials">Providing Credentials</h3>
-<p>Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config. </p>
+<p>Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config.</p>
 <h4 id="command-options">Command Options</h4>
 <p>A connection string can be supplied using the <code>connection-string</code> option:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -1862,7 +1982,7 @@ You're not viewing the latest version.
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
 <span class="nv">my_database_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">connection_string</span><span class="o">=</span><span class="s2">&quot;&lt;my_connection_string&gt;&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
-<p>Your command can then reference the key defined in your config. 
+<p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
@@ -1997,9 +2117,9 @@ Annotation coverage: <span class="m">100</span>%
 <h2 id="working-with-an-aws-account">Working With an AWS Account</h2>
 <p>The <code>generate</code> command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.</p>
 <h3 id="providing-credentials_1">Providing Credentials</h3>
-<p>AWS credentials can be provided through command options, environment variables or the fides config. </p>
+<p>AWS credentials can be provided through command options, environment variables or the fides config.</p>
 <h4 id="command-options_1">Command Options</h4>
-<p>Credentials can be directly supplied in your command using the <code>access_key_id</code>, <code>secret_access_key</code>, and <code>region</code> options. 
+<p>Credentials can be directly supplied in your command using the <code>access_key_id</code>, <code>secret_access_key</code>, and <code>region</code> options.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -2029,7 +2149,7 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
 <span class="nv">my_aws_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">aws_access_key_id</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_access_key_id&gt;&quot;</span>, <span class="nv">aws_secret_access_key</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>, <span class="nv">region_name</span><span class="o">=</span><span class="s2">&quot;us-east-1&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
-<p>Your command can then reference the key defined in your config. 
+<p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
@@ -2042,11 +2162,14 @@ Annotation coverage: <span class="m">100</span>%
 <span class="nb">export</span> <span class="nv">FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_aws_secret_access_key&gt;&quot;</span>
 </code></pre></div></td></tr></table></div></p>
 <h3 id="required-permissions">Required Permissions</h3>
-<p>The identity which is authenticated must be allowed to invoke the following actions:
-* redshift:DescribeClusters
-* rds:DescribeDBInstances
-* rds:DescribeDBClusters</p>
-<p>These can be supplied in an IAM policy:
+<p>The identity which is authenticated must be allowed to invoke the following actions:</p>
+<ul>
+<li>redshift:DescribeClusters</li>
+<li>rds:DescribeDBInstances</li>
+<li>rds:DescribeDBClusters</li>
+</ul>
+<h4 id="sample-iam-policy">Sample IAM Policy</h4>
+<p>These permissions can be supplied in an IAM policy:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2060,7 +2183,8 @@ Annotation coverage: <span class="m">100</span>%
 <span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
-<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">        </span><span class="p">{</span><span class="w"></span>
@@ -2068,13 +2192,14 @@ Annotation coverage: <span class="m">100</span>%
 <span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">                </span><span class="s2">&quot;redshift:DescribeClusters&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">                </span><span class="s2">&quot;rds:DescribeDBInstances&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">                </span><span class="s2">&quot;rds:DescribeDBClusters&quot;</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot;rds:DescribeDBClusters&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="s2">&quot;tag:GetResources&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">            </span><span class="p">],</span><span class="w"></span>
 <span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span><span class="w"></span>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
-</code></pre></div></td></tr></table></div></p>
+</code></pre></div></td></tr></table></div>
 <h3 id="filtering-aws-resources">Filtering AWS Resources</h3>
 <p>It is possible to filter resources at the organization level by adding a resource filter within <code>fidesctl_meta</code>. The <code>ignore_resource_arn</code> filter can exclude any resources with an exact matching Amazon Resource Name (ARN) and also supports wildcards in individual ARN fields. An empty ARN field in the filter pattern works as a wildcard.</p>
 <p>The filter can be added to the organization model within your manifest file:
@@ -2099,7 +2224,7 @@ Annotation coverage: <span class="m">100</span>%
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ignore_resource_arn</span><span class="w"></span>
 <span class="w">  </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;arn::rds:::db:&#39;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div></p>
-<p>Any ARN field can be wildcarded by leaving it empty. </p>
+<p>Any ARN field can be wildcarded by leaving it empty.</p>
 <h3 id="generating-systems">Generating Systems</h3>
 <p>Once credentials have been configured we can invoke the <code>generate system aws</code> command:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2145,11 +2270,11 @@ Scanned <span class="m">1</span> resource and all were found <span class="k">in<
 Resource coverage: <span class="m">100</span>%
 </code></pre></div></td></tr></table></div></p>
 <h2 id="working-with-an-okta-account">Working With an Okta Account</h2>
-<p>The <code>generate</code> command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with. </p>
+<p>The <code>generate</code> command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with.</p>
 <h3 id="providing-credentials_2">Providing Credentials</h3>
-<p>Okta credentials can be provided through command options, environment variables or the fides config. </p>
+<p>Okta credentials can be provided through command options, environment variables or the fides config.</p>
 <h4 id="command-options_2">Command Options</h4>
-<p>Credentials can be directly supplied in your command using the <code>org-url</code> and <code>token</code> options. 
+<p>Credentials can be directly supplied in your command using the <code>org-url</code> and <code>token</code> options.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -2177,7 +2302,7 @@ Resource coverage: <span class="m">100</span>%
 <span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="o">[</span>credentials<span class="o">]</span>
 <span class="nv">my_okta_credentials</span> <span class="o">=</span> <span class="o">{</span><span class="nv">orgUrl</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_org_url&gt;&quot;</span> <span class="nv">token</span><span class="o">=</span><span class="s2">&quot;&lt;my_okta_client_token&gt;&quot;</span><span class="o">}</span>
 </code></pre></div></td></tr></table></div>
-<p>Your command can then reference the key defined in your config. 
+<p>Your command can then reference the key defined in your config.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
@@ -2190,7 +2315,7 @@ Resource coverage: <span class="m">100</span>%
 <h3 id="generating-systems_1">Generating Systems</h3>
 <p>Once credentials have been configured we can invoke the <code>generate system okta</code> command:
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate system okta 
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate system okta
   fides_resources/okta_systems.yml
 </code></pre></div></td></tr></table></div></p>
 <p>The result is a resource file with systems that represent our application integrations:
@@ -2251,6 +2376,101 @@ Successfully scanned the following systems:
 
 Resource coverage: <span class="m">100</span>%
 </code></pre></div></td></tr></table></div></p>
+<h2 id="working-with-a-gcp-account">Working With a GCP Account</h2>
+<p>The <code>generate</code> command can connect to a GCP account and automatically generate resource YAML files based on tracked resources. Currently, generating datasets from BigQuery is supported.</p>
+<h3 id="providing-credentials_3">Providing Credentials</h3>
+<p>GCP credentials can be generated via a <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating">service account keyfile</a> which can be passed as a command option or the fides config. You will need to set project specific credentials for access rights, but datasets can be passed explicitly at runtime.</p>
+<h4 id="command-options_3">Command Options</h4>
+<p>The path to the keyfile can be directly supplied in your command using the <code>keyfile_path</code> option.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
+--keyfile-path <span class="s2">&quot;/path/to/keyfile.json&quot;</span>
+...
+</code></pre></div></td></tr></table></div></p>
+<h4 id="fides-config_3">Fides Config</h4>
+<p>Credentials can be defined within your <a href="../../installation/configuration/">fides config</a> under the credentials section.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[credentials.bigquery_1]</span><span class="w"></span>
+<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;service_account&quot;</span><span class="w"></span>
+<span class="n">project_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_project_id&gt;&quot;</span><span class="w"></span>
+<span class="n">private_key_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key_id&gt;&quot;</span><span class="w"></span>
+<span class="n">private_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_private_key&gt;&quot;</span><span class="w"></span>
+<span class="n">client_email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_email&gt;&quot;</span><span class="w"></span>
+<span class="n">client_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_client_id&gt;&quot;</span><span class="w"></span>
+<span class="n">auth_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://accounts.google.com/o/oauth2/auth&quot;</span><span class="w"></span>
+<span class="n">token_uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://oauth2.googleapis.com/token&quot;</span><span class="w"></span>
+<span class="n">auth_provider_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;https://www.googleapis.com/oauth2/v1/certs&quot;</span><span class="w"></span>
+<span class="n">client_x509_cert_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&lt;my_cert_url&gt;&quot;</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>Your command can then reference the key defined in your config.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>...
+--credentials-id <span class="s2">&quot;my_gcp_credentials&quot;</span>
+...
+</code></pre></div></td></tr></table></div></p>
+<p>It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of <code>FIDESCTL__CREDENTIALS__</code> and <code>__</code> as the nested key delimiter:
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nb">export</span> <span class="nv">FIDESCTL__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;my_private_key&gt;&quot;</span>
+<span class="nb">export</span> <span class="nv">FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_ID</span><span class="o">=</span><span class="s2">&quot;&lt;my_client_id&gt;&quot;</span>
+</code></pre></div></td></tr></table></div></p>
+<h3 id="generating-a-dataset_1">Generating a Dataset</h3>
+<p>Once credentials have been configured, the <code>generate dataset gcp bigquery</code> command can take both a configuration option and a dataset name to create the resource file.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>./venv/bin/fidesctl generate dataset gcp bigquery <span class="se">\</span>
+  &lt;dataset_name&gt; --keyfile-path <span class="s2">&quot;.fides/creds/bigquery.json&quot;</span> <span class="se">\</span>
+  &lt;output_file_name&gt;
+</code></pre></div></td></tr></table></div>
+<p>The result is a resource file with a dataset that represents the bigquery dataset defined in your account.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">dataset</span><span class="p">:</span><span class="w"></span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_bigquery_dataset</span><span class="w"></span>
+<span class="w">  </span><span class="nt">organization_fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default_organization</span><span class="w"></span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bigquery dataset</span><span class="w"></span>
+<span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Schema:</span><span class="nv"> </span><span class="s">BigQuery&#39;</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">  </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">  </span><span class="nt">retention</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">No retention or erasure policy</span><span class="w"></span>
+<span class="w">  </span><span class="nt">collections</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">table</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Table:</span><span class="nv"> </span><span class="s">table&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">    </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="w">    </span><span class="nt">fields</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">column</span><span class="w"></span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;Fides</span><span class="nv"> </span><span class="s">Generated</span><span class="nv"> </span><span class="s">Description</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">Column:</span><span class="nv"> </span><span class="s">column&#39;</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w"></span>
+<span class="w">      </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+<span class="nn">...</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 
               
             </article>
