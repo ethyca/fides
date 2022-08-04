@@ -25,6 +25,7 @@ class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
     cli: FidesctlCLISettings = FidesctlCLISettings()
+    # Add the API settings back here
     user: FidesctlUserSettings = FidesctlUserSettings()
     credentials: Dict[str, Dict] = dict()
     database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
