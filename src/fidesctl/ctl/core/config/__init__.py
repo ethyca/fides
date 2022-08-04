@@ -38,12 +38,12 @@ def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
     if settings.get("api") and not settings.get("database"):
         api_settings = settings.pop("api")
         database_settings = dict()
-        database_settings["user"] = api_settings["database_user"]
-        database_settings["password"] = api_settings["database_password"]
-        database_settings["server"] = api_settings["database_host"]
-        database_settings["port"] = api_settings["database_port"]
-        database_settings["db"] = api_settings["database_name"]
-        database_settings["test_db"] = api_settings["test_database_name"]
+        database_settings["user"] = api_settings.get("database_user")
+        database_settings["password"] = api_settings.get("database_password")
+        database_settings["server"] = api_settings.get("database_host")
+        database_settings["port"] = api_settings.get("database_port")
+        database_settings["db"] = api_settings.get("database_name")
+        database_settings["test_db"] = api_settings.get("test_database_name")
         settings["database"] = database_settings
 
     return settings
