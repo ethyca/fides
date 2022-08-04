@@ -51,7 +51,7 @@ RUN : \
 
 # SQL Server (MS SQL)
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list
+RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
 RUN : \
     && apt-get update \
