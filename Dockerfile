@@ -83,6 +83,10 @@ RUN pip install -r optional-requirements.txt
 COPY . /fides
 WORKDIR /fides
 
+# Reset the busted git cache
+RUN git rm --cached -r .
+RUN git reset --hard
+
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
