@@ -1,4 +1,4 @@
-import { Box, Center, Spinner, Text } from "@fidesui/react";
+import { Box, Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
 import { useMemo } from "react";
 
 import AccordionTree from "../common/AccordionTree";
@@ -29,9 +29,10 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
   }
 
   return (
-    <Box w={{ base: "100%", lg: "50%" }}>
+    <SimpleGrid columns={2}>
       <AccordionTree nodes={taxonomyNodes} />
-    </Box>
+      <Box>Edit form</Box>
+    </SimpleGrid>
   );
 };
 
