@@ -35,6 +35,14 @@ def test_init(test_cli_runner: CliRunner) -> None:
     print(result.output)
     assert result.exit_code == 0
 
+@pytest.mark.unit
+def test_view_config(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["view","config"], env={"FIDESCTL__USER__ANALYTICS_OPT_OUT": "true"}
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
 
 @pytest.mark.unit
 def test_webserver() -> None:

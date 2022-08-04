@@ -109,7 +109,6 @@ def test_database_url_test_mode_disabled() -> None:
         == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/database"
     )
 
-
 @pytest.mark.unit
 def test_database_url_test_mode_enabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "True"

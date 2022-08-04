@@ -3,7 +3,7 @@ This module is responsible for combining all of the different
 config sections into a single config.
 """
 from functools import lru_cache
-from typing import Dict
+from typing import Dict, MutableMapping
 
 import toml
 from fideslib.core.config import load_toml
@@ -25,12 +25,20 @@ class FidesctlConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
     cli: FidesctlCLISettings = FidesctlCLISettings()
-    # Add the API settings back here
     user: FidesctlUserSettings = FidesctlUserSettings()
     credentials: Dict[str, Dict] = dict()
     database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
     security: FidesctlSecuritySettings = FidesctlSecuritySettings()
     logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
+
+
+def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
+    """Custom logic for handling deprecated values."""
+
+    if settings.get("api"):
+        api_settings = settings.pop("api")
+        print("The API settings are there.")
+    return settings
 
 
 @lru_cache(maxsize=1)
