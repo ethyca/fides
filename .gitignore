@@ -1,6 +1,5 @@
 # frontend
-ui-build/
-src/fidesctl/ui-build/static/admin/
+ui-build/*
 
 ## generic files to ignore
 *~
