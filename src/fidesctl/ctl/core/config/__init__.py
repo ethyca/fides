@@ -61,7 +61,15 @@ def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
     for key, val in environ.items():
         match = deprecated_env_vars.search(key)
         if match:
-            settings["database"][match.group(1).lower()] = val
+            setting = match.group(1).lower().removeprefix("database_")
+            if setting == "host":
+                setting = "server"
+            if setting == "name":
+                setting = "db"
+            if setting == "test_database_name":
+                setting = "test_db"
+
+            settings["database"][setting] = val
 
     return settings
 
