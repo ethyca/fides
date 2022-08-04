@@ -1,0 +1,7 @@
+[api]
+database_user = "postgres_deprecated"
+database_password = "fidesctl_deprecated"
+database_host = "localhost_deprecated"
+database_port = "5431"
+database_name = "fidesctl_deprecated"
+test_database_name = "fidesctl_test_deprecated"

@@ -33,11 +33,17 @@ from fidesctl.ctl.core.config import FidesctlConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
+TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
 
 @pytest.fixture(scope="session")
 def test_config_path() -> Generator:
     yield TEST_CONFIG_PATH
+
+
+@pytest.fixture(scope="session")
+def test_deprecated_config_path() -> Generator:
+    yield TEST_DEPRECATED_CONFIG_PATH
 
 
 @pytest.fixture(scope="session")
