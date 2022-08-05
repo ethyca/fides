@@ -61,7 +61,8 @@ def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
     for key, val in environ.items():
         match = deprecated_env_vars.search(key)
         if match:
-            setting = match.group(1).lower().removeprefix("database_")
+            setting = match.group(1).lower()
+            setting = setting[setting.startswith("database_") and len("database_") :]
             if setting == "host":
                 setting = "server"
             if setting == "name":
@@ -94,7 +95,10 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
         settings = handle_deprecated_fields(settings)
+
+        # Called after `handle_deprecated_fields` to ensure ENV vars are respected
         settings = handle_deprecated_env_variables(settings)
+
         config_environment_dict = settings.get("credentials", dict())
         settings["credentials"] = merge_credentials_environment(
             credentials_dict=config_environment_dict
