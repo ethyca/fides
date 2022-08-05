@@ -7,19 +7,60 @@ saas_config:
 
   connector_params:
     - name: domain
-    - name: username
-    - name: password
     - name: client_id
     - name: client_secret
-    - name: access_token
+    - name: redirect_uri
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: oauth2
       configuration:
-        token: <access_token>
+        expires_in: 7200
+        authorization_request:
+          method: GET
+          path: /services/oauth2/authorize
+          query_params:
+            - name: client_id
+              value: <client_id>
+            - name: redirect_uri
+              value: <redirect_uri>
+            - name: response_type
+              value: code
+            - name: state
+              value: <state>
+        token_request:
+          method: POST
+          path: /services/oauth2/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "authorization_code",
+              "code": "<code>",
+              "redirect_uri": "<redirect_uri>"
+            }
+        refresh_request:
+          method: POST
+          client_config:
+            protocol: https
+            host: login.salesforce.com
+          path: /services/oauth2/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "refresh_token",
+              "refresh_token": "<refresh_token>",
+              "redirect_uri": "<redirect_uri>"
+            }
 
   test_request:
     method: GET
