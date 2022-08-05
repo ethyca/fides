@@ -1,5 +1,5 @@
 # frontend
-ui-build/*
+ui-build/
 
 ## generic files to ignore
 *~
