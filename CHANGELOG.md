@@ -21,6 +21,10 @@ The types of changes are:
 
 ### Changed
 
+### Fixed
+
+* Deprecated config options will continue to be respected when set via environment variables [#965](https://github.com/ethyca/fides/pull/965)
+
 ## [1.8.0](https://github.com/ethyca/fides/compare/1.7.1...1.8.0) - 2022-08-04
 
 ### Added
