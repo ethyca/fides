@@ -21,6 +21,10 @@ The types of changes are:
 
 ### Changed
 
+### Docs
+
+* Minor release documentation now reflects the desired patch release process [#955](https://github.com/ethyca/fides/pull/955)
+
 ## [1.8.0](https://github.com/ethyca/fides/compare/1.7.1...1.8.0) - 2022-08-04
 
 ### Added
@@ -65,8 +69,6 @@ The types of changes are:
 ### Developer Experience
 
 * Remove `API_PREFIX` from fidesctl/core/utils.py and change references to `API_PREFIX` in fidesctl/api/reoutes/util.py [922](https://github.com/ethyca/fides/pull/922)
-
-### Docs
 
 ### Fixed
 
