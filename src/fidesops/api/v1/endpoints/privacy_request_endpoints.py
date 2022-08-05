@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-locals
+# pylint: disable=too-many-branches,too-many-locals,too-many-lines
 
 import csv
 import io
@@ -194,6 +194,15 @@ def create_privacy_request(
             )
 
             if not config.execution.require_manual_request_approval:
+                AuditLog.create(
+                    db=db,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.approved,
+                        "message": "",
+                    },
+                )
                 queue_privacy_request(privacy_request.id)
 
         except common_exceptions.RedisConnectionError as exc:
@@ -936,6 +945,15 @@ def approve_privacy_request(
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
 
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": user_id,
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
         queue_privacy_request(privacy_request_id=privacy_request.id)
 
     return review_privacy_request(
