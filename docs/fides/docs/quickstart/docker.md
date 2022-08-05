@@ -12,7 +12,7 @@ Docker and Docker-Compose are the only requirements here.
 
 ## Docker Setup
 
-This is a reference file that you can copy/paste into a local `docker-compose.yml` file, which should be created in your project's root folder. It will create a database and spin up the fidesctl webserver. 
+This is a reference file that you can copy/paste into a local `docker-compose.yml` file, which should be created in your project's root folder. It will create a database and spin up the fidesctl webserver.
 
 Make sure that you don't have anything else running on port `5432` or `8080` before using this file.
 
@@ -34,10 +34,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      FIDESCTL_TEST_MODE: "True"
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
-      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
+      FIDESCTL__DATABASE__SERVER: "fidesctl-db"
+      FIDESCTL_TEST_MODE: "True"
     volumes:
       - type: bind
         source: .
@@ -86,7 +86,7 @@ Now you can start interacting with your installation. Run the following commands
     ```
 
 1. `fidesctl status` -> This confirms that your `fidesctl` CLI can reach the server and everything is ready to go!
-   
+
 
 Once your installation is running, you can use `fidesctl` from the shell to get a list of all the possible [CLI commands](../cli.md).
 

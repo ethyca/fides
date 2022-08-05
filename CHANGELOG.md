@@ -29,6 +29,15 @@ The types of changes are:
   * `FIDESCTL__API__DATABASE_TEST_DATABASE_NAME` --> `FIDESCTL__DATABASE__TEST_DB`
   * `FIDESCTL__API__DATABASE_USER` --> `FIDESCTL__DATABASE__USER`
 
+### Developer Experience
+
+* The included `docker-compose.yml` no longer references outdated ENV variables [#964](https://github.com/ethyca/fides/pull/964)
+
+### Docs
+
+* Minor release documentation now reflects the desired patch release process [#955](https://github.com/ethyca/fides/pull/955)
+* Updated references to ENV variables [#964](https://github.com/ethyca/fides/pull/964)
+
 ### Fixed
 
 * Deprecated config options will continue to be respected when set via environment variables [#965](https://github.com/ethyca/fides/pull/965)
@@ -78,8 +87,6 @@ The types of changes are:
 ### Developer Experience
 
 * Remove `API_PREFIX` from fidesctl/core/utils.py and change references to `API_PREFIX` in fidesctl/api/reoutes/util.py [922](https://github.com/ethyca/fides/pull/922)
-
-### Docs
 
 ### Fixed
 
