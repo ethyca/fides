@@ -21,9 +21,14 @@ The types of changes are:
 
 ### Changed
 
+### Developer Experience
+
+* The included `docker-compose.yml` no longer references outdated ENV variables [#964](https://github.com/ethyca/fides/pull/964)
+
 ### Docs
 
 * Minor release documentation now reflects the desired patch release process [#955](https://github.com/ethyca/fides/pull/955)
+* Updated references to ENV variables [#964](https://github.com/ethyca/fides/pull/964)
 
 ## [1.8.0](https://github.com/ethyca/fides/compare/1.7.1...1.8.0) - 2022-08-04
 
@@ -48,6 +53,7 @@ The types of changes are:
 * Update the `fidesctl` python package to automatically serve the UI [#941](https://github.com/ethyca/fides/pull/941)
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
+* Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
 
 ### Changed
 
