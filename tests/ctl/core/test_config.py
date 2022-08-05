@@ -46,7 +46,18 @@ def test_get_deprecated_api_config_from_file(test_deprecated_config_path: str) -
     assert config.database.test_db == "fidesctl_test_deprecated"
 
 
-@patch.dict(os.environ, {"FIDESCTL__API__DATABASE_HOST": "phil_rules"}, clear=True)
+@patch.dict(
+    os.environ,
+    {
+        "FIDESCTL__API__DATABASE_HOST": "test_host",
+        "FIDESCTL__API__DATABASE_NAME": "test_db_name",
+        "FIDESCTL__API__DATABASE_PASSWORD": "test_password",
+        "FIDESCTL__API__DATABASE_PORT": "1234",
+        "FIDESCTL__API__DATABASE_TEST_DATABASE_NAME": "test_test_db_name",
+        "FIDESCTL__API__DATABASE_USER": "phil_rules",
+    },
+    clear=True,
+)
 @pytest.mark.unit
 def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
     """
@@ -55,7 +66,12 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
     """
 
     config = get_config(test_config_path)
-    assert config.database.server == "phil_rules"
+    assert config.database.db == "test_db_name"
+    assert config.database.password == "test_password"
+    assert config.database.port == "1234"
+    assert config.database.server == "test_host"
+    assert config.database.test_db == "test_test_db_name"
+    assert config.database.user == "phil_rules"
 
 
 @patch.dict(
