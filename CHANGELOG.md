@@ -21,6 +21,14 @@ The types of changes are:
 
 ### Changed
 
+* The following environment variables have been deprecated, and replaced with the new environment variable names indicated below. To avoid breaking existing workflows, the deprecated variables are still respected in v1.8.1. They will be removed in a future release.
+  * `FIDESCTL__API__DATABASE_HOST` --> `FIDESCTL__DATABASE__SERVER`
+  * `FIDESCTL__API__DATABASE_NAME` --> `FIDESCTL__DATABASE__DB`
+  * `FIDESCTL__API__DATABASE_PASSWORD` --> `FIDESCTL__DATABASE__PASSWORD`
+  * `FIDESCTL__API__DATABASE_PORT` --> `FIDESCTL__DATABASE__PORT`
+  * `FIDESCTL__API__DATABASE_TEST_DATABASE_NAME` --> `FIDESCTL__DATABASE__TEST_DB`
+  * `FIDESCTL__API__DATABASE_USER` --> `FIDESCTL__DATABASE__USER`
+
 ### Fixed
 
 * Deprecated config options will continue to be respected when set via environment variables [#965](https://github.com/ethyca/fides/pull/965)
