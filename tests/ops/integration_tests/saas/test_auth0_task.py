@@ -12,6 +12,7 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 def test_auth0_access_request_task(
@@ -83,6 +84,7 @@ def test_auth0_access_request_task(
     )
 
 
+@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
 def test_auth0_erasure_request_task(

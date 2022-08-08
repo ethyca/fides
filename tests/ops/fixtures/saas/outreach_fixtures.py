@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
@@ -18,12 +17,11 @@ from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("outreach")
 
 
 @pytest.fixture(scope="session")
-def outreach_secrets():
+def outreach_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "outreach.domain") or secrets["domain"],
         "requester_email": pydash.get(saas_config, "outreach.requester_email")
@@ -40,7 +38,7 @@ def outreach_secrets():
 
 
 @pytest.fixture(scope="session")
-def outreach_identity_email():
+def outreach_identity_email(saas_config):
     return (
         pydash.get(saas_config, "outreach.identity_email") or secrets["identity_email"]
     )

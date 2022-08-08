@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from sqlalchemy.orm import Session
 
@@ -17,12 +16,11 @@ from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("zendesk")
 
 
 @pytest.fixture(scope="session")
-def zendesk_secrets():
+def zendesk_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "zendesk.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "zendesk.username") or secrets["username"],
@@ -31,7 +29,7 @@ def zendesk_secrets():
 
 
 @pytest.fixture(scope="session")
-def zendesk_identity_email():
+def zendesk_identity_email(saas_config):
     return (
         pydash.get(saas_config, "zendesk.identity_email") or secrets["identity_email"]
     )

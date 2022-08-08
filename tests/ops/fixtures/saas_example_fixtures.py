@@ -1,8 +1,8 @@
+import logging
 from typing import Any, Dict, Generator
 
-import pydash
 import pytest
-from fideslib.core.config import load_file, load_toml
+from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
 
 from fidesops.models.connectionconfig import (
@@ -14,20 +14,21 @@ from fidesops.models.datasetconfig import DatasetConfig
 from fidesops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
+from fidesops.util.logger import NotPii
 from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 
-saas_config = load_toml(["saas_config.toml"])
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="function")
 def saas_example_secrets():
     return {
-        "domain": pydash.get(saas_config, "saas_example.domain"),
-        "username": pydash.get(saas_config, "saas_example.username"),
-        "api_key": pydash.get(saas_config, "saas_example.api_key"),
-        "api_version": pydash.get(saas_config, "saas_example.api_version"),
-        "page_size": pydash.get(saas_config, "saas_example.page_size"),
+        "domain": "domain",
+        "username": "username",
+        "api_key": "api_key",
+        "api_version": "2.0",
+        "page_size": "page_size",
     }
 
 
@@ -223,3 +224,13 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
     )
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="session")
+def saas_config() -> Dict[str, Any]:
+    saas_config: Dict[str, Any] = {}
+    try:
+        saas_config: Dict[str, Any] = load_toml(["saas_config.toml"])
+    except FileNotFoundError as e:
+        logger.warning("saas_config.toml could not be loaded: %s", NotPii(e))
+    return saas_config

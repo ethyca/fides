@@ -2,7 +2,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -16,12 +15,11 @@ from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("sentry")
 
 
 @pytest.fixture(scope="session")
-def sentry_secrets():
+def sentry_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "sentry.domain") or secrets["sentry.domain"],
         "access_token": pydash.get(saas_config, "sentry.access_token")
@@ -40,7 +38,7 @@ def sentry_secrets():
 
 
 @pytest.fixture(scope="session")
-def sentry_identity_email():
+def sentry_identity_email(saas_config):
     return pydash.get(saas_config, "sentry.identity_email") or secrets["identity_email"]
 
 
