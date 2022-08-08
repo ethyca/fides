@@ -1,9 +1,9 @@
 name: Publish fidesctl
 
 on:
-  pull_request:
-    branches:
-      - main
+  push:
+    tags:
+      - "*"
 
 jobs:
   upload_to_pypi:
@@ -32,4 +32,7 @@ jobs:
       - name: Twine Upload
         run: |
           python setup.py sdist bdist_wheel 
-          git status
+          twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
