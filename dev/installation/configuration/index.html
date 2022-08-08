@@ -1590,9 +1590,36 @@ You're not viewing the latest version.
 </table>
 </div>
 <input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><label for="__tabbed_1_2">Logging Section</label><div class="tabbed-content">
-<p>| destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced. |
-| level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive). |
-| serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive). |</p>
+<table>
+<thead>
+<tr>
+<th align="center">Name</th>
+<th align="center">Type</th>
+<th align="center">Default</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">destination</td>
+<td align="center">String</td>
+<td align="center">""</td>
+<td align="center">The output location for log files. Accepts any valid file path. If left unset, log entries are printed to <code>stdout</code> and log files are not produced.</td>
+</tr>
+<tr>
+<td align="center">level</td>
+<td align="center">Enum (String)</td>
+<td align="center">INFO</td>
+<td align="center">The minimum log entry level to produce. Also accepts: <code>TRACE</code>, <code>DEBUG</code>, <code>WARNING</code>, <code>ERROR</code>, or <code>CRITICAL</code> (case insensitive).</td>
+</tr>
+<tr>
+<td align="center">serialization</td>
+<td align="center">Enum (String)</td>
+<td align="center">""</td>
+<td align="center">The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: <code>"JSON"</code> (case insensitive).</td>
+</tr>
+</tbody>
+</table>
 </div>
 <input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><label for="__tabbed_1_3">CLI Section</label><div class="tabbed-content">
 <table>
