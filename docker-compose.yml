@@ -26,12 +26,12 @@ services:
         target: /fides
         read_only: False
     environment:
-      FIDESCTL_TEST_MODE: "True"
       FIDES__CONFIG_PATH: "/fides/.fides/"
+      FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
       FIDESCTL__CLI__SERVER_HOST: "fidesctl"
       FIDESCTL__CLI__SERVER_PORT: "8080"
-      FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
-      FIDESCTL__API__DATABASE_HOST: "fidesctl-db"
+      FIDESCTL__DATABASE__SERVER: "fidesctl-db"
+      FIDESCTL_TEST_MODE: "True"
 
   fidesctl-ui:
     image: ethyca/fidesctl:local-ui

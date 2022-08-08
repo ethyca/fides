@@ -26,7 +26,8 @@ Fidesctl uses continuous delivery with a single `main` branch. All code changes 
 
 We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub & PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
 
-### Major
+### Major and Minor
+
 1. Open a PR that is titled the version of the release (i.e. `1.6.0`)
     * Rename the `Unreleased` section of `CHANGELOG.md` to the new version number and put a date next to it
     * Update the `compare` links for both the new version and for the new `Unreleased` section
@@ -38,21 +39,131 @@ We use GitHub’s `release` feature to tag releases that then get automatically 
 1. Auto-populate the release notes
 1. Publish the release
 
-### Minor
-1. Create a new branch from the latest tagged release being patched (i.e. `1.6.0`)
-1. Use `git cherry-pick <commit>` to incorporate specific changes required for the minor release
+### Patch
+
+It may be desired for a patch release to contain only select commits to the `main` branch since the last major or minor release. To create a release with only the desired changes, follow the steps below:
+
+1. Checkout the most recent release's tag
+    1. To fetch the most recent tag's name, run:
+
+        ```sh
+        # fides on main
+        git describe --abbrev=0 --tags
+
+        #=> 1.2.3
+        ```
+
+    1. To checkout the most recent tag, run:
+
+        ```sh
+        #fides on main
+        git checkout 1.2.3
+
+        #=> Note: switching to '1.2.3'.
+        #
+        # You are in 'detached HEAD' state. You can look around, make experimental
+        # changes and commit them, and you can discard any commits you make in this
+        # state without impacting any branches by switching back to a branch.
+        #
+        # If you want to create a new branch to retain commits you create, you may
+        # do so (now or later) by using -c with the switch command. Example:
+        #
+        # git switch -c <new-branch-name>
+        #
+        # Or undo this operation with:
+        #
+        # git switch -
+        #
+        # Turn off this advice by setting config variable advice.detachedHead to false
+        #
+        # HEAD is now at 0123abcd Commit Message
+        ```
+
+    !!! tip
+        This can be combined into a single command:
+
+        ```sh
+        # fides on main
+        git checkout $(git describe --abbrev=0 --tags)
+
+        #=> Note: switching to '1.2.3'.
+        #
+        # You are in 'detached HEAD' state. You can look around, make experimental
+        # changes and commit them, and you can discard any commits you make in this
+        # state without impacting any branches by switching back to a branch.
+        #
+        # If you want to create a new branch to retain commits you create, you may
+        # do so (now or later) by using -c with the switch command. Example:
+        #
+        # git switch -c <new-branch-name>
+        #
+        # Or undo this operation with:
+        #
+        # git switch -
+        #
+        # Turn off this advice by setting config variable advice.detachedHead to false
+        #
+        # HEAD is now at 0123abcd Commit Message
+        ```
+
+1. Create a new branch from the `HEAD` commit of the most recent release's tag, called `release-v<tag>`
+
+    ```sh
+    # fides on tags/1.2.3
+    git checkout -b release-v1.2.4
+
+    #=> Switched to a new branch 'release-v1.2.4'
+    ```
+
+1. If the changes to be included in the patch release are contained in one or more unmerged pull requests, change the base branch of the pull request(s) to the release branch created in the previous step
+1. Once approved, merge the pull request(s) into the release branch
+1. Create a new branch off of the release branch by running:
+
+    ```sh
+    # fides on release-v1.2.4
+    git checkout -b prepare-release-v1.2.4
+
+    #=> Switched to a new branch 'prepare-release-v1.2.4'
+    ```
+
+1. **Optional:** Incorporate any additional specific changes required for the patch release by running:
+
+    ```sh
+    # fides on prepare-release-v1.2.4
+    git cherry-pick <commit>...
+    ```
+
 1. Copy the `Unreleased` section of `CHANGELOG.md` and paste above the release being patched
-    * Rename `Unreleased` to the new version number and put a date next to it
-    * Cut and paste the changes documented that are now included in the minor release in the correct section
-1. Open a PR that is titled the version of the release (i.e. `1.6.1`), add the `do not merge` label
-1. Due to potential merge conflicts when opening against main, checks may need to be run manually
-1. Create a new release, using the branch created in step 1
-1. Add the new version as the tag (i.e. `1.6.1`)
-1. Make the title the version with a `v` in front of it (i.e. `v1.6.1`)
-1. Add a link to the `CHANGELOG.md` (the changes are not merged yet but can be planned for)
-1. Auto-populate the release notes
+    1. Rename `Unreleased` to the new version number and put a date next to it
+    1. Cut and paste the documented changes that are now included in the patch release to the correct section
+    1. Commit these changes
+1. Open a pull request to incorporate any cherry-picked commits and the `CHANGELOG.md` changes into the release branch
+    1. Set the base branch of this pull request to the release branch
+    1. Once approved, merge the pull request into the release branch
+1. Create a new release from the release branch
+    1. Add the new version as the tag (i.e. `1.2.4`)
+    1. Title the release with the version number, prefixed with a `v` (i.e. `v1.2.4`)
+    1. Add a link to the `CHANGELOG.md`
+    1. Auto-populate the release notes
 1. Publish the release
-1. Create a new branch from `main`
-1. Copy the changes from `CHANGELOG.md` for the minor release into the new branch
-1. Open a separate PR for the `CHANGELOG.md` updates for the minor release, once approved merge the PR
-1. Close the original PR made for the release (labeled `do not merge`) without merging
+1. Merge the new release tag into `main`
+
+    !!! warning
+        Pushing commits (including merge commits) to the `main` branch requires admin-level repository permissions.
+
+    1. Checkout the `main` branch, and update the local repository:
+
+        ```sh
+        git checkout main
+        #=> Switched to branch 'main'...
+
+        git pull
+        ```
+
+    1. Merge the new release tag into `main`:
+
+        ```sh
+        git merge tags/1.2.4
+
+        ```
+    1. Handle any merge conflicts, and push to the remote `main` branch
