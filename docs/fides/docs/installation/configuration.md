@@ -51,6 +51,9 @@ To better describe the various configuration options, the following tables descr
     | test_db | String | ""| Used instead of the `db` config when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | |
 
 === "Logging Section"
+
+    | Name | Type | Default | Description |
+    | :----: | :----: | :-------: | :-----------: |
     | destination | String | "" | The output location for log files. Accepts any valid file path. If left unset, log entries are printed to `stdout` and log files are not produced. |
     | level | Enum (String) | INFO | The minimum log entry level to produce. Also accepts: `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
     | serialization | Enum (String) | "" | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts: `"JSON"` (case insensitive). |
