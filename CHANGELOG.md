@@ -44,6 +44,7 @@ The types of changes are:
 * Update the `fidesctl` python package to automatically serve the UI [#941](https://github.com/ethyca/fides/pull/941)
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
+* Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
 
 ### Changed
 

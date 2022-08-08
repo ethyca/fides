@@ -2,6 +2,8 @@ name: Publish fidesctl
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "*"
 
@@ -10,6 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # This is required to properly tag packages
+
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
 
       - name: Use Node.js 16
         uses: actions/setup-node@v2
@@ -26,13 +35,28 @@ jobs:
           cd clients/admin-ui
           npm run prod-export
 
-      - name: Install Twine
-        run: pip install twine
+      - name: Install Twine and wheel
+        run: pip install twine wheel
 
-      - name: Twine Upload
+      - name: Build the package
+        run: python setup.py sdist bdist_wheel
+
+      - name: Upload to test pypi
+        run: twine upload --repository testpypi dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
+
+      - name: Check Prod Tag
+        id: check-tag
         run: |
-          python setup.py sdist bdist_wheel 
-          twine upload dist/*
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo ::set-output name=match::true
+          fi
+
+      - name: Upload to pypi
+        if: steps.check-tag.outputs.match == 'true'
+        run: twine upload dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
