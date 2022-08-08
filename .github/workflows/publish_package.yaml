@@ -46,7 +46,7 @@ jobs:
           git reset --hard
 
       - name: Build the wheel
-        run: bdist_wheel
+        run: python setup.py bdist_wheel
 
       - name: Upload to test pypi
         run: twine upload --repository testpypi dist/*
