@@ -1,5 +1,4 @@
-docs/fides/docs/api/openapi.json
-docs/fides/docs/schemas/config_schema.json
+# frontend
 ui-build/
 
 ## generic files to ignore
@@ -20,6 +19,8 @@ tmp/*
 
 # docs
 docs/fides/site/
+docs/fides/docs/api/openapi.json
+docs/fides/docs/schemas/config_schema.json
 
 # python specific
 *.pyc

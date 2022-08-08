@@ -2,8 +2,6 @@ name: Frontend PR Checks
 
 on:
   pull_request:
-    branches:
-      - main
     paths:
       - "clients/**"
       - ".github/workflows/frontend_pr_checks.yml"

@@ -3,6 +3,8 @@ This module is responsible for combining all of the different
 config sections into a single config.
 """
 from functools import lru_cache
+from os import environ
+from re import compile as regex
 from typing import Dict, MutableMapping
 
 import toml
@@ -49,6 +51,30 @@ def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
     return settings
 
 
+def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
+    """
+    Custom logic for handling deprecated ENV variable configuration.
+    """
+
+    deprecated_env_vars = regex(r"FIDESCTL__API__(\w+)")
+
+    for key, val in environ.items():
+        match = deprecated_env_vars.search(key)
+        if match:
+            setting = match.group(1).lower()
+            setting = setting[setting.startswith("database_") and len("database_") :]
+            if setting == "host":
+                setting = "server"
+            if setting == "name":
+                setting = "db"
+            if setting == "test_database_name":
+                setting = "test_db"
+
+            settings["database"][setting] = val
+
+    return settings
+
+
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "") -> FidesctlConfig:
     """
@@ -69,6 +95,10 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models
         settings = handle_deprecated_fields(settings)
+
+        # Called after `handle_deprecated_fields` to ensure ENV vars are respected
+        settings = handle_deprecated_env_variables(settings)
+
         config_environment_dict = settings.get("credentials", dict())
         settings["credentials"] = merge_credentials_environment(
             credentials_dict=config_environment_dict
