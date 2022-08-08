@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.core.config import load_toml
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
@@ -19,12 +18,11 @@ from fidesops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("mailchimp")
 
 
 @pytest.fixture(scope="session")
-def mailchimp_secrets():
+def mailchimp_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "mailchimp.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "mailchimp.username")
@@ -34,7 +32,7 @@ def mailchimp_secrets():
 
 
 @pytest.fixture(scope="session")
-def mailchimp_identity_email():
+def mailchimp_identity_email(saas_config):
     return (
         pydash.get(saas_config, "mailchimp.identity_email") or secrets["identity_email"]
     )

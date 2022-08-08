@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.core.config import load_toml
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
@@ -20,19 +19,13 @@ from tests.ops.fixtures.saas_example_fixtures import load_config
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
-saas_config = load_toml(["saas_config.toml"])
 secrets = get_secrets("sendgrid")
 
 SENDGRID_ERASURE_FIRSTNAME = "Erasurefirstname"
 
 
-@pytest.fixture(scope="session")
-def sendgrid_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
-
-
 @pytest.fixture(scope="function")
-def sendgrid_secrets():
+def sendgrid_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "sendgrid.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "sendgrid.api_key") or secrets["api_key"],
@@ -40,10 +33,15 @@ def sendgrid_secrets():
 
 
 @pytest.fixture(scope="function")
-def sendgrid_identity_email():
+def sendgrid_identity_email(saas_config):
     return (
         pydash.get(saas_config, "sendgrid.identity_email") or secrets["identity_email"]
     )
+
+
+@pytest.fixture(scope="session")
+def sendgrid_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture

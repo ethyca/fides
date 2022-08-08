@@ -13,12 +13,14 @@ from fidesops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
 def test_salesforce_connection_test(salesforce_connection_config) -> None:
     get_connector(salesforce_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
 def test_salesforce_access_request_task(
@@ -366,6 +368,7 @@ def test_salesforce_access_request_task(
         assert account["Id"] == account_id
 
 
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
 def test_salesforce_erasure_request_task(
