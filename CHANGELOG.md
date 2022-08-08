@@ -15,11 +15,14 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.1...main)
 
 ### Added
 
 ### Changed
+
+## [1.8.1](https://github.com/ethyca/fides/compare/1.8.0...1.8.1) - 2022-08-08
+
 
 ## [1.8.0](https://github.com/ethyca/fides/compare/1.7.1...1.8.0) - 2022-08-04
 
