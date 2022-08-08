@@ -2,8 +2,6 @@ name: Publish fidesctl
 
 on:
   pull_request:
-    branches:
-      - main
 
 jobs:
   upload_to_pypi:
