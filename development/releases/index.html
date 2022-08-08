@@ -1331,15 +1331,15 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#major" class="md-nav__link">
-    Major
+  <a href="#major-and-minor" class="md-nav__link">
+    Major and Minor
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#minor" class="md-nav__link">
-    Minor
+  <a href="#patch" class="md-nav__link">
+    Patch
   </a>
   
 </li>
@@ -1533,15 +1533,15 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#major" class="md-nav__link">
-    Major
+  <a href="#major-and-minor" class="md-nav__link">
+    Major and Minor
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#minor" class="md-nav__link">
-    Minor
+  <a href="#patch" class="md-nav__link">
+    Patch
   </a>
   
 </li>
@@ -1583,7 +1583,7 @@ You're not viewing the latest version.
 <p>Fidesctl uses continuous delivery with a single <code>main</code> branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.</p>
 <h2 id="release-steps">Release Steps</h2>
 <p>We use GitHub’s <code>release</code> feature to tag releases that then get automatically deployed to DockerHub &amp; PyPi via GitHub Actions pipelines. We also use a <code>CHANGELOG.md</code> to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:</p>
-<h3 id="major">Major</h3>
+<h3 id="major-and-minor">Major and Minor</h3>
 <ol>
 <li>Open a PR that is titled the version of the release (i.e. <code>1.6.0</code>)<ul>
 <li>Rename the <code>Unreleased</code> section of <code>CHANGELOG.md</code> to the new version number and put a date next to it</li>
@@ -1598,27 +1598,196 @@ You're not viewing the latest version.
 <li>Auto-populate the release notes</li>
 <li>Publish the release</li>
 </ol>
-<h3 id="minor">Minor</h3>
+<h3 id="patch">Patch</h3>
+<p>It may be desired for a patch release to contain only select commits to the <code>main</code> branch since the last major or minor release. To create a release with only the desired changes, follow the steps below:</p>
 <ol>
-<li>Create a new branch from the latest tagged release being patched (i.e. <code>1.6.0</code>)</li>
-<li>Use <code>git cherry-pick &lt;commit&gt;</code> to incorporate specific changes required for the minor release</li>
-<li>Copy the <code>Unreleased</code> section of <code>CHANGELOG.md</code> and paste above the release being patched<ul>
-<li>Rename <code>Unreleased</code> to the new version number and put a date next to it</li>
-<li>Cut and paste the changes documented that are now included in the minor release in the correct section</li>
-</ul>
+<li>
+<p>Checkout the most recent release's tag</p>
+<ol>
+<li>
+<p>To fetch the most recent tag's name, run:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on main</span>
+git describe --abbrev<span class="o">=</span><span class="m">0</span> --tags
+
+<span class="c1">#=&gt; 1.2.3</span>
+</code></pre></div></td></tr></table></div>
 </li>
-<li>Open a PR that is titled the version of the release (i.e. <code>1.6.1</code>), add the <code>do not merge</code> label</li>
-<li>Due to potential merge conflicts when opening against main, checks may need to be run manually</li>
-<li>Create a new release, using the branch created in step 1</li>
-<li>Add the new version as the tag (i.e. <code>1.6.1</code>)</li>
-<li>Make the title the version with a <code>v</code> in front of it (i.e. <code>v1.6.1</code>)</li>
-<li>Add a link to the <code>CHANGELOG.md</code> (the changes are not merged yet but can be planned for)</li>
+<li>
+<p>To checkout the most recent tag, run:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1">#fides on main</span>
+git checkout <span class="m">1</span>.2.3
+
+<span class="c1">#=&gt; Note: switching to &#39;1.2.3&#39;.</span>
+<span class="c1">#</span>
+<span class="c1"># You are in &#39;detached HEAD&#39; state. You can look around, make experimental</span>
+<span class="c1"># changes and commit them, and you can discard any commits you make in this</span>
+<span class="c1"># state without impacting any branches by switching back to a branch.</span>
+<span class="c1">#</span>
+<span class="c1"># If you want to create a new branch to retain commits you create, you may</span>
+<span class="c1"># do so (now or later) by using -c with the switch command. Example:</span>
+<span class="c1">#</span>
+<span class="c1"># git switch -c &lt;new-branch-name&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Or undo this operation with:</span>
+<span class="c1">#</span>
+<span class="c1"># git switch -</span>
+<span class="c1">#</span>
+<span class="c1"># Turn off this advice by setting config variable advice.detachedHead to false</span>
+<span class="c1">#</span>
+<span class="c1"># HEAD is now at 0123abcd Commit Message</span>
+</code></pre></div></td></tr></table></div>
+</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This can be combined into a single command:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on main</span>
+git checkout <span class="k">$(</span>git describe --abbrev<span class="o">=</span><span class="m">0</span> --tags<span class="k">)</span>
+
+<span class="c1">#=&gt; Note: switching to &#39;1.2.3&#39;.</span>
+<span class="c1">#</span>
+<span class="c1"># You are in &#39;detached HEAD&#39; state. You can look around, make experimental</span>
+<span class="c1"># changes and commit them, and you can discard any commits you make in this</span>
+<span class="c1"># state without impacting any branches by switching back to a branch.</span>
+<span class="c1">#</span>
+<span class="c1"># If you want to create a new branch to retain commits you create, you may</span>
+<span class="c1"># do so (now or later) by using -c with the switch command. Example:</span>
+<span class="c1">#</span>
+<span class="c1"># git switch -c &lt;new-branch-name&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Or undo this operation with:</span>
+<span class="c1">#</span>
+<span class="c1"># git switch -</span>
+<span class="c1">#</span>
+<span class="c1"># Turn off this advice by setting config variable advice.detachedHead to false</span>
+<span class="c1">#</span>
+<span class="c1"># HEAD is now at 0123abcd Commit Message</span>
+</code></pre></div></td></tr></table></div>
+</div>
+</li>
+<li>
+<p>Create a new branch from the <code>HEAD</code> commit of the most recent release's tag, called <code>release-v&lt;tag&gt;</code></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on tags/1.2.3</span>
+git checkout -b release-v1.2.4
+
+<span class="c1">#=&gt; Switched to a new branch &#39;release-v1.2.4&#39;</span>
+</code></pre></div></td></tr></table></div>
+</li>
+<li>
+<p>If the changes to be included in the patch release are contained in one or more unmerged pull requests, change the base branch of the pull request(s) to the release branch created in the previous step</p>
+</li>
+<li>Once approved, merge the pull request(s) into the release branch</li>
+<li>
+<p>Create a new branch off of the release branch by running:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on release-v1.2.4</span>
+git checkout -b prepare-release-v1.2.4
+
+<span class="c1">#=&gt; Switched to a new branch &#39;prepare-release-v1.2.4&#39;</span>
+</code></pre></div></td></tr></table></div>
+</li>
+<li>
+<p><strong>Optional:</strong> Incorporate any additional specific changes required for the patch release by running:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># fides on prepare-release-v1.2.4</span>
+git cherry-pick &lt;commit&gt;...
+</code></pre></div></td></tr></table></div>
+</li>
+<li>
+<p>Copy the <code>Unreleased</code> section of <code>CHANGELOG.md</code> and paste above the release being patched</p>
+<ol>
+<li>Rename <code>Unreleased</code> to the new version number and put a date next to it</li>
+<li>Cut and paste the documented changes that are now included in the patch release to the correct section</li>
+<li>Commit these changes</li>
+</ol>
+</li>
+<li>Open a pull request to incorporate any cherry-picked commits and the <code>CHANGELOG.md</code> changes into the release branch<ol>
+<li>Set the base branch of this pull request to the release branch</li>
+<li>Once approved, merge the pull request into the release branch</li>
+</ol>
+</li>
+<li>Create a new release from the release branch<ol>
+<li>Add the new version as the tag (i.e. <code>1.2.4</code>)</li>
+<li>Title the release with the version number, prefixed with a <code>v</code> (i.e. <code>v1.2.4</code>)</li>
+<li>Add a link to the <code>CHANGELOG.md</code></li>
 <li>Auto-populate the release notes</li>
+</ol>
+</li>
 <li>Publish the release</li>
-<li>Create a new branch from <code>main</code></li>
-<li>Copy the changes from <code>CHANGELOG.md</code> for the minor release into the new branch</li>
-<li>Open a separate PR for the <code>CHANGELOG.md</code> updates for the minor release, once approved merge the PR</li>
-<li>Close the original PR made for the release (labeled <code>do not merge</code>) without merging</li>
+<li>
+<p>Merge the new release tag into <code>main</code></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Pushing commits (including merge commits) to the <code>main</code> branch requires admin-level repository permissions.</p>
+</div>
+<ol>
+<li>
+<p>Checkout the <code>main</code> branch, and update the local repository:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>git checkout main
+<span class="c1">#=&gt; Switched to branch &#39;main&#39;...</span>
+
+git pull
+</code></pre></div></td></tr></table></div>
+</li>
+<li>
+<p>Merge the new release tag into <code>main</code>:</p>
+<p><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>git merge tags/1.2.4
+</code></pre></div></td></tr></table></div>
+    1. Handle any merge conflicts, and push to the remote <code>main</code> branch</p>
+</li>
+</ol>
+</li>
 </ol>
 
               
