@@ -5,6 +5,7 @@ from typing import ContextManager, Dict, List, Optional, Set
 from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -281,6 +282,15 @@ def run_privacy_request(
             return
 
         privacy_request.finished_processing_at = datetime.utcnow()
+        AuditLog.create(
+            db=session,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.finished,
+                "message": "",
+            },
+        )
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=session)
         logging.info(f"Privacy request {privacy_request.id} run completed.")

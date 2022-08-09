@@ -34,6 +34,7 @@ The types of changes are:
 * Access and erasure support for Auth0 [#991](https://github.com/ethyca/fidesops/pull/991)
 * Start better understanding how request execution fails [#993](https://github.com/ethyca/fidesops/pull/993)
 * Add approval `AuditLog`s for user and sytem approved privacy requests [#1038](https://github.com/ethyca/fidesops/pull/1038)
+* Add finished `AuditLog` for subject requests [#1040](https://github.com/ethyca/fidesops/pull/1040)
 
 ### Changed
 

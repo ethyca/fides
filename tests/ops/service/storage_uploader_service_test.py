@@ -386,9 +386,9 @@ class TestWriteToInMemoryBuffer:
         )
         assert isinstance(buff, BytesIO)
         encrypted = buff.read()
-        data = encrypted.decode(config.security.ENCODING)
+        data = encrypted.decode(config.security.encoding)
         decrypted = decrypt_combined_nonce_and_message(
-            data, self.key.encode(config.security.ENCODING)
+            data, self.key.encode(config.security.encoding)
         )
         assert json.loads(decrypted) == original_data
 
@@ -401,14 +401,14 @@ class TestWriteToInMemoryBuffer:
         zipfile = ZipFile(buff)
 
         with zipfile.open("mongo:address.csv", "r") as address_csv:
-            data = address_csv.read().decode(config.security.ENCODING)
+            data = address_csv.read().decode(config.security.encoding)
 
             decrypted = decrypt_combined_nonce_and_message(
-                data, self.key.encode(config.security.ENCODING)
+                data, self.key.encode(config.security.encoding)
             )
 
-            binary_stream = BytesIO(decrypted.encode(config.security.ENCODING))
-            df = pd.read_csv(binary_stream, encoding=config.security.ENCODING)
+            binary_stream = BytesIO(decrypted.encode(config.security.encoding))
+            df = pd.read_csv(binary_stream, encoding=config.security.encoding)
             assert list(df.columns) == [
                 "id",
                 "zip",
@@ -440,7 +440,7 @@ class TestEncryptResultsPackage:
         data = "test data"
         ret = encrypt_access_request_results(data, request_id=privacy_request.id)
         decrypted = decrypt_combined_nonce_and_message(
-            ret, key.encode(config.security.ENCODING)
+            ret, key.encode(config.security.encoding)
         )
         assert data == decrypted
 
