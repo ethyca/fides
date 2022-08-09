@@ -164,7 +164,7 @@ def _run_quickstart(
     """
     _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker exec -it {service_name} python scripts/quickstart.py")
+    _run_cmd_or_err(f"docker-compose run {service_name} python scripts/quickstart.py")
 
 
 def _run_create_superuser(
@@ -177,7 +177,7 @@ def _run_create_superuser(
     _run_cmd_or_err('echo "Running create superuser..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(
-        f"docker exec -it {service_name} python scripts/create_superuser.py"
+        f"docker-compose run {service_name} python scripts/create_superuser.py"
     )
 
 
@@ -191,7 +191,7 @@ def _run_create_test_data(
     _run_cmd_or_err('echo "Running create test data..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(
-        f"docker exec -it {service_name} python scripts/create_test_data.py"
+        f"docker-compose run {service_name} python scripts/create_test_data.py"
     )
 
 
