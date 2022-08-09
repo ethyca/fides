@@ -21,6 +21,8 @@ The types of changes are:
 
 ### Changed
 
+* Moved the `admin-ui` code down one level into a `ctl` subdir [#970](https://github.com/ethyca/fides/pull/970)
+
 * The following environment variables have been deprecated, and replaced with the new environment variable names indicated below. To avoid breaking existing workflows, the deprecated variables are still respected in v1.8.1. They will be removed in a future release.
   * `FIDESCTL__API__DATABASE_HOST` --> `FIDESCTL__DATABASE__SERVER`
   * `FIDESCTL__API__DATABASE_NAME` --> `FIDESCTL__DATABASE__DB`
