@@ -25,7 +25,7 @@ Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easi
 
 * **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
 * [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
-* [Python](https://www.python.org/downloads/) (3.8+)
+* [Python](https://www.python.org/downloads/) (3.9+)
 * [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
@@ -130,19 +130,19 @@ The Fides core team is committed to providing a variety of documentation to help
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-- Documentation: <https://ethyca.github.io/fides/>
-- Tutorial: <https://ethyca.github.io/fides/tutorial/>
-- Installation: <https://ethyca.github.io/fides/installation/installation/>
-- Roadmap: <https://github.com/ethyca/fides/projects>
-- Website: www.ethyca.com/fides
+* Documentation: <https://ethyca.github.io/fides/>
+* Tutorial: <https://ethyca.github.io/fides/tutorial/>
+* Installation: <https://ethyca.github.io/fides/installation/installation/>
+* Roadmap: <https://github.com/ethyca/fides/projects>
+* Website: www.ethyca.com/fides
 
 ### Support
 
 Join the conversation on:
 
-- [Slack](https://fid.es/join-slack)
-- [Twitter](https://twitter.com/ethyca)
-- [Discussions](https://github.com/ethyca/fides/discussions)
+* [Slack](https://fid.es/join-slack)
+* [Twitter](https://twitter.com/ethyca)
+* [Discussions](https://github.com/ethyca/fides/discussions)
 
 ### Contributing
 

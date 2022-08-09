@@ -15,10 +15,10 @@ jobs:
         with:
           fetch-depth: 0 # This is required to properly tag packages
 
-      - name: Setup Python 3.8
+      - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Use Node.js 16
         uses: actions/setup-node@v2
