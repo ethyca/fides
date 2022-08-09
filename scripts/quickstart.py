@@ -487,7 +487,7 @@ if __name__ == "__main__":
 
     # NOTE: In a real application, these secrets and config values would be provided
     # via ENV vars or similar, but we've inlined everything here for simplicity
-    FIDESOPS_URL = "http://0.0.0.0:8080"
+    FIDESOPS_URL = "http://webserver:8080"
     ROOT_CLIENT_ID = "fidesopsadmin"
     ROOT_CLIENT_SECRET = "fidesopsadminsecret"
 
