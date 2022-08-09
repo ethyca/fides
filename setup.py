@@ -44,8 +44,10 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
-    entry_points={"console_scripts": ["fidesctl=fidesctl.cli:cli","fides=fidesctl.cli:cli"]},
-    python_requires=">=3.8, <4",
+    entry_points={
+        "console_scripts": ["fidesctl=fidesctl.cli:cli", "fides=fidesctl.cli:cli"]
+    },
+    python_requires=">=3.9, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     include_package_data=True,
@@ -58,8 +60,9 @@ setup(
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Software Development :: Libraries",
     ],
 )
