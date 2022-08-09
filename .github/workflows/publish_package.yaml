@@ -38,8 +38,15 @@ jobs:
       - name: Install Twine and wheel
         run: pip install twine wheel
 
-      - name: Build the package
-        run: python setup.py sdist bdist_wheel
+      # The git reset is required here because the build modifies
+      # egg-info and the wheel becomes a dirty version
+      - name: Build the sdist
+        run: |
+          python setup.py sdist
+          git reset --hard
+
+      - name: Build the wheel
+        run: python setup.py bdist_wheel
 
       - name: Upload to test pypi
         run: twine upload --repository testpypi dist/*
@@ -53,7 +60,6 @@ jobs:
           if [[ ${{ github.event.ref }} =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo ::set-output name=match::true
           fi
-
       - name: Upload to pypi
         if: steps.check-tag.outputs.match == 'true'
         run: twine upload dist/*

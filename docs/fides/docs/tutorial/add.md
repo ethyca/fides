@@ -57,7 +57,11 @@ fidesctl:
   ports:
     - "8080:8080"
   environment:
-    - FIDESCTL__API__DATABASE_URL=postgres:postgres@db:5432/fidesctl
+    FIDESCTL__DATABASE__DB: "fidesctl"
+    FIDESCTL__DATABASE__PASSWORD: "postgres"
+    FIDESCTL__DATABASE__PORT: 5432
+    FIDESCTL__DATABASE__SERVER: "db"
+    FIDESCTL__DATABASE__USER: "postgres"
 ```
 
 > See [the fidesctl installation guide](../installation/installation.md) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.

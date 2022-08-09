@@ -83,6 +83,10 @@ RUN pip install -r optional-requirements.txt
 COPY . /fides
 WORKDIR /fides
 
+# Reset the busted git cache
+RUN git rm --cached -r .
+RUN git reset --hard
+
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
@@ -99,7 +103,7 @@ CMD ["fidesctl", "webserver"]
 FROM builder as dev
 
 # Install fidesctl as a symlink
-RUN pip install -e ".[all,mssql]"
+RUN pip install --no-deps -e ".[all,mssql]"
 
 ##################################
 ## Production Application Setup ##
@@ -112,4 +116,4 @@ COPY --from=frontend /fides/clients/ctl/admin-ui/out/ /fides/src/fidesctl/ui-bui
 
 # Install without a symlink
 RUN python setup.py bdist_wheel 
-RUN pip install dist/fidesctl-*.whl
+RUN pip install --no-deps dist/fidesctl-*.whl
