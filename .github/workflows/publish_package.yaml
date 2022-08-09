@@ -27,12 +27,12 @@ jobs:
 
       - name: Install node modules
         run: |
-          cd clients/admin-ui
+          cd clients/ctl/admin-ui
           npm install
 
       - name: Build and export frontend files
         run: |
-          cd clients/admin-ui
+          cd clients/ctl/admin-ui
           npm run prod-export
 
       - name: Install Twine and wheel
