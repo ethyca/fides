@@ -17,8 +17,8 @@ class TestClientModel:
         assert new_client.hashed_secret is not None
         assert (
             hash_with_salt(
-                secret.encode(config.security.ENCODING),
-                new_client.salt.encode(config.security.ENCODING),
+                secret.encode(config.security.encoding),
+                new_client.salt.encode(config.security.encoding),
             )
             == new_client.hashed_secret
         )
@@ -32,8 +32,8 @@ class TestClientModel:
         )
 
         hashed_access_key = hash_with_salt(
-            config.security.oauth_root_client_secret.encode(config.security.ENCODING),
-            client.salt.encode(config.security.ENCODING),
+            config.security.oauth_root_client_secret.encode(config.security.encoding),
+            client.salt.encode(config.security.encoding),
         )
 
         assert "fidesopsadmin" == client.id
