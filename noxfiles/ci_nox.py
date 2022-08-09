@@ -9,7 +9,7 @@ from constants_nox import (
     START_APP,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
-from utils_nox import db
+from utils_nox import db, install_requirements
 
 
 @nox.session()
@@ -36,45 +36,58 @@ def ci_suite(session: nox.Session) -> None:
 
 # Static Checks
 @nox.session()
+def static_checks(session: nox.Session) -> None:
+    """Run the static checks only."""
+    session.notify("black")
+    session.notify("isort")
+    session.notify("xenon")
+    session.notify("mypy")
+    session.notify("pylint")
+
+
+@nox.session()
 def black(session: nox.Session) -> None:
     """Run the 'black' style linter."""
+    install_requirements(session)
     command = (
-        *RUN_NO_DEPS,
         "black",
         "--check",
         "src",
         "tests",
         "noxfiles",
     )
-    session.run(*command, external=True)
+    session.run(*command)
 
 
 @nox.session()
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
-    command = (*RUN_NO_DEPS, "isort", "src", "tests", "noxfiles", "--check")
-    session.run(*command, external=True)
+    install_requirements(session)
+    command = ("isort", "src", "tests", "noxfiles", "--check")
+    session.run(*command)
 
 
 @nox.session()
 def mypy(session: nox.Session) -> None:
     """Run the 'mypy' static type checker."""
-    command = (*RUN_NO_DEPS, "mypy")
-    session.run(*command, external=True)
+    install_requirements(session)
+    command = "mypy"
+    session.run(command)
 
 
 @nox.session()
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
-    command = (*RUN_NO_DEPS, "pylint", "src", "noxfiles")
-    session.run(*command, external=True)
+    install_requirements(session)
+    command = ("pylint", "src", "noxfiles")
+    session.run(*command)
 
 
 @nox.session()
 def xenon(session: nox.Session) -> None:
     """Run 'xenon' code complexity monitoring."""
+    install_requirements(session)
     command = (
-        *RUN_NO_DEPS,
         "xenon",
         "noxfiles",
         "src",
@@ -85,7 +98,7 @@ def xenon(session: nox.Session) -> None:
         "--ignore 'data, docs'",
         "--exclude src/fidesops/_version.py",
     )
-    session.run(*command, external=True)
+    session.run(*command)
 
 
 @nox.session()

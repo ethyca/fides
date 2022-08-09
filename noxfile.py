@@ -14,3 +14,4 @@ from utils_nox import *
 
 # Sets the default session to `--list`
 nox.options.sessions = []
+nox.options.reuse_existing_virtualenvs = True
