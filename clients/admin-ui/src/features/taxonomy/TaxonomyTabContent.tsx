@@ -38,7 +38,11 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
 
   return (
     <SimpleGrid columns={2} spacing={2}>
-      <AccordionTree nodes={taxonomyNodes} onEdit={handleEdit} />
+      <AccordionTree
+        nodes={taxonomyNodes}
+        onEdit={handleEdit}
+        focusedKey={editEntity?.fides_key}
+      />
       {editEntity ? (
         <EditTaxonomyForm
           entity={editEntity}

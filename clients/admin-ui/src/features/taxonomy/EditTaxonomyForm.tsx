@@ -1,36 +1,10 @@
-import { Box, Button, ButtonGroup, Heading, Stack } from "@fidesui/react";
+import { Button, ButtonGroup, Heading, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 
 import { CustomTextArea, CustomTextInput } from "../common/form/inputs";
 import { TaxonomyEntity } from "./types";
 
 type FormValues = Partial<TaxonomyEntity>;
-
-interface InnerFormProps {
-  values: TaxonomyEntity;
-}
-const InnerForm = ({ values }: InnerFormProps) => {
-  const initialValues: FormValues = {
-    name: values.name ?? "",
-    description: values.description ?? "",
-    parent_key: values.parent_key ?? "",
-  };
-
-  const handleSubmit = (newValues: FormValues) => {
-    console.log({ newValues });
-  };
-
-  return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      <Form>
-        <Stack>
-          <CustomTextInput name="name" label="name" />
-          <CustomTextInput name="parent_key" label="Parent" />
-        </Stack>
-      </Form>
-    </Formik>
-  );
-};
 
 interface Props {
   entity: TaxonomyEntity;
@@ -48,7 +22,7 @@ const EditTaxonomyForm = ({ entity, onCancel }: Props) => {
   };
 
   return (
-    <Stack spacing={6}>
+    <Stack pl={6} spacing={6}>
       <Heading size="md">Modify {entity.name}</Heading>
 
       <Formik
