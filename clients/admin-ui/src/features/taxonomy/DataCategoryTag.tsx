@@ -1,10 +1,10 @@
-import { Tag, TagCloseButton, TagLabel } from "@fidesui/react";
+import { Tag, TagCloseButton, TagLabel, TagProps } from "@fidesui/react";
 
 interface Props {
   name: string;
   onClose?: () => void;
 }
-const DataCategoryTag = ({ name, onClose }: Props) => {
+const DataCategoryTag = ({ name, onClose, ...other }: Props & TagProps) => {
   if (!onClose) {
     return (
       <Tag backgroundColor="primary.400" color="white" size="sm">
@@ -20,6 +20,7 @@ const DataCategoryTag = ({ name, onClose }: Props) => {
       justifyContent="space-between"
       width="fit-content"
       data-testid={`data-category-${name}`}
+      {...other}
     >
       <TagLabel>{name}</TagLabel>
       <TagCloseButton onClick={onClose} color="white" />
