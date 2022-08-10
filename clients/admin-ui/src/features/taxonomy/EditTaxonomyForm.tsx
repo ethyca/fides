@@ -11,16 +11,19 @@ import { Form, Formik } from "formik";
 
 import { CustomTextArea, CustomTextInput } from "../common/form/inputs";
 import DataCategoryTag from "./DataCategoryTag";
-import { TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity } from "./types";
 
-type FormValues = Partial<TaxonomyEntity>;
+type FormValues = TaxonomyEntity;
 
 interface Props {
   entity: TaxonomyEntity;
+  labels: Labels;
   onCancel: () => void;
+  onEdit: (entity: TaxonomyEntity) => void;
 }
-const EditTaxonomyForm = ({ entity, onCancel }: Props) => {
+const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
   const initialValues: FormValues = {
+    fides_key: entity.fides_key,
     name: entity.name ?? "",
     description: entity.description ?? "",
     parent_key: entity.parent_key ?? "",
@@ -28,11 +31,14 @@ const EditTaxonomyForm = ({ entity, onCancel }: Props) => {
 
   const handleSubmit = (newValues: FormValues) => {
     console.log({ newValues });
+    onEdit(newValues);
   };
 
   return (
     <Stack pl={6} spacing={6}>
-      <Heading size="md">Modify {entity.name}</Heading>
+      <Heading size="md" textTransform="capitalize">
+        Modify {labels.fides_key}
+      </Heading>
 
       <Formik
         initialValues={initialValues}
@@ -43,14 +49,18 @@ const EditTaxonomyForm = ({ entity, onCancel }: Props) => {
           <Form>
             <Stack mb={6}>
               <Grid templateColumns="1fr 3fr">
-                <FormLabel>Entity</FormLabel>
+                <FormLabel>{labels.fides_key}</FormLabel>
                 <Box>
                   <DataCategoryTag name={entity.fides_key} size="sm" />
                 </Box>
               </Grid>
-              <CustomTextInput name="name" label="Name" />
-              <CustomTextArea name="description" label="Description" />
-              <CustomTextInput name="parent_key" label="Parent" disabled />
+              <CustomTextInput name="name" label={labels.name} />
+              <CustomTextArea name="description" label={labels.description} />
+              <CustomTextInput
+                name="parent_key"
+                label={labels.parent_key}
+                disabled
+              />
             </Stack>
 
             <ButtonGroup size="sm">

@@ -9,5 +9,12 @@ export interface TaxonomyEntity {
   fides_key: string;
   name?: string;
   description?: string;
-  parent_key?: string | null;
+  parent_key?: string;
+}
+
+export interface Labels {
+  fides_key: string;
+  name: string;
+  description: string;
+  parent_key: string;
 }

@@ -17,16 +17,29 @@ export const dataCategoriesApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Data Category"],
+  tagTypes: ["Data Categories"],
   endpoints: (build) => ({
     getAllDataCategories: build.query<DataCategory[], void>({
       query: () => ({ url: `data_category/` }),
-      providesTags: () => ["Data Category"],
+      providesTags: () => ["Data Categories"],
+    }),
+    updateDataCategory: build.mutation<
+      DataCategory,
+      Partial<DataCategory> & Pick<DataCategory, "fides_key">
+    >({
+      query: (dataCategory) => ({
+        url: `data_category/`,
+        params: { resource_type: "data_category" },
+        method: "PUT",
+        body: dataCategory,
+      }),
+      invalidatesTags: ["Data Categories"],
     }),
   }),
 });
 
-export const { useGetAllDataCategoriesQuery } = dataCategoriesApi;
+export const { useGetAllDataCategoriesQuery, useUpdateDataCategoryMutation } =
+  dataCategoriesApi;
 
 export const dataCategoriesSlice = createSlice({
   name: "dataCategories",

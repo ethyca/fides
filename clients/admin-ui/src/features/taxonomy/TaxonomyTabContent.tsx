@@ -4,13 +4,15 @@ import { useMemo, useState } from "react";
 import AccordionTree from "../common/AccordionTree";
 import EditTaxonomyForm from "./EditTaxonomyForm";
 import { transformTaxonomyEntityToNodes } from "./helpers";
-import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
+import { Labels, TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 interface Props {
   isLoading: boolean;
   data: TaxonomyEntity[] | undefined;
+  labels: Labels;
+  edit: (entity: TaxonomyEntity) => void;
 }
-const TaxonomyTabContent = ({ isLoading, data }: Props) => {
+const TaxonomyTabContent = ({ isLoading, data, labels, edit }: Props) => {
   const taxonomyNodes = useMemo(() => {
     if (data) {
       return transformTaxonomyEntityToNodes(data);
@@ -31,7 +33,7 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
-  const handleEdit = (node: TaxonomyEntityNode) => {
+  const handleSetEditEntity = (node: TaxonomyEntityNode) => {
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
     setEditEntity(entity);
   };
@@ -40,13 +42,15 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
     <SimpleGrid columns={2} spacing={2}>
       <AccordionTree
         nodes={taxonomyNodes}
-        onEdit={handleEdit}
+        onEdit={handleSetEditEntity}
         focusedKey={editEntity?.fides_key}
       />
       {editEntity ? (
         <EditTaxonomyForm
+          labels={labels}
           entity={editEntity}
           onCancel={() => setEditEntity(null)}
+          onEdit={edit}
         />
       ) : null}
     </SimpleGrid>

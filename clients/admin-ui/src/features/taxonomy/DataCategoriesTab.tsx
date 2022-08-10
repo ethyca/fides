@@ -1,18 +1,16 @@
-import { useGetAllDataCategoriesQuery } from "./data-categories.slice";
+import { useDataCategory } from "./hooks";
 import TaxonomyTabContent from "./TaxonomyTabContent";
 
-const useDataCategories = () => {
-  const { data, isLoading } = useGetAllDataCategoriesQuery();
-
-  return {
-    isLoading,
-    dataCategories: data,
-  };
-};
-
 const DataCategoriesTab = () => {
-  const { isLoading, dataCategories } = useDataCategories();
-  return <TaxonomyTabContent isLoading={isLoading} data={dataCategories} />;
+  const { isLoading, data, labels, edit } = useDataCategory();
+  return (
+    <TaxonomyTabContent
+      isLoading={isLoading}
+      data={data}
+      labels={labels}
+      edit={edit}
+    />
+  );
 };
 
 export default DataCategoriesTab;
