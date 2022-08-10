@@ -361,14 +361,20 @@ export const CustomCreatableMultiSelect = ({
   );
 };
 
+interface CustomTextAreaProps {
+  textAreaProps?: TextareaProps;
+  label?: string;
+}
 export const CustomTextArea = ({
   textAreaProps,
+  label,
   ...props
-}: { textAreaProps?: TextareaProps } & FieldHookConfig<string>) => {
+}: CustomTextAreaProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   return (
     <FormControl isInvalid={isInvalid}>
+      {label ? <FormLabel>{label}</FormLabel> : null}
       <Textarea
         {...field}
         size="sm"

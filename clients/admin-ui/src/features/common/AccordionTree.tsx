@@ -12,19 +12,27 @@ import {
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
 
+import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
 
-const ActionButtons = () => (
+interface ActionButtonProps {
+  node: TaxonomyEntityNode;
+  onEdit: (node: TaxonomyEntityNode) => void;
+}
+const ActionButtons = ({ node, onEdit }: ActionButtonProps) => (
   <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
-    <Button data-testid="edit-btn">Edit</Button>
+    <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
+      Edit
+    </Button>
     <Button data-testid="delete-btn">Delete</Button>
   </ButtonGroup>
 );
 
 interface Props {
   nodes: TreeNode[];
+  onEdit: (node: TaxonomyEntityNode) => void;
 }
-const AccordionTree = ({ nodes }: Props) => {
+const AccordionTree = ({ nodes, onEdit }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -56,7 +64,9 @@ const AccordionTree = ({ nodes }: Props) => {
           >
             {node.label}
           </Text>
-          {hoverNode?.value === node.value ? <ActionButtons /> : null}
+          {hoverNode?.value === node.value ? (
+            <ActionButtons node={hoverNode} onEdit={onEdit} />
+          ) : null}
         </Box>
       );
     }
@@ -75,7 +85,9 @@ const AccordionTree = ({ nodes }: Props) => {
             <AccordionIcon />
             {node.label}
           </AccordionButton>
-          {hoverNode?.value === node.value ? <ActionButtons /> : null}
+          {hoverNode?.value === node.value ? (
+            <ActionButtons node={hoverNode} onEdit={onEdit} />
+          ) : null}
         </Box>
 
         <AccordionPanel p={0}>

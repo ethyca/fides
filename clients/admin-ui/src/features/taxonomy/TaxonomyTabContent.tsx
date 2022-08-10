@@ -1,9 +1,10 @@
-import { Box, Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
-import { useMemo } from "react";
+import { Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import { useMemo, useState } from "react";
 
 import AccordionTree from "../common/AccordionTree";
+import EditTaxonomyForm from "./EditTaxonomyForm";
 import { transformTaxonomyEntityToNodes } from "./helpers";
-import { TaxonomyEntity } from "./types";
+import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 interface Props {
   isLoading: boolean;
@@ -17,6 +18,8 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
     return null;
   }, [data]);
 
+  const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+
   if (isLoading) {
     return (
       <Center>
@@ -28,10 +31,20 @@ const TaxonomyTabContent = ({ isLoading, data }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
+  const handleEdit = (node: TaxonomyEntityNode) => {
+    const entity = data?.find((d) => d.fides_key === node.value) ?? null;
+    setEditEntity(entity);
+  };
+
   return (
-    <SimpleGrid columns={2}>
-      <AccordionTree nodes={taxonomyNodes} />
-      <Box>Edit form</Box>
+    <SimpleGrid columns={2} spacing={2}>
+      <AccordionTree nodes={taxonomyNodes} onEdit={handleEdit} />
+      {editEntity ? (
+        <EditTaxonomyForm
+          entity={editEntity}
+          onCancel={() => setEditEntity(null)}
+        />
+      ) : null}
     </SimpleGrid>
   );
 };
