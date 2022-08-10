@@ -16,7 +16,10 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.6.3...main)
+
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
+
+## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
 ### Added
 
@@ -46,9 +49,6 @@ The types of changes are:
 * Move tests into an `ops` subdir [#935](https://github.com/ethyca/fidesops/pull/935)
 * Move client code into an `ops` subdir [#964](https://github.com/ethyca/fidesops/pull/964)
 * Updated the docs docker base image to be consistent with the fidesops image [#949](https://github.com/ethyca/fidesops/pull/949)
-
-### Breaking Changes
-
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
 ### Developer Experience
