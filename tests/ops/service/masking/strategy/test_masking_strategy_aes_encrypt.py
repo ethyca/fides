@@ -1,11 +1,11 @@
 from unittest import mock
 from unittest.mock import Mock
 
-from fidesops.schemas.masking.masking_configuration import (
+from fidesops.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AES_ENCRYPT_STRATEGY_NAME,
     AesEncryptionMaskingStrategy,
 )
@@ -19,7 +19,9 @@ GCM_CONFIGURATION = AesEncryptionMaskingConfiguration(
 AES_STRATEGY = AesEncryptionMaskingStrategy(configuration=GCM_CONFIGURATION)
 
 
-@mock.patch("fidesops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt")
+@mock.patch(
+    "fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
+)
 def test_mask_gcm_happypath(mock_encrypt: Mock):
     mock_encrypt.return_value = "encrypted"
 
@@ -34,7 +36,9 @@ def test_mask_gcm_happypath(mock_encrypt: Mock):
     clear_cache_secrets(request_id)
 
 
-@mock.patch("fidesops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt")
+@mock.patch(
+    "fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
+)
 def test_mask_all_aes_modes(mock_encrypt: Mock):
     cache_secrets()
     for mode in AesEncryptionMaskingConfiguration.Mode:

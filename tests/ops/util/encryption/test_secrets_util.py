@@ -1,18 +1,18 @@
 from typing import Dict, List
 
-from fidesops.schemas.masking.masking_secrets import (
+from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AES_ENCRYPT_STRATEGY_NAME,
 )
-from fidesops.service.masking.strategy.masking_strategy_hmac import (
+from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
     HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
 )
-from fidesops.util.encryption.secrets_util import SecretsUtil
+from fidesops.ops.util.encryption.secrets_util import SecretsUtil
 
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 

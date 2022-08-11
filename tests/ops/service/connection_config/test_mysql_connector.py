@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from fidesops.service.connectors.sql_connector import MySQLConnector
+from fidesops.ops.service.connectors.sql_connector import MySQLConnector
 
 
 def test_mysql_connector_build_uri(connection_config_mysql, db: Session):

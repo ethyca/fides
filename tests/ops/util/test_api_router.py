@@ -3,8 +3,8 @@ from fideslib.models.client import ClientDetail
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fidesops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
+from fidesops.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 class TestApiRouter:

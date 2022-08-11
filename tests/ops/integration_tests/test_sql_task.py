@@ -7,26 +7,26 @@ from unittest.mock import Mock
 
 import pytest
 
-from fidesops.core.config import config
-from fidesops.graph.config import (
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
 )
-from fidesops.graph.data_type import DataType, StringTypeConverter
-from fidesops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.graph.traversal import TraversalNode
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.schemas.dataset import FidesopsDataset
-from fidesops.service.connectors import get_connector
-from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.graph.data_type import DataType, StringTypeConverter
+from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.ops.graph.traversal import TraversalNode
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
+from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesops.ops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.ops.schemas.dataset import FidesopsDataset
+from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.filter_results import filter_data_categories
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import (
     assert_rows_match,
@@ -859,7 +859,7 @@ class TestRetrievingData:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -893,7 +893,7 @@ class TestRetrievingData:
             }
         ]
 
-    @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -929,7 +929,7 @@ class TestRetrievingData:
             traversal_node, Policy(), privacy_request, {"email": None}
         )
 
-    @mock.patch("fidesops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,
@@ -959,7 +959,9 @@ class TestRetrievingData:
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 class TestRetryIntegration:
-    @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.retrieve_data")
+    @mock.patch(
+        "fidesops.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
+    )
     def test_retry_access_request(
         self,
         mock_retrieve,
@@ -1011,7 +1013,7 @@ class TestRetryIntegration:
             ("postgres_example_test_dataset:employee", "error"),
         ]
 
-    @mock.patch("fidesops.service.connectors.sql_connector.SQLConnector.mask_data")
+    @mock.patch("fidesops.ops.service.connectors.sql_connector.SQLConnector.mask_data")
     def test_retry_erasure(
         self,
         mock_mask: Mock,

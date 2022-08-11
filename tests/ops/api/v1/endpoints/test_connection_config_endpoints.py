@@ -11,14 +11,14 @@ from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fidesops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fidesops.ops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
 

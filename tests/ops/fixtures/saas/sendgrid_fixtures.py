@@ -8,12 +8,12 @@ from fideslib.db import session
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_202_ACCEPTED
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.datasetconfig import DatasetConfig
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.fixtures.saas_example_fixtures import load_config
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence

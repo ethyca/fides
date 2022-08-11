@@ -9,21 +9,21 @@ from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.models.storage import StorageConfig
-from fidesops.schemas.storage.data_upload_location_response import DataUpload
-from fidesops.schemas.storage.storage import (
+from fidesops.ops.models.storage import StorageConfig
+from fidesops.ops.schemas.storage.data_upload_location_response import DataUpload
+from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     StorageDetails,
@@ -69,7 +69,7 @@ class TestUploadData:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    @mock.patch("fidesops.api.v1.endpoints.storage_endpoints.upload")
+    @mock.patch("fidesops.ops.api.v1.endpoints.storage_endpoints.upload")
     def test_post_upload_data(
         self,
         mock_post_upload_data: Mock,
@@ -118,7 +118,7 @@ class TestPatchStorageConfig:
         ]
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_config_not_authenticated(
         self, mock_scheduled_task, api_client: TestClient, payload, url
@@ -129,7 +129,7 @@ class TestPatchStorageConfig:
         mock_scheduled_task.assert_not_called()
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_config_incorrect_scope(
         self,
@@ -173,7 +173,7 @@ class TestPatchStorageConfig:
         )
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_config_with_no_key(
         self,
@@ -213,7 +213,7 @@ class TestPatchStorageConfig:
         )
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_configs_limits_exceeded(
         self,
@@ -251,7 +251,7 @@ class TestPatchStorageConfig:
         )
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_config_with_key(
         self,
@@ -294,7 +294,7 @@ class TestPatchStorageConfig:
         storage_config.delete(db)
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_config_response_format_not_specified(
         self,
@@ -466,7 +466,7 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fidesops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fidesops.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
         self,
         mock_valid: Mock,
@@ -507,7 +507,9 @@ class TestPutStorageConfigSecretsS3:
             "failure_reason": None,
         }
 
-    @mock.patch("fidesops.service.storage.storage_authenticator_service.get_s3_session")
+    @mock.patch(
+        "fidesops.ops.service.storage.storage_authenticator_service.get_s3_session"
+    )
     def test_put_s3_config_secrets_and_verify(
         self,
         get_s3_session_mock: Mock,
@@ -522,7 +524,7 @@ class TestPutStorageConfigSecretsS3:
         get_s3_session_mock.assert_called_once_with(**payload)
 
     @mock.patch(
-        "fidesops.service.storage.storage_authenticator_service.get_onetrust_access_token"
+        "fidesops.ops.service.storage.storage_authenticator_service.get_onetrust_access_token"
     )
     def test_put_onetrust_config_secrets_and_verify(
         self,
@@ -615,7 +617,7 @@ class TestPutStorageConfigSecretsOneTrust:
             == "peanutbutter.onetrust"
         )
 
-    @mock.patch("fidesops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fidesops.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
         self,
         mock_valid: Mock,

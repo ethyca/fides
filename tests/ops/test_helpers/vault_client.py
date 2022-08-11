@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 from hvac import Client
 
-from fidesops.common_exceptions import FidesopsException
+from fidesops.ops.common_exceptions import FidesopsException
 
 logger = logging.getLogger(__name__)
 

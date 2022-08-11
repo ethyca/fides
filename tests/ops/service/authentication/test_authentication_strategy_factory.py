@@ -1,14 +1,16 @@
 import pytest
 
-from fidesops.common_exceptions import NoSuchStrategyException
-from fidesops.service.authentication.authentication_strategy_basic import (
+from fidesops.ops.common_exceptions import NoSuchStrategyException
+from fidesops.ops.service.authentication.authentication_strategy_basic import (
     BasicAuthenticationStrategy,
 )
-from fidesops.service.authentication.authentication_strategy_bearer import (
+from fidesops.ops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
-from fidesops.service.authentication.authentication_strategy_factory import get_strategy
-from fidesops.service.authentication.authentication_strategy_query_param import (
+from fidesops.ops.service.authentication.authentication_strategy_factory import (
+    get_strategy,
+)
+from fidesops.ops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
 )
 

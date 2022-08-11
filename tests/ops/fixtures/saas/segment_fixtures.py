@@ -9,13 +9,13 @@ from faker import Faker
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.datasetconfig import DatasetConfig
-from fidesops.util.saas_util import load_config
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets

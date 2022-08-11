@@ -1,5 +1,5 @@
-from fidesops.schemas.masking.masking_configuration import NullMaskingConfiguration
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.schemas.masking.masking_configuration import NullMaskingConfiguration
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
 

@@ -1,5 +1,5 @@
-from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.analytics_events import failed_graph_analytics_event
+from fidesops.ops.common_exceptions import FidesopsException
+from fidesops.ops.graph.analytics_events import failed_graph_analytics_event
 
 
 class TestFailedGraphAnalyticsEvent:

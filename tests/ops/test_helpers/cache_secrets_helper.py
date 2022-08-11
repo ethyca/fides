@@ -1,5 +1,9 @@
-from fidesops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.util.cache import FidesopsRedis, get_cache, get_masking_secret_cache_key
+from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.ops.util.cache import (
+    FidesopsRedis,
+    get_cache,
+    get_masking_secret_cache_key,
+)
 
 
 def cache_secret(masking_secret_cache: MaskingSecretCache, request_id: str) -> None:

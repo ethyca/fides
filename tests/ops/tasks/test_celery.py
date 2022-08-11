@@ -1,5 +1,5 @@
-from fidesops.core.config import config
-from fidesops.tasks import _create_celery
+from fidesops.ops.core.config import config
+from fidesops.ops.tasks import _create_celery
 
 
 def test_create_task(celery_session_app, celery_session_worker):

@@ -1,4 +1,4 @@
-from fidesops.task.task_resources import TaskResources
+from fidesops.ops.task.task_resources import TaskResources
 
 
 class TestTaskResources:

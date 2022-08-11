@@ -2,8 +2,8 @@ import pytest
 from fastapi import HTTPException
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fidesops.api.v1.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
-from fidesops.schemas.user_permission import UserPermissionsCreate
+from fidesops.ops.api.v1.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
+from fidesops.ops.schemas.user_permission import UserPermissionsCreate
 
 
 class TestUserPermissionsCreate:

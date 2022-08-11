@@ -6,7 +6,7 @@ import pytest
 from fideslib.core.config import get_config
 from pydantic import ValidationError
 
-from fidesops.core.config import FidesopsConfig
+from fidesops.ops.core.config import FidesopsConfig
 
 
 def test_config_from_default() -> None:

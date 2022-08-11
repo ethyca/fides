@@ -3,9 +3,9 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fidesops.graph.config import CollectionAddress, FieldAddress
-from fidesops.schemas.dataset import FidesopsDatasetReference
-from fidesops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fidesops.ops.graph.config import CollectionAddress, FieldAddress
+from fidesops.ops.schemas.dataset import FidesopsDatasetReference
+from fidesops.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 
 
 @pytest.mark.unit_saas

@@ -4,9 +4,11 @@ from typing import Optional
 import pytest
 from requests import Response
 
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.schemas.saas.strategy_configuration import LinkPaginationConfiguration
-from fidesops.service.pagination.pagination_strategy_link import LinkPaginationStrategy
+from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.ops.schemas.saas.strategy_configuration import LinkPaginationConfiguration
+from fidesops.ops.service.pagination.pagination_strategy_link import (
+    LinkPaginationStrategy,
+)
 
 
 @pytest.fixture(scope="function")

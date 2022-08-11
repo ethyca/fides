@@ -57,7 +57,7 @@ For this call, we have to populate the `Authorization` header. Notice that the h
 
 To add scopes to the client, the body of your request must contain an array of scope tokens. 
 
-You can retrieve the available scopes by calling [`GET /api/v1/oauth/scopes`](/fidesops/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get), or you can look in [the scope registry file](https://github.com/ethyca/fidesops/blob/main/src/fidesops/api/v1/scope_registry.py).
+You can retrieve the available scopes by calling [`GET /api/v1/oauth/scopes`](/fidesops/api#operations-OAuth-read_scopes_api_v1_oauth_scope_get), or you can look in [the scope registry file](https://github.com/ethyca/fidesops/blob/main/src/fidesops/ops/api/v1/scope_registry.py).
 
 If the call is successful, Fidesapi responds with a new client ID/client secret pair:
 
@@ -85,5 +85,3 @@ If you call a fidesops API with an expired token, the call returns `401`.
 ### Other OAuth Calls
 
 Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/fidesops/api#operations-tag-OAuth) for details. 
-
-

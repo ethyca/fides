@@ -1,14 +1,16 @@
 import pytest
 
-from fidesops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
     NoSuchStrategyException,
 )
-from fidesops.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
+from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 
