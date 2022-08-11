@@ -91,7 +91,7 @@ class DataCategory(Base, FidesBase):
     The SQL model for the DataCategory resource.
     """
 
-    __tablename__ = "data_categories"
+    __tablename__ = "ctl_data_categories"
 
     parent_key = Column(Text)
 
@@ -101,7 +101,7 @@ class DataQualifier(Base, FidesBase):
     The SQL model for the DataQualifier resource.
     """
 
-    __tablename__ = "data_qualifiers"
+    __tablename__ = "ctl_data_qualifiers"
 
     parent_key = Column(Text)
 
@@ -111,7 +111,7 @@ class DataSubject(Base, FidesBase):
     The SQL model for the DataSubject resource.
     """
 
-    __tablename__ = "data_subjects"
+    __tablename__ = "ctl_data_subjects"
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
 
@@ -121,7 +121,7 @@ class DataUse(Base, FidesBase):
     The SQL model for the DataUse resource.
     """
 
-    __tablename__ = "data_uses"
+    __tablename__ = "ctl_data_uses"
 
     parent_key = Column(Text)
     legal_basis = Column(Text)
@@ -137,7 +137,7 @@ class Dataset(Base, FidesBase):
     The SQL model for the Dataset resource.
     """
 
-    __tablename__ = "datasets"
+    __tablename__ = "ctl_datasets"
 
     meta = Column(JSON)
     data_categories = Column(ARRAY(String))
@@ -155,7 +155,7 @@ class Evaluation(Base):
     The SQL model for the Evaluation resource.
     """
 
-    __tablename__ = "evaluations"
+    __tablename__ = "ctl_evaluations"
 
     fides_key = Column(String, primary_key=True, index=True, unique=True)
     status = Column(String)
@@ -170,7 +170,7 @@ class Organization(Base, FidesBase):
     """
 
     # It inherits this from FidesModel but Organization's don't have this field
-    __tablename__ = "organizations"
+    __tablename__ = "ctl_organizations"
 
     organization_parent_key = Column(String, nullable=True)
     controller = Column(PGEncryptedString, nullable=True)
@@ -186,7 +186,7 @@ class Policy(Base, FidesBase):
     The SQL model for the Policy resource.
     """
 
-    __tablename__ = "policies"
+    __tablename__ = "ctl_policies"
 
     rules = Column(JSON)
 
@@ -197,7 +197,7 @@ class Registry(Base, FidesBase):
     The SQL model for the Registry resource.
     """
 
-    __tablename__ = "registries"
+    __tablename__ = "ctl_registries"
 
 
 # System
@@ -206,7 +206,7 @@ class System(Base, FidesBase):
     The SQL model for the system resource.
     """
 
-    __tablename__ = "systems"
+    __tablename__ = "ctl_systems"
 
     registry_id = Column(String)
     meta = Column(JSON)
