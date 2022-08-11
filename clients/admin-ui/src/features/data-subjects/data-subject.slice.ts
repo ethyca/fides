@@ -17,16 +17,29 @@ export const dataSubjectsApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Data Subject"],
+  tagTypes: ["Data Subjects"],
   endpoints: (build) => ({
     getAllDataSubjects: build.query<DataSubject[], void>({
       query: () => ({ url: `data_subject/` }),
-      providesTags: () => ["Data Subject"],
+      providesTags: () => ["Data Subjects"],
+    }),
+    updateDataSubject: build.mutation<
+      DataSubject,
+      Partial<DataSubject> & Pick<DataSubject, "fides_key">
+    >({
+      query: (dataSubject) => ({
+        url: `data_subject/`,
+        params: { resource_type: "data_subject" },
+        method: "PUT",
+        body: dataSubject,
+      }),
+      invalidatesTags: ["Data Subjects"],
     }),
   }),
 });
 
-export const { useGetAllDataSubjectsQuery } = dataSubjectsApi;
+export const { useGetAllDataSubjectsQuery, useUpdateDataSubjectMutation } =
+  dataSubjectsApi;
 
 export const dataSubjectsSlice = createSlice({
   name: "dataSubjects",

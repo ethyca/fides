@@ -4,15 +4,15 @@ import { useMemo, useState } from "react";
 import AccordionTree from "../common/AccordionTree";
 import EditTaxonomyForm from "./EditTaxonomyForm";
 import { transformTaxonomyEntityToNodes } from "./helpers";
-import { Labels, TaxonomyEntity, TaxonomyEntityNode } from "./types";
+import { TaxonomyHookData } from "./hooks";
+import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 interface Props {
-  isLoading: boolean;
-  data: TaxonomyEntity[] | undefined;
-  labels: Labels;
-  edit: (entity: TaxonomyEntity) => void;
+  useTaxonomy: () => TaxonomyHookData;
 }
-const TaxonomyTabContent = ({ isLoading, data, labels, edit }: Props) => {
+
+const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
+  const { isLoading, data, labels, edit: onEdit } = useTaxonomy();
   const taxonomyNodes = useMemo(() => {
     if (data) {
       return transformTaxonomyEntityToNodes(data);
@@ -50,7 +50,7 @@ const TaxonomyTabContent = ({ isLoading, data, labels, edit }: Props) => {
           labels={labels}
           entity={editEntity}
           onCancel={() => setEditEntity(null)}
-          onEdit={edit}
+          onEdit={onEdit}
         />
       ) : null}
     </SimpleGrid>

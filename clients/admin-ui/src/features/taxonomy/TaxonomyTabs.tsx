@@ -1,16 +1,31 @@
 import { Box } from "@fidesui/react";
 
 import DataTabs from "../common/DataTabs";
-import DataCategoriesTab from "./DataCategoriesTab";
-import DataSubjectsTab from "./DataSubjectsTab";
-import DataUsesTab from "./DataUsesTab";
-import IdentifiabilityTab from "./IdentifiabilityTab";
+import {
+  useDataCategory,
+  useDataQualifier,
+  useDataSubject,
+  useDataUse,
+} from "./hooks";
+import TaxonomyTabContent from "./TaxonomyTabContent";
 
 const TABS = [
-  { label: "Data Categories", content: <DataCategoriesTab /> },
-  { label: "Data Uses", content: <DataUsesTab /> },
-  { label: "Data Subjects", content: <DataSubjectsTab /> },
-  { label: "Identifiability", content: <IdentifiabilityTab /> },
+  {
+    label: "Data Categories",
+    content: <TaxonomyTabContent useTaxonomy={useDataCategory} />,
+  },
+  {
+    label: "Data Uses",
+    content: <TaxonomyTabContent useTaxonomy={useDataUse} />,
+  },
+  {
+    label: "Data Subjects",
+    content: <TaxonomyTabContent useTaxonomy={useDataSubject} />,
+  },
+  {
+    label: "Identifiability",
+    content: <TaxonomyTabContent useTaxonomy={useDataQualifier} />,
+  },
 ];
 const TaxonomyTabs = () => (
   <Box data-testid="taxonomy-tabs">

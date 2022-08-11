@@ -17,16 +17,29 @@ export const dataQualifierApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
-  tagTypes: ["Data Qualifier"],
+  tagTypes: ["Data Qualifiers"],
   endpoints: (build) => ({
     getAllDataQualifiers: build.query<DataQualifier[], void>({
       query: () => ({ url: `data_qualifier/` }),
-      providesTags: () => ["Data Qualifier"],
+      providesTags: () => ["Data Qualifiers"],
+    }),
+    updateDataQualifier: build.mutation<
+      DataQualifier,
+      Partial<DataQualifier> & Pick<DataQualifier, "fides_key">
+    >({
+      query: (dataQualifier) => ({
+        url: `data_qualifier/`,
+        params: { resource_type: "data_qualifier" },
+        method: "PUT",
+        body: dataQualifier,
+      }),
+      invalidatesTags: ["Data Qualifiers"],
     }),
   }),
 });
 
-export const { useGetAllDataQualifiersQuery } = dataQualifierApi;
+export const { useGetAllDataQualifiersQuery, useUpdateDataQualifierMutation } =
+  dataQualifierApi;
 
 export const dataQualifierSlice = createSlice({
   name: "dataQualifier",
