@@ -1,7 +1,7 @@
 import pytest
 
-from fidesops.common_exceptions import FidesopsException
-from fidesops.graph.config import (
+from fidesops.ops.common_exceptions import FidesopsException
+from fidesops.ops.graph.config import (
     Collection,
     Dataset,
     FieldAddress,
@@ -9,7 +9,11 @@ from fidesops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesops.util.saas_util import assign_placeholders, merge_datasets, unflatten_dict
+from fidesops.ops.util.saas_util import (
+    assign_placeholders,
+    merge_datasets,
+    unflatten_dict,
+)
 
 
 class TestMergeDatasets:

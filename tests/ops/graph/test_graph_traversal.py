@@ -1,6 +1,6 @@
 import pytest
 
-from fidesops.graph.graph import *
+from fidesops.ops.graph.graph import *
 
 from .graph_test_util import *
 

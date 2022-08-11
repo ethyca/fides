@@ -1,7 +1,7 @@
-from fidesops.schemas.saas.strategy_configuration import (
+from fidesops.ops.schemas.saas.strategy_configuration import (
     UnwrapPostProcessorConfiguration,
 )
-from fidesops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
+from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
     UnwrapPostProcessorStrategy,
 )
 

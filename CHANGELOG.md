@@ -42,6 +42,7 @@ The types of changes are:
 ### Changed
 
 * Users should be able to click on the full field of a dropdown-type filter to open up the dropdown [#747](https://github.com/ethyca/fidesops/pull/903)
+* Reorganize the core code logic to be easier to merge with fidesctl [#1058](https://github.com/ethyca/fidesops/pull/1058)
 * Updated the python docker base image from slim-buster to slim-bullseye [#928](https://github.com/ethyca/fidesops/pull/928)
 * Removed ipython from the docker install [#928](https://github.com/ethyca/fidesops/pull/928)
 * Run static nox checks outside of Docker [#1053](https://github.com/ethyca/fidesops/pull/1053)

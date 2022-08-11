@@ -14,7 +14,7 @@ from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload
 from starlette.testclient import TestClient
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -23,7 +23,7 @@ from fidesops.api.v1.scope_registry import (
     SCOPE_REGISTRY,
     STORAGE_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
@@ -32,9 +32,9 @@ from fidesops.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fidesops.common_exceptions import OAuth2TokenException
-from fidesops.core.config import config
-from fidesops.models.authentication_request import AuthenticationRequest
+from fidesops.ops.common_exceptions import OAuth2TokenException
+from fidesops.ops.core.config import config
+from fidesops.ops.models.authentication_request import AuthenticationRequest
 
 
 class TestCreateClient:
@@ -458,7 +458,7 @@ class TestCallback:
         }
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state(
         self,
@@ -485,7 +485,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fidesops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state_with_token_error(
         self,

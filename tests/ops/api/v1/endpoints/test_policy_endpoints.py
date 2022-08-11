@@ -5,21 +5,21 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fidesops.api.v1 import scope_registry as scopes
-from fidesops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
-from fidesops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
-from fidesops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
-from fidesops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1 import scope_registry as scopes
+from fidesops.ops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fidesops.ops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fidesops.ops.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fidesops.ops.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
+from fidesops.ops.api.v1.urn_registry import (
     RULE_TARGET_DETAIL,
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fidesops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fidesops.service.masking.strategy.masking_strategy_nullify import (
+from fidesops.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.util.data_category import DataCategory, generate_fides_data_categories
+from fidesops.ops.util.data_category import DataCategory, generate_fides_data_categories
 
 
 class TestGetPolicies:

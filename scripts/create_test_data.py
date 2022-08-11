@@ -9,19 +9,19 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
-from fidesops.core.config import config
-from fidesops.db.database import init_db
-from fidesops.models.connectionconfig import (
+from fidesops.ops.core.config import config
+from fidesops.ops.db.database import init_db
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.models.storage import ResponseFormat, StorageConfig
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
-from fidesops.util.data_category import DataCategory
+from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.storage import ResponseFormat, StorageConfig
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
+from fidesops.ops.util.data_category import DataCategory
 
 
 def _create_policy(

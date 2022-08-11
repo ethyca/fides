@@ -3,21 +3,21 @@ from typing import Dict
 
 import pytest
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     POLICY_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fidesops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     POLICY_POST_WEBHOOK_DETAIL,
     POLICY_PRE_WEBHOOK_DETAIL,
     POLICY_WEBHOOKS_POST,
     POLICY_WEBHOOKS_PRE,
     V1_URL_PREFIX,
 )
-from fidesops.models.connectionconfig import ConnectionConfig
-from fidesops.models.policy import PolicyPostWebhook, PolicyPreWebhook
+from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 

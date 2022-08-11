@@ -2,11 +2,11 @@
 
 ## What is data masking?
 
-Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally 
+Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally
 identifiable information.)
 
 For example, if a customer requests that your remove all information associated with their email,
-`test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and 
+`test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and
 their associated address with another random string `2ab6jghdg37uhkaz3hpyavpss1dvg2`.
 
 It's important to remember that masking does not equal anonymization. Since records are not deleted, a masked dataset is (at best)
@@ -15,27 +15,25 @@ pseudonymized in most cases, and (at worst) may still be identifiable if the mas
 In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
 of masking strategies for different purposes when used directly as an API including HMAC, Hash, AES encryption, string rewrite, random string rewrite, and null rewrite.
 
-
 ### Why mask instead of delete?
 
-Deleting customer data may involve entirely deleting a whole record (all attributes of the entity) or permanent and 
+Deleting customer data may involve entirely deleting a whole record (all attributes of the entity) or permanent and
 irreversible anonymization of the record by updating specific fields within a record with masked values.
 
-Using a masking strategy instead of straight deletion to obscure PII helps ensure referential integrity in your 
-database. For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first 
-deleted a user with email `test@example.com` without addressing their orders, you could potentially 
-have lingering orphans in the `orders` table. Using masking as a "soft delete" might be a safer strategy 
+Using a masking strategy instead of straight deletion to obscure PII helps ensure referential integrity in your
+database. For example, you might have an `orders` table with a foreign key to `user` without cascade delete. Say you first
+deleted a user with email `test@example.com` without addressing their orders, you could potentially
+have lingering orphans in the `orders` table. Using masking as a "soft delete" might be a safer strategy
 depending on how your tables are defined.
 
-In order to ensure referential integrity is retained, any values that represent foreign keys must be consistently 
+In order to ensure referential integrity is retained, any values that represent foreign keys must be consistently
 updated with the same masked values across all sources.
 
 Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.
 
-
 ## Using fidesops as a masking service
 
-If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the 
+If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the
 value(s) you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
 
 ### Masking example
@@ -65,7 +63,6 @@ value(s) you'd like pseudonymized. This endpoint is also useful for getting a fe
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
 See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use fidesops to as a masking service.
-
 
 ## Configuration
 
@@ -112,7 +109,7 @@ Masks the input value with a default string value.
 
 - `rewrite_value`: `str` that will replace input values
 - `format_preservation` (optional): `Dict` with the following key/vals:
-    - `suffix`: `str` that specifies suffix to append to masked value
+  - `suffix`: `str` that specifies suffix to append to masked value
 
 ### Hash
 
@@ -124,7 +121,7 @@ Masks the data by hashing the input before returning it. The hash is determinist
 
 - `algorithm` (optional): `str` that specifies Hash masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
 - `format_preservation` (optional): `Dict` with the following key/vals:
-    - `suffix`: `str` that specifies suffix to append to masked value
+  - `suffix`: `str` that specifies suffix to append to masked value
 
 ### Random string rewrite
 
@@ -136,7 +133,7 @@ Masks the input value with a random string of a specified length.
 
 - `length` (optional): `int` that specifies length of randomly generated string. Default = `30`
 - `format_preservation` (optional): `Dict` with the following key/vals:
-    - `suffix`: `str` that specifies suffix to append to masked value
+  - `suffix`: `str` that specifies suffix to append to masked value
 
 ### AES encrypt
 
@@ -148,7 +145,7 @@ Masks the data using AES encryption before returning it. The AES encryption stra
 
 - `mode` (optional): `str` that specifies AES encryption mode. Only supported option is `GCM`. Default = `GCM`
 - `format_preservation` (optional): `Dict` with the following key/vals:
-    - `suffix`: `str` that specifies suffix to append to masked value
+  - `suffix`: `str` that specifies suffix to append to masked value
 
 ### HMAC
 
@@ -160,36 +157,32 @@ Masks the data using HMAC before returning it. The HMAC encryption strategy is d
 
 - `algorithm` (optional): `str` that specifies HMAC masking algorithm. Options include `SHA-512` or `SHA_256`. Default = `SHA_256`
 - `format_preservation` (optional): `Dict` with the following key/vals:
-    - `suffix`: `str` that specifies suffix to append to masked value
+  - `suffix`: `str` that specifies suffix to append to masked value
 
-    
 See the [Policy guide](policies.md) for more detailed instructions on creating Policies and Rules.
-
 
 ## Getting masking options
 
 Issue a GET request to [`/api/v1/masking/strategy`](/fidesops/api#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
-strategies available, along with their configuration options. 
-
+strategies available, along with their configuration options.
 
 ## Extensibility
 
-In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`. 
-`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these 
+In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`.
+`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
-
 
 ```python
 import string
 from typing import Optional
 from secrets import choice
 
-from fidesops.schemas.masking.masking_configuration import RandomStringMaskingConfiguration, MaskingConfiguration
-from fidesops.schemas.masking.masking_strategy_description import MaskingStrategyDescription
-from fidesops.service.masking.strategy.format_preservation import FormatPreservation
-from fidesops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.ops.schemas.masking.masking_configuration import RandomStringMaskingConfiguration, MaskingConfiguration
+from fidesops.ops.schemas.masking.masking_strategy_description import MaskingStrategyDescription
+from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
+from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 
@@ -237,15 +230,14 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         """Not covered in this example"""
 ```
 
-The `mask` method will be called with the list of values to be masked and the masked values will be the output. In this case, we want to replace the supplied values with a random mixture of ascii lowercase letters and digits of the 
-specified length. If format preservation is specified, for example, we still want to know that an email was an email, 
+The `mask` method will be called with the list of values to be masked and the masked values will be the output. In this case, we want to replace the supplied values with a random mixture of ascii lowercase letters and digits of the
+specified length. If format preservation is specified, for example, we still want to know that an email was an email,
 we might tack on an email-like suffix.
 
-Note the arguments to the __init__ method - there is a field configuration of type `RandomStringMaskingConfiguration`. 
-This is the configuration for the masking strategy. It is used to house the options specified by the client as well as 
-any defaults that should be applied in their absence. All configuration classes extend from the 
+Note the arguments to the __init__ method - there is a field configuration of type `RandomStringMaskingConfiguration`.
+This is the configuration for the masking strategy. It is used to house the options specified by the client as well as
+any defaults that should be applied in their absence. All configuration classes extend from the
 `MaskingConfiguration` class.
-
 
 ### Integrate the masking strategy factory
 

@@ -6,9 +6,12 @@ import pytest
 from fideslib.core.config import load_toml
 from sqlalchemy import inspect
 
-from fidesops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
-from fidesops.service.connectors import (
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.schemas.connection_configuration import (
+    RedshiftSchema,
+    SnowflakeSchema,
+)
+from fidesops.ops.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,

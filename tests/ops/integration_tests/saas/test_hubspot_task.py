@@ -3,15 +3,15 @@ import random
 
 import pytest
 
-from fidesops.graph.graph import DatasetGraph
-from fidesops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.service.connectors import SaaSConnector
-from fidesops.task import graph_task
-from fidesops.task.filter_results import filter_data_categories
-from fidesops.task.graph_task import get_cached_data_for_erasures
-from fidesops.util.saas_util import format_body
+from fidesops.ops.graph.graph import DatasetGraph
+from fidesops.ops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesops.ops.service.connectors import SaaSConnector
+from fidesops.ops.task import graph_task
+from fidesops.ops.task.filter_results import filter_data_categories
+from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fidesops.ops.util.saas_util import format_body
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 

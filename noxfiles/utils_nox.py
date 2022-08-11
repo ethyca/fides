@@ -51,7 +51,7 @@ def db(session: nox.Session, db_command: str) -> None:
     init_command = (
         "python",
         "-c",
-        "from fidesops.db.database import init_db; from fidesops.core.config import config; init_db(config.database.sqlalchemy_database_uri)",
+        "from fidesops.ops.db.database import init_db; from fidesops.ops.core.config import config; init_db(config.database.sqlalchemy_database_uri)",
     )
     session.run(*RUN, *init_command, external=True)
 

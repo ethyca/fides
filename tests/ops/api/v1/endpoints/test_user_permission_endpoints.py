@@ -13,15 +13,15 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SAAS_CONFIG_READ,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
 )
-from fidesops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
-from fidesops.core.config import config
+from fidesops.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
+from fidesops.ops.core.config import config
 
 
 class TestCreateUserPermissions:

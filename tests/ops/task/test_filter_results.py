@@ -3,8 +3,8 @@ from datetime import datetime
 
 from bson import ObjectId
 
-from fidesops.graph.config import CollectionAddress, FieldPath
-from fidesops.task.filter_results import (
+from fidesops.ops.graph.config import CollectionAddress, FieldPath
+from fidesops.ops.task.filter_results import (
     filter_data_categories,
     remove_empty_containers,
     select_and_save_field,

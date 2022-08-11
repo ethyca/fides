@@ -2,11 +2,11 @@
 
 ## Overview
 
-Access requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket). 
+Access requests will produce a data package upon completion. This data will need to be uploaded to a storage destination (e.g. an S3 bucket).
 
 Fidesops never stores privacy request results locally, so you’ll need to configure at least one storage destination if you wish to process Access requests.
 
-Storage destinations are configured on Rules. 
+Storage destinations are configured on Rules.
 
 ![Storage Destinations](../img/storage_destinations.png "Storage Destinations")
 
@@ -24,7 +24,7 @@ To configure a StorageConfig, you'll first need to choose a storage destination 
 
 Let's get started. To create a new StorageConfig, use the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_api_v1_storage_config_put)):
 
-```json title="<code>PATCH {host}/api/v1/storage/config</code>" 
+```json title="<code>PATCH {host}/api/v1/storage/config</code>"
   {
     "destinations": [
       {
@@ -46,6 +46,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
   }
 
 ```
+
 Params:
 
 - `name`: A unique user-friendly name for your storage destination.
@@ -56,7 +57,7 @@ Params:
 Additional params needed for S3:
 
 - `bucket`: Name of bucket in S3.
-- `naming`: This defines how the uploaded files will be named. Currently, fidesops only supports upload file naming by `request_id`. Use this value for all your storage destinations. 
+- `naming`: This defines how the uploaded files will be named. Currently, fidesops only supports upload file naming by `request_id`. Use this value for all your storage destinations.
 
 Additional params needed for OneTrust:
 
@@ -68,8 +69,7 @@ Additional params needed for local:
 
 - `naming`: This defines how the uploaded files will be named. Currently, fidesops only supports upload file naming by `request_id`. Use this value for all your storage destinations.
 
-On success, the response from the above endpoint will include a `storage_key` for each destination. 
-
+On success, the response from the above endpoint will include a `storage_key` for each destination.
 
 ```json title="Example response"
 {
@@ -98,7 +98,7 @@ Next, you'll need to authenticate secrets with the specific storage destination.
 
 Authentication is not needed for the `local` destination type.
 
-Use the `storage_key` obtained from above in the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_secrets_api_v1_storage_config__config_key__secret_put)): 
+Use the `storage_key` obtained from above in the following endpoint ([API docs here](/fidesops/api#operations-Storage-put_config_secrets_api_v1_storage_config__config_key__secret_put)):
 
 ```json title="<code>PUT {host}/api/v1/storage/config/{storage_key}/secret</code>"
   {
@@ -115,14 +115,14 @@ Use the `storage_key` obtained from above in the following endpoint ([API docs h
 
 Params needed for S3:
 
-  - `aws_access_key_id`: AWS access key id, obtained from AWS console.
-  - `aws_secret_access_key`: AWS secret access key, obtained from AWS console.
+- `aws_access_key_id`: AWS access key id, obtained from AWS console.
+- `aws_secret_access_key`: AWS secret access key, obtained from AWS console.
 
 Params needed for OneTrust:
 
-  - `onetrust_hostname`: Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. `my-company.onetrust`
-  - `onetrust_client_id`: OneTrust client id, obtained from OneTrust portal.
-  - `onetrust_client_secret`: OneTrust client id, obtained from OneTrust portal.
+- `onetrust_hostname`: Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. `my-company.onetrust`
+- `onetrust_client_id`: OneTrust client id, obtained from OneTrust portal.
+- `onetrust_client_secret`: OneTrust client id, obtained from OneTrust portal.
 
 Currently, we do not save the secrets if credentials fail authentication with the given storage destination.
 
@@ -130,7 +130,7 @@ Currently, we do not save the secrets if credentials fail authentication with th
 
 To test that your storage destination works correctly, you may hit the upload endpoint directly, where `request_id` in the path is an arbitrary string.
 
-Keep in mind that OneTrust destinations will need to be tested end-to-end, using the OneTrust interface to approve a test privacy request. 
+Keep in mind that OneTrust destinations will need to be tested end-to-end, using the OneTrust interface to approve a test privacy request.
 
 To upload data to a storage destination of choice ([api docs here](/fidesops/api#operations-Storage-upload_data_api_v1_storage__request_id__post)):
 
@@ -149,11 +149,10 @@ Params:
 - `storage_key`: key associated with the storage destination
 - `data`: dict of arbitrary data you wish to upload to storage destination.
 
-
 ## Extensibility
 
 Need a different storage destination? Fidesops can be extended to support additional storage destinations by:
- 
-1. Add destination-specific enums in `src/fidesops/schemas/storage/storage.py`
-2. Implement an authenticator in `src/fidesops/service/storage/storage_authenticator_service.py`
-3. Implement the uploader in `src/fidesops/service/storage/storage_uploader_service.py`
+
+1. Add destination-specific enums in `src/fidesops/ops/schemas/storage/storage.py`
+2. Implement an authenticator in `src/fidesops/ops/service/storage/storage_authenticator_service.py`
+3. Implement the uploader in `src/fidesops/ops/service/storage/storage_uploader_service.py`

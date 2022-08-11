@@ -19,7 +19,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fidesops",
-    entry_points={"console_scripts": ["fidesops=fidesops.cli:cli"]},
+    entry_points={"console_scripts": ["fidesops=fidesops.ops.cli:cli"]},
     python_requires=">=3.7, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),

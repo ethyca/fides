@@ -13,9 +13,9 @@ from typing import Optional
 import requests
 import yaml
 
-from fidesops.core.config import config
-from fidesops.models.connectionconfig import ConnectionType
-from fidesops.models.policy import ActionType
+from fidesops.ops.core.config import config
+from fidesops.ops.models.connectionconfig import ConnectionType
+from fidesops.ops.models.policy import ActionType
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

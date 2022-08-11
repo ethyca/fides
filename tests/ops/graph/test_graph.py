@@ -1,11 +1,11 @@
 import pytest
 
-from fidesops.core.config import config
-from fidesops.graph.config import *
-from fidesops.graph.traversal import *
-from fidesops.models.policy import ActionType
-from fidesops.task.graph_task import retry
-from fidesops.task.task_resources import TaskResources
+from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import *
+from fidesops.ops.graph.traversal import *
+from fidesops.ops.models.policy import ActionType
+from fidesops.ops.task.graph_task import retry
+from fidesops.ops.task.task_resources import TaskResources
 from tests.ops.task.traversal_data import integration_db_graph
 
 t1 = Collection(

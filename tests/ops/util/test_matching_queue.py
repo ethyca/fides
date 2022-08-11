@@ -1,4 +1,4 @@
-from fidesops.util.matching_queue import *
+from fidesops.ops.util.matching_queue import *
 
 
 def test_queue() -> None:

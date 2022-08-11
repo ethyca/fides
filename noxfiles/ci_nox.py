@@ -114,7 +114,7 @@ def check_migrations(session: nox.Session) -> None:
     check_migration_command = (
         "python",
         "-c",
-        "from fidesops.db.database import check_missing_migrations; from fidesops.core.config import config; check_missing_migrations(config.database.sqlalchemy_database_uri);",
+        "from fidesops.ops.db.database import check_missing_migrations; from fidesops.ops.core.config import config; check_missing_migrations(config.database.sqlalchemy_database_uri);",
     )
     session.run(*RUN, *check_migration_command, external=True)
 

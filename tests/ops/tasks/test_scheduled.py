@@ -1,13 +1,13 @@
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 
-from fidesops.models.privacy_request import PrivacyRequestStatus
-from fidesops.schemas.storage.storage import StorageDetails
-from fidesops.service.privacy_request.request_runner_service import (
+from fidesops.ops.models.privacy_request import PrivacyRequestStatus
+from fidesops.ops.schemas.storage.storage import StorageDetails
+from fidesops.ops.service.privacy_request.request_runner_service import (
     initiate_paused_privacy_request_followup,
 )
-from fidesops.tasks.scheduled.scheduler import scheduler
-from fidesops.tasks.scheduled.tasks import (
+from fidesops.ops.tasks.scheduled.scheduler import scheduler
+from fidesops.ops.tasks.scheduled.tasks import (
     ONETRUST_INTAKE_TASK,
     initiate_scheduled_request_intake,
 )
