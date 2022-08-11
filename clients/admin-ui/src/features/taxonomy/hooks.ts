@@ -14,20 +14,13 @@ import {
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "./data-categories.slice";
-import { TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
 export interface TaxonomyHookData {
   data?: TaxonomyEntity[];
   isLoading: boolean;
   labels: Labels;
-  edit: (entity: TaxonomyEntity) => void;
-}
-
-interface Labels {
-  fides_key: string;
-  name: string;
-  description: string;
-  parent_key: string;
+  edit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
 }
 
 export const useDataCategory = (): TaxonomyHookData => {

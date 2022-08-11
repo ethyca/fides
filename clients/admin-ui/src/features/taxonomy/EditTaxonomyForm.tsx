@@ -6,32 +6,51 @@ import {
   Grid,
   Heading,
   Stack,
+  Text,
+  useToast,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
+import { useState } from "react";
+
+import { isErrorResult, parseError } from "~/features/common/helpers";
+import { RTKErrorResult } from "~/types/errors";
 
 import { CustomTextArea, CustomTextInput } from "../common/form/inputs";
+import { successToastParams } from "../common/toast";
 import DataCategoryTag from "./DataCategoryTag";
-import { Labels, TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
-type FormValues = TaxonomyEntity;
+type FormValues = Partial<TaxonomyEntity> & Pick<TaxonomyEntity, "fides_key">;
 
 interface Props {
   entity: TaxonomyEntity;
   labels: Labels;
   onCancel: () => void;
-  onEdit: (entity: TaxonomyEntity) => void;
+  onEdit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
 }
 const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
+  const toast = useToast();
   const initialValues: FormValues = {
     fides_key: entity.fides_key,
     name: entity.name ?? "",
     description: entity.description ?? "",
     parent_key: entity.parent_key ?? "",
   };
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const handleSubmit = (newValues: FormValues) => {
-    console.log({ newValues });
-    onEdit(newValues);
+  const handleError = (error: RTKErrorResult["error"]) => {
+    const parsedError = parseError(error);
+    setFormError(parsedError.message);
+  };
+
+  const handleSubmit = async (newValues: FormValues) => {
+    setFormError(null);
+    const result = await onEdit(newValues);
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      toast(successToastParams("Taxonomy successfully updated"));
+    }
   };
 
   return (
@@ -62,6 +81,12 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
                 disabled
               />
             </Stack>
+
+            {formError ? (
+              <Text color="red" mb={2}>
+                {formError}
+              </Text>
+            ) : null}
 
             <ButtonGroup size="sm">
               <Button
