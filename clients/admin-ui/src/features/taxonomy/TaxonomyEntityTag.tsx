@@ -5,23 +5,20 @@ interface Props {
   onClose?: () => void;
 }
 const TaxonomyEntityTag = ({ name, onClose, ...other }: Props & TagProps) => {
+  const tagProps = {
+    backgroundColor: "primary.400",
+    color: "white",
+    "data-testid": `taxonomy-entity-${name}`,
+    width: "fit-content",
+    size: "sm",
+    ...other,
+  };
+
   if (!onClose) {
-    return (
-      <Tag backgroundColor="primary.400" color="white" size="sm">
-        {name}
-      </Tag>
-    );
+    return <Tag {...tagProps}>{name}</Tag>;
   }
   return (
-    <Tag
-      backgroundColor="primary.400"
-      color="white"
-      display="flex"
-      justifyContent="space-between"
-      width="fit-content"
-      data-testid={`data-category-${name}`}
-      {...other}
-    >
+    <Tag display="flex" justifyContent="space-between" {...tagProps}>
       <TagLabel>{name}</TagLabel>
       <TagCloseButton onClick={onClose} color="white" />
     </Tag>

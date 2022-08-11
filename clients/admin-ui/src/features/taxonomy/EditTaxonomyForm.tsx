@@ -70,7 +70,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
               <Grid templateColumns="1fr 3fr">
                 <FormLabel>{labels.fides_key}</FormLabel>
                 <Box>
-                  <TaxonomyEntityTag name={entity.fides_key} size="sm" />
+                  <TaxonomyEntityTag name={entity.fides_key} />
                 </Box>
               </Grid>
               <CustomTextInput name="name" label={labels.name} />
