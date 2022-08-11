@@ -19,8 +19,8 @@ import { DataCategory } from "~/types/api";
 import CheckboxTree from "../common/CheckboxTree";
 import { ArrowDownLineIcon } from "../common/Icon";
 import QuestionTooltip from "../common/QuestionTooltip";
-import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import { transformTaxonomyEntityToNodes } from "../taxonomy/helpers";
+import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 
 interface Props {
   dataCategories: DataCategory[];
@@ -138,7 +138,7 @@ const DataCategoryInput = ({
         </Box>
         <Stack data-testid="selected-categories">
           {sortedCheckedDataCategories.map((dc) => (
-            <DataCategoryTag
+            <TaxonomyEntityTag
               key={dc}
               name={dc}
               onClose={() => {

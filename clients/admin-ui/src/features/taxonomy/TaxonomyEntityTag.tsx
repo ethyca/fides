@@ -4,7 +4,7 @@ interface Props {
   name: string;
   onClose?: () => void;
 }
-const DataCategoryTag = ({ name, onClose, ...other }: Props & TagProps) => {
+const TaxonomyEntityTag = ({ name, onClose, ...other }: Props & TagProps) => {
   if (!onClose) {
     return (
       <Tag backgroundColor="primary.400" color="white" size="sm">
@@ -28,4 +28,4 @@ const DataCategoryTag = ({ name, onClose, ...other }: Props & TagProps) => {
   );
 };
 
-export default DataCategoryTag;
+export default TaxonomyEntityTag;

@@ -17,7 +17,7 @@ import { RTKErrorResult } from "~/types/errors";
 
 import { CustomTextArea, CustomTextInput } from "../common/form/inputs";
 import { successToastParams } from "../common/toast";
-import DataCategoryTag from "./DataCategoryTag";
+import TaxonomyEntityTag from "./TaxonomyEntityTag";
 import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
 type FormValues = Partial<TaxonomyEntity> & Pick<TaxonomyEntity, "fides_key">;
@@ -54,7 +54,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
   };
 
   return (
-    <Stack pl={6} spacing={6}>
+    <Stack pl={6} spacing={6} data-testid="edit-taxonomy-form">
       <Heading size="md" textTransform="capitalize">
         Modify {labels.fides_key}
       </Heading>
@@ -70,7 +70,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
               <Grid templateColumns="1fr 3fr">
                 <FormLabel>{labels.fides_key}</FormLabel>
                 <Box>
-                  <DataCategoryTag name={entity.fides_key} size="sm" />
+                  <TaxonomyEntityTag name={entity.fides_key} size="sm" />
                 </Box>
               </Grid>
               <CustomTextInput name="name" label={labels.name} />
