@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.8-slim-bullseye as base
+FROM --platform=linux/amd64 python:3.9-slim-bullseye as base
 
 # Update pip in the base image since we'll use it everywhere
 RUN pip install -U pip

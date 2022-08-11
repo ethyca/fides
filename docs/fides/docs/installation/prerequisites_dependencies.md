@@ -2,7 +2,7 @@
 
 Fidesctl supports the following Python versions:
 
-* Python: 3.8
+* Python: 3.9+
 
 Fidesctl supports the following databases as the application database:
 

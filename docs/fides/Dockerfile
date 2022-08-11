@@ -1,4 +1,4 @@
-FROM python:3.8-slim-bullseye
+FROM python:3.9-slim-bullseye
 
 # Install auxiliary software
 RUN apt-get update
