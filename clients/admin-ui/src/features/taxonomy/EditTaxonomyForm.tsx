@@ -83,7 +83,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
             </Stack>
 
             {formError ? (
-              <Text color="red" mb={2}>
+              <Text color="red" mb={2} data-testid="taxonomy-form-error">
                 {formError}
               </Text>
             ) : null}
