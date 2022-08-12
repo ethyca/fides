@@ -63,6 +63,7 @@ class OffsetPaginationStrategy(PaginationStrategy):
         request_params.query_params[self.incremental_param] = param_value
         return SaaSRequestParams(
             method=request_params.method,
+            headers=request_params.headers,
             path=request_params.path,
             query_params=request_params.query_params,
             body=request_params.body,

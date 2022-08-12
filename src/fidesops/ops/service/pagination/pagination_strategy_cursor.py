@@ -47,6 +47,7 @@ class CursorPaginationStrategy(PaginationStrategy):
 
         return SaaSRequestParams(
             method=request_params.method,
+            headers=request_params.headers,
             path=request_params.path,
             query_params=request_params.query_params,
             body=request_params.body,

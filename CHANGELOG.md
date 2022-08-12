@@ -19,6 +19,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
 
+### Fixed
+
+* HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
+
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 
 ### Added
