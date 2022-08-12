@@ -56,6 +56,10 @@ The types of changes are:
 * Updated the docs docker base image to be consistent with the fidesops image [#949](https://github.com/ethyca/fidesops/pull/949)
 * Update fidesops to use bcrypt for hashing [#876](https://github.com/ethyca/fidesops/pull/876)
 
+### Changed
+
+* Updated fideslog==1.1.0 [#890](https://github.com/ethyca/fidesops/pull/890)
+
 ### Developer Experience
 
 * Fix randomly failing mssql integration tests [#918](https://github.com/ethyca/fidesops/pull/918)

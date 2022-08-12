@@ -102,7 +102,7 @@ For simplicity's sake, let's just create one Policy, one Rule, and one Target.
 Our single Policy will have one Rule with type `access`, meaning we just want to *retrieve* user data, not delete it. 
 We also configure on the Rule that any results will be uploaded to our local Storage `example_storage`.
 
-Finally, we create a RuleTarget, that is looking for all data with the category `user.provided.identifiable` (and included subcategories). 
+Finally, we create a RuleTarget, that is looking for all data with the category `user` (and included subcategories). 
 
 ```python
 if __name__ == "__main__":
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         access_token=access_token,
     )
 
-    data_category = "user.provided.identifiable"
+    data_category = "user"
     create_policy_rule_target(
         "example_request_policy", "access_user_data", data_category, access_token
     )

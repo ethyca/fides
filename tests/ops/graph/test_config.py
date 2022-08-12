@@ -338,13 +338,13 @@ class TestField:
             name="apartment_no",
             primary_key=False,
             data_type_converter=IntTypeConverter(),
-            data_categories=["user.provided.identifiable.contact.street"],
+            data_categories=["user.contact.address.street"],
         )
         street_address_sub_field = ScalarField(
             name="street_address",
             primary_key=False,
             data_type_converter=StringTypeConverter(),
-            data_categories=["user.provided.identifiable.contact.street"],
+            data_categories=["user.contact.address.street"],
         )
         is_apartment_sub_field = ScalarField(
             name="is_apartment",
@@ -370,9 +370,7 @@ class TestField:
         )
 
         def is_street_category(field):
-            return "user.provided.identifiable.contact.street" in (
-                field.data_categories or []
-            )
+            return "user.contact.address.street" in (field.data_categories or [])
 
         # ObjectField collect_matching - nested fields selected.
         results = contact_info_field.collect_matching(is_street_category)
@@ -392,7 +390,7 @@ class TestField:
             name="apartment_no",
             primary_key=False,
             data_type_converter=IntTypeConverter(),
-            data_categories=["user.provided.identifiable.contact.street"],
+            data_categories=["user.contact.address.street"],
         )
 
         with pytest.raises(pydantic.error_wrappers.ValidationError):

@@ -411,7 +411,7 @@ def _create_mock_policy(
             "storage_destination_id": storage_config.id,
         },
     )
-    data_category = DataCategory("user.provided.identifiable").value
+    data_category = DataCategory("user").value
     RuleTarget.get_or_create(
         db=db,
         data={

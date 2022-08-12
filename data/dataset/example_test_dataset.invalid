@@ -6,19 +6,19 @@ dataset:
       * name: address
         fields:
           * name: city
-            data_categories: [user.provided.identifiable.contact.city]
+            data_categories: [user.contact.address.city]
           * name: house
-            data_categories: [user.provided.identifiable.contact.street]
+            data_categories: [user.contact.address.street]
           * name: id
             data_categories: [system.operations]
             fidesops_meta:
               primary_key: True
           * name: state
-            data_categories: [user.provided.identifiable.contact.state]
+            data_categories: [user.contact.address.state]
           * name: street
-            data_categories: [user.provided.identifiable.contact.street]
+            data_categories: [user.contact.address.street]
           * name: zip
-            data_categories: [user.provided.identifiable.contact.postal_code]
+            data_categories: [user.contact.address.postal_code]
 
       * name: customer
         fields:
@@ -32,16 +32,16 @@ dataset:
           * name: created
             data_categories: [system.operations]
           * name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
           * name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           * name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
               length: 40
@@ -56,23 +56,23 @@ dataset:
                   field: address.id
                   direction: to
           * name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
           * name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           * name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
 
       * name: login
         fields:
           * name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 * dataset: bigquery_example_test_dataset
@@ -83,12 +83,12 @@ dataset:
             fidesops_meta:
               primary_key: True
           * name: time
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
 
       * name: orders
         fields:
           * name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 * dataset: bigquery_example_test_dataset
@@ -136,11 +136,11 @@ dataset:
                   field: address.id
                   direction: to
           * name: ccn
-            data_categories: [user.provided.identifiable.financial.account_number]
+            data_categories: [user.financial.account_number]
           * name: code
-            data_categories: [user.provided.identifiable.financial]
+            data_categories: [user.financial]
           * name: customer_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 * dataset: bigquery_example_test_dataset
@@ -151,9 +151,9 @@ dataset:
             fidesops_meta:
               primary_key: True
           * name: name
-            data_categories: [user.provided.identifiable.financial]
+            data_categories: [user.financial]
           * name: preferred
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
 
       * name: product
         fields:
@@ -169,7 +169,7 @@ dataset:
       * name: report
         fields:
           * name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
@@ -189,7 +189,7 @@ dataset:
       * name: service_request
         fields:
           * name: alt_email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string
@@ -201,7 +201,7 @@ dataset:
               identity: email
               data_type: string
           * name: employee_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 * dataset: bigquery_example_test_dataset
@@ -217,7 +217,7 @@ dataset:
       * name: visit
         fields:
           * name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               identity: email
               data_type: string

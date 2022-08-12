@@ -6,7 +6,7 @@ dataset:
       - name: contacts
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: string
@@ -15,7 +15,7 @@ dataset:
               data_type: object
             fields:
               - name: company
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
               - name: createdate
@@ -23,35 +23,35 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: email
-                data_categories: [user.provided.identifiable.contact.email]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
               - name: firstname
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: lastmodifieddate
-                data_categories: [user.derived.nonidentifiable.sensor]
+                data_categories: [user.sensor]
                 fidesops_meta:
                   data_type: string
               - name: lastname
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: website
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
           - name: createdAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
           - name: archived
@@ -61,11 +61,11 @@ dataset:
       - name: owners
         fields:
           - name: firstName
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: lastName
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: createdAt
@@ -85,386 +85,386 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: name
-                data_categories: [user.provided.nonidentifiable]
+                data_categories: [user]
                 fidesops_meta:
                   data_type: string
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: userId
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: integer
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: updatedAt
-            data_categories: [user.derived.nonidentifiable.sensor]
+            data_categories: [user.sensor]
             fidesops_meta:
               data_type: string
-#      - name: marketing_emails
-#        fields:
-#          - name: ab
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: abHoursToWait
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: abSampleSizeDefault
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: abSamplingDefault
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: abSuccessMetric
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: abTestPercentage
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: abVariation
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: absoluteUrl
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: allEmailCampaignIds
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer[]
-#          - name: analyticsPageId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: analyticsPageType
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: archived
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: author
-#            data_categories: [user.provided.identifiable.contact.email]
-#            fidesops_meta:
-#              data_type: string
-#          - name: authorAt
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: authorEmail
-#            data_categories: [user.provided.identifiable.contact.email]
-#            fidesops_meta:
-#              data_type: string
-#          - name: authorName
-#            data_categories: [user.provided.identifiable.name]
-#            fidesops_meta:
-#              data_type: string
-#          - name: authorUserId
-#            data_categories: [user.derived.identifiable.unique_id]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: blogRssSettings
-#            data_categories: [system.operations]
-#          - name: campaign
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: campaignName
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: campaignUtm
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: canSpamSettingsId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: categoryId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: contentTypeCategory
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: createPage
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: created
-#            data_categories: [user.derived.nonidentifiable.sensor]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: createdById
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: currentState
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: currentlyPublished
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: domain
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: emailBody
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: emailNote
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: emailTemplateMode
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: emailType
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: emailbodyPlaintext
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: feedbackEmailCategory
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: feedbackSurveyId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: flexAreas
-#            data_categories: [system.operations]
-#          - name: freezeDate
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: fromName
-#            data_categories: [user.provided.identifiable.name]
-#            fidesops_meta:
-#              data_type: string
-#          - name: htmlTitle
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: id
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#              primary_key: True
-#          - name: isGraymailSuppressionEnabled
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: isLocalTimezoneSend
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: isPublished
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: isRecipientFatigueSuppressionEnabled
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: lastEditSessionId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: lastEditUpdateId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: layoutSections
-#            data_categories: [system.operations]
-#          - name: leadFlowId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: liveDomain
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: mailingListsExcluded,
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer[]
-#          - name: mailingListsIncluded
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer[]
-#          - name: maxRssEntries
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: metaDescription
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: name
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: pageExpiryEnabled
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: pageRedirected
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: portalId
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: previewKey
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: processingStatus
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: publishDate
-#            data_categories: [user.derived.nonidentifiable.sensor]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: publishImmediately
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: publishedUrl
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: replyTo
-#            data_categories: [user.provided.identifiable.contact.email]
-#            fidesops_meta:
-#              data_type: string
-#          - name: resolvedDomain
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: rssEmailByText
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: rssEmailClickThroughText
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: rssEmailCommentText
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: rssEmailEntryTemplateEnabled
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: rssEmailImageMaxWidth
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: rssEmailUrl
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: scrubsSubscriptionLinks
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: slug
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: smartEmailFields
-#            data_categories: [system.operations]
-#          - name: state
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: styleSettings
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: subcategory
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: subject
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: subscription
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: subscriptionName
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: teamPerms
-#            data_categories: [system.operations]
-#          - name: templatePath
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: string
-#          - name: transactional
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: unpublishedAt
-#            data_categories: [user.derived.nonidentifiable.sensor]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: updated
-#            data_categories: [user.derived.nonidentifiable.sensor]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: updatedById
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: integer
-#          - name: url
-#            data_categories: [user.provided.nonidentifiable]
-#            fidesops_meta:
-#              data_type: string
-#          - name: useRssHeadlineAsSubject
-#            data_categories: [system.operations]
-#            fidesops_meta:
-#              data_type: boolean
-#          - name: userPerms
-#            data_categories: [system.operations]
-#          - name: vidsExcluded
-#            data_categories: [system.operations]
-#          - name: vidsIncluded
-#            data_categories: [system.operations]
-#          - name: widgets
-#            data_categories: [system.operations]
+      #      - name: marketing_emails
+      #        fields:
+      #          - name: ab
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: abHoursToWait
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: abSampleSizeDefault
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: abSamplingDefault
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: abSuccessMetric
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: abTestPercentage
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: abVariation
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: absoluteUrl
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: allEmailCampaignIds
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer[]
+      #          - name: analyticsPageId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: analyticsPageType
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: archived
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: author
+      #            data_categories: [user.contact.email]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: authorAt
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: authorEmail
+      #            data_categories: [user.contact.email]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: authorName
+      #            data_categories: [user.name]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: authorUserId
+      #            data_categories: [user.unique_id]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: blogRssSettings
+      #            data_categories: [system.operations]
+      #          - name: campaign
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: campaignName
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: campaignUtm
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: canSpamSettingsId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: categoryId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: contentTypeCategory
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: createPage
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: created
+      #            data_categories: [user.sensor]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: createdById
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: currentState
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: currentlyPublished
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: domain
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: emailBody
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: emailNote
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: emailTemplateMode
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: emailType
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: emailbodyPlaintext
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: feedbackEmailCategory
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: feedbackSurveyId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: flexAreas
+      #            data_categories: [system.operations]
+      #          - name: freezeDate
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: fromName
+      #            data_categories: [user.name]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: htmlTitle
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: id
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #              primary_key: True
+      #          - name: isGraymailSuppressionEnabled
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: isLocalTimezoneSend
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: isPublished
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: isRecipientFatigueSuppressionEnabled
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: lastEditSessionId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: lastEditUpdateId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: layoutSections
+      #            data_categories: [system.operations]
+      #          - name: leadFlowId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: liveDomain
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: mailingListsExcluded,
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer[]
+      #          - name: mailingListsIncluded
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer[]
+      #          - name: maxRssEntries
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: metaDescription
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: name
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: pageExpiryEnabled
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: pageRedirected
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: portalId
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: previewKey
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: processingStatus
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: publishDate
+      #            data_categories: [user.sensor]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: publishImmediately
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: publishedUrl
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: replyTo
+      #            data_categories: [user.contact.email]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: resolvedDomain
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: rssEmailByText
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: rssEmailClickThroughText
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: rssEmailCommentText
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: rssEmailEntryTemplateEnabled
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: rssEmailImageMaxWidth
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: rssEmailUrl
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: scrubsSubscriptionLinks
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: slug
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: smartEmailFields
+      #            data_categories: [system.operations]
+      #          - name: state
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: styleSettings
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: subcategory
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: subject
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: subscription
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: subscriptionName
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: teamPerms
+      #            data_categories: [system.operations]
+      #          - name: templatePath
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: transactional
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: unpublishedAt
+      #            data_categories: [user.sensor]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: updated
+      #            data_categories: [user.sensor]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: updatedById
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: integer
+      #          - name: url
+      #            data_categories: [user]
+      #            fidesops_meta:
+      #              data_type: string
+      #          - name: useRssHeadlineAsSubject
+      #            data_categories: [system.operations]
+      #            fidesops_meta:
+      #              data_type: boolean
+      #          - name: userPerms
+      #            data_categories: [system.operations]
+      #          - name: vidsExcluded
+      #            data_categories: [system.operations]
+      #          - name: vidsIncluded
+      #            data_categories: [system.operations]
+      #          - name: widgets
+      #            data_categories: [system.operations]
       - name: subscription_preferences
         fields:
           - name: recipient
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: subscriptionStatuses
@@ -507,12 +507,12 @@ dataset:
 #      - name: users
 #        fields:
 #          - name: id
-#            data_categories: [user.derived.identifiable.unique_id]
+#            data_categories: [user.unique_id]
 #            fidesops_meta:
 #              primary_key: True
 #              data_type: string
 #          - name: email
-#            data_categories: [user.provided.identifiable.contact.email]
+#            data_categories: [user.contact.email]
 #            fidesops_meta:
 #              data_type: string
 #          - name: roleId
@@ -530,12 +530,12 @@ dataset:
 #      - name: user_provisioning
 #        fields:
 #          - name: id
-#            data_categories: [user.derived.identifiable.unique_id]
+#            data_categories: [user.unique_id]
 #            fidesops_meta:
 #              primary_key: True
 #              data_type: string
 #          - name: email
-#            data_categories: [user.provided.identifiable.contact.email]
+#            data_categories: [user.contact.email]
 #            fidesops_meta:
 #              data_type: string
 #          - name: roleId

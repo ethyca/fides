@@ -10,7 +10,7 @@ add the `data_type: object` annotation, but the object type will be inferred by 
 
 Data categories cannot be specified at the `object` level due to potential conflicts with nested fields. Instead,
 annotate the scalar fields within the object field.  Here, the `workplace_info.position` field has `data_category`
-`user.provided.identifiable.job_title`.
+`user.job_title`.
 
 
 ```yaml
@@ -30,7 +30,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: position
-                data_categories: [ user.provided.identifiable.job_title ]
+                data_categories: [ user.job_title ]
                 fidesops_meta:
                   data_type: string
               - name: id
@@ -116,11 +116,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: position
-                data_categories: [ user.provided.identifiable.job_title ]
+                data_categories: [ user.job_title ]
                 fidesops_meta:
                   data_type: string
               - name: direct_reports
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string[]
 ```
@@ -144,14 +144,14 @@ dataset:
               data_type: object[]
             fields:
               - name: name
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string
               - name: relationship
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [ user.provided.identifiable.contact.phone_number ]
+                data_categories: [ user.contact.phone_number ]
                 fidesops_meta:
                   data_type: string
 ```
@@ -240,7 +240,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: chat_name
-                data_categories: [ user.provided.identifiable.name ]
+                data_categories: [ user.name ]
                 fidesops_meta:
                   data_type: string
 ```

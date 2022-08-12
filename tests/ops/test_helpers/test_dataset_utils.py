@@ -282,7 +282,7 @@ class TestGenerateDataset:
             "collections": [
                 {
                     "name": "user",
-                    "fields": [{"name": "a", "data_categories": ["user.provided"]}],
+                    "fields": [{"name": "a", "data_categories": ["user"]}],
                 }
             ],
         }
@@ -298,7 +298,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -322,7 +322,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -473,7 +473,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -492,7 +492,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -515,7 +515,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -534,7 +534,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -557,7 +557,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -567,7 +567,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "b",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -586,7 +586,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -596,7 +596,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "b",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -619,7 +619,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -629,7 +629,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "b",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -648,7 +648,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "b",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],
@@ -658,7 +658,7 @@ class TestGenerateDataset:
                     "fields": [
                         {
                             "name": "a",
-                            "data_categories": ["user.provided"],
+                            "data_categories": ["user"],
                             "fidesops_meta": {"data_type": "string"},
                         }
                     ],

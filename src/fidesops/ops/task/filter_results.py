@@ -18,9 +18,9 @@ def filter_data_categories(
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
 
-    Regarding subcategories,if data category "user.provided.identifiable.contact" is specified on one of the rule
-    targets, for example, all fields on subcategories also apply, so ["user.provided.identifiable.contact.city",
-    "user.provided.identifiable.contact.street", ...], etc.
+    Regarding subcategories,if data category "user.contact" is specified on one of the rule
+    targets, for example, all fields on subcategories also apply, so ["user.contact.address.city",
+    "user.contact.address.street", ...], etc.
 
     :param access_request_results: Dictionary of access request results for each of your collections
     :param target_categories: A set of data categories that we'd like to extract from access_request_results

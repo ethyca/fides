@@ -18,7 +18,7 @@ dataset:
               - name: updatedAt
                 data_categories: [system.operations]
               - name: value
-                data_categories: [user.provided.identifiable.contact.email]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
       - name: prospects
@@ -30,28 +30,27 @@ dataset:
           - name: attributes
             fields:
               - name: addressCity
-                data_categories: [user.provided.identifiable.contact.city]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: addressCountry
-                data_categories: [user.provided.identifiable.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: addressState
-                data_categories: [user.provided.identifiable.contact.state]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: addressStreet
-                data_categories: [user.provided.identifiable.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: addressStreet2
-                data_categories: [user.provided.identifiable.contact.street]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: addressZip
-                data_categories:
-                  [user.provided.identifiable.contact.postal_code]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: angelListUrl
@@ -79,7 +78,7 @@ dataset:
               - name: createdAt
                 data_categories: [system.operations]
               - name: dateOfBirth
-                data_categories: [user.provided.identifiable.date_of_birth]
+                data_categories: [user.date_of_birth]
                 fidesops_meta:
                   data_type: string
               - name: degree
@@ -87,7 +86,7 @@ dataset:
               - name: emailOptedOut
                 data_categories: [system.operations]
               - name: emails
-                data_categories: [user.provided.identifiable.contact.email]
+                data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string[]
               - name: emailsOptStatus
@@ -105,11 +104,11 @@ dataset:
               - name: facebookUrl
                 data_categories: [system.operations]
               - name: firstName
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: gender
-                data_categories: [user.provided.identifiable.gender]
+                data_categories: [user.gender]
                 fidesops_meta:
                   data_type: string
               - name: githubUrl
@@ -121,14 +120,13 @@ dataset:
               - name: graduationDate
                 data_categories: [system.operations]
               - name: homePhones
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string[]
               - name: jobStartDate
                 data_categories: [system.operations]
               - name: lastName
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: linkedInConnections
@@ -140,20 +138,19 @@ dataset:
               - name: linkedInUrl
                 data_categories: [system.operations]
               - name: middleName
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: mobilePhones
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string[]
               - name: name
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: nickname
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: occupation
@@ -163,8 +160,7 @@ dataset:
               - name: optedOutAt
                 data_categories: [system.operations]
               - name: otherPhones
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string[]
               - name: personalNote1
@@ -192,7 +188,7 @@ dataset:
               - name: stackOverflowUrl
                 data_categories: [system.operations]
               - name: title
-                data_categories: [user.provided.identifiable.job_title]
+                data_categories: [user.job_title]
                 fidesops_meta:
                   data_type: string
               - name: twitterUrl
@@ -200,8 +196,7 @@ dataset:
               - name: twitterUsername
                 data_categories: [system.operations]
               - name: voipPhones
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string[]
               - name: websiteUrl1
@@ -211,7 +206,6 @@ dataset:
               - name: websiteUrl3
                 data_categories: [system.operations]
               - name: workPhones
-                data_categories:
-                  [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string[]

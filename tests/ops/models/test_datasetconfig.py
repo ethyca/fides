@@ -85,18 +85,14 @@ def test_convert_dataset_to_graph(example_datasets):
     )[0]
     assert employee_collection
     assert employee_collection.fields[1].name == "email"
-    assert employee_collection.fields[1].data_categories == [
-        "user.provided.identifiable.contact.email"
-    ]
+    assert employee_collection.fields[1].data_categories == ["user.contact.email"]
     assert employee_collection.fields[1].identity == "email"
     assert employee_collection.fields[1].references == []
 
     login_collection = list(filter(lambda x: x.name == "login", graph.collections))[0]
     assert login_collection
     assert login_collection.fields[0].name == "customer_id"
-    assert login_collection.fields[0].data_categories == [
-        "user.derived.identifiable.unique_id"
-    ]
+    assert login_collection.fields[0].data_categories == ["user.unique_id"]
     assert login_collection.fields[0].identity is None
     assert login_collection.fields[0].references == [
         (FieldAddress("postgres_example_test_dataset", "customer", "id"), "from")

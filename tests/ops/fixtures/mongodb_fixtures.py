@@ -49,7 +49,7 @@ def mongo_execution_log(
                 {
                     "path": "my-mongo-db:orders:name",
                     "field_name": "name",
-                    "data_categories": ["user.provided.identifiable.contact.name"],
+                    "data_categories": ["user.contact.name"],
                 }
             ],
             "action_type": ActionType.access,
