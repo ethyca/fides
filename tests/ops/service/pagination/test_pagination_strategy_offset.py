@@ -176,3 +176,21 @@ def test_validate_request_missing_param():
             method="GET", path="/test", query_params=query_params, pagination=pagination
         )
     assert "Query param 'page' not found." in str(exc.value)
+
+
+def test_headers_present_in_paginated_request(response_with_body):
+    config = OffsetPaginationConfiguration(
+        incremental_param="page", increment_by=1, limit=10
+    )
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        headers={"X-Fides-Token": "token"},
+        path="/conversations",
+        query_params={"page": 1},
+    )
+
+    paginator = OffsetPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_body, "conversations"
+    )
+    assert next_request.headers == request_params.headers
