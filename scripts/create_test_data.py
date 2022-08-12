@@ -91,7 +91,7 @@ def _create_policy(
     RuleTarget.create(
         db=db,
         data={
-            "data_category": DataCategory("user.provided.identifiable.name").value,
+            "data_category": DataCategory("user.name").value,
             "rule_id": rule.id,
             "client_id": client_id,
         },

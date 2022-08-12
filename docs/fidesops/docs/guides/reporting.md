@@ -125,7 +125,7 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
                                 "path": "mongo_test:flights:passenger_information.full_name",
                                 "field_name": "passenger_information.full_name",
                                 "data_categories": [
-                                    "user.provided.identifiable.name"
+                                    "user.name"
                                 ]
                             }
                         ],
@@ -151,7 +151,7 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
                                 "path": "order.customer_name",
                                 "field_name": "name",
                                 "data_categories": [
-                                    "user.provided.identifiable.name"
+                                    "user.name"
                                 ]
                             }
                         ], 

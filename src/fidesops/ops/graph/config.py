@@ -471,11 +471,11 @@ class Collection(BaseModel):
 
         Example:
             {
-                "user.provided.identifiable.contact.city": [FieldPath("city")],
-                "user.provided.identifiable.contact.street": [FieldPath("house"), FieldPath("street")],
+                "user.contact.address.city": [FieldPath("city")],
+                "user.contact.address.street": [FieldPath("house"), FieldPath("street")],
                 "system.operations": ["id"],
-                "user.provided.identifiable.contact.state": [FieldPath("state", "code"),FieldPath("state", "full_name"), ],
-                "user.provided.identifiable.contact.postal_code": ["zip"]
+                "user.contact.address.state": [FieldPath("state", "code"),FieldPath("state", "full_name"), ],
+                "user.contact.address.postal_code": ["zip"]
             }
         """
         categories = defaultdict(list)

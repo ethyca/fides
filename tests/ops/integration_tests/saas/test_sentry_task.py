@@ -140,7 +140,7 @@ def test_sentry_access_request_task(
         ],
     )
 
-    target_categories = {"user.provided"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         v,
         target_categories,

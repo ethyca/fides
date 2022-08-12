@@ -29,7 +29,7 @@ example_dataset_yaml = """dataset:
             after: [a.b, c.d, e.f]
         fields:
           - name: city
-            data_categories: [user.provided.identifiable.contact.city] 
+            data_categories: [user.contact.address.city] 
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
@@ -50,7 +50,7 @@ example_dataset_nested_yaml = """dataset:
               primary_key: True
               data_type: object_id
           - name: photo_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               references:
                 - dataset: postgres_main_database
@@ -58,20 +58,20 @@ example_dataset_nested_yaml = """dataset:
                   direction: from
               data_type: integer
           - name: name
-            data_categories: [user.provided.identifiable]
+            data_categories: [user]
             fidesops_meta:
                 data_type: string
           - name: submitter
             fidesops_meta:
                 data_type: string 
-            data_categories: [user.provided.identifiable]
+            data_categories: [user]
           - name: thumbnail
             fields:
               - name: photo_id
                 fidesops_meta:
                     data_type: integer
               - name: name
-                data_categories: [user.provided.identifiable]
+                data_categories: [user]
                 fidesops_meta:
                     data_type: string
               - name: submitter
@@ -81,7 +81,7 @@ example_dataset_nested_yaml = """dataset:
                         - dataset: postgres_main_database
                           field: users.id
                           direction: from
-                data_categories: [user.provided.identifiable]
+                data_categories: [user]
               - name: camera_used
                 data_categories: [ system.operations ]
                 fidesops_meta:
@@ -90,7 +90,7 @@ example_dataset_nested_yaml = """dataset:
           - name: tags
             fidesops_meta:
                 data_type: string[]
-            data_categories: [user.provided]
+            data_categories: [user]
           - name: comments
             fidesops_meta:
                 data_type: object[]
@@ -113,11 +113,11 @@ example_bad_dataset_nested_yaml = """dataset:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user.provided.identifiable]
+                data_categories: [user]
                 data_type: string
               - name: submitter
                 data_type: string
-                data_categories: [user.provided.identifiable]
+                data_categories: [user]
 """
 
 
@@ -228,7 +228,7 @@ example_postgres_yaml = """dataset:
       - name: users
         fields:
           - name: name
-            data_categories: [ user.provided.identifiable.name]
+            data_categories: [ user.name]
             fidesops_meta:
               data_type: string
           - name: id
@@ -238,7 +238,7 @@ example_postgres_yaml = """dataset:
       - name: cameras
         fields:
           - name: name
-            data_categories: [ user.provided.nonidentifiable]
+            data_categories: [ user]
             fidesops_meta:
               data_type: string
           - name: id
@@ -300,14 +300,14 @@ example_object_with_data_categories_nested_yaml = """dataset:
       - name: photos
         fields:
           - name: thumbnail
-            data_categories: [user.derived]    
+            data_categories: [user]    
             fidesops_meta:
                 data_type: object
             fields:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user.provided.identifiable]    
+                data_categories: [user]    
 """
 
 
@@ -334,7 +334,7 @@ non_array_field_with_invalid_flag = """dataset:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user.provided.identifiable]    
+                data_categories: [user]    
 """
 
 

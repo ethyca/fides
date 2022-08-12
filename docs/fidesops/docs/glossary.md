@@ -47,7 +47,7 @@ See the [fidesctl repo](https://github.com/ethyca/fides) for more information, b
 - `System`: Systems represent the applications, services, integrations, and any software that processes data for a specific use case.
 
 - Privacy Data Types:
-    - `Data Category` - *What kind of data is it?*  For example, the Data Category `user.provided.identifiable` includes things like contact email and street address.
+    - `Data Category` - *What kind of data is it?*  For example, the Data Category `user` includes things like contact email and street address.
     - `Data Use` - *Why is it being used?*  For example, for `advertising` or to `improve` the system.
     - `Data Subject` - *Whose data is it?* For example, a `customer`.
     - `Data Qualifier` - *How is the data being protected?* For example, it might be `aggregated`.

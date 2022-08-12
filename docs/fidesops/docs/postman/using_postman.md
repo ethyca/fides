@@ -68,7 +68,7 @@ Inspect the `Body` of each request to see what is sent to fidesops:
 2. Configure what data you care about, and what to do with it:
       1. SEND `Create/Update Policies` - Creates a Policy to handle Privacy Requests
       2. SEND `Create/Update Access Rule` - Defines an `access` Rule on the previous Policy, which specifies results will be uploaded to the configured local storage
-      3. SEND `Create/Update Rule Targets` - Specify a RuleTarget that says to will return data that has been marked as having a `user.provided.identifiable` data category
+      3. SEND `Create/Update Rule Targets` - Specify a RuleTarget that says to will return data that has been marked as having a `user` data category
 3. Create ConnectionConfigs, and add connection secrets for the `postgres_example` and `mongodb_example` mock databases:
       1. SEND `Create/Update Connection Configs: Postgres`
       2. SEND `Create/Update Connection Configs: Mongo`
@@ -90,7 +90,7 @@ You have now completed the basic configuration required to create an Access Requ
       ![Succeeded Request](../img/postman_images/succeeded_privacy_request.png)
 
 2. Check your local `fides_uploads` folder, configured earlier, to see access request results.
-      - This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the `postgres_example` and `mongodb_example` databases with the `user.provided.identifiable` data_category
+      - This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the `postgres_example` and `mongodb_example` databases with the `user` data_category
 
       ![Local Results](../img/postman_images/local_results.png)
 

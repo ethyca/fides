@@ -526,7 +526,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
             ScalarField(
                 name="authorized_user",
                 data_type_converter=str_converter,
-                data_categories=["user.provided.identifiable"],
+                data_categories=["user"],
             ),
             ScalarField(
                 name="customer_id",
@@ -550,7 +550,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> Dataset:
                 name="email",
                 identity="email",
                 data_type_converter=str_converter,
-                data_categories=["user.provided.identifiable"],
+                data_categories=["user"],
             ),
         ],
     )

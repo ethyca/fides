@@ -239,11 +239,11 @@ class DatasetGraph:
         For example:
         {
             "postgres_example_test_dataset:address": {
-                "user.provided.identifiable.contact.city": [FieldPath("city")],
-                "user.provided.identifiable.contact.street": [FieldPath("house"), FieldPath("street")],
+                "user.contact.address.city": [FieldPath("city")],
+                "user.contact.address.street": [FieldPath("house"), FieldPath("street")],
                 "system.operations": [FieldPath("id")],
-                "user.provided.identifiable.contact.state": [FieldPath("state"]),
-                "user.provided.identifiable.contact.postal_code": [FieldPath("zip")]
+                "user.contact.address.state": [FieldPath("state"]),
+                "user.contact.address.postal_code": [FieldPath("zip")]
             }
         }
 

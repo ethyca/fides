@@ -59,7 +59,7 @@ def test_saas_access_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
-    target_categories = {"user.provided"}
+    target_categories = {"user"}
     filtered_results = filter_data_categories(
         v,
         target_categories,

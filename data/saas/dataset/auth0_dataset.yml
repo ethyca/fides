@@ -10,7 +10,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: email_verified
@@ -30,7 +30,7 @@ dataset:
               fidesops_meta:
                 data_type: string
             - name: user_id
-              data_categories: [user.derived.identifiable.unique_id]
+              data_categories: [user.unique_id]
               fidesops_meta:
                 data_type: string
             - name: isSocial
@@ -38,7 +38,7 @@ dataset:
               fidesops_meta:
                 data_type: boolean
           - name: name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: nickname
@@ -54,7 +54,7 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: user_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
               data_type: string
@@ -117,11 +117,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: user_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: user_name
-            data_categories: [user.provided.identifiable.name]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: log_id
@@ -141,27 +141,27 @@ dataset:
               data_type: object
             fields:
             - name: country_code
-              data_categories: [user.provided.identifiable.contact.country]
+              data_categories: [user.contact.address.country]
               fidesops_meta:
                 data_type: string
             - name: country_code3
-              data_categories: [user.provided.identifiable.contact.country]
+              data_categories: [user.contact.address.country]
               fidesops_meta:
                 data_type: string
             - name: country_name
-              data_categories: [user.provided.identifiable.contact.country]
+              data_categories: [user.contact.address.country]
               fidesops_meta:
                 data_type: string
             - name: city_name
-              data_categories: [user.provided.identifiable.contact.city]
+              data_categories: [user.contact.address.city]
               fidesops_meta:
                 data_type: string
             - name: latitude
-              data_categories: [user.derived.identifiable.location]
+              data_categories: [user.location]
               fidesops_meta:
                 data_type: float
             - name: longitude
-              data_categories: [user.derived.identifiable.location]
+              data_categories: [user.location]
               fidesops_meta:
                 data_type: float
             - name: time_zone

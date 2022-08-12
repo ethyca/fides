@@ -553,7 +553,8 @@ def test_filter_data_categories_arrays():
 
 def test_filter_data_categories_limited_results():
     """
-    Test scenario where the related data for a given identity is only a small subset of all the annotated fields.
+    Test scenario where the related data for a given identity is only a
+    small subset of all the annotated fields.
     """
     jane_results = {
         "mongo_test:customer_details": [
@@ -610,16 +611,16 @@ def test_filter_data_categories_limited_results():
         "mongo_test:internal_customer_profile": [],
     }
 
-    target_categories = {"user.provided.identifiable"}
+    target_categories = {"user"}
 
     data_category_fields = {
         CollectionAddress.from_string("postgres_example:address"): {
-            "user.provided.identifiable.contact.city": [
+            "user.contact.address.city": [
                 FieldPath(
                     "city",
                 )
             ],
-            "user.provided.identifiable.contact.street": [
+            "user.contact.address.street": [
                 FieldPath(
                     "house",
                 ),
@@ -632,12 +633,12 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.provided.identifiable.contact.state": [
+            "user.contact.address.state": [
                 FieldPath(
                     "state",
                 )
             ],
-            "user.provided.identifiable.contact.postal_code": [
+            "user.contact.address.postal_code": [
                 FieldPath(
                     "zip",
                 )
@@ -652,17 +653,17 @@ def test_filter_data_categories_limited_results():
                     "created",
                 ),
             ],
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "id",
                 )
             ],
-            "user.provided.identifiable.name": [
+            "user.name": [
                 FieldPath(
                     "name",
                 )
@@ -674,24 +675,24 @@ def test_filter_data_categories_limited_results():
                     "address_id",
                 )
             ],
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "id",
                 )
             ],
-            "user.provided.identifiable.name": [
+            "user.name": [
                 FieldPath(
                     "name",
                 )
             ],
         },
         CollectionAddress.from_string("postgres_example:login"): {
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
@@ -701,7 +702,7 @@ def test_filter_data_categories_limited_results():
                     "id",
                 )
             ],
-            "user.derived.nonidentifiable.sensor": [
+            "user.sensor": [
                 FieldPath(
                     "time",
                 )
@@ -721,7 +722,7 @@ def test_filter_data_categories_limited_results():
             ]
         },
         CollectionAddress.from_string("postgres_example:orders"): {
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
@@ -744,12 +745,12 @@ def test_filter_data_categories_limited_results():
                     "id",
                 ),
             ],
-            "user.provided.identifiable.financial.account_number": [
+            "user.financial.account_number": [
                 FieldPath(
                     "ccn",
                 )
             ],
-            "user.provided.identifiable.financial": [
+            "user.financial": [
                 FieldPath(
                     "code",
                 ),
@@ -757,12 +758,12 @@ def test_filter_data_categories_limited_results():
                     "name",
                 ),
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
             ],
-            "user.provided.nonidentifiable": [
+            "user": [
                 FieldPath(
                     "preferred",
                 )
@@ -782,7 +783,7 @@ def test_filter_data_categories_limited_results():
             ]
         },
         CollectionAddress.from_string("postgres_example:report"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -806,7 +807,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("postgres_example:service_request"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "alt_email",
                 )
@@ -825,14 +826,14 @@ def test_filter_data_categories_limited_results():
                     "opened",
                 ),
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "employee_id",
                 )
             ],
         },
         CollectionAddress.from_string("postgres_example:visit"): {
-            "user.provided.identifiable.contact.email": [
+            "user.contact.email": [
                 FieldPath(
                     "email",
                 )
@@ -849,24 +850,22 @@ def test_filter_data_categories_limited_results():
                     "_id",
                 )
             ],
-            "user.provided.identifiable.date_of_birth": [
+            "user.date_of_birth": [
                 FieldPath(
                     "birthday",
                 )
             ],
-            "user.derived.identifiable.unique_id": [
+            "user.unique_id": [
                 FieldPath(
                     "customer_id",
                 )
             ],
-            "user.provided.identifiable.gender": [
+            "user.gender": [
                 FieldPath(
                     "gender",
                 )
             ],
-            "user.provided.identifiable.job_title": [
-                FieldPath("workplace_info", "position")
-            ],
+            "user.job_title": [FieldPath("workplace_info", "position")],
         },
         CollectionAddress.from_string("mongo_test:customer_feedback"): {
             "system.operations": [
@@ -874,10 +873,8 @@ def test_filter_data_categories_limited_results():
                     "_id",
                 )
             ],
-            "user.provided.identifiable.contact.phone_number": [
-                FieldPath("customer_information", "phone")
-            ],
-            "user.provided.nonidentifiable": [
+            "user.contact.phone_number": [FieldPath("customer_information", "phone")],
+            "user": [
                 FieldPath(
                     "message",
                 ),
@@ -887,7 +884,7 @@ def test_filter_data_categories_limited_results():
             ],
         },
         CollectionAddress.from_string("mongo_test:internal_customer_profile"): {
-            "user.derived": [
+            "user": [
                 FieldPath(
                     "derived_interests",
                 )
@@ -898,24 +895,42 @@ def test_filter_data_categories_limited_results():
     filtered_results = filter_data_categories(
         copy.deepcopy(jane_results), target_categories, data_category_fields
     )
-
-    assert filtered_results == {
+    expected_results = {
         "mongo_test:customer_details": [
-            {"gender": "female", "birthday": datetime(1990, 2, 28)}
+            {
+                "birthday": datetime(1990, 2, 28, 0, 0),
+                "gender": "female",
+                "customer_id": 3.0,
+            }
         ],
+        "postgres_example:orders": [{"customer_id": 3}],
         "postgres_example:address": [
             {
-                "city": "Example Mountain",
-                "house": 1111,
                 "state": "TX",
                 "street": "Example Place",
                 "zip": "54321",
+                "house": 1111,
+                "city": "Example Mountain",
             }
         ],
         "postgres_example:customer": [
-            {"email": "jane@example.com", "name": "Jane Customer"}
+            {"id": 3, "name": "Jane Customer", "email": "jane@example.com"}
         ],
         "postgres_example:payment_card": [
-            {"ccn": 373719391, "code": 222, "name": "Example Card 3"}
+            {
+                "code": 222,
+                "name": "Example Card 3",
+                "customer_id": 3,
+                "preferred": False,
+                "ccn": 373719391,
+            }
+        ],
+        "postgres_example:login": [
+            {"time": datetime(2021, 1, 6, 1, 0), "customer_id": 3}
         ],
     }
+
+    print(filtered_results)
+    print("-" * 10)
+    print(expected_results)
+    assert filtered_results == expected_results

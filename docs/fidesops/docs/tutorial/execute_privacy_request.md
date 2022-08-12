@@ -44,7 +44,7 @@ def create_privacy_request(email, policy_key):
 
 ### Call the helper method to run the Privacy Request
 
-This will create a request to fetch for all user data with category `user.provided.identifiable` associated 
+This will create a request to fetch for all user data with category `user` associated 
 with email `user@example.com` and save it to our local Storage destination, by specifying the email and the Policy.
 
 ```python

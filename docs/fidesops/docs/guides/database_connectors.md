@@ -417,9 +417,9 @@ dataset:
       - name: person
         fields:
           - name: name
-            data_categories: [user.provided.identifiable.contact.name]
+            data_categories: [user.contact.name]
           - name: email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
           - name: id
             data_categories: [system.operations] 
 ```

@@ -2,7 +2,7 @@
 
 ## Graphs and Traversals
 
-Fidesops uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, fidesops then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request. 
+Fidesops uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, fidesops then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request.
 
 The graph supports both directed and non-directed edges using the optional `direction` parameter on the relation (non-directional edges may be traversed in either direction). You can preview the queries that will be generated or manually control the order of operations by making relations explicitly directional and with the `after` Collection parameters. If you specify a Collection that can't be reached, fidesops generates an error.
 
@@ -99,9 +99,9 @@ dataset:
           - name: address_id
 ```
 
-We trigger a retrieval with identity data, such as an email address or user ID, that's provided by the user. What we do is... 
+We trigger a retrieval with identity data, such as an email address or user ID, that's provided by the user. What we do is...
 
-1. Identify the collections that contain the identity data that the user provided.
+1. Identify the collections that contain the identity data that the user.
 2. Find all related records.
 3. Use the data to find all connected data.
 4. Continue until we've found all related data.
@@ -117,9 +117,8 @@ collection:
            identity: email 
 ```
 
-What this means is that we will initiate the data retrieval process with provided data that looks like 
-`{"email": "user@example.com", "username": "someone"}` by looking for values in the collection `users` where `email == user@example.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`. 
-
+What this means is that we will initiate the data retrieval process with provided data that looks like
+`{"email": "user@example.com", "username": "someone"}` by looking for values in the collection `users` where `email == user@example.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`.
 
 ## How does fidesops execute queries?
 
@@ -139,18 +138,16 @@ The next step is to follow any links provided in field relationship information.
 6. select internal_id, comment from users where id in [ <id values from (3) >]
 ```
 
-
-Logically, we are creating a linked graph using the connections you've specified between your collections to retrieve your data. 
+Logically, we are creating a linked graph using the connections you've specified between your collections to retrieve your data.
 
 ![Example graph](../img/traversal_graph.png "Example graph")
 
-## Notes about Dataset traversals 
+## Notes about Dataset traversals
 
-* You can define multiple links between collections, which will generate OR queries like `SELECT a,b,c from TABLE_1 where name in  (values from TABLE\_2)  OR email in (values from TABLE\_3)`. 
-	
+* You can define multiple links between collections, which will generate OR queries like `SELECT a,b,c from TABLE_1 where name in  (values from TABLE\_2)  OR email in (values from TABLE\_3)`.
+ 
 * It's an error to specify a collection in your Dataset can't be reached through the relations you've specified.
 
-	
 * Fidesops uses your Datasets and your input data to "solve" the graph of your collections and how it is traversed. If your Dataset has multiple identity values, you can create a situation where the query behavior depends on the values you provide. In the example above, starting the graph traversal with `{"email": "value1", "username":" value2"}` is valid, but starting with  `{"email": "value1"}` fails because `mongo_1.users` is no longer reachable.
-	
+ 
 * As shown in the example, you can create queries between Datasets.

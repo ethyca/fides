@@ -46,9 +46,7 @@ def dataset_config_mysql(
                             },
                             {
                                 "name": "email",
-                                "data_categories": [
-                                    "user.provided.identifiable.contact.email"
-                                ],
+                                "data_categories": ["user.contact.email"],
                                 "fidesops_meta": {
                                     "identity": "email",
                                 },

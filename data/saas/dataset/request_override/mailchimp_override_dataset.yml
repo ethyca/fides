@@ -12,13 +12,13 @@ dataset:
           - name: from_label
             data_categories: [system.operations]
           - name: from_email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: subject
             data_categories: [system.operations]
           - name: message
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
           - name: read
             data_categories: [system.operations]
           - name: timestamp
@@ -32,29 +32,29 @@ dataset:
           - name: list_id
             data_categories: [system.operations]
           - name: from_email
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
           - name: from_label
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
           - name: subject
-            data_categories: [user.provided.nonidentifiable]
+            data_categories: [user]
       - name: member
         fields:
           - name: id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               primary_key: True
           - name: list_id
             data_categories: [system.operations]
           - name: email_address
-            data_categories: [user.provided.identifiable.contact.email]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: unique_email_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: web_id
-            data_categories: [user.derived.identifiable.unique_id]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: email_type
@@ -64,49 +64,49 @@ dataset:
           - name: merge_fields
             fields:
               - name: FNAME
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: LNAME
-                data_categories: [user.provided.identifiable.name]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: ADDRESS
                 fields:
                   - name: addr1
-                    data_categories: [user.provided.identifiable.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: addr2
-                    data_categories: [user.provided.identifiable.contact.street]
+                    data_categories: [user.contact.address.street]
                     fidesops_meta:
                       data_type: string
                   - name: city
-                    data_categories: [user.provided.identifiable.contact.city]
+                    data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
                   - name: state
-                    data_categories: [user.provided.identifiable.contact.state]
+                    data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
                   - name: zip
-                    data_categories: [user.provided.identifiable.contact.postal_code]
+                    data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
                   - name: country
-                    data_categories: [user.provided.identifiable.contact.country]
+                    data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
               - name: PHONE
-                data_categories: [user.provided.identifiable.contact.phone_number]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: BIRTHDAY
-                data_categories: [user.provided.identifiable.date_of_birth]
+                data_categories: [user.date_of_birth]
                 fidesops_meta:
                   data_type: string
           - name: ip_signup
-            data_categories: [user.derived.identifiable.device.ip_address]
+            data_categories: [user.device.ip_address]
             fidesops_meta:
               data_type: string
           - name: timestamp_signup
@@ -130,7 +130,7 @@ dataset:
               - name: dstoff
                 data_categories: [system.operations]
               - name: country_code
-                data_categories: [user.provided.identifiable.contact.country]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: timezone

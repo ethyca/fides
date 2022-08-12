@@ -796,7 +796,7 @@ def test_create_and_process_erasure_request_generic_category(
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = DataCategory("user.provided.identifiable.contact").value
+    target.data_category = DataCategory("user.contact").value
     target.save(db=db)
 
     email = "customer-2@example.com"
@@ -827,8 +827,8 @@ def test_create_and_process_erasure_request_generic_category(
         if customer_id in row:
             customer_found = True
             # Check that the `email` field is `None` and that its data category
-            # ("user.provided.identifiable.contact.email") has been erased by the parent
-            # category ("user.provided.identifiable.contact")
+            # ("user.contact.email") has been erased by the parent
+            # category ("user.contact")
             assert row.email is None
             assert row.name is not None
         else:
@@ -851,7 +851,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy_aes.rules[0].targets[0]
-    target.data_category = DataCategory("user.provided.identifiable.contact").value
+    target.data_category = DataCategory("user.contact").value
     target.save(db=db)
 
     email = "customer-2@example.com"
@@ -882,8 +882,8 @@ def test_create_and_process_erasure_request_aes_generic_category(
         if customer_id in row:
             customer_found = True
             # Check that the `email` field is not original val and that its data category
-            # ("user.provided.identifiable.contact.email") has been erased by the parent
-            # category ("user.provided.identifiable.contact").
+            # ("user.contact.email") has been erased by the parent
+            # category ("user.contact").
             # masked val for `email` field will change per new privacy request, so the best
             # we can do here is test that the original val has been changed
             assert row[1] != "customer-2@example.com"
@@ -907,7 +907,7 @@ def test_create_and_process_erasure_request_with_table_joins(
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = DataCategory("user.provided.identifiable.financial").value
+    target.data_category = DataCategory("user.financial").value
     target.save(db=db)
 
     customer_email = "customer-1@example.com"
@@ -1240,7 +1240,7 @@ def test_create_and_process_erasure_request_redshift(
             assert row.state == redshift_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.provided.identifiable.contact.state"
+    target.data_category = "user.contact.address.state"
     target.save(db=db)
 
     # Should erase state fields on address table
@@ -1355,7 +1355,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.state == bigquery_resources["state"]
 
     target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.provided.identifiable.contact.state"
+    target.data_category = "user.contact.address.state"
     target.save(db=db)
 
     # Should erase state fields on address table

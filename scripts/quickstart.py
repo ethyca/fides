@@ -650,7 +650,7 @@ if __name__ == "__main__":
     print(
         "-------------------------------------------------------------------------------------"
     )
-    data_category = "user.provided.identifiable"
+    data_category = "user"
     print(
         f"Press [enter] to create a Policy Rule that accesses information with the data category '{data_category}':"
     )
