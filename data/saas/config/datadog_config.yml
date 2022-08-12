@@ -1,0 +1,59 @@
+saas_config:
+  - fides_key: datadog_connector_example
+    name: Datadog SaaS Config
+    type: datadog
+    description: A sample schema representing the Datadog connector for Fidesops
+    version: 0.0.1
+
+    connector_params:
+      - name: domain
+      - name: api_key
+      - name: app_key
+      - name: page_size
+
+    client_config:
+      protocol: https
+      host: <domain>
+
+    test_request:
+      method: GET
+      path: /api/v2/logs/events
+      headers:
+        - name: DD-APPLICATION-KEY
+          value: <app_key>
+        - name: DD-API-KEY
+          value: <api_key>
+
+    endpoints:
+      - name: events
+        requests:
+          read:
+            method: GET
+            path: /api/v2/logs/events
+            headers:
+              - name: DD-APPLICATION-KEY
+                value: <app_key>
+              - name: DD-API-KEY
+                value: <api_key>
+            query_params:
+              - name: filter[query]
+                value: <email>
+              - name: filter[from]
+                value: 0
+              - name: filter[to]
+                value: now
+              - name: page[limit]
+                value: <page_size>
+            param_values:
+              - name: app_key
+                connector_param: app_key
+              - name: api_key
+                connector_param: api_key
+              - name: email
+                identity: email
+            data_path: data
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: links.next

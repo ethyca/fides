@@ -1,0 +1,55 @@
+dataset:
+  - fides_key: datadog_connector_example
+    name: Datadog Dataset
+    description: A sample dataset representing the Datadog connector for Fidesops
+    collections:
+      - name: events
+        fields:
+          - name: attributes
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: status
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: service
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: tags
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string[]
+              - name: timestamp
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: host
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: attributes
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: hostname
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: service
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+              - name: message
+                data_categories: [user]
+                fidesops_meta:
+                  data_type: string
+          - name: type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
