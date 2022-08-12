@@ -17,7 +17,7 @@ jobs:
         node-version: [16.x]
     defaults:
       run:
-        working-directory: clients/admin-ui
+        working-directory: clients/ctl/admin-ui
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -55,13 +55,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd clients/admin-ui
+          cd clients/ctl/admin-ui
           npm install
 
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
-          working-directory: clients/admin-ui
+          working-directory: clients/ctl/admin-ui
           install: false
           start: npm run cy:start
           wait-on: "http://localhost:3000"
