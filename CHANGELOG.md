@@ -19,6 +19,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.0...main)
 
+### Added
+
+* Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 ### Fixed
 
 * HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
