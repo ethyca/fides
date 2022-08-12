@@ -212,6 +212,7 @@ class SaaSType(Enum):
 
     adobe_campaign = "adobe_campaign"
     auth0 = "auth0"
+    
     mailchimp = "mailchimp"
     hubspot = "hubspot"
     outreach = "outreach"
