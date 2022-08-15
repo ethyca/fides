@@ -51,7 +51,7 @@ def upgrade():
 
     # Datasets
     op.rename_table("datasets", "ctl_datasets")
-    op.execute("ALTER INDEX datasets_pkey RENAME TO ctl_datasets_pkey")
+    op.execute("ALTER INDEX data_sets_pkey RENAME TO ctl_datasets_pkey")
     op.execute("ALTER INDEX ix_datasets_fides_key RENAME TO ix_ctl_datasets_fides_key")
     op.execute("ALTER INDEX ix_datasets_id RENAME TO ix_ctl_datasets_id")
 
