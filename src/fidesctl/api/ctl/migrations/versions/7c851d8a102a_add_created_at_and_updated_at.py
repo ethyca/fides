@@ -16,40 +16,45 @@ down_revision = "312aff72b275"
 branch_labels = None
 depends_on = None
 
+SQL_MODEL_LIST = [
+    "data_categories",
+    "data_qualifiers",
+    "data_uses",
+    "data_subjects",
+    "datasets",
+    "evaluations",
+    "policies",
+    "registries",
+    "systems",
+    "organizations",
+]
+
 
 def upgrade():
-    for k, model in sql_model_map.items():
-        if k not in (
-            "client_detail",
-            "fides_user",
-            "fides_user_permissions",
-        ):
-            op.add_column(
-                model.__tablename__,
-                Column(
-                    "created_at",
-                    DateTime(timezone=True),
-                    server_default=text("now()"),
-                    nullable=True,
-                ),
-            )
-            op.add_column(
-                model.__tablename__,
-                Column(
-                    "updated_at",
-                    DateTime(timezone=True),
-                    server_default=text("now()"),
-                    nullable=True,
-                ),
-            )
+
+    for table_name in SQL_MODEL_LIST:
+        op.add_column(
+            table_name,
+            Column(
+                "created_at",
+                DateTime(timezone=True),
+                server_default=text("now()"),
+                nullable=True,
+            ),
+        )
+        op.add_column(
+            table_name,
+            Column(
+                "updated_at",
+                DateTime(timezone=True),
+                server_default=text("now()"),
+                nullable=True,
+            ),
+        )
 
 
 def downgrade():
-    for k, model in sql_model_map.items():
-        if k not in (
-            "client_detail",
-            "fides_user",
-            "fides_user_permissions",
-        ):
-            op.drop_column(model.__tablename__, "created_at")
-            op.drop_column(model.__tablename__, "updated_at")
+
+    for table_name in SQL_MODEL_LIST:
+        op.drop_column(table_name, "created_at")
+        op.drop_column(table_name, "updated_at")

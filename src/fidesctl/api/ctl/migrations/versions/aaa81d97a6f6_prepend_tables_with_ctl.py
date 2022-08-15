@@ -17,6 +17,7 @@ depends_on = None
 
 
 def upgrade():
+    """Rename tables to avoid collisions with fidesops."""
 
     op.rename_table("data_categories", "ctl_data_categories")
     op.rename_table("data_subjects", "ctl_data_subjects")
