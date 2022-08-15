@@ -11,7 +11,7 @@ fastapi-caching[redis]
 fastapi-pagination[sqlalchemy]~= 0.9.3
 fideslang==1.1.0
 fideslib==3.0.2
-fideslog==1.2.2
+fideslog==1.2.3
 hvac==0.11.2
 multidimensional_urlencode==0.0.4
 pandas==1.4.3
