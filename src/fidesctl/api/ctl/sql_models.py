@@ -240,3 +240,5 @@ sql_model_map: Dict = {
     "system": System,
     "evaluation": Evaluation,
 }
+
+taxonomy_types = [DataCategory, DataQualifier, DataSubject, DataUse]

@@ -14,7 +14,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
 from fidesctl.api.ctl.database.session import async_session
+from fidesctl.api.ctl.sql_models import taxonomy_types
 from fidesctl.api.ctl.utils import errors
+
+
+def forbid_if_default(resource: Base) -> None:
+    """Raise a forbidden error if the existing resource is a
+    default field"""
+    if resource in taxonomy_types and resource.is_default:
+        raise errors.ForbiddenError()
 
 
 # CRUD Functions
@@ -110,7 +118,13 @@ async def update_resource(sql_model: Base, resource_dict: Dict) -> Dict:
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
-        await get_resource(sql_model, resource_dict["fides_key"])
+        resource = await get_resource(sql_model, resource_dict["fides_key"])
+        # do not allow modifying the is_default field
+        try:
+            resource_dict.pop("is_default")
+        except KeyError:
+            pass
+        forbid_if_default(resource)
         async with async_session() as session:
             async with session.begin():
                 try:

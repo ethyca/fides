@@ -56,6 +56,20 @@ class QueryError(HTTPException):
         )
 
 
+class ForbiddenError(HTTPException):
+    """
+    To be raised when a user cannot modify an entity.
+    """
+
+    def __init__(self, resource_type: str, fides_key: str) -> None:
+        detail = {
+            "error": "user does not have permission to modify",
+            "resource_type": resource_type,
+            "fides_key": fides_key,
+        }
+        super().__init__(status.HTTP_403_FORBIDDEN, detail=detail)
+
+
 def get_full_exception_name(exception: Exception) -> str:
     """Get the full exception name
     i.e. get sqlalchemy.exc.IntegrityError instead of just IntegrityError
