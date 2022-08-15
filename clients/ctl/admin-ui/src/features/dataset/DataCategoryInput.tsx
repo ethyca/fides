@@ -57,7 +57,7 @@ const DataCategoryDropdown = ({
         Select data categories
       </MenuButton>
       <MenuList>
-        <Box maxHeight="500px" minWidth="300px" overflowY="scroll">
+        <Box maxHeight="50vh" minWidth="300px" overflowY="scroll">
           <Box
             position="sticky"
             top={0}
