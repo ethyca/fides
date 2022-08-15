@@ -9,6 +9,7 @@ import pytest
 import yaml
 from faker import Faker
 from fideslib.core.config import load_file, load_toml
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
@@ -795,6 +796,21 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def audit_log(db: Session, privacy_request) -> PrivacyRequest:
+    audit_log = AuditLog.create(
+        db=db,
+        data={
+            "user_id": "system",
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.approved,
+            "message": "",
+        },
+    )
+    yield audit_log
+    audit_log.delete(db)
 
 
 @pytest.fixture(scope="function")

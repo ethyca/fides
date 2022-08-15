@@ -22,6 +22,7 @@ from starlette.testclient import TestClient
 
 from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
+    execution_and_audit_logs_by_dataset_name,
     validate_manual_input,
 )
 from fidesops.ops.api.v1.scope_registry import (
@@ -58,6 +59,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
+from fidesops.ops.schemas.privacy_request import ExecutionAndAuditLogResponse
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.util.cache import (
     get_encryption_cache_key,
@@ -955,6 +957,7 @@ class TestGetPrivacyRequests:
         api_client: TestClient,
         generate_auth_header,
         privacy_request: PrivacyRequest,
+        audit_log,
         postgres_execution_log,
         second_postgres_execution_log,
         mongo_execution_log,
@@ -1000,6 +1003,17 @@ class TestGetPrivacyRequests:
                     "stopped_collection_details": None,
                     "resume_endpoint": None,
                     "results": {
+                        "Request approved": [
+                            {
+                                "collection_name": None,
+                                "fields_affected": None,
+                                "message": "",
+                                "action_type": None,
+                                "status": "approved",
+                                "updated_at": stringify_date(audit_log.updated_at),
+                                "user_id": "system",
+                            }
+                        ],
                         "my-mongo-db": [
                             {
                                 "collection_name": "orders",
@@ -1016,6 +1030,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     mongo_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -1034,6 +1049,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     postgres_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             },
                             {
                                 "collection_name": "address",
@@ -1059,6 +1075,7 @@ class TestGetPrivacyRequests:
                                 "updated_at": stringify_date(
                                     second_postgres_execution_log.updated_at
                                 ),
+                                "user_id": None,
                             },
                         ],
                     },

@@ -91,12 +91,17 @@ Use the `verbose` query param to see more details about individual collections v
 with individual statuses. Individual collection statuses include `in_processing`, `retrying`, `complete` or `error`.
 You may see multiple logs for each collection as they reach different steps in the lifecycle.  
 
-`verbose` will embed a “results” key in the response, with execution logs grouped by dataset name.  In the example below,
+`verbose` will embed a “results” key in the response, with both audit logs containing information about the overall request,
+as well as execution logs grouped by dataset name.  
+
+In the example below,
 we have two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for `my-mongo-db` (when the `flights` 
 collection is starting execution and when the `flights` collection has finished) and two execution
 logs for `my-postgres-db` (when the `order` collection is starting and finishing execution).  `fields_affected` are the fields
 that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
 are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
+
+There are also "Request approved" and "Request finished" audit logs included in the response.
 
 ```json title="<code>GET api/v1/privacy-request?request_id={privacy_request_id}&verbose=True</code>"
 {
@@ -109,6 +114,17 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
             "status": "complete",
             "external_id": null,
             "results": {
+                 "Request approved": [
+                    {
+                        "collection_name": null,
+                        "fields_affected": null,
+                        "message": "",
+                        "action_type": null,
+                        "status": "approved",
+                        "updated_at": "2022-08-11T14:03:37.679732+00:00",
+                        "user_id": "system"
+                    }
+                ],
                 "my-mongo-db": [
                     {
                         "collection_name": "flights",
@@ -132,7 +148,8 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
                         "message": "success",
                         "action_type": "access",
                         "status": "complete",
-                        "updated_at": "2022-02-28T16:38:04.727094+00:00"
+                        "updated_at": "2022-02-28T16:38:04.727094+00:00",
+                        "user_id": null
                     }
                 ],
                 "my-postgres-db": [
@@ -158,10 +175,22 @@ are automatically truncated at 50 logs, so to view the entire list of logs, visi
                         "message": "success",
                         "action_type": "access",
                         "status": "complete",
-                        "updated_at": "2022-02-28T16:39:04.668513+00:00"
+                        "updated_at": "2022-02-28T16:39:04.668513+00:00",
+                        "user_id": null
                     }
                 ]
-            }
+            },
+            "Request finished": [
+                {
+                    "collection_name": null,
+                    "fields_affected": null,
+                    "message": "",
+                    "action_type": null,
+                    "status": "finished",
+                    "updated_at": "2022-08-11T14:04:29.611878+00:00",
+                    "user_id": "system"
+                }
+            ]
         }
     ],
     "total": 1,
