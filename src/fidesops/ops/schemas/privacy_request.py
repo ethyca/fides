@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
+from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
@@ -107,6 +108,25 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
+class ExecutionAndAuditLogResponse(BaseSchema):
+    """Schema for the combined ExecutionLogs and Audit Logs
+    associated with a PrivacyRequest"""
+
+    collection_name: Optional[str]
+    fields_affected: Optional[List[FieldsAffectedResponse]]
+    message: Optional[str]
+    action_type: Optional[ActionType]
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction]]
+    updated_at: Optional[datetime]
+    user_id: Optional[str]
+
+    class Config:
+        """Set orm_mode and allow population by field name"""
+
+        use_enum_values = True
+        allow_population_by_field_name = True
+
+
 class RowCountRequest(BaseSchema):
     """Schema for a user to manually confirm data erased for a collection"""
 
@@ -148,11 +168,12 @@ class PrivacyRequestResponse(BaseSchema):
 
 
 class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
-    """The schema for the more detailed PrivacyRequest response containing detailed execution logs."""
+    """The schema for the more detailed PrivacyRequest response containing both
+    detailed execution logs and audit logs."""
 
-    execution_logs_by_dataset: Dict[str, List[ExecutionLogResponse]] = Field(
-        alias="results"
-    )
+    execution_and_audit_logs_by_dataset: Dict[
+        str, List[ExecutionAndAuditLogResponse]
+    ] = Field(alias="results")
 
     class Config:
         """Allow the results field to be populated by the 'PrivacyRequest.execution_logs_by_dataset' property"""

@@ -7,6 +7,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Callable, DefaultDict, Dict, List, Optional, Set, Union
 
+import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -15,7 +16,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from pydantic import conlist
-from sqlalchemy import column
+from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session
 from starlette.responses import StreamingResponse
 from starlette.status import (
@@ -283,27 +284,64 @@ def privacy_request_csv_download(
     return response
 
 
-def execution_logs_by_dataset_name(
+def execution_and_audit_logs_by_dataset_name(
     self: PrivacyRequest,
 ) -> DefaultDict[str, List["ExecutionLog"]]:
     """
-    Returns a truncated list of ExecutionLogs for each dataset name associated with
-    a PrivacyRequest. Added as a conditional property to the PrivacyRequest class at runtime to
-    show optionally embedded execution logs.
+    Returns a combined mapping of execution and audit logs for the given privacy request.
+
+    Audit Logs are for the entire privacy request as a whole, while execution logs are created for specific collections.
+    Logs here are grouped by dataset, but if it is an audit log, it is just given a fake dataset name, here "Request + status"
+    ExecutionLogs for each dataset are truncated.
+
+    Added as a conditional property to the PrivacyRequest class at runtime to
+    show optionally embedded execution and audit logs.
 
     An example response might include your execution logs from your mongo db in one group, and execution logs from
-    your postgres db in a different group.
+    your postgres db in a different group, plus audit logs for when the request was approved and denied.
     """
+    db: Session = Session.object_session(self)
+    all_logs: DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]] = defaultdict(
+        list
+    )
 
-    execution_logs: DefaultDict[str, List["ExecutionLog"]] = defaultdict(list)
+    execution_log_query: Query = db.query(
+        ExecutionLog.id,
+        ExecutionLog.created_at,
+        ExecutionLog.updated_at,
+        ExecutionLog.message,
+        cast(ExecutionLog.status, sqlalchemy.String).label("status"),
+        ExecutionLog.privacy_request_id,
+        ExecutionLog.dataset_name,
+        ExecutionLog.collection_name,
+        ExecutionLog.fields_affected,
+        ExecutionLog.action_type,
+        null().label("user_id"),
+    ).filter(ExecutionLog.privacy_request_id == self.id)
 
-    for log in self.execution_logs.order_by(
-        ExecutionLog.dataset_name, ExecutionLog.updated_at.asc()
-    ):
-        if len(execution_logs[log.dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+    audit_log_query: Query = db.query(
+        AuditLog.id,
+        AuditLog.created_at,
+        AuditLog.updated_at,
+        AuditLog.message,
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label("status"),
+        AuditLog.privacy_request_id,
+        null().label("dataset_name"),
+        null().label("collection_name"),
+        null().label("fields_affected"),
+        null().label("action_type"),
+        AuditLog.user_id,
+    ).filter(AuditLog.privacy_request_id == self.id)
+
+    combined: Query = execution_log_query.union_all(audit_log_query)
+
+    for log in combined.order_by(ExecutionLog.updated_at.asc()):
+        dataset_name: str = log.dataset_name or f"Request {log.status}"
+
+        if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
             continue
-        execution_logs[log.dataset_name].append(log)
-    return execution_logs
+        all_logs[dataset_name].append(log)
+    return all_logs
 
 
 def _filter_privacy_request_queryset(
@@ -509,12 +547,12 @@ def get_request_status(
 
     # Conditionally embed execution log details in the response.
     if verbose:
-        logger.info("Finding execution log details")
-        PrivacyRequest.execution_logs_by_dataset = property(
-            execution_logs_by_dataset_name
+        logger.info("Finding execution and audit log details")
+        PrivacyRequest.execution_and_audit_logs_by_dataset = property(
+            execution_and_audit_logs_by_dataset_name
         )
     else:
-        PrivacyRequest.execution_logs_by_dataset = property(lambda self: None)
+        PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
 
     paginated = paginate(query, params)
     if include_identities:
