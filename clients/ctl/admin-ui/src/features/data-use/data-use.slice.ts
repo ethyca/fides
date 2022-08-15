@@ -22,6 +22,8 @@ export const dataUseApi = createApi({
     getAllDataUses: build.query<DataUse[], void>({
       query: () => ({ url: `data_use/` }),
       providesTags: () => ["Data Uses"],
+      transformResponse: (uses: DataUse[]) =>
+        uses.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateDataUse: build.mutation<
       DataUse,

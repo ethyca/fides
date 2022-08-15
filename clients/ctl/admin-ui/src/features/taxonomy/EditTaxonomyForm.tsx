@@ -45,7 +45,10 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
 
   const handleSubmit = async (newValues: FormValues) => {
     setFormError(null);
-    const result = await onEdit(newValues);
+    // ensure parent key stays the same, as it cannot be changed by the user
+    // and because the backend requires it to be undefined over an empty string
+    const payload = { ...newValues, parent_key: entity.parent_key };
+    const result = await onEdit(payload);
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {

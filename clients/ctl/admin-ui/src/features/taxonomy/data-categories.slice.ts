@@ -22,6 +22,8 @@ export const dataCategoriesApi = createApi({
     getAllDataCategories: build.query<DataCategory[], void>({
       query: () => ({ url: `data_category/` }),
       providesTags: () => ["Data Categories"],
+      transformResponse: (categories: DataCategory[]) =>
+        categories.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateDataCategory: build.mutation<
       DataCategory,

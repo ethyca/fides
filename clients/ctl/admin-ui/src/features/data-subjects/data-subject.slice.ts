@@ -22,6 +22,8 @@ export const dataSubjectsApi = createApi({
     getAllDataSubjects: build.query<DataSubject[], void>({
       query: () => ({ url: `data_subject/` }),
       providesTags: () => ["Data Subjects"],
+      transformResponse: (subjects: DataSubject[]) =>
+        subjects.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateDataSubject: build.mutation<
       DataSubject,

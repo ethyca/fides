@@ -22,7 +22,10 @@ export const dataQualifierApi = createApi({
     getAllDataQualifiers: build.query<DataQualifier[], void>({
       query: () => ({ url: `data_qualifier/` }),
       providesTags: () => ["Data Qualifiers"],
+      transformResponse: (qualifiers: DataQualifier[]) =>
+        qualifiers.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
+
     updateDataQualifier: build.mutation<
       DataQualifier,
       Partial<DataQualifier> & Pick<DataQualifier, "fides_key">

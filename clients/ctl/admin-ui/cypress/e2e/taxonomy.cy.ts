@@ -78,7 +78,7 @@ describe("Taxonomy management page", () => {
           organization_fides_key: "default_organization",
           name: "name",
           description: "description",
-          parent_key: "",
+          parent_key: undefined,
         },
       };
       cy.intercept("PUT", "/api/v1/data_category*", taxonomyPayload).as(
