@@ -10,7 +10,7 @@ pre-commit==2.20.0
 pylint==2.14.5
 pytest-cov==3.0.0
 pytest-env==0.6.2
-pytest==6.2.2
+pytest==7.1.2
 requests-mock==1.9.3
 setuptools>=64.0.2
 types-PyYAML==6.0.11
