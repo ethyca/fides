@@ -24,6 +24,10 @@ The types of changes are:
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 
+### Developer Experience
+
+* When releases are published, dispatch a repository webhook event to ethyca/fidesdemo [#1075](https://github.com/ethyca/fidesops/pull/1075)
+
 ### Fixed
 
 * HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
