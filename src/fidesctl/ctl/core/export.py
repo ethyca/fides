@@ -140,6 +140,7 @@ def generate_system_records(
     formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
     output_list: List[Tuple[str, ...]] = [
         (
+            "system.fides_key",
             "system.name",
             "system.description",
             "system.data_responsibility_title",
@@ -181,6 +182,7 @@ def generate_system_records(
             dataset_references = declaration.dataset_references or ["N/A"]
             cartesian_product_of_declaration = [
                 (
+                    system.fides_key,
                     system.name,
                     system.description,
                     system.data_responsibility_title,
