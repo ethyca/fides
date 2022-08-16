@@ -1,10 +1,10 @@
 from functools import update_wrapper
-from typing import Any, Callable
+from typing import Any, Callable, List
 
 from fastapi import HTTPException, status
 from fideslib.db.base import Base
 
-from fidesctl.api.ctl.database.crud import get_resource
+from fidesctl.api.ctl.database.crud import get_resource, list_resource
 from fidesctl.api.ctl.sql_models import models_with_default_field
 from fidesctl.api.ctl.utils import errors
 from fidesctl.api.ctl.utils.api_router import APIRouter
@@ -90,3 +90,14 @@ async def forbid_if_default(sql_model: Base, fides_key: str) -> None:
         resource = await get_resource(sql_model, fides_key)
         if resource.is_default:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
+
+async def forbid_if_any_default(sql_model: Base, fides_keys: List[str]) -> None:
+    """
+    Raise a forbidden error if any of the existing resources
+    is a default field
+    """
+    if sql_model in models_with_default_field:
+        resources = [r for r in await list_resource(sql_model) if r.fides_key in fides_keys]
+        for resource in resources:
+            if resource.is_default:
+                raise errors.ForbiddenError(sql_model.__name__, resource.fides_key)

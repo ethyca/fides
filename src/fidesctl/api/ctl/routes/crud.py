@@ -21,6 +21,7 @@ from fidesctl.api.ctl.database.crud import (
 )
 from fidesctl.api.ctl.routes.util import (
     API_PREFIX,
+    forbid_if_any_default,
     forbid_if_default,
     get_resource_type,
 )
@@ -114,7 +115,9 @@ for resource_type, resource_model in model_map.items():
         """
 
         sql_model = sql_model_map[resource_type]
-        await forbid_if_default(sql_model, resource.fides_key)
+        await forbid_if_any_default(
+            sql_model, [resource["fides_key"] for resource in resources]
+        )
         result = await upsert_resources(sql_model, resources)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
@@ -132,7 +135,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Delete a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
-        await forbid_if_default(sql_model, resource.fides_key)
+        await forbid_if_default(sql_model, fides_key)
         deleted_resource = await delete_resource(sql_model, fides_key)
         # Convert the resource to a dict explicitly for the response
         deleted_resource_dict = (
