@@ -14,6 +14,8 @@ from fidesctl.api.ctl.routes.util import API_PREFIX
 from fidesctl.ctl.core import api as _api
 from fidesctl.ctl.core.config import FidesctlConfig
 
+TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+
 
 # Helper Functions
 def get_existing_key(test_config: FidesctlConfig, resource_type: str) -> int:
@@ -156,9 +158,7 @@ class TestCrud:
         print(result.text)
         assert result.status_code == 200
 
-    @pytest.mark.parametrize(
-        "endpoint", ["data_category", "data_subject", "data_use", "data_qualifier"]
-    )
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_modify_default_taxonomy(
         self, test_config: FidesctlConfig, endpoint: str
     ) -> None:
@@ -187,6 +187,63 @@ class TestCrud:
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 403
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_cannot_create_default_taxonomy(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        manifest.is_default = True
+        result = _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+        assert result.status_code == 403
+
+        _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=manifest.fides_key,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_cannot_update_is_default_taxonomy(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+
+        manifest.is_default = True
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            json_resource=manifest.json(exclude_none=True),
+        )
+        assert result.status_code == 403
+
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[loads(manifest.json())],
+        )
+        assert result.status_code == 403
+
+        _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=manifest.fides_key,
+            headers=test_config.user.request_headers,
+        )
 
 
 # This test will fail if certain other tests run before it, due to a non-deterministic bug in the code
