@@ -1,4 +1,4 @@
-# Meet Fidesctl: Privacy Policies as Code
+# Meet Fides: Privacy Policies as Code
 
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
