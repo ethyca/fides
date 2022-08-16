@@ -5,7 +5,7 @@ from typing import Dict
 
 import pytest
 import requests
-from fideslang import model_list, parse
+from fideslang import DEFAULT_TAXONOMY, model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
@@ -155,6 +155,38 @@ class TestCrud:
         )
         print(result.text)
         assert result.status_code == 200
+
+    @pytest.mark.parametrize(
+        "endpoint", ["data_category", "data_subject", "data_use", "data_qualifier"]
+    )
+    def test_api_cannot_modify_default_taxonomy(
+        self, test_config: FidesctlConfig, endpoint: str
+    ) -> None:
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            json_resource=resource.json(exclude_none=True),
+        )
+        assert result.status_code == 403
+
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[loads(resource.json())],
+        )
+        assert result.status_code == 403
+
+        result = _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+            headers=test_config.user.request_headers,
+        )
+        assert result.status_code == 403
 
 
 # This test will fail if certain other tests run before it, due to a non-deterministic bug in the code
