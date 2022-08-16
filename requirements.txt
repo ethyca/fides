@@ -6,7 +6,7 @@ cryptography>=36
 deepdiff==5.8.0
 fastapi==0.77.1
 fastapi-pagination[sqlalchemy]==0.9.3
-fideslang==1.1.0
+fideslang==1.2.0
 fideslib==3.0.1
 fideslog==1.1.5
 GitPython==3.1

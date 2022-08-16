@@ -94,6 +94,7 @@ class DataCategory(Base, FidesBase):
     __tablename__ = "data_categories"
 
     parent_key = Column(Text)
+    is_default = Column(BOOLEAN, default=False)
 
 
 class DataQualifier(Base, FidesBase):
@@ -104,6 +105,7 @@ class DataQualifier(Base, FidesBase):
     __tablename__ = "data_qualifiers"
 
     parent_key = Column(Text)
+    is_default = Column(BOOLEAN, default=False)
 
 
 class DataSubject(Base, FidesBase):
@@ -114,6 +116,7 @@ class DataSubject(Base, FidesBase):
     __tablename__ = "data_subjects"
     rights = Column(JSON, nullable=True)
     automated_decisions_or_profiling = Column(BOOLEAN, nullable=True)
+    is_default = Column(BOOLEAN, default=False)
 
 
 class DataUse(Base, FidesBase):
@@ -129,6 +132,7 @@ class DataUse(Base, FidesBase):
     recipients = Column(ARRAY(String))
     legitimate_interest = Column(BOOLEAN, nullable=True)
     legitimate_interest_impact_assessment = Column(String, nullable=True)
+    is_default = Column(BOOLEAN, default=False)
 
 
 # Dataset
