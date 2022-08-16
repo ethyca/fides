@@ -20,6 +20,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 
 DATAMAP_COLUMNS["system.fides_key"] = "The fides key for the system"
 DATAMAP_COLUMNS["dataset.fides_key"] = "The fides key for the dataset (if applicable)"
+DATAMAP_COLUMNS["system.system_dependencies"] = "Related cross-system dependencies"
 
 
 @router.get(
@@ -57,6 +58,7 @@ DATAMAP_COLUMNS["dataset.fides_key"] = "The fides key for the dataset (if applic
                             "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/",
                             "system.fides_key": "",
                             "dataset.fides_key": "",
+                            "system.system_dependencies": "",
                         },
                     ]
                 }
