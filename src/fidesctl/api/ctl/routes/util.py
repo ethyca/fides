@@ -2,7 +2,11 @@ from functools import update_wrapper
 from typing import Any, Callable
 
 from fastapi import HTTPException, status
+from fideslib.db.base import Base
 
+from fidesctl.api.ctl.database.crud import get_resource
+from fidesctl.api.ctl.sql_models import models_with_default_field
+from fidesctl.api.ctl.utils import errors
 from fidesctl.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
@@ -28,7 +32,7 @@ def route_requires_aws_connector(func: Callable) -> Callable:
 
     def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
         try:
-            import fidesctl.ctl.connectors.aws  # pylint: disable=unused-import
+            import fidesctl.ctl.connectors.aws  # pylint: disable=unused-import        
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -47,7 +51,7 @@ def route_requires_okta_connector(func: Callable) -> Callable:
 
     def wrapper_func(*args, **kwargs) -> Any:  # type: ignore
         try:
-            import fidesctl.ctl.connectors.okta  # pylint: disable=unused-import
+            import fidesctl.ctl.connectors.okta  # pylint: disable=unused-import 
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -75,3 +79,14 @@ def route_requires_bigquery_connector(func: Callable) -> Callable:
         return func(*args, **kwargs)
 
     return update_wrapper(wrapper_func, func)
+
+
+async def forbid_if_default(sql_model: Base, fides_key: str) -> None:
+    """
+    Raise a forbidden error if the existing resource is a
+    default field
+    """
+    if sql_model in models_with_default_field:
+        resource = await get_resource(sql_model, fides_key)
+        if resource.is_default:
+            raise errors.ForbiddenError(sql_model.__name__, fides_key)

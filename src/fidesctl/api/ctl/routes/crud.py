@@ -19,7 +19,11 @@ from fidesctl.api.ctl.database.crud import (
     update_resource,
     upsert_resources,
 )
-from fidesctl.api.ctl.routes.util import API_PREFIX, get_resource_type
+from fidesctl.api.ctl.routes.util import (
+    API_PREFIX,
+    forbid_if_default,
+    get_resource_type,
+)
 from fidesctl.api.ctl.sql_models import sql_model_map
 from fidesctl.api.ctl.utils.api_router import APIRouter
 
@@ -66,6 +70,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Update a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
+        await forbid_if_default(sql_model, resource.fides_key)
         return await update_resource(sql_model, resource.dict())
 
     @router.post(
@@ -109,6 +114,7 @@ for resource_type, resource_model in model_map.items():
         """
 
         sql_model = sql_model_map[resource_type]
+        await forbid_if_default(sql_model, resource.fides_key)
         result = await upsert_resources(sql_model, resources)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
@@ -126,6 +132,7 @@ for resource_type, resource_model in model_map.items():
     ) -> Dict:
         """Delete a resource by its fides_key."""
         sql_model = sql_model_map[resource_type]
+        await forbid_if_default(sql_model, resource.fides_key)
         deleted_resource = await delete_resource(sql_model, fides_key)
         # Convert the resource to a dict explicitly for the response
         deleted_resource_dict = (
