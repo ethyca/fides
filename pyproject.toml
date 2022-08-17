@@ -133,8 +133,13 @@ extension-pkg-whitelist = ["pydantic", "zlib"]
 # Pytest
 ########
 [tool.pytest.ini_options]
+env = [
+  "TESTING=True"
+]
+log_cli=false
+filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
-log_level = "DEBUG"
+log_level = "INFO"
 addopts = ["--cov=fidesctl.ctl.core",
             "--cov=fidesctl.cli",
             "--cov-report=term-missing",
@@ -147,5 +152,31 @@ markers = [
     "external: only runs tests that require access to non-docker, external services (i.e. Snowflake)",
     "postgres: only runs the integration tests for postgres",
     "mssql: only runs the integration tests for sqlserver/mssql",
-    "mysql: only runs the integration tests for mysql"
+    "mysql: only runs the integration tests for mysql",
+    "integration",
+    "integration_external",
+    "integration_mysql",
+    "integration_postgres",
+    "integration_mongodb",
+    "integration_mssql",
+    "integration_redshift",
+    "integration_snowflake",
+    "integration_mariadb",
+    "integration_bigquery",
+    "integration_saas",
+    "integration_saas_override",
+    "integration_mailchimp",
+    "integration_zendesk",
+    "integration_sentry",
+    "integration_stripe",
+    "integration_hubspot",
+    "integration_datadog",
+    "integration_segment",
+    "integration_sendgrid",
+    "integration_auth0",
+    "integration_outreach",
+    "integration_salesforce",
+    "integration_logi_id",
+    "integration_adobe_campaign",
+    "unit_saas"
 ]
