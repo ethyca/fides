@@ -60,7 +60,6 @@ def get_server_resource(
     raw_server_response: Response = api.get(
         url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
     )
-    print("response status code", raw_server_response.status_code)
 
     server_resource: Optional[FidesModel] = (
         raw_server_response.json()

@@ -42,14 +42,12 @@ def created_resources(
         base_resource.fides_key = "{}_{}".format(
             base_resource.fides_key, str(uuid.uuid4())[:6]
         )
-        print("\n base resource", base_resource)
-        result = _api.create(
+        _api.create(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             json_resource=base_resource.json(exclude_none=True),
             headers=test_config.user.request_headers,
         )
-        print("created?", result.status_code)
         created_keys.append(base_resource.fides_key)
 
     # Wait for test to finish before cleaning up resources
@@ -95,11 +93,8 @@ class TestGetServerResource:
         """
         Tests that an existing resource is returned by helper
         """
-        print("created resources", created_resources)
         resource_type = created_resources[0]
-        print(resource_type)
         resource_key = created_resources[1][0]
-        print(resource_key)
         result: FidesModel = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
