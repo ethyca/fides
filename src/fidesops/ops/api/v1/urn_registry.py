@@ -28,6 +28,11 @@ STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
 
+# Email URLs
+EMAIL_CONFIG = "/email/config"
+EMAIL_SECRETS = "/email/config/{config_key}/secret"
+EMAIL_BY_KEY = "/email/config/{config_key}"
+
 # Policy URLs
 POLICY_LIST = "/policy"
 POLICY_DETAIL = "/policy/{policy_key}"

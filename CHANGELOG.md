@@ -23,6 +23,7 @@ The types of changes are:
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
 ""
+* Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 
 ### Developer Experience
 

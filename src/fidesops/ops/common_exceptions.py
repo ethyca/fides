@@ -105,6 +105,18 @@ class SaaSConfigNotFoundException(FidesopsException):
     """Custom Exception - SaaS Config Not Found"""
 
 
+class EmailConfigAlreadyExistsException(FidesopsException):
+    """Custom Exception - Email Config already exists"""
+
+
+class EmailConfigNotFoundException(FidesopsException):
+    """Custom Exception - Email Config Not Found"""
+
+
+class EmailDispatchException(FidesopsException):
+    """Custom Exception - Email Dispatch Error"""
+
+
 class OAuth2TokenException(FidesopsException):
     """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
 
