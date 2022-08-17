@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: adobe_campaign_connector_example
+  - fides_key: <instance_fides_key>
     name: Adobe Campaign Dataset
     description: A dataset representing the Adobe Campaign connector for Fidesops
     collections:

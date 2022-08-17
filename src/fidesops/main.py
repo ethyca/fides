@@ -33,6 +33,10 @@ from fidesops.ops.common_exceptions import (
 from fidesops.ops.core.config import config
 from fidesops.ops.db.database import init_db
 from fidesops.ops.schemas.analytics import Event, ExtraData
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    load_registry,
+    registry_file,
+)
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.cache import get_cache
@@ -179,6 +183,9 @@ def start_webserver() -> None:
             "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
         )
         config.log_all_config_values()
+
+    logger.info("Validating SaaS connector templates...")
+    load_registry(registry_file)
 
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")

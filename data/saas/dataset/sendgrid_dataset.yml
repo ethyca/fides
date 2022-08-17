@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: sendgrid_connector_example
+  - fides_key: <instance_fides_key>
     name: Sendgrid Dataset
     description: A sample dataset representing the Sendgrid connector for Fidesops
     collections:

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Extra
 
 from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.ops.schemas.connection_configuration import connection_secrets_schemas
 from fidesops.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -98,3 +99,13 @@ class BulkPutConnectionConfiguration(BulkResponse):
 
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
+
+
+class SaasConnectionTemplateValues(BaseModel):
+    """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
+
+    name: str  # For ConnectionConfig
+    key: Optional[FidesOpsKey]  # For ConnectionConfig
+    description: Optional[str]  # For ConnectionConfig
+    secrets: connection_secrets_schemas  # For ConnectionConfig
+    instance_key: FidesOpsKey  # For DatasetConfig.fides_key

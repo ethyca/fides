@@ -11,8 +11,10 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("datadog")
@@ -36,12 +38,20 @@ def datadog_identity_email(saas_config):
 
 @pytest.fixture
 def datadog_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/datadog_config.yml")[0]
+    return load_config_with_replacement(
+        "data/saas/config/datadog_config.yml",
+        "<instance_fides_key>",
+        "datadog_instance",
+    )
 
 
 @pytest.fixture
 def datadog_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/datadog_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/datadog_dataset.yml",
+        "<instance_fides_key>",
+        "datadog_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

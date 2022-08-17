@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: logi_id_connector_example
+  fides_key: <instance_fides_key>
   name: Logi ID SaaS Config
   type: logi_id
   description: A sample schema representing the Logi ID connector for Fidesops
@@ -44,7 +44,7 @@ saas_config:
           param_values:
             - name: user_id
               references:
-                - dataset: logi_id_connector_example
+                - dataset: <instance_fides_key>
                   field: users.id
                   direction: from
     - name: user_claims

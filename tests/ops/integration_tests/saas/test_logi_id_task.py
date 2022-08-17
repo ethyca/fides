@@ -154,8 +154,8 @@ def test_logi_id_erasure_request_task(
         db,
     )
     assert erasure == {
-        "logi_id_connector_example:user_claims": 0,
-        "logi_id_connector_example:users": 1,
+        "logi_id_instance:user_claims": 0,
+        "logi_id_instance:users": 1,
     }
 
     # Verifying user is deleted

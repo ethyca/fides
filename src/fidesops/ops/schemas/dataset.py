@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
-from pydantic import BaseModel, ConstrainedStr, validator
+from pydantic import BaseModel, ConstrainedStr, Field, validator
 
 from fidesops.ops.common_exceptions import (
     InvalidDataLengthValidationError,
@@ -201,6 +201,9 @@ class FidesopsDatasetCollection(DatasetCollection):
 class FidesopsDataset(Dataset):
     """Overrides fideslang Collection model with additional Fidesops annotations"""
 
+    fides_key: FidesOpsKey = Field(
+        description="A unique key used to identify this resource."
+    )
     fidesops_meta: Optional[FidesopsDatasetMeta]
     collections: List[FidesopsDatasetCollection]
     """Overrides fideslang.models.Collection.collections"""

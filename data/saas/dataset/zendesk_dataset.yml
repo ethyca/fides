@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: zendesk_connector_example
+  - fides_key: <instance_fides_key>
     name: Zendesk Dataset
     description: A sample dataset representing the Zendesk connector for Fidesops
     collections:

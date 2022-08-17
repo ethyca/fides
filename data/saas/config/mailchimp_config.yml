@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: mailchimp_connector_example
+  fides_key: <instance_fides_key>
   name: Mailchimp SaaS Config
   type: mailchimp
   description: A sample schema representing the Mailchimp connector for Fidesops
@@ -32,7 +32,7 @@ saas_config:
           param_values:
             - name: conversation_id
               references:
-                - dataset: mailchimp_connector_example
+                - dataset: <instance_fides_key>
                   field: conversations.id
                   direction: from
           data_path: conversation_messages
@@ -80,12 +80,12 @@ saas_config:
           param_values:
             - name: list_id
               references:
-                - dataset: mailchimp_connector_example
+                - dataset: <instance_fides_key>
                   field: member.list_id
                   direction: from
             - name: subscriber_hash
               references:
-                - dataset: mailchimp_connector_example
+                - dataset: <instance_fides_key>
                   field: member.id
                   direction: from
           body: |

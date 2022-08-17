@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: stripe_connector_example
+  fides_key: <instance_fides_key>
   name: Stripe SaaS Config
   type: stripe
   description: A sample schema representing the Stripe connector for Fidesops
@@ -46,7 +46,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
           body: |
@@ -66,7 +66,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -92,12 +92,12 @@ saas_config:
           param_values:
             - name: charge_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: charge.id
                   direction: from
             - name: payment_intent_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: payment_intent.id
                   direction: from
             - name: limit
@@ -121,7 +121,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -145,7 +145,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: type
@@ -167,7 +167,7 @@ saas_config:
           param_values:
             - name: payment_method_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: payment_method.id
                   direction: from
           body: |
@@ -187,7 +187,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -207,12 +207,12 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: bank_account.customer
                   direction: from
             - name: bank_account_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: bank_account.id
                   direction: from
           body: |
@@ -232,7 +232,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -252,12 +252,12 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: card.customer
                   direction: from
             - name: card_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: card.id
                   direction: from
           body: |
@@ -277,7 +277,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -299,7 +299,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -321,7 +321,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -338,12 +338,12 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: tax_id.customer
                   direction: from
             - name: tax_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: tax_id.id
                   direction: from
     - name: invoice
@@ -359,7 +359,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -377,7 +377,7 @@ saas_config:
           param_values:
             - name: invoice_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: invoice.id
                   direction: from
     - name: invoice_item
@@ -393,7 +393,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -411,7 +411,7 @@ saas_config:
           param_values:
             - name: invoice_item_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: invoice_item.id
                   direction: from
     - name: subscription
@@ -427,7 +427,7 @@ saas_config:
           param_values:
             - name: customer_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
             - name: limit
@@ -444,6 +444,6 @@ saas_config:
           param_values:
             - name: subscription_id
               references:
-                - dataset: stripe_connector_example
+                - dataset: <instance_fides_key>
                   field: subscription.id
                   direction: from

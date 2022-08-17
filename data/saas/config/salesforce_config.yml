@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: salesforce_connector_example
+  fides_key: <instance_fides_key>
   name: Salesforce SaaS Config
   type: salesforce
   description: A sample schema representing the Salesforce connector for Fidesops
@@ -87,7 +87,7 @@ saas_config:
           param_values:
             - name: contact_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: contact_list.Id
                   direction: from
         update:
@@ -100,7 +100,7 @@ saas_config:
           param_values:
             - name: contact_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: contacts.Id
                   direction: from
     - name: case_list
@@ -114,7 +114,7 @@ saas_config:
           param_values:
             - name: contact_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: contact_list.Id
                   direction: from
           data_path: records
@@ -126,7 +126,7 @@ saas_config:
           param_values:
             - name: case_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: case_list.Id
                   direction: from
         update:
@@ -139,7 +139,7 @@ saas_config:
           param_values:
             - name: case_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: cases.Id
                   direction: from
     - name: lead_list
@@ -162,7 +162,7 @@ saas_config:
           param_values:
             - name: lead_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: lead_list.Id
                   direction: from
         update:
@@ -175,7 +175,7 @@ saas_config:
           param_values:
             - name: lead_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: leads.Id
                   direction: from
     - name: accounts
@@ -186,7 +186,7 @@ saas_config:
           param_values:
             - name: account_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: contacts.AccountId
         update:
           method: PATCH
@@ -198,7 +198,7 @@ saas_config:
           param_values:
             - name: account_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: accounts.Id
                   direction: from
     - name: campaign_member_list
@@ -221,7 +221,7 @@ saas_config:
           param_values:
             - name: campaign_member_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: campaign_member_list.Id
                   direction: from
         update:
@@ -234,6 +234,6 @@ saas_config:
           param_values:
             - name: campaign_member_id
               references:
-                - dataset: salesforce_connector_example
+                - dataset: <instance_fides_key>
                   field: campaign_members.Id
                   direction: from
