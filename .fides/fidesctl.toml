@@ -1,10 +1,10 @@
 [database]
-server="fidesctl-db"
+server="fides-db"
 user="postgres"
-password="fidesctl"
+password="fides"
 port="5432"
-db="fidesctl"
-test_db="fidesctl_test"
+db="fides"
+test_db="fides_test"
 
 [logging]
 level = "INFO"
