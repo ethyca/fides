@@ -46,7 +46,15 @@ ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
-RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, *ANALYTICS_OPT_OUT, CI_ARGS, COMPOSE_SERVICE_NAME)
+RUN = (
+    "docker-compose",
+    "run",
+    "--rm",
+    *ANALYTICS_ID_OVERRIDE,
+    *ANALYTICS_OPT_OUT,
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+)
 RUN_NO_DEPS = (
     "docker-compose",
     "run",
@@ -56,8 +64,8 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", COMPOSE_SERVICE_NAME)
-START_APP_UI = ("docker-compose", "up", "-d", "fides-ui")
+START_APP = ("docker-compose", "up", "--wait", COMPOSE_SERVICE_NAME)
+START_APP_UI = ("docker-compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker-compose",
     "-f",

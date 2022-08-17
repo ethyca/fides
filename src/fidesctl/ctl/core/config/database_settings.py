@@ -13,11 +13,11 @@ class FidesctlDatabaseSettings(DatabaseSettings):
     """Configuration settings for Postgres."""
 
     user: str = "postgres"
-    password: str = "fidesctl"
-    server: str = "fidesctl-db"
+    password: str = "fides"
+    server: str = "fides-db"
     port: str = "5432"
-    db: str = "fidesctl"
-    test_db: str = "fidesctl_test"
+    db: str = "fides"
+    test_db: str = "fides_test"
 
     async_database_uri: Optional[PostgresDsn]
     sync_database_uri: Optional[PostgresDsn]

@@ -75,6 +75,10 @@ WORKDIR /fides
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
+# Reset the busted git cache
+RUN git rm --cached -r .
+RUN git reset --hard
+
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 

@@ -1,10 +1,10 @@
 [database]
-server="fidesctl-db"
+server="fides-db"
 user="postgres"
-password="fidesctl"
+password="fides"
 port="5432"
-db="fidesctl"
-test_db="fidesctl_test"
+db="fides"
+test_db="fides_test"
 
 [api]
 database_user = "postgres_deprecated"
@@ -18,7 +18,7 @@ test_database_name = "fidesctl_test_deprecated"
 level = "INFO"
 
 [cli]
-server_host = "fidesctl"
+server_host = "fides"
 server_port = 8080
 
 [user]
@@ -26,7 +26,7 @@ analytics_opt_out = true
 
 
 [credentials]
-postgres_1 = {connection_string="postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"}
+postgres_1 = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"}
 okta_1 = {orgUrl="https://dev-78908748.okta.com", token="redacted_override_in_tests"}
 aws_1 = {aws_access_key_id="redacted_id_override_in_tests", aws_secret_access_key="redacted_override_in_tests", region_name="us-east-1"}
 [credentials.bigquery_1]

@@ -21,10 +21,10 @@ def test_get_config(test_config_path: str) -> None:
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
     assert config.database.user == "postgres"
-    assert config.cli.server_url == "http://fidesctl:8080"
+    assert config.cli.server_url == "http://fides:8080"
     assert (
         config.credentials["postgres_1"]["connection_string"]
-        == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+        == "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"
     )
 
 
@@ -140,6 +140,11 @@ def test_config_from_env_vars() -> None:
     )
 
 
+@patch.dict(
+    os.environ,
+    {},
+    clear=True,
+)
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "False"

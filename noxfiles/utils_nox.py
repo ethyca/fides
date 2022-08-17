@@ -1,6 +1,6 @@
 """Contains various utility-related nox sessions."""
 import nox
-from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, RUN
+from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
@@ -53,6 +53,7 @@ def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
     session.run(*COMPOSE_DOWN, external=True)
     print("Teardown complete")
+
 
 def install_requirements(session: nox.Session) -> None:
     session.install("-r", "requirements.txt")

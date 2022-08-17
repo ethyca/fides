@@ -23,9 +23,9 @@ services:
     environment:
       FIDES__CONFIG_PATH: "/fides/.fides/"
       FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
-      FIDESCTL__CLI__SERVER_HOST: "fidesctl"
+      FIDESCTL__CLI__SERVER_HOST: "fides"
       FIDESCTL__CLI__SERVER_PORT: "8080"
-      FIDESCTL__DATABASE__SERVER: "fidesctl-db"
+      FIDESCTL__DATABASE__SERVER: "fides-db"
       FIDESCTL_TEST_MODE: "True"
     volumes:
       - type: bind
@@ -34,10 +34,10 @@ services:
         read_only: False
 
   fides-ui:
-    image: ethyca/fidesctl:local-ui
+    image: ethyca/fides:local-ui
     command: npm run dev-docker
     depends_on:
-      - fidesctl
+      - fides
     expose:
       - 3000
     ports:
@@ -65,8 +65,8 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "fidesctl"
-      POSTGRES_DB: "fidesctl"
+      POSTGRES_PASSWORD: "fides"
+      POSTGRES_DB: "fides"
     deploy:
       placement:
         constraints:
