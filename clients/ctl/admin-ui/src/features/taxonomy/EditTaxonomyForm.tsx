@@ -35,6 +35,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
     name: entity.name ?? "",
     description: entity.description ?? "",
     parent_key: entity.parent_key ?? "",
+    is_default: entity.is_default ?? false,
   };
   const [formError, setFormError] = useState<string | null>(null);
 

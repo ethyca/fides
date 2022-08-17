@@ -47,4 +47,8 @@ export type DataUse = {
    * A url pointing to the legitimate interest impact assessment. Required if the legal bases used is legitimate interest.
    */
   legitimate_interest_impact_assessment?: string;
+  /**
+   * Denotes whether the resource is part of the default taxonomy or not.
+   */
+  is_default?: boolean;
 };
