@@ -35,9 +35,9 @@ from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.connection_configuration.connection_config import (
+    SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
-from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
@@ -268,13 +268,13 @@ def authorize_connection(
 @router.post(
     SAAS_CONNECTOR_FROM_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONNECTION_INSTANTIATE])],
-    response_model=FidesopsDataset,
+    response_model=SaasConnectionTemplateResponse,
 )
 def instantiate_connection_from_template(
     saas_connector_type: str,
     template_values: SaasConnectionTemplateValues,
     db: Session = Depends(deps.get_db),
-) -> FidesopsDataset:
+) -> SaasConnectionTemplateResponse:
     """
     Creates a SaaS Connector and a SaaS Dataset from a template.
 
@@ -331,4 +331,6 @@ def instantiate_connection_from_template(
     logger.info(
         f"SaaS Connector and Dataset {template_values.instance_key} successfully created from '{saas_connector_type}' template."
     )
-    return dataset_config.dataset
+    return SaasConnectionTemplateResponse(
+        connection=connection_config, dataset=dataset_config.dataset
+    )
