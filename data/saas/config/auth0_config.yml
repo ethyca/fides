@@ -1,5 +1,5 @@
 saas_config:
-    fides_key: auth0_connector_example
+    fides_key: <instance_fides_key>
     name: Auth0 SaaS Config
     type: auth0
     description: A sample schema representing the Auth0 connector for Fidesops
@@ -46,7 +46,7 @@ saas_config:
             param_values:
               - name: user_id
                 references:
-                  - dataset: auth0_connector_example
+                  - dataset: <instance_fides_key>
                     field: users.user_id
                     direction: from
       - name: user_logs
@@ -57,6 +57,6 @@ saas_config:
             param_values:
               - name: user_id
                 references:
-                  - dataset: auth0_connector_example
+                  - dataset: <instance_fides_key>
                     field: users.user_id
                     direction: from

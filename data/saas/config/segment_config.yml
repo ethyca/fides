@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: segment_connector_example
+  fides_key: <instance_fides_key>
   name: Segment SaaS Config
   type: segment
   description: A sample schema representing the Segment connector for Fidesops
@@ -55,7 +55,7 @@ saas_config:
               connector_param: namespace_id
             - name: segment_id
               references:
-                - dataset: segment_connector_example
+                - dataset: <instance_fides_key>
                   field: segment_user.segment_id
                   direction: from
           data_path: data
@@ -84,7 +84,7 @@ saas_config:
               connector_param: namespace_id
             - name: segment_id
               references:
-                - dataset: segment_connector_example
+                - dataset: <instance_fides_key>
                   field: segment_user.segment_id
                   direction: from
           data_path: traits
@@ -110,7 +110,7 @@ saas_config:
               connector_param: namespace_id
             - name: segment_id
               references:
-                - dataset: segment_connector_example
+                - dataset: <instance_fides_key>
                   field: segment_user.segment_id
                   direction: from
           data_path: data

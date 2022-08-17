@@ -15,6 +15,7 @@ CONNECTION_CREATE_OR_UPDATE = "connection:create_or_update"
 CONNECTION_READ = "connection:read"
 CONNECTION_DELETE = "connection:delete"
 CONNECTION_AUTHORIZE = "connection:authorize"
+SAAS_CONNECTION_INSTANTIATE = "connection:instantiate"
 
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
@@ -71,6 +72,7 @@ SCOPE_REGISTRY = [
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_AUTHORIZE,
+    SAAS_CONNECTION_INSTANTIATE,
     CONNECTION_TYPE_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,

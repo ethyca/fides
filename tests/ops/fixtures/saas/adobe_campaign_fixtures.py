@@ -12,8 +12,10 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("adobe_campaign")
@@ -51,12 +53,19 @@ def adobe_campaign_erasure_identity_email() -> str:
 
 @pytest.fixture
 def adobe_campaign_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/adobe_campaign_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/adobe_campaign_config.yml",
+        "<instance_fides_key>",
+        "adobe_campaign_instance",
+    )
 
 
 @pytest.fixture
 def adobe_campaign_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/adobe_campaign_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/adobe_campaign_dataset.yml" "<instance_fides_key>",
+        "adobe_campaign_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

@@ -135,7 +135,7 @@ def test_sendgrid_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    assert erasure == {"sendgrid_connector_example:contacts": 1}
+    assert erasure == {"sendgrid_instance:contacts": 1}
     error_message = f"Contact with email {sendgrid_erasure_identity_email} could not be deleted in Sendgrid"
     poll_for_existence(
         contact_exists,

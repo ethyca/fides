@@ -40,7 +40,7 @@ def mailchimp_messages_access(
     - name: conversation_id
         type: path
         references:
-        - dataset: mailchimp_connector_example
+        - dataset: mailchimp_instance
         field: conversations.id
         direction: from
     data_path: conversation_messages

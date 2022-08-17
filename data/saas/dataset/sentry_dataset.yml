@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: sentry_connector
+  - fides_key: <instance_fides_key>
     name: Sentry Dataset
     description: A sample dataset representing the Sentry connector for Fidesops
     collections:

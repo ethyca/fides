@@ -14,8 +14,10 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from tests.ops.fixtures.application_fixtures import load_dataset
-from tests.ops.fixtures.saas_example_fixtures import load_config
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -46,12 +48,20 @@ def sendgrid_erasure_identity_email():
 
 @pytest.fixture
 def sendgrid_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/sendgrid_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/sendgrid_config.yml",
+        "<instance_fides_key>",
+        "sendgrid_instance",
+    )
 
 
 @pytest.fixture
 def sendgrid_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/sendgrid_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/sendgrid_dataset.yml",
+        "<instance_fides_key>",
+        "sendgrid_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

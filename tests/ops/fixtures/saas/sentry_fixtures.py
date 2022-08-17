@@ -11,8 +11,10 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fidesops.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("sentry")
@@ -44,12 +46,16 @@ def sentry_identity_email(saas_config):
 
 @pytest.fixture
 def sentry_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/sentry_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/sentry_config.yml", "<instance_fides_key>", "sentry_instance"
+    )
 
 
 @pytest.fixture
 def sentry_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/sentry_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/sentry_dataset.yml", "<instance_fides_key>", "sentry_dataset"
+    )[0]
 
 
 @pytest.fixture(scope="function")

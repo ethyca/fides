@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 from fideslib.db.base import Base
+from fideslib.db.base_class import get_key_from_data
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -87,6 +89,33 @@ class ConnectionConfig(Base):
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
+
+    @classmethod
+    def create_without_saving(
+        cls: Type[ConnectionConfig], db: Session, *, data: dict[str, Any]
+    ) -> ConnectionConfig:
+        """Create a ConnectionConfig without persisting to the database"""
+        # Build properly formatted key/name for ConnectionConfig.
+        # Borrowed from OrmWrappedFidesBase.create
+        if hasattr(cls, "key"):
+            data["key"] = get_key_from_data(data, cls.__name__)
+            if db.query(cls).filter_by(key=data["key"]).first():
+                raise KeyOrNameAlreadyExists(
+                    f"Key {data['key']} already exists in {cls.__name__}. Keys will be snake-cased names if not provided. "
+                    f"If you are seeing this error without providing a key, please provide a key or a different name."
+                    ""
+                )
+
+        if hasattr(cls, "name"):
+            data["name"] = data.get("name")
+            if db.query(cls).filter_by(name=data["name"]).first():
+                raise KeyOrNameAlreadyExists(
+                    f"Name {data['name']} already exists in {cls.__name__}."
+                )
+
+        # Create
+        db_obj = cls(**data)  # type: ignore
+        return db_obj
 
     def get_saas_config(self) -> Optional[SaaSConfig]:
         """Returns a SaaSConfig object from a yaml config"""
