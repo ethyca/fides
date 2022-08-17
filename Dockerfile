@@ -3,10 +3,16 @@
 ##############
 FROM node:16 as frontend
 
+# Build the Ops frontend
 WORKDIR /fidesops/clients/ops/admin-ui
 COPY clients/ops/admin-ui/ .
 RUN npm install
-# Build the frontend static files
+RUN npm run export
+
+# Build the Ctl frontend
+WORKDIR /fidesops/clients/ctl/admin-ui
+COPY clients/ctl/admin-ui/ .
+RUN npm install
 RUN npm run export
 
 #############
@@ -90,7 +96,8 @@ FROM backend as prod
 
 # Install without a symlink
 RUN python setup.py sdist
-RUN pip install dist/fidesops-*.tar.gz
+RUN pip install dist/fidesctl-*.tar.gz
 
 # Copy frontend build over
 COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/ops/build/static/
+COPY --from=frontend /fidesops/clients/ctl/admin-ui/out/ /fidesops/src/fidesops/ctl/build/static/
