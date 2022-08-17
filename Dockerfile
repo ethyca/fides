@@ -57,6 +57,9 @@ RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-r
 COPY mssql-requirements.txt .
 RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
 
+COPY optional-requirements.txt .
+RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
+
 COPY dev-requirements.txt .
 RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
 

@@ -18,6 +18,7 @@ from utils_nox import install_requirements
 
 RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
+
 @nox.session()
 def ci_suite(session: nox.Session) -> None:
     """
@@ -144,6 +145,7 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     )
     session.run(*run_command, external=True)
 
+
 @nox.session()
 def check_migrations(session: nox.Session) -> None:
     """Check for missing migrations."""
@@ -172,11 +174,13 @@ def pytest(session: nox.Session, mark: str) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        "tests/ctl/",
         "-x",
         "-m",
         mark,
     )
     session.run(*run_command, external=True)
+
 
 @nox.session()
 def pytest_unit(session: nox.Session) -> None:
@@ -222,6 +226,7 @@ def pytest_external(session: nox.Session) -> None:
         "external",
     )
     session.run(*run_command, external=True)
+
 
 @nox.session()
 def pytest_integration(session: nox.Session) -> None:
