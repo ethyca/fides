@@ -75,7 +75,7 @@ def setup_db(test_config: FidesctlConfig) -> Generator:
     yield api.db_action(test_config.cli.server_url, "reset")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def resources_dict() -> Generator:
     """
     Yields a resource containing sample representations of different
