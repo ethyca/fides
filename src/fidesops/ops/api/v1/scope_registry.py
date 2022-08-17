@@ -35,6 +35,10 @@ STORAGE_CREATE_OR_UPDATE = "storage:create_or_update"
 STORAGE_READ = "storage:read"
 STORAGE_DELETE = "storage:delete"
 
+EMAIL_CREATE_OR_UPDATE = "email:create_or_update"
+EMAIL_READ = "email:read"
+EMAIL_DELETE = "email:delete"
+
 SCOPE_READ = "scope:read"
 
 ENCRYPTION_EXEC = "encryption:exec"
@@ -86,6 +90,9 @@ SCOPE_REGISTRY = [
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+    EMAIL_CREATE_OR_UPDATE,
+    EMAIL_DELETE,
+    EMAIL_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_READ,
     WEBHOOK_DELETE,

@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "2244490f-dd6c-4811-bcd7-40b560cec834",
+		"_postman_id": "c2e8bb17-9afa-4e3a-8cc0-e294b35956b5",
 		"name": "Fidesops",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13396647"
 	},
 	"item": [
 		{
@@ -3902,6 +3903,222 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Email Config",
+			"item": [
+				{
+					"name": "Post Email Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"key\": \"{{email_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/email/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Email Config By Key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"key\": \"{{email_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								"{{email_config_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Email Configs",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/email/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Email Config By Key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								"{{email_config_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Email Config By Key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n      \"key\": \"{{email_config_key}}\",\n      \"name\": \"mailgun\",\n      \"service_type\": \"mailgun\",\n      \"details\": {\n        \"domain\": \"{{mailgun_domain}}\"\n      }\n    }\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								"{{email_config_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Email Config Secrets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mailgun_api_key\": \"{{mailgun_api_key}}\"\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/email/config/{{email_config_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"email",
+								"config",
+								"{{email_config_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -4138,6 +4355,11 @@
 		{
 			"key": "manual_connector",
 			"value": "manual_key"
+		},
+		{
+			"key": "email_config_key",
+			"value": "my_email_config",
+			"type": "string"
 		}
 	]
 }
