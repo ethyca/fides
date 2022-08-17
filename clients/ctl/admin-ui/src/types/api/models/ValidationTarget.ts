@@ -8,4 +8,5 @@
 export enum ValidationTarget {
   AWS = 'aws',
   OKTA = 'okta',
+  BIGQUERY = 'bigquery',
 }
