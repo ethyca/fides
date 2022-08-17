@@ -16,12 +16,15 @@ from fidesctl.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundErro
 from fidesctl.ctl.core.export import build_joined_dataframe
 from fidesctl.ctl.core.export_helpers import DATAMAP_COLUMNS
 
-router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
+API_EXTRA_COLUMNS = {
+    "system.fides_key": "The fides key for the system",
+    "dataset.fides_key": "The fides key for the dataset (if applicable)",
+    "system.system_dependencies": "Related cross-system dependencies",
+    "system.description": "Description of the System",
+}
+DATAMAP_COLUMNS_API = {**DATAMAP_COLUMNS, **API_EXTRA_COLUMNS}
 
-DATAMAP_COLUMNS["system.fides_key"] = "The fides key for the system"
-DATAMAP_COLUMNS["dataset.fides_key"] = "The fides key for the dataset (if applicable)"
-DATAMAP_COLUMNS["system.system_dependencies"] = "Related cross-system dependencies"
-DATAMAP_COLUMNS["system.description"] = "Description of the System"
+router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 
 
 @router.get(
@@ -32,7 +35,7 @@ DATAMAP_COLUMNS["system.description"] = "Description of the System"
             "content": {
                 "application/json": {
                     "example": [
-                        DATAMAP_COLUMNS,
+                        DATAMAP_COLUMNS_API,
                         {
                             "system.name": "Demo Analytics System",
                             "system.data_responsibility_title": "Controller",
@@ -124,7 +127,7 @@ async def export_datamap(
     formatted_datamap = format_datamap_values(joined_system_dataset_df)
 
     # prepend column names
-    formatted_datamap = [DATAMAP_COLUMNS] + formatted_datamap
+    formatted_datamap = [DATAMAP_COLUMNS_API] + formatted_datamap
     return formatted_datamap
 
 
@@ -135,7 +138,7 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str,
 
     limited_columns_df = DataFrame(
         joined_system_dataset_df,
-        columns=list(DATAMAP_COLUMNS.keys()),
+        columns=list(DATAMAP_COLUMNS_API.keys()),
     )
 
     return limited_columns_df.to_dict("records")
