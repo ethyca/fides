@@ -34,6 +34,7 @@ The types of changes are:
 
 * HTTP headers are now preserved in requests generated from SaaS connector pagination [#1069](https://github.com/ethyca/fidesops/pull/1069)
 * Bump fideslib to fix issue where the authenticate button in the FastAPI docs did not work [#1092](https://github.com/ethyca/fidesops/pull/1092)
+* Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 
 ### Changed
 
