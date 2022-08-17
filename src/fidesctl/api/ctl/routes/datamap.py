@@ -21,6 +21,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
 DATAMAP_COLUMNS["system.fides_key"] = "The fides key for the system"
 DATAMAP_COLUMNS["dataset.fides_key"] = "The fides key for the dataset (if applicable)"
 DATAMAP_COLUMNS["system.system_dependencies"] = "Related cross-system dependencies"
+DATAMAP_COLUMNS["system.description"] = "Description of the System"
 
 
 @router.get(
@@ -59,6 +60,7 @@ DATAMAP_COLUMNS["system.system_dependencies"] = "Related cross-system dependenci
                             "system.fides_key": "",
                             "dataset.fides_key": "",
                             "system.system_dependencies": "",
+                            "system.description": "",
                         },
                     ]
                 }
@@ -130,6 +132,7 @@ def format_datamap_values(joined_system_dataset_df: DataFrame) -> List[Dict[str,
     """
     Formats the joined DataFrame to return the data as records.
     """
+
     limited_columns_df = DataFrame(
         joined_system_dataset_df,
         columns=list(DATAMAP_COLUMNS.keys()),
