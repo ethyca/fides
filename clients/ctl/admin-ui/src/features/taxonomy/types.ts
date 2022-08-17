@@ -1,3 +1,5 @@
+import { RTKErrorResult } from "~/types/errors";
+
 export interface TaxonomyEntityNode {
   value: string;
   label: string;
@@ -9,5 +11,19 @@ export interface TaxonomyEntity {
   fides_key: string;
   name?: string;
   description?: string;
-  parent_key?: string | null;
+  parent_key?: string;
 }
+
+export interface Labels {
+  fides_key: string;
+  name: string;
+  description: string;
+  parent_key: string;
+}
+
+export type TaxonomyRTKResult = Promise<
+  | {
+      data: TaxonomyEntity;
+    }
+  | { error: RTKErrorResult["error"] }
+>;

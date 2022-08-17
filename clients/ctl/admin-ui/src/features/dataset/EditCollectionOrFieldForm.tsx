@@ -77,7 +77,7 @@ const EditCollectionOrFieldForm = ({
           display="flex"
           flexDirection="column"
           justifyContent="space-between"
-          height="80vh"
+          height="75vh"
         >
           <Stack>
             <CustomTextInput

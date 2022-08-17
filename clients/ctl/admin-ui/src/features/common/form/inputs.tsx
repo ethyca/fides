@@ -27,6 +27,7 @@ interface InputProps {
 export const CustomTextInput = ({
   label,
   tooltip,
+  disabled,
   ...props
 }: InputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
@@ -51,6 +52,7 @@ export const CustomTextInput = ({
           <InputGroup size="sm" mr="2">
             <Input
               {...field}
+              disabled={disabled}
               data-testid={`input-${field.name}`}
               type={type}
               placeholder={placeholder}
@@ -361,21 +363,38 @@ export const CustomCreatableMultiSelect = ({
   );
 };
 
+interface CustomTextAreaProps {
+  textAreaProps?: TextareaProps;
+  label?: string;
+}
 export const CustomTextArea = ({
   textAreaProps,
+  label,
   ...props
-}: { textAreaProps?: TextareaProps } & FieldHookConfig<string>) => {
+}: CustomTextAreaProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
+  const InnerTextArea = (
+    <Textarea
+      {...field}
+      size="sm"
+      width="auto"
+      mr={2}
+      {...textAreaProps}
+      data-testid={`input-${field.name}`}
+    />
+  );
+
   return (
     <FormControl isInvalid={isInvalid}>
-      <Textarea
-        {...field}
-        size="sm"
-        mb={2}
-        {...textAreaProps}
-        data-testid={`input-${field.name}`}
-      />
+      {label ? (
+        <Grid templateColumns="1fr 3fr">
+          {label ? <FormLabel>{label}</FormLabel> : null}
+          {InnerTextArea}
+        </Grid>
+      ) : (
+        InnerTextArea
+      )}
       {isInvalid ? (
         <FormErrorMessage data-testid={`error-${field.name}`}>
           {meta.error}
