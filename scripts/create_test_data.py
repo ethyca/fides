@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fideslib.db.session import get_db_session
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
@@ -17,7 +18,12 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
 from fidesops.ops.models.storage import ResponseFormat, StorageConfig
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
@@ -194,6 +200,63 @@ def create_test_data(db: orm.Session) -> FidesUser:
                     phone_number="+1 234 567 8910",
                 ),
             )
+            for action_type in [
+                AuditLogAction.denied,  # Run denied before approved to simulate a realistic order
+                AuditLogAction.approved,
+                AuditLogAction.finished,
+            ]:
+                AuditLog.create(
+                    db=session,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": pr.id,
+                        "action": action_type,
+                        "message": f"Audit log for request with id {pr.id} and action_type {action_type}",
+                    },
+                )
+
+            for action_type in [
+                ActionType.access.value,
+                ActionType.erasure.value,
+            ]:
+                for exl_status in [
+                    ExecutionLogStatus.in_processing,
+                    ExecutionLogStatus.pending,
+                    ExecutionLogStatus.complete,
+                    ExecutionLogStatus.error,
+                    ExecutionLogStatus.paused,
+                    ExecutionLogStatus.retrying,
+                    ExecutionLogStatus.skipped,
+                ]:
+                    ExecutionLog.create(
+                        db=db,
+                        data={
+                            "dataset_name": "dummy_dataset",
+                            "collection_name": "dummy_collection",
+                            "fields_affected": [
+                                {
+                                    "path": "dummy_dataset:dummy_collection:dummy_field_1",
+                                    "field_name": "dummy_field",
+                                    "data_categories": [
+                                        "data_category_1",
+                                        "data_category_2",
+                                    ],
+                                },
+                                {
+                                    "path": "dummy_dataset:dummy_collection:dummy_field_2",
+                                    "field_name": "dummy_field_2",
+                                    "data_categories": [
+                                        "data_category_2",
+                                        "data_category_3",
+                                    ],
+                                },
+                            ],
+                            "action_type": action_type,
+                            "status": exl_status,
+                            "privacy_request_id": pr.id,
+                            "message": f"Execution log for request id {pr.id} status {status} and action_type {action_type}",
+                        },
+                    )
 
     print("Adding connection configs")
     _create_connection_configs(db)
