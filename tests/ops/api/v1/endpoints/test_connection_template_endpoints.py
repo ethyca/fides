@@ -503,7 +503,14 @@ class TestInstantiateConnectionFromTemplate:
         )
 
         assert resp.status_code == 200
-        assert resp.json()["fides_key"] == "secondary_mailchimp_instance"
+        assert set(resp.json().keys()) == {"connection", "dataset"}
+        connection_data = resp.json()["connection"]
+        assert connection_data["key"] == "mailchimp_connection_config"
+        assert connection_data["name"] == "Mailchimp Connector"
+        assert "secrets" not in connection_data
+
+        dataset_data = resp.json()["dataset"]
+        assert dataset_data["fides_key"] == "secondary_mailchimp_instance"
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")

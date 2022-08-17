@@ -7,6 +7,7 @@ from pydantic import BaseModel, Extra
 from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.connection_configuration import connection_secrets_schemas
+from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -109,3 +110,8 @@ class SaasConnectionTemplateValues(BaseModel):
     description: Optional[str]  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesOpsKey  # For DatasetConfig.fides_key
+
+
+class SaasConnectionTemplateResponse(BaseModel):
+    connection: ConnectionConfigurationResponse
+    dataset: FidesopsDataset
