@@ -38,6 +38,7 @@ def created_resources(
     created_keys = []
     resource_type = request.param
     for _ in range(RESOURCE_CREATION_COUNT):
+        print("resource", resources_dict[resource_type])
         base_resource = resources_dict[resource_type].copy()
         base_resource.fides_key = "{}_{}".format(
             base_resource.fides_key, str(uuid.uuid4())[:6]
