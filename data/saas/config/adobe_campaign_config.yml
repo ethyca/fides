@@ -1,0 +1,100 @@
+saas_config:
+  fides_key: adobe_campaign_connector_example
+  name: Adobe Campaign SaaS Config
+  type: adobe_campaign
+  description: A schema representing the Adobe Campaign connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: mc.adobe.io
+    - name: organization_id
+    - name: namespace
+      default_value: defaultNamespace1
+      description: The namespace to use for data protections requests
+    - name: regulation
+      description: The regulation to follow for data protection requests
+    - name: client_id
+    - name: access_token
+
+  client_config:
+    protocol: https
+    host: <domain>/<organization_id>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <access_token>
+
+  test_request:
+    method: GET
+    path: /campaign/profileAndServices/profile/PKey
+    headers:
+      - name: X-Api-Key
+        value: <client_id>
+    query_params:
+      - name: _lineCount
+        value: 1
+    param_values:
+      - name: client_id
+        connector_param: client_id
+
+  endpoints:
+    - name: profile
+      requests:
+        read:
+          method: GET
+          path: /campaign/profileAndServices/profile/byEmail
+          headers:
+            - name: X-Api-Key
+              value: <client_id>
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: client_id
+              connector_param: client_id
+            - name: email
+              identity: email
+          data_path: content
+    - name: marketing_history
+      requests:
+        read:
+          method: GET
+          path: /campaign/profileAndServices/history/byEmail
+          headers:
+            - name: X-Api-Key
+              value: <client_id>
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: client_id
+              connector_param: client_id
+            - name: email
+              identity: email
+          data_path: content
+
+  data_protection_request:
+    method: POST
+    path: /campaign/privacy/privacyTool
+    headers:
+      - name: X-Api-Key
+        value: <client_id>
+    param_values:
+      - name: client_id
+        connector_param: client_id
+      - name: regulation
+        connector_param: regulation
+      - name: namespace
+        connector_param: namespace
+      - name: reconciliation_value
+        identity: email
+    body: |
+      {
+          "name": "<privacy_request_id>",
+          "namespaceName": "<namespace>",
+          "reconciliationValue": "<reconciliation_value>",
+          "regulation": "<regulation>",
+          "label": "Erasure Request",
+          "type": "delete"
+      }

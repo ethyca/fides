@@ -1,0 +1,214 @@
+name: Fidesops CI Checks - Safe
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  CONTAINER: fidesops-local
+  IMAGE: ethyca/fidesops:local
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build fidesops container
+        uses: docker/build-push-action@v3
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          target: prod
+          outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
+          push: false
+          tags: ${{ env.IMAGE }}
+
+      - name: Upload fidesops container
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/${{ env.CONTAINER }}.tar
+          retention-days: 1
+
+  Fidesops:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check fidesops installation
+        run: nox -s check_install
+
+      - name: Check migrations
+        run: nox -s check_migrations
+
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run sorter
+        run: nox -s isort
+
+  Black:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run formatter
+        run: nox -s black
+
+  Docs:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check that the docs can build
+        run: nox -s docs_check
+
+  Pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run linter
+        run: nox -s pylint
+
+  Mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run typechecker
+        run: nox -s mypy
+
+  Xenon:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run cyclomatic complexity check
+        run: nox -s xenon
+
+  Pytest-Unit:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run unit test suite
+        run: nox -s pytest_unit
+
+  Pytest-Integration:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run integration test suite
+        run: nox -s pytest_integration

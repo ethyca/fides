@@ -1,0 +1,43 @@
+port = 8080
+
+[database]
+server = "db"
+user = "postgres"
+password = "216f4b49bea5da4f84f05288258471852c3e325cd336821097e1e65ff92b528a"
+db = "app"
+test_db = "test"
+enabled = true
+
+[redis]
+host = "redis"
+password = "testpassword"
+port = 6379
+charset = "utf8"
+default_ttl_seconds = 604800
+db_index = 0
+enabled = true
+ssl = false
+ssl_cert_reqs = "required"
+
+[security]
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
+encoding = "UTF-8"
+oauth_root_client_id = "fidesopsadmin"
+oauth_root_client_secret = "fidesopsadminsecret"
+drp_jwt_secret = "secret"
+log_level = "INFO"
+
+[execution]
+masking_strict = true
+require_manual_request_approval = false
+task_retry_count = 0
+task_retry_delay = 1
+task_retry_backoff = 1
+worker_enabled = false
+
+[root_user]
+analytics_opt_out = false
+
+[admin_ui]
+enabled = true

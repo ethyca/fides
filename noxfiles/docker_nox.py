@@ -26,7 +26,7 @@ def get_current_image() -> str:
     ],
 )
 def build(session: nox.Session, image: str) -> None:
-    """Build the Docker container for fidesctl."""
+    """Build the Docker containers."""
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -67,6 +67,6 @@ def push(session: nox.Session, tag: str) -> None:
     session.run("docker", "push", tag_matrix[tag], external=True)
 
     # Only push the tagged version if its for prod
-    # Example: "ethyca/fidesctl:1.7.0"
+    # Example: "ethyca/ethyca-fides:1.7.0"
     if tag == "prod":
         session.run("docker", "push", f"{IMAGE}:{get_current_tag()}", external=True)

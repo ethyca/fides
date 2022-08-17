@@ -1,13 +1,56 @@
 [build-system]
 requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 
-######
-# MyPy
-######
-# [tool.mypy] Waiting for new version of Mypy
-# warn_unused_configs = true
-# ignore_missing_imports = true
-# pretty = true
+##########
+## MyPy ##
+##########
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+files = ['src']
+exclude = ["fidesctl.ops.migrations.*"]
+exclude = ["fidesctl.ctl.migrations.*"]
+plugins = ["pydantic.mypy", "sqlmypy"]
+pretty = true
+show_error_codes = true
+warn_unused_configs = true
+
+[pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[mypy-src.fidesops._version]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+  "alembic.*",
+  "apscheduler.*",
+  "boto3.*",
+  "botocore.*",
+  "bson.*",
+  "celery.*",
+  "dask.*",
+  "fideslang.*",
+  "fideslib.*",
+  "fideslog.*",
+  "jose.*",
+  "jwt.*",
+  "multidimensional_urlencode.*",
+  "pandas.*",
+  "pydash.*",
+  "pymongo.*",
+  "snowflake.*",
+  "sqlalchemy_utils.*",
+  "uvicorn.*"
+]
+ignore_missing_imports = true
 
 #######
 # Black
@@ -46,21 +89,30 @@ src_paths = ["src", "tests"]
 # Pylint
 ########
 [tool.pylint.messages_control]
-ignore="migrations"
 disable=[
-    "line-too-long",
-    "too-few-public-methods",
+    "bad-option-value",
+    "broad-except",
+    "dangerous-default-value",
     "duplicate-code",
+    "fixme",
     "import-error",
-    "unused-argument",
-    "no-self-use",
     "import-outside-toplevel",
-    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
-    "too-many-arguments",
+    "invalid-name",
+    "line-too-long",
+    "logging-fstring-interpolation",
+    "missing-class-docstring",
+    "missing-function-docstring",
     "missing-module-docstring",
+    "no-self-argument",
+    "no-self-use",
     "raise-missing-from",
-    "fixme"]
-extension-pkg-whitelist = ["pydantic", "zlib"]
+    "too-few-public-methods",
+    "too-many-ancestors",
+    "too-many-arguments",
+    "unnecessary-comprehension",
+    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "unused-argument",
+]
 
 [tool.pylint.reports]
 reports="no"
@@ -71,6 +123,12 @@ max-line-length="88"
 
 [tool.pylint.basic]
 good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
+
+[tool.pylint.ignore]
+ignore="migrations,tests"
+
+[tool.pylint.whitelist]
+extension-pkg-whitelist = ["pydantic", "zlib"]
 
 ########
 # Pytest

@@ -1,119 +1,96 @@
-FROM --platform=linux/amd64 python:3.9-slim-bullseye as base
-
-# Update pip in the base image since we'll use it everywhere
-RUN pip install -U pip
-
-####################
-## Build frontend ##
-####################
+##############
+## Frontend ##
+##############
 FROM node:16 as frontend
 
-WORKDIR /fides/clients/ctl/admin-ui
-
-# install node modules
-COPY clients/ctl/admin-ui/ .
+WORKDIR /fidesops/clients/ops/admin-ui
+COPY clients/ops/admin-ui/ .
 RUN npm install
-
 # Build the frontend static files
 RUN npm run export
 
-#######################
-## Tool Installation ##
-#######################
+#############
+## Backend ##
+#############
+FROM --platform=linux/amd64 python:3.9.13-slim-bullseye as backend
 
-FROM base as builder
-
-RUN : \
-    && apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    curl \
+# Install auxiliary software
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     git \
+    make \
     vim \
+    curl \
     g++ \
     gnupg \
     gcc \
+    python3-wheel \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-###########################
-## Database Dependencies ##
-###########################
-
-# Postgres
-RUN : \
-    && apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    libpq-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+ARG SKIP_MSSQL_INSTALLATION
+RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
 
 # SQL Server (MS SQL)
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
+# https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get install -y --no-install-recommends apt-transport-https && apt-get clean && rm -rf /var/lib/apt/lists/* ; fi
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - ; fi
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list ; fi
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get update ; fi
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN : \
-    && apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    apt-transport-https \
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-recommends install \
     unixodbc-dev \
+    msodbcsql17 \
     mssql-tools \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* ; fi
 
 #########################
 ## Python Dependencies ##
 #########################
+COPY mssql-requirements.txt .
+RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
 
-COPY dev-requirements.txt dev-requirements.txt
-RUN pip install -r dev-requirements.txt
+COPY dev-requirements.txt .
+RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
 
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-COPY optional-requirements.txt optional-requirements.txt
-RUN pip install -r optional-requirements.txt
+COPY requirements.txt .
+RUN pip install -U pip --no-cache-dir install -r requirements.txt
 
 ###############################
 ## General Application Setup ##
 ###############################
-
 COPY . /fides
 WORKDIR /fides
-
-# Reset the busted git cache
-RUN git rm --cached -r .
-RUN git reset --hard
 
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
 # Enable detection of running within Docker
-ENV RUNNING_IN_DOCKER=TRUE
+ENV RUNNING_IN_DOCKER=true
+
+# Make a static files directory
+RUN mkdir -p /fides/src/fides/ops/build/static/
+RUN mkdir -p /fides/src/fides/ctl/build/static/
 
 EXPOSE 8080
-CMD ["fidesctl", "webserver"]
+CMD [ "fides", "webserver" ]
 
-###################################
-## Application Development Setup ##
-###################################
+#############################
+## Development Application ##
+#############################
+FROM backend as dev
 
-FROM builder as dev
+RUN pip install -e .
 
-# Install fidesctl as a symlink
-RUN pip install --no-deps -e ".[all,mssql]"
-
-##################################
-## Production Application Setup ##
-##################################
-
-FROM builder as prod
-
-# Copy frontend build over in order to be available in wheel package
-COPY --from=frontend /fides/clients/ctl/admin-ui/out/ /fides/src/fidesctl/ui-build/static/admin/
+#############################
+## Production Application ##
+#############################
+FROM backend as prod
 
 # Install without a symlink
-RUN python setup.py bdist_wheel 
-RUN pip install --no-deps dist/fidesctl-*.whl
+RUN python setup.py sdist
+RUN pip install dist/fidesops-*.tar.gz
+
+# Copy frontend build over
+COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/ops/build/static/

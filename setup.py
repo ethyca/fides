@@ -1,14 +1,16 @@
 import pathlib
 
-import versioneer
 from setuptools import find_packages, setup
+
+import versioneer
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = open("README.md").read()
 
 # Requirements
 
-# Explicitly add optional dependencies for conda compatiblity, for instance, avoid using fastapi[all]
+# Explicitly add optional dependencies for conda compatiblity,
+# for instance, avoid using fastapi[all]
 install_requires = open("requirements.txt").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 

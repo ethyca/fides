@@ -1,0 +1,113 @@
+site_name: Fidesops
+site_url: https://ethyca.github.io/fidesops/
+nav:
+  - What is Fidesops?: index.md
+  - Use Cases: use_cases.md
+  - Installation and Use:
+      - Getting Started: getting_started.md
+      - Authenticate with OAuth: guides/oauth.md
+      - Connect to Databases: guides/database_connectors.md
+      - Define Datasets: guides/datasets.md
+      - Configure Policies: guides/policies.md
+      - Execute Privacy Requests: guides/privacy_requests.md
+  - Fidesops UI:
+      - Overview: ui/overview.md
+      - Privacy Center: ui/privacy_center.md
+      - Admin UI:
+          - Subject Requests: ui/subject_requests.md
+          - Managing Datastores: ui/datastores.md
+          - User Management: ui/user_management.md
+  - How-To Guides:
+      - Annotate Complex Fields: guides/complex_fields.md
+      - Configure Data Masking: guides/masking_strategies.md
+      - Configure Storage Destinations: guides/storage.md
+      - Configure Policy Webhooks: guides/policy_webhooks.md
+      - Report on Privacy Requests: guides/reporting.md
+      - Configure OneTrust Integration: guides/onetrust.md
+      - Preview Query Execution: guides/query_execution.md
+      - Data Rights Protocol: guides/data_rights_protocol.md
+  - SaaS Connectors:
+      - Connect to SaaS Applications: saas_connectors/saas_connectors.md
+      - SaaS Configuration: saas_connectors/saas_config.md
+      - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
+      - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
+      - SaaS Pagination: saas_connectors/saas_pagination.md
+      - Connection Examples:
+          - Adobe Campaign: saas_connectors/example_configs/adobe.md
+          - Hubspot: saas_connectors/example_configs/hubspot.md
+          - Mailchimp: saas_connectors/example_configs/mailchimp.md
+          - Outreach: saas_connectors/example_configs/outreach.md
+          - Salesforce: saas_connectors/example_configs/salesforce.md
+          - Segment: saas_connectors/example_configs/segment.md
+          - Sendgrid: saas_connectors/example_configs/sendgrid.md
+          - Sentry: saas_connectors/example_configs/sentry.md
+          - Stripe: saas_connectors/example_configs/stripe.md
+          - Zendesk: saas_connectors/example_configs/zendesk.md
+  - Configuration Reference: guides/configuration_reference.md
+  - Deployment Guide: deployment.md
+  - Glossary: glossary.md
+  - API: api/index.md
+  - Tutorial:
+      - Zero to Privacy Request: tutorial/index.md
+      - Install Fidesops: tutorial/installation.md
+      - Outline a Python Script: tutorial/outline.md
+      - Create an Oauth Client: tutorial/oauth_client.md
+      - Connect to Postgres: tutorial/postgres_connection.md
+      - Annotate a Database: tutorial/annotate_datasets.md
+      - Configure a Storage Destination: tutorial/storage_config.md
+      - Define a Policy: tutorial/define_policy.md
+      - Execute a Privacy Request: tutorial/execute_privacy_request.md
+  - Development:
+      - Overview: development/overview.md
+      - Contributing Details: development/contributing_details.md
+      - Code Style: development/code_style.md
+      - Documentation: development/documentation.md
+      - Fideslog Analytics: development/fideslog.md
+      - Testing: development/testing.md
+      - Pull Requests: development/pull_requests.md
+      - Releases: development/releases.md
+      - Postman Collection: postman/using_postman.md
+  - Community:
+      - GitHub: community/github.md
+      - Code of Conduct: community/code_of_conduct.md
+  - About Ethyca: ethyca.md
+  - License: license.md
+theme:
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  name: material
+  favicon: img/favicon.ico
+  logo: img/fidesops.svg
+  font:
+    text: Source Sans Pro
+  features:
+    - navigation.top
+    - navigation.instant
+  custom_dir: overrides
+markdown_extensions:
+  - attr_list
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed
+  - admonition
+  - pymdownx.highlight:
+      linenums: true
+      linenums_style: table
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css
+  - css/fides.css
+  - css/api.css
+  - css/logo.css
+plugins:
+  - render_swagger
+  - search

@@ -63,11 +63,11 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
 4. View the newly-generated data map generated from the provided resources.
 
-    #### **Controller**
+#### **Controller**
 
     The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    #### **Article 30 Record of Processing Activities**
+#### **Article 30 Record of Processing Activities**
 
     The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 

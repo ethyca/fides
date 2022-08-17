@@ -1,17 +1,41 @@
+<<<<<<< HEAD
 name: Release Dispatch Event
+=======
+name: Notify Downstream Projects of Release
+>>>>>>> fidesops/main
 
 on:
   release:
     types: [released]
 
 jobs:
+<<<<<<< HEAD
   Notify-of-New-Release:
+=======
+  fidesops-plus:
+>>>>>>> fidesops/main
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+<<<<<<< HEAD
           repository: ethyca/fidesctl-plus
           event-type: new-fidesctl-release
+=======
+          repository: ethyca/fidesops-plus
+          event-type: new-fidesops-release
+          client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
+
+  fidesdemo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+          repository: ethyca/fidesdemo
+          event-type: new-fidesops-release
+>>>>>>> fidesops/main
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'

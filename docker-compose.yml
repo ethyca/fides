@@ -1,6 +1,6 @@
 services:
-  fidesctl:
-    image: ethyca/fidesctl:local
+  fides:
+    image: ethyca/fides:local
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesctl.api.main:app
     healthcheck:
       test:
@@ -13,18 +13,13 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    ports:
+      - "8080:8080"
     depends_on:
-      fidesctl-db:
+      fides-db:
         condition: service_healthy
     expose:
       - 8080
-    ports:
-      - "8080:8080"
-    volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
     environment:
       FIDES__CONFIG_PATH: "/fides/.fides/"
       FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
@@ -32,8 +27,13 @@ services:
       FIDESCTL__CLI__SERVER_PORT: "8080"
       FIDESCTL__DATABASE__SERVER: "fidesctl-db"
       FIDESCTL_TEST_MODE: "True"
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
 
-  fidesctl-ui:
+  fides-ui:
     image: ethyca/fidesctl:local-ui
     command: npm run dev-docker
     depends_on:
@@ -48,9 +48,9 @@ services:
         target: /fides
         read_only: False
     environment:
-      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fidesctl:8080
+      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
 
-  fidesctl-db:
+  fides-db:
     image: postgres:12
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -67,6 +67,10 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "fidesctl"
       POSTGRES_DB: "fidesctl"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.fides.app-db-data == true
 
   docs:
     build:
@@ -74,10 +78,36 @@ services:
     volumes:
       - ./docs/fides:/docs
       - ./:/fides
+    environment:
+      - FIDESOPS__DEV_MODE=True
+      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
+      - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
+      - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__EXECUTION__WORKER_ENABLED=True
+
+  redis:
+    image: "redis:6.2.5-alpine"
+    command: redis-server --requirepass testpassword
+    environment:
+      - REDIS_PASSWORD=testpassword
     expose:
-      - 8000
+      - 6379
     ports:
-      - "8000:8000"
+      - "0.0.0.0:6379:6379"
+
+  worker:
+    image: ethyca/fides:local
+    command: fides worker
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
 
 volumes:
   postgres: null
