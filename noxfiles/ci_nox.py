@@ -8,15 +8,15 @@ from constants_nox import (
     CI_ARGS,
     IMAGE_NAME,
     WITH_TEST_CONFIG,
-    RUN_STATIC_ANALYSIS,
     COMPOSE_FILE,
     RUN,
     RUN_NO_DEPS,
     START_APP,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
-from utils_nox import db, install_requirements
+from utils_nox import install_requirements
 
+RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 @nox.session()
 def ci_suite(session: nox.Session) -> None:
@@ -147,7 +147,6 @@ def fidesctl_db_scan(session: nox.Session) -> None:
 @nox.session()
 def check_migrations(session: nox.Session) -> None:
     """Check for missing migrations."""
-    db(session, "init")
     check_migration_command = (
         "python",
         "-c",
