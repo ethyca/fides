@@ -19,7 +19,9 @@ The types of changes are:
 
 ### Added
 
+* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977)
 * New column `is_default` added to DataCategory, DataUse, DataSubject, and DataQualifier tables [#976](https://github.com/ethyca/fides/pull/976)
+
 ### Changed
 
 * Upgraded base Docker version to Python 3.9 and updated all other references from 3.8 -> 3.9 [#974](https://github.com/ethyca/fides/pull/974)

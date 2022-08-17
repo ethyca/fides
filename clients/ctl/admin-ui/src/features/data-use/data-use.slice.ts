@@ -22,11 +22,25 @@ export const dataUseApi = createApi({
     getAllDataUses: build.query<DataUse[], void>({
       query: () => ({ url: `data_use/` }),
       providesTags: () => ["Data Uses"],
+      transformResponse: (uses: DataUse[]) =>
+        uses.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
+    }),
+    updateDataUse: build.mutation<
+      DataUse,
+      Partial<DataUse> & Pick<DataUse, "fides_key">
+    >({
+      query: (dataUse) => ({
+        url: `data_use/`,
+        params: { resource_type: "data_use" },
+        method: "PUT",
+        body: dataUse,
+      }),
+      invalidatesTags: ["Data Uses"],
     }),
   }),
 });
 
-export const { useGetAllDataUsesQuery } = dataUseApi;
+export const { useGetAllDataUsesQuery, useUpdateDataUseMutation } = dataUseApi;
 
 export const dataUseSlice = createSlice({
   name: "dataUse",

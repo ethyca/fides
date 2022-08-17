@@ -12,24 +12,35 @@ import {
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
 
+import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
 
-const ActionButtons = () => (
+interface ActionButtonProps {
+  node: TaxonomyEntityNode;
+  onEdit: (node: TaxonomyEntityNode) => void;
+}
+const ActionButtons = ({ node, onEdit }: ActionButtonProps) => (
   <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
-    <Button data-testid="edit-btn">Edit</Button>
+    <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
+      Edit
+    </Button>
     <Button data-testid="delete-btn">Delete</Button>
   </ButtonGroup>
 );
 
 interface Props {
   nodes: TreeNode[];
+  onEdit: (node: TaxonomyEntityNode) => void;
+  focusedKey?: string;
 }
-const AccordionTree = ({ nodes }: Props) => {
+const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
    */
   const createTree = (node: TreeNode, level: number = 0) => {
+    const isHovered = hoverNode?.value === node.value;
+    const isFocused = focusedKey === node.value;
     // some nodes render as AccordionItems and some as just Boxes, but
     // we want to keep their styling similar, so pass them the same props
     const itemProps: BoxProps = {
@@ -53,10 +64,13 @@ const AccordionTree = ({ nodes }: Props) => {
         <Box py={2} {...itemProps} data-testid={`item-${node.label}`}>
           <Text
             pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
+            color={isFocused ? "complimentary.500" : undefined}
           >
             {node.label}
           </Text>
-          {hoverNode?.value === node.value ? <ActionButtons /> : null}
+          {isHovered ? (
+            <ActionButtons node={hoverNode} onEdit={onEdit} />
+          ) : null}
         </Box>
       );
     }
@@ -71,11 +85,14 @@ const AccordionTree = ({ nodes }: Props) => {
             _expanded={{ color: "complimentary.500" }}
             _hover={{ bg: "gray.50" }}
             pl={0}
+            color={isFocused ? "complimentary.500" : undefined}
           >
             <AccordionIcon />
             {node.label}
           </AccordionButton>
-          {hoverNode?.value === node.value ? <ActionButtons /> : null}
+          {isHovered ? (
+            <ActionButtons node={hoverNode} onEdit={onEdit} />
+          ) : null}
         </Box>
 
         <AccordionPanel p={0}>
