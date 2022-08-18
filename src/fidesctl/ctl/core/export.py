@@ -140,11 +140,13 @@ def generate_system_records(
     formatted_data_subjects = format_data_subjects(server_resources["data_subject"])
     output_list: List[Tuple[str, ...]] = [
         (
+            "system.fides_key",
             "system.name",
             "system.description",
             "system.data_responsibility_title",
             "system.administrating_department",
             "system.third_country_transfers",
+            "system.system_dependencies",
             "system.privacy_declaration.name",
             "system.privacy_declaration.data_categories",
             "system.privacy_declaration.data_use.name",
@@ -166,6 +168,7 @@ def generate_system_records(
 
     for system in server_resources["system"]:
         third_country_list = ", ".join(system.third_country_transfers or [])
+        system_dependencies = ", ".join(system.system_dependencies or [])
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
                 system.data_protection_impact_assessment.dict()
@@ -181,11 +184,13 @@ def generate_system_records(
             dataset_references = declaration.dataset_references or ["N/A"]
             cartesian_product_of_declaration = [
                 (
+                    system.fides_key,
                     system.name,
                     system.description,
                     system.data_responsibility_title,
                     system.administrating_department,
                     third_country_list,
+                    system_dependencies,
                     declaration.name,
                     category,
                     data_use["name"],
