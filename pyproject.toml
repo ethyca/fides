@@ -20,7 +20,7 @@ init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
 
-[mypy-src.fidesops._version]
+[mypy-src.fidesctl._version]
 ignore_errors = true
 
 [[tool.mypy.overrides]]

@@ -90,7 +90,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pip install -e .
+RUN pip install --no-deps -e .
 
 #############################
 ## Production Application ##

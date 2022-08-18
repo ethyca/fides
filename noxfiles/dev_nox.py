@@ -9,6 +9,7 @@ from run_infrastructure import ALL_DATASTORES, run_infrastructure
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
     build(session, "dev")
+    build(session, "ui")
     session.notify("teardown")
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
