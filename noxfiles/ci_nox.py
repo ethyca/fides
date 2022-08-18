@@ -3,15 +3,15 @@ from time import sleep
 
 import nox
 from constants_nox import (
-    INTEGRATION_COMPOSE_FILE,
-    COMPOSE_SERVICE_NAME,
     CI_ARGS,
-    IMAGE_NAME,
-    WITH_TEST_CONFIG,
     COMPOSE_FILE,
+    COMPOSE_SERVICE_NAME,
+    IMAGE_NAME,
+    INTEGRATION_COMPOSE_FILE,
     RUN,
     RUN_NO_DEPS,
     START_APP,
+    WITH_TEST_CONFIG,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
 from utils_nox import install_requirements
