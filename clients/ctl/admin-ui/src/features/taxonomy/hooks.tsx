@@ -1,3 +1,12 @@
+import { ReactNode } from "react";
+
+import { LegalBasisEnum, SpecialCategoriesEnum } from "~/types/api";
+
+import {
+  CustomCreatableMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "../common/form/inputs";
 import {
   useGetAllDataQualifiersQuery,
   useUpdateDataQualifierMutation,
@@ -21,7 +30,21 @@ export interface TaxonomyHookData {
   isLoading: boolean;
   labels: Labels;
   edit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
+  extraFormFields?: ReactNode;
 }
+
+const enumToOptions = (e: { [s: number]: string }) =>
+  Object.entries(e).map((entry) => ({
+    value: entry[1],
+    label: entry[1],
+  }));
+
+// const enumToOptions = (enum: str) => {
+//   return Object.entries(enum).map((entry) => ({
+//     value: entry[1],
+//     label: entry[1],
+//   }));
+// }
 
 export const useDataCategory = (): TaxonomyHookData => {
   const { data, isLoading } = useGetAllDataCategoriesQuery();
@@ -46,11 +69,45 @@ export const useDataUse = (): TaxonomyHookData => {
     name: "Data use name",
     description: "Data use description",
     parent_key: "Parent data use",
+    legal_basis: "Legal basis",
+    special_category: "Special category",
+    recipient: "Recipient",
+    legitimate_interest: "Legitimate interest",
+    legitimate_interest_impact_assessment:
+      "Legitimate interest impact assessment",
   };
 
   const [edit] = useUpdateDataUseMutation();
 
-  return { data, isLoading, labels, edit };
+  const legalBases = enumToOptions(LegalBasisEnum);
+  const specialCategories = enumToOptions(SpecialCategoriesEnum);
+
+  const extraFormFields = (
+    <>
+      <CustomSelect
+        name="legal_basis"
+        label={labels.legal_basis}
+        options={legalBases}
+      />
+      <CustomSelect
+        name="special_categories"
+        label={labels.special_category}
+        options={specialCategories}
+      />
+      {/* <CustomCreatableMultiSelect
+        name="recipient"
+        label="Recipients"
+        options={[]}
+      /> */}
+      {/* TODO: legitimate interest: boolean field */}
+      <CustomTextInput
+        name="legitimate_interest_impact_assessment"
+        label={labels.legitimate_interest_impact_assessment}
+      />
+    </>
+  );
+
+  return { data, isLoading, labels, edit, extraFormFields };
 };
 
 export const useDataSubject = (): TaxonomyHookData => {
@@ -65,7 +122,9 @@ export const useDataSubject = (): TaxonomyHookData => {
 
   const [edit] = useUpdateDataSubjectMutation();
 
-  return { data, isLoading, labels, edit };
+  const extraFormFields = <div>hi</div>;
+
+  return { data, isLoading, labels, edit, extraFormFields };
 };
 
 export const useDataQualifier = (): TaxonomyHookData => {
