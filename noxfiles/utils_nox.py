@@ -22,6 +22,7 @@ COMPOSE_DOWN = (
     "down",
     "--remove-orphans",
 )
+COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
 
 
 @nox.session()
@@ -51,7 +52,10 @@ def clean(session: nox.Session) -> None:
 @nox.session()
 def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
-    session.run(*COMPOSE_DOWN, external=True)
+    if session.posargs[0] == "volumes":
+        session.run(*COMPOSE_DOWN_VOLUMES, external=True)
+    else:
+        session.run(*COMPOSE_DOWN, external=True)
     print("Teardown complete")
 
 
