@@ -98,7 +98,7 @@ describe("Dataset", () => {
       );
       cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
-      cy.getByTestId("data-category-user.derived.identifiable.unique_id");
+      cy.getByTestId("taxonomy-entity-user.derived.identifiable.unique_id");
     });
 
     it("Can render an edit form for a dataset collection with existing values", () => {

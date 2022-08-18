@@ -39,4 +39,8 @@ export type DataSubject = {
    * A boolean value to annotate whether or not automated decisions/profiling exists for the data subject.
    */
   automated_decisions_or_profiling?: boolean;
+  /**
+   * Denotes whether the resource is part of the default taxonomy or not.
+   */
+  is_default?: boolean;
 };
