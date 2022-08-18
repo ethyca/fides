@@ -3,8 +3,6 @@ from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pydash
-from requests import Response
-
 from fidesops.ops.common_exceptions import FidesopsException, PostProcessingException
 from fidesops.ops.graph.traversal import Row, TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -32,6 +30,7 @@ from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
 )
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from requests import Response
 
 logger = logging.getLogger(__name__)
 

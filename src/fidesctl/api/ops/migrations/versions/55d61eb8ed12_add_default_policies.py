@@ -16,14 +16,6 @@ from fideslib.cryptography.cryptographic_util import (
     hash_with_salt,
 )
 from fideslib.db.base_class import FidesBase
-from sqlalchemy import text
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.engine import LegacyRow
-from sqlalchemy.engine.base import Connection
-from sqlalchemy.sql.elements import TextClause
-from sqlalchemy_utils import StringEncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
-
 from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
@@ -34,6 +26,13 @@ from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite impor
     STRING_REWRITE_STRATEGY_NAME,
 )
 from fidesops.ops.util.data_category import DataCategory
+from sqlalchemy import text
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine import LegacyRow
+from sqlalchemy.engine.base import Connection
+from sqlalchemy.sql.elements import TextClause
+from sqlalchemy_utils import StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

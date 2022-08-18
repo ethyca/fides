@@ -3,12 +3,11 @@ from string import ascii_letters
 from typing import Dict, List
 
 from faker import Faker
-from sqlalchemy import Boolean, Column, Float, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
 from fidesops.ops.graph.config import CollectionAddress, Field, ScalarField
 from fidesops.ops.graph.data_type import DataType
 from fidesops.ops.graph.traversal import Row, Traversal, TraversalNode
+from sqlalchemy import Boolean, Column, Float, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 

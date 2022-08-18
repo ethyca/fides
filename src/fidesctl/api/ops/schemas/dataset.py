@@ -1,8 +1,6 @@
 from typing import Any, Dict, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
-from pydantic import BaseModel, ConstrainedStr, validator
-
 from fidesops.ops.common_exceptions import (
     InvalidDataLengthValidationError,
     InvalidDataTypeValidationError,
@@ -13,6 +11,7 @@ from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.data_category import _validate_data_category
+from pydantic import BaseModel, ConstrainedStr, validator
 
 
 def _valid_data_categories(

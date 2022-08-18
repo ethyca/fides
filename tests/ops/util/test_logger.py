@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from fidesops.ops.util import logger
 from fidesops.ops.util.logger import MASKED, NotPii
 

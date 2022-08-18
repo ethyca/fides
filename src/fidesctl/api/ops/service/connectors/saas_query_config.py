@@ -5,7 +5,6 @@ import logging
 from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
-
 from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import ScalarField

@@ -1,11 +1,10 @@
 import pytest
-from requests import PreparedRequest, Request
-
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
+from requests import PreparedRequest, Request
 
 
 def test_bearer_auth_with_token():

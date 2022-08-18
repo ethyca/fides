@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import (
     Collection,

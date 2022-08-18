@@ -5,13 +5,6 @@ from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
-from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
-
 from fidesops.ops.api.deps import get_db
 from fidesops.ops.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
@@ -50,6 +43,12 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
 )
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

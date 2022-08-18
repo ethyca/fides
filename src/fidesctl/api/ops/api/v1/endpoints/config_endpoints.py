@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict
 
 from fastapi.params import Security
-
 from fidesops.ops.api.v1 import scope_registry as scopes
 from fidesops.ops.api.v1 import urn_registry as urls
 from fidesops.ops.core.config import censored_config

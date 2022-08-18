@@ -5,14 +5,6 @@ from fideslib.cryptography.cryptographic_util import b64_str_to_str
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
-from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_404_NOT_FOUND,
-)
-
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import urn_registry as urls
 from fidesops.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
@@ -20,6 +12,13 @@ from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
 from fidesops.ops.core.config import config
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import get_current_user, verify_oauth_client
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_404_NOT_FOUND,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)

@@ -7,10 +7,6 @@ import pydash
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
-from pydash import filter_
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
-
 from fidesops.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
@@ -25,6 +21,9 @@ from fidesops.ops.api.v1.urn_registry import (
 )
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from pydash import filter_
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:

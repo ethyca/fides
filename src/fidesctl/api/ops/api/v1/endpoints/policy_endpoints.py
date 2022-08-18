@@ -7,12 +7,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
-from pydantic import conlist
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
-from starlette.exceptions import HTTPException
-from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
-
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import scope_registry
 from fidesops.ops.api.v1 import urn_registry as urls
@@ -30,6 +24,11 @@ from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
+from pydantic import conlist
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+from starlette.exceptions import HTTPException
+from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
 router = APIRouter(tags=["Policy"], prefix=urls.V1_URL_PREFIX)
 

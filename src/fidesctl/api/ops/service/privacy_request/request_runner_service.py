@@ -6,10 +6,6 @@ from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
-from pydantic import ValidationError
-from redis.exceptions import DataError
-from sqlalchemy.orm import Session
-
 from fidesops.ops import common_exceptions
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
@@ -48,6 +44,9 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.logger import _log_exception, _log_warning
+from pydantic import ValidationError
+from redis.exceptions import DataError
+from sqlalchemy.orm import Session
 
 logger = get_task_logger(__name__)
 

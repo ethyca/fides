@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, List, Union
 
 import pydash
-
 from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.ops.schemas.saas.strategy_configuration import (

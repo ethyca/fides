@@ -1,5 +1,4 @@
 import pytest
-
 from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )

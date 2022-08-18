@@ -2,8 +2,6 @@ from typing import Dict
 
 import pytest
 from fideslib.db.base_class import KeyOrNameAlreadyExists
-from sqlalchemy.orm import Session
-
 from fidesops.ops.models.storage import StorageConfig
 from fidesops.ops.schemas.storage.storage import (
     ResponseFormat,
@@ -12,6 +10,7 @@ from fidesops.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from sqlalchemy.orm import Session
 
 
 class TestStorageConfigModel:

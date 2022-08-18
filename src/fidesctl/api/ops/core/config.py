@@ -14,9 +14,8 @@ from fideslib.core.config import (
     load_toml,
 )
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
-from pydantic import validator
-
 from fidesops.ops.util.logger import NotPii
+from pydantic import validator
 
 logger = logging.getLogger(__name__)
 

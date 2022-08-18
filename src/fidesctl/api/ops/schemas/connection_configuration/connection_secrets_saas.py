@@ -1,9 +1,8 @@
 import abc
 from typing import Any, Dict, Type
 
-from pydantic import BaseModel, Extra, create_model, root_validator
-
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from pydantic import BaseModel, Extra, create_model, root_validator
 
 
 class SaaSSchema(BaseModel, abc.ABC):

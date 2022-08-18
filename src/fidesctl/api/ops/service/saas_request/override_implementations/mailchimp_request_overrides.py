@@ -2,8 +2,6 @@ from json import dumps
 from typing import Any, Dict, List
 
 import pydash
-from requests import get, put
-
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
@@ -17,6 +15,7 @@ from fidesops.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fidesops.ops.util.collection_util import Row
+from requests import get, put
 
 
 @register("mailchimp_messages_access", [SaaSRequestType.READ])

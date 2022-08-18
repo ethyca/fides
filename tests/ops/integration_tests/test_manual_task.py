@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-
 from fidesops.ops.common_exceptions import PrivacyRequestPaused
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress

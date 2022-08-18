@@ -4,9 +4,6 @@ from uuid import uuid4
 
 import pytest
 import requests_mock
-from pydantic import ValidationError
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
@@ -17,6 +14,8 @@ from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestSt
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

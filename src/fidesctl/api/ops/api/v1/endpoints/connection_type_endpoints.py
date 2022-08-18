@@ -5,8 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from starlette.status import HTTP_404_NOT_FOUND
-
 from fidesops.ops.api.v1.scope_registry import CONNECTION_TYPE_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
@@ -25,6 +23,7 @@ from fidesops.ops.schemas.connection_configuration.connection_config import (
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig, SaaSType
 from fidesops.ops.util.oauth_util import verify_oauth_client
 from fidesops.ops.util.saas_util import load_config
+from starlette.status import HTTP_404_NOT_FOUND
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 

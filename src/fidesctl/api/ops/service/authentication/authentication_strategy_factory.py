@@ -2,8 +2,6 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
-
 from fidesops.ops.common_exceptions import NoSuchStrategyException
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
@@ -22,6 +20,7 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
 from fidesops.ops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
 )
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 

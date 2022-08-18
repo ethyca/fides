@@ -1,7 +1,6 @@
 import random
 
 import pytest
-
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
@@ -9,6 +8,7 @@ from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+
 from tests.ops.fixtures.saas.logi_id_fixtures import user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence

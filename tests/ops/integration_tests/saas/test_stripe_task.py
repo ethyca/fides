@@ -3,7 +3,6 @@ from typing import List
 
 import pytest
 import requests
-
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
@@ -11,6 +10,7 @@ from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 

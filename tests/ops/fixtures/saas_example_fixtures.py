@@ -3,8 +3,6 @@ from typing import Any, Dict, Generator
 
 import pytest
 from fideslib.core.config import load_toml
-from sqlalchemy.orm import Session
-
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -16,6 +14,8 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
 )
 from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.saas_util import load_config
+from sqlalchemy.orm import Session
+
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,4 @@
 import pytest
-
 from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesops.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,

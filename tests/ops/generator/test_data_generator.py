@@ -1,5 +1,4 @@
 import yaml
-
 from fidesops.ops.graph.graph import *
 
 #  -------------------------------------------

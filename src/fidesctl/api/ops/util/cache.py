@@ -3,12 +3,11 @@ import logging
 import pickle
 from typing import Any, Dict, List, Optional, Union
 
-from redis import Redis
-from redis.client import Script  # type: ignore
-
 from fidesops.ops import common_exceptions
 from fidesops.ops.core.config import config
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
+from redis import Redis
+from redis.client import Script  # type: ignore
 
 logger = logging.getLogger(__name__)
 

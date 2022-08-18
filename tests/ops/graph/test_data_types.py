@@ -1,5 +1,4 @@
 from bson import ObjectId
-
 from fidesops.ops.graph.data_type import (
     DataType,
     NoOpTypeConverter,

@@ -2,7 +2,6 @@ import re
 from typing import Any, Dict, Iterable, List, Optional
 
 import yaml
-
 from fidesops.ops.graph.config import (
     Collection,
     Field,

@@ -1,8 +1,7 @@
 from typing import Optional
 
-from pydantic import Extra
-
 from fidesops.ops.schemas.base_class import BaseSchema
+from pydantic import Extra
 
 
 class PrivacyRequestIdentity(BaseSchema):

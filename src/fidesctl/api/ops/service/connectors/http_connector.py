@@ -3,8 +3,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import requests
-from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-
 from fidesops.ops.common_exceptions import ClientUnsuccessfulException
 from fidesops.ops.graph.traversal import TraversalNode
 from fidesops.ops.models.connectionconfig import ConnectionTestStatus
@@ -14,6 +12,7 @@ from fidesops.ops.schemas.connection_configuration import HttpsSchema
 from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import QueryConfig
 from fidesops.ops.util.collection_util import Row
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 logger = logging.getLogger(__name__)
 

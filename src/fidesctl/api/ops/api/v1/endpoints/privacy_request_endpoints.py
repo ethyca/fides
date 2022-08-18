@@ -15,18 +15,6 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
-from pydantic import conlist
-from sqlalchemy import cast, column, null
-from sqlalchemy.orm import Query, Session
-from starlette.responses import StreamingResponse
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_424_FAILED_DEPENDENCY,
-)
-
 from fidesops.ops import common_exceptions
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1 import scope_registry as scopes
@@ -93,6 +81,17 @@ from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from pydantic import conlist
+from sqlalchemy import cast, column, null
+from sqlalchemy.orm import Query, Session
+from starlette.responses import StreamingResponse
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_424_FAILED_DEPENDENCY,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)

@@ -9,8 +9,6 @@ from zipfile import ZipFile
 
 import pandas as pd
 import pytest
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import StorageUploadError
 from fidesops.ops.core.config import config
 from fidesops.ops.models.privacy_request import PrivacyRequest
@@ -32,6 +30,7 @@ from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
+from sqlalchemy.orm import Session
 
 
 @mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")

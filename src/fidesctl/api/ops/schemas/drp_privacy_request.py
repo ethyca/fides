@@ -1,10 +1,9 @@
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import validator
-
 from fidesops.ops.models.policy import DrpAction
 from fidesops.ops.schemas.base_class import BaseSchema
+from pydantic import validator
 
 DRP_VERSION = "0.5"
 

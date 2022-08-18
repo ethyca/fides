@@ -1,9 +1,8 @@
 import boto3
 import requests
 from boto3 import Session
-from requests import Response
-
 from fidesops.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
+from requests import Response
 
 
 def get_s3_session(aws_access_key_id: str, aws_secret_access_key: str) -> Session:

@@ -2,8 +2,6 @@ import json
 from typing import Optional
 
 import pytest
-from requests import Response
-
 from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.schemas.saas.saas_config import SaaSRequest
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -13,6 +11,7 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
 from fidesops.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+from requests import Response
 
 
 @pytest.fixture(scope="function")

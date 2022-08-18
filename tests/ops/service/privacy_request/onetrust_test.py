@@ -4,8 +4,6 @@ from unittest.mock import Mock, call
 import pytest
 from fideslib.exceptions import AuthenticationError
 from fideslib.models.client import ClientDetail
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
@@ -25,6 +23,7 @@ from fidesops.ops.service.privacy_request.onetrust_service import (
     OneTrustService,
 )
 from fidesops.ops.util.data_category import DataCategory
+from sqlalchemy.orm import Session
 
 
 @mock.patch(

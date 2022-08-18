@@ -1,8 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import ConnectorNotFoundException
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -28,6 +26,7 @@ from fidesops.ops.service.connectors import (
 )
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import Row
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

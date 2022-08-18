@@ -4,8 +4,6 @@ import logging
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from pydantic import ValidationError
-
 from fidesops.ops.common_exceptions import NoSuchStrategyException
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.ops.service.pagination.pagination_strategy_cursor import (
@@ -17,6 +15,7 @@ from fidesops.ops.service.pagination.pagination_strategy_link import (
 from fidesops.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
+from pydantic import ValidationError
 
 if TYPE_CHECKING:
     from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration

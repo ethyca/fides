@@ -4,9 +4,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
-
 from fidesops.ops.api.v1.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
@@ -25,6 +22,9 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
 
 

@@ -15,18 +15,6 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
-from starlette.testclient import TestClient
-
 from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_READ,
@@ -44,6 +32,18 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.core.config import config
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
+from starlette.testclient import TestClient
+
 from tests.ops.conftest import generate_auth_header_for_user
 
 page_size = Params().size

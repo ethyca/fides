@@ -5,6 +5,9 @@ from datetime import datetime
 from typing import Any, Optional
 
 from fideslib.db.base import Base
+from fidesops.ops.core.config import config
+from fidesops.ops.db.base_class import JSONTypeOverride
+from fidesops.ops.schemas.saas.saas_config import SaaSConfig
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -13,10 +16,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
-
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
 
 
 class ConnectionTestStatus(enum.Enum):

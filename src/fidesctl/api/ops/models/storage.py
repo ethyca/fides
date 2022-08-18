@@ -1,16 +1,6 @@
 import logging
 
 from fideslib.db.base import Base
-from pydantic import ValidationError
-from sqlalchemy import Column, Enum, String
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
-
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.storage.storage import (
@@ -22,6 +12,15 @@ from fidesops.ops.schemas.storage.storage import (
 )
 from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
+)
+from pydantic import ValidationError
+from sqlalchemy import Column, Enum, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import Session
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
 )
 
 logger = logging.getLogger(__name__)

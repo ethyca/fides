@@ -1,6 +1,5 @@
 import pydantic
 import pytest
-
 from fidesops.ops.common_exceptions import ValidationError
 from fidesops.ops.graph.config import *
 from fidesops.ops.graph.data_type import (

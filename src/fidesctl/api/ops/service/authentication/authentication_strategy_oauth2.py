@@ -4,9 +4,6 @@ from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
-from requests import PreparedRequest
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesops.ops.core.config import config
 from fidesops.ops.models.authentication_request import AuthenticationRequest
@@ -24,6 +21,8 @@ from fidesops.ops.service.connectors.saas.authenticated_client import (
 )
 from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from requests import PreparedRequest
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

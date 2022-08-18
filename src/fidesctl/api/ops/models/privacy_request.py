@@ -13,18 +13,6 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from pydantic import root_validator
-from sqlalchemy import Column, DateTime
-from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict, MutableList
-from sqlalchemy.orm import Session, backref, relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
-
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import PrivacyRequestPaused
 from fidesops.ops.core.config import config
@@ -60,6 +48,17 @@ from fidesops.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fidesops.ops.util.collection_util import Row
+from pydantic import root_validator
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict, MutableList
+from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,3 @@
-from requests import PreparedRequest
-
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     BearerAuthenticationConfiguration,
@@ -9,6 +7,7 @@ from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fidesops.ops.util.saas_util import assign_placeholders
+from requests import PreparedRequest
 
 
 class BearerAuthenticationStrategy(AuthenticationStrategy):

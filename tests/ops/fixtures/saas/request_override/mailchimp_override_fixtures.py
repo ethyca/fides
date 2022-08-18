@@ -3,8 +3,6 @@ from typing import Any, Dict, Generator
 
 import pytest
 from fideslib.db import session
-from sqlalchemy.orm import Session
-
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,6 +12,8 @@ from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesops.ops.service.connectors.saas_connector import SaaSConnector
 from fidesops.ops.util.saas_util import load_config
+from sqlalchemy.orm import Session
+
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 

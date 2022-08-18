@@ -3,9 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from requests import Response
-
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from requests import Response
 
 if TYPE_CHECKING:
     from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration

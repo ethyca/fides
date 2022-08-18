@@ -3,15 +3,6 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
-
 from fidesops.ops.api import deps
 from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
@@ -42,6 +33,14 @@ from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
 )
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

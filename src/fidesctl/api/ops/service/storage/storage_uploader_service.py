@@ -1,8 +1,6 @@
 import logging
 from typing import Any, Dict, Optional
 
-from sqlalchemy.orm import Session
-
 from fidesops.ops.common_exceptions import StorageUploadError
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.models.storage import StorageConfig
@@ -14,6 +12,7 @@ from fidesops.ops.schemas.storage.storage import (
     StorageType,
 )
 from fidesops.ops.tasks.storage import upload_to_local, upload_to_onetrust, upload_to_s3
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

@@ -4,8 +4,6 @@ from urllib import parse
 from urllib.parse import urlsplit
 
 import pydash
-from requests import Response
-
 from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
@@ -13,6 +11,7 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from requests import Response
 
 STRATEGY_NAME = "link"
 

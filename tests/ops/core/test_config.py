@@ -4,9 +4,8 @@ from unittest.mock import patch
 
 import pytest
 from fideslib.core.config import get_config
-from pydantic import ValidationError
-
 from fidesops.ops.core.config import FidesopsConfig
+from pydantic import ValidationError
 
 
 def test_config_from_default() -> None:

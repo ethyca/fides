@@ -2,8 +2,6 @@ from typing import Generator
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.orm import Session
-
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -15,6 +13,7 @@ from fidesops.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
 )
+from sqlalchemy.orm import Session
 
 from .application_fixtures import integration_secrets
 

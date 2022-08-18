@@ -13,11 +13,6 @@ from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
-from redis.exceptions import ResponseError
-from starlette.background import BackgroundTask
-from starlette.middleware.cors import CORSMiddleware
-from starlette.status import HTTP_404_NOT_FOUND
-
 from fidesops.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
@@ -38,6 +33,10 @@ from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.logger import get_fides_log_record_factory
 from fidesops.ops.util.oauth_util import get_db, verify_oauth_client
+from redis.exceptions import ResponseError
+from starlette.background import BackgroundTask
+from starlette.middleware.cors import CORSMiddleware
+from starlette.status import HTTP_404_NOT_FOUND
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())

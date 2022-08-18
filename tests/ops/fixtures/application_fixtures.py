@@ -13,9 +13,6 @@ from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
-
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
@@ -50,6 +47,8 @@ from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite impor
     STRING_REWRITE_STRATEGY_NAME,
 )
 from fidesops.ops.util.data_category import DataCategory
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging

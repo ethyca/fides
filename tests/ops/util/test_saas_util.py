@@ -1,5 +1,4 @@
 import pytest
-
 from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.graph.config import (
     Collection,

@@ -6,7 +6,6 @@ from unittest.mock import Mock
 
 import pytest
 from bson import ObjectId
-
 from fidesops.ops.graph.config import Collection, Dataset, FieldAddress, ScalarField
 from fidesops.ops.graph.data_type import (
     IntTypeConverter,
