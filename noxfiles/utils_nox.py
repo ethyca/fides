@@ -52,7 +52,7 @@ def clean(session: nox.Session) -> None:
 @nox.session()
 def teardown(session: nox.Session) -> None:
     """Tear down the docker dev environment."""
-    if session.posargs[0] == "volumes":
+    if "volumes" in session.posargs:
         session.run(*COMPOSE_DOWN_VOLUMES, external=True)
     else:
         session.run(*COMPOSE_DOWN, external=True)

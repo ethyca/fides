@@ -82,10 +82,6 @@ RUN git reset --hard
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
-# Make a static files directory
-RUN mkdir -p /fides/src/fides/ops/build/static/
-RUN mkdir -p /fides/src/fides/ctl/build/static/
-
 EXPOSE 8080
 CMD [ "fides", "webserver" ]
 
