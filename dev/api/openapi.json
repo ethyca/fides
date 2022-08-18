@@ -3519,7 +3519,11 @@
                     "dataset.source_name": "The source of the personal data (if applicable)",
                     "system.data_protection_impact_assessment.is_required": "Data Protection Impact Assessment required?",
                     "system.data_protection_impact_assessment.progress": "Data Protection Impact Assessment progress",
-                    "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment"
+                    "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
+                    "system.fides_key": "The fides key for the system",
+                    "dataset.fides_key": "The fides key for the dataset (if applicable)",
+                    "system.system_dependencies": "Related cross-system dependencies",
+                    "system.description": "Description of the System"
                   },
                   {
                     "system.name": "Demo Analytics System",
@@ -3544,7 +3548,11 @@
                     "system.joint_controller": "",
                     "system.third_country_safeguards": "",
                     "system.link_to_processor_contract": "",
-                    "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/"
+                    "organization.link_to_security_policy": "https://ethyca.com/privacy-policy/",
+                    "system.fides_key": "",
+                    "dataset.fides_key": "",
+                    "system.system_dependencies": "",
+                    "system.description": ""
                   }
                 ]
               }
