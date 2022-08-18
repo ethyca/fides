@@ -47,7 +47,8 @@ ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
 RUN = (
-    "docker-compose",
+    "docker",
+    "compose",
     "run",
     "--rm",
     *ANALYTICS_ID_OVERRIDE,
@@ -56,7 +57,8 @@ RUN = (
     COMPOSE_SERVICE_NAME,
 )
 RUN_NO_DEPS = (
-    "docker-compose",
+    "docker",
+    "compose",
     "run",
     "--no-deps",
     "--rm",
@@ -64,10 +66,10 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "--wait", COMPOSE_SERVICE_NAME)
-START_APP_UI = ("docker-compose", "up", "--wait", "fides-ui")
+START_APP = ("docker","compose", "up", "--wait", COMPOSE_SERVICE_NAME)
+START_APP_UI = ("docker","compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
-    "docker-compose",
+    "docker","compose",
     "-f",
     COMPOSE_FILE,
     "-f",
