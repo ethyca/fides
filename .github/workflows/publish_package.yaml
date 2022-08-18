@@ -1,4 +1,4 @@
-name: Publish fidesctl
+name: Publish Fides
 
 on:
   push:

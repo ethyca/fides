@@ -30,7 +30,7 @@ jobs:
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
-      - name: Install fidesctl
+      - name: Install fides
         run: pip install -e ./[all]
 
       - name: Checkout the gh-pages branches

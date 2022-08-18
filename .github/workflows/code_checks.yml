@@ -37,17 +37,140 @@ jobs:
           path: /tmp/${{ env.CONTAINER }}.tar
           retention-days: 1
 
-  Fidesctl:
+###################
+## Static Checks ##
+###################
+  isort:
     needs: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Download fides container
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run sorter
+        run: nox -s isort
+
+  Black:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run formatter
+        run: nox -s black
+
+  Pylint:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run linter
+        run: nox -s pylint
+
+  Mypy:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run typechecker
+        run: nox -s mypy
+
+  Xenon:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run cyclomatic complexity check
+        run: nox -s xenon
+
+########################
+## Application Checks ##
+########################
+  Docs:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fides image
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check that the docs can build
+        run: nox -s docs_check
+
+  Fidesops:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check fidesops installation
+        run: nox -s check_install
+
+      - name: Check migrations
+        run: nox -s check_migrations
+
+  Fidesctl:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Checkout
@@ -70,149 +193,20 @@ jobs:
       - name: Scan fides db
         run: nox -s fidesctl_db_scan -- docker
 
-  isort:
+###########
+## Tests ##
+###########
+  Pytest-Unit-Ctl:
     needs: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Download fides container
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run sorter
-        run: nox -s isort -- docker
-
-  Black:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run formatter
-        run: nox -s black -- docker
-
-  Docs:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Check that the docs can build
-        run: nox -s docs_check
-
-  Pylint:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run linter
-        run: nox -s pylint -- docker
-
-  Mypy:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run typechecker
-        run: nox -s mypy -- docker
-
-  Xenon:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run cyclomatic complexity check
-        run: nox -s xenon -- docker
-
-  Pytest-Unit:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download fides container
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ env.CONTAINER }}
-          path: /tmp/
-
-      - name: Load fides image
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Checkout
@@ -224,17 +218,17 @@ jobs:
       - name: Run unit test suite
         run: nox -s "pytest(unit)"
 
-  Pytest-Integration:
+  Pytest-Integration-Ctl:
     needs: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Download fides container
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fides image
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Checkout
@@ -246,17 +240,17 @@ jobs:
       - name: Run integration test suite
         run: nox -s "pytest(integration)"
 
-  Pytest-External:
+  Pytest-External-Ctl:
     needs: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Download fides container
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fides image
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Checkout
@@ -275,3 +269,50 @@ jobs:
           OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
           AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
+
+
+
+
+  Pytest-Unit-Ops:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run unit test suite
+        run: nox -s pytest_unit
+
+  Pytest-Integration-Ops:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run integration test suite
+        run: nox -s pytest_integration
