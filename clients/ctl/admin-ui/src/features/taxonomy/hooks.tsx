@@ -183,6 +183,8 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       // to properly type just for this special case
       rights: { values: entity.rights, strategy: entity.strategy },
     };
+    // @ts-ignore for the same reason as above
+    delete transformedEntity.strategy;
     return edit(transformedEntity);
   };
 

@@ -6,11 +6,11 @@
     "name": "Provide the capability",
     "description": "Provide, give, or make available the product, service, application or system.",
     "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legal_basis": "Legitimate Interests",
+    "special_category": "Vital Interests",
+    "recipients": ["marketing team", "dog shelter"],
+    "legitimate_interest": true,
+    "legitimate_interest_impact_assessment": "https://example.org/legitimate_interest_assessment"
   },
   {
     "fides_key": "provide.service",

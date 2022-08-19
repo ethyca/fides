@@ -14,8 +14,11 @@
     "tags": null,
     "name": "Citizen Voter",
     "description": "An individual registered to voter with a state or authority.",
-    "rights": null,
-    "automated_decisions_or_profiling": null
+    "rights": {
+      "strategy": "INCLUDE",
+      "values": ["Informed", "Access", "Rectification", "Erasure", "Object"]
+    },
+    "automated_decisions_or_profiling": true
   },
   {
     "fides_key": "commuter",
