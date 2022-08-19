@@ -308,6 +308,7 @@ export const CustomCreatableMultiSelect = ({
   isSearchable,
   isClearable,
   options,
+  size,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
@@ -322,6 +323,7 @@ export const CustomCreatableMultiSelect = ({
         <CreatableSelect
           name={props.name}
           chakraStyles={{
+            container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
             dropdownIndicator: (provided) => ({
               ...provided,
               background: "white",
@@ -356,6 +358,7 @@ export const CustomCreatableMultiSelect = ({
               newValue.map((v) => v.value)
             );
           }}
+          size={size}
         />
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}

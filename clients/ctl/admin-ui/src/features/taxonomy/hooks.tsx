@@ -40,7 +40,7 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
   isLoading: boolean;
   labels: Labels;
-  edit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
+  edit: (entity: T) => TaxonomyRTKResult;
   extraFormFields?: ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
@@ -97,6 +97,14 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   };
 
   const [edit] = useUpdateDataUseMutation();
+  const handleEdit = (entity: DataUse) =>
+    edit({
+      ...entity,
+      // text inputs don't like having undefined, so we originally converted
+      // to "", but on submission we need to convert back to undefined
+      legitimate_interest_impact_assessment:
+        entity.legitimate_interest_impact_assessment ?? undefined,
+    });
 
   const transformEntityToInitialValues = (du: DataUse) => {
     const base = transformTaxonomyBaseToInitialValues(du);
@@ -107,7 +115,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       recipients: du.recipients ?? [],
       legitimate_interest: du.legitimate_interest,
       legitimate_interest_impact_assessment:
-        du.legitimate_interest_impact_assessment,
+        du.legitimate_interest_impact_assessment ?? "",
     };
   };
 
@@ -130,6 +138,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         name="recipients"
         label="Recipients"
         options={[]}
+        size="sm"
       />
       {/* TODO: legitimate interest: boolean field */}
       <CustomTextInput
@@ -143,7 +152,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     data,
     isLoading,
     labels,
-    edit,
+    edit: handleEdit,
     extraFormFields,
     transformEntityToInitialValues,
   };
