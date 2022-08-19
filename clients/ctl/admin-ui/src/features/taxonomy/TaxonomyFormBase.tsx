@@ -17,10 +17,11 @@ import { isErrorResult, parseError } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
 import { RTKErrorResult } from "~/types/errors";
 
-import TaxonomyEntityTag from "../TaxonomyEntityTag";
-import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "../types";
+import TaxonomyEntityTag from "./TaxonomyEntityTag";
+import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
-type FormValues = Partial<TaxonomyEntity> & Pick<TaxonomyEntity, "fides_key">;
+export type FormValues = Partial<TaxonomyEntity> &
+  Pick<TaxonomyEntity, "fides_key">;
 
 interface Props {
   entity: TaxonomyEntity;
@@ -28,6 +29,7 @@ interface Props {
   onCancel: () => void;
   onEdit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
   extraFormFields?: ReactNode;
+  initialValues: FormValues;
 }
 const EditTaxonomyForm = ({
   entity,
@@ -35,15 +37,9 @@ const EditTaxonomyForm = ({
   onCancel,
   onEdit,
   extraFormFields,
+  initialValues,
 }: Props) => {
   const toast = useToast();
-  const initialValues: FormValues = {
-    fides_key: entity.fides_key,
-    name: entity.name ?? "",
-    description: entity.description ?? "",
-    parent_key: entity.parent_key ?? "",
-    is_default: entity.is_default ?? false,
-  };
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleError = (error: RTKErrorResult["error"]) => {
@@ -53,9 +49,12 @@ const EditTaxonomyForm = ({
 
   const handleSubmit = async (newValues: FormValues) => {
     setFormError(null);
-    // ensure parent key stays the same, as it cannot be changed by the user
-    // and because the backend requires it to be undefined over an empty string
-    const payload = { ...newValues, parent_key: entity.parent_key };
+    // parent_key and fides_keys are immutable
+    const payload = {
+      ...newValues,
+      parent_key: entity.parent_key,
+      fides_key: entity.fides_key,
+    };
     const result = await onEdit(payload);
     if (isErrorResult(result)) {
       handleError(result.error);

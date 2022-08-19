@@ -1,9 +1,19 @@
 import { ReactNode } from "react";
 
-import { LegalBasisEnum, SpecialCategoriesEnum } from "~/types/api";
+import {
+  DataCategory,
+  DataQualifier,
+  DataSubject,
+  DataSubjectRightsEnum,
+  DataUse,
+  IncludeExcludeEnum,
+  LegalBasisEnum,
+  SpecialCategoriesEnum,
+} from "~/types/api";
 
 import {
   CustomCreatableMultiSelect,
+  CustomMultiSelect,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
@@ -23,14 +33,16 @@ import {
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "./data-categories.slice";
+import type { FormValues } from "./TaxonomyFormBase";
 import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
-export interface TaxonomyHookData {
+export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
   isLoading: boolean;
   labels: Labels;
   edit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
   extraFormFields?: ReactNode;
+  transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
 const enumToOptions = (e: { [s: number]: string }) =>
@@ -39,14 +51,15 @@ const enumToOptions = (e: { [s: number]: string }) =>
     label: entry[1],
   }));
 
-// const enumToOptions = (enum: str) => {
-//   return Object.entries(enum).map((entry) => ({
-//     value: entry[1],
-//     label: entry[1],
-//   }));
-// }
+const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
+  fides_key: t.fides_key ?? "",
+  name: t.name ?? "",
+  description: t.description ?? "",
+  parent_key: t.parent_key ?? "",
+  is_default: t.is_default ?? false,
+});
 
-export const useDataCategory = (): TaxonomyHookData => {
+export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
   const { data, isLoading } = useGetAllDataCategoriesQuery();
 
   const labels = {
@@ -58,10 +71,16 @@ export const useDataCategory = (): TaxonomyHookData => {
 
   const [edit] = useUpdateDataCategoryMutation();
 
-  return { data, isLoading, labels, edit };
+  return {
+    data,
+    isLoading,
+    labels,
+    edit,
+    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
+  };
 };
 
-export const useDataUse = (): TaxonomyHookData => {
+export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const { data, isLoading } = useGetAllDataUsesQuery();
 
   const labels = {
@@ -79,6 +98,19 @@ export const useDataUse = (): TaxonomyHookData => {
 
   const [edit] = useUpdateDataUseMutation();
 
+  const transformEntityToInitialValues = (du: DataUse) => {
+    const base = transformTaxonomyBaseToInitialValues(du);
+    return {
+      ...base,
+      legal_basis: du.legal_basis,
+      special_category: du.special_category,
+      recipients: du.recipients ?? [],
+      legitimate_interest: du.legitimate_interest,
+      legitimate_interest_impact_assessment:
+        du.legitimate_interest_impact_assessment,
+    };
+  };
+
   const legalBases = enumToOptions(LegalBasisEnum);
   const specialCategories = enumToOptions(SpecialCategoriesEnum);
 
@@ -90,15 +122,15 @@ export const useDataUse = (): TaxonomyHookData => {
         options={legalBases}
       />
       <CustomSelect
-        name="special_categories"
+        name="special_category"
         label={labels.special_category}
         options={specialCategories}
       />
-      {/* <CustomCreatableMultiSelect
-        name="recipient"
+      <CustomCreatableMultiSelect
+        name="recipients"
         label="Recipients"
         options={[]}
-      /> */}
+      />
       {/* TODO: legitimate interest: boolean field */}
       <CustomTextInput
         name="legitimate_interest_impact_assessment"
@@ -107,10 +139,17 @@ export const useDataUse = (): TaxonomyHookData => {
     </>
   );
 
-  return { data, isLoading, labels, edit, extraFormFields };
+  return {
+    data,
+    isLoading,
+    labels,
+    edit,
+    extraFormFields,
+    transformEntityToInitialValues,
+  };
 };
 
-export const useDataSubject = (): TaxonomyHookData => {
+export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const { data, isLoading } = useGetAllDataSubjectsQuery();
 
   const labels = {
@@ -125,12 +164,56 @@ export const useDataSubject = (): TaxonomyHookData => {
 
   const [edit] = useUpdateDataSubjectMutation();
 
-  const extraFormFields = <div>hi</div>;
+  const handleEdit = (entity: TaxonomyEntity) => {
+    const transformedEntity = {
+      ...entity,
+      // @ts-ignore because DataSubjects have their rights field nested, which
+      // does not work well when being passed into a form. We unnest them in
+      // transformEntityToInitialValues, and it is the unnested value we get back
+      // here, but it would make the types of our other components much more complicated
+      // to properly type just for this special case
+      rights: { values: entity.rights, strategy: entity.strategy },
+    };
+    return edit(transformedEntity);
+  };
 
-  return { data, isLoading, labels, edit, extraFormFields };
+  const transformEntityToInitialValues = (ds: DataSubject) => {
+    const base = transformTaxonomyBaseToInitialValues(ds);
+    return {
+      ...base,
+      rights: ds.rights?.values ?? [],
+      strategy: ds.rights?.strategy,
+      automatic_decisions: ds.automated_decisions_or_profiling,
+    };
+  };
+
+  const extraFormFields = (
+    <>
+      <CustomMultiSelect
+        name="rights"
+        label={labels.rights}
+        options={enumToOptions(DataSubjectRightsEnum)}
+      />
+      <CustomSelect
+        name="strategy"
+        label={labels.strategy}
+        options={enumToOptions(IncludeExcludeEnum)}
+      />
+      {/* TODO: automatic decisions: boolean field */}
+    </>
+  );
+
+  return {
+    data,
+    isLoading,
+    labels,
+    edit: handleEdit,
+    extraFormFields,
+    transformEntityToInitialValues,
+  };
 };
 
-export const useDataQualifier = (): TaxonomyHookData => {
+export const useDataQualifier = (): TaxonomyHookData<DataQualifier> => {
   const { data, isLoading } = useGetAllDataQualifiersQuery();
 
   const labels = {
@@ -142,5 +225,11 @@ export const useDataQualifier = (): TaxonomyHookData => {
 
   const [edit] = useUpdateDataQualifierMutation();
 
-  return { data, isLoading, labels, edit };
+  return {
+    data,
+    isLoading,
+    labels,
+    edit,
+    transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
+  };
 };
