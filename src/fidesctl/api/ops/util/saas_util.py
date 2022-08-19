@@ -9,10 +9,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import yaml
 from fideslib.core.config import load_file
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.graph.config import Collection, CollectionAddress, Dataset, Field
-from fidesops.ops.schemas.saas.saas_config import SaaSRequest
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesctl.api.ops.common_exceptions import FidesopsException
+from fidesctl.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSRequest
+from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 logger = logging.getLogger(__name__)

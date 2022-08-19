@@ -3,9 +3,9 @@ import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
-from fidesops.ops.graph.config import CollectionAddress, FieldPath
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.graph.config import CollectionAddress, FieldPath
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 

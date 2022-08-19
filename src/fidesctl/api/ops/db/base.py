@@ -6,9 +6,9 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fidesops.ops.models.authentication_request import AuthenticationRequest
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
+from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.models.policy import Policy, Rule, RuleTarget
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig

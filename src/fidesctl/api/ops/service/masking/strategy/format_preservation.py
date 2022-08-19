@@ -1,4 +1,6 @@
-from fidesops.ops.schemas.masking.masking_configuration import FormatPreservationConfig
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+)
 
 
 class FormatPreservation:

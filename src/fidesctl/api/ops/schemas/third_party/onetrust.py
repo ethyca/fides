@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from fidesops.ops.schemas.base_class import BaseSchema
+from fidesctl.api.ops.schemas.base_class import BaseSchema
 
 
 class OneTrustSubtaskStatus(Enum):

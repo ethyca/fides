@@ -1,17 +1,21 @@
 import logging
 from typing import Any, Dict, Optional
 
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.common_exceptions import StorageUploadError
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     StorageDetails,
     StorageType,
 )
-from fidesops.ops.tasks.storage import upload_to_local, upload_to_onetrust, upload_to_s3
+from fidesctl.api.ops.tasks.storage import (
+    upload_to_local,
+    upload_to_onetrust,
+    upload_to_s3,
+)
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)

@@ -3,9 +3,9 @@ import logging
 import pickle
 from typing import Any, Dict, List, Optional, Union
 
-from fidesops.ops import common_exceptions
-from fidesops.ops.core.config import config
-from fidesops.ops.schemas.masking.masking_secrets import SecretType
+from fidesctl.api.ops import common_exceptions
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.schemas.masking.masking_secrets import SecretType
 from redis import Redis
 from redis.client import Script  # type: ignore
 

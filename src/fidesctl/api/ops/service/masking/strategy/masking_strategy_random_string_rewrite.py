@@ -2,17 +2,19 @@ import string
 from secrets import choice
 from typing import List, Optional
 
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     RandomStringMaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fidesctl.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
+from fidesctl.api.ops.service.masking.strategy.format_preservation import (
+    FormatPreservation,
+)
+from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 

@@ -1,17 +1,17 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fidesops.ops.common_exceptions import ConnectorNotFoundException
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.policy import ActionType, Policy
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.common_exceptions import ConnectorNotFoundException
+from fidesctl.api.ops.graph.config import CollectionAddress
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesctl.api.ops.models.policy import ActionType, Policy
+from fidesctl.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.connectors import (
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     ManualConnector,
@@ -24,8 +24,8 @@ from fidesops.ops.service.connectors import (
     SaaSConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.util.cache import get_cache
+from fidesctl.api.ops.util.collection_util import Row
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)

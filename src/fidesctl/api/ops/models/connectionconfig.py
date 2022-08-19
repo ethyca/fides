@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Any, Optional
 
 from fideslib.db.base import Base
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.base_class import JSONTypeOverride
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfig
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -28,7 +28,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fidesops.
+    Supported types to which we can connect fidesctl.api.
     """
 
     postgres = "postgres"

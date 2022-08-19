@@ -1,8 +1,11 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
-from fidesops.ops.schemas.saas.saas_config import SaaSRequest
-from fidesops.ops.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSRequest
+from fidesctl.api.ops.schemas.saas.shared_schemas import (
+    ConnectorParamRef,
+    IdentityParamRef,
+)
 from pydantic import BaseModel, root_validator, validator
 
 

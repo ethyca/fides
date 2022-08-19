@@ -1,16 +1,16 @@
 import logging
 
 from fideslib.db.base import Base
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.base_class import JSONTypeOverride
+from fidesctl.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,
     StorageSecretsOnetrust,
     StorageSecretsS3,
     StorageType,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+from fidesctl.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
 from pydantic import ValidationError

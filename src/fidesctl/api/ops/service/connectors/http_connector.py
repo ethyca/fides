@@ -3,15 +3,15 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import requests
-from fidesops.ops.common_exceptions import ClientUnsuccessfulException
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.connection_configuration import HttpsSchema
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.query_config import QueryConfig
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.common_exceptions import ClientUnsuccessfulException
+from fidesctl.api.ops.graph.traversal import TraversalNode
+from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
+from fidesctl.api.ops.models.policy import Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.schemas.connection_configuration import HttpsSchema
+from fidesctl.api.ops.service.connectors.base_connector import BaseConnector
+from fidesctl.api.ops.service.connectors.query_config import QueryConfig
+from fidesctl.api.ops.util.collection_util import Row
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 logger = logging.getLogger(__name__)

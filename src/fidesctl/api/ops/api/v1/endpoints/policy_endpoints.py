@@ -7,23 +7,23 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1 import scope_registry
+from fidesctl.api.ops.api.v1 import urn_registry as urls
+from fidesctl.api.ops.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas import policy as schemas
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas import policy as schemas
+from fidesctl.api.ops.schemas.api import BulkUpdateFailed
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session

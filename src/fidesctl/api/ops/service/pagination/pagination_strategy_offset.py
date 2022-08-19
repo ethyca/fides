@@ -1,14 +1,14 @@
 from typing import Any, Dict, Optional, Union
 
 import pydash
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fidesctl.api.ops.common_exceptions import FidesopsException
+from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
     StrategyConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesctl.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 from requests import Response
 
 STRATEGY_NAME = "offset"

@@ -2,12 +2,12 @@ import logging
 import secrets
 from typing import Dict, List, Optional, TypeVar
 
-from fidesops.ops.schemas.masking.masking_secrets import (
+from fidesctl.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.ops.util.cache import get_cache, get_masking_secret_cache_key
+from fidesctl.api.ops.util.cache import get_cache, get_masking_secret_cache_key
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)

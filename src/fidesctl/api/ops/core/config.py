@@ -14,7 +14,7 @@ from fideslib.core.config import (
     load_toml,
 )
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
-from fidesops.ops.util.logger import NotPii
+from fidesctl.api.ops.util.logger import NotPii
 from pydantic import validator
 
 logger = logging.getLogger(__name__)
@@ -240,10 +240,10 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
     :param updates: A nested `dict`, where top-level keys correspond to configuration sections and top-level values contain `dict`s whose key/value pairs correspond to the desired option/value updates.
     """
     try:
-        config_path: str = load_file(["fidesops.toml"])
-        current_config: MutableMapping[str, Any] = load_toml(["fidesops.toml"])
+        config_path: str = load_file(["fidesctl.api.toml"])
+        current_config: MutableMapping[str, Any] = load_toml(["fidesctl.api.toml"])
     except FileNotFoundError as e:
-        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
+        logger.warning("fidesctl.api.toml could not be loaded: %s", NotPii(e))
 
     for key, value in updates.items():
         if key in current_config:

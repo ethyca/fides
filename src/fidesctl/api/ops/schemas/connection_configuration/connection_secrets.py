@@ -3,8 +3,8 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional
 
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.schemas import Msg
+from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
+from fidesctl.api.ops.schemas import Msg
 from pydantic import BaseModel, Extra, root_validator
 
 

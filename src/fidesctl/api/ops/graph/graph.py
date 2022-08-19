@@ -4,8 +4,8 @@ import logging
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
-from fidesops.ops.common_exceptions import ValidationError
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.common_exceptions import ValidationError
+from fidesctl.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -15,7 +15,7 @@ from fidesops.ops.graph.config import (
     FieldPath,
     SeedAddress,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 

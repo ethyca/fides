@@ -7,42 +7,42 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
     ValidationError,
 )
-from fidesops.ops.graph.traversal import DatasetGraph, Traversal
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.datasetconfig import (
+from fidesctl.api.ops.graph.traversal import DatasetGraph, Traversal
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesctl.api.ops.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.dataset import (
+from fidesctl.api.ops.schemas.api import BulkUpdateFailed
+from fidesctl.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetTraversalDetails,
     FidesopsDataset,
     ValidateDatasetResponse,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
-from fidesops.ops.util.saas_util import merge_datasets
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.util.saas_util import merge_datasets
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.status import (

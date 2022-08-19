@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fidesops.ops.schemas.base_class import BaseSchema
+from fidesctl.api.ops.schemas.base_class import BaseSchema
 from pydantic import Extra
 
 

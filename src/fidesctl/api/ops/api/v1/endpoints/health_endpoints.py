@@ -2,12 +2,12 @@ import logging
 from typing import Dict, Optional, Union
 
 from alembic import migration, script
-from fidesops.ops.api.v1.urn_registry import HEALTH
-from fidesops.ops.common_exceptions import RedisConnectionError
-from fidesops.ops.core.config import config
-from fidesops.ops.db.database import get_alembic_config
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.cache import get_cache
+from fidesctl.api.ops.api.v1.urn_registry import HEALTH
+from fidesctl.api.ops.common_exceptions import RedisConnectionError
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.database import get_alembic_config
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.cache import get_cache
 from redis.exceptions import ResponseError
 from sqlalchemy import create_engine
 

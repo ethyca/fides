@@ -13,26 +13,26 @@ from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
-from fidesops.ops.analytics import (
+from fidesctl.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.ops.api.v1.api import api_router
-from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
-from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.api.v1.api import api_router
+from fidesctl.api.ops.api.v1.exception_handlers import ExceptionHandlers
+from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesctl.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.db.database import init_db
-from fidesops.ops.schemas.analytics import Event, ExtraData
-from fidesops.ops.tasks.scheduled.scheduler import scheduler
-from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.logger import get_fides_log_record_factory
-from fidesops.ops.util.oauth_util import get_db, verify_oauth_client
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.database import init_db
+from fidesctl.api.ops.schemas.analytics import Event, ExtraData
+from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
+from fidesctl.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesctl.api.ops.util.cache import get_cache
+from fidesctl.api.ops.util.logger import get_fides_log_record_factory
+from fidesctl.api.ops.util.oauth_util import get_db, verify_oauth_client
 from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
@@ -215,7 +215,7 @@ def start_webserver() -> None:
 
     logger.info("Starting web server...")
     uvicorn.run(
-        "fidesops.main:app",
+        "fidesctl.api.main:app",
         host="0.0.0.0",
         port=config.port,
         log_config=None,

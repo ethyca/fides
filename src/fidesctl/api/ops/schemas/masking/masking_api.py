@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from fidesops.ops.schemas.policy import PolicyMaskingSpec
+from fidesctl.api.ops.schemas.policy import PolicyMaskingSpec
 from pydantic import BaseModel
 
 

@@ -3,36 +3,36 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
-from fidesops.ops import common_exceptions
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry as scopes
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
+from fidesctl.api.ops import common_exceptions
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1 import scope_registry as scopes
+from fidesctl.api.ops.api.v1 import urn_registry as urls
+from fidesctl.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import DrpAction, Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.ops.schemas.drp_privacy_request import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.policy import DrpAction, Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesctl.api.ops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
     DrpIdentity,
     DrpPrivacyRequestCreate,
     DrpRevokeRequest,
 )
-from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
+from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesctl.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
+from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.ops.service.privacy_request.request_service import (
+from fidesctl.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.cache import FidesopsRedis
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.cache import FidesopsRedis
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

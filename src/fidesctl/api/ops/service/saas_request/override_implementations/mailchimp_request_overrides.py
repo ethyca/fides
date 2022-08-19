@@ -2,19 +2,19 @@ from json import dumps
 from typing import Any, Dict, List
 
 import pydash
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.service.saas_request.saas_request_override_factory import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.graph.traversal import TraversalNode
+from fidesctl.api.ops.models.policy import Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.util.collection_util import Row
 from requests import get, put
 
 

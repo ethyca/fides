@@ -82,15 +82,15 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.graph.data_type import (
+from fidesctl.api.ops.common_exceptions import FidesopsException
+from fidesctl.api.ops.graph.data_type import (
     DataType,
     DataTypeConverter,
     get_data_type_converter,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.collection_util import merge_dicts
-from fidesops.ops.util.querytoken import QueryToken
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.collection_util import merge_dicts
+from fidesctl.api.ops.util.querytoken import QueryToken
 from pydantic import BaseModel, validator
 
 DatasetAddress = str

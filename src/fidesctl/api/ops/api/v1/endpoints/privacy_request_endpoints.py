@@ -15,16 +15,16 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
-from fidesops.ops import common_exceptions
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry as scopes
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops import common_exceptions
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1 import scope_registry as scopes
+from fidesctl.api.ops.api.v1 import urn_registry as urls
+from fidesctl.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
@@ -33,30 +33,30 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     TraversalError,
     ValidationError,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph, Node
-from fidesops.ops.graph.traversal import Traversal
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.graph.config import CollectionAddress
+from fidesctl.api.ops.graph.graph import DatasetGraph, Node
+from fidesctl.api.ops.graph.traversal import Traversal
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
+from fidesctl.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fidesops.ops.schemas.dataset import (
+from fidesctl.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesops.ops.schemas.privacy_request import (
+from fidesctl.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fidesctl.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     DenyPrivacyRequests,
@@ -68,19 +68,19 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     StoppedCollection,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.ops.service.privacy_request.request_service import (
+from fidesctl.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
-from fidesops.ops.task.task_resources import TaskResources
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.cache import FidesopsRedis
-from fidesops.ops.util.collection_util import Row
-from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fidesctl.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
+from fidesctl.api.ops.task.task_resources import TaskResources
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.cache import FidesopsRedis
+from fidesctl.api.ops.util.collection_util import Row
+from fidesctl.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from pydantic import conlist
 from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session

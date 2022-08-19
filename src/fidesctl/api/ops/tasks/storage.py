@@ -13,14 +13,14 @@ import pandas as pd
 import requests
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
-from fidesops.ops.core.config import config
-from fidesops.ops.models.storage import ResponseFormat
-from fidesops.ops.schemas.storage.storage import StorageSecrets
-from fidesops.ops.util.cache import get_cache, get_encryption_cache_key
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.storage import ResponseFormat
+from fidesctl.api.ops.schemas.storage.storage import StorageSecrets
+from fidesctl.api.ops.util.cache import get_cache, get_encryption_cache_key
+from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
-from fidesops.ops.util.storage_authenticator import (
+from fidesctl.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )

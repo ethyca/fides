@@ -1,10 +1,14 @@
 import logging
 from typing import Callable, Dict, Type, Union, ValuesView
 
-from fidesops.ops.common_exceptions import NoSuchStrategyException
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.schemas.masking.masking_configuration import FormatPreservationConfig
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
+from fidesctl.api.ops.common_exceptions import (
+    ValidationError as FidesopsValidationError,
+)
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+)
+from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)

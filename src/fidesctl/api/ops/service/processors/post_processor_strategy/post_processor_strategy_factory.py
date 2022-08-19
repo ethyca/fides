@@ -2,16 +2,18 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List
 
-from fidesops.ops.common_exceptions import NoSuchStrategyException
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
+from fidesctl.api.ops.common_exceptions import (
+    ValidationError as FidesopsValidationError,
+)
+from fidesctl.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
+from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
+from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
-from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
+from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy_unwrap import (
     UnwrapPostProcessorStrategy,
 )
 from pydantic import ValidationError

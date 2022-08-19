@@ -2,9 +2,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
-from fidesops.ops.schemas.masking.masking_configuration import MaskingConfiguration
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fidesctl.api.ops.schemas.masking.masking_configuration import MaskingConfiguration
+from fidesctl.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesctl.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
 

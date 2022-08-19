@@ -6,33 +6,33 @@ from typing import Dict, Final, List, Optional, Union
 import requests
 from fideslib.db.session import get_db_session
 from fideslib.exceptions import AuthenticationError
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.privacy_request import PrivacyRequestIdentity
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
-from fidesops.ops.schemas.third_party.onetrust import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.policy import Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestIdentity
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fidesctl.api.ops.schemas.third_party.onetrust import (
     OneTrustGetRequestsResponse,
     OneTrustGetSubtasksResponse,
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.ops.service.outbound_urn_registry import (
+from fidesctl.api.ops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.ops.util.storage_authenticator import get_onetrust_access_token
+from fidesctl.api.ops.util.storage_authenticator import get_onetrust_access_token
 from requests import Response
 from sqlalchemy.orm import Session
 

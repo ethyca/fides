@@ -1,12 +1,14 @@
 from typing import Dict, List, Optional, Union
 
-from fidesops.ops.models.policy import ActionType, DrpAction
-from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.masking.masking_configuration import FormatPreservationConfig
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.storage import StorageDestinationResponse
-from fidesops.ops.util.data_category import DataCategory
+from fidesctl.api.ops.models.policy import ActionType, DrpAction
+from fidesctl.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesctl.api.ops.schemas.base_class import BaseSchema
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
+    FormatPreservationConfig,
+)
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.storage.storage import StorageDestinationResponse
+from fidesctl.api.ops.util.data_category import DataCategory
 
 
 class PolicyMaskingSpec(BaseSchema):

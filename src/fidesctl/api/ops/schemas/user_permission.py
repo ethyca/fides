@@ -10,7 +10,7 @@ from fideslib.oauth.schemas.user_permission import (
 from fideslib.oauth.schemas.user_permission import (
     UserPermissionsResponse as UserPermissionsResponseLib,
 )
-from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fidesctl.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from pydantic import validator
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 

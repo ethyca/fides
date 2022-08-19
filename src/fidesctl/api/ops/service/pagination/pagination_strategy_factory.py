@@ -4,22 +4,28 @@ import logging
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List
 
-from fidesops.ops.common_exceptions import NoSuchStrategyException
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.service.pagination.pagination_strategy_cursor import (
+from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
+from fidesctl.api.ops.common_exceptions import (
+    ValidationError as FidesopsValidationError,
+)
+from fidesctl.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesops.ops.service.pagination.pagination_strategy_link import (
+from fidesctl.api.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
-from fidesops.ops.service.pagination.pagination_strategy_offset import (
+from fidesctl.api.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 from pydantic import ValidationError
 
 if TYPE_CHECKING:
-    from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
-    from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+    from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+        StrategyConfiguration,
+    )
+    from fidesctl.api.ops.service.pagination.pagination_strategy import (
+        PaginationStrategy,
+    )
 
 logger = logging.getLogger(__name__)
 

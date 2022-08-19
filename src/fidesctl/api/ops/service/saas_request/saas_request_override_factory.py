@@ -3,11 +3,11 @@ from enum import Enum
 from inspect import Signature, signature
 from typing import Callable, Dict, List, Union
 
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 

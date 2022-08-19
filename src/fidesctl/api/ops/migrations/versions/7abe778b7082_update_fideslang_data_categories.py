@@ -10,8 +10,8 @@ Create Date: 2022-07-29 17:54:53.719453
 import logging
 
 from fideslib.db.session import get_db_session
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base import DatasetConfig
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.base import DatasetConfig
 from sqlalchemy.exc import ProgrammingError
 
 logger = logging.getLogger(__name__)

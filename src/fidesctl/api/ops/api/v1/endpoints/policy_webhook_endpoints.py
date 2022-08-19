@@ -7,25 +7,25 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.db.base_class import get_key_from_data
 from fideslib.exceptions import KeyOrNameAlreadyExists
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry as scopes
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.endpoints.connection_endpoints import (
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1 import scope_registry as scopes
+from fidesctl.api.ops.api.v1 import urn_registry as urls
+from fidesctl.api.ops.api.v1.endpoints.connection_endpoints import (
     get_connection_config_or_error,
 )
-from fidesops.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
-from fidesops.ops.common_exceptions import WebhookOrderException
-from fidesops.ops.models.policy import (
+from fidesctl.api.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
+from fidesctl.api.ops.common_exceptions import WebhookOrderException
+from fidesctl.api.ops.models.policy import (
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesops.ops.schemas import policy_webhooks as schemas
-from fidesops.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.schemas import policy_webhooks as schemas
+from fidesctl.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException

@@ -4,13 +4,13 @@ from urllib import parse
 from urllib.parse import urlsplit
 
 import pydash
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
     LinkSource,
     StrategyConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesctl.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 from requests import Response
 
 STRATEGY_NAME = "link"

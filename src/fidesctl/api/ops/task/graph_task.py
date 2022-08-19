@@ -8,13 +8,13 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask.threaded import get
-from fidesops.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.analytics_events import (
+from fidesctl.api.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
 )
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
@@ -22,21 +22,21 @@ from fidesops.ops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.ops.graph.graph_differences import format_graph_for_caching
-from fidesops.ops.graph.traversal import Traversal, TraversalNode
-from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fidesops.ops.models.policy import ActionType, Policy
-from fidesops.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-from fidesops.ops.service.connectors import BaseConnector
-from fidesops.ops.task.consolidate_query_matches import consolidate_query_matches
-from fidesops.ops.task.filter_element_match import filter_element_match
-from fidesops.ops.task.refine_target_path import FieldPathNodeInput
-from fidesops.ops.task.task_resources import TaskResources
-from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
-from fidesops.ops.util.logger import NotPii
-from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fidesctl.api.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesctl.api.ops.graph.graph_differences import format_graph_for_caching
+from fidesctl.api.ops.graph.traversal import Traversal, TraversalNode
+from fidesctl.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
+from fidesctl.api.ops.models.policy import ActionType, Policy
+from fidesctl.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fidesctl.api.ops.service.connectors import BaseConnector
+from fidesctl.api.ops.task.consolidate_query_matches import consolidate_query_matches
+from fidesctl.api.ops.task.filter_element_match import filter_element_match
+from fidesctl.api.ops.task.refine_target_path import FieldPathNodeInput
+from fidesctl.api.ops.task.task_resources import TaskResources
+from fidesctl.api.ops.util.cache import get_cache
+from fidesctl.api.ops.util.collection_util import NodeInput, Row, append, partition
+from fidesctl.api.ops.util.logger import NotPii
+from fidesctl.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)

@@ -2,8 +2,10 @@ import hashlib
 import hmac
 from typing import Callable
 
-from fidesops.ops.core.config import config
-from fidesops.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
+    HmacMaskingConfiguration,
+)
 
 
 def hmac_encrypt_return_bytes(

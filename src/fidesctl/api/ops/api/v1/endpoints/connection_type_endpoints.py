@@ -5,24 +5,24 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
-from fidesops.ops.api.v1.scope_registry import CONNECTION_TYPE_READ
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import CONNECTION_TYPE_READ
+from fidesctl.api.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
-from fidesops.ops.models.connectionconfig import ConnectionType
-from fidesops.ops.schemas.connection_configuration import (
+from fidesctl.api.ops.models.connectionconfig import ConnectionType
+from fidesctl.api.ops.schemas.connection_configuration import (
     SaaSSchemaFactory,
     secrets_validators,
 )
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fidesctl.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig, SaaSType
-from fidesops.ops.util.oauth_util import verify_oauth_client
-from fidesops.ops.util.saas_util import load_config
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSType
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.util.saas_util import load_config
 from starlette.status import HTTP_404_NOT_FOUND
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)

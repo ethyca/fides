@@ -2,22 +2,24 @@ import logging
 from enum import Enum
 from typing import Any, Dict, List
 
-from fidesops.ops.common_exceptions import NoSuchStrategyException
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
+from fidesctl.api.ops.common_exceptions import (
+    ValidationError as FidesopsValidationError,
+)
+from fidesctl.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
+from fidesctl.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_basic import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_basic import (
     BasicAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_bearer import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_query_param import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
 )
 from pydantic import ValidationError

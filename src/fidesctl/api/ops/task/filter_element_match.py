@@ -4,13 +4,13 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import pydash
-from fidesops.ops.task.refine_target_path import (
+from fidesctl.api.ops.task.refine_target_path import (
     DetailedPath,
     FieldPathNodeInput,
     build_refined_target_paths,
     join_detailed_path,
 )
-from fidesops.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fidesctl.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
 
 logger = logging.getLogger(__name__)
 

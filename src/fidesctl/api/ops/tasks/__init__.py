@@ -3,8 +3,8 @@ from typing import Any, Dict, MutableMapping
 from celery import Celery
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
-from fidesops.ops.core.config import config
-from fidesops.ops.util.logger import NotPii
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.util.logger import NotPii
 
 logger = get_task_logger(__name__)
 
@@ -34,9 +34,9 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [
-            "fidesops.ops.tasks",
-            "fidesops.ops.tasks.scheduled",
-            "fidesops.ops.service.privacy_request",
+            "fidesctl.api.ops.tasks",
+            "fidesctl.api.ops.tasks.scheduled",
+            "fidesctl.api.ops.service.privacy_request",
         ]
     )
     return app

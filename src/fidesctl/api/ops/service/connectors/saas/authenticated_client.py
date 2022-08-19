@@ -3,17 +3,17 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.ops.core.config import config
+from fidesctl.api.ops.core.config import config
 from requests import PreparedRequest, Request, Response, Session
 
 if TYPE_CHECKING:
-    from fidesops.ops.models.connectionconfig import ConnectionConfig
-    from fidesops.ops.schemas.saas.saas_config import ClientConfig
-    from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+    from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+    from fidesctl.api.ops.schemas.saas.saas_config import ClientConfig
+    from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.ops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
+        from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

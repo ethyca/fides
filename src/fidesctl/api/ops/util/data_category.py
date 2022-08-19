@@ -2,7 +2,7 @@ from enum import Enum as EnumType
 from typing import Type
 
 from fideslang import DEFAULT_TAXONOMY
-from fidesops.ops import common_exceptions
+from fidesctl.api.ops import common_exceptions
 
 
 def generate_fides_data_categories() -> Type[EnumType]:

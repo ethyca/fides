@@ -3,26 +3,28 @@ from __future__ import annotations
 import hashlib
 from typing import Dict, List, Optional
 
-from fidesops.ops.core.config import config
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_secrets import (
+from fidesctl.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fidesctl.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
+from fidesctl.api.ops.service.masking.strategy.format_preservation import (
+    FormatPreservation,
+)
+from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fidesops.ops.util.encryption.secrets_util import SecretsUtil
+from fidesctl.api.ops.util.encryption.secrets_util import SecretsUtil
 
 HASH_STRATEGY_NAME = "hash"
 

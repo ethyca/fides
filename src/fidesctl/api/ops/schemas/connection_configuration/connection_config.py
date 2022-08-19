@@ -2,10 +2,10 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
-from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionType
-from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesops.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.models.connectionconfig import AccessLevel, ConnectionType
+from fidesctl.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 from pydantic import BaseModel, Extra
 
 

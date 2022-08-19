@@ -3,36 +3,36 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.saas.saas_config import (
+from fidesctl.api.ops.common_exceptions import FidesopsException
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

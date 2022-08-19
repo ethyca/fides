@@ -1,7 +1,7 @@
 import boto3
 import requests
 from boto3 import Session
-from fidesops.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
+from fidesctl.api.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 from requests import Response
 
 

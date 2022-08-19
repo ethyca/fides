@@ -4,29 +4,29 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
     FieldPath,
     MaskingOverride,
 )
-from fidesops.ops.graph.traversal import Row, TraversalNode
-from fidesops.ops.models.policy import ActionType, Policy, Rule
-from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
+from fidesctl.api.ops.graph.traversal import Row, TraversalNode
+from fidesctl.api.ops.models.policy import ActionType, Policy, Rule
+from fidesctl.api.ops.models.privacy_request import ManualAction, PrivacyRequest
+from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.ops.task.refine_target_path import (
+from fidesctl.api.ops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
-from fidesops.ops.util.collection_util import append, filter_nonempty_values
-from fidesops.ops.util.querytoken import QueryToken
+from fidesctl.api.ops.util.collection_util import append, filter_nonempty_values
+from fidesctl.api.ops.util.querytoken import QueryToken
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore
@@ -57,7 +57,7 @@ class QueryConfig(Generic[T], ABC):
         """
         Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
-        {<fidesops.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
+        {<fidesctl.api.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
         rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:

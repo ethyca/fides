@@ -23,7 +23,7 @@ from fideslib.db.base import Base  # pylint: disable=W0611
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from fidesops.ops.core.config import config as fides_config
+from fidesctl.api.ops.core.config import config as fides_config
 
 # Load the correct environment
 target_metadata = Base.metadata

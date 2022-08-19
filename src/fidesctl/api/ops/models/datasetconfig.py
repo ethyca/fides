@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Set
 
 from boto3 import Session
 from fideslib.db.base_class import Base
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -11,12 +11,12 @@ from fidesops.ops.graph.config import (
     FieldAddress,
     generate_field,
 )
-from fidesops.ops.graph.data_type import parse_data_type_string
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.logger import NotPii
-from fidesops.ops.util.saas_util import merge_datasets
+from fidesctl.api.ops.graph.data_type import parse_data_type_string
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesctl.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.logger import NotPii
+from fidesctl.api.ops.util.saas_util import merge_datasets
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict

@@ -6,42 +6,44 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.exceptions import KeyOrNameAlreadyExists
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig, get_schema_for_secrets
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.connection_configuration.connection_secrets import (
+from fidesctl.api.ops.common_exceptions import StorageUploadError
+from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig, get_schema_for_secrets
+from fidesctl.api.ops.schemas.api import BulkUpdateFailed
+from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.data_upload_location_response import DataUpload
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.storage.data_upload_location_response import DataUpload
+from fidesctl.api.ops.schemas.storage.storage import (
     BulkPutStorageConfigResponse,
     StorageDestination,
     StorageDestinationResponse,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+from fidesctl.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fidesops.ops.service.storage.storage_authenticator_service import secrets_are_valid
-from fidesops.ops.service.storage.storage_uploader_service import upload
-from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.service.storage.storage_authenticator_service import (
+    secrets_are_valid,
+)
+from fidesctl.api.ops.service.storage.storage_uploader_service import upload
+from fidesctl.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from pydantic import conlist
 from requests import RequestException
 from sqlalchemy.orm import Session

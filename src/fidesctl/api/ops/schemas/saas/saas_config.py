@@ -1,17 +1,20 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
 )
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.schemas.base_class import BaseSchema
+from fidesctl.api.ops.schemas.dataset import (
+    FidesCollectionKey,
+    FidesopsDatasetReference,
+)
+from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 from pydantic import BaseModel, Extra, root_validator, validator
 
 
@@ -115,7 +118,7 @@ class SaaSRequest(BaseModel):
         """
 
         # delay import to avoid cyclic-dependency error - We still ignore the pylint error
-        from fidesops.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+        from fidesctl.api.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

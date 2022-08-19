@@ -2,28 +2,28 @@ import logging
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
-from fidesops.ops.common_exceptions import ConnectionException
-from fidesops.ops.graph.traversal import Row, TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.connection_configuration import (
+from fidesctl.api.ops.common_exceptions import ConnectionException
+from fidesctl.api.ops.graph.traversal import Row, TraversalNode
+from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
+from fidesctl.api.ops.models.policy import Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.schemas.connection_configuration import (
     MicrosoftSQLServerSchema,
     PostgreSQLSchema,
     RedshiftSchema,
     SnowflakeSchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_bigquery import (
+from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb import (
+from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_mysql import (
+from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.query_config import (
+from fidesctl.api.ops.service.connectors.base_connector import BaseConnector
+from fidesctl.api.ops.service.connectors.query_config import (
     BigQueryQueryConfig,
     MicrosoftSQLServerQueryConfig,
     RedshiftQueryConfig,

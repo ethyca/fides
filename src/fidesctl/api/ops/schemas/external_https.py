@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import List, Optional
 
-from fidesops.ops.models.policy import WebhookDirection
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesctl.api.ops.models.policy import WebhookDirection
+from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
 from pydantic import BaseModel
 
 

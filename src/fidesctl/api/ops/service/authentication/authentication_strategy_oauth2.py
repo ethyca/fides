@@ -4,23 +4,23 @@ from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
-from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.core.config import config
-from fidesops.ops.models.authentication_request import AuthenticationRequest
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fidesctl.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
     StrategyConfiguration,
 )
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fidesctl.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.ops.service.connectors.saas.authenticated_client import (
+from fidesctl.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesops.ops.util.logger import NotPii
-from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from fidesctl.api.ops.util.logger import NotPii
+from fidesctl.api.ops.util.saas_util import assign_placeholders, map_param_values
 from requests import PreparedRequest
 from sqlalchemy.orm import Session
 

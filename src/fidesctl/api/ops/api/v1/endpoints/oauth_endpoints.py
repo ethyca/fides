@@ -5,11 +5,11 @@ from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
-from fidesops.ops.api.deps import get_db
-from fidesops.ops.api.v1.endpoints.saas_config_endpoints import (
+from fidesctl.api.ops.api.deps import get_db
+from fidesctl.api.ops.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -17,7 +17,7 @@ from fidesops.ops.api.v1.scope_registry import (
     SCOPE_READ,
     SCOPE_REGISTRY,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
@@ -26,23 +26,23 @@ from fidesops.ops.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     AuthenticationFailure,
     FidesopsException,
     OAuth2TokenException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.authentication_request import AuthenticationRequest
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.client import ClientCreatedResponse
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.schemas.client import ClientCreatedResponse
+from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,

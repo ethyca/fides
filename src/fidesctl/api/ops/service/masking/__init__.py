@@ -1,4 +1,4 @@
-from fidesops.ops.service.masking.strategy import (
+from fidesctl.api.ops.service.masking.strategy import (
     masking_strategy_aes_encrypt,
     masking_strategy_hash,
     masking_strategy_hmac,
