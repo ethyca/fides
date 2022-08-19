@@ -37,28 +37,22 @@ services:
     image: ethyca/fides:local
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesctl.api.ops_main:app
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://0.0.0.0:8080/api/v1/health"
-        ]
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 15s
       timeout: 5s
       retries: 5
     ports:
       - "8080:8080"
     depends_on:
-      fides-db:
-        condition: service_healthy
+      - redis
+      - fides-db
     expose:
       - 8080
     environment:
       - FIDESOPS__DEV_MODE=True
       - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
       - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
-      - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDESOPS__ROOT_USER__ANALYTICS_ID="internal"
       - FIDESOPS__EXECUTION__WORKER_ENABLED=True
     volumes:
       - type: bind

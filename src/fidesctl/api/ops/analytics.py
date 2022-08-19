@@ -6,7 +6,7 @@ from typing import Optional
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
-from fidesops import __version__ as fidesops_version
+from fidesctl import __version__ as fides_version
 from fidesctl.api.ops.core.config import config
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ analytics_client = AnalyticsClient(
     extra_data=None,
     os=system(),
     product_name="fidesops",
-    production_version=fidesops_version,
+    production_version=fides_version,
 )
 
 

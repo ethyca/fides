@@ -9,6 +9,8 @@ from constants_nox import (
     IMAGE_NAME,
     INTEGRATION_COMPOSE_FILE,
     RUN,
+    RUN_OPS,
+    RUN_OPS_NO_DEPS,
     RUN_NO_DEPS,
     START_APP,
     WITH_TEST_CONFIG,
@@ -141,20 +143,9 @@ def fidesctl_db_scan(session: nox.Session) -> None:
         "dataset",
         "db",
         "--connection-string",
-        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
     )
     session.run(*run_command, external=True)
-
-
-@nox.session()
-def check_migrations(session: nox.Session) -> None:
-    """Check for missing migrations."""
-    check_migration_command = (
-        "python",
-        "-c",
-        "from fidesops.ops.db.database import check_missing_migrations; from fidesops.ops.core.config import config; check_missing_migrations(config.database.sqlalchemy_database_uri);",
-    )
-    session.run(*RUN, *check_migration_command, external=True)
 
 
 # Pytest
@@ -168,7 +159,7 @@ def check_migrations(session: nox.Session) -> None:
     ],
 )
 def pytest(session: nox.Session, mark: str) -> None:
-    """Runs tests."""
+    """Runs fidesctl tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -184,7 +175,7 @@ def pytest(session: nox.Session, mark: str) -> None:
 
 @nox.session()
 def pytest_unit(session: nox.Session) -> None:
-    """Runs tests."""
+    """Runs fidesops unit tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -199,7 +190,7 @@ def pytest_unit(session: nox.Session) -> None:
 
 @nox.session()
 def pytest_external(session: nox.Session) -> None:
-    """Run all tests that rely on the third-party databases and services."""
+    """Run all fidesctl tests that rely on the third-party databases and services."""
     run_command = (
         "docker-compose",
         "run",
@@ -230,7 +221,7 @@ def pytest_external(session: nox.Session) -> None:
 
 @nox.session()
 def pytest_integration(session: nox.Session) -> None:
-    """Runs tests."""
+    """Runs fidesops integration tests."""
     session.notify("teardown")
     run_infrastructure(
         run_tests=True,
