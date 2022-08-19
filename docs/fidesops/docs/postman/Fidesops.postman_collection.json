@@ -3,7 +3,7 @@
 		"_postman_id": "645bae7d-d9af-4b08-84cf-b98d9ae26014",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13396647"
+		"_exporter_id": "1984786"
 	},
 	"item": [
 		{
@@ -908,6 +908,34 @@
 								"privacy-request",
 								"administrate",
 								"deny"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Identity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"code\": \"123456\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/verify",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"verify"
 							]
 						}
 					},

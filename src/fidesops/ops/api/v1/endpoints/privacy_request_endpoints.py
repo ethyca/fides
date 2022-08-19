@@ -22,6 +22,7 @@ from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
@@ -43,10 +44,12 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
     REQUEST_PREVIEW,
 )
 from fidesops.ops.common_exceptions import (
     FunctionalityNotConfigured,
+    IdentityVerificationException,
     TraversalError,
     ValidationError,
 )
@@ -79,6 +82,7 @@ from fidesops.ops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     RowCountRequest,
     StoppedCollection,
+    VerificationCode,
 )
 from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -732,7 +736,6 @@ def validate_manual_input(
 def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
-    cache: FidesopsRedis,
     expected_paused_step: PausedStep,
     manual_rows: List[Row] = [],
     manual_count: Optional[int] = None,
@@ -829,7 +832,6 @@ def resume_with_manual_input(
     return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        cache=cache,
         expected_paused_step=PausedStep.access,
         manual_rows=manual_rows,
     )
@@ -857,7 +859,6 @@ def resume_with_erasure_confirmation(
     return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        cache=cache,
         expected_paused_step=PausedStep.erasure,
         manual_count=manual_count.row_count,
     )
@@ -875,7 +876,6 @@ def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
 ) -> PrivacyRequestResponse:
     """Restart a privacy request from failure"""
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
@@ -960,6 +960,51 @@ def review_privacy_request(
         succeeded=succeeded,
         failed=failed,
     )
+
+
+@router.post(
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+)
+def verify_identification_code(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    provided_code: VerificationCode,
+) -> PrivacyRequestResponse:
+    """Verify the supplied identity verification code
+
+    If successful, and we don't need separate manual request approval, queue the privacy request
+    for execution.
+    """
+
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    try:
+        privacy_request.verify_identity(db, provided_code.code)
+    except IdentityVerificationException as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
+    except PermissionError as exc:
+        logger.info(f"Invalid verification code provided for {privacy_request.id}.")
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
+
+    logger.info(f"Identity verified for {privacy_request.id}.")
+
+    if not config.execution.require_manual_request_approval:
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
+        queue_privacy_request(privacy_request.id)
+
+    return privacy_request
 
 
 @router.patch(
