@@ -1,6 +1,13 @@
 """Contains the nox sessions for running development environments."""
 import nox
-from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP_UI
+from constants_nox import (
+    ANALYTICS_OPT_OUT,
+    COMPOSE_SERVICE_NAME,
+    RUN,
+    START_APP_UI,
+    RUN_OPS,
+    START_APP_OPS,
+)
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
@@ -20,8 +27,12 @@ def dev(session: nox.Session) -> None:
     open_shell = "shell" in session.posargs
     if not datastores:
         if open_shell:
-            session.run(*START_APP_UI, external=True)
-            session.run(*RUN, "/bin/bash", external=True)
+            if service == "fidesops":
+                session.run(*START_APP_OPS, external=True)
+                session.run(*RUN_OPS, "/bin/bash", external=True)
+            else:
+                session.run(*START_APP_UI, external=True)
+                session.run(*RUN, "/bin/bash", external=True)
         else:
             session.run("docker-compose", "up", service, external=True)
     else:

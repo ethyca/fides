@@ -87,6 +87,7 @@ RUN_OPS_NO_DEPS = (
     "fidesops",
 )
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
+START_APP_OPS = ("docker", "compose", "up", "--wait", "fidesops")
 START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker",
