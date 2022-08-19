@@ -69,6 +69,8 @@ services:
         target: /fidesops
         read_only: False
       - /fidesops/src/fidesops.egg-info
+    environment:
+      - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
 
   docs:
     build:
