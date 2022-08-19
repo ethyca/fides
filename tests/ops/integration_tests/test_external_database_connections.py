@@ -4,12 +4,12 @@ from typing import Generator
 
 import pytest
 from fideslib.core.config import load_toml
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.schemas.connection_configuration import (
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesctl.api.ops.schemas.connection_configuration import (
     RedshiftSchema,
     SnowflakeSchema,
 )
-from fidesops.ops.service.connectors import (
+from fidesctl.api.ops.service.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,

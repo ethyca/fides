@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
-from fidesops.ops.common_exceptions import FidesopsException
+from fidesctl.api.ops.common_exceptions import FidesopsException
 from hvac import Client
 
 logger = logging.getLogger(__name__)

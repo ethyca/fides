@@ -2,8 +2,8 @@ import copy
 from datetime import datetime
 
 from bson import ObjectId
-from fidesops.ops.graph.config import CollectionAddress, FieldPath
-from fidesops.ops.task.filter_results import (
+from fidesctl.api.ops.graph.config import CollectionAddress, FieldPath
+from fidesctl.api.ops.task.filter_results import (
     filter_data_categories,
     remove_empty_containers,
     select_and_save_field,

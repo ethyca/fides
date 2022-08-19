@@ -1,6 +1,6 @@
 import pytest
 from fideslib.cryptography import cryptographic_util
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )

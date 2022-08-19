@@ -1,4 +1,4 @@
-from fidesops.ops.service.connectors.sql_connector import MySQLConnector
+from fidesctl.api.ops.service.connectors.sql_connector import MySQLConnector
 from sqlalchemy.orm import Session
 
 

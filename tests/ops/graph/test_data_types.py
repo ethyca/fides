@@ -1,5 +1,5 @@
 from bson import ObjectId
-from fidesops.ops.graph.data_type import (
+from fidesctl.api.ops.graph.data_type import (
     DataType,
     NoOpTypeConverter,
     StringTypeConverter,

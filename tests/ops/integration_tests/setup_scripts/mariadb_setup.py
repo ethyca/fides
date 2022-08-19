@@ -4,13 +4,13 @@ import pydash
 import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.service.connectors.sql_connector import MariaDBConnector
+from fidesctl.api.ops.service.connectors.sql_connector import MariaDBConnector
 
 integration_config = load_toml(["fidesops-integration.toml"])
 

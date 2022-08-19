@@ -8,14 +8,14 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslib.models.client import ClientDetail
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -379,7 +379,7 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fidesops.main.prepare_and_log_request")
+    @mock.patch("fidesctl.api.main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -401,7 +401,7 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fidesops.main.prepare_and_log_request")
+    @mock.patch("fidesctl.api.main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
         mocked_prepare_and_log_request,

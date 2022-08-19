@@ -2,8 +2,8 @@ from collections.abc import Generator
 
 import pytest
 import requests_mock
-from fidesops.ops.common_exceptions import ClientUnsuccessfulException
-from fidesops.ops.service.connectors import HTTPSConnector
+from fidesctl.api.ops.common_exceptions import ClientUnsuccessfulException
+from fidesctl.api.ops.service.connectors import HTTPSConnector
 
 
 class TestHttpConnectorMethods:

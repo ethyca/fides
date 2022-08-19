@@ -1,4 +1,4 @@
-from fidesops.ops.api.v1.urn_registry import HEALTH
+from fidesctl.api.ops.api.v1.urn_registry import HEALTH
 from starlette.testclient import TestClient
 
 

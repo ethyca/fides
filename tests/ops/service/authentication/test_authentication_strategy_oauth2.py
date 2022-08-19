@@ -3,11 +3,11 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
+from fidesctl.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
+from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
+from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
 from requests import PreparedRequest, Request
@@ -85,9 +85,9 @@ class TestAddAuthentication:
         )
 
     # access token expired, call refresh request
-    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesctl.api.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesctl.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_oauth2_authentication_successful_refresh(
         self,
@@ -147,7 +147,7 @@ class TestAddAuthentication:
 
     # access token expired, unable to refresh
     @mock.patch(
-        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesctl.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_oauth2_authentication_failed_refresh(
         self, mock_send: Mock, oauth2_connection_config, oauth2_configuration
@@ -172,10 +172,10 @@ class TestAddAuthentication:
 
 class TestAuthorizationUrl:
     @mock.patch(
-        "fidesops.ops.service.authentication.authentication_strategy_oauth2.OAuth2AuthenticationStrategy._generate_state"
+        "fidesctl.api.ops.service.authentication.authentication_strategy_oauth2.OAuth2AuthenticationStrategy._generate_state"
     )
     @mock.patch(
-        "fidesops.ops.models.authentication_request.AuthenticationRequest.create_or_update"
+        "fidesctl.api.ops.models.authentication_request.AuthenticationRequest.create_or_update"
     )
     def test_get_authorization_url(
         self,
@@ -223,9 +223,9 @@ class TestAuthorizationUrl:
 
 class TestAccessTokenRequest:
     @mock.patch("datetime.datetime")
-    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesctl.api.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesctl.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_get_access_token(
         self,
@@ -272,9 +272,9 @@ class TestAccessTokenRequest:
     # make sure we can use the expires_in value in the config if no expires_in is provided
     # in the access token response
     @mock.patch("datetime.datetime")
-    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesctl.api.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesctl.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_get_access_token_no_expires_in(
         self,

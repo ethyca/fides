@@ -7,20 +7,20 @@ import pydash
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
 from pydash import filter_
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -801,7 +801,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesctl.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -895,7 +895,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fidesops.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fidesctl.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,

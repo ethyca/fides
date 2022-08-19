@@ -2,16 +2,16 @@ from typing import Any, Dict
 
 import pytest
 import yaml
-from fidesops.ops.graph.config import (
+from fidesctl.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fidesops.ops.graph.graph import DatasetGraph, Edge
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.schemas.dataset import FidesopsDataset
+from fidesctl.api.ops.graph.graph import DatasetGraph, Edge
+from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fidesctl.api.ops.schemas.dataset import FidesopsDataset
 from pydantic import ValidationError
 
 from ..graph.graph_test_util import field

@@ -2,24 +2,24 @@ import json
 
 import pytest
 from fideslib.models.client import ClientDetail
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
-from fidesops.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
-from fidesops.ops.common_exceptions import ConnectionException
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.service.connectors import (
+from fidesctl.api.ops.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fidesctl.api.ops.common_exceptions import ConnectionException
+from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
+from fidesctl.api.ops.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     SaaSConnector,
     get_connector,
 )
-from fidesops.ops.service.connectors.saas.authenticated_client import (
+from fidesctl.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesops.ops.service.connectors.sql_connector import (
+from fidesctl.api.ops.service.connectors.sql_connector import (
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,

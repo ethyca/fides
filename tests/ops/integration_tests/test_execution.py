@@ -3,24 +3,24 @@ from unittest import mock
 
 import pytest
 from fideslib.db.session import get_db_session
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.graph.config import CollectionAddress
+from fidesctl.api.ops.graph.graph import DatasetGraph
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import PausedStep
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fidesctl.api.ops.models.policy import PausedStep
+from fidesctl.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     StoppedCollection,
 )
-from fidesops.ops.schemas.dataset import FidesopsDataset
-from fidesops.ops.task import graph_task
-from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fidesctl.api.ops.schemas.dataset import FidesopsDataset
+from fidesctl.api.ops.task import graph_task
+from fidesctl.api.ops.task.graph_task import get_cached_data_for_erasures
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
@@ -95,7 +95,7 @@ class TestDeleteCollection:
         )
         assert pr.get_results() == {}
 
-    @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fidesctl.api.ops.task.graph_task.GraphTask.log_start")
     def test_delete_collection_while_in_progress(
         self,
         mocked_log_start,
@@ -357,7 +357,7 @@ class TestSkipDisabledCollection:
         assert mongo_logs.count() == 9
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
-    @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fidesctl.api.ops.task.graph_task.GraphTask.log_start")
     def test_run_disabled_collections_in_progress(
         self,
         mocked_log_start,
@@ -642,7 +642,7 @@ def test_restart_graph_from_failure(
 
     # Rerun access request using cached results
     with mock.patch(
-        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesctl.api.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
         graph_task.run_access_request(
             privacy_request,
@@ -772,7 +772,7 @@ def test_restart_graph_from_failure_during_erasure(
 
     # Rerun erasure portion of request using cached results
     with mock.patch(
-        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesctl.api.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
         graph_task.run_erasure(
             privacy_request,

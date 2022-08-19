@@ -6,23 +6,23 @@ from unittest.mock import Mock
 
 import pytest
 from bson import ObjectId
-from fidesops.ops.graph.config import Collection, Dataset, FieldAddress, ScalarField
-from fidesops.ops.graph.data_type import (
+from fidesctl.api.ops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fidesctl.api.ops.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,
     StringTypeConverter,
 )
-from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.dataset import FidesopsDataset
-from fidesops.ops.service.connectors import get_connector
-from fidesops.ops.task import graph_task
-from fidesops.ops.task.filter_results import filter_data_categories
-from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fidesctl.api.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesctl.api.ops.graph.traversal import TraversalNode
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fidesctl.api.ops.models.policy import Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.schemas.dataset import FidesopsDataset
+from fidesctl.api.ops.service.connectors import get_connector
+from fidesctl.api.ops.task import graph_task
+from fidesctl.api.ops.task.filter_results import filter_data_categories
+from fidesctl.api.ops.task.graph_task import get_cached_data_for_erasures
 
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
 from ..task.traversal_data import (
@@ -1086,7 +1086,7 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesctl.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -1108,7 +1108,7 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesctl.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1146,7 +1146,7 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesctl.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,

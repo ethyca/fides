@@ -1,14 +1,14 @@
 import json
 
 import pytest
-from fidesops.ops.api.v1.scope_registry import CLIENT_CREATE
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import CLIENT_CREATE
+from fidesctl.api.ops.api.v1.urn_registry import (
     CLIENT,
     HEALTH,
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core import config
+from fidesctl.api.ops.core import config
 from starlette.testclient import TestClient
 
 

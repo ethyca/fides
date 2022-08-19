@@ -7,42 +7,42 @@ from uuid import uuid4
 import pydash
 import pytest
 from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import PausedStep, PolicyPostWebhook
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.policy import PausedStep, PolicyPostWebhook
+from fidesctl.api.ops.models.privacy_request import (
     ActionType,
     ExecutionLog,
     PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fidesctl.api.ops.schemas.external_https import SecondPartyResponseFormat
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.policy import Rule
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.service.connectors.saas_connector import SaaSConnector
-from fidesops.ops.service.connectors.sql_connector import (
+from fidesctl.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesctl.api.ops.schemas.policy import Rule
+from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesctl.api.ops.service.connectors.saas_connector import SaaSConnector
+from fidesctl.api.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fidesctl.api.ops.util.data_category import DataCategory
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
@@ -52,7 +52,7 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 
 
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.upload")
+@mock.patch("fidesctl.api.ops.service.privacy_request.request_runner_service.upload")
 def test_policy_upload_called(
     upload_mock: Mock,
     privacy_request_status_pending: PrivacyRequest,
@@ -99,7 +99,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.upload_access_results"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.upload_access_results"
 )
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
@@ -121,12 +121,14 @@ def test_halts_proceeding_if_cancelled(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_access_request"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch(
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_erasure"
+)
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -159,12 +161,14 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_access_request"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch("fidesops.ops.service.privacy_request.request_runner_service.run_erasure")
+@mock.patch(
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_erasure"
+)
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -252,7 +256,9 @@ def get_privacy_request_results(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request(
     trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
@@ -320,7 +326,9 @@ def test_create_and_process_access_request(
 
 
 @pytest.mark.integration
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request_mssql(
     trigger_webhook_mock,
     mssql_example_test_dataset_config,
@@ -366,7 +374,9 @@ def test_create_and_process_access_request_mssql(
 
 
 @pytest.mark.integration
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request_mysql(
     trigger_webhook_mock,
     mysql_example_test_dataset_config,
@@ -413,7 +423,9 @@ def test_create_and_process_access_request_mysql(
 
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request_mariadb(
     trigger_webhook_mock,
     mariadb_example_test_dataset_config,
@@ -460,7 +472,9 @@ def test_create_and_process_access_request_mariadb(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request_saas_mailchimp(
     trigger_webhook_mock,
     mailchimp_connection_config,
@@ -506,7 +520,9 @@ def test_create_and_process_access_request_saas_mailchimp(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_erasure_request_saas(
     _,
     mailchimp_connection_config,
@@ -565,7 +581,9 @@ def test_create_and_process_erasure_request_saas(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_create_and_process_access_request_saas_hubspot(
     trigger_webhook_mock,
     connection_config_hubspot,
@@ -1381,7 +1399,7 @@ def test_create_and_process_erasure_request_bigquery(
 
 class TestRunPrivacyRequestRunsWebhooks:
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_halt_received(
         self,
@@ -1401,7 +1419,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is not None
 
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_ap_scheduler_cleanup(
         self,
@@ -1428,7 +1446,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is not None
 
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_client_error(
         self,
@@ -1448,7 +1466,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is None
 
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_validation_error(
         self,
@@ -1468,7 +1486,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert privacy_request.paused_at is None
 
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks(
         self,
@@ -1485,7 +1503,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert mock_trigger_policy_webhook.call_count == 2
 
     @mock.patch(
-        "fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+        "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
     )
     def test_run_webhooks_after_webhook(
         self,
@@ -1507,9 +1525,11 @@ class TestRunPrivacyRequestRunsWebhooks:
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_access_request"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_access_request"
 )
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@mock.patch(
+    "fidesctl.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
+)
 def test_privacy_request_log_failure(
     _,
     run_access_request_mock,
@@ -1531,7 +1551,7 @@ def test_privacy_request_log_failure(
     }
 
     with mock.patch(
-        "fidesops.ops.service.privacy_request.request_runner_service.fideslog_graph_failure"
+        "fidesctl.api.ops.service.privacy_request.request_runner_service.fideslog_graph_failure"
     ) as mock_log_event:
         pr = get_privacy_request_results(
             db,

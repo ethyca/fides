@@ -2,8 +2,8 @@ from typing import Dict
 
 import pytest
 from fideslib.db.base_class import KeyOrNameAlreadyExists
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.storage.storage import (
     ResponseFormat,
     StorageDestination,
     StorageDetails,

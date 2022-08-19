@@ -4,15 +4,18 @@ from unittest.mock import Mock
 
 import pytest
 from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
-from fidesops.ops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
+    ENCRYPTION_EXEC,
+    STORAGE_CREATE_OR_UPDATE,
+)
+from fidesctl.api.ops.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
@@ -38,7 +41,7 @@ class TestGetEncryptionKey:
         assert response.status_code == 403
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
+        "fidesctl.api.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,

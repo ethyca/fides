@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 from fideslib.core.config import get_config
-from fidesops.ops.core.config import FidesopsConfig
+from fidesctl.api.ops.core.config import FidesopsConfig
 from pydantic import ValidationError
 
 

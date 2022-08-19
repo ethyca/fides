@@ -4,20 +4,20 @@ from uuid import uuid4
 
 import pytest
 from fideslib.db.session import get_db_engine, get_db_session
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.models.policy import ActionType
+from fidesctl.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.ops.service.connectors import PostgreSQLConnector
+from fidesctl.api.ops.service.connectors import PostgreSQLConnector
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database

@@ -1,5 +1,5 @@
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.util.cache import (
+from fidesctl.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesctl.api.ops.util.cache import (
     FidesopsRedis,
     get_cache,
     get_masking_secret_cache_key,

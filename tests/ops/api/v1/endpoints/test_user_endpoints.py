@@ -15,7 +15,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload
-from fidesops.ops.api.v1.scope_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_READ,
     USER_CREATE,
@@ -24,14 +24,14 @@ from fidesops.ops.api.v1.scope_registry import (
     USER_READ,
     USER_UPDATE,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_DETAIL,
     USERS,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
+from fidesctl.api.ops.core.config import config
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,

@@ -5,13 +5,13 @@ import pytest
 import requests
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.util.saas_util import load_config
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 

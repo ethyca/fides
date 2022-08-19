@@ -1,7 +1,7 @@
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fidesctl.api.ops.schemas.masking.masking_configuration import (
     RandomStringMaskingConfiguration,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RandomStringRewriteMaskingStrategy,
 )
 

@@ -4,14 +4,14 @@ from uuid import uuid4
 
 import pytest
 from fideslib.db.session import get_db_engine, get_db_session
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.service.connectors import MicrosoftSQLServerConnector
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.service.connectors import MicrosoftSQLServerConnector
 from sqlalchemy.orm import Session
 
 from .application_fixtures import integration_secrets

@@ -2,11 +2,11 @@ import json
 from typing import Optional
 
 import pytest
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     CursorPaginationConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy_cursor import (
+from fidesctl.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
 from requests import Response

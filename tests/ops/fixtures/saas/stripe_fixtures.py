@@ -4,13 +4,13 @@ import pydash
 import pytest
 import requests
 from fideslib.db import session
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import load_config
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.util.saas_util import load_config
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
 

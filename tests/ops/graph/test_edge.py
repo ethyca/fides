@@ -1,6 +1,6 @@
 import pytest
-from fidesops.ops.common_exceptions import ValidationError
-from fidesops.ops.graph.graph import *
+from fidesctl.api.ops.common_exceptions import ValidationError
+from fidesctl.api.ops.graph.graph import *
 
 
 class TestEdge:

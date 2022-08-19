@@ -4,16 +4,16 @@ from uuid import uuid4
 
 import pytest
 import requests_mock
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.policy import PausedStep, Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.service.connectors.manual_connector import ManualAction
-from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fidesctl.api.ops.graph.config import CollectionAddress
+from fidesctl.api.ops.models.policy import PausedStep, Policy
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesctl.api.ops.service.connectors.manual_connector import ManualAction
+from fidesctl.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 

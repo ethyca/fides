@@ -3,13 +3,13 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_secrets_snowflake import (
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
 )
 from sqlalchemy.orm import Session

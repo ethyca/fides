@@ -9,31 +9,34 @@ from zipfile import ZipFile
 
 import pandas as pd
 import pytest
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.core.config import config
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.common_exceptions import StorageUploadError
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fidesops.ops.service.storage.storage_uploader_service import get_extension, upload
-from fidesops.ops.tasks.storage import (
+from fidesctl.api.ops.service.storage.storage_uploader_service import (
+    get_extension,
+    upload,
+)
+from fidesctl.api.ops.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
     write_to_in_memory_buffer,
 )
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
 from sqlalchemy.orm import Session
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -80,7 +83,7 @@ def test_uploader_s3_success(
     storage_config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
 
@@ -115,7 +118,7 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
     sc.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
     storage_key = "s3_key"
@@ -128,8 +131,10 @@ def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     mock_upload_to_s3.assert_not_called()
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.get")
+@mock.patch(
+    "fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_onetrust"
+)
+@mock.patch("fidesctl.api.ops.models.privacy_request.PrivacyRequest.get")
 def test_uploader_onetrust_success(
     mock_get_request_details: Mock,
     mock_upload_to_onetrust: Mock,
@@ -188,7 +193,9 @@ def test_uploader_onetrust_success(
     config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
+@mock.patch(
+    "fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_onetrust"
+)
 def test_uploader_onetrust_request_details_not_found(
     mock_upload_to_onetrust: Mock,
     db: Session,

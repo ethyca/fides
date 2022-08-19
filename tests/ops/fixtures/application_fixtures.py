@@ -13,14 +13,14 @@ from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import (
+from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fidesctl.api.ops.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -28,25 +28,25 @@ from fidesops.ops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.ops.models.storage import ResponseFormat, StorageConfig
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.schemas.storage.storage import (
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesctl.api.ops.models.storage import ResponseFormat, StorageConfig
+from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesctl.api.ops.schemas.storage.storage import (
     FileNaming,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HMAC_STRATEGY_NAME,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fidesctl.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fidesctl.api.ops.util.data_category import DataCategory
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -101,7 +101,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fidesops.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fidesctl.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 

@@ -2,13 +2,13 @@ from typing import Generator
 from uuid import uuid4
 
 import pytest
-from fidesops.ops.models.connectionconfig import (
+from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import (
+from fidesctl.api.ops.models.policy import ActionType
+from fidesctl.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,

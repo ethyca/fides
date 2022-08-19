@@ -1,7 +1,7 @@
 import pytest
-from fidesops.ops.api.deps import get_cache, get_db
-from fidesops.ops.common_exceptions import FunctionalityNotConfigured
-from fidesops.ops.core import config
+from fidesctl.api.ops.api.deps import get_cache, get_db
+from fidesctl.api.ops.common_exceptions import FunctionalityNotConfigured
+from fidesctl.api.ops.core import config
 
 
 @pytest.fixture

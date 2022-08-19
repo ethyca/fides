@@ -2,19 +2,19 @@ import random
 from typing import Iterable
 
 from fideslib.db.base_class import FidesBase
-from fidesops.ops.graph.config import *
-from fidesops.ops.graph.traversal import *
-from fidesops.ops.graph.traversal import Traversal, TraversalNode
+from fidesctl.api.ops.graph.config import *
+from fidesctl.api.ops.graph.traversal import *
+from fidesctl.api.ops.graph.traversal import Traversal, TraversalNode
 
 # to avoid having faker spam the logs
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.service.connectors import BaseConnector, MongoDBConnector
-from fidesops.ops.service.connectors.sql_connector import SQLConnector
-from fidesops.ops.task.graph_task import GraphTask
-from fidesops.ops.task.task_resources import TaskResources
-from fidesops.ops.util.collection_util import Row
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.service.connectors import BaseConnector, MongoDBConnector
+from fidesctl.api.ops.service.connectors.sql_connector import SQLConnector
+from fidesctl.api.ops.task.graph_task import GraphTask
+from fidesctl.api.ops.task.task_resources import TaskResources
+from fidesctl.api.ops.util.collection_util import Row
 from sqlalchemy.engine import Engine
 
 from ..fixtures.application_fixtures import faker

@@ -2,18 +2,18 @@ from typing import List
 
 import pytest
 from fideslib.models.client import ClientDetail
-from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
-from fidesops.ops.api.v1.urn_registry import (
+from fidesctl.api.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
+from fidesctl.api.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
-from fidesops.ops.models.connectionconfig import ConnectionType
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fidesctl.api.ops.models.connectionconfig import ConnectionType
+from fidesctl.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
-from fidesops.ops.schemas.saas.saas_config import SaaSType
+from fidesctl.api.ops.schemas.saas.saas_config import SaaSType
 from starlette.testclient import TestClient
 
 

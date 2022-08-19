@@ -4,42 +4,42 @@ from unittest.mock import Mock, call
 import pytest
 from fideslib.exceptions import AuthenticationError
 from fideslib.models.client import ClientDetail
-from fidesops.ops.common_exceptions import (
+from fidesctl.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
-from fidesops.ops.schemas.third_party.onetrust import (
+from fidesctl.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fidesctl.api.ops.models.privacy_request import PrivacyRequest
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fidesctl.api.ops.schemas.third_party.onetrust import (
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.ops.service.privacy_request.onetrust_service import (
+from fidesctl.api.ops.service.privacy_request.onetrust_service import (
     FIDES_TASK,
     ONETRUST_POLICY_KEY,
     OneTrustService,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fidesctl.api.ops.util.data_category import DataCategory
 from sqlalchemy.orm import Session
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService.transition_status"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService.transition_status"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_success(
     finish_processing_mock: Mock,
@@ -126,16 +126,16 @@ def test_intake_onetrust_requests_success(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_config(
     finish_processing_mock: Mock,
@@ -183,16 +183,16 @@ def test_intake_onetrust_requests_no_config(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_policy(
     finish_processing_mock: Mock,
@@ -242,16 +242,16 @@ def test_intake_onetrust_requests_no_policy(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_auth_fail(
     finish_processing_mock: Mock,
@@ -303,16 +303,16 @@ def test_intake_onetrust_requests_auth_fail(
 
 
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.get_onetrust_access_token"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_requests"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
+    "fidesctl.api.ops.service.privacy_request.onetrust_service.OneTrustService._get_all_subtasks"
 )
 @mock.patch(
-    "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
 )
 def test_intake_onetrust_requests_no_fides_tasks(
     finish_processing_mock: Mock,
