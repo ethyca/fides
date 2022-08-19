@@ -25,6 +25,7 @@ The types of changes are:
 * Access and erasure support for Logi ID [#1074](https://github.com/ethyca/fidesops/pull/1074)
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
+* Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
 
 ### Developer Experience
 
