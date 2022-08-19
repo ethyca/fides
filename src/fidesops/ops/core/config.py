@@ -57,6 +57,7 @@ class RedisSettings(FidesSettings):
     charset: str = "utf8"
     decode_responses: bool = True
     default_ttl_seconds: int = 604800
+    identity_verification_code_ttl_seconds: int = 600
     db_index: Optional[int]
     enabled: bool = True
     ssl: bool = False

@@ -231,3 +231,12 @@ def analytics_opt_out():
     config.root_user.analytics_opt_out = True
     yield
     config.root_user.analytics_opt_out = original_value
+
+
+@pytest.fixture(scope="function")
+def require_manual_request_approval():
+    """Require manual request approval"""
+    original_value = config.execution.require_manual_request_approval
+    config.execution.require_manual_request_approval = True
+    yield
+    config.execution.require_manual_request_approval = original_value

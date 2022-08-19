@@ -163,3 +163,7 @@ class InvalidSaaSRequestOverrideException(ValueError):
 
 class NoSuchSaaSRequestOverrideException(ValueError):
     """Exception for when a requested SaaS request override function does not exist"""
+
+
+class IdentityVerificationException(FidesopsException):
+    """Custom exceptions for when we cannot verify the identity of a subjct"""

@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime, timedelta
 from typing import ContextManager, Dict, List, Optional, Set
 
@@ -328,3 +329,10 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
         )
         privacy_request.error_processing(db=db)
     db.close()
+
+
+def generate_id_verification_code() -> str:
+    """
+    Generate one-time identity verification code
+    """
+    return str(random.choice(range(100000, 999999)))

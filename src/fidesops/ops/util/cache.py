@@ -26,9 +26,13 @@ class FidesopsRedis(Redis):
     should never be instantiated on its own.
     """
 
-    def set_with_autoexpire(self, key: str, value: RedisValue) -> Optional[bool]:
+    def set_with_autoexpire(
+        self, key: str, value: RedisValue, expire_time: int = None
+    ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
-        return self.set(key, value, ex=config.redis.default_ttl_seconds)
+        if not expire_time:
+            expire_time = config.redis.default_ttl_seconds
+        return self.set(key, value, ex=expire_time)
 
     def get_keys_by_prefix(self, prefix: str, chunk_size: int = 1000) -> List[str]:
         """Retrieve all keys that match a given prefix."""

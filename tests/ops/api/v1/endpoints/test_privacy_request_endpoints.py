@@ -22,7 +22,6 @@ from starlette.testclient import TestClient
 
 from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
-    execution_and_audit_logs_by_dataset_name,
     validate_manual_input,
 )
 from fidesops.ops.api.v1.scope_registry import (
@@ -40,6 +39,7 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
@@ -149,9 +149,8 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
+        require_manual_request_approval,
     ):
-        config.execution.require_manual_request_approval = True
-
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
@@ -167,8 +166,6 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
-
-        config.execution.require_manual_request_approval = False
 
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -574,6 +571,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -628,6 +626,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -982,6 +981,7 @@ class TestGetPrivacyRequests:
                         privacy_request.started_processing_at
                     ),
                     "finished_processing_at": None,
+                    "identity_verified_at": None,
                     "status": privacy_request.status.value,
                     "external_id": privacy_request.external_id,
                     "identity": None,
@@ -2004,6 +2004,7 @@ class TestResumePrivacyRequest:
                 privacy_request.started_processing_at
             ),
             "finished_processing_at": None,
+            "identity_verified_at": None,
             "status": "in_processing",
             "external_id": privacy_request.external_id,
             "identity": None,
@@ -2410,3 +2411,120 @@ class TestRestartFromFailure:
             from_step=PausedStep.access.value,
             from_webhook_id=None,
         )
+
+
+class TestVerifyIdentity:
+    code = "123456"
+
+    @pytest.fixture(scope="function")
+    def url(self, db, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_VERIFY_IDENTITY.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 400
+        assert (
+            resp.json()["detail"]
+            == f"Invalid identity verification request. Privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_verification_code_expired(self, db, api_client, url, privacy_request):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 400
+        assert (
+            resp.json()["detail"]
+            == f"Identification code expired for {privacy_request.id}."
+        )
+
+    def test_invalid_code(self, db, api_client, url, privacy_request):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code("999999")
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 403
+        assert (
+            resp.json()["detail"]
+            == f"Incorrect identification code for '{privacy_request.id}'"
+        )
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_verify_identity_no_admin_approval_needed(
+        self, mock_run_privacy_request, db, api_client, url, privacy_request
+    ):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp = resp.json()
+        assert resp["status"] == "pending"
+        assert resp["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.identity_verified_at is not None
+
+        approved_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
+        assert approved_audit_log is not None
+
+        assert mock_run_privacy_request.called
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_verify_identity_admin_approval_needed(
+        self,
+        mock_run_privacy_request,
+        require_manual_request_approval,
+        db,
+        api_client,
+        url,
+        privacy_request,
+    ):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp = resp.json()
+        assert resp["status"] == "pending"
+        assert resp["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.identity_verified_at is not None
+
+        approved_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
+        assert approved_audit_log is None
+        assert not mock_run_privacy_request.called
