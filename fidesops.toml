@@ -1,11 +1,12 @@
 port = 8080
 
 [database]
-server = "db"
+server = "fides-db"
 user = "postgres"
-password = "216f4b49bea5da4f84f05288258471852c3e325cd336821097e1e65ff92b528a"
-db = "app"
-test_db = "test"
+password = "fides"
+port = "5432"
+db = "fides"
+test_db = "fides_test"
 enabled = true
 
 [redis]
@@ -38,6 +39,7 @@ worker_enabled = false
 
 [root_user]
 analytics_opt_out = false
+analytics_id = "f1d289eab984fb7f0e1515625dd71f62"
 
 [admin_ui]
 enabled = true
