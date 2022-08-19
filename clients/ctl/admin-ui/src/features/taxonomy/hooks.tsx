@@ -118,6 +118,9 @@ export const useDataSubject = (): TaxonomyHookData => {
     name: "Data subject name",
     description: "Data subject description",
     parent_key: "Parent data subject",
+    rights: "Rights",
+    strategy: "Strategy",
+    automatic_decisions: "Automatic decisions or profiling",
   };
 
   const [edit] = useUpdateDataSubjectMutation();
