@@ -12,9 +12,9 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.schemas.user import UserCreate
 from sqlalchemy.orm import Session
 
-from fidesops.ops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
-from fidesops.ops.core.config import config
-from fidesops.ops.db.database import init_db
+from fidesctl.api.ops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.database import init_db
 
 
 def get_username(prompt: str) -> str:
