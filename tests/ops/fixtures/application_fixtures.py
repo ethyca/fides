@@ -23,6 +23,7 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import (
     ActionType,
     Policy,
@@ -33,6 +34,12 @@ from fidesops.ops.models.policy import (
 )
 from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.models.storage import ResponseFormat, StorageConfig
+from fidesops.ops.schemas.email.email import (
+    EmailServiceDetails,
+    EmailServiceSecrets,
+    EmailServiceSecretsMailgun,
+    EmailServiceType,
+)
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
@@ -163,6 +170,29 @@ def storage_config_onetrust(db: Session) -> Generator:
     )
     yield storage_config
     storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def email_config(db: Session) -> Generator:
+    name = str(uuid4())
+    email_config = EmailConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_email_config",
+            "service_type": EmailServiceType.MAILGUN,
+            "details": {
+                EmailServiceDetails.API_VERSION.value: "v3",
+                EmailServiceDetails.DOMAIN.value: "some.domain",
+                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+            },
+        },
+    )
+    email_config.set_secrets(
+        db=db, email_secrets={EmailServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"}
+    )
+    yield email_config
+    email_config.delete(db)
 
 
 @pytest.fixture(scope="function")

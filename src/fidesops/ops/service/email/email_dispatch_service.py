@@ -103,5 +103,5 @@ def _mailgun_dispatcher(
                 f"Email failed to send with status code {response.status_code}"
             )
     except Exception as e:
-        logger.error(e)
-        raise EmailDispatchException(format("Email failed to send: %s", str(e)))
+        logger.error("Email failed to send: %s", str(e))
+        raise EmailDispatchException(f"Email failed to send due to: {e}")

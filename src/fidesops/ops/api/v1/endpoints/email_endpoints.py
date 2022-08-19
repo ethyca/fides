@@ -2,8 +2,9 @@ import logging
 from typing import Optional
 
 from fastapi import Depends, Security
-from fastapi_pagination import Page, Params, paginate
+from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -12,6 +13,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fidesops.ops.api import deps
@@ -75,7 +77,7 @@ def post_config(
     except Exception as exc:
         logger.warning(f"Create failed for email config {email_config.key}: {exc}")
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
         )
 
@@ -97,16 +99,16 @@ def patch_config_by_key(
     try:
         return update_email_config(db=db, key=config_key, config=email_config)
     except EmailConfigNotFoundException:
-        logger.warning(f"No email config found with key {email_config.key}")
+        logger.warning(f"No email config found with key {config_key}")
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=f"No email config found with key {email_config.key}",
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No email config found with key {config_key}",
         )
 
     except Exception as exc:
         logger.warning(f"Patch failed for email config {email_config.key}: {exc}")
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
         )
 

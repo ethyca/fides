@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 
-from pydantic import BaseModel, Extra, ValidationError, validator
+from pydantic import BaseModel, Extra
 
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
@@ -93,38 +93,6 @@ class EmailConfigRequest(BaseModel):
     class Config:
         use_enum_values = False
         orm_mode = True
-
-    @validator("details", pre=True, always=True)
-    def validate_details(
-        cls,
-        v: Dict[str, str],
-        values: Dict[str, Any],
-    ) -> Dict[str, str]:
-        """
-        Custom validation logic for the `details` field.
-        """
-        service_type = values.get("service_type")
-        if not service_type:
-            raise ValueError("A `service_type` field must be specified.")
-
-        try:
-            schema = {
-                EmailServiceType.MAILGUN: EmailServiceDetailsMailgun,
-            }[service_type]
-        except KeyError:
-            raise ValueError(
-                f"`service type` {service_type} has no supported `details` validation."
-            )
-
-        try:
-            schema.parse_obj(v)  # type: ignore
-        except ValidationError as exc:
-            # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
-            # so this exception is cast into a `ValueError`.
-            errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
-            raise ValueError(errors)
-
-        return v
 
 
 class EmailConfigResponse(BaseModel):
