@@ -124,9 +124,9 @@ def check_install(session: nox.Session) -> None:
 def fidesctl(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "fides")
+        run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
     else:
-        run_command = ("fidesctl", "--local", *(WITH_TEST_CONFIG), "evaluate")
+        run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
