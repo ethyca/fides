@@ -37,11 +37,22 @@ export const dataSubjectsApi = createApi({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
+    deleteDataSubject: build.mutation<string, string>({
+      query: (key) => ({
+        url: `data_subject/${key}`,
+        params: { resource_type: "data_subject" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Data Subjects"],
+    }),
   }),
 });
 
-export const { useGetAllDataSubjectsQuery, useUpdateDataSubjectMutation } =
-  dataSubjectsApi;
+export const {
+  useGetAllDataSubjectsQuery,
+  useUpdateDataSubjectMutation,
+  useDeleteDataSubjectMutation,
+} = dataSubjectsApi;
 
 export const dataSubjectsSlice = createSlice({
   name: "dataSubjects",

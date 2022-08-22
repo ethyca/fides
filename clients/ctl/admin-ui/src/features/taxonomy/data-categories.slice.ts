@@ -37,11 +37,22 @@ export const dataCategoriesApi = createApi({
       }),
       invalidatesTags: ["Data Categories"],
     }),
+    deleteDataCategory: build.mutation<string, string>({
+      query: (key) => ({
+        url: `data_category/${key}`,
+        params: { resource_type: "data_category" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Data Categories"],
+    }),
   }),
 });
 
-export const { useGetAllDataCategoriesQuery, useUpdateDataCategoryMutation } =
-  dataCategoriesApi;
+export const {
+  useGetAllDataCategoriesQuery,
+  useUpdateDataCategoryMutation,
+  useDeleteDataCategoryMutation,
+} = dataCategoriesApi;
 
 export const dataCategoriesSlice = createSlice({
   name: "dataCategories",
