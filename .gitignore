@@ -127,7 +127,13 @@ dmypy.json
 .pyre/
 
 .idea
-.vscode
+
+# VSCode
+.vscode/*
+
+# Congigure and save debugging details in VS Code launch.json file
+!.vscode/launch.json
+
 *.code-workspace
 .mypy_cache
 docker-stack.yml

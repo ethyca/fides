@@ -58,7 +58,7 @@ export enum TestingStatus {
 /**
  * Relative folder path for connector logo images
  */
-export const CONNECTOR_LOGOS_PATH = "images/connector-logos/";
+export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
 
 /**
  * List of connection type image key/value pairs

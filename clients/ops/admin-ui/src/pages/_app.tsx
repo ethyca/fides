@@ -5,9 +5,13 @@ import "@fontsource/inter/700.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import React from "react";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { FlagsProvider } from "react-feature-flags";
 import { Provider } from "react-redux";
 
 import store from "../app/store";
+import flags from "../flags.json";
 import theme from "../theme";
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
@@ -22,13 +26,15 @@ const SafeHydrate: React.FC = ({ children }) => (
 );
 
 const MyApp = ({ Component, pageProps }: AppProps) => (
-  <SafeHydrate>
-    <Provider store={store}>
-      <ChakraProvider theme={theme}>
-        <Component {...pageProps} />
-      </ChakraProvider>
-    </Provider>
-  </SafeHydrate>
+  <FlagsProvider value={flags}>
+    <SafeHydrate>
+      <Provider store={store}>
+        <ChakraProvider theme={theme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </Provider>
+    </SafeHydrate>
+  </FlagsProvider>
 );
 
 export default MyApp;

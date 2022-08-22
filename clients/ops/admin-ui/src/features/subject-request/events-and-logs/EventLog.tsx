@@ -9,9 +9,8 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import { format } from "date-fns-tz";
+import { formatDate } from "common/utils";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
-import React from "react";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
@@ -38,7 +37,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
     >
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {format(new Date(detail.updated_at), "MMMM d, Y, KK:mm:ss z")}
+          {formatDate(detail.updated_at)}
         </Text>
       </Td>
       <Td>
