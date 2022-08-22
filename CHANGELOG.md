@@ -42,7 +42,8 @@ The types of changes are:
 
 ### Changed
 
-* Update request status endpoint to return both audit and execution logs [#1068] https://github.com/ethyca/fidesops/pull/1068/
+* Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
+* Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
 
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
