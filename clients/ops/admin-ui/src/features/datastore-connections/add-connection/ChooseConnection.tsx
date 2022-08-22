@@ -9,7 +9,7 @@ import {
 } from "@fidesui/react";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "../../../app/hooks";
@@ -38,16 +38,25 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
       250
     )
   );
-
-  useEffect(() => {
-    updateCachedFilters.current(filters);
-  }, [setCachedFilters, filters]);
-
   const { data, isFetching, isLoading, isSuccess } =
     useGetAllConnectionTypesQuery(cachedFilters);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setSearch(event.target.value));
+
+  useEffect(() => {
+    updateCachedFilters.current(filters);
+    return () => {
+      setCachedFilters(filters);
+    };
+  }, [setCachedFilters, filters]);
+
+  const sortedItems = useMemo(
+    () =>
+      data?.items &&
+      [...data.items].sort((a, b) => (a.identifier > b.identifier ? 1 : -1)),
+    [data]
+  );
 
   return (
     <>
@@ -86,12 +95,8 @@ const ChooseConnection: React.FC<ChooseConnectionProps> = ({ currentStep }) => {
           <Spinner />
         </Center>
       )}
-      {isSuccess && data ? (
-        <ConnectionTypeList
-          items={[...data].sort((a, b) =>
-            a.identifier > b.identifier ? 1 : -1
-          )}
-        />
+      {isSuccess && sortedItems ? (
+        <ConnectionTypeList items={sortedItems} />
       ) : null}
     </>
   );

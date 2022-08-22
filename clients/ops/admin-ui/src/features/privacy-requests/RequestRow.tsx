@@ -15,7 +15,7 @@ import {
   useClipboard,
   useToast,
 } from "@fidesui/react";
-import { format } from "date-fns-tz";
+import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
@@ -175,9 +175,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
         </Text>
       </Td>
       <Td py={1}>
-        <Text fontSize="xs">
-          {format(new Date(request.created_at), "MMMM d, Y, KK:mm:ss z")}
-        </Text>
+        <Text fontSize="xs">{formatDate(request.created_at)}</Text>
       </Td>
       <Td py={1}>
         <Text fontSize="xs">
