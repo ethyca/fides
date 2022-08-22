@@ -2,6 +2,8 @@ import json
 from typing import Optional
 
 import pytest
+from requests import Response
+
 from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
@@ -9,7 +11,6 @@ from fidesctl.api.ops.schemas.saas.strategy_configuration import (
 from fidesctl.api.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
-from requests import Response
 
 
 @pytest.fixture(scope="function")

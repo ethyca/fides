@@ -2,6 +2,11 @@ import json
 
 import pytest
 from fideslib.models.client import ClientDetail
+from pymongo import MongoClient
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
@@ -24,10 +29,6 @@ from fidesctl.api.ops.service.connectors.sql_connector import (
     MicrosoftSQLServerConnector,
     MySQLConnector,
 )
-from pymongo import MongoClient
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 
 @pytest.mark.integration_postgres

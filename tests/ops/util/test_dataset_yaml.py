@@ -2,6 +2,8 @@ from typing import Any, Dict
 
 import pytest
 import yaml
+from pydantic import ValidationError
+
 from fidesctl.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
@@ -12,7 +14,6 @@ from fidesctl.api.ops.graph.config import (
 from fidesctl.api.ops.graph.graph import DatasetGraph, Edge
 from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fidesctl.api.ops.schemas.dataset import FidesopsDataset
-from pydantic import ValidationError
 
 from ..graph.graph_test_util import field
 

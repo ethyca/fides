@@ -4,6 +4,8 @@ import pydash
 import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -11,7 +13,6 @@ from fidesctl.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesctl.api.ops.service.connectors.sql_connector import PostgreSQLConnector
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 integration_config = load_toml(["fidesops-integration.toml"])
 

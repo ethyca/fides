@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import pytest
+
 from fidesctl.api.ops.graph.analytics_events import prepare_rerun_graph_analytics_event
 from fidesctl.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,

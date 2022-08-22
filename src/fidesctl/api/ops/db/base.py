@@ -6,6 +6,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+
 from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
 from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
 from fidesctl.api.ops.models.datasetconfig import DatasetConfig

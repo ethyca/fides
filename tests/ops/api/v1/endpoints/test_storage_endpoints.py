@@ -6,6 +6,9 @@ from unittest.mock import Mock
 import pytest
 from fastapi_pagination import Params
 from fideslib.models.client import ClientDetail
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
@@ -27,8 +30,6 @@ from fidesctl.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 PAGE_SIZE = Params().size
 

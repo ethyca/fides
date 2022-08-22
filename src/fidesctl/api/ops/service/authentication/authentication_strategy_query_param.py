@@ -1,3 +1,5 @@
+from requests import PreparedRequest
+
 from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
 from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     QueryParamAuthenticationConfiguration,
@@ -8,7 +10,6 @@ from fidesctl.api.ops.service.authentication.authentication_strategy import (
 )
 from fidesctl.api.ops.util.saas_util import assign_placeholders
 from fidesctl.api.ops.util.url_util import set_query_parameter
-from requests import PreparedRequest
 
 
 class QueryParamAuthenticationStrategy(AuthenticationStrategy):

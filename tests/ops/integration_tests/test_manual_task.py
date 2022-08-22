@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+
 from fidesctl.api.ops.common_exceptions import PrivacyRequestPaused
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.config import CollectionAddress

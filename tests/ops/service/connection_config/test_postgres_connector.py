@@ -1,6 +1,7 @@
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
 from fidesctl.api.ops.service.connectors import PostgreSQLConnector
-from sqlalchemy.orm import Session
 
 
 def test_postgres_connector_build_uri(connection_config: ConnectionConfig, db: Session):

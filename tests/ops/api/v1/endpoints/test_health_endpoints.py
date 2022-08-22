@@ -1,5 +1,6 @@
-from fidesctl.api.ops.api.v1.urn_registry import HEALTH
 from starlette.testclient import TestClient
+
+from fidesctl.api.ops.api.v1.urn_registry import HEALTH
 
 
 def test_health(api_client: TestClient) -> None:

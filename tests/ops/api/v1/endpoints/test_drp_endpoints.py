@@ -3,6 +3,9 @@ from unittest import mock
 
 import jwt
 import pytest
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -24,8 +27,6 @@ from fidesctl.api.ops.util.cache import (
     get_drp_request_body_cache_key,
     get_identity_cache_key,
 )
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
 
 
 class TestCreateDrpPrivacyRequest:

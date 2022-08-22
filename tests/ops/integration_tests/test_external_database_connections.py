@@ -4,6 +4,8 @@ from typing import Generator
 
 import pytest
 from fideslib.core.config import load_toml
+from sqlalchemy import inspect
+
 from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesctl.api.ops.schemas.connection_configuration import (
     RedshiftSchema,
@@ -14,7 +16,6 @@ from fidesctl.api.ops.service.connectors import (
     SnowflakeConnector,
     get_connector,
 )
-from sqlalchemy import inspect
 
 logger = logging.getLogger(__name__)
 

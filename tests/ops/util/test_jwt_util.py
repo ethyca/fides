@@ -8,6 +8,7 @@ from fideslib.cryptography.schemas.jwt import (
 )
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
+
 from fidesctl.api.ops.core.config import config
 
 

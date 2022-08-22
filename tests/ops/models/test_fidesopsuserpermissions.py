@@ -1,8 +1,9 @@
 import pytest
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fidesctl.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 from sqlalchemy.orm import Session
+
+from fidesctl.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 
 
 class TestFidesUserPermissions:

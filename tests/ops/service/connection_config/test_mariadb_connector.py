@@ -1,5 +1,6 @@
-from fidesctl.api.ops.service.connectors.sql_connector import MariaDBConnector
 from sqlalchemy.orm import Session
+
+from fidesctl.api.ops.service.connectors.sql_connector import MariaDBConnector
 
 
 def test_mariadb_connector_build_uri(connection_config_mariadb, db: Session):

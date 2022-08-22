@@ -2,6 +2,8 @@ import logging
 from typing import Any
 
 from botocore.exceptions import ClientError
+from requests import RequestException
+
 from fidesctl.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     StorageSecretsOnetrust,
@@ -12,7 +14,6 @@ from fidesctl.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )
-from requests import RequestException
 
 logger = logging.getLogger(__name__)
 

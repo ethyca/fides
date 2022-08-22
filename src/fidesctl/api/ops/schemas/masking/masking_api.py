@@ -1,7 +1,8 @@
 from typing import Any, List
 
-from fidesctl.api.ops.schemas.policy import PolicyMaskingSpec
 from pydantic import BaseModel
+
+from fidesctl.api.ops.schemas.policy import PolicyMaskingSpec
 
 
 class MaskingAPIRequest(BaseModel):

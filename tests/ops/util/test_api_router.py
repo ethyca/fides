@@ -1,9 +1,10 @@
 import pytest
 from fideslib.models.client import ClientDetail
-from fidesctl.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
-from fidesctl.api.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
+
+from fidesctl.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
+from fidesctl.api.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 class TestApiRouter:

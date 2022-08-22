@@ -3,6 +3,7 @@ from typing import Any, Dict, MutableMapping
 from celery import Celery
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.util.logger import NotPii
 

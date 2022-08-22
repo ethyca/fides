@@ -5,6 +5,8 @@ import pytest
 import requests
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -12,8 +14,6 @@ from fidesctl.api.ops.models.connectionconfig import (
 )
 from fidesctl.api.ops.models.datasetconfig import DatasetConfig
 from fidesctl.api.ops.util.saas_util import load_config
-from sqlalchemy.orm import Session
-
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 

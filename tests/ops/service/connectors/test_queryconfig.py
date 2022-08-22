@@ -2,6 +2,7 @@ import json
 from typing import Any, Dict, Optional, Set
 
 import pytest
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.config import (
     CollectionAddress,

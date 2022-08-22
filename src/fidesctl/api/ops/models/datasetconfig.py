@@ -3,6 +3,11 @@ from typing import Any, Dict, Optional, Set
 
 from boto3 import Session
 from fideslib.db.base_class import Base
+from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import relationship
+
 from fidesctl.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -17,10 +22,6 @@ from fidesctl.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetFie
 from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 from fidesctl.api.ops.util.logger import NotPii
 from fidesctl.api.ops.util.saas_util import merge_datasets
-from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
 
 logger = logging.getLogger(__name__)
 

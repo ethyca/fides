@@ -1,10 +1,11 @@
 from typing import List, Optional
 
+from pydantic.main import BaseModel
+
 from fidesctl.api.ops.schemas.base_class import NoValidationSchema
 from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-from pydantic.main import BaseModel
 
 
 class KeyfileCreds(BaseModel):

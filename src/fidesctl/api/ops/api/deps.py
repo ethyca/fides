@@ -1,6 +1,7 @@
 from typing import Generator
 
 from fideslib.db.session import get_db_session
+
 from fidesctl.api.ops.common_exceptions import FunctionalityNotConfigured
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.util.cache import get_cache as get_redis_connection

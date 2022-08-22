@@ -1,5 +1,7 @@
 import json
 
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.urn_registry import (
     MASKING,
     MASKING_STRATEGY,
@@ -30,7 +32,6 @@ from fidesctl.api.ops.service.masking.strategy.masking_strategy_random_string_re
 from fidesctl.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from starlette.testclient import TestClient
 
 
 class TestGetMaskingStrategies:

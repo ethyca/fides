@@ -5,6 +5,8 @@ from uuid import uuid4
 import pytest
 import sqlalchemy
 from fideslib.db.session import get_db_engine, get_db_session
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -13,7 +15,6 @@ from fidesctl.api.ops.models.connectionconfig import (
 )
 from fidesctl.api.ops.models.datasetconfig import DatasetConfig
 from fidesctl.api.ops.service.connectors import MariaDBConnector
-from sqlalchemy.orm import Session
 
 from .application_fixtures import integration_secrets
 

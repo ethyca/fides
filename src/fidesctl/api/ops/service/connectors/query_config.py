@@ -4,6 +4,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
 
 import pydash
+from sqlalchemy import MetaData, Table, text
+from sqlalchemy.engine import Engine
+from sqlalchemy.sql import Executable, Update  # type: ignore
+from sqlalchemy.sql.elements import ColumnElement, TextClause
+
 from fidesctl.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -27,10 +32,6 @@ from fidesctl.api.ops.task.refine_target_path import (
 )
 from fidesctl.api.ops.util.collection_util import append, filter_nonempty_values
 from fidesctl.api.ops.util.querytoken import QueryToken
-from sqlalchemy import MetaData, Table, text
-from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Executable, Update  # type: ignore
-from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")

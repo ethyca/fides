@@ -4,6 +4,7 @@ import logging
 from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
+
 from fidesctl.api.ops.common_exceptions import TraversalError
 from fidesctl.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,

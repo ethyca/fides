@@ -15,16 +15,17 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
-from fidesctl.api.ops_main import app
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+
+from fidesctl.api.ctl.database.database import get_alembic_config, upgrade_db
 from fidesctl.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.db.base import Base
-from fidesctl.api.ctl.database.database import get_alembic_config, upgrade_db
 from fidesctl.api.ops.models.privacy_request import generate_request_callback_jwe
 from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
 from fidesctl.api.ops.util.cache import get_cache
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from fidesctl.api.ops_main import app
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *

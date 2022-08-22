@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
+
 from fidesctl.api.ops.analytics import in_docker_container, send_analytics_event
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.config import CollectionAddress

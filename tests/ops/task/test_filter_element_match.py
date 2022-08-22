@@ -1,6 +1,7 @@
 import copy
 
 import pytest
+
 from fidesctl.api.ops.graph.config import FieldPath
 from fidesctl.api.ops.task.filter_element_match import (
     _expand_array_paths_to_preserve,

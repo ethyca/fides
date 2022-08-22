@@ -5,15 +5,16 @@ from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
+from pymongo import MongoClient
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesctl.api.ops.service.connectors import MongoDBConnector
-from pymongo import MongoClient
-from sqlalchemy import text
-from sqlalchemy.engine import Engine
 
 from .application_fixtures import faker, integration_secrets
 

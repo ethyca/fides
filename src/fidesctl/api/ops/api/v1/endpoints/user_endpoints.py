@@ -5,13 +5,6 @@ from fideslib.cryptography.cryptographic_util import b64_str_to_str
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
-from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import get_current_user, verify_oauth_client
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -19,6 +12,14 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
 )
+
+from fidesctl.api.ops.api import deps
+from fidesctl.api.ops.api.v1 import urn_registry as urls
+from fidesctl.api.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
+from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.util.api_router import APIRouter
+from fidesctl.api.ops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)

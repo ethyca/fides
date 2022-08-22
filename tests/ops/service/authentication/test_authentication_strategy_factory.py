@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
 from fidesctl.api.ops.service.authentication.authentication_strategy_basic import (
     BasicAuthenticationStrategy,

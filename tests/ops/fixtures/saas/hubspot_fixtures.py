@@ -4,6 +4,8 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 from fideslib.cryptography import cryptographic_util
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -13,8 +15,6 @@ from fidesctl.api.ops.models.datasetconfig import DatasetConfig
 from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fidesctl.api.ops.service.connectors import SaaSConnector
 from fidesctl.api.ops.util.saas_util import format_body, load_config
-from sqlalchemy.orm import Session
-
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets

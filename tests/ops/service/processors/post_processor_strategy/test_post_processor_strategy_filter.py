@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 import pytest
+
 from fidesctl.api.ops.common_exceptions import FidesopsException
 from fidesctl.api.ops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,

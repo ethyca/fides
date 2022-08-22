@@ -2,6 +2,8 @@ import random
 from typing import Iterable
 
 from fideslib.db.base_class import FidesBase
+from sqlalchemy.engine import Engine
+
 from fidesctl.api.ops.graph.config import *
 from fidesctl.api.ops.graph.traversal import *
 from fidesctl.api.ops.graph.traversal import Traversal, TraversalNode
@@ -15,7 +17,6 @@ from fidesctl.api.ops.service.connectors.sql_connector import SQLConnector
 from fidesctl.api.ops.task.graph_task import GraphTask
 from fidesctl.api.ops.task.task_resources import TaskResources
 from fidesctl.api.ops.util.collection_util import Row
-from sqlalchemy.engine import Engine
 
 from ..fixtures.application_fixtures import faker
 

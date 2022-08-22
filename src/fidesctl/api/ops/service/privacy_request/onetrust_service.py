@@ -6,6 +6,9 @@ from typing import Dict, Final, List, Optional, Union
 import requests
 from fideslib.db.session import get_db_session
 from fideslib.exceptions import AuthenticationError
+from requests import Response
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
@@ -33,8 +36,6 @@ from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fidesctl.api.ops.util.storage_authenticator import get_onetrust_access_token
-from requests import Response
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.api.deps import get_cache, get_db
 from fidesctl.api.ops.common_exceptions import FunctionalityNotConfigured
 from fidesctl.api.ops.core import config

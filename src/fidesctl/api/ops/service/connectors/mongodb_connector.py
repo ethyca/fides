@@ -1,6 +1,9 @@
 import logging
 from typing import Any, Dict, List, Optional
 
+from pymongo import MongoClient
+from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
+
 from fidesctl.api.ops.common_exceptions import ConnectionException
 from fidesctl.api.ops.graph.traversal import Row, TraversalNode
 from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
@@ -15,8 +18,6 @@ from fidesctl.api.ops.service.connectors.query_config import (
     QueryConfig,
 )
 from fidesctl.api.ops.util.logger import NotPii
-from pymongo import MongoClient
-from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
 logger = logging.getLogger(__name__)
 

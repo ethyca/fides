@@ -1,6 +1,8 @@
 from typing import Dict
 
 import pytest
+from pydantic import ValidationError
+
 from fidesctl.api.ops.graph.config import CollectionAddress, FieldAddress
 from fidesctl.api.ops.schemas.dataset import FidesopsDatasetReference
 from fidesctl.api.ops.schemas.saas.saas_config import (
@@ -8,7 +10,6 @@ from fidesctl.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSRequest,
 )
-from pydantic import ValidationError
 
 
 @pytest.mark.unit_saas

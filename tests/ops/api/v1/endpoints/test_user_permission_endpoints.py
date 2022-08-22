@@ -4,6 +4,15 @@ import pytest
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SAAS_CONFIG_READ,
@@ -13,14 +22,6 @@ from fidesctl.api.ops.api.v1.scope_registry import (
 )
 from fidesctl.api.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fidesctl.api.ops.core.config import config
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
 
 
 class TestCreateUserPermissions:

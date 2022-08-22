@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.graph.graph import *
 
 from .graph_test_util import *

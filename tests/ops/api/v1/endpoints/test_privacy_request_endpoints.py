@@ -18,6 +18,8 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     execution_and_audit_logs_by_dataset_name,
@@ -64,7 +66,6 @@ from fidesctl.api.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from starlette.testclient import TestClient
 
 page_size = Params().size
 

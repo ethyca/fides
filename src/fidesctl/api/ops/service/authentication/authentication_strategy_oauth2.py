@@ -4,6 +4,9 @@ from typing import Any, Dict, Literal, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
+from requests import PreparedRequest
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
@@ -21,8 +24,6 @@ from fidesctl.api.ops.service.connectors.saas.authenticated_client import (
 )
 from fidesctl.api.ops.util.logger import NotPii
 from fidesctl.api.ops.util.saas_util import assign_placeholders, map_param_values
-from requests import PreparedRequest
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

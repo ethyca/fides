@@ -3,6 +3,8 @@ from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import pydash
+from requests import Response
+
 from fidesctl.api.ops.common_exceptions import (
     FidesopsException,
     PostProcessingException,
@@ -36,7 +38,6 @@ from fidesctl.api.ops.service.saas_request.saas_request_override_factory import 
     SaaSRequestType,
 )
 from fidesctl.api.ops.util.saas_util import assign_placeholders, map_param_values
-from requests import Response
 
 logger = logging.getLogger(__name__)
 

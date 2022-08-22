@@ -4,6 +4,8 @@ from typing import Dict, List, Optional, Union
 
 from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
+from pydantic import Field, validator
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.policy import ActionType
 from fidesctl.api.ops.models.privacy_request import (
@@ -19,7 +21,6 @@ from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from pydantic import Field, validator
 
 
 class PrivacyRequestDRPStatus(EnumType):

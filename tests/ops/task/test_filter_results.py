@@ -2,6 +2,7 @@ import copy
 from datetime import datetime
 
 from bson import ObjectId
+
 from fidesctl.api.ops.graph.config import CollectionAddress, FieldPath
 from fidesctl.api.ops.task.filter_results import (
     filter_data_categories,

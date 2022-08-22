@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.common_exceptions import ValidationError
 from fidesctl.api.ops.graph.graph import *
 

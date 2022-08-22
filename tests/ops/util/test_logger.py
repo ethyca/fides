@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from fidesctl.api.ops.util import logger
 from fidesctl.api.ops.util.logger import MASKED, NotPii
 

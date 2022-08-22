@@ -4,6 +4,10 @@ from uuid import uuid4
 
 import pytest
 from fideslib.db.session import get_db_engine, get_db_session
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -18,9 +22,6 @@ from fidesctl.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fidesctl.api.ops.service.connectors import PostgreSQLConnector
-from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from .application_fixtures import integration_secrets
 

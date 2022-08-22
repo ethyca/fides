@@ -2,6 +2,8 @@ import logging
 from typing import List
 
 from fastapi import HTTPException
+from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+
 from fidesctl.api.ops.api.v1.urn_registry import (
     MASKING,
     MASKING_STRATEGY,
@@ -20,7 +22,6 @@ from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
     NoSuchStrategyException,
 )
 from fidesctl.api.ops.util.api_router import APIRouter
-from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 

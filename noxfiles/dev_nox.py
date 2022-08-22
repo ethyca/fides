@@ -4,9 +4,9 @@ from constants_nox import (
     ANALYTICS_OPT_OUT,
     COMPOSE_SERVICE_NAME,
     RUN,
-    START_APP_UI,
     RUN_OPS,
     START_APP_OPS,
+    START_APP_UI,
 )
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure

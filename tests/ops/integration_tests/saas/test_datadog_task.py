@@ -2,12 +2,12 @@ import logging
 import random
 
 import pytest
+
 from fidesctl.api.ops.graph.graph import DatasetGraph
 from fidesctl.api.ops.models.privacy_request import PrivacyRequest
 from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesctl.api.ops.service.connectors import get_connector
 from fidesctl.api.ops.task import graph_task
-
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 logger = logging.getLogger(__name__)

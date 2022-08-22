@@ -2,6 +2,7 @@ import json
 from typing import Dict
 
 import pytest
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     POLICY_READ,
     WEBHOOK_CREATE_OR_UPDATE,
@@ -17,7 +18,6 @@ from fidesctl.api.ops.api.v1.urn_registry import (
 )
 from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
 from fidesctl.api.ops.models.policy import PolicyPostWebhook, PolicyPreWebhook
-
 from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 

@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesctl.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,

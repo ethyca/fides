@@ -3,6 +3,8 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -12,7 +14,6 @@ from fidesctl.api.ops.models.datasetconfig import DatasetConfig
 from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
 )
-from sqlalchemy.orm import Session
 
 
 @pytest.fixture(scope="function")

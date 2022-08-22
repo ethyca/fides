@@ -1,13 +1,14 @@
 import json
 
 import pytest
+from requests import Response
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+
 from fidesctl.api.ops.schemas.saas.saas_config import SaaSRequest
 from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fidesctl.api.ops.service.connectors import get_connector
 from fidesctl.api.ops.service.connectors.saas_connector import SaaSConnector
-from requests import Response
-from sqlalchemy.orm import Session
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
 
 @pytest.mark.unit_saas

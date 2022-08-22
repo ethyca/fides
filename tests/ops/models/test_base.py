@@ -6,8 +6,9 @@ import pytest
 from fideslang.validation import FidesValidationError
 from fideslib.db.base_class import get_key_from_data
 from fideslib.exceptions import KeyValidationError
-from fidesctl.api.ops.models.storage import StorageConfig
 from sqlalchemy.orm import Session
+
+from fidesctl.api.ops.models.storage import StorageConfig
 
 
 def test_get_key_from_data_method_invalid_key() -> None:

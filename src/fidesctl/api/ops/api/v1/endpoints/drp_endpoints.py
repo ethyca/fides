@@ -3,6 +3,16 @@ from typing import Any, Dict, List, Optional
 
 import jwt
 from fastapi import Depends, HTTPException, Security
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_424_FAILED_DEPENDENCY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
+
 from fidesctl.api.ops import common_exceptions
 from fidesctl.api.ops.api import deps
 from fidesctl.api.ops.api.v1 import scope_registry as scopes
@@ -33,15 +43,6 @@ from fidesctl.api.ops.service.privacy_request.request_service import (
 from fidesctl.api.ops.util.api_router import APIRouter
 from fidesctl.api.ops.util.cache import FidesopsRedis
 from fidesctl.api.ops.util.oauth_util import verify_oauth_client
-from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_424_FAILED_DEPENDENCY,
-    HTTP_500_INTERNAL_SERVER_ERROR,
-)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)

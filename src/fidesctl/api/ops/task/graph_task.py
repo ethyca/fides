@@ -8,6 +8,8 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
 from dask.threaded import get
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.analytics_events import (
@@ -37,7 +39,6 @@ from fidesctl.api.ops.util.cache import get_cache
 from fidesctl.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fidesctl.api.ops.util.logger import NotPii
 from fidesctl.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

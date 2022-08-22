@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
 from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy,

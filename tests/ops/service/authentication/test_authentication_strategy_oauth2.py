@@ -3,6 +3,9 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+from requests import PreparedRequest, Request
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
 from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
@@ -10,8 +13,6 @@ from fidesctl.api.ops.service.authentication.authentication_strategy_factory imp
 from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from requests import PreparedRequest, Request
-from sqlalchemy.orm import Session
 
 
 class TestAddAuthentication:

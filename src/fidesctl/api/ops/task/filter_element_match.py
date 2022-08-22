@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import pydash
+
 from fidesctl.api.ops.task.refine_target_path import (
     DetailedPath,
     FieldPathNodeInput,

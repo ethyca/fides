@@ -3,6 +3,9 @@ import logging
 from fastapi import Depends, HTTPException, Security
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+
 from fidesctl.api.ops.api import deps
 from fidesctl.api.ops.api.v1 import urn_registry as urls
 from fidesctl.api.ops.api.v1.scope_registry import (
@@ -18,8 +21,6 @@ from fidesctl.api.ops.schemas.user_permission import (
 )
 from fidesctl.api.ops.util.api_router import APIRouter
 from fidesctl.api.ops.util.oauth_util import verify_oauth_client
-from sqlalchemy.orm import Session
-from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)

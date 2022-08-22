@@ -12,6 +12,8 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -33,7 +35,6 @@ from fidesctl.api.ops.api.v1.urn_registry import (
 from fidesctl.api.ops.common_exceptions import OAuth2TokenException
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
-from starlette.testclient import TestClient
 
 
 class TestCreateClient:

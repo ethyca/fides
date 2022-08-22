@@ -7,6 +7,16 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from pydantic import conlist
+from sqlalchemy.orm import Session
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+    HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+)
+
 from fidesctl.api.ops.api import deps
 from fidesctl.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -43,15 +53,6 @@ from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
 from fidesctl.api.ops.util.api_router import APIRouter
 from fidesctl.api.ops.util.oauth_util import verify_oauth_client
 from fidesctl.api.ops.util.saas_util import merge_datasets
-from pydantic import conlist
-from sqlalchemy.orm import Session
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_404_NOT_FOUND,
-    HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-)
 
 X_YAML = "application/x-yaml"
 

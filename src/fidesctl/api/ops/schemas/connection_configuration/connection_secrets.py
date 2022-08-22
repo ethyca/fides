@@ -3,9 +3,10 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional
 
+from pydantic import BaseModel, Extra, root_validator
+
 from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
 from fidesctl.api.ops.schemas import Msg
-from pydantic import BaseModel, Extra, root_validator
 
 
 class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):

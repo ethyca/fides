@@ -2,13 +2,14 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from sqlalchemy.orm import Session
 
 
 @pytest.fixture(scope="function")

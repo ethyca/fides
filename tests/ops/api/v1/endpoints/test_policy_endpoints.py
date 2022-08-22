@@ -3,6 +3,8 @@ from uuid import uuid4
 
 import pytest
 from fideslib.models.client import ClientDetail
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1 import scope_registry as scopes
 from fidesctl.api.ops.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
 from fidesctl.api.ops.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
@@ -27,7 +29,6 @@ from fidesctl.api.ops.util.data_category import (
     DataCategory,
     generate_fides_data_categories,
 )
-from starlette.testclient import TestClient
 
 
 class TestGetPolicies:

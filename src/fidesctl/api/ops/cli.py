@@ -2,6 +2,7 @@
 import logging
 
 import click
+
 from fidesctl.api.main import start_webserver
 from fidesctl.api.ops.tasks import start_worker
 

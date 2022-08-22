@@ -1,6 +1,8 @@
 import json
 
 import pytest
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1.scope_registry import CLIENT_CREATE
 from fidesctl.api.ops.api.v1.urn_registry import (
     CLIENT,
@@ -9,7 +11,6 @@ from fidesctl.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesctl.api.ops.core import config
-from starlette.testclient import TestClient
 
 
 @pytest.fixture

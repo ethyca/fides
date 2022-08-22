@@ -6,14 +6,6 @@ from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
 from fideslib.db.base_class import Base, FidesBase
 from fideslib.models.client import ClientDetail
-from fidesctl.api.ops import common_exceptions
-from fidesctl.api.ops.common_exceptions import WebhookOrderException
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.base_class import JSONTypeOverride
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.models.storage import StorageConfig
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.util.data_category import _validate_data_category
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -23,6 +15,15 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
+
+from fidesctl.api.ops import common_exceptions
+from fidesctl.api.ops.common_exceptions import WebhookOrderException
+from fidesctl.api.ops.core.config import config
+from fidesctl.api.ops.db.base_class import JSONTypeOverride
+from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fidesctl.api.ops.models.storage import StorageConfig
+from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesctl.api.ops.util.data_category import _validate_data_category
 
 
 class PausedStep(EnumType):

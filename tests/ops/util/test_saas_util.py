@@ -1,4 +1,5 @@
 import pytest
+
 from fidesctl.api.ops.common_exceptions import FidesopsException
 from fidesctl.api.ops.graph.config import (
     Collection,

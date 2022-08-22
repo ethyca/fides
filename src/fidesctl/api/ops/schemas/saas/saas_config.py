@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
+from pydantic import BaseModel, Extra, root_validator, validator
+
 from fidesctl.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -15,7 +17,6 @@ from fidesctl.api.ops.schemas.dataset import (
 )
 from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from pydantic import BaseModel, Extra, root_validator, validator
 
 
 class ParamValue(BaseModel):

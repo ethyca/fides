@@ -3,12 +3,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Optional
 
+from requests import PreparedRequest, Request, Response, Session
+
 from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
 from fidesctl.api.ops.core.config import config
-from requests import PreparedRequest, Request, Response, Session
 
 if TYPE_CHECKING:
     from fidesctl.api.ops.models.connectionconfig import ConnectionConfig

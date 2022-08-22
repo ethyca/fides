@@ -3,6 +3,9 @@ from unittest import mock
 
 import pytest
 from fideslib.db.session import get_db_session
+from pydantic import ValidationError
+from sqlalchemy.exc import InvalidRequestError
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.config import CollectionAddress
 from fidesctl.api.ops.graph.graph import DatasetGraph
@@ -21,8 +24,6 @@ from fidesctl.api.ops.models.privacy_request import (
 from fidesctl.api.ops.schemas.dataset import FidesopsDataset
 from fidesctl.api.ops.task import graph_task
 from fidesctl.api.ops.task.graph_task import get_cached_data_for_erasures
-from pydantic import ValidationError
-from sqlalchemy.exc import InvalidRequestError
 
 from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (

@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import List, Optional
 
+from pydantic import BaseModel
+
 from fidesctl.api.ops.models.policy import WebhookDirection
 from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from pydantic import BaseModel
 
 
 class CallbackType(Enum):

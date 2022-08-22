@@ -1,5 +1,7 @@
 import pytest
 from fideslib.models.client import ClientDetail
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import (
     DataCategoryNotSupported,
     PolicyValidationError,
@@ -20,7 +22,6 @@ from fidesctl.api.ops.service.masking.strategy.masking_strategy_nullify import (
 )
 from fidesctl.api.ops.util.data_category import DataCategory
 from fidesctl.api.ops.util.text import to_snake_case
-from sqlalchemy.orm import Session
 
 
 def test_policy_sets_slug(

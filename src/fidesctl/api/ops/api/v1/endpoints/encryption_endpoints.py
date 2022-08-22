@@ -4,6 +4,7 @@ import secrets
 from fastapi import Security
 from fideslib.cryptography import cryptographic_util
 from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
+
 from fidesctl.api.ops.api.v1.scope_registry import ENCRYPTION_EXEC
 from fidesctl.api.ops.api.v1.urn_registry import (
     DECRYPT_AES,

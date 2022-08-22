@@ -7,6 +7,10 @@ from uuid import uuid4
 import pydash
 import pytest
 from fideslib.models.audit_log import AuditLog, AuditLogAction
+from pydantic import ValidationError
+from sqlalchemy import column, select, table
+from sqlalchemy.orm import Session
+
 from fidesctl.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
@@ -43,9 +47,6 @@ from fidesctl.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
 from fidesctl.api.ops.util.data_category import DataCategory
-from pydantic import ValidationError
-from sqlalchemy import column, select, table
-from sqlalchemy.orm import Session
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

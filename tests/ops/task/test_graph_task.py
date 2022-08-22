@@ -1,6 +1,7 @@
 import dask
 import pytest
 from bson import ObjectId
+
 from fidesctl.api.ops.graph.config import CollectionAddress, FieldPath
 from fidesctl.api.ops.graph.graph import DatasetGraph
 from fidesctl.api.ops.graph.traversal import Traversal

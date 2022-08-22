@@ -6,6 +6,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
+
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.graph.config import (
     Collection,

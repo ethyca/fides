@@ -1,7 +1,8 @@
 import pytest
+from starlette.testclient import TestClient
+
 from fidesctl.api.ops.api.v1 import scope_registry as scopes
 from fidesctl.api.ops.api.v1 import urn_registry as urls
-from starlette.testclient import TestClient
 
 
 class TestGetConnections:

@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from requests import Response
+
+from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 if TYPE_CHECKING:
     from fidesctl.api.ops.schemas.saas.strategy_configuration import (
