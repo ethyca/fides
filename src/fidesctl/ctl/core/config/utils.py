@@ -60,7 +60,7 @@ def update_config_file(  # type: ignore
         else:
             current_config.update({key: value})
 
-    with open(config_path, "w") as config_file:
+    with open(config_path, "w", encoding="utf-8") as config_file:
         dump(current_config, config_file)
 
     echo(f"Updated {config_path}:")

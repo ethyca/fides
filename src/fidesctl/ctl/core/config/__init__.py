@@ -28,7 +28,7 @@ class FidesctlConfig(BaseModel):
 
     cli: FidesctlCLISettings = FidesctlCLISettings()
     user: FidesctlUserSettings = FidesctlUserSettings()
-    credentials: Dict[str, Dict] = dict()
+    credentials: Dict[str, Dict] = {}
     database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
     security: FidesctlSecuritySettings = FidesctlSecuritySettings()
     logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
@@ -39,7 +39,7 @@ def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
 
     if settings.get("api") and not settings.get("database"):
         api_settings = settings.pop("api")
-        database_settings = dict()
+        database_settings = {}
         database_settings["user"] = api_settings.get("database_user")
         database_settings["password"] = api_settings.get("database_password")
         database_settings["server"] = api_settings.get("database_host")
@@ -99,7 +99,7 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
         # Called after `handle_deprecated_fields` to ensure ENV vars are respected
         settings = handle_deprecated_env_variables(settings)
 
-        config_environment_dict = settings.get("credentials", dict())
+        config_environment_dict = settings.get("credentials", {})
         settings["credentials"] = merge_credentials_environment(
             credentials_dict=config_environment_dict
         )

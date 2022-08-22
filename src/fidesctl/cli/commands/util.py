@@ -73,7 +73,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
         separate()
 
-        with open(config_path, "w") as config_file:
+        with open(config_path, "w", encoding="utf-8") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
 

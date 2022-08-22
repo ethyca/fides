@@ -7,8 +7,8 @@ requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 [tool.mypy]
 check_untyped_defs = true
 disallow_untyped_defs = true
-files = ['src']
-exclude = ["fidesctl.ops.migrations.*", "fidesctl.ops.migrations"]
+files = ["src","noxfiles"]
+exclude = ["fidesctl.api.ctl.migrations.*", "fidesctl.api.ctl.migrations"]
 plugins = ["pydantic.mypy", "sqlmypy"]
 pretty = true
 show_error_codes = true
@@ -82,7 +82,7 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 88
-src_paths = ["src", "tests"]
+src_paths = ["src", "tests", "noxfiles"]
 
 ########
 # Pylint
@@ -91,6 +91,7 @@ src_paths = ["src", "tests"]
 disable=[
     "bad-option-value",
     "broad-except",
+    "consider-using-f-string",
     "dangerous-default-value",
     "duplicate-code",
     "fixme",
@@ -109,6 +110,7 @@ disable=[
     "too-many-ancestors",
     "too-many-arguments",
     "unnecessary-comprehension",
+    "unnecessary-lambda-assignment",
     "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
     "unused-argument",
 ]

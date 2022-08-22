@@ -13,7 +13,7 @@ def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
     """
     Write a manifest file out.
     """
-    with open(manifest_path, "w") as manifest_file:
+    with open(manifest_path, "w", encoding="utf-8") as manifest_file:
         yaml.dump(manifest, manifest_file, sort_keys=False, indent=2)
     echo_green(f"Updated manifest file written out to: '{manifest_path}'")
 
