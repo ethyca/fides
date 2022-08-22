@@ -17,7 +17,7 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
-from .commands.util import init, status, webserver
+from .commands.util import init, status, webserver, worker
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -25,7 +25,19 @@ LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
-API_COMMANDS = [annotate, apply, database, delete, export, get, ls, status, pull, push]
+API_COMMANDS = [
+    annotate,
+    apply,
+    database,
+    delete,
+    export,
+    get,
+    ls,
+    status,
+    pull,
+    push,
+    worker,
+]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [

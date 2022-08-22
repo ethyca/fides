@@ -122,3 +122,16 @@ def webserver(ctx: click.Context) -> None:
     from fidesctl.api.main import start_webserver
 
     start_webserver()
+
+
+@click.command()
+@click.pass_context
+@with_analytics
+def worker(ctx: click.Context) -> None:
+    """
+    Starts a celery worker.
+    """
+    # This has to be here to avoid a circular dependency
+    from fidesctl.api.ops.tasks import start_worker
+
+    start_worker()
