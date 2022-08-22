@@ -2,15 +2,13 @@
 from time import sleep
 
 import nox
+
 from constants_nox import (
     CI_ARGS,
-    COMPOSE_FILE,
     COMPOSE_SERVICE_NAME,
     IMAGE_NAME,
-    INTEGRATION_COMPOSE_FILE,
     RUN,
     RUN_NO_DEPS,
-    RUN_OPS,
     RUN_OPS_NO_DEPS,
     START_APP,
     START_APP_OPS,
