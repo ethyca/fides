@@ -185,7 +185,7 @@ class Organization(Base, FidesBase):
 
 
 # Policy
-class Policy(Base, FidesBase):
+class PolicyCtl(Base, FidesBase):
     """
     The SQL model for the Policy resource.
     """
@@ -235,7 +235,7 @@ sql_model_map: Dict = {
     "fides_user": FidesUser,
     "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
-    "policy": Policy,
+    "policy": PolicyCtl,
     "registry": Registry,
     "system": System,
     "evaluation": Evaluation,
