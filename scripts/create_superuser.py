@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from fidesctl.api.ops.api.v1.scope_registry import CLIENT_CREATE, SCOPE_REGISTRY
 from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.database import init_db
+from fidesctl.api.ctl.database.database import init_db
 
 
 def get_username(prompt: str) -> str:
