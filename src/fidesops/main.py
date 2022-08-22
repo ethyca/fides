@@ -1,9 +1,10 @@
 import logging
 import os
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
@@ -137,6 +138,37 @@ WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
+    route_file_map = {}
+
+    def generate_route_file_map() -> None:
+        """Generates a map of frontend routes and the corresponding files to serve for each route.
+        Each route is based frontend build directories and files."""
+        exact_pattern = r"\[[a-zA-Z]+\]"
+        nested_pattern = r"\[...[a-zA-Z]+\]"
+
+        exact_pattern_replacement = "[a-zA-Z10-9-_]+/?$"
+        nested_pattern_replacement = "[a-zA-Z10-9-_/]+"
+
+        for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
+            relative_web_dir_path = str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
+            if filepath != WEBAPP_INDEX:
+                path = None
+                if re.search(exact_pattern, str(filepath)):
+                    path = re.sub(
+                        exact_pattern, exact_pattern_replacement, relative_web_dir_path
+                    )
+                if re.search(nested_pattern, str(filepath)):
+                    path = re.sub(
+                        nested_pattern,
+                        nested_pattern_replacement,
+                        relative_web_dir_path,
+                    )
+                if path is None:
+                    path = relative_web_dir_path
+
+                rule = re.compile(r"^" + path)
+
+                route_file_map[rule] = FileResponse(str(filepath.relative_to(".")))
 
     @app.on_event("startup")
     def check_if_admin_ui_index_exists() -> None:
@@ -152,10 +184,18 @@ if config.admin_ui.enabled:
                     "No Admin UI files are bundled in the docker image. Creating diagnostic help index.html"
                 )
 
+        generate_route_file_map()
+
     @app.get("/", response_class=FileResponse)
     def read_index() -> FileResponse:
         """Returns index.html file"""
         return FileResponse(WEBAPP_INDEX)
+
+    def match_route(path: str) -> Union[FileResponse, None]:
+        for key, value in route_file_map.items():
+            if re.fullmatch(key, path):
+                return value
+        return None
 
     @app.get("/{catchall:path}", response_class=FileResponse)
     def read_ui_files(request: Request) -> FileResponse:
@@ -164,13 +204,15 @@ if config.admin_ui.enabled:
         if V1_URL_PREFIX in "/" + path:
             raise HTTPException(status_code=HTTP_404_NOT_FOUND)
 
-        path = path + ".html" if path.find(".") == -1 else path
-        file = WEBAPP_DIRECTORY / path
+        entry_point_html_file = match_route(path)
+        if entry_point_html_file:
+            return entry_point_html_file
 
+        file = WEBAPP_DIRECTORY / path
         if os.path.exists(file):
             return FileResponse(file)
 
-        return FileResponse(WEBAPP_INDEX)
+        return FileResponse(WEBAPP_DIRECTORY / "404.html")
 
 
 def start_webserver() -> None:
