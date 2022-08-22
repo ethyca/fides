@@ -1,5 +1,13 @@
-import { Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import {
+  Center,
+  SimpleGrid,
+  Spinner,
+  Text,
+  useDisclosure,
+} from "@fidesui/react";
 import { useMemo, useState } from "react";
+
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 
 import AccordionTree from "../common/AccordionTree";
 import { transformTaxonomyEntityToNodes } from "./helpers";
@@ -16,7 +24,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     isLoading,
     data,
     labels,
-    edit: onEdit,
+    onEdit,
+    onDelete,
     extraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -28,6 +37,13 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+  const [deleteKey, setDeleteKey] = useState<string | null>(null);
+
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   if (isLoading) {
     return (
@@ -45,24 +61,55 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     setEditEntity(entity);
   };
 
+  const handleSetDeleteKey = (node: TaxonomyEntityNode) => {
+    setDeleteKey(node.value);
+    onDeleteOpen();
+  };
+
+  const handleDelete = () => {
+    if (deleteKey) {
+      onDelete(deleteKey);
+      onDeleteClose();
+    }
+  };
+
   return (
-    <SimpleGrid columns={2} spacing={2}>
-      <AccordionTree
-        nodes={taxonomyNodes}
-        onEdit={handleSetEditEntity}
-        focusedKey={editEntity?.fides_key}
-      />
-      {editEntity ? (
-        <TaxonomyFormBase
-          labels={labels}
-          entity={editEntity}
-          onCancel={() => setEditEntity(null)}
-          onEdit={onEdit}
-          extraFormFields={extraFormFields}
-          initialValues={transformEntityToInitialValues(editEntity)}
+    <>
+      <SimpleGrid columns={2} spacing={2}>
+        <AccordionTree
+          nodes={taxonomyNodes}
+          onEdit={handleSetEditEntity}
+          onDelete={handleSetDeleteKey}
+          focusedKey={editEntity?.fides_key}
         />
-      ) : null}
-    </SimpleGrid>
+        {editEntity ? (
+          <TaxonomyFormBase
+            labels={labels}
+            entity={editEntity}
+            onCancel={() => setEditEntity(null)}
+            onEdit={onEdit}
+            extraFormFields={extraFormFields}
+            initialValues={transformEntityToInitialValues(editEntity)}
+          />
+        ) : null}
+      </SimpleGrid>
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={onDeleteClose}
+        onConfirm={handleDelete}
+        title={`Delete ${labels.fides_key.toLocaleLowerCase()}`}
+        message={
+          <Text>
+            You are about to permanently delete the{" "}
+            {labels.fides_key.toLocaleLowerCase()}{" "}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {deleteKey}
+            </Text>{" "}
+            from your taxonomy. Are you sure you would like to continue?
+          </Text>
+        }
+      />
+    </>
   );
 };
 

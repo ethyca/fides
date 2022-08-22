@@ -18,22 +18,26 @@ import { TreeNode } from "./types";
 interface ActionButtonProps {
   node: TaxonomyEntityNode;
   onEdit: (node: TaxonomyEntityNode) => void;
+  onDelete: (node: TaxonomyEntityNode) => void;
 }
-const ActionButtons = ({ node, onEdit }: ActionButtonProps) => (
+const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => (
   <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
     <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
       Edit
     </Button>
-    <Button data-testid="delete-btn">Delete</Button>
+    <Button data-testid="delete-btn" onClick={() => onDelete(node)}>
+      Delete
+    </Button>
   </ButtonGroup>
 );
 
 interface Props {
   nodes: TreeNode[];
   onEdit: (node: TaxonomyEntityNode) => void;
+  onDelete: (node: TaxonomyEntityNode) => void;
   focusedKey?: string;
 }
-const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
+const AccordionTree = ({ nodes, onEdit, onDelete, focusedKey }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -69,7 +73,11 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
             {node.label}
           </Text>
           {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
+            <ActionButtons
+              node={hoverNode}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ) : null}
         </Box>
       );
@@ -91,7 +99,11 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
             {node.label}
           </AccordionButton>
           {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
+            <ActionButtons
+              node={hoverNode}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ) : null}
         </Box>
 
