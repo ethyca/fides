@@ -38,7 +38,6 @@ def ci_suite(session: nox.Session) -> None:
     session.notify("mypy")
     session.notify("pylint")
     session.notify("check_install")
-    session.notify("check_migrations")
     session.notify("pytest_unit")
     session.notify("pytest_integration")
     session.notify("teardown")
