@@ -17,8 +17,8 @@ from fidesctl.ctl.core.export import build_joined_dataframe
 from fidesctl.ctl.core.export_helpers import DATAMAP_COLUMNS
 
 API_EXTRA_COLUMNS = {
-    "system.fides_key": "The fides key for the system",
-    "dataset.fides_key": "The fides key for the dataset (if applicable)",
+    "system.fides_key": "System Fides Key",
+    "dataset.fides_key": "Dataset Fides Key (if applicable)",
     "system.system_dependencies": "Related cross-system dependencies",
     "system.description": "Description of the System",
 }
