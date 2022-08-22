@@ -26,7 +26,7 @@ from fidesctl.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.database import init_db
+from fidesctl.api.ctl.database.database import configure_db
 from fidesctl.api.ops.schemas.analytics import Event, ExtraData
 from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
 from fidesctl.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -168,8 +168,9 @@ if config.admin_ui.enabled:
         return FileResponse(WEBAPP_INDEX)
 
 
-def start_webserver() -> None:
-    """Run any pending DB migrations and start the webserver."""
+@app.on_event("startup")
+async def setup_server() -> None:
+    "Run all of the required setup steps for the webserver."
     logger.info("****************fidesops****************")
 
     if logger.getEffectiveLevel() == logging.DEBUG:
@@ -182,7 +183,7 @@ def start_webserver() -> None:
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
-            init_db(config.database.sqlalchemy_database_uri)
+            await configure_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
             logger.error(f"Connection to database failed: {error}")
             return
@@ -213,7 +214,10 @@ def start_webserver() -> None:
         logger.info("Starting worker...")
         subprocess.Popen(["fidesops", "worker"])  # pylint: disable=consider-using-with
 
-    logger.info("Starting web server...")
+
+def start_webserver() -> None:
+    """Run any pending DB migrations and start the webserver."""
+    logger.info("Starting webserver...")
     uvicorn.run(
         "fidesctl.api.main:app",
         host="0.0.0.0",
