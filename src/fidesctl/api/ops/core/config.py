@@ -261,7 +261,9 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
             logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
 
 
-config = get_config(FidesopsConfig, file_names=["fidesops.toml"])
+config = get_config(
+    FidesopsConfig, file_names=["fidesops.toml", "/fides/fidesops.toml"]
+)
 # `censored_config` is included below because it's important we keep the censored
 # config at parity with `config`. This means if we change the path at which fidesops
 # loads `config`, we should also change `censored_config`.
