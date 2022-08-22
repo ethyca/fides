@@ -35,7 +35,7 @@ services:
 
   fidesops:
     image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload fidesctl.api.ops_main:app
+    command: python -c "from fidesctl.api.ops_main import start_webserver; start_webserver()"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 15s

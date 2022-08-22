@@ -18,9 +18,11 @@ def get_alembic_config(database_url: str) -> Config:
     """
 
     current_dir = path.dirname(path.abspath(__file__))
-    migrations_dir = path.abspath(path.join(current_dir, "../migrations"))
+    migrations_dir = path.abspath(path.join(current_dir, "../../ctl/migrations"))
 
-    alembic_config = Config(path.abspath(path.join(current_dir, "../alembic.ini")))
+    alembic_config = Config(
+        path.abspath(path.join(current_dir, "../../ctl/alembic.ini"))
+    )
     alembic_config.set_main_option("script_location", migrations_dir.replace("%", "%%"))
     alembic_config.set_main_option("sqlalchemy.url", database_url)
     return alembic_config
