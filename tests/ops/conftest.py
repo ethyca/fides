@@ -19,7 +19,7 @@ from fidesctl.api.ops_main import app
 from fidesctl.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fidesctl.api.ops.core.config import config
 from fidesctl.api.ops.db.base import Base
-from fidesctl.api.ctl.database.database import create_db_if_not_exists, init_db
+from fidesctl.api.ctl.database.database import get_alembic_config, upgrade_db
 from fidesctl.api.ops.models.privacy_request import generate_request_callback_jwe
 from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
 from fidesctl.api.ops.util.cache import get_cache
@@ -61,8 +61,10 @@ def migrate_test_db() -> None:
     logger.debug("Applying migrations...")
     assert config.is_test_mode
     if config.database.enabled:
-        create_db_if_not_exists(config.database.sqlalchemy_test_database_uri)
-        init_db(config.database.sqlalchemy_test_database_uri)
+        alembic_config = get_alembic_config(
+            config.database.sqlalchemy_test_database_uri
+        )
+        upgrade_db(alembic_config)
     logger.debug("Migrations successfully applied")
 
 
@@ -84,6 +86,7 @@ def db() -> Generator:
         logger.debug(f"Database at: {engine.url} already exists")
 
     migrate_test_db()
+    raise SystemExit(1)
     scheduler.start()
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
