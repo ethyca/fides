@@ -6,6 +6,8 @@ import nox
 from constants_nox import (
     CI_ARGS,
     COMPOSE_SERVICE_NAME,
+    COMPOSE_FILE,
+    INTEGRATION_COMPOSE_FILE,
     IMAGE_NAME,
     RUN,
     RUN_NO_DEPS,
@@ -190,6 +192,17 @@ def pytest_unit(session: nox.Session) -> None:
 @nox.session()
 def pytest_external(session: nox.Session) -> None:
     """Run all fidesctl tests that rely on the third-party databases and services."""
+    start_command = (
+        "docker-compose",
+        "-f",
+        COMPOSE_FILE,
+        "-f",
+        INTEGRATION_COMPOSE_FILE,
+        "up",
+        "-d",
+        IMAGE_NAME,
+    )
+    session.run(*start_command, external=True)
     run_command = (
         "docker-compose",
         "run",
