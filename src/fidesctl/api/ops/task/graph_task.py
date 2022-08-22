@@ -615,7 +615,7 @@ def run_access_request(
         )
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))  # type: ignore
         return v.compute()
 
 
@@ -696,7 +696,7 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
         )
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))  # type: ignore
 
         update_cts: Tuple[int, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide

@@ -6,7 +6,7 @@ from alembic.migration import MigrationContext
 from fideslib.db.session import get_db_engine
 from pydantic import PostgresDsn
 
-from .base import Base
+from fidesctl.api.ops.db.base import Base
 
 
 def check_missing_migrations(database_url: PostgresDsn) -> None:
@@ -19,7 +19,7 @@ def check_missing_migrations(database_url: PostgresDsn) -> None:
     connection = engine.connect()
 
     migration_context = MigrationContext.configure(connection)
-    result = command.autogen.compare_metadata(migration_context, Base.metadata)
+    result = command.autogen.compare_metadata(migration_context, Base.metadata)  # type: ignore
 
     if result:
         raise SystemExit("Migrations needs to be generated!")
