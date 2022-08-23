@@ -4,12 +4,16 @@ import {
   Spinner,
   Text,
   useDisclosure,
+  useToast,
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
 import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { isErrorResult } from "~/types/errors";
 
 import AccordionTree from "../common/AccordionTree";
+import { getErrorMessage } from "../common/helpers";
+import { errorToastParams, successToastParams } from "../common/toast";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
 import TaxonomyFormBase from "./TaxonomyFormBase";
@@ -44,6 +48,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
+  const toast = useToast();
 
   if (isLoading) {
     return (
@@ -56,6 +61,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
+  const taxonomyType = labels.fides_key.toLocaleLowerCase();
+
   const handleSetEditEntity = (node: TaxonomyEntityNode) => {
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
     setEditEntity(entity);
@@ -66,9 +73,14 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     onDeleteOpen();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteKey) {
-      onDelete(deleteKey);
+      const result = await onDelete(deleteKey);
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(successToastParams(`Successfully deleted ${taxonomyType}`));
+      }
       onDeleteClose();
     }
   };
@@ -97,11 +109,10 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
         isOpen={deleteIsOpen}
         onClose={onDeleteClose}
         onConfirm={handleDelete}
-        title={`Delete ${labels.fides_key.toLocaleLowerCase()}`}
+        title={`Delete ${taxonomyType}`}
         message={
           <Text>
-            You are about to permanently delete the{" "}
-            {labels.fides_key.toLocaleLowerCase()}{" "}
+            You are about to permanently delete the {taxonomyType}{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
               {deleteKey}
             </Text>{" "}
