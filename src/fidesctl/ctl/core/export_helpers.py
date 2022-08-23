@@ -293,7 +293,6 @@ def union_data_categories_in_joined_dataframe(joined_df: pd.DataFrame) -> pd.Dat
     # isolate the system data categories into a new dataframe and create a common column
     joined_df = joined_df.drop(
         [
-            "system.description",
             "system.privacy_declaration.name",
             "dataset.description",
         ],
