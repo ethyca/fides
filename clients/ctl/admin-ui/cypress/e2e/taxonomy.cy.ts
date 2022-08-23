@@ -296,7 +296,7 @@ describe("Taxonomy management page", () => {
         statusCode: 500,
         body: errorMsg,
       }).as("putDataCategoryError");
-      // cy.visit("/taxonomy")
+
       cy.getByTestId(`tab-Data Categories`).click();
       cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
@@ -308,6 +308,127 @@ describe("Taxonomy management page", () => {
       cy.wait("@putDataCategoryError");
       cy.getByTestId("toast-success-msg").should("not.exist");
       cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
+    });
+  });
+
+  describe("Can delete data", () => {
+    beforeEach(() => {
+      cy.visit("/taxonomy");
+
+      const taxonomyPayload = {
+        statusCode: 200,
+        body: {
+          message: "resource deleted",
+          resource: {
+            fides_key: "key",
+            organization_fides_key: "default_organization",
+            tags: null,
+            name: "name",
+            description: "description",
+            parent_key: null,
+            is_default: false,
+          },
+        },
+      };
+      cy.intercept("DELETE", "/api/v1/data_category/*", taxonomyPayload).as(
+        "deleteDataCategory"
+      );
+      cy.intercept("DELETE", "/api/v1/data_use/*", taxonomyPayload).as(
+        "deleteDataUse"
+      );
+      cy.intercept("DELETE", "/api/v1/data_subject/*", taxonomyPayload).as(
+        "deleteDataSubject"
+      );
+      cy.intercept("DELETE", "/api/v1/data_qualifier/*", taxonomyPayload).as(
+        "deleteDataQualifier"
+      );
+    });
+
+    it("Only renders delete button on nodes without children", () => {
+      cy.getByTestId(`tab-Data Categories`).click();
+      cy.getByTestId("accordion-item-User Data").trigger("mouseover");
+      cy.getByTestId("delete-btn").should("not.exist");
+      cy.getByTestId("accordion-item-User Data").click();
+      cy.getByTestId("accordion-item-User Provided Data").click();
+      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
+        "mouseover"
+      );
+      cy.getByTestId("delete-btn");
+    });
+
+    it("Can delete a data category", () => {
+      cy.getByTestId(`tab-Data Categories`).click();
+      cy.getByTestId("accordion-item-User Data").click();
+      cy.getByTestId("accordion-item-User Provided Data").click();
+      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
+        "mouseover"
+      );
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataCategory").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("user.provided.nonidentifiable");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can delete a data use", () => {
+      cy.getByTestId(`tab-Data Uses`).click();
+      cy.getByTestId("item-Collect").trigger("mouseover");
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataUse").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("collect");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can delete a data subject", () => {
+      cy.getByTestId(`tab-Data Subjects`).click();
+      cy.getByTestId("item-Commuter").trigger("mouseover");
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataSubject").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("commuter");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can delete a data qualifier", () => {
+      cy.getByTestId(`tab-Identifiability`).click();
+      cy.getByTestId("accordion-item-Aggregated Data").click();
+      cy.getByTestId("accordion-item-Anonymized Data").click();
+      cy.getByTestId("accordion-item-Unlinked Pseudonymized Data").click();
+      cy.getByTestId("accordion-item-Pseudonymized Data").click();
+      cy.getByTestId("item-Identified Data").trigger("mouseover");
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataQualifier").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain(
+          "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
+        );
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can render an error on delete", () => {
+      cy.intercept("DELETE", "/api/v1/data_category/*", {
+        statusCode: 500,
+        body: "Internal Server Error",
+      }).as("deleteDataCategoryError");
+      cy.getByTestId(`tab-Data Categories`).click();
+      cy.getByTestId("accordion-item-User Data").click();
+      cy.getByTestId("accordion-item-User Provided Data").click();
+      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
+        "mouseover"
+      );
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataCategoryError");
+      cy.getByTestId("toast-error-msg");
     });
   });
 });
