@@ -1545,7 +1545,7 @@ def test_privacy_request_log_failure(
         assert sent_event.event == "privacy_request_execution_failure"
         assert sent_event.event_created_at is not None
 
-        assert sent_event.local_host is False
+        assert sent_event.local_host is None
         assert sent_event.endpoint is None
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"
