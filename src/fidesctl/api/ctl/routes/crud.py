@@ -21,8 +21,9 @@ from fidesctl.api.ctl.database.crud import (
 )
 from fidesctl.api.ctl.routes.util import (
     API_PREFIX,
-    forbid_if_any_default,
     forbid_if_default,
+    forbid_if_editing_any_default,
+    forbid_if_editing_is_default,
     get_resource_type,
 )
 from fidesctl.api.ctl.sql_models import models_with_default_field, sql_model_map
@@ -115,11 +116,11 @@ for resource_type, resource_model in model_map.items():
         """
         Update a resource by its fides_key.
 
-        Resources that have `is_default=True` cannot be updated and will respond
-        with a `403 Forbidden`.
+        The `is_default` field cannot be updated and will respond
+        with a `403 Forbidden` if attempted.
         """
         sql_model = sql_model_map[resource_type]
-        await forbid_if_default(sql_model, resource.fides_key, resource)
+        await forbid_if_editing_is_default(sql_model, resource.fides_key, resource)
         return await update_resource(sql_model, resource.dict())
 
     @router.post(
@@ -174,12 +175,12 @@ for resource_type, resource_model in model_map.items():
         Responds with a `201 Created` if even a single resource in `resources`
         did not previously exist. Otherwise, responds with a `200 OK`.
 
-        Resources that have `is_default=True` cannot be updated and will respond
-        with a `403 Forbidden`.
+        The `is_default` field cannot be updated and will respond
+        with a `403 Forbidden` if attempted.
         """
 
         sql_model = sql_model_map[resource_type]
-        await forbid_if_any_default(sql_model, resources)
+        await forbid_if_editing_any_default(sql_model, resources)
         result = await upsert_resources(sql_model, resources)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
@@ -215,7 +216,7 @@ for resource_type, resource_model in model_map.items():
         """
         Delete a resource by its fides_key.
 
-        Resources that have `is_default=True` cannot be updated and will respond
+        Resources that have `is_default=True` cannot be deleted and will respond
         with a `403 Forbidden`.
         """
         sql_model = sql_model_map[resource_type]

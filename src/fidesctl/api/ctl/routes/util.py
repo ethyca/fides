@@ -1,5 +1,5 @@
 from functools import update_wrapper
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from fastapi import HTTPException, status
 from fideslang import FidesModelType
@@ -82,39 +82,44 @@ def route_requires_bigquery_connector(func: Callable) -> Callable:
     return update_wrapper(wrapper_func, func)
 
 
-async def forbid_if_default(
-    sql_model: Base, fides_key: str, payload: Optional[FidesModelType] = None
+async def forbid_if_editing_is_default(
+    sql_model: Base, fides_key: str, payload: FidesModelType
 ) -> None:
     """
-    Raise a forbidden error if the existing resource is a
-    default field or if the user is trying to make a field default
+    Raise a forbidden error if the user is trying modify the `is_default` field
     """
-    error = errors.ForbiddenError(sql_model.__name__, fides_key)
     if sql_model in models_with_default_field:
-        if payload and payload.is_default:
-            raise error
+        resource = await get_resource(sql_model, fides_key)
+        if resource.is_default != payload.is_default:
+            raise errors.ForbiddenError(sql_model.__name__, fides_key)
 
+
+async def forbid_if_default(sql_model: Base, fides_key: str) -> None:
+    """
+    Raise a forbidden error if the user is trying to operate on a resource
+    with `is_default=True`
+    """
+    if sql_model in models_with_default_field:
         resource = await get_resource(sql_model, fides_key)
         if resource.is_default:
-            raise error
+            raise errors.ForbiddenError(sql_model.__name__, fides_key)
 
 
-async def forbid_if_any_default(sql_model: Base, resources: List[Dict]) -> None:
+async def forbid_if_editing_any_default(sql_model: Base, resources: List[Dict]) -> None:
     """
-    Raise a forbidden error if any of the existing resources
-    is a default field or if any are trying to make a field default
+    Raise a forbidden error if any of the existing resources' `is_default`
+    field is being modified
     """
     if sql_model in models_with_default_field:
-        for resource in resources:
-            if resource["is_default"]:
-                raise errors.ForbiddenError(sql_model.__name__, resource["fides_key"])
-
         fides_keys = [resource["fides_key"] for resource in resources]
-        existing_resources = [
-            r for r in await list_resource(sql_model) if r.fides_key in fides_keys
-        ]
-        for existing_resource in existing_resources:
-            if existing_resource.is_default:
-                raise errors.ForbiddenError(
-                    sql_model.__name__, existing_resource.fides_key
-                )
+        existing_resources = {
+            r.fides_key: r
+            for r in await list_resource(sql_model)
+            if r.fides_key in fides_keys
+        }
+        for resource in resources:
+            if (
+                resource["is_default"]
+                != existing_resources[resource["fides_key"]].is_default
+            ):
+                raise errors.ForbiddenError(sql_model.__name__, resource["fides_key"])

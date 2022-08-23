@@ -159,26 +159,10 @@ class TestCrud:
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
-    def test_api_cannot_modify_default_taxonomy(
+    def test_api_cannot_delete_default(
         self, test_config: FidesctlConfig, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
-
-        result = _api.update(
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-            resource_type=endpoint,
-            json_resource=resource.json(exclude_none=True),
-        )
-        assert result.status_code == 403
-
-        result = _api.upsert(
-            url=test_config.cli.server_url,
-            headers=test_config.user.request_headers,
-            resource_type=endpoint,
-            resources=[loads(resource.json())],
-        )
-        assert result.status_code == 403
 
         result = _api.delete(
             url=test_config.cli.server_url,
@@ -187,6 +171,34 @@ class TestCrud:
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 403
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_update_default(
+        self, test_config: FidesctlConfig, endpoint: str
+    ) -> None:
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        json_resource = resource.json(exclude_none=True)
+
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_upsert_default(
+        self, test_config: FidesctlConfig, endpoint: str
+    ) -> None:
+        resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=resources,
+        )
+        assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
@@ -210,7 +222,7 @@ class TestCrud:
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
-    def test_api_cannot_update_is_default_taxonomy(
+    def test_api_cannot_update_is_default(
         self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
@@ -230,11 +242,27 @@ class TestCrud:
         )
         assert result.status_code == 403
 
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_cannot_upsert_is_default(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        manifest.is_default = True
+        second_item = manifest.copy()
+        second_item.is_default = False
+
+        _api.create(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            json_resource=second_item.json(exclude_none=True),
+            headers=test_config.user.request_headers,
+        )
+
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
             resource_type=endpoint,
-            resources=[loads(manifest.json())],
+            resources=[manifest.dict(), second_item.dict()],
         )
         assert result.status_code == 403
 
@@ -242,6 +270,12 @@ class TestCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
+            headers=test_config.user.request_headers,
+        )
+        _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=second_item.fides_key,
             headers=test_config.user.request_headers,
         )
 
