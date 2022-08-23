@@ -5,11 +5,12 @@ To test the UI locally, clone the [FidesOps repository](https://github.com/ethyc
 
 ### Creating the root user
 
-In the top-level `fidesops` directory, run `nox -s create_user`.
+A root user can be created by adding a `root_username` and `root_password` to the
+security section of `fidesops.toml` file, or by setting `FIDESOPS__SECURITY__ROOT_USERNAME`
+and `FIDESOPS__SECURITY__ROOT_PASSWORD` environment variables.
 
-A series of prompts will walk you through creating a username and password. Passwords require 8 or more characters, upper and lowercase characters, a number, and a symbol.
-
-This will create an Admin UI Root User that can be used to access additional [user endpoints](#managing-users).
+This will allow you to login in with a root user that can be used to access
+additional [user endpoints](#managing-users).
 
 ### Accessing the Control Panel
 

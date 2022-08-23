@@ -44,6 +44,9 @@ The `fidesops.toml` file should specify the following variables:
 | `oauth_root_client_id` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID` | string | fidesopsadmin | N/A | The value used to identify the fidesops application root API client |
 | `oauth_root_client_secret` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET` | string | fidesopsadminsecret | N/A | The secret value used to authenticate the fidesops application root API client |
 | `oauth_access_token_expire_minutes` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period fidesops API tokens will be valid |
+| `root_username` | `FIDESOPS__SECURITY__ROOT_USERNAME` | string | root_user | None | If set this can be used in conjunction with `root_password` to log in as a root user without first needing to create a user in the database. |
+| `root_password` | `FIDESOPS__SECURITY__ROOT_PASSWORD` | string | apassword | None | If set this can be used in conjunction with `root_username` to log in as a root user without first needing to create a user in the database. |
+| `root_user_scopes` | `FIDESOPS__SECURITY__ROOT_USER_SCOPES` | list of strings | ["client:create", "client:update"] | All available scopes | The scopes granted to the root user when logging in with `root_username` and `root_password`. |
 | Execution Variables |---|---|---|---|---|
 |`privacy_request_delay_timeout` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
 |`task_retry_count` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
@@ -88,6 +91,8 @@ encoding = "UTF-8"
 oauth_root_client_id = "fidesopsadmin"
 oauth_root_client_secret = "fidesopsadminsecret"
 log_level = "INFO"
+root_username = "root_user"
+root_password = "Testpassword1!"
 
 [execution]
 masking_strict = true

@@ -30,7 +30,8 @@ The types of changes are:
 * SaaS Connector Configuration - Testing a Connection [#985](https://github.com/ethyca/fidesops/pull/1099)
 * Add an endpoint for verifying the user's identity before queuing the privacy request. [#1111](https://github.com/ethyca/fidesops/pull/1111)
 * Adds tests for email endpoints and service [#1112](https://github.com/ethyca/fidesops/pull/1112)
-* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115] https://github.com/ethyca/fidesops/pull/1115
+* Adds the ability to verify a subject's identity before processing a Privacy Request  [#1115](https://github.com/ethyca/fidesops/pull/1115)
+* Add option to login as root user from config[#1116](https://github.com/ethyca/fidesops/pull/1116)
 * Added email templates [#1123](https://github.com/ethyca/fidesops/pull/1123)
 * Add Retry button back into the subject request detail view [#1128](https://github.com/ethyca/fidesops/pull/1131)
 
@@ -56,6 +57,10 @@ The types of changes are:
 ### Docs
 
 * Minor formatting updates to [Policy Webhooks](https://ethyca.github.io/fidesops/guides/policy_webhooks/) documentation [#1114](https://github.com/ethyca/fidesops/pull/1114)
+
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
 
 ## [1.7.0](https://github.com/ethyca/fidesops/compare/1.6.3...1.7.0)
 

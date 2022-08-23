@@ -36,7 +36,6 @@ def run_infrastructure(
     run_application: bool = False,  # Should we run the Fidesops webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
-    run_create_superuser: bool = False,  # Should we run the create_superuser command?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
 ) -> None:
@@ -100,9 +99,6 @@ def run_infrastructure(
             analytics_opt_out=analytics_opt_out,
         )
 
-    if run_create_superuser:
-        return _run_create_superuser(path, COMPOSE_SERVICE_NAME)
-
     if run_create_test_data:
         return _run_create_test_data(path, COMPOSE_SERVICE_NAME)
 
@@ -165,20 +161,6 @@ def _run_quickstart(
     _run_cmd_or_err('echo "Running the quickstart..."')
     _run_cmd_or_err(f"docker-compose {path} up -d")
     _run_cmd_or_err(f"docker-compose run {service_name} python scripts/quickstart.py")
-
-
-def _run_create_superuser(
-    path: str,
-    service_name: str,
-) -> None:
-    """
-    Invokes the Fidesops create_user_and_client command
-    """
-    _run_cmd_or_err('echo "Running create superuser..."')
-    _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(
-        f"docker-compose run {service_name} python scripts/create_superuser.py"
-    )
 
 
 def _run_create_test_data(

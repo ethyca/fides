@@ -23,12 +23,6 @@ COMPOSE_DOWN = (
 
 
 @nox.session()
-def create_user(session: nox.Session) -> None:
-    """Create a super user in the fidesops database."""
-    run_infrastructure(datastores=["postgres"], run_create_superuser=True)
-
-
-@nox.session()
 def seed_test_data(session: nox.Session) -> None:
     """Seed test data in the Postgres application database."""
     run_infrastructure(datastores=["postgres"], run_create_test_data=True)
