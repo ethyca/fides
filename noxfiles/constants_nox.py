@@ -20,7 +20,16 @@ WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
 # Image Names & Tags
 REGISTRY = "ethyca"
-IMAGE_NAME = "fidesctl"
+IMAGE_NAME = "fides"
+COMPOSE_SERVICE_NAME = "fides"
+
+# Files
+COMPOSE_FILE = "docker-compose.yml"
+INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+
+# Image Names & Tags
+REGISTRY = "ethyca"
+IMAGE_NAME = "fides"
 IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
@@ -34,11 +43,32 @@ CI_ARGS = "-T" if getenv("CI") else "--user=root"
 
 # If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
+ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
-RUN = ("docker-compose", "run", "--rm", *ANALYTICS_ID_OVERRIDE, CI_ARGS, IMAGE_NAME)
+RUN = (
+    "docker",
+    "compose",
+    "run",
+    "--rm",
+    *ANALYTICS_ID_OVERRIDE,
+    *ANALYTICS_OPT_OUT,
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+)
+RUN_OPS = (
+    "docker",
+    "compose",
+    "run",
+    "--rm",
+    *ANALYTICS_ID_OVERRIDE,
+    *ANALYTICS_OPT_OUT,
+    CI_ARGS,
+    "fidesops",
+)
 RUN_NO_DEPS = (
-    "docker-compose",
+    "docker",
+    "compose",
     "run",
     "--no-deps",
     "--rm",
@@ -46,10 +76,22 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-START_APP = ("docker-compose", "up", "-d", "fidesctl")
-START_APP_UI = ("docker-compose", "up", "-d", "fidesctl-ui")
+RUN_OPS_NO_DEPS = (
+    "docker",
+    "compose",
+    "run",
+    "--no-deps",
+    "--rm",
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS,
+    "fidesops",
+)
+START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
+START_APP_OPS = ("docker", "compose", "up", "--wait", "fidesops")
+START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
-    "docker-compose",
+    "docker",
+    "compose",
     "-f",
     COMPOSE_FILE,
     "-f",
@@ -57,4 +99,5 @@ START_APP_EXTERNAL = (
     "up",
     "-d",
     IMAGE_NAME,
+    COMPOSE_SERVICE_NAME,
 )

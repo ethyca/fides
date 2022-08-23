@@ -51,7 +51,7 @@ def insert_environment(current_dict: Dict, env_key: str, env_val: str) -> None:
         next_env_key = env_key_split[1]
 
         # create new dict if key does not exist yet
-        next_dict = current_dict.get(current_dict_key, dict())
+        next_dict = current_dict.get(current_dict_key, {})
         current_dict[current_dict_key] = next_dict
 
         insert_environment(

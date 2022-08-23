@@ -73,7 +73,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
         separate()
 
-        with open(config_path, "w") as config_file:
+        with open(config_path, "w", encoding="utf-8") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
 
@@ -122,3 +122,16 @@ def webserver(ctx: click.Context) -> None:
     from fidesctl.api.main import start_webserver
 
     start_webserver()
+
+
+@click.command()
+@click.pass_context
+@with_analytics
+def worker(ctx: click.Context) -> None:
+    """
+    Starts a celery worker.
+    """
+    # This has to be here to avoid a circular dependency
+    from fidesctl.api.ops.tasks import start_worker
+
+    start_worker()

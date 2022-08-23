@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export type { AccessToken } from './models/AccessToken';
 export type { AWSConfig } from './models/AWSConfig';
+export type { BigQueryConfig } from './models/BigQueryConfig';
 export type { ContactDetails } from './models/ContactDetails';
 export type { DatabaseConfig } from './models/DatabaseConfig';
 export type { DataCategory } from './models/DataCategory';
@@ -26,11 +28,13 @@ export type { GenerateResponse } from './models/GenerateResponse';
 export { GenerateTypes } from './models/GenerateTypes';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export { IncludeExcludeEnum } from './models/IncludeExcludeEnum';
+export type { KeyfileCreds } from './models/KeyfileCreds';
 export { LegalBasisEnum } from './models/LegalBasisEnum';
 export { MatchesEnum } from './models/MatchesEnum';
 export type { OktaConfig } from './models/OktaConfig';
 export type { Organization } from './models/Organization';
 export type { OrganizationMetadata } from './models/OrganizationMetadata';
+export type { Page_UserResponse_ } from './models/Page_UserResponse_';
 export type { Policy } from './models/Policy';
 export type { PolicyRule } from './models/PolicyRule';
 export type { PrivacyDeclaration } from './models/PrivacyDeclaration';
@@ -41,6 +45,13 @@ export { SpecialCategoriesEnum } from './models/SpecialCategoriesEnum';
 export { StatusEnum } from './models/StatusEnum';
 export type { System } from './models/System';
 export type { SystemMetadata } from './models/SystemMetadata';
+export type { UserCreate } from './models/UserCreate';
+export type { UserCreateResponse } from './models/UserCreateResponse';
+export type { UserLogin } from './models/UserLogin';
+export type { UserLoginResponse } from './models/UserLoginResponse';
+export type { UserPasswordReset } from './models/UserPasswordReset';
+export type { UserResponse } from './models/UserResponse';
+export type { UserUpdate } from './models/UserUpdate';
 export type { ValidateRequest } from './models/ValidateRequest';
 export type { ValidateResponse } from './models/ValidateResponse';
 export type { ValidationError } from './models/ValidationError';

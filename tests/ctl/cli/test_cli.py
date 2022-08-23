@@ -439,7 +439,7 @@ def test_generate_dataset_db_with_connection_string(
             "db",
             f"{tmp_file}",
             "--connection-string",
-            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+            "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
         ],
     )
     print(result.output)
@@ -483,7 +483,7 @@ def test_scan_dataset_db_input_connection_string(
             "dataset",
             "db",
             "--connection-string",
-            "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+            "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
             "--coverage-threshold",
             "0",
         ],

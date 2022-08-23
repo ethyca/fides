@@ -1,0 +1,134 @@
+dataset:
+  - fides_key: logi_id_connector_example
+    name: Logi ID Example Dataset
+    description: A sample dataset representing the Logi ID connector for Fidesops
+    collections:
+      - name: users
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: sub
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: email_verified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: phone_number_verified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: given_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: firstname
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: family_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastname
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: zoneinfo
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: address
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: country
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+      - name: user_claims
+        fields:
+          - name: email_verified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: phone_number_verified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: given_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: family_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: address
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: country
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: zoneinfo
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: location
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: longitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: float
+              - name: latitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: float
+          - name: sub
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: country
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: firstname
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastname
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: provider
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: twoStepVerificationEnabled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean

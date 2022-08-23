@@ -52,8 +52,8 @@ async def health() -> Dict:
         "database": database_health,
     }
 
-    for key in response:
-        if response[key] == "unhealthy":
+    for _, value in response.items():
+        if value == "unhealthy":
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
             )

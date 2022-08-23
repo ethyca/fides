@@ -129,7 +129,7 @@ class TestHandleDatabaseCredentialsOptions:
         )
         assert (
             connection_string
-            == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+            == "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"
         )
 
 

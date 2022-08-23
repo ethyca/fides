@@ -10,7 +10,7 @@ env:
   CI: true
 
 jobs:
-  Admin-UI-Unit:
+  Ctl-Admin-UI-Unit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -66,3 +66,67 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
+
+  Ops-Admin-UI-Unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: clients/ops/admin-ui
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:ci
+
+      - name: Jest test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+  Privacy-Center-Unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: clients/ops/privacy-center
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:ci
+
+      - name: Jest test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build

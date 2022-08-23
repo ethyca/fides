@@ -3,6 +3,7 @@ build/
 dist/
 src/fidesctl.egg-info/
 src/fidesctl/ui-build/
+src/ui-build/
 
 # Ignore Python-Specific Files
 .mypy_cache/
@@ -10,6 +11,9 @@ src/fidesctl/ui-build/
 .pytest_cache/
 __pycache__/
 .coverage
+**.*.pyc
+**.*.pyo
+**.*.pyd
 
 # pyenv
 .python-version
@@ -35,3 +39,7 @@ docs/
 # Ignore cypress artifacts
 **/videos/
 **/screenshots/
+clients/ops/admin-ui/node_modules
+clients/ops/admin-ui/.next
+clients/privacy-center/.next
+.DS_Store

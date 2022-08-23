@@ -1,0 +1,107 @@
+name: Fidesops CI Checks - Unsafe
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [labeled]
+
+env:
+  CONTAINER: fidesops-local
+  IMAGE: ethyca/fidesops:local
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build fidesops container
+        uses: docker/build-push-action@v3
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          target: prod
+          outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
+          push: false
+          tags: ${{ env.IMAGE }}
+
+      - name: Upload fidesops container
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/${{ env.CONTAINER }}.tar
+          retention-days: 1
+
+  External-Datastores:
+    needs: Build
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Integration Tests (External)
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
+          BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: nox -s pytest_integration_external
+
+  External-SaaS-Connectors:
+    needs: Build
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download fidesops container
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.CONTAINER }}
+          path: /tmp/
+
+      - name: Load fidesops image
+        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Vault Token
+        uses: hashicorp/vault-action@v2.4.1
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          namespace: ${{ secrets.VAULT_NAMESPACE }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          exportToken: True
+
+      - name: SaaS Connector Tests
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+        run: nox -s pytest_saas

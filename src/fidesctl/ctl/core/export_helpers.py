@@ -51,7 +51,7 @@ def export_to_csv(
     utc_datetime = datetime.utcnow().strftime("%Y-%m-%d-T%H%M%S")
     filename = f"{utc_datetime}_{resource_exported}.csv"
     filepath = f"{manifests_dir}/{filename}"
-    with open(filepath, "w") as csvfile:
+    with open(filepath, "w", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(list_to_export)
 
@@ -144,7 +144,7 @@ def format_data_uses(data_uses: List[DataUse]) -> Dict[str, Dict[str, str]]:
     differences exist due to various types allowed across attributes.
     """
 
-    formatted_data_uses = dict()
+    formatted_data_uses = {}
     for data_use in data_uses:
         formatted_data_use = {
             "name": data_use.name,
@@ -190,7 +190,7 @@ def format_data_subjects(data_subjects: List[DataSubject]) -> Dict[str, Dict[str
         "automated_decisions_or_profiling",
     ]
 
-    formatted_data_subjects = dict()  # empty dict to populate and return
+    formatted_data_subjects = {}
 
     for data_subject in data_subjects:
         data_subject_dict = data_subject.dict()

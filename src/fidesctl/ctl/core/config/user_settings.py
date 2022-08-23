@@ -16,7 +16,7 @@ class FidesctlUserSettings(FidesSettings):
 
     user_id: str = "1"
     api_key: str = "test_api_key"
-    request_headers: Dict[str, str] = dict()
+    request_headers: Dict[str, str] = {}
     encryption_key: str = "test_encryption_key"
     analytics_opt_out: Optional[bool]
 

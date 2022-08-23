@@ -97,6 +97,8 @@ const DatasetYamlForm = () => {
                 color: "gray.800",
                 fontSize: "13px",
                 height: "50vh",
+                width: "100%",
+                mb: "2",
               }}
             />
           </Box>

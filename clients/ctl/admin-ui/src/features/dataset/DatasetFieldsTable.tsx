@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { DatasetField } from "~/types/api";
 
-import DataCategoryTag from "../taxonomy/DataCategoryTag";
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
+import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import { selectActiveFieldIndex, setActiveFieldIndex } from "./dataset.slice";
 import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata } from "./types";
@@ -73,7 +73,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
                     if (c.attribute === "data_categories") {
                       return field[c.attribute]?.map((dc) => (
                         <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
-                          <DataCategoryTag name={dc} />
+                          <TaxonomyEntityTag name={dc} />
                         </Box>
                       ));
                     }

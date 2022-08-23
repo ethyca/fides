@@ -258,7 +258,7 @@ def handle_okta_credentials_options(
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
-    okta_config = dict()
+    okta_config = {}
     if token or org_url:
         if not token or not org_url:
             raise click.UsageError(

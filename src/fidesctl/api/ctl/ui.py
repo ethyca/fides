@@ -20,7 +20,7 @@ def get_path_to_ui_file(package_name: str, path: str) -> Optional[Path]:
 
 def get_path_to_admin_ui_file(path: str) -> Optional[Path]:
     """Return a path to an admin UI file."""
-    package_name = __package__.split(".")[0]
+    package_name = __package__.split(".", maxsplit=1)[0]
     return get_path_to_ui_file(package_name, ADMIN_UI_DIRECTORY + path)
 
 
