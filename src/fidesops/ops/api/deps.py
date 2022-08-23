@@ -4,10 +4,15 @@ from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FunctionalityNotConfigured
-from fidesops.ops.core.config import config
+from fidesops.ops.core.config import FidesopsConfig, config
 from fidesops.ops.util.cache import get_cache as get_redis_connection
 
 _engine = None
+
+
+def get_config() -> FidesopsConfig:
+    """Returns the config for use in dependency injection."""
+    return config
 
 
 def get_db() -> Generator:
