@@ -28,14 +28,16 @@ def test_email_dispatch_mailgun_success(
         db=db,
         action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_email="test@email.com",
-        email_body_params=SubjectIdentityVerificationBodyParams(access_code="2348"),
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code="2348", verification_code_ttl_seconds=600
+        ),
     )
-
+    body = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>ID Code</title>\n</head>\n<body>\n<main>\n    <p>\n        Your privacy request verification code is 2348.\n        Please return to the Privacy Center and enter the code to\n        continue. This code will expire in 10 minutes\n    </p>\n</main>\n</body>\n</html>'
     mock_mailgun_dispatcher.assert_called_with(
         email_config=email_config,
         email=EmailForActionType(
             subject="Your one-time code",
-            body=f"<html>Your one-time code is 2348. Hurry! It expires in 10 minutes.</html>",
+            body=body,
         ),
         to_email="test@email.com",
     )
@@ -51,7 +53,9 @@ def test_email_dispatch_mailgun_config_not_found(
             db=db,
             action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_email="test@email.com",
-            email_body_params=SubjectIdentityVerificationBodyParams(access_code="2348"),
+            email_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
         )
     assert exc.value.args[0] == "No email config found."
 
@@ -80,7 +84,9 @@ def test_email_dispatch_mailgun_config_no_secrets(
             db=db,
             action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_email="test@email.com",
-            email_body_params=SubjectIdentityVerificationBodyParams(access_code="2348"),
+            email_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
         )
     assert (
         exc.value.args[0]
@@ -108,7 +114,7 @@ def test_email_dispatch_mailgun_failed_email(db: Session, email_config) -> None:
                 action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_email="test@email.com",
                 email_body_params=SubjectIdentityVerificationBodyParams(
-                    access_code="2348"
+                    verification_code="2348", verification_code_ttl_seconds=600
                 ),
             )
         assert (

@@ -6,6 +6,7 @@ from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
@@ -54,10 +55,15 @@ def _build_email(
     body_params: Union[SubjectIdentityVerificationBodyParams],
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
+        template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your one-time code",
-            # for 1st iteration, below will be replaced with actual template files
-            body=f"<html>Your one-time code is {body_params.access_code}. Hurry! It expires in 10 minutes.</html>",
+            body=template.render(
+                {
+                    "code": body_params.verification_code,
+                    "minutes": body_params.get_verification_code_ttl_minutes(),
+                }
+            ),
         )
     logger.error(f"Email action type {action_type} is not implemented")
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")

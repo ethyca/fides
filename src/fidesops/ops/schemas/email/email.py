@@ -24,13 +24,20 @@ class EmailActionType(Enum):
 class EmailTemplateBodyParams(Enum):
     """Enum for all possible email template body params"""
 
-    ACCESS_CODE = "access_code"
+    VERIFICATION_CODE = "verification_code"
 
 
 class SubjectIdentityVerificationBodyParams(BaseModel):
     """Body params required for subject identity verification email template"""
 
-    access_code: str
+    verification_code: str
+    verification_code_ttl_seconds: int
+
+    def get_verification_code_ttl_minutes(self) -> int:
+        """returns verification_code_ttl_seconds in minutes"""
+        if self.verification_code_ttl_seconds < 60:
+            return 0
+        return self.verification_code_ttl_seconds // 60
 
 
 class EmailForActionType(BaseModel):
