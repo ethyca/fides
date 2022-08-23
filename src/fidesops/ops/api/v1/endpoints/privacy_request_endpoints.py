@@ -48,6 +48,7 @@ from fidesops.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
 )
 from fidesops.ops.common_exceptions import (
+    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
     TraversalError,
@@ -70,6 +71,10 @@ from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
+from fidesops.ops.schemas.email.email import (
+    EmailActionType,
+    SubjectIdentityVerificationBodyParams,
+)
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -84,7 +89,9 @@ from fidesops.ops.schemas.privacy_request import (
     StoppedCollection,
     VerificationCode,
 )
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.service.privacy_request.request_runner_service import (
+    generate_id_verification_code,
     queue_privacy_request,
 )
 from fidesops.ops.service.privacy_request.request_service import (
@@ -201,6 +208,13 @@ def create_privacy_request(
                 None,
             )
 
+            if config.execution.subject_identity_verification_required:
+                _send_verification_code_to_user(
+                    db, privacy_request, privacy_request_data.identity.email
+                )
+                created.append(privacy_request)
+                continue  # Skip further processing for this privacy request
+
             if not config.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
@@ -212,7 +226,14 @@ def create_privacy_request(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
-
+        except EmailDispatchException as exc:
+            kwargs["privacy_request_id"] = privacy_request.id
+            logger.error("EmailDispatchException: %s", exc)
+            failure = {
+                "message": "Verification email could not be sent.",
+                "data": kwargs,
+            }
+            failed.append(failure)
         except common_exceptions.RedisConnectionError as exc:
             logger.error("RedisConnectionError: %s", exc)
             # Thrown when cache.ping() fails on cache connection retrieval
@@ -233,6 +254,23 @@ def create_privacy_request(
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,
+    )
+
+
+def _send_verification_code_to_user(
+    db: Session, privacy_request: PrivacyRequest, email: Optional[str]
+) -> None:
+    """Generate and cache a verification code, and then email to the user"""
+    verification_code: str = generate_id_verification_code()
+    privacy_request.cache_identity_verification_code(verification_code)
+    dispatch_email(
+        db=db,
+        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        to_email=email,
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        ),
     )
 
 
@@ -973,7 +1011,7 @@ def verify_identification_code(
     db: Session = Depends(deps.get_db),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
-    """Verify the supplied identity verification code
+    """Verify the supplied identity verification code.
 
     If successful, and we don't need separate manual request approval, queue the privacy request
     for execution.

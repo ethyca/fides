@@ -38,6 +38,7 @@ class ExecutionSettings(FidesSettings):
     task_retry_count: int
     task_retry_delay: int  # In seconds
     task_retry_backoff: int
+    subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
     masking_strict: bool = True
     worker_enabled: bool = True

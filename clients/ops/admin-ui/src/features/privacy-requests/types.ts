@@ -6,7 +6,8 @@ export type PrivacyRequestStatus =
   | "in_processing"
   | "paused"
   | "canceled"
-  | "pending";
+  | "pending"
+  | "identity_unverified";
 
 export enum ActionType {
   ACCESS = "access",
