@@ -20,16 +20,27 @@ interface ActionButtonProps {
   onEdit: (node: TaxonomyEntityNode) => void;
   onDelete: (node: TaxonomyEntityNode) => void;
 }
-const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => (
-  <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
-    <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
-      Edit
-    </Button>
-    <Button data-testid="delete-btn" onClick={() => onDelete(node)}>
-      Delete
-    </Button>
-  </ButtonGroup>
-);
+const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => {
+  const showDelete = node.children.length === 0;
+  return (
+    <ButtonGroup
+      size="xs"
+      isAttached
+      variant="outline"
+      data-testid="action-btns"
+      mr="2"
+    >
+      <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
+        Edit
+      </Button>
+      {showDelete ? (
+        <Button data-testid="delete-btn" onClick={() => onDelete(node)}>
+          Delete
+        </Button>
+      ) : null}
+    </ButtonGroup>
+  );
+};
 
 interface Props {
   nodes: TreeNode[];
