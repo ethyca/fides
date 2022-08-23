@@ -158,6 +158,9 @@ class TestCrud:
         print(result.text)
         assert result.status_code == 200
 
+
+@pytest.mark.integration
+class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
         self, test_config: FidesctlConfig, endpoint: str
@@ -176,6 +179,7 @@ class TestCrud:
     def test_api_can_update_default(
         self, test_config: FidesctlConfig, endpoint: str
     ) -> None:
+        """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         json_resource = resource.json(exclude_none=True)
 
@@ -191,6 +195,7 @@ class TestCrud:
     def test_api_can_upsert_default(
         self, test_config: FidesctlConfig, endpoint: str
     ) -> None:
+        """Should be able to upsert as long as `is_default` is not changing"""
         resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
         result = _api.upsert(
             url=test_config.cli.server_url,
@@ -211,6 +216,27 @@ class TestCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=test_config.user.request_headers,
+        )
+        assert result.status_code == 403
+
+        _api.delete(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=manifest.fides_key,
+            headers=test_config.user.request_headers,
+        )
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_cannot_upsert_default_taxonomy(
+        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+    ) -> None:
+        manifest = resources_dict[endpoint]
+        manifest.is_default = True
+        result = _api.upsert(
+            url=test_config.cli.server_url,
+            headers=test_config.user.request_headers,
+            resource_type=endpoint,
+            resources=[manifest.dict()],
         )
         assert result.status_code == 403
 
