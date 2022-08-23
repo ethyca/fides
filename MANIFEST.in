@@ -6,6 +6,7 @@ include versioneer.py
 include src/fidesops/ops/alembic.ini
 include src/fidesops/_version.py
 include src/fidesops/py.typed
+graft src/fidesops/ops/email_templates/templates
 graft src/fidesops/ops/migrations
 exclude src/fidesops/ops/migrations/README
 exclude src/fidesops/ops/migrations/script.py.mako
