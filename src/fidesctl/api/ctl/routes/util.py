@@ -105,7 +105,9 @@ async def forbid_if_default(sql_model: Base, fides_key: str) -> None:
             raise errors.ForbiddenError(sql_model.__name__, fides_key)
 
 
-async def forbid_if_editing_any_default(sql_model: Base, resources: List[Dict]) -> None:
+async def forbid_if_editing_any_is_default(
+    sql_model: Base, resources: List[Dict]
+) -> None:
     """
     Raise a forbidden error if any of the existing resources' `is_default`
     field is being modified
@@ -118,6 +120,8 @@ async def forbid_if_editing_any_default(sql_model: Base, resources: List[Dict]) 
             if r.fides_key in fides_keys
         }
         for resource in resources:
+            if existing_resources.get(resource["fides_key"]) is None:
+                continue
             if (
                 resource["is_default"]
                 != existing_resources[resource["fides_key"]].is_default

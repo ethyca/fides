@@ -22,7 +22,7 @@ from fidesctl.api.ctl.database.crud import (
 from fidesctl.api.ctl.routes.util import (
     API_PREFIX,
     forbid_if_default,
-    forbid_if_editing_any_default,
+    forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
     get_resource_type,
 )
@@ -180,7 +180,7 @@ for resource_type, resource_model in model_map.items():
         """
 
         sql_model = sql_model_map[resource_type]
-        await forbid_if_editing_any_default(sql_model, resources)
+        await forbid_if_editing_any_is_default(sql_model, resources)
         result = await upsert_resources(sql_model, resources)
         response.status_code = (
             status.HTTP_201_CREATED if result[0] > 0 else response.status_code
