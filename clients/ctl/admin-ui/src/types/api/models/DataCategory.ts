@@ -24,4 +24,8 @@ export type DataCategory = {
    */
   description?: string;
   parent_key?: string;
+  /**
+   * Denotes whether the resource is part of the default taxonomy or not.
+   */
+  is_default?: boolean;
 };

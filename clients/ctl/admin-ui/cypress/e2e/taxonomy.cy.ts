@@ -185,6 +185,111 @@ describe("Taxonomy management page", () => {
       );
     });
 
+    it("Can render an extended form for Data Uses", () => {
+      cy.getByTestId("tab-Data Uses").click();
+
+      // check an entity that has optional fields filled in ("provides")
+      cy.getByTestId("accordion-item-Provide the capability").trigger(
+        "mouseover"
+      );
+      cy.getByTestId("edit-btn").click();
+      cy.getByTestId("input-legal_basis").should(
+        "contain",
+        "Legitimate Interests"
+      );
+      cy.getByTestId("input-special_category").should(
+        "contain",
+        "Vital Interests"
+      );
+      cy.getByTestId("input-recipients").should("contain", "marketing team");
+      cy.getByTestId("input-recipients").should("contain", "dog shelter");
+      cy.getByTestId("input-legitimate_interest_impact_assessment").should(
+        "have.value",
+        "https://example.org/legitimate_interest_assessment"
+      );
+
+      // trigger a PUT
+      cy.getByTestId("input-legitimate_interest_impact_assessment")
+        .clear()
+        .type("foo");
+      cy.getByTestId("update-btn").click();
+      cy.wait("@putDataUse").then((interception) => {
+        const { body } = interception.request;
+        const expected = {
+          fides_key: "provide",
+          name: "Provide the capability",
+          description:
+            "Provide, give, or make available the product, service, application or system.",
+          is_default: false,
+          parent_key: null,
+          legal_basis: "Legitimate Interests",
+          special_category: "Vital Interests",
+          recipients: ["marketing team", "dog shelter"],
+          legitimate_interest: true,
+          legitimate_interest_impact_assessment: "foo",
+        };
+        expect(body).to.eql(expected);
+      });
+
+      // check an entity that has no optional fields filled in
+      cy.getByTestId("accordion-item-Improve the capability").trigger(
+        "mouseover"
+      );
+      cy.getByTestId("edit-btn").click();
+      cy.getByTestId("input-legal_basis").should("contain", "Select...");
+      cy.getByTestId("input-special_category").should("contain", "Select...");
+      cy.getByTestId("input-recipients").should("contain", "Select...");
+      cy.getByTestId("input-legitimate_interest_impact_assessment").should(
+        "have.value",
+        ""
+      );
+    });
+
+    it("Can render an extended form for Data Subjects", () => {
+      cy.getByTestId("tab-Data Subjects").click();
+
+      // check an entity that has optional fields filled in ("Citizen Voter")
+      cy.getByTestId("item-Citizen Voter").trigger("mouseover");
+      cy.getByTestId("edit-btn").click();
+      const rightValues = [
+        "Informed",
+        "Access",
+        "Rectification",
+        "Erasure",
+        "Object",
+      ];
+      rightValues.forEach((v) => {
+        cy.getByTestId("input-rights").should("contain", v);
+      });
+      cy.getByTestId("input-strategy").should("contain", "INCLUDE");
+
+      // trigger a PUT
+      cy.getByTestId("input-name").clear().type("foo");
+      cy.getByTestId("update-btn").click();
+      cy.wait("@putDataSubject").then((interception) => {
+        const { body } = interception.request;
+        const expected = {
+          automatic_decisions: true,
+          description:
+            "An individual registered to voter with a state or authority.",
+          fides_key: "citizen_voter",
+          is_default: false,
+          name: "foo",
+          rights: {
+            values: rightValues,
+            strategy: "INCLUDE",
+          },
+        };
+        expect(body).to.eql(expected);
+      });
+
+      // check an entity that has no optional fields filled in
+      cy.getByTestId("item-Anonymous User").trigger("mouseover");
+      cy.getByTestId("edit-btn").click();
+      cy.getByTestId("input-rights").should("contain", "Select...");
+      cy.getByTestId("input-strategy").should("contain", "Select...");
+    });
+
     it("Can trigger an error", () => {
       const errorMsg = "Internal Server Error";
       cy.intercept("PUT", "/api/v1/data_category*", {

@@ -30,6 +30,8 @@ system:
     system_type: Service
     administrating_department: Marketing
     data_responsibility_title: Processor
+    system_dependencies:
+    - demo_analytics_system
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:

@@ -264,39 +264,41 @@ export const CustomCreatableSingleSelect = ({
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-        <CreatableSelect
-          options={options}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            if (newValue) {
-              field.onChange(props.name)(newValue.value);
-            } else {
-              field.onChange(props.name)("");
-            }
-          }}
-          name={props.name}
-          value={selected}
-          chakraStyles={{
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              background: "white",
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              background: "primary.400",
-              color: "white",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              display: "none",
-              visibility: "hidden",
-            }),
-          }}
-        />
+        <Box data-testid={`input-${field.name}`}>
+          <CreatableSelect
+            options={options}
+            onBlur={(option) => {
+              if (option) {
+                field.onBlur(props.name);
+              }
+            }}
+            onChange={(newValue) => {
+              if (newValue) {
+                field.onChange(props.name)(newValue.value);
+              } else {
+                field.onChange(props.name)("");
+              }
+            }}
+            name={props.name}
+            value={selected}
+            chakraStyles={{
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                background: "white",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                display: "none",
+                visibility: "hidden",
+              }),
+            }}
+          />
+        </Box>
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>
@@ -308,6 +310,7 @@ export const CustomCreatableMultiSelect = ({
   isSearchable,
   isClearable,
   options,
+  size,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
@@ -319,44 +322,49 @@ export const CustomCreatableMultiSelect = ({
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-        <CreatableSelect
-          name={props.name}
-          chakraStyles={{
-            dropdownIndicator: (provided) => ({
-              ...provided,
-              background: "white",
-            }),
-            multiValue: (provided) => ({
-              ...provided,
-              background: "primary.400",
-              color: "white",
-            }),
-            multiValueRemove: (provided) => ({
-              ...provided,
-              display: "none",
-              visibility: "hidden",
-            }),
-          }}
-          components={{
-            Menu: () => null,
-            DropdownIndicator: () => null,
-          }}
-          isClearable={isClearable}
-          isMulti
-          options={options}
-          value={selected}
-          onBlur={(option) => {
-            if (option) {
-              field.onBlur(props.name);
-            }
-          }}
-          onChange={(newValue) => {
-            setFieldValue(
-              field.name,
-              newValue.map((v) => v.value)
-            );
-          }}
-        />
+        <Box data-testid={`input-${field.name}`}>
+          <CreatableSelect
+            data-testid={`input-${field.name}`}
+            name={props.name}
+            chakraStyles={{
+              container: (provided) => ({ ...provided, mr: 2, flexGrow: 1 }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                background: "white",
+              }),
+              multiValue: (provided) => ({
+                ...provided,
+                background: "primary.400",
+                color: "white",
+              }),
+              multiValueRemove: (provided) => ({
+                ...provided,
+                display: "none",
+                visibility: "hidden",
+              }),
+            }}
+            components={{
+              Menu: () => null,
+              DropdownIndicator: () => null,
+            }}
+            isClearable={isClearable}
+            isMulti
+            options={options}
+            value={selected}
+            onBlur={(option) => {
+              if (option) {
+                field.onBlur(props.name);
+              }
+            }}
+            onChange={(newValue) => {
+              setFieldValue(
+                field.name,
+                newValue.map((v) => v.value)
+              );
+            }}
+            size={size}
+          />
+        </Box>
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}
     </FormControl>

@@ -15,7 +15,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.2...main)
+
+### Added
+
+* Added more taxonomy fields that can be edited via the UI [#1000](https://github.com/ethyca/fides/pull/1000)
+
+## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
 ### Added
 
@@ -26,7 +32,9 @@ The types of changes are:
 ### Changed
 
 * Upgraded base Docker version to Python 3.9 and updated all other references from 3.8 -> 3.9 [#974](https://github.com/ethyca/fides/pull/974)
+* Prepend all database tables with `ctl_` [#979](https://github.com/ethyca/fides/pull/979)
 * Moved the `admin-ui` code down one level into a `ctl` subdir [#970](https://github.com/ethyca/fides/pull/970)
+* Extended the `/datamap` endpoint to include extra metadata [#992](https://github.com/ethyca/fides/pull/992)
 
 ## [1.8.1](https://github.com/ethyca/fides/compare/1.8.0...1.8.1) - 2022-08-08
 

@@ -10,32 +10,36 @@ import {
   useToast,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
+import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult, parseError } from "~/features/common/helpers";
+import { successToastParams } from "~/features/common/toast";
 import { RTKErrorResult } from "~/types/errors";
 
-import { CustomTextArea, CustomTextInput } from "../common/form/inputs";
-import { successToastParams } from "../common/toast";
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
 import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
-type FormValues = Partial<TaxonomyEntity> & Pick<TaxonomyEntity, "fides_key">;
+export type FormValues = Partial<TaxonomyEntity> &
+  Pick<TaxonomyEntity, "fides_key">;
 
 interface Props {
   entity: TaxonomyEntity;
   labels: Labels;
   onCancel: () => void;
   onEdit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
+  extraFormFields?: ReactNode;
+  initialValues: FormValues;
 }
-const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
+const EditTaxonomyForm = ({
+  entity,
+  labels,
+  onCancel,
+  onEdit,
+  extraFormFields,
+  initialValues,
+}: Props) => {
   const toast = useToast();
-  const initialValues: FormValues = {
-    fides_key: entity.fides_key,
-    name: entity.name ?? "",
-    description: entity.description ?? "",
-    parent_key: entity.parent_key ?? "",
-  };
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleError = (error: RTKErrorResult["error"]) => {
@@ -45,9 +49,12 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
 
   const handleSubmit = async (newValues: FormValues) => {
     setFormError(null);
-    // ensure parent key stays the same, as it cannot be changed by the user
-    // and because the backend requires it to be undefined over an empty string
-    const payload = { ...newValues, parent_key: entity.parent_key };
+    // parent_key and fides_keys are immutable
+    const payload = {
+      ...newValues,
+      parent_key: entity.parent_key,
+      fides_key: entity.fides_key,
+    };
     const result = await onEdit(payload);
     if (isErrorResult(result)) {
       handleError(result.error);
@@ -83,6 +90,7 @@ const EditTaxonomyForm = ({ entity, labels, onCancel, onEdit }: Props) => {
                 label={labels.parent_key}
                 disabled
               />
+              {extraFormFields}
             </Stack>
 
             {formError ? (
