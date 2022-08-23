@@ -36,7 +36,7 @@ def get_connection_types(
 ) -> List[ConnectionSystemTypeMap]:
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
-        return search in elem if search else True
+        return search.lower() in elem.lower() if search else True
 
     connection_system_types: List[ConnectionSystemTypeMap] = []
     if system_type == SystemType.database or system_type is None:

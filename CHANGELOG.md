@@ -51,6 +51,7 @@ The types of changes are:
 
 * Update request status endpoint to return both audit and execution logs [#1068] (https://github.com/ethyca/fidesops/pull/1068/)
 * Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
+* Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
 
 ### Docs
 

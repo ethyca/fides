@@ -1,4 +1,3 @@
-from typing import List
 from unittest import mock
 
 import pytest
@@ -81,6 +80,40 @@ class TestGetConnections:
         }
 
         resp = api_client.get(url + "?search=re", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 3
+        assert data == [
+            {
+                "identifier": ConnectionType.postgres.value,
+                "type": SystemType.database.value,
+            },
+            {
+                "identifier": ConnectionType.redshift.value,
+                "type": SystemType.database.value,
+            },
+            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+        ]
+
+    def test_search_connection_types_case_insensitive(
+        self, api_client, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?search=St", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 2
+        assert data[0] == {
+            "identifier": ConnectionType.postgres.value,
+            "type": SystemType.database.value,
+        }
+        assert data[1] == {
+            "identifier": SaaSType.stripe.value,
+            "type": SystemType.saas.value,
+        }
+
+        resp = api_client.get(url + "?search=Re", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
         assert len(data) == 3
