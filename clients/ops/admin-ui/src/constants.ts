@@ -18,6 +18,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "privacy-request:review",
   },
   {
+    privilege: "Resume subject requests",
+    scope: "privacy-request:resume",
+  },
+  {
     privilege: "View datastore connections",
     scope: "connection:read",
   },
