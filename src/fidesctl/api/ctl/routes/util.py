@@ -110,7 +110,7 @@ async def forbid_if_editing_any_is_default(
 ) -> None:
     """
     Raise a forbidden error if any of the existing resources' `is_default`
-    field is being modified
+    field is being modified, or if there is a new resource with `is_default=True`
     """
     if sql_model in models_with_default_field:
         fides_keys = [resource["fides_key"] for resource in resources]
@@ -121,8 +121,12 @@ async def forbid_if_editing_any_is_default(
         }
         for resource in resources:
             if existing_resources.get(resource["fides_key"]) is None:
-                continue
-            if (
+                # new resource is being upserted
+                if resource["is_default"]:
+                    raise errors.ForbiddenError(
+                        sql_model.__name__, resource["fides_key"]
+                    )
+            elif (
                 resource["is_default"]
                 != existing_resources[resource["fides_key"]].is_default
             ):
