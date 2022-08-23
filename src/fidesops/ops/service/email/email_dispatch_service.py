@@ -23,9 +23,11 @@ logger = logging.getLogger(__name__)
 def dispatch_email(
     db: Session,
     action_type: EmailActionType,
-    to_email: str,
+    to_email: Optional[str],
     email_body_params: Union[SubjectIdentityVerificationBodyParams],
 ) -> None:
+    if not to_email:
+        raise EmailDispatchException("No email supplied.")
     logger.info("Retrieving email config")
     email_config: Optional[EmailConfig] = db.query(EmailConfig).first()
     if not email_config:

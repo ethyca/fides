@@ -271,7 +271,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         return schema
 
     def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
-        """Verify the identification code supplied by the user"""
+        """Verify the identification code supplied by the user
+        If verified, change the status of the request to "pending", and set the datetime the identity was verified.
+        """
         if not self.status == PrivacyRequestStatus.identity_unverified:
             raise IdentityVerificationException(
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member

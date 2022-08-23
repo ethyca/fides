@@ -2,8 +2,9 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
+from fidesops.ops.core.config import config
 from fidesops.ops.models.policy import ActionType, Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -17,11 +18,20 @@ logger = logging.getLogger(__name__)
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime], policy_id: str
 ) -> Dict[str, Any]:
-    """Build kwargs required for creating privacy request"""
+    """Build kwargs required for creating privacy request
+
+    If identity verification is on, the request will have an initial status of
+    "identity_unverified", otherwise, it will have an initial status of "pending".
+    """
+    status = (
+        PrivacyRequestStatus.identity_unverified
+        if config.execution.subject_identity_verification_required
+        else PrivacyRequestStatus.pending
+    )
     return {
         "requested_at": requested_at,
         "policy_id": policy_id,
-        "status": "pending",
+        "status": status,
     }
 
 
