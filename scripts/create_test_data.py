@@ -10,24 +10,28 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
-from fidesops.ops.core.config import config
-from fidesops.ops.db.database import init_db
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.db.database import init_db
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.models.storage import ResponseFormat, StorageConfig
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.storage.storage import (
+    FileNaming,
+    StorageDetails,
+    StorageType,
+)
+from fides.api.ops.util.data_category import DataCategory
 
 
 def _create_policy(

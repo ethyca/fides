@@ -15,7 +15,7 @@ class CallbackType(Enum):
 
 
 class SecondPartyRequestFormat(BaseModel):
-    """The request body we will use when calling a user's HTTP endpoint from Fidesops"""
+    """The request body we will use when calling a user's HTTP endpoint from fides.api"""
 
     privacy_request_id: str
     direction: WebhookDirection
@@ -29,7 +29,7 @@ class SecondPartyRequestFormat(BaseModel):
 
 
 class SecondPartyResponseFormat(BaseModel):
-    """The expected response from a user's HTTP endpoint that receives callbacks from Fidesops
+    """The expected response from a user's HTTP endpoint that receives callbacks from fides.api
 
     Responses are only expected (and considered) for two_way webhooks.
     """

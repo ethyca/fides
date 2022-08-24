@@ -15,9 +15,9 @@ from fides.api.ops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
-from fidesops.ops.util.collection_util import Row, append
-from fidesops.ops.util.matching_queue import MatchingQueue
+from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
+from fides.api.ops.util.collection_util import Row, append
+from fides.api.ops.util.matching_queue import MatchingQueue
 
 logger = logging.getLogger(__name__)
 

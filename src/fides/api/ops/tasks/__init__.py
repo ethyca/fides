@@ -4,7 +4,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 
-from fidesops.ops.core.config import config
+from fides.api.ops.core.config import config
 
 logger = get_task_logger(__name__)
 

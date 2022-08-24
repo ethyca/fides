@@ -47,8 +47,8 @@ from fides.api.ops.util.cache import (
     get_async_task_tracking_cache_key,
     get_cache,
 )
-from fidesops.ops.util.collection_util import Row
-from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 
 logger = get_task_logger(__name__)
 

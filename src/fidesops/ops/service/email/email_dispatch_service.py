@@ -5,10 +5,10 @@ import requests
 from requests import Response
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import EmailDispatchException
-from fidesops.ops.email_templates import get_email_template
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
@@ -16,7 +16,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

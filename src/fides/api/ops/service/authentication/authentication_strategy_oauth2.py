@@ -22,8 +22,8 @@ from fides.api.ops.service.authentication.authentication_strategy import (
 from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

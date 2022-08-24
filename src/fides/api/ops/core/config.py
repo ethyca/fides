@@ -17,7 +17,7 @@ from fideslib.core.config import (
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
 
-from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 

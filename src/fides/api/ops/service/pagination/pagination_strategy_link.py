@@ -12,8 +12,8 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     LinkSource,
     StrategyConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fides.api.ops.util.logger import Pii
 
 STRATEGY_NAME = "link"
 

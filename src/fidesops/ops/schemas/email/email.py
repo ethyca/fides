@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fidesops.ops.schemas import Msg
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class EmailServiceType(Enum):

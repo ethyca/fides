@@ -3,11 +3,11 @@ import pathlib
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
-from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
-from fidesops.ops.email_templates.template_names import (
+from fides.api.ops.common_exceptions import EmailTemplateUnhandledActionType
+from fides.api.ops.email_templates.template_names import (
     SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
 )
-from fidesops.ops.schemas.email.email import EmailActionType
+from fides.api.ops.schemas.email.email import EmailActionType
 
 pathlib.Path(__file__).parent.resolve()
 logger = logging.getLogger(__name__)
