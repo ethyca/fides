@@ -21,7 +21,7 @@ setup(
     name="ethyca-fides",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="Ecosystem for data privacy as code.",
+    description="Open-source ecosystem for data privacy as code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
