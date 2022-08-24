@@ -78,6 +78,9 @@ const EditTaxonomyForm = ({
           `Taxonomy successfully ${isCreate ? "created" : "updated"}`
         )
       );
+      if (isCreate) {
+        onCancel();
+      }
     }
   };
 

@@ -39,7 +39,7 @@ export const dataSubjectsApi = createApi({
     }),
     createDataSubject: build.mutation<DataSubject, DataSubject>({
       query: (dataSubject) => ({
-        url: `data_use/`,
+        url: `data_subject/`,
         method: "POST",
         body: dataSubject,
       }),

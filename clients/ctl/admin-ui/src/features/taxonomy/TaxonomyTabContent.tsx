@@ -1,5 +1,5 @@
 import { Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -42,6 +42,16 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
   const addTaxonomyType = useAppSelector(selectAddTaxonomyType);
 
+  useEffect(() => {
+    if (addTaxonomyType) {
+      setEditEntity(null);
+    }
+  }, [addTaxonomyType]);
+
+  const closeAddForm = () => {
+    dispatch(setAddTaxonomyType(null));
+  };
+
   if (isLoading) {
     return (
       <Center>
@@ -53,10 +63,6 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
-  const closeAddForm = () => {
-    dispatch(setAddTaxonomyType(null));
-  };
-
   const handleSetEditEntity = (node: TaxonomyEntityNode) => {
     if (addTaxonomyType) {
       closeAddForm();
@@ -65,11 +71,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     setEditEntity(entity);
   };
 
-  const handleCreate = (entity: TaxonomyEntity) => {
-    const result = onCreate(entity);
-    closeAddForm();
-    return result;
-  };
+  const handleCreate = (entity: TaxonomyEntity) => onCreate(entity);
 
   return (
     <SimpleGrid columns={2} spacing={2}>
