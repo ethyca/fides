@@ -18,7 +18,7 @@ dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 # Add these to `optional-requirements.txt` as well
 
 setup(
-    name="fidesctl",
+    name="ethyca-fides",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="CLI for Fides",
