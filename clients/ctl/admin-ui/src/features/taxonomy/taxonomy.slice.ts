@@ -4,16 +4,16 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { AppState } from "~/app/store";
 import { DataCategory } from "~/types/api";
 
-import { TaxonomyTypes } from "./types";
+import { TaxonomyType } from "./types";
 
 export interface State {
   dataCategories: DataCategory[];
-  activeTaxonomyType: TaxonomyTypes;
+  addTaxonomyType: TaxonomyType | null;
 }
 
 const initialState: State = {
   dataCategories: [],
-  activeTaxonomyType: "DataCategory",
+  addTaxonomyType: null,
 };
 
 export const taxonomyApi = createApi({
@@ -41,11 +41,22 @@ export const taxonomyApi = createApi({
       }),
       invalidatesTags: ["Data Categories"],
     }),
+    createDataCategory: build.mutation<DataCategory, DataCategory>({
+      query: (dataCategory) => ({
+        url: `data_category/`,
+        method: "POST",
+        body: dataCategory,
+      }),
+      invalidatesTags: ["Data Categories"],
+    }),
   }),
 });
 
-export const { useGetAllDataCategoriesQuery, useUpdateDataCategoryMutation } =
-  taxonomyApi;
+export const {
+  useGetAllDataCategoriesQuery,
+  useUpdateDataCategoryMutation,
+  useCreateDataCategoryMutation,
+} = taxonomyApi;
 
 export const taxonomySlice = createSlice({
   name: "taxonomy",
@@ -55,18 +66,20 @@ export const taxonomySlice = createSlice({
       ...state,
       dataCategories: action.payload,
     }),
-    setActiveTaxonomyType: (state, action: PayloadAction<TaxonomyTypes>) => ({
+    setAddTaxonomyType: (
+      state,
+      action: PayloadAction<TaxonomyType | null>
+    ) => ({
       ...state,
-      activeTaxonomyType: action.payload,
+      addTaxonomyType: action.payload,
     }),
   },
 });
 
-export const { setDataCategories, setActiveTaxonomyType } =
-  taxonomySlice.actions;
+export const { setDataCategories, setAddTaxonomyType } = taxonomySlice.actions;
 export const selectDataCategories = (state: AppState) =>
-  state.dataCategories.dataCategories;
-export const selectActiveTaxonomyType = (state: AppState) =>
-  state.dataCategories.activeTaxonomyType;
+  state.taxonomy.dataCategories;
+export const selectAddTaxonomyType = (state: AppState) =>
+  state.taxonomy.addTaxonomyType;
 
 export const { reducer } = taxonomySlice;

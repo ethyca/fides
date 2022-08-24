@@ -37,11 +37,22 @@ export const dataSubjectsApi = createApi({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
+    createDataSubject: build.mutation<DataSubject, DataSubject>({
+      query: (dataSubject) => ({
+        url: `data_use/`,
+        method: "POST",
+        body: dataSubject,
+      }),
+      invalidatesTags: ["Data Subjects"],
+    }),
   }),
 });
 
-export const { useGetAllDataSubjectsQuery, useUpdateDataSubjectMutation } =
-  dataSubjectsApi;
+export const {
+  useGetAllDataSubjectsQuery,
+  useUpdateDataSubjectMutation,
+  useCreateDataSubjectMutation,
+} = dataSubjectsApi;
 
 export const dataSubjectsSlice = createSlice({
   name: "dataSubjects",

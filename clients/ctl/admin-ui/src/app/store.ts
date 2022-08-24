@@ -22,10 +22,7 @@ import {
   reducer as organizationReducer,
 } from "~/features/organization";
 import { systemApi } from "~/features/system";
-import {
-  reducer as dataCategoriesReducer,
-  taxonomyApi,
-} from "~/features/taxonomy";
+import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
 const makeStore = () => {
@@ -34,7 +31,7 @@ const makeStore = () => {
       configWizard: configWizardReducer,
       user: userReducer,
       dataset: datasetReducer,
-      dataCategories: dataCategoriesReducer,
+      taxonomy: taxonomyReducer,
       dataQualifier: dataQualifierReducer,
       dataSubjects: dataSubjectsReducer,
       dataUse: dataUseReducer,
