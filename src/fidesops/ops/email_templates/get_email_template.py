@@ -23,7 +23,7 @@ def get_email_template(action_type: EmailActionType) -> Template:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
 
-    logger.error(f"No corresponding template linked to the {action_type}")
+    logger.error("No corresponding template linked to the %s", action_type)
     raise EmailTemplateUnhandledActionType(
         f"No corresponding template linked to the {action_type}"
     )

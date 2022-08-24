@@ -19,7 +19,7 @@ def get_access_token(client_id, client_secret):
         "client_secret": client_secret,
     }
     response = requests.post(f"{FIDESOPS_URL}/api/v1/oauth/token", data=data)
-    logger.info(f"Creating access token. Status {response.status_code}")
+    logger.info("Creating access token. Status %s", response.status_code)
     return response.json()["access_token"]
 ```
 
@@ -64,7 +64,7 @@ def create_oauth_client(access_token):
     response = requests.post(
         f"{FIDESOPS_URL}/api/v1/oauth/client", headers=oauth_headers(access_token), json=scopes_data
     )
-    logger.info(f"Creating Oauth Client. Status {response.status_code}")
+    logger.info("Creating Oauth Client. Status %s", response.status_code)
     return response.json()
 
 ```

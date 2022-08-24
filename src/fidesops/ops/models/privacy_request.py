@@ -526,7 +526,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "reply-to-token": generate_request_callback_jwe(webhook),
             }
 
-        logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
+        logger.info(
+            "Calling webhook '%s' for privacy_request '%s'", webhook.key, self.id
+        )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
@@ -542,7 +544,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             [response_body.derived_identity.dict().values()]
         ):
             logger.info(
-                f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
+                "Updating known identities on privacy request '%s' from webhook '%s'.",
+                self.id,
+                webhook.key,
             )
             # Don't persist derived identities because they aren't provided directly
             # by the end user
@@ -551,7 +555,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
             raise PrivacyRequestPaused(
-                f"Halt instruction received on privacy request {self.id}."
+                f"Halt instruction received on privacy request '{self.id}'."
             )
 
         return
@@ -584,7 +588,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info(f"Revoking task {task_id} for request {self.id}")
+                logger.info("Revoking task %s for request %s", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 

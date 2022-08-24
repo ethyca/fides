@@ -75,13 +75,13 @@ def db() -> Generator:
         database_uri=config.database.sqlalchemy_test_database_uri,
     )
 
-    logger.debug(f"Configuring database at: {engine.url}")
+    logger.debug("Configuring database at: %s", engine.url)
     if not database_exists(engine.url):
-        logger.debug(f"Creating database at: {engine.url}")
+        logger.debug("Creating database at: %s", engine.url)
         create_database(engine.url)
-        logger.debug(f"Database at: {engine.url} successfully created")
+        logger.debug("Database at: %s successfully created", engine.url)
     else:
-        logger.debug(f"Database at: {engine.url} already exists")
+        logger.debug("Database at: %s already exists", engine.url)
 
     migrate_test_db()
     scheduler.start()
@@ -92,11 +92,11 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug(f"Dropping database at: {engine.url}")
+    logger.debug("Dropping database at: %s", engine.url)
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
     drop_database(engine.url)
-    logger.debug(f"Database at: {engine.url} successfully dropped")
+    logger.debug("Database at: %s successfully dropped", engine.url)
 
 
 @pytest.fixture(autouse=True)

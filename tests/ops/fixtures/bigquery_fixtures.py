@@ -171,7 +171,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
     This helper function has already been run once, and data has been populated in the test BigQuery dataset.
     We may need this later for integration erasure tests, or in case tables are accidentally removed.
     """
-    logger.info(f"Seeding bigquery db")
+    logger.info("Seeding bigquery db")
     statements = [
         """
         DROP TABLE IF EXISTS fidesopstest.report;
@@ -373,5 +373,5 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
     ]
     with bigquery_integration_engine.connect() as connection:
         [connection.execute(stmt) for stmt in statements]
-    logger.info(f"Finished seeding bigquery db")
+    logger.info("Finished seeding bigquery db")
     return

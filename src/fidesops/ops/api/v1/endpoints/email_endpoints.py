@@ -47,6 +47,7 @@ from fidesops.ops.service.email.email_crud_service import (
     update_email_config,
 )
 from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["email"], prefix=V1_URL_PREFIX)
@@ -75,7 +76,9 @@ def post_config(
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=e.message)
 
     except Exception as exc:
-        logger.warning(f"Create failed for email config {email_config.key}: {exc}")
+        logger.warning(
+            "Create failed for email config %s: %s", email_config.key, Pii(str(exc))
+        )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
@@ -99,14 +102,16 @@ def patch_config_by_key(
     try:
         return update_email_config(db=db, key=config_key, config=email_config)
     except EmailConfigNotFoundException:
-        logger.warning(f"No email config found with key {config_key}")
+        logger.warning("No email config found with key %s", config_key)
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No email config found with key {config_key}",
         )
 
     except Exception as exc:
-        logger.warning(f"Patch failed for email config {email_config.key}: {exc}")
+        logger.warning(
+            "Patch failed for email config %s: %s", email_config.key, Pii(str(exc))
+        )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Config with key {email_config.key} failed to be added",
@@ -128,7 +133,7 @@ def put_config_secrets(
     """
     Add or update secrets for email config.
     """
-    logger.info(f"Finding email config with key '{config_key}'")
+    logger.info("Finding email config with key '%s'", config_key)
     email_config = EmailConfig.get_by(db=db, field="key", value=config_key)
     if not email_config:
         raise HTTPException(
@@ -152,7 +157,7 @@ def put_config_secrets(
             detail=exc.args[0],
         )
 
-    logger.info(f"Updating email config secrets for config with key '{config_key}'")
+    logger.info("Updating email config secrets for config with key '%s'", config_key)
     try:
         email_config.set_secrets(db=db, email_secrets=secrets_schema.dict())
     except ValueError as exc:
@@ -177,7 +182,7 @@ def get_configs(
     """
     Retrieves configs for email.
     """
-    logger.info(f"Finding all email configurations with pagination params {params}")
+    logger.info("Finding all email configurations with pagination params %s", params)
     return paginate(
         EmailConfig.query(db=db).order_by(EmailConfig.created_at.desc()), params=params
     )
@@ -194,7 +199,7 @@ def get_config_by_key(
     """
     Retrieves configs for email by key.
     """
-    logger.info(f"Finding email config with key '{config_key}'")
+    logger.info("Finding email config with key '%s'", config_key)
 
     try:
         return get_email_config_by_key(db=db, key=config_key)

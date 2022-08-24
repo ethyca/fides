@@ -20,7 +20,6 @@ from fidesops.ops.graph.data_type import parse_data_type_string
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.logger import NotPii
 from fidesops.ops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
@@ -91,7 +90,8 @@ class DatasetConfig(Base):
             )
         else:
             logger.debug(
-                f"Connection config with key {self.connection_config.key} is not a saas config, skipping merge dataset"
+                "Connection config with key %s is not a saas config, skipping merge dataset",
+                self.connection_config.key,
             )
         return dataset_graph
 
@@ -188,15 +188,15 @@ def convert_dataset_to_graph(
     after = set()
     if dataset.fidesops_meta and dataset.fidesops_meta.after:
         after = set(dataset.fidesops_meta.after)
-    logger.debug(f"Parsing dataset '{dataset_name}' into graph representation")
+    logger.debug("Parsing dataset '%s' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
         graph_fields = [to_graph_field(field) for field in collection.fields]
         logger.debug(
             "Parsing dataset %s: parsed collection %s with %s fields",
-            NotPii(dataset_name),
-            NotPii(collection.name),
-            NotPii(len(graph_fields)),
+            dataset_name,
+            collection.name,
+            len(graph_fields),
         )
         collection_after: Set[CollectionAddress] = set()
         if collection.fidesops_meta and collection.fidesops_meta.after:
@@ -210,8 +210,8 @@ def convert_dataset_to_graph(
         graph_collections.append(graph_collection)
     logger.debug(
         "Finished parsing dataset %s with %s collections",
-        NotPii(dataset_name),
-        NotPii(len(graph_collections)),
+        dataset_name,
+        len(graph_collections),
     )
 
     return Dataset(

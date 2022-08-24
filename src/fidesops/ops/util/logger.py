@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import logging
 import os
-from numbers import Number
 from typing import Any, Mapping, Union
 
 MASKED = "MASKED"
 
 
-class NotPii(str):
-    """whitelist non pii data"""
+class Pii(str):
+    """Mask pii data"""
 
 
 def get_fides_log_record_factory() -> Any:
@@ -50,14 +49,10 @@ def _mask_pii_for_logs(parameter: Any) -> Any:
     :param parameter: param that contains possible pii
     :return: depending on ENV config, returns masked pii param.
 
-    Don't mask numeric values as this can throw errors in consumers
-    format strings.
+    Logging args must be specifically wrapped in Pii in order to mask.
+
     """
-
-    if isinstance(parameter, (NotPii, Number)):
-        return parameter
-
-    return MASKED
+    return MASKED if isinstance(parameter, Pii) else parameter
 
 
 def _log_exception(exc: BaseException, dev_mode: bool = False) -> None:
