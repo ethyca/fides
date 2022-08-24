@@ -7,8 +7,8 @@ from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
 
-from fidesctl import __version__ as fides_version
-from fidesctl.api.ops.core.config import config
+from fides import __version__ as fides_version
+from fides.api.ops.core.config import config
 
 logger = logging.getLogger(__name__)
 

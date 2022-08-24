@@ -11,16 +11,16 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.base_class import JSONTypeOverride
-from fidesctl.api.ops.schemas.storage.storage import (
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,
     StorageSecretsOnetrust,
     StorageSecretsS3,
     StorageType,
 )
-from fidesctl.api.ops.schemas.storage.storage_secrets_docs_only import (
+from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
 

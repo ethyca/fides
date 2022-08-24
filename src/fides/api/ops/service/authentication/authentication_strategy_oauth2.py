@@ -7,23 +7,23 @@ from uuid import uuid4
 from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.models.authentication_request import AuthenticationRequest
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
+from fides.api.ops.core.config import config
+from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
     StrategyConfiguration,
 )
-from fidesctl.api.ops.service.authentication.authentication_strategy import (
+from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesctl.api.ops.service.connectors.saas.authenticated_client import (
+from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesctl.api.ops.util.logger import NotPii
-from fidesctl.api.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.api.ops.util.logger import NotPii
+from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

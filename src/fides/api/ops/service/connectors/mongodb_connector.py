@@ -4,20 +4,20 @@ from typing import Any, Dict, List, Optional
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
-from fidesctl.api.ops.common_exceptions import ConnectionException
-from fidesctl.api.ops.graph.traversal import Row, TraversalNode
-from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
-from fidesctl.api.ops.models.policy import Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
+from fides.api.ops.common_exceptions import ConnectionException
+from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
-from fidesctl.api.ops.service.connectors.base_connector import BaseConnector
-from fidesctl.api.ops.service.connectors.query_config import (
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.query_config import (
     MongoQueryConfig,
     QueryConfig,
 )
-from fidesctl.api.ops.util.logger import NotPii
+from fides.api.ops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 

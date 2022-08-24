@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import Extra
 
-from fidesctl.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.base_class import BaseSchema
 
 
 class PrivacyRequestIdentity(BaseSchema):

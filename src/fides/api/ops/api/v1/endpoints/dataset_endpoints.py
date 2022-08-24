@@ -17,42 +17,42 @@ from starlette.status import (
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
 )
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     SaaSConfigNotFoundException,
     TraversalError,
     ValidationError,
 )
-from fidesctl.api.ops.graph.traversal import DatasetGraph, Traversal
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesctl.api.ops.models.datasetconfig import (
+from fides.api.ops.graph.traversal import DatasetGraph, Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
 )
-from fidesctl.api.ops.schemas.api import BulkUpdateFailed
-from fidesctl.api.ops.schemas.dataset import (
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetTraversalDetails,
     FidesopsDataset,
     ValidateDatasetResponse,
 )
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
-from fidesctl.api.ops.util.saas_util import merge_datasets
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.saas_util import merge_datasets
 
 X_YAML = "application/x-yaml"
 

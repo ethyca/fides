@@ -12,36 +12,36 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.common_exceptions import FidesopsException
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.schemas.saas.saas_config import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesctl.api.ops.service.authentication.authentication_strategy_oauth2 import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

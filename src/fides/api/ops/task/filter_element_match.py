@@ -5,13 +5,13 @@ from typing import Any, Dict, List
 
 import pydash
 
-from fidesctl.api.ops.task.refine_target_path import (
+from fides.api.ops.task.refine_target_path import (
     DetailedPath,
     FieldPathNodeInput,
     build_refined_target_paths,
     join_detailed_path,
 )
-from fidesctl.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
 
 logger = logging.getLogger(__name__)
 

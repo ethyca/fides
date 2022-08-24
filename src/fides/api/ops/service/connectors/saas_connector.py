@@ -5,39 +5,39 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Response
 
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     FidesopsException,
     PostProcessingException,
 )
-from fidesctl.api.ops.graph.traversal import Row, TraversalNode
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
 )
-from fidesctl.api.ops.models.policy import Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesctl.api.ops.service.connectors.base_connector import BaseConnector
-from fidesctl.api.ops.service.connectors.saas.authenticated_client import (
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesctl.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesctl.api.ops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesctl.api.ops.service.pagination.pagination_strategy_factory import (
+from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fides.api.ops.service.pagination.pagination_strategy_factory import (
     get_strategy as get_pagination_strategy,
 )
-from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
+from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
     get_strategy as get_postprocessor_strategy,
 )
-from fidesctl.api.ops.service.saas_request.saas_request_override_factory import (
+from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
-from fidesctl.api.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

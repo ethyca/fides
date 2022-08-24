@@ -13,36 +13,36 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fidesctl.api.ops import common_exceptions
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import scope_registry as scopes
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.endpoints.privacy_request_endpoints import (
+from fides.api.ops import common_exceptions
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import scope_registry as scopes
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.models.policy import DrpAction, Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesctl.api.ops.schemas.drp_privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import DrpAction, Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
     DrpIdentity,
     DrpPrivacyRequestCreate,
     DrpRevokeRequest,
 )
-from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesctl.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fidesctl.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesctl.api.ops.service.privacy_request.request_service import (
+from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.cache import FidesopsRedis
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.cache import FidesopsRedis
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)

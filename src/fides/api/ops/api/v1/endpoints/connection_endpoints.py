@@ -20,13 +20,13 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_SECRETS,
     CONNECTION_TEST,
@@ -34,33 +34,33 @@ from fidesctl.api.ops.api.v1.urn_registry import (
     SAAS_CONFIG,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesctl.api.ops.schemas.api import BulkUpdateFailed
-from fidesctl.api.ops.schemas.connection_configuration import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_validator,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfiguration,
     SystemType,
     TestStatus,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
     ConnectionTestStatus,
     TestStatusMessage,
 )
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.service.connectors import get_connector
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.logger import NotPii
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.service.connectors import get_connector
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import NotPii
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

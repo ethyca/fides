@@ -1,11 +1,11 @@
 from typing import List, Optional
 
-from fidesctl.api.ops.models.policy import WebhookDirection
-from fidesctl.api.ops.schemas.base_class import BaseSchema
-from fidesctl.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.models.policy import WebhookDirection
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class WebhookBase(BaseSchema):

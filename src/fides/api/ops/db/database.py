@@ -6,7 +6,7 @@ from alembic.migration import MigrationContext
 from fideslib.db.session import get_db_engine
 from pydantic import PostgresDsn
 
-from fidesctl.api.ops.db.base import Base
+from fides.api.ops.db.base import Base
 
 
 def check_missing_migrations(database_url: PostgresDsn) -> None:

@@ -1,13 +1,13 @@
 import logging
 from typing import Dict
 
-from fidesctl.api.ops.models.privacy_request import (
+from fides.api.ops.models.privacy_request import (
     PrivacyRequestStatus,
     ProvidedIdentityType,
 )
-from fidesctl.api.ops.schemas.drp_privacy_request import DrpIdentity
-from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.drp_privacy_request import DrpIdentity
+from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
 
 logger = logging.getLogger(__name__)
 

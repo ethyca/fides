@@ -10,20 +10,20 @@ from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops import common_exceptions
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops import common_exceptions
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.graph.analytics_events import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fidesctl.api.ops.graph.graph import DatasetGraph
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.models.policy import (
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import (
     ActionType,
     PausedStep,
     Policy,
@@ -31,23 +31,23 @@ from fidesctl.api.ops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesctl.api.ops.service.storage.storage_uploader_service import upload
-from fidesctl.api.ops.task.filter_results import filter_data_categories
-from fidesctl.api.ops.task.graph_task import (
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.service.storage.storage_uploader_service import upload
+from fides.api.ops.task.filter_results import filter_data_categories
+from fides.api.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_erasure,
 )
-from fidesctl.api.ops.tasks import celery_app
-from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
-from fidesctl.api.ops.util.cache import (
+from fides.api.ops.tasks import celery_app
+from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
 )
-from fidesctl.api.ops.util.collection_util import Row
-from fidesctl.api.ops.util.logger import _log_exception, _log_warning
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.logger import _log_exception, _log_warning
 
 logger = get_task_logger(__name__)
 

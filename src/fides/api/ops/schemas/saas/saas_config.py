@@ -3,20 +3,20 @@ from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
     FieldAddress,
     ScalarField,
 )
-from fidesctl.api.ops.schemas.base_class import BaseSchema
-from fidesctl.api.ops.schemas.dataset import (
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.dataset import (
     FidesCollectionKey,
     FidesopsDatasetReference,
 )
-from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ParamValue(BaseModel):
@@ -119,7 +119,7 @@ class SaaSRequest(BaseModel):
         """
 
         # delay import to avoid cyclic-dependency error - We still ignore the pylint error
-        from fidesctl.api.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
+        from fides.api.ops.service.pagination.pagination_strategy_factory import (  # pylint: disable=R0401
             get_strategy,
         )
 

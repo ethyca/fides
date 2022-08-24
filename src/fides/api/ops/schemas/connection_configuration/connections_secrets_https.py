@@ -1,7 +1,7 @@
 from typing import List
 
-from fidesctl.api.ops.schemas.base_class import NoValidationSchema
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 

@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Set
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fidesctl.api.ops.schemas.base_class import BaseSchema
-from fidesctl.api.ops.util.collection_util import Row
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
-    from fidesctl.api.ops.task.graph_task import GraphTask
+    from fides.api.ops.task.graph_task import GraphTask
 
 GraphRepr = Dict[str, Dict[str, List[str]]]
 

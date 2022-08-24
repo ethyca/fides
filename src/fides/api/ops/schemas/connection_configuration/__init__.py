@@ -1,49 +1,49 @@
 from typing import Any, Dict, Optional, Union
 
-from fidesctl.api.ops.models.connectionconfig import ConnectionType
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.models.connectionconfig import ConnectionType
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQueryDocsSchema,
     BigQuerySchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema,
     MariaDBSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBDocsSchema,
     MongoDBSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mssql import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mssql import (
     MicrosoftSQLServerSchema,
     MSSQLDocsSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLDocsSchema,
     MySQLSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_postgres import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLDocsSchema,
     PostgreSQLSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema,
     RedshiftSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_saas import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema,
     SaaSSchemaFactory,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeDocsSchema,
     SnowflakeSchema,
 )
-from fidesctl.api.ops.schemas.connection_configuration.connections_secrets_https import (
+from fides.api.ops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
-from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 secrets_validators: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,

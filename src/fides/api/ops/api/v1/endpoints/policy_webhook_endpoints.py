@@ -12,25 +12,25 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import scope_registry as scopes
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.endpoints.connection_endpoints import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import scope_registry as scopes
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.connection_endpoints import (
     get_connection_config_or_error,
 )
-from fidesctl.api.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
-from fidesctl.api.ops.common_exceptions import WebhookOrderException
-from fidesctl.api.ops.models.policy import (
+from fides.api.ops.api.v1.endpoints.policy_endpoints import get_policy_or_error
+from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.models.policy import (
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesctl.api.ops.schemas import policy_webhooks as schemas
-from fidesctl.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.schemas import policy_webhooks as schemas
+from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 

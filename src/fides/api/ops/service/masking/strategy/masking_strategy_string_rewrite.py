@@ -1,18 +1,18 @@
 from typing import List, Optional
 
-from fidesctl.api.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.masking.masking_configuration import (
     MaskingConfiguration,
     StringRewriteMaskingConfiguration,
 )
-from fidesctl.api.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fidesctl.api.ops.service.masking.strategy.format_preservation import (
+from fides.api.ops.service.masking.strategy.format_preservation import (
     FormatPreservation,
 )
-from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 

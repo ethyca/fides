@@ -9,6 +9,7 @@ ui-build/
 *.DS_Store
 *.swp
 *.out
+*.tmp
 
 # rails specific
 *.sqlite3

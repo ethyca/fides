@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional, Union
 from redis import Redis
 from redis.client import Script  # type: ignore
 
-from fidesctl.api.ops import common_exceptions
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.schemas.masking.masking_secrets import SecretType
+from fides.api.ops import common_exceptions
+from fides.api.ops.core.config import config
+from fides.api.ops.schemas.masking.masking_secrets import SecretType
 
 logger = logging.getLogger(__name__)
 

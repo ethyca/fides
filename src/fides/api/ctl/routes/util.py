@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from fastapi import HTTPException, status
 
-from fidesctl.api.ctl.utils.api_router import APIRouter
+from fides.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
 

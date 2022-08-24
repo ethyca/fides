@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from fidesctl.api.ops.models.policy import WebhookDirection
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.models.policy import WebhookDirection
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
 
 
 class CallbackType(Enum):

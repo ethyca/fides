@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
 
-from fidesctl.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 

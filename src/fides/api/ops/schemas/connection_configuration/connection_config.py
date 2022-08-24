@@ -4,10 +4,10 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fidesctl.api.ops.models.connectionconfig import AccessLevel, ConnectionType
-from fidesctl.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
+from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class CreateConnectionConfiguration(BaseModel):

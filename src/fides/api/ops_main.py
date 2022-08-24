@@ -18,26 +18,26 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_404_NOT_FOUND
 
-from fidesctl.api.ctl.database.database import configure_db
-from fidesctl.api.ops.analytics import (
+from fides.api.ctl.database.database import configure_db
+from fides.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
     send_analytics_event,
 )
-from fidesctl.api.ops.api.v1.api import api_router
-from fidesctl.api.ops.api.v1.exception_handlers import ExceptionHandlers
-from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.api.v1.api import api_router
+from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.schemas.analytics import Event, ExtraData
-from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
-from fidesctl.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesctl.api.ops.util.cache import get_cache
-from fidesctl.api.ops.util.logger import get_fides_log_record_factory
-from fidesctl.api.ops.util.oauth_util import get_db, verify_oauth_client
+from fides.api.ops.core.config import config
+from fides.api.ops.schemas.analytics import Event, ExtraData
+from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fides.api.ops.util.cache import get_cache
+from fides.api.ops.util.logger import get_fides_log_record_factory
+from fides.api.ops.util.oauth_util import get_db, verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())

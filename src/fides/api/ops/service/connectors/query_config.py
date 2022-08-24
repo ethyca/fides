@@ -9,29 +9,29 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
     FieldPath,
     MaskingOverride,
 )
-from fidesctl.api.ops.graph.traversal import Row, TraversalNode
-from fidesctl.api.ops.models.policy import ActionType, Policy, Rule
-from fidesctl.api.ops.models.privacy_request import ManualAction, PrivacyRequest
-from fidesctl.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
+from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.models.policy import ActionType, Policy, Rule
+from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )
-from fidesctl.api.ops.task.refine_target_path import (
+from fides.api.ops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
-from fidesctl.api.ops.util.collection_util import append, filter_nonempty_values
-from fidesctl.api.ops.util.querytoken import QueryToken
+from fides.api.ops.util.collection_util import append, filter_nonempty_values
+from fides.api.ops.util.querytoken import QueryToken
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")

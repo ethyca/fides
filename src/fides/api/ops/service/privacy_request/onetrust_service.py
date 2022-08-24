@@ -9,33 +9,33 @@ from fideslib.exceptions import AuthenticationError
 from requests import Response
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.models.policy import Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.models.storage import StorageConfig
-from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestIdentity
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
-from fidesctl.api.ops.schemas.third_party.onetrust import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.privacy_request import PrivacyRequestIdentity
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fides.api.ops.schemas.third_party.onetrust import (
     OneTrustGetRequestsResponse,
     OneTrustGetSubtasksResponse,
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesctl.api.ops.service.outbound_urn_registry import (
+from fides.api.ops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesctl.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesctl.api.ops.util.storage_authenticator import get_onetrust_access_token
+from fides.api.ops.util.storage_authenticator import get_onetrust_access_token
 
 logger = logging.getLogger(__name__)
 

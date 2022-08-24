@@ -3,17 +3,17 @@ from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.common_exceptions import StorageUploadError
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.models.storage import StorageConfig
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.schemas.storage.storage import (
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     StorageDetails,
     StorageType,
 )
-from fidesctl.api.ops.tasks.storage import (
+from fides.api.ops.tasks.storage import (
     upload_to_local,
     upload_to_onetrust,
     upload_to_s3,

@@ -6,19 +6,19 @@ from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.models.policy import ActionType
-from fidesctl.api.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestStatus,
     StoppedCollection,
 )
-from fidesctl.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesctl.api.ops.schemas.base_class import BaseSchema
-from fidesctl.api.ops.schemas.policy import PolicyResponse as PolicySchema
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
 

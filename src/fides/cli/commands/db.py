@@ -1,10 +1,10 @@
 """Contains the db group of the commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import yes_flag
-from fidesctl.cli.utils import handle_cli_response, with_analytics
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.utils import echo_red
+from fides.cli.options import yes_flag
+from fides.cli.utils import handle_cli_response, with_analytics
+from fides.ctl.core import api as _api
+from fides.ctl.core.utils import echo_red
 
 
 @click.group(name="db")

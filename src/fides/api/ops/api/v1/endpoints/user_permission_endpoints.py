@@ -6,21 +6,21 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
 )
-from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesctl.api.ops.schemas.user_permission import (
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.schemas.user_permission import (
     UserPermissionsCreate,
     UserPermissionsEdit,
     UserPermissionsResponse,
 )
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)

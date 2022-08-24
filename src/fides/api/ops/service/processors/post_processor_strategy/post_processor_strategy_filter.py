@@ -3,13 +3,13 @@ from typing import Any, Dict, List, Union
 
 import pydash
 
-from fidesctl.api.ops.common_exceptions import FidesopsException
-from fidesctl.api.ops.schemas.saas.shared_schemas import IdentityParamRef
-from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.schemas.saas.shared_schemas import IdentityParamRef
+from fides.api.ops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
     StrategyConfiguration,
 )
-from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 

@@ -6,25 +6,25 @@ from typing import TYPE_CHECKING, Any, Dict, List
 
 from pydantic import ValidationError
 
-from fidesctl.api.ops.common_exceptions import NoSuchStrategyException
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import NoSuchStrategyException
+from fides.api.ops.common_exceptions import (
     ValidationError as FidesopsValidationError,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_cursor import (
+from fides.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_link import (
+from fides.api.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_offset import (
+from fides.api.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 
 if TYPE_CHECKING:
-    from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+    from fides.api.ops.schemas.saas.strategy_configuration import (
         StrategyConfiguration,
     )
-    from fidesctl.api.ops.service.pagination.pagination_strategy import (
+    from fides.api.ops.service.pagination.pagination_strategy import (
         PaginationStrategy,
     )
 

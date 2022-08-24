@@ -24,16 +24,16 @@ from sqlalchemy.sql.elements import TextClause
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
-from fidesctl.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
-from fidesctl.api.ops.db.base_class import JSONTypeOverride
-from fidesctl.api.ops.models.policy import ActionType, DrpAction
-from fidesctl.api.ops.schemas.storage.storage import StorageType
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.models.policy import ActionType, DrpAction
+from fides.api.ops.schemas.storage.storage import StorageType
+from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     STRING_REWRITE_STRATEGY_NAME,
 )
-from fidesctl.api.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

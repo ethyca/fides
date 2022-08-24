@@ -27,16 +27,16 @@ from starlette.status import (
     HTTP_424_FAILED_DEPENDENCY,
 )
 
-from fidesctl.api.ops import common_exceptions
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import scope_registry as scopes
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops import common_exceptions
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import scope_registry as scopes
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
@@ -45,30 +45,30 @@ from fidesctl.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RETRY,
     REQUEST_PREVIEW,
 )
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     TraversalError,
     ValidationError,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.graph.config import CollectionAddress
-from fidesctl.api.ops.graph.graph import DatasetGraph, Node
-from fidesctl.api.ops.graph.traversal import Traversal
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
-from fidesctl.api.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph, Node
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
-from fidesctl.api.ops.schemas.dataset import (
+from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fidesctl.api.ops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesctl.api.ops.schemas.privacy_request import (
+from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     DenyPrivacyRequests,
@@ -80,19 +80,19 @@ from fidesctl.api.ops.schemas.privacy_request import (
     RowCountRequest,
     StoppedCollection,
 )
-from fidesctl.api.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesctl.api.ops.service.privacy_request.request_service import (
+from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesctl.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
-from fidesctl.api.ops.task.task_resources import TaskResources
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.cache import FidesopsRedis
-from fidesctl.api.ops.util.collection_util import Row
-from fidesctl.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
+from fides.api.ops.task.task_resources import TaskResources
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.cache import FidesopsRedis
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)

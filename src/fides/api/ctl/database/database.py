@@ -12,13 +12,13 @@ from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fidesctl.api.ctl.sql_models import sql_model_map
-from fidesctl.api.ctl.utils.errors import (
+from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.utils.errors import (
     AlreadyExistsError,
     QueryError,
     get_full_exception_name,
 )
-from fidesctl.ctl.core.utils import get_db_engine
+from fides.ctl.core.utils import get_db_engine
 
 from .crud import create_resource, upsert_resources
 

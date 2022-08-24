@@ -23,18 +23,18 @@ from fideslog.sdk.python.utils import (
 )
 
 import fidesctl
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
-from fidesctl.ctl.core.config.credentials_settings import (
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fidesctl.ctl.core.config.utils import get_config_from_file, update_config_file
-from fidesctl.ctl.core.utils import check_response, echo_green, echo_red
+from fides.ctl.core.config.utils import get_config_from_file, update_config_file
+from fides.ctl.core.utils import check_response, echo_green, echo_red
 
 FIDESCTL_ASCII_ART = """
 ███████╗██╗██████╗ ███████╗███████╗ ██████╗████████╗██╗     

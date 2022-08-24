@@ -13,13 +13,13 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1 import urn_registry as urls
-from fidesctl.api.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
-from fidesctl.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import get_current_user, verify_oauth_client
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.core.config import config
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import get_current_user, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)

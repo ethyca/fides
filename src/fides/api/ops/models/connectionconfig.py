@@ -14,9 +14,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.base_class import JSONTypeOverride
-from fidesctl.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
 class ConnectionTestStatus(enum.Enum):

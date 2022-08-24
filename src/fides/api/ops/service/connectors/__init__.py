@@ -1,12 +1,12 @@
 from typing import Any, Dict
 
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesctl.api.ops.service.connectors.base_connector import BaseConnector
-from fidesctl.api.ops.service.connectors.http_connector import HTTPSConnector
-from fidesctl.api.ops.service.connectors.manual_connector import ManualConnector
-from fidesctl.api.ops.service.connectors.mongodb_connector import MongoDBConnector
-from fidesctl.api.ops.service.connectors.saas_connector import SaaSConnector
-from fidesctl.api.ops.service.connectors.sql_connector import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.http_connector import HTTPSConnector
+from fides.api.ops.service.connectors.manual_connector import ManualConnector
+from fides.api.ops.service.connectors.mongodb_connector import MongoDBConnector
+from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.service.connectors.sql_connector import (
     BigQueryConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,

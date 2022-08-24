@@ -2,12 +2,12 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from fidesctl.api.ops.models.policy import ActionType, Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fidesctl.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_factory import (
+from fides.api.ops.models.policy import ActionType, Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 

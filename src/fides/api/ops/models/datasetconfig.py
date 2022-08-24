@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -16,12 +16,12 @@ from fidesctl.api.ops.graph.config import (
     FieldAddress,
     generate_field,
 )
-from fidesctl.api.ops.graph.data_type import parse_data_type_string
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesctl.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.util.logger import NotPii
-from fidesctl.api.ops.util.saas_util import merge_datasets
+from fides.api.ops.graph.data_type import parse_data_type_string
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.logger import NotPii
+from fides.api.ops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
 

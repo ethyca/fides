@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
 
-from fidesctl.api.ops.schemas.saas.saas_config import SaaSRequest
-from fidesctl.api.ops.schemas.saas.shared_schemas import (
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import (
     ConnectorParamRef,
     IdentityParamRef,
 )

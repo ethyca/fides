@@ -3,10 +3,10 @@ from typing import Dict
 from fastapi import HTTPException, status
 
 import fidesctl
-from fidesctl.api.ctl.database.database import get_db_health
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.api.ctl.utils.api_router import APIRouter
-from fidesctl.ctl.core.config import FidesctlConfig, get_config
+from fides.api.ctl.database.database import get_db_health
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.utils.api_router import APIRouter
+from fides.ctl.core.config import FidesctlConfig, get_config
 
 CONFIG: FidesctlConfig = get_config()
 

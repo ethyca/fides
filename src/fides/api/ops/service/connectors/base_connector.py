@@ -2,16 +2,16 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.graph.traversal import TraversalNode
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
 )
-from fidesctl.api.ops.models.policy import Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.service.connectors.query_config import QueryConfig
-from fidesctl.api.ops.util.collection_util import Row
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.service.connectors.query_config import QueryConfig
+from fides.api.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
@@ -21,9 +21,9 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     """Abstract BaseConnector class containing the methods to interact with your configured connection.
 
     How to use example:
-    from fidesctl.api.ops.db.session import get_db_session
-    from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-    from fidesctl.api.ops.service.connectors import get_connector
+    from fides.api.ops.db.session import get_db_session
+    from fides.api.ops.models.connectionconfig import ConnectionConfig
+    from fides.api.ops.service.connectors import get_connector
 
     SessionLocal = get_db_session(config)
     db = SessionLocal()

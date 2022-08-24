@@ -6,18 +6,18 @@ from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
 
-from fidesctl.api.ops.common_exceptions import FidesopsException
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.graph.config import ScalarField
-from fidesctl.api.ops.graph.traversal import TraversalNode
-from fidesctl.api.ops.models.policy import Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
-from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesctl.api.ops.service.connectors.query_config import QueryConfig
-from fidesctl.api.ops.util import saas_util
-from fidesctl.api.ops.util.collection_util import Row, merge_dicts
-from fidesctl.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS, unflatten_dict
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import ScalarField
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.service.connectors.query_config import QueryConfig
+from fides.api.ops.util import saas_util
+from fides.api.ops.util.collection_util import Row, merge_dicts
+from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS, unflatten_dict
 
 logger = logging.getLogger(__name__)
 

@@ -2,13 +2,13 @@ from typing import Dict, List, Optional
 
 from fideslang.models import DataSubject, DataUse, Organization, System
 
-from fidesctl.cli.utils import pretty_echo
-from fidesctl.ctl.core.api_helpers import (
+from fides.cli.utils import pretty_echo
+from fides.ctl.core.api_helpers import (
     get_server_resource,
     get_server_resources,
     list_server_resources,
 )
-from fidesctl.ctl.core.utils import echo_green, echo_red
+from fides.ctl.core.utils import echo_green, echo_red
 
 
 def audit_systems(

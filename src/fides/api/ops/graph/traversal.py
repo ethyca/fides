@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, List, Set, Tuple, cast
 
 import pydash.collections
 
-from fidesctl.api.ops.common_exceptions import TraversalError
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.common_exceptions import TraversalError
+from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
@@ -15,10 +15,10 @@ from fidesctl.api.ops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fidesctl.api.ops.graph.graph import DatasetGraph, Edge, Node
-from fidesctl.api.ops.util.collection_util import Row, append
-from fidesctl.api.ops.util.logger import NotPii
-from fidesctl.api.ops.util.matching_queue import MatchingQueue
+from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
+from fides.api.ops.util.collection_util import Row, append
+from fides.api.ops.util.logger import NotPii
+from fides.api.ops.util.matching_queue import MatchingQueue
 
 logger = logging.getLogger(__name__)
 

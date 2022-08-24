@@ -2,9 +2,9 @@
 
 import click
 
-from fidesctl.cli.options import fides_key_argument, resource_type_argument
-from fidesctl.cli.utils import handle_cli_response, with_analytics
-from fidesctl.ctl.core import api as _api
+from fides.cli.options import fides_key_argument, resource_type_argument
+from fides.cli.utils import handle_cli_response, with_analytics
+from fides.ctl.core import api as _api
 
 
 @click.command()

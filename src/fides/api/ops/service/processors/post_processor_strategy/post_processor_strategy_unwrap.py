@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Union
 
 import pydash
 
-from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
     UnwrapPostProcessorConfiguration,
 )
-from fidesctl.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
+from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 

@@ -1,7 +1,7 @@
 from typing import Union
 
-from fidesctl.api.ops.schemas.base_class import NoValidationSchema
-from fidesctl.api.ops.schemas.storage.storage import (
+from fides.api.ops.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.storage.storage import (
     StorageSecretsOnetrust,
     StorageSecretsS3,
 )

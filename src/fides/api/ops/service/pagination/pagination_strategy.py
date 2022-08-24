@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from requests import Response
 
-from fidesctl.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 if TYPE_CHECKING:
-    from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+    from fides.api.ops.schemas.saas.strategy_configuration import (
         StrategyConfiguration,
     )
 

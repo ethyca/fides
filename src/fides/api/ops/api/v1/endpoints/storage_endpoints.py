@@ -19,44 +19,44 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesctl.api.ops.api import deps
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.common_exceptions import StorageUploadError
-from fidesctl.api.ops.models.connectionconfig import ConnectionTestStatus
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.models.storage import StorageConfig, get_schema_for_secrets
-from fidesctl.api.ops.schemas.api import BulkUpdateFailed
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig, get_schema_for_secrets
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
-from fidesctl.api.ops.schemas.storage.data_upload_location_response import DataUpload
-from fidesctl.api.ops.schemas.storage.storage import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
+from fides.api.ops.schemas.storage.storage import (
     BulkPutStorageConfigResponse,
     StorageDestination,
     StorageDestinationResponse,
 )
-from fidesctl.api.ops.schemas.storage.storage_secrets_docs_only import (
+from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fidesctl.api.ops.service.storage.storage_authenticator_service import (
+from fides.api.ops.service.storage.storage_authenticator_service import (
     secrets_are_valid,
 )
-from fidesctl.api.ops.service.storage.storage_uploader_service import upload
-from fidesctl.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesctl.api.ops.util.api_router import APIRouter
-from fidesctl.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.service.storage.storage_uploader_service import upload
+from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
