@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   setDataCategories,
   useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/data-categories.slice";
+} from "~/features/taxonomy/taxonomy.slice";
 
 import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";

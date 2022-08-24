@@ -43,7 +43,7 @@ import {
   selectDataCategories,
   setDataCategories,
   useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/data-categories.slice";
+} from "~/features/taxonomy/taxonomy.slice";
 import { PrivacyDeclaration } from "~/types/api";
 
 import {

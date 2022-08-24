@@ -32,7 +32,7 @@ import {
 import {
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
-} from "./data-categories.slice";
+} from "./taxonomy.slice";
 import type { FormValues } from "./TaxonomyFormBase";
 import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
