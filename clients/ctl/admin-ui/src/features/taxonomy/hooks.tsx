@@ -111,7 +111,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     // text inputs don't like having undefined, so we originally converted
     // to "", but on submission we need to convert back to undefined
     legitimate_interest_impact_assessment:
-      formValues.legitimate_interest_impact_assessment ?? undefined,
+      formValues.legitimate_interest_impact_assessment === ""
+        ? undefined
+        : formValues.legitimate_interest_impact_assessment,
   });
 
   const handleEdit = (entity: DataUse) =>

@@ -5,6 +5,7 @@ import {
   FormLabel,
   Grid,
   Heading,
+  Input,
   Stack,
   Text,
   useToast,
@@ -18,6 +19,7 @@ import { isErrorResult, parseError } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
 import { RTKErrorResult } from "~/types/errors";
 
+import { parentKeyFromFidesKey } from "./helpers";
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
 import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
 
@@ -55,20 +57,24 @@ const EditTaxonomyForm = ({
     setFormError(null);
     // parent_key and fides_keys are immutable
     // parent_key also needs to be undefined, not an empty string, if there is no parent element
-    const payload = isCreate
-      ? {
-          ...newValues,
-          parent_key:
-            newValues.parent_key === "" ? undefined : newValues.parent_key,
-        }
-      : {
-          ...newValues,
-          parent_key:
-            initialValues.parent_key === ""
-              ? undefined
-              : initialValues.parent_key,
-          fides_key: initialValues.fides_key,
-        };
+    let payload: TaxonomyEntity;
+    if (isCreate) {
+      const parentKey = parentKeyFromFidesKey(newValues.fides_key);
+      payload = {
+        ...newValues,
+        parent_key: parentKey === "" ? undefined : parentKey,
+      };
+    } else {
+      payload = {
+        ...newValues,
+        parent_key:
+          initialValues.parent_key === ""
+            ? undefined
+            : initialValues.parent_key,
+        fides_key: initialValues.fides_key,
+      };
+    }
+
     const result = await onSubmit(payload);
     if (isErrorResult(result)) {
       handleError(result.error);
@@ -96,7 +102,7 @@ const EditTaxonomyForm = ({
         validationSchema={ValidationSchema}
         enableReinitialize
       >
-        {({ dirty }) => (
+        {({ dirty, values }) => (
           <Form>
             <Stack mb={6}>
               {isCreate ? (
@@ -111,11 +117,25 @@ const EditTaxonomyForm = ({
               )}
               <CustomTextInput name="name" label={labels.name} />
               <CustomTextArea name="description" label={labels.description} />
-              <CustomTextInput
-                name="parent_key"
-                label={labels.parent_key}
-                disabled={!isCreate}
-              />
+              {isCreate ? (
+                <Grid templateColumns="1fr 3fr">
+                  <FormLabel>{labels.parent_key}</FormLabel>
+                  <Box mr="2">
+                    <Input
+                      data-testid="input-parent_key"
+                      disabled
+                      value={parentKeyFromFidesKey(values.fides_key)}
+                      size="sm"
+                    />
+                  </Box>
+                </Grid>
+              ) : (
+                <CustomTextInput
+                  name="parent_key"
+                  label={labels.parent_key}
+                  disabled={!isCreate}
+                />
+              )}
               {extraFormFields}
             </Stack>
 

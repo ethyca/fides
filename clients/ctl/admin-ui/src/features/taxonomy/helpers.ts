@@ -30,3 +30,11 @@ export const transformTaxonomyEntityToNodes = (
   });
   return nodes;
 };
+
+export const parentKeyFromFidesKey = (fidesKey: string) => {
+  const split = fidesKey.split(".");
+  if (split.length === 1) {
+    return "";
+  }
+  return split.slice(0, split.length - 1).join(".");
+};

@@ -43,6 +43,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   const addTaxonomyType = useAppSelector(selectAddTaxonomyType);
 
   useEffect(() => {
+    // prevent both the add and edit forms being opened at once
     if (addTaxonomyType) {
       setEditEntity(null);
     }
