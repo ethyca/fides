@@ -31,7 +31,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     separate = lambda: print("-" * 10, end=None)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
+    config_file_name = "fidesctl.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
