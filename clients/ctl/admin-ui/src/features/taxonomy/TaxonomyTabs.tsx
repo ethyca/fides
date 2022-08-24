@@ -58,7 +58,12 @@ const TaxonomyTabs = () => {
         pr="2"
         pb="2"
       >
-        <Button size="sm" variant="outline" onClick={handleAddEntity}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleAddEntity}
+          data-testid="add-taxonomy-btn"
+        >
           Add Taxonomy Entity +
         </Button>
       </Box>

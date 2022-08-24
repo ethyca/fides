@@ -91,8 +91,12 @@ const EditTaxonomyForm = ({
   };
 
   return (
-    <Stack pl={6} spacing={6} data-testid="edit-taxonomy-form">
-      <Heading size="md" textTransform="capitalize">
+    <Stack
+      pl={6}
+      spacing={6}
+      data-testid={`${isCreate ? "create" : "edit"}-taxonomy-form`}
+    >
+      <Heading size="md" textTransform="capitalize" data-testid="form-heading">
         {isCreate ? "Create" : "Modify"} {labels.fides_key}
       </Heading>
 
@@ -155,7 +159,7 @@ const EditTaxonomyForm = ({
                 Cancel
               </Button>
               <Button
-                data-testid="update-btn"
+                data-testid="submit-btn"
                 variant="primary"
                 type="submit"
                 disabled={!isCreate && !dirty}
