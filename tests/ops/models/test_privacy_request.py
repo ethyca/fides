@@ -7,16 +7,16 @@ import requests_mock
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesctl.api.ops.graph.config import CollectionAddress
-from fidesctl.api.ops.models.policy import PausedStep, Policy
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesctl.api.ops.service.connectors.manual_connector import ManualAction
-from fidesctl.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.policy import PausedStep, Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.service.connectors.manual_connector import ManualAction
+from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

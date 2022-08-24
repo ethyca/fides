@@ -2,11 +2,11 @@ import random
 
 import pytest
 
-from fidesctl.api.ops.graph.graph import DatasetGraph
-from fidesctl.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fidesctl.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesctl.api.ops.task import graph_task
-from fidesctl.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.task import graph_task
+from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
 
 

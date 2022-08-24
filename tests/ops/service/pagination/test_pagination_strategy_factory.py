@@ -1,14 +1,14 @@
 import pytest
 
-from fidesctl.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
-from fidesctl.api.ops.service.pagination.pagination_strategy_cursor import (
+from fides.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
+from fides.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_factory import get_strategy
-from fidesctl.api.ops.service.pagination.pagination_strategy_link import (
+from fides.api.ops.service.pagination.pagination_strategy_factory import get_strategy
+from fides.api.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_offset import (
+from fides.api.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 

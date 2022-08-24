@@ -2,11 +2,9 @@ import pytest
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 from requests import PreparedRequest, Request
 
-from fidesctl.api.ops.common_exceptions import (
-    ValidationError as FidesopsValidationError,
-)
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.service.authentication.authentication_strategy_factory import (
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
 

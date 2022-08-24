@@ -4,11 +4,11 @@ from typing import Optional
 import pytest
 from requests import Response
 
-from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesctl.api.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
 )
-from fidesctl.api.ops.service.pagination.pagination_strategy_link import (
+from fides.api.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
 

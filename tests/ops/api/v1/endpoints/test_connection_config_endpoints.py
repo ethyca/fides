@@ -11,14 +11,14 @@ from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fidesctl.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 
 page_size = Params().size
 
@@ -380,7 +380,7 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fidesctl.api.ops_main.prepare_and_log_request")
+    @mock.patch("fides.api.ops_main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -402,7 +402,7 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fidesctl.api.ops_main.prepare_and_log_request")
+    @mock.patch("fides.api.ops_main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
         mocked_prepare_and_log_request,

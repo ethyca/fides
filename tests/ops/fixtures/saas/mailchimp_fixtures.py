@@ -6,15 +6,15 @@ import pytest
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesctl.api.ops.service.connectors.saas_connector import SaaSConnector
-from fidesctl.api.ops.util.saas_util import load_config
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.vault_client import get_secrets
 

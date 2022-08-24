@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
-from fidesctl.ctl.core.config import get_config
-from fidesctl.ctl.core.config.database_settings import FidesctlDatabaseSettings
+from fides.ctl.core.config import get_config
+from fides.ctl.core.config.database_settings import FidesctlDatabaseSettings
 
 
 # Unit
@@ -122,7 +122,7 @@ def test_default_config() -> None:
         "FIDESCTL__USER__USER_ID": "2",
         "FIDESCTL__CLI__SERVER_HOST": "test",
         "FIDESCTL__CLI__SERVER_PORT": "8080",
-        "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test",
+        "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
     },
     clear=True,
 )
@@ -136,7 +136,7 @@ def test_config_from_env_vars() -> None:
     assert config.cli.server_url == "http://test:8080"
     assert (
         config.credentials["postgres_1"]["connection_string"]
-        == "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test"
+        == "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test"
     )
 
 
@@ -150,13 +150,13 @@ def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDESCTL_TEST_MODE"] = "False"
     database_settings = FidesctlDatabaseSettings(
         user="postgres",
-        password="fidesctl",
-        server="fidesctl-db",
+        password="fides",
+        server="fides-db",
         port="5432",
         db="database",
         test_db="test_database",
     )
     assert (
         database_settings.async_database_uri
-        == "postgresql+asyncpg://postgres:fidesctl@fidesctl-db:5432/database"
+        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database"
     )

@@ -4,12 +4,12 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
 
 
 @pytest.fixture(scope="function")

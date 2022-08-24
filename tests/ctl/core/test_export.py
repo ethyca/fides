@@ -13,8 +13,8 @@ from fideslang.models import (
     System,
 )
 
-from fidesctl.ctl.core import export
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import export
+from fides.ctl.core.config import FidesctlConfig
 
 
 @pytest.fixture()

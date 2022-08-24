@@ -7,14 +7,14 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.schemas.connection_configuration import BigQuerySchema
-from fidesctl.api.ops.service.connectors import BigQueryConnector, get_connector
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration import BigQuerySchema
+from fides.api.ops.service.connectors import BigQueryConnector, get_connector
 
 from .application_fixtures import integration_config
 

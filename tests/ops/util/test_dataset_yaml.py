@@ -4,16 +4,16 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fidesctl.api.ops.graph.graph import DatasetGraph, Edge
-from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesctl.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.graph.graph import DatasetGraph, Edge
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.schemas.dataset import FidesopsDataset
 
 from ..graph.graph_test_util import field
 
