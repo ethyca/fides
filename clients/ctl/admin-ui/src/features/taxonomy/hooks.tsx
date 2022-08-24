@@ -18,18 +18,22 @@ import {
   CustomTextInput,
 } from "../common/form/inputs";
 import {
+  useCreateDataQualifierMutation,
   useGetAllDataQualifiersQuery,
   useUpdateDataQualifierMutation,
 } from "../data-qualifier/data-qualifier.slice";
 import {
+  useCreateDataSubjectMutation,
   useGetAllDataSubjectsQuery,
   useUpdateDataSubjectMutation,
 } from "../data-subjects/data-subject.slice";
 import {
+  useCreateDataUseMutation,
   useGetAllDataUsesQuery,
   useUpdateDataUseMutation,
 } from "../data-use/data-use.slice";
 import {
+  useCreateDataCategoryMutation,
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "./taxonomy.slice";
@@ -41,6 +45,7 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   isLoading: boolean;
   labels: Labels;
   edit: (entity: T) => TaxonomyRTKResult;
+  onCreate: (entity: T) => TaxonomyRTKResult;
   extraFormFields?: ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
@@ -70,12 +75,14 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
   };
 
   const [edit] = useUpdateDataCategoryMutation();
+  const [onCreate] = useCreateDataCategoryMutation();
 
   return {
     data,
     isLoading,
     labels,
     edit,
+    onCreate,
     transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };
@@ -97,14 +104,21 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   };
 
   const [edit] = useUpdateDataUseMutation();
+  const [onCreate] = useCreateDataUseMutation();
+
+  const transformFormValuesToEntity = (formValues: DataUse) => ({
+    ...formValues,
+    // text inputs don't like having undefined, so we originally converted
+    // to "", but on submission we need to convert back to undefined
+    legitimate_interest_impact_assessment:
+      formValues.legitimate_interest_impact_assessment ?? undefined,
+  });
+
   const handleEdit = (entity: DataUse) =>
-    edit({
-      ...entity,
-      // text inputs don't like having undefined, so we originally converted
-      // to "", but on submission we need to convert back to undefined
-      legitimate_interest_impact_assessment:
-        entity.legitimate_interest_impact_assessment ?? undefined,
-    });
+    edit(transformFormValuesToEntity(entity));
+
+  const handleCreate = (entity: DataUse) =>
+    onCreate(transformFormValuesToEntity(entity));
 
   const transformEntityToInitialValues = (du: DataUse) => {
     const base = transformTaxonomyBaseToInitialValues(du);
@@ -153,6 +167,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     isLoading,
     labels,
     edit: handleEdit,
+    onCreate: handleCreate,
     extraFormFields,
     transformEntityToInitialValues,
   };
@@ -172,8 +187,9 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   };
 
   const [edit] = useUpdateDataSubjectMutation();
+  const [onCreate] = useCreateDataSubjectMutation();
 
-  const handleEdit = (entity: TaxonomyEntity) => {
+  const transformFormValuesToEntity = (entity: TaxonomyEntity) => {
     const transformedEntity = {
       ...entity,
       // @ts-ignore because DataSubjects have their rights field nested, which
@@ -185,8 +201,14 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     };
     // @ts-ignore for the same reason as above
     delete transformedEntity.strategy;
-    return edit(transformedEntity);
+    return transformedEntity;
   };
+
+  const handleEdit = (entity: TaxonomyEntity) =>
+    edit(transformFormValuesToEntity(entity));
+
+  const handleCreate = (entity: TaxonomyEntity) =>
+    onCreate(transformFormValuesToEntity(entity));
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
     const base = transformTaxonomyBaseToInitialValues(ds);
@@ -219,6 +241,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     isLoading,
     labels,
     edit: handleEdit,
+    onCreate: handleCreate,
     extraFormFields,
     transformEntityToInitialValues,
   };
@@ -235,12 +258,14 @@ export const useDataQualifier = (): TaxonomyHookData<DataQualifier> => {
   };
 
   const [edit] = useUpdateDataQualifierMutation();
+  const [onCreate] = useCreateDataQualifierMutation();
 
   return {
     data,
     isLoading,
     labels,
     edit,
+    onCreate,
     transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };

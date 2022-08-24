@@ -1,9 +1,12 @@
 import { Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+
 import AccordionTree from "../common/AccordionTree";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
+import { selectAddTaxonomyType, setAddTaxonomyType } from "./taxonomy.slice";
 import TaxonomyFormBase from "./TaxonomyFormBase";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
@@ -11,12 +14,21 @@ interface Props {
   useTaxonomy: () => TaxonomyHookData<TaxonomyEntity>;
 }
 
+const DEFAULT_INITIAL_VALUES: TaxonomyEntity = {
+  fides_key: "",
+  parent_key: "",
+  name: "",
+  description: "",
+};
+
 const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
+  const dispatch = useAppDispatch();
   const {
     isLoading,
     data,
     labels,
     edit: onEdit,
+    onCreate,
     extraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -28,6 +40,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+  const addTaxonomyType = useAppSelector(selectAddTaxonomyType);
 
   if (isLoading) {
     return (
@@ -40,9 +53,22 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
+  const closeAddForm = () => {
+    dispatch(setAddTaxonomyType(null));
+  };
+
   const handleSetEditEntity = (node: TaxonomyEntityNode) => {
+    if (addTaxonomyType) {
+      closeAddForm();
+    }
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
     setEditEntity(entity);
+  };
+
+  const handleCreate = (entity: TaxonomyEntity) => {
+    const result = onCreate(entity);
+    closeAddForm();
+    return result;
   };
 
   return (
@@ -55,11 +81,20 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       {editEntity ? (
         <TaxonomyFormBase
           labels={labels}
-          entity={editEntity}
           onCancel={() => setEditEntity(null)}
-          onEdit={onEdit}
+          onSubmit={onEdit}
           extraFormFields={extraFormFields}
           initialValues={transformEntityToInitialValues(editEntity)}
+        />
+      ) : null}
+      {addTaxonomyType ? (
+        <TaxonomyFormBase
+          labels={labels}
+          onCancel={closeAddForm}
+          onSubmit={handleCreate}
+          extraFormFields={extraFormFields}
+          initialValues={transformEntityToInitialValues(DEFAULT_INITIAL_VALUES)}
+          isCreate
         />
       ) : null}
     </SimpleGrid>

@@ -20,7 +20,10 @@ export const transformTaxonomyEntityToNodes = (
     const thisLevelKey = thisLevelEntity.fides_key;
     return {
       value: thisLevelEntity.fides_key,
-      label: thisLevelEntity.name ?? thisLevelEntity.fides_key,
+      label:
+        thisLevelEntity.name === "" || thisLevelEntity.name == null
+          ? thisLevelEntity.fides_key
+          : thisLevelEntity.name,
       description: thisLevelEntity.description,
       children: transformTaxonomyEntityToNodes(entities, thisLevelKey),
     };
