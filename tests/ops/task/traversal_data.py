@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
@@ -8,7 +8,7 @@ from fidesctl.api.ops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fidesctl.api.ops.graph.data_type import (
+from fides.api.ops.graph.data_type import (
     DataType,
     IntTypeConverter,
     NoOpTypeConverter,
@@ -16,10 +16,10 @@ from fidesctl.api.ops.graph.data_type import (
     ObjectTypeConverter,
     StringTypeConverter,
 )
-from fidesctl.api.ops.graph.graph import DatasetGraph
-from fidesctl.api.ops.graph.traversal import Traversal
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value

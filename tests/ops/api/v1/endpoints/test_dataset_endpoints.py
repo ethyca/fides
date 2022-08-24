@@ -11,20 +11,20 @@ from pydash import filter_
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from fidesctl.api.ops.models.connectionconfig import ConnectionConfig
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -802,7 +802,7 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fidesctl.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -896,7 +896,7 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fidesctl.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fides.api.ops.models.datasetconfig.DatasetConfig.create_or_update")
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,

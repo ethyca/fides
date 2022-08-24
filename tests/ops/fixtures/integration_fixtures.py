@@ -9,12 +9,12 @@ from pymongo import MongoClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.service.connectors import MongoDBConnector
+from fides.api.ops.service.connectors import MongoDBConnector
 
 from .application_fixtures import faker, integration_secrets
 

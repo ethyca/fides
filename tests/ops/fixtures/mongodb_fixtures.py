@@ -4,13 +4,13 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.models.policy import ActionType
-from fidesctl.api.ops.models.privacy_request import (
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,

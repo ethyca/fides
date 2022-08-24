@@ -7,20 +7,20 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
@@ -435,7 +435,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fidesctl.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_authorization_url"
+        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,

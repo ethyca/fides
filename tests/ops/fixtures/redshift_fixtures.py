@@ -5,13 +5,13 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesctl.api.ops.models.datasetconfig import DatasetConfig
-from fidesctl.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema,
 )
 

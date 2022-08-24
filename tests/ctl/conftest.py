@@ -25,11 +25,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
-from fidesctl.api import main
-from fidesctl.api.ctl.database.session import sync_session
-from fidesctl.api.ctl.sql_models import FidesUser, FidesUserPermissions
-from fidesctl.ctl.core import api
-from fidesctl.ctl.core.config import FidesctlConfig, get_config
+from fides.api import main
+from fides.api.ctl.database.session import sync_session
+from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
+from fides.ctl.core import api
+from fides.ctl.core.config import FidesctlConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"

@@ -1,7 +1,7 @@
 {
-	"name": "Fidesctl",
+	"name": "fides",
 	"dockerComposeFile": "../docker-compose.yml",
-	"service": "fidesctl",
+	"service": "fides",
 	"workspaceFolder": "/fides",
 	"shutdownAction": "stopCompose",
 	"extensions": [
@@ -12,7 +12,7 @@
 		"bungcip.better-toml",
 		"github.vscode-pull-request-github",
 		"ms-python.vscode-pylance",
-		"ethyca.fidesctl"
+		"ethyca.fides"
 	],
 	"settings": {
 		"editor.formatOnSave": true,
@@ -20,8 +20,8 @@
 		"editor.insertSpaces": true,
 		"python.formatting.provider": "black",
 		"python.linting.mypyEnabled": true,
-		"conf.fidesctl.confFilePath": "/fides/.fides/fidesctl.toml",
-		"conf.fidesctl.manifestFilePath": "/fides/.fides/",
-		"conf.fidesctl.parseOnSave": true
+		"conf.fides.confFilePath": "/fides/.fides/fides.toml",
+		"conf.fides.manifestFilePath": "/fides/.fides/",
+		"conf.fides.parseOnSave": true
 	}
 }

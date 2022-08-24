@@ -18,14 +18,14 @@ from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesctl.api.ctl.database.database import get_alembic_config, upgrade_db
-from fidesctl.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.db.base import Base
-from fidesctl.api.ops.models.privacy_request import generate_request_callback_jwe
-from fidesctl.api.ops.tasks.scheduled.scheduler import scheduler
-from fidesctl.api.ops.util.cache import get_cache
-from fidesctl.api.ops_main import app
+from fides.api.ctl.database.database import get_alembic_config, upgrade_db
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base import Base
+from fides.api.ops.models.privacy_request import generate_request_callback_jwe
+from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.util.cache import get_cache
+from fides.api.ops_main import app
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -224,7 +224,7 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request"
     ]
 
 

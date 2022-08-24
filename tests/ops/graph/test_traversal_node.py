@@ -1,4 +1,4 @@
-from fidesctl.api.ops.graph.traversal import *
+from fides.api.ops.graph.traversal import *
 
 from .test_graph_traversal import generate_node
 

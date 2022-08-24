@@ -9,9 +9,9 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 
-from fidesctl.ctl.core import api
-from fidesctl.ctl.core import dataset as _dataset
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import api
+from fides.ctl.core import dataset as _dataset
+from fides.ctl.core.config import FidesctlConfig
 
 
 def create_server_datasets(
@@ -249,12 +249,12 @@ MSSQL_URL = MSSQL_URL_TEMPLATE.format("sqlserver_example")
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master") + "&autocommit=True"
 
 # External databases require credentials passed through environment variables
-SNOWFLAKE_URL_TEMPLATE = "snowflake://FIDESCTL:{}@ZOA73785/FIDESCTL_TEST"
+SNOWFLAKE_URL_TEMPLATE = "snowflake://fides:{}@ZOA73785/FIDESCTL_TEST"
 SNOWFLAKE_URL = SNOWFLAKE_URL_TEMPLATE.format(
     quote_plus(os.getenv("SNOWFLAKE_FIDESCTL_PASSWORD", ""))
 )
 
-REDSHIFT_URL_TEMPLATE = "redshift+psycopg2://fidesctl:{}@redshift-cluster-1.cohs2e5eq2e4.us-east-1.redshift.amazonaws.com:5439/fidesctl_test"
+REDSHIFT_URL_TEMPLATE = "redshift+psycopg2://fides:{}@redshift-cluster-1.cohs2e5eq2e4.us-east-1.redshift.amazonaws.com:5439/fidesctl_test"
 REDSHIFT_URL = REDSHIFT_URL_TEMPLATE.format(
     quote_plus(os.getenv("REDSHIFT_FIDESCTL_PASSWORD", ""))
 )
