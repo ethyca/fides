@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import AccordionTree from "../common/AccordionTree";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
-import { selectAddTaxonomyType, setAddTaxonomyType } from "./taxonomy.slice";
+import { selectIsAddFormOpen, setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyFormBase from "./TaxonomyFormBase";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
@@ -40,17 +40,17 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
-  const addTaxonomyType = useAppSelector(selectAddTaxonomyType);
+  const isAdding = useAppSelector(selectIsAddFormOpen);
 
   useEffect(() => {
     // prevent both the add and edit forms being opened at once
-    if (addTaxonomyType) {
+    if (isAdding) {
       setEditEntity(null);
     }
-  }, [addTaxonomyType]);
+  }, [isAdding]);
 
   const closeAddForm = () => {
-    dispatch(setAddTaxonomyType(null));
+    dispatch(setIsAddFormOpen(false));
   };
 
   if (isLoading) {
@@ -65,7 +65,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }
 
   const handleSetEditEntity = (node: TaxonomyEntityNode) => {
-    if (addTaxonomyType) {
+    if (isAdding) {
       closeAddForm();
     }
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
@@ -90,7 +90,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           initialValues={transformEntityToInitialValues(editEntity)}
         />
       ) : null}
-      {addTaxonomyType ? (
+      {isAdding ? (
         <TaxonomyFormBase
           labels={labels}
           onCancel={closeAddForm}

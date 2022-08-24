@@ -1,5 +1,4 @@
 import { Box, Button } from "@fidesui/react";
-import { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 
@@ -10,47 +9,37 @@ import {
   useDataSubject,
   useDataUse,
 } from "./hooks";
-import { setAddTaxonomyType } from "./taxonomy.slice";
+import { setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyTabContent from "./TaxonomyTabContent";
-import { TaxonomyType } from "./types";
 
-interface TaxonomyTabData extends TabData {
-  type: TaxonomyType;
-}
-
-const TABS: TaxonomyTabData[] = [
+const TABS: TabData[] = [
   {
     label: "Data Categories",
     content: <TaxonomyTabContent useTaxonomy={useDataCategory} />,
-    type: "DataCategory",
   },
   {
     label: "Data Uses",
     content: <TaxonomyTabContent useTaxonomy={useDataUse} />,
-    type: "DataUse",
   },
   {
     label: "Data Subjects",
     content: <TaxonomyTabContent useTaxonomy={useDataSubject} />,
-    type: "DataSubject",
   },
   {
     label: "Identifiability",
     content: <TaxonomyTabContent useTaxonomy={useDataQualifier} />,
-    type: "DataQualifier",
   },
 ];
 const TaxonomyTabs = () => {
-  const [activeTab, setActiveTab] = useState(0);
   const dispatch = useAppDispatch();
 
   const handleAddEntity = () => {
-    dispatch(setAddTaxonomyType(TABS[activeTab].type));
+    dispatch(setIsAddFormOpen(true));
   };
 
   return (
     <Box data-testid="taxonomy-tabs" display="flex">
-      <DataTabs isLazy data={TABS} flexGrow={1} onChange={setActiveTab} />
+      <DataTabs isLazy data={TABS} flexGrow={1} />
       <Box
         borderBottom="2px solid"
         borderColor="gray.200"

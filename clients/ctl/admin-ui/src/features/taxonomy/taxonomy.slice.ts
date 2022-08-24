@@ -4,16 +4,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { AppState } from "~/app/store";
 import { DataCategory } from "~/types/api";
 
-import { TaxonomyType } from "./types";
-
 export interface State {
   dataCategories: DataCategory[];
-  addTaxonomyType: TaxonomyType | null;
+  isAddFormOpen: boolean;
 }
 
 const initialState: State = {
   dataCategories: [],
-  addTaxonomyType: null,
+  isAddFormOpen: false,
 };
 
 export const taxonomyApi = createApi({
@@ -66,20 +64,17 @@ export const taxonomySlice = createSlice({
       ...state,
       dataCategories: action.payload,
     }),
-    setAddTaxonomyType: (
-      state,
-      action: PayloadAction<TaxonomyType | null>
-    ) => ({
+    setIsAddFormOpen: (state, action: PayloadAction<boolean>) => ({
       ...state,
-      addTaxonomyType: action.payload,
+      isAddFormOpen: action.payload,
     }),
   },
 });
 
-export const { setDataCategories, setAddTaxonomyType } = taxonomySlice.actions;
+export const { setDataCategories, setIsAddFormOpen } = taxonomySlice.actions;
 export const selectDataCategories = (state: AppState) =>
   state.taxonomy.dataCategories;
-export const selectAddTaxonomyType = (state: AppState) =>
-  state.taxonomy.addTaxonomyType;
+export const selectIsAddFormOpen = (state: AppState) =>
+  state.taxonomy.isAddFormOpen;
 
 export const { reducer } = taxonomySlice;
