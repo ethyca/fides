@@ -4,18 +4,18 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fidesctl.api.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.scope_registry import CONNECTION_READ, CONNECTION_TYPE_READ
+from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.models.connectionconfig import ConnectionType
-from fidesctl.api.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.models.connectionconfig import ConnectionType
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
-from fidesctl.api.ops.schemas.saas.saas_config import SaaSType
+from fides.api.ops.schemas.saas.saas_config import SaaSType
 
 
 class TestGetConnections:

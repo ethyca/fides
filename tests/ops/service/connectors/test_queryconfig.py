@@ -3,42 +3,42 @@ from typing import Any, Dict, Optional, Set
 
 import pytest
 
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.graph.config import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fidesctl.api.ops.graph.graph import DatasetGraph, Edge
-from fidesctl.api.ops.graph.traversal import Traversal, TraversalNode
-from fidesctl.api.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest
-from fidesctl.api.ops.schemas.dataset import FidesopsDataset
-from fidesctl.api.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.graph.graph import DatasetGraph, Edge
+from fides.api.ops.graph.traversal import Traversal, TraversalNode
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.masking.masking_configuration import (
     HashMaskingConfiguration,
 )
-from fidesctl.api.ops.schemas.masking.masking_secrets import (
+from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     SecretType,
 )
-from fidesctl.api.ops.schemas.saas.saas_config import (
+from fides.api.ops.schemas.saas.saas_config import (
     ParamValue,
     SaaSConfig,
     SaaSRequest,
 )
-from fidesctl.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesctl.api.ops.service.connectors.query_config import (
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.query_config import (
     MongoQueryConfig,
     SQLQueryConfig,
 )
-from fidesctl.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HASH_STRATEGY_NAME,
     HashMaskingStrategy,
 )
-from fidesctl.api.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets

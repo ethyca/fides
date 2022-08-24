@@ -4,8 +4,8 @@ import pytest
 from fideslib.db.base_class import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.storage import StorageConfig
-from fidesctl.api.ops.schemas.storage.storage import (
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.storage import (
     ResponseFormat,
     StorageDestination,
     StorageDetails,

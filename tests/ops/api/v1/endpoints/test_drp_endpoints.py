@@ -6,24 +6,24 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesctl.api.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fidesctl.api.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
     DRP_EXERCISE,
     DRP_REVOKE,
     DRP_STATUS,
     V1_URL_PREFIX,
 )
-from fidesctl.api.ops.core.config import config
-from fidesctl.api.ops.models.policy import DrpAction
-from fidesctl.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesctl.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
-from fidesctl.api.ops.util.cache import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import DrpAction
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
+from fides.api.ops.util.cache import (
     get_drp_request_body_cache_key,
     get_identity_cache_key,
 )
@@ -35,7 +35,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request(
         self,
@@ -106,7 +106,7 @@ class TestCreateDrpPrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fidesctl.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,

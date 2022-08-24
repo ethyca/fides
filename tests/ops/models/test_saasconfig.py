@@ -3,9 +3,9 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fidesctl.api.ops.graph.config import CollectionAddress, FieldAddress
-from fidesctl.api.ops.schemas.dataset import FidesopsDatasetReference
-from fidesctl.api.ops.schemas.saas.saas_config import (
+from fides.api.ops.graph.config import CollectionAddress, FieldAddress
+from fides.api.ops.schemas.dataset import FidesopsDatasetReference
+from fides.api.ops.schemas.saas.saas_config import (
     ParamValue,
     SaaSConfig,
     SaaSRequest,

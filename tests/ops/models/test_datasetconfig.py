@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 
-from fidesctl.api.ops.models.datasetconfig import (
+from fides.api.ops.models.datasetconfig import (
     DatasetConfig,
     FieldAddress,
     convert_dataset_to_graph,
 )
-from fidesctl.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.dataset import FidesopsDataset
 
 from ..graph.graph_test_util import field
 

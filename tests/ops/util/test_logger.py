@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from fidesctl.api.ops.util import logger
-from fidesctl.api.ops.util.logger import MASKED, NotPii
+from fides.api.ops.util import logger
+from fides.api.ops.util.logger import MASKED, NotPii
 
 
 @pytest.fixture(scope="function")

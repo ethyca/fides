@@ -1,7 +1,7 @@
-from fidesctl.api.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.masking.masking_configuration import (
     NullMaskingConfiguration,
 )
-from fidesctl.api.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
 
