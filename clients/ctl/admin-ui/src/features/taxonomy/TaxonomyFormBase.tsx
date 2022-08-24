@@ -117,25 +117,26 @@ const EditTaxonomyForm = ({
               )}
               <CustomTextInput name="name" label={labels.name} />
               <CustomTextArea name="description" label={labels.description} />
-              {isCreate ? (
-                <Grid templateColumns="1fr 3fr">
-                  <FormLabel>{labels.parent_key}</FormLabel>
-                  <Box mr="2">
-                    <Input
-                      data-testid="input-parent_key"
-                      disabled
-                      value={parentKeyFromFidesKey(values.fides_key)}
-                      size="sm"
-                    />
-                  </Box>
-                </Grid>
-              ) : (
-                <CustomTextInput
-                  name="parent_key"
-                  label={labels.parent_key}
-                  disabled={!isCreate}
-                />
-              )}
+              {labels.parent_key &&
+                (isCreate ? (
+                  <Grid templateColumns="1fr 3fr">
+                    <FormLabel>{labels.parent_key}</FormLabel>
+                    <Box mr="2">
+                      <Input
+                        data-testid="input-parent_key"
+                        disabled
+                        value={parentKeyFromFidesKey(values.fides_key)}
+                        size="sm"
+                      />
+                    </Box>
+                  </Grid>
+                ) : (
+                  <CustomTextInput
+                    name="parent_key"
+                    label={labels.parent_key}
+                    disabled={!isCreate}
+                  />
+                ))}
               {extraFormFields}
             </Stack>
 
