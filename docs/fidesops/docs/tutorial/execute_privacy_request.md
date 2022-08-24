@@ -37,8 +37,8 @@ def create_privacy_request(email, policy_key):
         f"{FIDESOPS_URL}/api/v1/privacy-request",
         json=privacy_request_data,
     )
-    logger.info(f"Executing a Privacy Request. Status {response.status_code}")
-    logger.info(f"Check fidesdemo/fides_uploads for upload package.")
+    logger.info("Executing a Privacy Request. Status %s", response.status_code)
+    logger.info("Check fidesdemo/fides_uploads for upload package.")
     return response.json()
 ```
 

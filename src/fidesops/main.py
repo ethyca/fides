@@ -43,7 +43,7 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.logger import get_fides_log_record_factory
+from fidesops.ops.util.logger import Pii, get_fides_log_record_factory
 from fidesops.ops.util.oauth_util import verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
@@ -238,7 +238,7 @@ def start_webserver() -> None:
         try:
             init_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
-            logger.error(f"Connection to database failed: {error}")
+            logger.error("Connection to database failed: %s", Pii(str(error)))
             return
 
     if config.redis.enabled:
@@ -246,7 +246,7 @@ def start_webserver() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error(f"Connection to cache failed: {e}")
+            logger.error("Connection to cache failed: %s", Pii(str(e)))
             return
 
     scheduler.start()

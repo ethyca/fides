@@ -84,7 +84,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
         uri = self.build_uri()
-        logger.info(f"Creating client to {uri}")
+        logger.info("Creating client to %s", uri)
         return AuthenticatedClient(uri, self.configuration)
 
     def _build_client_with_config(
@@ -181,7 +181,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
 
         logger.info(
-            f"{len(rows)} row(s) returned after postprocessing '{self.collection_name}' collection."
+            "%s row(s) returned after postprocessing '%s' collection.",
+            len(rows),
+            self.collection_name,
         )
 
         # use the pagination strategy (if available) to get the next request
@@ -197,8 +199,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if next_request:
             logger.info(
-                f"Using '{saas_request.pagination.strategy}' "  # type: ignore
-                f"pagination strategy to get next page for '{self.collection_name}'."
+                "Using '%s' pagination strategy to get next page for '%s'.",
+                saas_request.pagination.strategy,  # type: ignore
+                self.collection_name,
             )
 
         return rows, next_request
@@ -223,8 +226,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                f"Starting postprocessing of '{self.collection_name}' collection with "  # type: ignore
-                f"'{postprocessor.strategy}' strategy."
+                "Starting postprocessing of '%s' collection with '%s' strategy.",
+                self.collection_name,
+                postprocessor.strategy,  # type: ignore
             )
             try:
                 processed_data = strategy.process(processed_data, identity_data)
@@ -319,7 +323,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         if saas_request.ignore_errors and not response.ok:
             logger.info(
-                f"Ignoring and clearing errored response with status code {response.status_code}."
+                "Ignoring and clearing errored response with status code %s.",
+                response.status_code,
             )
             response = Response()
             response._content = b"{}"  # pylint: disable=W0212

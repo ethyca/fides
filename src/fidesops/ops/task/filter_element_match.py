@@ -12,6 +12,7 @@ from fidesops.ops.task.refine_target_path import (
     join_detailed_path,
 )
 from fidesops.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +103,9 @@ def _remove_paths_from_row(
         if matched_array is None:
             # This case shouldn't happen - if this gets logged, we've done something wrong
             logger.info(
-                f"_remove_paths_from_row call: Path {path} in row {row} not found."
+                "_remove_paths_from_row call: Path %s in row %s not found.",
+                path,
+                Pii(row),
             )
             continue
         # Loop through array in *reverse* to delete/replace indices

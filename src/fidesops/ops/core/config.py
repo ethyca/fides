@@ -18,7 +18,6 @@ from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
 
 from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesops.ops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)
 
@@ -170,10 +169,11 @@ class FidesopsConfig(FidesSettings):
         case_sensitive = True
 
     logger.warning(
-        f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
+        "Startup configuration: reloading = %s, dev_mode = %s", hot_reloading, dev_mode
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"}'
+        "Startup configuration: pii logging = %s",
+        os.getenv("FIDESOPS__LOG_PII", "").lower() == "true",
     )
 
     def log_all_config_values(self) -> None:
@@ -188,9 +188,9 @@ class FidesopsConfig(FidesSettings):
             for key, value in settings.dict().items():  # type: ignore
                 logger.debug(
                     "Using config: %s%s = %s",
-                    NotPii(settings.Config.env_prefix),  # type: ignore
-                    NotPii(key),
-                    NotPii(value),
+                    settings.Config.env_prefix,  # type: ignore
+                    key,
+                    value,
                 )
 
 
@@ -249,7 +249,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
         config_path: str = load_file(["fidesops.toml"])
         current_config: MutableMapping[str, Any] = load_toml(["fidesops.toml"])
     except FileNotFoundError as e:
-        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
+        logger.warning("fidesops.toml could not be loaded: %s", e)
 
     for key, value in updates.items():
         if key in current_config:
@@ -260,11 +260,11 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
     with open(config_path, "w") as config_file:  # pylint: disable=W1514
         toml.dump(current_config, config_file)
 
-    logger.info(f"Updated {config_path}:")
+    logger.info("Updated %s:", config_path)
 
     for key, value in updates.items():
         for subkey, val in value.items():
-            logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
+            logger.info("\tSet %s.%s = %s", key, subkey, val)
 
 
 config = get_config(FidesopsConfig)

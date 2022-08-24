@@ -37,7 +37,7 @@ from fidesops.ops.task.refine_target_path import FieldPathNodeInput
 from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
-from fidesops.ops.util.logger import NotPii
+from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
@@ -81,22 +81,28 @@ def retry(
                     return func(*args, **kwargs)
                 except PrivacyRequestPaused as ex:
                     logger.warning(
-                        f"Privacy request {method_name} paused {self.traversal_node.address}"
+                        "Privacy request %s paused %s",
+                        method_name,
+                        self.traversal_node.address,
                     )
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
                 except CollectionDisabled as exc:
                     logger.warning(
-                        f"Skipping disabled collection {self.traversal_node.address} "
-                        f"for privacy_request: {self.resources.request.id}"
+                        "Skipping disabled collection %s for privacy_request: %s",
+                        self.traversal_node.address,
+                        self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= config.execution.task_retry_backoff
                     logger.warning(
-                        f"Retrying {method_name} {self.traversal_node.address} in {func_delay} seconds..."
+                        "Retrying %s %s in %s seconds...",
+                        method_name,
+                        self.traversal_node.address,
+                        func_delay,
                     )
                     sleep(func_delay)
                     raised_ex = ex
@@ -251,9 +257,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if not len(data) == len(self.input_keys):
             logger.warning(
                 "%s expected %s input keys, received %s",
-                NotPii(self),
-                NotPii(len(self.input_keys)),
-                NotPii(len(data)),
+                self,
+                len(self.input_keys),
+                len(data),
             )
 
         output: Dict[str, List[Any]] = {FIDESOPS_GROUPED_INPUTS: []}
@@ -275,7 +281,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 continue
 
             logger.info(
-                f"Consolidating incoming data into {self.traversal_node.node.address} from {collection_address}."
+                "Consolidating incoming data into %s from %s.",
+                self.traversal_node.node.address,
+                collection_address,
             )
             for row in rowset:
                 # Consolidate lists of independent field inputs
@@ -328,7 +336,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info(f"Starting {self.resources.request.id}, traversal_node {self.key}")
+        logger.info(
+            "Starting %s, traversal_node %s", self.resources.request.id, self.key
+        )
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -336,19 +346,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info(f"Retrying {self.resources.request.id}, node {self.key}")
+        logger.info("Retrying %s, node %s", self.resources.request.id, self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
     def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
         """On paused activities"""
-        logger.info(f"Pausing {self.resources.request.id}, node {self.key}")
+        logger.info("Pausing %s, node %s", self.resources.request.id, self.key)
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
-        logger.info(f"Skipping {self.resources.request.id}, node {self.key}")
+        logger.info("Skipping %s, node %s", self.resources.request.id, self.key)
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
@@ -359,11 +369,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if ex:
             traceback.print_exc()
             logger.warning(
-                f"Ending {self.resources.request.id}, {self.key} with failure {ex}"
+                "Ending %s, %s with failure %s",
+                self.resources.request.id,
+                self.key,
+                Pii(ex),
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
         else:
-            logger.info(f"Ending {self.resources.request.id}, {self.key}")
+            logger.info("Ending %s, %s", self.resources.request.id, self.key)
             self.update_status(
                 "success",
                 build_affected_field_logs(
@@ -442,7 +455,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:
             logger.info(
-                f"Filtering row in {self.traversal_node.node.address} for matching array elements."
+                "Filtering row in %s for matching array elements.",
+                self.traversal_node.node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
         self.resources.cache_object(f"access_request__{self.key}", output)
@@ -484,7 +498,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
             logger.warning(
-                f"No erasures on {self.traversal_node.node.address} as there is no primary_key defined."
+                "No erasures on %s as there is no primary_key defined.",
+                self.traversal_node.node.address,
             )
             self.update_status(
                 "No values were erased since no primary key was defined for this collection",
@@ -496,7 +511,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         if not self.can_write_data():
             logger.warning(
-                f"No erasures on {self.traversal_node.node.address} as its ConnectionConfig does not have write access."
+                "No erasures on %s as its ConnectionConfig does not have write access.",
+                self.traversal_node.node.address,
             )
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "

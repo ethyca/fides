@@ -13,6 +13,7 @@ from fidesops.ops.core.config import config
 from fidesops.ops.db.database import get_alembic_config
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import get_cache
+from fidesops.ops.util.logger import Pii
 
 router = APIRouter(tags=["Public"])
 
@@ -48,7 +49,7 @@ def get_db_health(database_url: Optional[str], db: Session) -> str:
             return "needs migration"
         return "healthy"
     except Exception as error:  # pylint: disable=broad-except
-        logger.error(f"Unable to reach the database: {error}")
+        logger.error("Unable to reach the database: %s", Pii(str(error)))
         return "unhealthy"
 
 
@@ -60,5 +61,5 @@ def get_cache_health() -> str:
         get_cache()
         return "healthy"
     except (RedisConnectionError, ResponseError) as e:
-        logger.error(f"Unable to reach cache: {e}")
+        logger.error("Unable to reach cache: %s", Pii(str(e)))
         return "unhealthy"

@@ -104,7 +104,8 @@ class AuthenticatedClient:
         if not response.ok:
             if ignore_errors:
                 logger.info(
-                    f"Ignoring errors on response with status code {response.status_code} as configured."
+                    "Ignoring errors on response with status code %s as configured.",
+                    response.status_code,
                 )
                 return response
 

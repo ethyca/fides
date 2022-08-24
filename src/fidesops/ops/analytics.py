@@ -41,8 +41,10 @@ def send_analytics_event(event: AnalyticsEvent) -> None:
     try:
         analytics_client.send(event)
     except AnalyticsError as err:
-        logger.warning(f"Error sending analytics event: {err}")
+        logger.warning("Error sending analytics event: %s", err)
     else:
         logger.info(
-            f"Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
+            "Analytics event sent: %s with client id: %s",
+            event.event,
+            analytics_client.client_id,
         )

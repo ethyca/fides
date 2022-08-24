@@ -21,12 +21,17 @@ class MaskingStrategyFactory:
     ) -> Callable[[Type[MaskingStrategy]], Type[MaskingStrategy]]:
         def wrapper(strategy_class: Type[MaskingStrategy]) -> Type[MaskingStrategy]:
             logger.debug(
-                f"Registering new masking strategy '{strategy_class}' under name '{name}'"
+                "Registering new masking strategy '%s' under name '%s'",
+                strategy_class,
+                name,
             )
 
             if name in cls.registry:
                 logger.warning(
-                    f"Masking strategy with name '{name}' already exists. It previously referred to class '{cls.registry[name]}', but will now refer to '{strategy_class}'"
+                    "Masking strategy with name '%s' already exists. It previously referred to class '%s', but will now refer to '%s'",
+                    name,
+                    cls.registry[name],
+                    strategy_class,
                 )
 
             cls.registry[name] = strategy_class

@@ -19,6 +19,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceType,
 )
 from fidesops.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ class EmailConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error("Error: %s", exc)
+            logger.error("Error: %s", Pii(str(exc)))
             # We don't want to handle these explicitly here, only in the API view
             raise
 

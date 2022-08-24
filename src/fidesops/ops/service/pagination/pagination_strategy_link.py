@@ -13,6 +13,7 @@ from fidesops.ops.schemas.saas.strategy_configuration import (
     StrategyConfiguration,
 )
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fidesops.ops.util.logger import Pii
 
 STRATEGY_NAME = "link"
 
@@ -59,7 +60,9 @@ class LinkPaginationStrategy(PaginationStrategy):
         updated_path = urlsplit(next_link).path
         updated_query_params = dict(parse.parse_qsl(urlsplit(next_link).query))
         logger.debug(
-            f"Replacing path with {updated_path} and query params with {updated_query_params}"
+            "Replacing path with %s and query params with %s",
+            updated_path,
+            Pii(updated_query_params),
         )
         return SaaSRequestParams(
             method=request_params.method,
