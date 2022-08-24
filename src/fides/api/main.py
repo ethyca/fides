@@ -48,7 +48,6 @@ ROUTERS = (
     ]
 )
 
-## TODO: merge in ops_main.py
 
 def configure_routes() -> None:
     "Include all of the routers not defined in this module."

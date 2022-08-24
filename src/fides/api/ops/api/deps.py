@@ -4,7 +4,7 @@ from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured
-from fides.api.ops.core.config import config
+from fides.api.ops.core.config import FidesopsConfig, config
 from fides.api.ops.util.cache import get_cache as get_redis_connection
 
 _engine = None

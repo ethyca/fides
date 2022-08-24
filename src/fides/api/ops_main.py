@@ -26,6 +26,7 @@ from fides.api.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
+from fides.api.ops.api.deps import get_config, get_db
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
@@ -35,11 +36,15 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.core.config import config
 from fides.api.ops.schemas.analytics import Event, ExtraData
+from fides.api.ops.service.connectors.saas.connector_registry_service import (
+    load_registry,
+    registry_file,
+)
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.logger import get_fides_log_record_factory
-from fides.api.ops.util.oauth_util import get_db, verify_oauth_client
+from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 logging.basicConfig(level=config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -268,7 +273,7 @@ def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("Starting webserver...")
     uvicorn.run(
-        "fides.api.main:app",
+        "fides.api.ops_main:app",
         host="0.0.0.0",
         port=config.port,
         log_config=None,
