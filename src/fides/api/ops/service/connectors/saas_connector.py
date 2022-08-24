@@ -5,15 +5,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import pydash
 from requests import Response
 
-from fides.api.ops.common_exceptions import (
-    FidesopsException,
-    PostProcessingException,
-)
+from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
 from fides.api.ops.graph.traversal import Row, TraversalNode
-from fides.api.ops.models.connectionconfig import (
-    ConnectionConfig,
-    ConnectionTestStatus,
-)
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest

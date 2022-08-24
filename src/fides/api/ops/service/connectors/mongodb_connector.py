@@ -13,10 +13,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb i
     MongoDBSchema,
 )
 from fides.api.ops.service.connectors.base_connector import BaseConnector
-from fides.api.ops.service.connectors.query_config import (
-    MongoQueryConfig,
-    QueryConfig,
-)
+from fides.api.ops.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fides.api.ops.util.logger import NotPii
 
 logger = logging.getLogger(__name__)

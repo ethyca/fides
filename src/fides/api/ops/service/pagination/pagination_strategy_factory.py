@@ -7,9 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from pydantic import ValidationError
 
 from fides.api.ops.common_exceptions import NoSuchStrategyException
-from fides.api.ops.common_exceptions import (
-    ValidationError as FidesopsValidationError,
-)
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
@@ -21,12 +19,8 @@ from fides.api.ops.service.pagination.pagination_strategy_offset import (
 )
 
 if TYPE_CHECKING:
-    from fides.api.ops.schemas.saas.strategy_configuration import (
-        StrategyConfiguration,
-    )
-    from fides.api.ops.service.pagination.pagination_strategy import (
-        PaginationStrategy,
-    )
+    from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
+    from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 logger = logging.getLogger(__name__)
 

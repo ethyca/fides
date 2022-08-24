@@ -5,9 +5,7 @@ from typing import Any, Dict, List
 from pydantic import ValidationError
 
 from fides.api.ops.common_exceptions import NoSuchStrategyException
-from fides.api.ops.common_exceptions import (
-    ValidationError as FidesopsValidationError,
-)
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,

@@ -22,9 +22,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrat
 from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
-from fides.api.ops.util.encryption.hmac_encryption_scheme import (
-    hmac_encrypt_return_str,
-)
+from fides.api.ops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fides.api.ops.util.encryption.secrets_util import SecretsUtil
 
 HMAC_STRATEGY_NAME = "hmac"

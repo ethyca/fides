@@ -4,11 +4,7 @@ from typing import List
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.ops.api.v1.urn_registry import (
-    MASKING,
-    MASKING_STRATEGY,
-    V1_URL_PREFIX,
-)
+from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.schemas.masking.masking_api import (
     MaskingAPIRequest,

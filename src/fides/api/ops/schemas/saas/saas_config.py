@@ -11,10 +11,7 @@ from fides.api.ops.graph.config import (
     ScalarField,
 )
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.api.ops.schemas.dataset import (
-    FidesCollectionKey,
-    FidesopsDatasetReference,
-)
+from fides.api.ops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 

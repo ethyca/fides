@@ -4,10 +4,7 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from fides.api.ops.core.config import config
 from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import (
-    ConnectionConfig,
-    ConnectionTestStatus,
-)
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.connectors.query_config import QueryConfig

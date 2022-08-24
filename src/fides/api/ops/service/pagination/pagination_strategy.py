@@ -8,9 +8,7 @@ from requests import Response
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 if TYPE_CHECKING:
-    from fides.api.ops.schemas.saas.strategy_configuration import (
-        StrategyConfiguration,
-    )
+    from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 
 class PaginationStrategy(ABC):
