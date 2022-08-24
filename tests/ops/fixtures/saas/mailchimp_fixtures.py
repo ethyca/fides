@@ -14,8 +14,10 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
-from fides.api.ops.util.saas_util import load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fides.api.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("mailchimp")
@@ -40,12 +42,20 @@ def mailchimp_identity_email(saas_config):
 
 @pytest.fixture
 def mailchimp_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/mailchimp_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/mailchimp_config.yml",
+        "<instance_fides_key>",
+        "mailchimp_instance",
+    )
 
 
 @pytest.fixture
 def mailchimp_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/mailchimp_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/mailchimp_dataset.yml",
+        "<instance_fides_key>",
+        "mailchimp_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

@@ -8,7 +8,7 @@ REST API endpoint *before* or *after* a Privacy Request executes.
 You can define as many webhooks as you'd like.  Webhooks can be `one_way`, where we will just ping your API and move on,
 or `two_way`, where we will wait for a response. Any `derived_identities` returned from a `two_way` webhook will be saved
 and can be used to locate other user information.  For example, a webhook might take a known `email` `identity` and
-use that to find a `phone_number` `derived)identity`.
+use that to find a `phone_number` `derived_identity`.
 
 Another use case for a Policy Webhook might be to log a user out of your mobile app after you've cleared
 their data from your system.  In this case, you'd create a `Policy` and a `ConnectionConfig` to describe the URL to hit
@@ -63,7 +63,7 @@ Policy. The same applies for PolicyPostWebhooks.
 
 To update your list of PolicyPreWebhooks:
 
-```json title="<code>PUT /policy/<policy_key>/webhook/pre_execution</code>"
+```json title="<code>PUT /policy/{policy_key}/webhook/pre_execution</code>"
 [
     {
         "connection_config_key": "test_webhook_connection_config",
@@ -85,7 +85,7 @@ This creates two webhooks that are run sequentially for the Policy before a Priv
 Similarly, to update your list of Post-Execution webhooks on a Policy:
 
 ```
-PUT /policy/<policy_key>/webhook/post_execution
+PUT /policy/{policy_key}/webhook/post_execution
 ```
 
 See API docs for more information on how to [Update PolicyPreWebhooks](/fidesops/api#operations-Policy_Webhooks-create_or_update_pre_execution_webhooks_api_v1_policy__policy_key__webhook_pre_execution_put)
@@ -100,7 +100,7 @@ The following example will update the PolicyPreWebhook with key `webhook_hook` t
 `one_way` and will update its order from 0 to 1.  Because we've defined two PolicyPreWebhooks, this causes the
 webhook at position 1 to move to position 0.
 
-```json title="<code>PATCH /policy/<policy_key>/webhook/pre-execution/wake_up_snowflake_db</code>"
+```json title="<code>PATCH /policy/{policy_key}/webhook/pre-execution/wake_up_snowflake_db</code>"
 {
     "direction": "two_way",
     "order": 1
@@ -135,7 +135,7 @@ Because this PATCH request updated the order of other webhooks, a reordered summ
 Similarly, to update your a Post-Execution webhook on a Policy:
 
 ```
-PATCH /policy/<policy_key>/webhook/post_execution/<post_execution_key>
+PATCH /policy/{policy_key}/webhook/post_execution/{post_execution_key}
 ```
 
 See API docs for more information on how to [PATCH a PolicyPreWebhook](/fidesops/api#operations-Policy_Webhooks-update_pre_execution_webhook_api_v1_policy__policy_key__webhook_pre_execution__pre_webhook_key__patch)
@@ -146,7 +146,7 @@ and how to [PATCH a PolicyPostWebhook](/fidesops/api#operations-Policy_Webhooks-
 Before and after running access or erasure requests, fidesops will send requests to any configured webhooks in sequential order
 with the following request body:
 
-```json title="<code>POST <user-defined URL></code>"
+```json title="<code>POST {user-defined URL}</code>"
 {
   "privacy_request_id": "pri_029832ba-3b84-40f7-8946-82aec6f95448",
   "direction": "one_way | two_way",
@@ -167,7 +167,7 @@ execution while you take care of additional processing on your end.
 
 ```json
 {
-  "reply-to": "/privacy-request/<privacy_request_id>/resume",
+  "reply-to": "/privacy-request/{privacy_request_id}/resume",
   "reply-to-token": "<jwe_token>"
 }
 ```
@@ -202,7 +202,7 @@ Derived identity is optional: a returned email or phone number will replace curr
 If your webhook needed more processing time, once completed, send a request to the `reply-to` URL
 given to you in the original request header with the `reply-to-token` auth token.
 
-```json title="<code>POST privacy_request/<privacy-request-id>/resume</code>"
+```json title="<code>POST privacy_request/{privacy-request-id}/resume</code>"
 {
   "derived_identity": {
     "email": "customer-1@gmail.com",

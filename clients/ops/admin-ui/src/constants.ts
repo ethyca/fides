@@ -18,12 +18,24 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "privacy-request:review",
   },
   {
+    privilege: "Resume subject requests",
+    scope: "privacy-request:resume",
+  },
+  {
     privilege: "View datastore connections",
     scope: "connection:read",
   },
   {
     privilege: "Create or Update datastore connections",
     scope: "connection:create_or_update",
+  },
+  {
+    privilege: "Instantiate connections to SaaS datastores",
+    scope: "connection:instantiate",
+  },
+  {
+    privilege: "Read connection types",
+    scope: "connection_type:read",
   },
   {
     privilege: "Delete datastore connections",

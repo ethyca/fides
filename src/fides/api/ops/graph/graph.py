@@ -206,7 +206,7 @@ class DatasetGraph:
                 for (dest_field_address, direction) in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
                         logger.warning(
-                            f"Referenced object {dest_field_address} does not exist"
+                            "Referenced object %s does not exist", dest_field_address
                         )
                         raise ValidationError(
                             f"Referred to object {dest_field_address} does not exist"

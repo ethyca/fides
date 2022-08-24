@@ -62,7 +62,7 @@ def update_user(
         )
 
     user.update(db=db, data=data.dict())
-    logger.info(f"Updated user with id: '{user.id}'.")
+    logger.info("Updated user with id: '%s'.", user.id)
     return user
 
 
@@ -94,7 +94,7 @@ def update_user_password(
 
     current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
 
-    logger.info(f"Updated user with id: '{current_user.id}'.")
+    logger.info("Updated user with id: '%s'.", current_user.id)
     return current_user
 
 

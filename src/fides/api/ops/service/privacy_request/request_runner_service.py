@@ -1,4 +1,5 @@
 import logging
+import random
 from datetime import datetime, timedelta
 from typing import ContextManager, Dict, List, Optional, Set
 
@@ -46,8 +47,8 @@ from fides.api.ops.util.cache import (
     get_async_task_tracking_cache_key,
     get_cache,
 )
-from fides.api.ops.util.collection_util import Row
-from fides.api.ops.util.logger import _log_exception, _log_warning
+from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
 
 logger = get_task_logger(__name__)
 
@@ -77,20 +78,27 @@ def run_webhooks_and_report_status(
             privacy_request.trigger_policy_webhook(webhook)
         except PrivacyRequestPaused:
             logging.info(
-                f"Pausing execution of privacy request {privacy_request.id}. Halt instruction received from webhook {webhook.key}."
+                "Pausing execution of privacy request %s. Halt instruction received from webhook %s.",
+                privacy_request.id,
+                webhook.key,
             )
             privacy_request.pause_processing(db)
             initiate_paused_privacy_request_followup(privacy_request)
             return False
         except ClientUnsuccessfulException as exc:
             logging.error(
-                f"Privacy Request '{privacy_request.id}' exited after response from webhook '{webhook.key}': {exc.args[0]}."
+                "Privacy Request '%s' exited after response from webhook '%s': %s.",
+                privacy_request.id,
+                webhook.key,
+                Pii(str(exc.args[0])),
             )
             privacy_request.error_processing(db)
             return False
         except ValidationError:
             logging.error(
-                f"Privacy Request '{privacy_request.id}' errored due to response validation error from webhook '{webhook.key}'."
+                "Privacy Request '%s' errored due to response validation error from webhook '%s'.",
+                privacy_request.id,
+                webhook.key,
             )
             privacy_request.error_processing(db)
             return False
@@ -107,7 +115,7 @@ def upload_access_results(
 ) -> None:
     """Process the data uploads after the access portion of the privacy request has completed"""
     if not access_result:
-        logging.info(f"No results returned for access request {privacy_request.id}")
+        logging.info("No results returned for access request %s", privacy_request.id)
 
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
         if not rule.storage_destination:
@@ -121,7 +129,9 @@ def upload_access_results(
             dataset_graph.data_category_field_mapping,
         )
         logging.info(
-            f"Starting access request upload for rule {rule.key} for privacy request {privacy_request.id}"
+            "Starting access request upload for rule %s for privacy request %s",
+            rule.key,
+            privacy_request.id,
         )
         try:
             upload(
@@ -132,7 +142,11 @@ def upload_access_results(
             )
         except common_exceptions.StorageUploadError as exc:
             logging.error(
-                f"Error uploading subject access data for rule {rule.key} on policy {policy.key} and privacy request {privacy_request.id} : {exc}"
+                "Error uploading subject access data for rule %s on policy %s and privacy request %s : %s",
+                rule.key,
+                policy.key,
+                privacy_request.id,
+                Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
 
@@ -154,7 +168,9 @@ def queue_privacy_request(
             task.task_id,
         )
     except DataError:
-        logger.debug(f"Error tracking task_id for request with id {privacy_request_id}")
+        logger.debug(
+            "Error tracking task_id for request with id %s", privacy_request_id
+        )
 
     return task.task_id
 
@@ -197,10 +213,10 @@ def run_privacy_request(
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logging.info(
-                f"Terminating privacy request {privacy_request.id}: request canceled."
+                "Terminating privacy request %s: request canceled.", privacy_request.id
             )
             return
-        logging.info(f"Dispatching privacy request {privacy_request.id}")
+        logging.info("Dispatching privacy request %s", privacy_request.id)
         privacy_request.start_processing(session)
 
         if not from_step:  # Skip if we're resuming from the access or erasure step.
@@ -296,7 +312,7 @@ def run_privacy_request(
         )
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db=session)
-        logging.info(f"Privacy request {privacy_request.id} run completed.")
+        logging.info("Privacy request %s run completed.", privacy_request.id)
 
 
 def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
@@ -318,13 +334,22 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:
         logger.info(
-            f"Attempted to mark as expired. No privacy request with id'{privacy_request_id}' found."
+            "Attempted to mark as expired. No privacy request with id '%s' found.",
+            privacy_request_id,
         )
         db.close()
         return
     if privacy_request.status == PrivacyRequestStatus.paused:
         logger.error(
-            f"Privacy request '{privacy_request.id}' has expired. Please resubmit information."
+            "Privacy request '%s' has expired. Please resubmit information.",
+            privacy_request.id,
         )
         privacy_request.error_processing(db=db)
     db.close()
+
+
+def generate_id_verification_code() -> str:
+    """
+    Generate one-time identity verification code
+    """
+    return str(random.choice(range(100000, 999999)))

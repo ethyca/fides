@@ -505,7 +505,7 @@ def test_create_and_process_access_request_saas_mailchimp(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_connector_example:"
+    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_instance:"
     member_key = result_key_prefix + "member"
     assert results[member_key][0]["email_address"] == customer_email
 
@@ -614,7 +614,7 @@ def test_create_and_process_access_request_saas_hubspot(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_connector_example:"
+    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_instance:"
     contacts_key = result_key_prefix + "contacts"
     assert results[contacts_key][0]["properties"]["email"] == customer_email
 
@@ -1561,7 +1561,7 @@ def test_privacy_request_log_failure(
         assert sent_event.event == "privacy_request_execution_failure"
         assert sent_event.event_created_at is not None
 
-        assert sent_event.local_host is False
+        assert sent_event.local_host is None
         assert sent_event.endpoint is None
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"

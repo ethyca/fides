@@ -2,7 +2,8 @@
 
 import logging
 import os
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, List, MutableMapping, Optional
+from urllib.parse import quote_plus
 
 import toml
 from fideslib.core.config import (
@@ -16,7 +17,7 @@ from fideslib.core.config import (
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
 
-from fides.api.ops.util.logger import NotPii
+from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ class ExecutionSettings(FidesSettings):
     task_retry_count: int
     task_retry_delay: int  # In seconds
     task_retry_backoff: int
+    subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
     masking_strict: bool = True
     worker_enabled: bool = True
@@ -56,6 +58,7 @@ class RedisSettings(FidesSettings):
     charset: str = "utf8"
     decode_responses: bool = True
     default_ttl_seconds: int = 604800
+    identity_verification_code_ttl_seconds: int = 600
     db_index: Optional[int]
     enabled: bool = True
     ssl: bool = False
@@ -74,7 +77,7 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{values.get('user', '')}:{values['password']}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
+        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values['password'])}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
 
     class Config:
         env_prefix = "FIDESOPS__REDIS__"
@@ -84,6 +87,7 @@ class FidesopsSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
     log_level: str = "INFO"
+    root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
@@ -165,10 +169,11 @@ class FidesopsConfig(FidesSettings):
         case_sensitive = True
 
     logger.warning(
-        f"Startup configuration: reloading = {hot_reloading}, dev_mode = {dev_mode}"
+        "Startup configuration: reloading = %s, dev_mode = %s", hot_reloading, dev_mode
     )
     logger.warning(
-        f'Startup configuration: pii logging = {os.getenv("FIDESOPS__LOG_PII", "").lower() == "true"}'
+        "Startup configuration: pii logging = %s",
+        os.getenv("FIDESOPS__LOG_PII", "").lower() == "true",
     )
 
     def log_all_config_values(self) -> None:
@@ -183,9 +188,9 @@ class FidesopsConfig(FidesSettings):
             for key, value in settings.dict().items():  # type: ignore
                 logger.debug(
                     "Using config: %s%s = %s",
-                    NotPii(settings.Config.env_prefix),  # type: ignore
-                    NotPii(key),
-                    NotPii(value),
+                    settings.Config.env_prefix,  # type: ignore
+                    key,
+                    value,
                 )
 
 
@@ -244,7 +249,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
         config_path: str = load_file(["fidesops.toml"])
         current_config: MutableMapping[str, Any] = load_toml(["fidesops.toml"])
     except FileNotFoundError as e:
-        logger.warning("fidesops.toml could not be loaded: %s", NotPii(e))
+        logger.warning("fidesops.toml could not be loaded: %s", e)
 
     for key, value in updates.items():
         if key in current_config:
@@ -255,11 +260,11 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
     with open(config_path, "w") as config_file:  # pylint: disable=W1514
         toml.dump(current_config, config_file)
 
-    logger.info(f"Updated {config_path}:")
+    logger.info("Updated %s:", config_path)
 
     for key, value in updates.items():
         for subkey, val in value.items():
-            logger.info("\tSet %s.%s = %s", NotPii(key), NotPii(subkey), NotPii(val))
+            logger.info("\tSet %s.%s = %s", key, subkey, val)
 
 
 config = get_config(

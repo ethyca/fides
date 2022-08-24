@@ -79,7 +79,7 @@ def prepare_rerun_graph_analytics_event(
         if step == ActionType.access
         else "rerun_erasure_graph",
         event_created_at=datetime.now(tz=timezone.utc),
-        local_host=False,  # Temporarily defaulting to False, but we are going to change this to None
+        local_host=None,
         endpoint=None,
         status_code=None,
         error=None,
@@ -98,7 +98,7 @@ def failed_graph_analytics_event(
         docker=in_docker_container(),
         event="privacy_request_execution_failure",
         event_created_at=datetime.now(tz=timezone.utc),
-        local_host=False,  # Temporarily defaulting to False, but we are going to change this to None
+        local_host=None,
         endpoint=None,
         status_code=500,
         error=exc.__class__.__name__ if exc else None,

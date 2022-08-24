@@ -15,6 +15,7 @@ CONNECTION_CREATE_OR_UPDATE = "connection:create_or_update"
 CONNECTION_READ = "connection:read"
 CONNECTION_DELETE = "connection:delete"
 CONNECTION_AUTHORIZE = "connection:authorize"
+SAAS_CONNECTION_INSTANTIATE = "connection:instantiate"
 
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
@@ -34,6 +35,10 @@ RULE_DELETE = "rule:delete"
 STORAGE_CREATE_OR_UPDATE = "storage:create_or_update"
 STORAGE_READ = "storage:read"
 STORAGE_DELETE = "storage:delete"
+
+EMAIL_CREATE_OR_UPDATE = "email:create_or_update"
+EMAIL_READ = "email:read"
+EMAIL_DELETE = "email:delete"
 
 SCOPE_READ = "scope:read"
 
@@ -67,6 +72,7 @@ SCOPE_REGISTRY = [
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_AUTHORIZE,
+    SAAS_CONNECTION_INSTANTIATE,
     CONNECTION_TYPE_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
@@ -86,6 +92,9 @@ SCOPE_REGISTRY = [
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+    EMAIL_CREATE_OR_UPDATE,
+    EMAIL_DELETE,
+    EMAIL_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_READ,
     WEBHOOK_DELETE,

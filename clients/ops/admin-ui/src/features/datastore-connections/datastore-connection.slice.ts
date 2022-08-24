@@ -16,6 +16,8 @@ import {
   DatastoreConnectionParams,
   DatastoreConnectionResponse,
   DatastoreConnectionStatus,
+  SassConnectionConfigRequest,
+  SassConnectionConfigResponse,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -150,6 +152,24 @@ export const datastoreConnectionApi = createApi({
   }),
   tagTypes: ["DatastoreConnection"],
   endpoints: (build) => ({
+    createSassConnectionConfig: build.mutation<
+      SassConnectionConfigResponse,
+      SassConnectionConfigRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`,
+        method: "POST",
+        body: { ...params },
+      }),
+      invalidatesTags: ["DatastoreConnection"],
+    }),
+    deleteDatastoreConnection: build.mutation({
+      query: (id) => ({
+        url: `${CONNECTION_ROUTE}/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     getAllDatastoreConnections: build.query<
       DatastoreConnectionResponse,
       Partial<DatastoreConnectionParams>
@@ -220,13 +240,6 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-    deleteDatastoreConnection: build.mutation({
-      query: (id) => ({
-        url: `${CONNECTION_ROUTE}/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: () => ["DatastoreConnection"],
-    }),
     updateDatastoreConnectionSecrets: build.mutation({
       query: (id) => ({
         url: `${CONNECTION_ROUTE}/${id}/secret`,
@@ -239,6 +252,7 @@ export const datastoreConnectionApi = createApi({
 });
 
 export const {
+  useCreateSassConnectionConfigMutation,
   useGetAllDatastoreConnectionsQuery,
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchDatastoreConnectionsMutation,

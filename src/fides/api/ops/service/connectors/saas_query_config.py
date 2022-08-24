@@ -54,12 +54,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             collection_name = self.node.address.collection
             request = self.endpoints[collection_name].requests[action]  # type: ignore
             logger.info(
-                f"Found matching endpoint to {action} '{collection_name}' collection"
+                "Found matching endpoint to %s '%s' collection", action, collection_name
             )
             return request
         except KeyError:
             logger.info(
-                f"The '{action}' action is not defined for the '{collection_name}' endpoint in {self.node.node.dataset.connection_key}"
+                "The '%s' action is not defined for the '%s' endpoint in %s",
+                action,
+                collection_name,
+                self.node.node.dataset.connection_key,
             )
             return None
 
@@ -92,7 +95,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action = action_type
 
             logger.info(
-                f"Selecting '{action_type}' action to perform masking request for '{self.collection_name}' collection."
+                "Selecting '%s' action to perform masking request for '%s' collection.",
+                action_type,
+                self.collection_name,
             )
             return next(request for request in [update, gdpr_delete, delete] if request)
         except StopIteration:
@@ -162,7 +167,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, current_request, param_values  # type: ignore
         )
 
-        logger.info(f"Populated request params for {current_request.path}")
+        logger.info("Populated request params for %s", current_request.path)
 
         return saas_request_params
 
@@ -268,7 +273,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             self.action, self.collection_name, masking_request, param_values  # type: ignore
         )
 
-        logger.info(f"Populated request params for {masking_request.path}")
+        logger.info("Populated request params for %s", masking_request.path)
 
         return saas_request_params
 

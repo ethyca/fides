@@ -40,9 +40,23 @@ You submit a Privacy Request by calling the **Submit a Privacy Request** operati
 A full list of attributes available to set on the Privacy Request can be found in the [API docs](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 
+## Subject Identity Verification 
+
+To have users verify their identity before their Privacy Request is executed, set the `subject_identity_verification_required` 
+variable in your `fidesops.toml` to `TRUE`. You must also set up an EmailConfig that lets Fidesops send automated emails 
+to your users.
+
+When a user submits a PrivacyRequest, they will be emailed a six-digit code.  They must supply that verification code to Fidesops
+to continue privacy request execution.  Until the Privacy Request identity is verified, it will have a status of: `identity_unverified`.
+
+```json title="<code>POST api/v1/privacy-request/<privacy_request_id>/verify</code>"
+{"code": "<verification code here>"}
+```
+
+
 ## Approve and deny Privacy Requests
 
-Privacy Requests are executed immediately by default. To review Privacy Requests before they are executed, set the `require_manual_request_approval` variable in your `fidesops.toml` to `TRUE`.
+ To review Privacy Requests before they are executed, set the `require_manual_request_approval` variable in your `fidesops.toml` to `TRUE`.
 
 To process Privacy Requests, send a list of Privacy Request IDs to the `approve` or `deny` endpoints. Both endpoints support processing requests in bulk.
 

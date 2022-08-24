@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
+from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -10,25 +11,34 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1.scope_registry import (
+from fidesops.ops.api import deps
+from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
+from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fides.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
+    CONNECTION_TYPES,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.saas_config import (
+from fidesops.ops.common_exceptions import FidesopsException
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.schemas.connection_configuration.connection_config import (
+    SaasConnectionTemplateResponse,
+    SaasConnectionTemplateValues,
+)
+from fidesops.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
@@ -40,8 +50,16 @@ from fides.api.ops.service.authentication.authentication_strategy_factory import
 from fides.api.ops.service.authentication.authentication_strategy_oauth2 import (
     OAuth2AuthenticationStrategy,
 )
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    ConnectorTemplate,
+    create_connection_config_from_template_no_save,
+    create_dataset_config_from_template,
+    load_registry,
+    registry_file,
+)
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
@@ -50,7 +68,7 @@ logger = logging.getLogger(__name__)
 def _get_saas_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info(f"Finding connection config with key '{connection_key}'")
+    logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -120,7 +138,7 @@ def validate_saas_config(
     - each connector_param only has one of references or identity, not both
     """
 
-    logger.info(f"Validation successful for SaaS config '{saas_config.fides_key}'")
+    logger.info("Validation successful for SaaS config '%s'", saas_config.fides_key)
     return ValidateSaaSConfigResponse(
         saas_config=saas_config,
         validation_details=SaaSConfigValidationDetails(
@@ -145,7 +163,9 @@ def patch_saas_config(
     or report failure
     """
     logger.info(
-        f"Updating SaaS config '{saas_config.fides_key}' on connection config '{connection_config.key}'"
+        "Updating SaaS config '%s' on connection config '%s'",
+        saas_config.fides_key,
+        connection_config.key,
     )
     connection_config.update_saas_config(db, saas_config=saas_config)
     return connection_config.saas_config  # type: ignore
@@ -161,7 +181,7 @@ def get_saas_config(
 ) -> SaaSConfig:
     """Returns the SaaS config for the given connection config."""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -183,7 +203,7 @@ def delete_saas_config(
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
 
-    logger.info(f"Finding SaaS config for connection '{connection_config.key}'")
+    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -220,7 +240,7 @@ def delete_saas_config(
     if warnings:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=" ".join(warnings))
 
-    logger.info(f"Deleting SaaS config for connection '{connection_config.key}'")
+    logger.info("Deleting SaaS config for connection '%s'", connection_config.key)
     connection_config.update(db, data={"saas_config": None})
 
 
@@ -245,3 +265,76 @@ def authorize_connection(
         return auth_strategy.get_authorization_url(db, connection_config)
     except FidesopsException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.post(
+    SAAS_CONNECTOR_FROM_TEMPLATE,
+    dependencies=[Security(verify_oauth_client, scopes=[SAAS_CONNECTION_INSTANTIATE])],
+    response_model=SaasConnectionTemplateResponse,
+)
+def instantiate_connection_from_template(
+    saas_connector_type: str,
+    template_values: SaasConnectionTemplateValues,
+    db: Session = Depends(deps.get_db),
+) -> SaasConnectionTemplateResponse:
+    """
+    Creates a SaaS Connector and a SaaS Dataset from a template.
+
+    Looks up the connector type in the SaaS connector registry and, if all required
+    fields are provided, persists the associated connection config and dataset to the database.
+    """
+
+    registry: ConnectorRegistry = load_registry(registry_file)
+    connector_template: Optional[ConnectorTemplate] = registry.get_connector_template(
+        saas_connector_type
+    )
+    if not connector_template:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+        )
+
+    if DatasetConfig.filter(
+        db=db,
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+    ).count():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"SaaS connector instance key '{template_values.instance_key}' already exists.",
+        )
+
+    try:
+        connection_config: ConnectionConfig = (
+            create_connection_config_from_template_no_save(
+                db, connector_template, template_values
+            )
+        )
+    except KeyOrNameAlreadyExists as exc:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=exc.args[0],
+        )
+
+    connection_config.secrets = validate_secrets(
+        template_values.secrets, connection_config
+    ).dict()
+    connection_config.save(db=db)  # Not persisted to db until secrets are validated
+
+    try:
+        dataset_config: DatasetConfig = create_dataset_config_from_template(
+            db, connection_config, connector_template, template_values
+        )
+    except Exception:
+        connection_config.delete(db)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
+        )
+    logger.info(
+        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        template_values.instance_key,
+        saas_connector_type,
+    )
+    return SaasConnectionTemplateResponse(
+        connection=connection_config, dataset=dataset_config.dataset
+    )

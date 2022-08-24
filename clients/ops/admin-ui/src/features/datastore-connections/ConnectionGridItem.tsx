@@ -1,16 +1,11 @@
-import { Box, Button, Flex, Image, Spacer, Text } from "@fidesui/react";
-import { format } from "date-fns-tz";
+import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
 import React from "react";
 
-import { capitalize } from "../common/utils";
+import { capitalize, formatDate } from "../common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
-import {
-  CONNECTION_TYPE_LOGO_MAP,
-  ConnectionType,
-  CONNECTOR_LOGOS_PATH,
-  FALLBACK_CONNECTOR_LOGOS_PATH,
-} from "./constants";
+import ConnectionTypeLogo from "./ConnectionTypeLogo";
+import { ConnectionType } from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { DatastoreConnection } from "./types";
 
@@ -25,7 +20,7 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
     testCircleColor = "gray.300";
   }
 
-  const date = format(new Date(timestamp), "MMMM d, Y, KK:mm:ss z");
+  const date = formatDate(timestamp);
   const testText = timestamp
     ? `Last tested on ${date}`
     : "This datastore has not been tested yet";
@@ -76,22 +71,8 @@ const useConnectionGridItem = () => {
     return value;
   };
 
-  const getImageSrc = (data: DatastoreConnection): string => {
-    const item = [...CONNECTION_TYPE_LOGO_MAP].find(
-      ([k]) =>
-        (data.connection_type.toString() !== ConnectionType.SAAS &&
-          data.connection_type.toString() === k) ||
-        (data.connection_type.toString() === ConnectionType.SAAS &&
-          data.saas_config?.type?.toString() === k.toString())
-    );
-    return item
-      ? CONNECTOR_LOGOS_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
-  };
-
   return {
     getConnectorDisplayName,
-    getImageSrc,
   };
 };
 
@@ -103,18 +84,12 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   connectionData,
 }) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
-  const { getConnectorDisplayName, getImageSrc } = useConnectionGridItem();
+  const { getConnectorDisplayName } = useConnectionGridItem();
 
   return (
     <Box width="100%" height={136} p="18px 16px 16px 16px">
       <Flex justifyContent="center" alignItems="center">
-        <Image
-          boxSize="32px"
-          objectFit="cover"
-          src={getImageSrc(connectionData)}
-          fallbackSrc={FALLBACK_CONNECTOR_LOGOS_PATH}
-          alt={connectionData.name}
-        />
+        <ConnectionTypeLogo data={connectionData} />
         <Text
           color="gray.900"
           fontSize="md"
@@ -142,8 +117,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         )}
       </Text>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
-        Edited on{" "}
-        {format(new Date(connectionData.updated_at!), "MMMM d, Y, KK:mm:ss z")}
+        Edited on {formatDate(connectionData.updated_at!)}
       </Text>
 
       <Flex mt="0px" justifyContent="center" alignItems="center">

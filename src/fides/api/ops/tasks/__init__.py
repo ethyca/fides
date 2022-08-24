@@ -4,8 +4,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 
-from fides.api.ops.core.config import config
-from fides.api.ops.util.logger import NotPii
+from fidesops.ops.core.config import config
 
 logger = get_task_logger(__name__)
 
@@ -26,7 +25,7 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
     try:
         celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
     except FileNotFoundError as e:
-        logger.warning("celery.toml could not be loaded: %s", NotPii(e))
+        logger.warning("celery.toml could not be loaded: %s", e)
     else:
         celery_config.update(celery_config_overrides)
 

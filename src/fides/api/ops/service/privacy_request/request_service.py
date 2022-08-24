@@ -2,12 +2,13 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
+from fidesops.ops.core.config import config
+from fidesops.ops.models.policy import ActionType, Policy
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
+from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
     MaskingStrategyFactory,
 )
 
@@ -17,11 +18,20 @@ logger = logging.getLogger(__name__)
 def build_required_privacy_request_kwargs(
     requested_at: Optional[datetime], policy_id: str
 ) -> Dict[str, Any]:
-    """Build kwargs required for creating privacy request"""
+    """Build kwargs required for creating privacy request
+
+    If identity verification is on, the request will have an initial status of
+    "identity_unverified", otherwise, it will have an initial status of "pending".
+    """
+    status = (
+        PrivacyRequestStatus.identity_unverified
+        if config.execution.subject_identity_verification_required
+        else PrivacyRequestStatus.pending
+    )
     return {
         "requested_at": requested_at,
         "policy_id": policy_id,
-        "status": "pending",
+        "status": status,
     }
 
 
@@ -34,12 +44,12 @@ def cache_data(
 ) -> None:
     """Cache privacy request data"""
     # Store identity and encryption key in the cache
-    logger.info(f"Caching identity for privacy request {privacy_request.id}")
+    logger.info("Caching identity for privacy request %s", privacy_request.id)
     privacy_request.cache_identity(identity)
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
     # Store masking secrets in the cache
-    logger.info(f"Caching masking secrets for privacy request {privacy_request.id}")
+    logger.info("Caching masking secrets for privacy request %s", privacy_request.id)
     erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:

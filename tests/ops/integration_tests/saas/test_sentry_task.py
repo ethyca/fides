@@ -376,12 +376,12 @@ def test_sentry_erasure_request_task(
 
     # Masking request only issued to "issues" endpoint
     assert x == {
-        "sentry_connector:projects": 0,
-        "sentry_connector:person": 0,
-        "sentry_connector:issues": 1,
-        "sentry_connector:organizations": 0,
-        "sentry_connector:user_feedback": 0,
-        "sentry_connector:employees": 0,
+        "sentry_instance:projects": 0,
+        "sentry_instance:person": 0,
+        "sentry_instance:issues": 1,
+        "sentry_instance:organizations": 0,
+        "sentry_instance:user_feedback": 0,
+        "sentry_instance:employees": 0,
     }
 
     # Verify the user has been assigned to None

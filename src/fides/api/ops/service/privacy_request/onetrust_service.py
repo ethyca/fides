@@ -127,7 +127,7 @@ class OneTrustService:
         )
         if api_response.status_code != 200:
             logger.error(
-                f"Unable to set status for onetrust subtask with id: {subtask_id}"
+                "Unable to set status for onetrust subtask with id: %s", subtask_id
             )
 
     @staticmethod

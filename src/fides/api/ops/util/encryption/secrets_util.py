@@ -26,7 +26,9 @@ class SecretsUtil:
             )
             if not secret:
                 logger.warning(
-                    f"Secret type {secret_type} expected from cache but was not present for masking strategy {masking_secret_meta.masking_strategy}"
+                    "Secret type %s expected from cache but was not present for masking strategy %s",
+                    secret_type,
+                    masking_secret_meta.masking_strategy,
                 )
             return secret
 

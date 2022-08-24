@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: sendgrid_connector_example
+  fides_key: <instance_fides_key>
   name: Sendgrid SaaS Config
   type: sendgrid
   description: A sample schema representing the Sendgrid connector for Fidesops
@@ -41,6 +41,6 @@ saas_config:
           param_values:
             - name: contact_id
               references:
-                - dataset: sendgrid_connector_example
+                - dataset: <instance_fides_key>
                   field: contacts.id
                   direction: from

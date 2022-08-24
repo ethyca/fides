@@ -70,7 +70,12 @@ def test_saas_access_request_task(
         f"{dataset_name}:contacts",
         f"{dataset_name}:subscription_preferences",
     }
-    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {"properties"}
+    assert set(filtered_results[f"{dataset_name}:contacts"][0].keys()) == {
+        "id",
+        "createdAt",
+        "updatedAt",
+        "properties",
+    }
 
     assert set(
         filtered_results[f"{dataset_name}:contacts"][0]["properties"].keys()
@@ -175,9 +180,9 @@ def test_saas_erasure_request_task(
 
     # Masking request only issued to "contacts" and "subscription_preferences" endpoints
     assert erasure == {
-        "hubspot_connector_example:contacts": 1,
-        "hubspot_connector_example:owners": 0,
-        "hubspot_connector_example:subscription_preferences": 1,
+        "hubspot_instance:contacts": 1,
+        "hubspot_instance:owners": 0,
+        "hubspot_instance:subscription_preferences": 1,
     }
 
     connector = SaaSConnector(connection_config_hubspot)

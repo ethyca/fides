@@ -34,7 +34,8 @@ class DrpFidesopsMapper:
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
                 logger.warning(
-                    f"Identity attribute of {attr} is not supported by Fidesops at this time. Continuing to use other identity props, if provided."
+                    "Identity attribute of %s is not supported by Fidesops at this time. Continuing to use other identity props, if provided.",
+                    attr,
                 )
             else:
                 fidesops_prop: str = DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP[

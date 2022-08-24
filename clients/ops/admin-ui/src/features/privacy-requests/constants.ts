@@ -10,4 +10,5 @@ export const SubjectRequestStatusMap = new Map<string, string>([
   ["In Progress", "in_processing"],
   ["New", "pending"],
   ["Paused", "paused"],
+  ["Unverified", "identity_unverified"],
 ]);

@@ -38,6 +38,10 @@ export const statusPropMap: {
     bg: "blue.400",
     label: "New",
   },
+  identity_unverified: {
+    bg: "red.400",
+    label: "Unverified",
+  },
 };
 
 interface RequestBadgeProps {

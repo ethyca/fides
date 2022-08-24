@@ -78,13 +78,13 @@ def db() -> Generator:
         database_uri=config.database.sqlalchemy_test_database_uri,
     )
 
-    logger.debug(f"Configuring database at: {engine.url}")
+    logger.debug("Configuring database at: %s", engine.url)
     if not database_exists(engine.url):
-        logger.debug(f"Creating database at: {engine.url}")
+        logger.debug("Creating database at: %s", engine.url)
         create_database(engine.url)
-        logger.debug(f"Database at: {engine.url} successfully created")
+        logger.debug("Database at: %s successfully created", engine.url)
     else:
-        logger.debug(f"Database at: {engine.url} already exists")
+        logger.debug("Database at: %s already exists", engine.url)
 
     migrate_test_db()
     raise SystemExit(1)
@@ -96,11 +96,11 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug(f"Dropping database at: {engine.url}")
+    logger.debug("Dropping database at: %s", engine.url)
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
     drop_database(engine.url)
-    logger.debug(f"Database at: {engine.url} successfully dropped")
+    logger.debug("Database at: %s successfully dropped", engine.url)
 
 
 @pytest.fixture(autouse=True)
@@ -235,3 +235,21 @@ def analytics_opt_out():
     config.root_user.analytics_opt_out = True
     yield
     config.root_user.analytics_opt_out = original_value
+
+
+@pytest.fixture(scope="function")
+def require_manual_request_approval():
+    """Require manual request approval"""
+    original_value = config.execution.require_manual_request_approval
+    config.execution.require_manual_request_approval = True
+    yield
+    config.execution.require_manual_request_approval = original_value
+
+
+@pytest.fixture(autouse=True, scope="session")
+def subject_identity_verification_required():
+    """Disable identity verification for most tests unless overridden"""
+    original_value = config.execution.subject_identity_verification_required
+    config.execution.subject_identity_verification_required = False
+    yield
+    config.execution.subject_identity_verification_required = original_value

@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: hubspot_connector_example
+  - fides_key: <instance_fides_key>
     name: Hubspot Dataset
     description: A sample dataset representing the Hubspot connector for Fidesops
     collections:

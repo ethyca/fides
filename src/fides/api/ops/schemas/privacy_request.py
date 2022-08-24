@@ -140,6 +140,12 @@ class StoppedCollectionDetails(StoppedCollection):
     collection: Optional[str] = None  # type: ignore
 
 
+class VerificationCode(BaseSchema):
+    """Request Body for the user to supply their identity verification code"""
+
+    code: str
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 
@@ -150,6 +156,7 @@ class PrivacyRequestResponse(BaseSchema):
     reviewed_by: Optional[str]
     reviewer: Optional[PrivacyRequestReviewer]
     finished_processing_at: Optional[datetime]
+    identity_verified_at: Optional[datetime]
     paused_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]

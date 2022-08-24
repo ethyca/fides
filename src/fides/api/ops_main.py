@@ -1,14 +1,16 @@
 import logging
 import os
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
+from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
@@ -124,8 +126,10 @@ def prepare_and_log_request(
 
 app.include_router(api_router)
 app.include_router(user_router, tags=["Users"], prefix=f"{V1_URL_PREFIX}")
+app.dependency_overrides[lib_get_config] = get_config
 app.dependency_overrides[lib_get_db] = get_db
 app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
+
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
@@ -133,6 +137,37 @@ WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
+    route_file_map = {}
+
+    def generate_route_file_map() -> None:
+        """Generates a map of frontend routes and the corresponding files to serve for each route.
+        Each route is based frontend build directories and files."""
+        exact_pattern = r"\[[a-zA-Z]+\]"
+        nested_pattern = r"\[...[a-zA-Z]+\]"
+
+        exact_pattern_replacement = "[a-zA-Z10-9-_]+/?$"
+        nested_pattern_replacement = "[a-zA-Z10-9-_/]+"
+
+        for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
+            relative_web_dir_path = str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
+            if filepath != WEBAPP_INDEX:
+                path = None
+                if re.search(exact_pattern, str(filepath)):
+                    path = re.sub(
+                        exact_pattern, exact_pattern_replacement, relative_web_dir_path
+                    )
+                if re.search(nested_pattern, str(filepath)):
+                    path = re.sub(
+                        nested_pattern,
+                        nested_pattern_replacement,
+                        relative_web_dir_path,
+                    )
+                if path is None:
+                    path = relative_web_dir_path
+
+                rule = re.compile(r"^" + path)
+
+                route_file_map[rule] = FileResponse(str(filepath.relative_to(".")))
 
     @app.on_event("startup")
     def check_if_admin_ui_index_exists() -> None:
@@ -148,10 +183,18 @@ if config.admin_ui.enabled:
                     "No Admin UI files are bundled in the docker image. Creating diagnostic help index.html"
                 )
 
+        generate_route_file_map()
+
     @app.get("/", response_class=FileResponse)
     def read_index() -> FileResponse:
         """Returns index.html file"""
         return FileResponse(WEBAPP_INDEX)
+
+    def match_route(path: str) -> Union[FileResponse, None]:
+        for key, value in route_file_map.items():
+            if re.fullmatch(key, path):
+                return value
+        return None
 
     @app.get("/{catchall:path}", response_class=FileResponse)
     def read_ui_files(request: Request) -> FileResponse:
@@ -160,13 +203,15 @@ if config.admin_ui.enabled:
         if V1_URL_PREFIX in "/" + path:
             raise HTTPException(status_code=HTTP_404_NOT_FOUND)
 
-        path = path + ".html" if path.find(".") == -1 else path
-        file = WEBAPP_DIRECTORY / path
+        entry_point_html_file = match_route(path)
+        if entry_point_html_file:
+            return entry_point_html_file
 
+        file = WEBAPP_DIRECTORY / path
         if os.path.exists(file):
             return FileResponse(file)
 
-        return FileResponse(WEBAPP_INDEX)
+        return FileResponse(WEBAPP_DIRECTORY / "404.html")
 
 
 @app.on_event("startup")
@@ -181,12 +226,15 @@ async def setup_server() -> None:
         )
         config.log_all_config_values()
 
+    logger.info("Validating SaaS connector templates...")
+    load_registry(registry_file)
+
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
             await configure_db(config.database.sqlalchemy_database_uri)
         except Exception as error:  # pylint: disable=broad-except
-            logger.error(f"Connection to database failed: {error}")
+            logger.error("Connection to database failed: %s", Pii(str(error)))
             return
 
     if config.redis.enabled:
@@ -194,7 +242,7 @@ async def setup_server() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error(f"Connection to cache failed: {e}")
+            logger.error("Connection to cache failed: %s", Pii(str(e)))
             return
 
     scheduler.start()

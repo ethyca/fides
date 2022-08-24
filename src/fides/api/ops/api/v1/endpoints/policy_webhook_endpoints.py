@@ -56,7 +56,9 @@ def get_policy_pre_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        f"Finding all Pre-Execution Webhooks for Policy '{policy.key}' with pagination params '{params}'"
+        "Finding all Pre-Execution Webhooks for Policy '%s' with pagination params '%s'",
+        policy.key,
+        params,
     )
     return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)
 
@@ -80,7 +82,9 @@ def get_policy_post_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        f"Finding all Post-Execution Webhooks for Policy '{policy.key}' with pagination params '{params}'"
+        "Finding all Post-Execution Webhooks for Policy '%s' with pagination params '%s'",
+        policy.key,
+        params,
     )
     return paginate(policy.post_execution_webhooks.order_by("order"), params=params)
 
@@ -146,13 +150,15 @@ def put_webhooks(
 
     if webhooks_to_remove.count():
         logger.info(
-            f"Removing {webhook_cls.prefix.capitalize()}-Execution Webhooks from Policy '{policy.key}' that were not included in request: "
-            f"{[webhook.key for webhook in webhooks_to_remove]}"
+            "Removing %s-Execution Webhooks from Policy '%s' that were not included in request: %s",
+            webhook_cls.prefix.capitalize(),
+            policy.key,
+            [webhook.key for webhook in webhooks_to_remove],
         )
         webhooks_to_remove.delete()
 
     logger.info(
-        f"Creating/updating Policy Pre-Execution Webhooks: {staged_webhook_keys}"
+        "Creating/updating Policy Pre-Execution Webhooks: %s", staged_webhook_keys
     )
     # Committing to database now, as a last step, once we've verified that all the webhooks
     # in the request are free of issues.
@@ -217,7 +223,10 @@ def get_policy_webhook_or_error(
     Also verifies that the webhook belongs to the given Policy.
     """
     logger.info(
-        f"Finding {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' for Policy '{policy.key}'"
+        "Finding %s-Execution Webhook with key '%s' for Policy '%s'",
+        webhook_cls.prefix.capitalize(),
+        webhook_key,
+        policy.key,
     )
     loaded_webhook = webhook_cls.filter(
         db=db,
@@ -298,7 +307,10 @@ def _patch_webhook(
 
     try:
         logger.info(
-            f"Updating {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' on Policy '{policy_key}' "
+            "Updating %s-Execution Webhook with key '%s' on Policy '%s' ",
+            webhook_cls.prefix.capitalize(),
+            webhook_key,
+            policy_key,
         )
         loaded_webhook.update(db, data=data)
     except KeyOrNameAlreadyExists as exc:
@@ -309,7 +321,9 @@ def _patch_webhook(
 
     if index is not None and index != loaded_webhook.order:
         logger.info(
-            f"Reordering {webhook_cls.prefix.capitalize()}-Execution Webhooks for Policy '{policy_key}'"
+            "Reordering %s-Execution Webhooks for Policy '%s'",
+            webhook_cls.prefix.capitalize(),
+            policy_key,
         )
         try:
             loaded_webhook.reorder_related_webhooks(db=db, new_index=index)
@@ -408,12 +422,17 @@ def delete_webhook(
     if reordering:
         # Move the webhook to the end and shuffle other webhooks
         logger.info(
-            f"Reordering {webhook_cls.prefix.capitalize()}-Execution Webhooks for Policy '{policy_key}'"
+            "Reordering %s-Execution Webhooks for Policy '%s'",
+            webhook_cls.prefix.capitalize(),
+            policy_key,
         )
         loaded_webhook.reorder_related_webhooks(db=db, new_index=total_webhook_count)
 
     logger.info(
-        f"Deleting {webhook_cls.prefix.capitalize()}-Execution Webhook with key '{webhook_key}' off of Policy '{policy_key}'"
+        "Deleting %s-Execution Webhook with key '%s' off of Policy '%s'",
+        webhook_cls.prefix.capitalize(),
+        webhook_key,
+        policy_key,
     )
     loaded_webhook.delete(db=db)
     return PolicyWebhookDeleteResponse(

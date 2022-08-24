@@ -28,6 +28,11 @@ STORAGE_SECRETS = "/storage/config/{config_key}/secret"
 STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
 
+# Email URLs
+EMAIL_CONFIG = "/email/config"
+EMAIL_SECRETS = "/email/config/{config_key}/secret"
+EMAIL_BY_KEY = "/email/config/{config_key}"
+
 # Policy URLs
 POLICY_LIST = "/policy"
 POLICY_DETAIL = "/policy/{policy_key}"
@@ -37,6 +42,7 @@ PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
 PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
@@ -83,6 +89,7 @@ YAML_DATASETS = YAML + DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 
 
 # User URLs

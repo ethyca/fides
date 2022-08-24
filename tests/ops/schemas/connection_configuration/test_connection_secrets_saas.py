@@ -22,7 +22,7 @@ class TestSaaSConnectionSecrets:
         that the schema is a subclass of SaaSSchema
         """
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        assert schema.__name__ == f"{saas_config.fides_key}_schema"
+        assert schema.__name__ == f"{saas_config.type}_schema"
         assert issubclass(schema.__base__, SaaSSchema)
 
     def test_validation(
@@ -43,7 +43,7 @@ class TestSaaSConnectionSecrets:
             if not connector_param.default_value
         ]
         assert (
-            f"{saas_config.fides_key}_schema must be supplied all of: "
+            f"{saas_config.type}_schema must be supplied all of: "
             f"[{', '.join(required_fields)}]." in str(exc.value)
         )
 

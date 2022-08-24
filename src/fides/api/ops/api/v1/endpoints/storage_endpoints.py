@@ -50,13 +50,12 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fides.api.ops.service.storage.storage_authenticator_service import (
-    secrets_are_valid,
-)
-from fides.api.ops.service.storage.storage_uploader_service import upload
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fidesops.ops.service.storage.storage_authenticator_service import secrets_are_valid
+from fidesops.ops.service.storage.storage_uploader_service import upload
+from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
@@ -79,7 +78,7 @@ def upload_data(
     Uploads data from an access request to specified storage destination.
     Returns location of data.
     """
-    logger.info(f"Finding privacy request with id '{request_id}'")
+    logger.info("Finding privacy request with id '%s'", request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=request_id)
     if not privacy_request:
@@ -88,7 +87,7 @@ def upload_data(
             detail=f"No privacy with id {request_id}.",
         )
 
-    logger.info(f"Starting storage upload for request id: {request_id}")
+    logger.info("Starting storage upload for request id: %s", request_id)
     try:
         data_location: str = upload(
             db, request_id=request_id, data=data, storage_key=storage_key
@@ -118,7 +117,7 @@ def patch_config(
     created_or_updated: List[StorageConfig] = []
     failed: List[BulkUpdateFailed] = []
 
-    logger.info(f"Starting bulk upsert for {len(storage_configs)} storage configs")
+    logger.info("Starting bulk upsert for %s storage configs", len(storage_configs))
     for destination in storage_configs:
         try:
             storage_config = StorageConfig.create_or_update(
@@ -126,7 +125,9 @@ def patch_config(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for storage config {destination.key}: {exc}"
+                "Create/update failed for storage config %s: %s",
+                destination.key,
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -136,7 +137,9 @@ def patch_config(
             continue
         except Exception as exc:
             logger.warning(
-                f"Create/update failed for storage config {destination.key}: {exc}"
+                "Create/update failed for storage config %s: %s",
+                destination.key,
+                Pii(str(exc)),
             )
             failed.append(
                 BulkUpdateFailed(
@@ -171,7 +174,7 @@ def put_config_secrets(
     """
     Add or update secrets for storage config.
     """
-    logger.info(f"Finding storage config with key '{config_key}'")
+    logger.info("Finding storage config with key '%s'", config_key)
     storage_config = StorageConfig.get_by(db=db, field="key", value=config_key)
     if not storage_config:
         raise HTTPException(
@@ -195,7 +198,7 @@ def put_config_secrets(
             detail=exc.args[0],
         )
 
-    logger.info(f"Updating storage config secrets for config with key '{config_key}'")
+    logger.info("Updating storage config secrets for config with key '%s'", config_key)
     try:
         storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())
     except ValueError as exc:
@@ -208,10 +211,12 @@ def put_config_secrets(
     if verify:
         status = secrets_are_valid(secrets_schema, storage_config.type)
         if status:
-            logger.info(f"Storage secrets are valid for config with key '{config_key}'")
+            logger.info(
+                "Storage secrets are valid for config with key '%s'", config_key
+            )
         else:
             logger.warning(
-                f"Storage secrets are invalid for config with key '{config_key}'"
+                "Storage secrets are invalid for config with key '%s'", config_key
             )
 
         return TestStatusMessage(
@@ -235,7 +240,7 @@ def get_configs(
     """
     Retrieves configs for storage.
     """
-    logger.info(f"Finding all storage configurations with pagination params {params}")
+    logger.info("Finding all storage configurations with pagination params %s", params)
     return paginate(
         StorageConfig.query(db).order_by(StorageConfig.created_at.desc()), params=params
     )
@@ -252,7 +257,7 @@ def get_config_by_key(
     """
     Retrieves configs for storage by key.
     """
-    logger.info(f"Finding storage config with key '{config_key}'")
+    logger.info("Finding storage config with key '%s'", config_key)
 
     storage_config = StorageConfig.get_by(db, field="key", value=config_key)
     if not storage_config:
@@ -274,7 +279,7 @@ def delete_config_by_key(
     """
     Deletes configs by key.
     """
-    logger.info(f"Finding storage config with key '{config_key}'")
+    logger.info("Finding storage config with key '%s'", config_key)
 
     storage_config = StorageConfig.get_by(db, field="key", value=config_key)
     if not storage_config:
@@ -283,5 +288,5 @@ def delete_config_by_key(
             detail=f"No configuration with key {config_key}.",
         )
 
-    logger.info(f"Deleting storage config with key '{config_key}'")
+    logger.info("Deleting storage config with key '%s'", config_key)
     storage_config.delete(db)

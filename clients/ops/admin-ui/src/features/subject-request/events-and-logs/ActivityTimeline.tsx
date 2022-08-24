@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from "@fidesui/react";
-import { GreenCheckCircle } from "common/Icon";
+import { GreenCheckCircleIcon } from "common/Icon";
 import { PrivacyRequest } from "privacy-requests/types";
 import React from "react";
 
@@ -22,7 +22,7 @@ const ActivityTimeline = ({
     <Box key={key}>
       <Flex alignItems="center" height={23} position="relative">
         <Box zIndex={1}>
-          <GreenCheckCircle />
+          <GreenCheckCircleIcon />
         </Box>
         {index === resultKeys.length - 1 ? null : (
           <Box

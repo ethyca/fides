@@ -22,6 +22,7 @@ from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
@@ -43,10 +44,13 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
     REQUEST_PREVIEW,
 )
-from fides.api.ops.common_exceptions import (
+from fidesops.ops.common_exceptions import (
+    EmailDispatchException,
     FunctionalityNotConfigured,
+    IdentityVerificationException,
     TraversalError,
     ValidationError,
 )
@@ -67,8 +71,12 @@ from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.ops.schemas.privacy_request import (
+from fidesops.ops.schemas.email.email import (
+    EmailActionType,
+    SubjectIdentityVerificationBodyParams,
+)
+from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     DenyPrivacyRequests,
@@ -79,20 +87,24 @@ from fides.api.ops.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     RowCountRequest,
     StoppedCollection,
+    VerificationCode,
 )
-from fides.api.ops.service.privacy_request.request_runner_service import (
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.privacy_request.request_runner_service import (
+    generate_id_verification_code,
     queue_privacy_request,
 )
 from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
-from fides.api.ops.task.task_resources import TaskResources
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.cache import FidesopsRedis
-from fides.api.ops.util.collection_util import Row
-from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
+from fidesops.ops.task.task_resources import TaskResources
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.cache import FidesopsRedis
+from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
@@ -103,7 +115,7 @@ def get_privacy_request_or_error(
     db: Session, privacy_request_id: str
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
-    logger.info(f"Finding privacy request with id '{privacy_request_id}'")
+    logger.info("Finding privacy request with id '%s'", privacy_request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
@@ -142,7 +154,7 @@ def create_privacy_request(
     # Optional fields to validate here are those that are both nullable in the DB, and exist
     # on the Pydantic schema
 
-    logger.info(f"Starting creation for {len(data)} privacy requests")
+    logger.info("Starting creation for %s privacy requests", len(data))
 
     optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
     for privacy_request_data in data:
@@ -157,7 +169,7 @@ def create_privacy_request(
             failed.append(failure)
             continue
 
-        logger.info(f"Finding policy with key '{privacy_request_data.policy_key}'")
+        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",
@@ -165,7 +177,8 @@ def create_privacy_request(
         )
         if policy is None:
             logger.warning(
-                f"Create failed for privacy request with invalid policy key {privacy_request_data.policy_key}'"
+                "Create failed for privacy request with invalid policy key %s'",
+                privacy_request_data.policy_key,
             )
 
             failure = {
@@ -197,6 +210,13 @@ def create_privacy_request(
                 None,
             )
 
+            if config.execution.subject_identity_verification_required:
+                _send_verification_code_to_user(
+                    db, privacy_request, privacy_request_data.identity.email
+                )
+                created.append(privacy_request)
+                continue  # Skip further processing for this privacy request
+
             if not config.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
@@ -208,16 +228,23 @@ def create_privacy_request(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
-
+        except EmailDispatchException as exc:
+            kwargs["privacy_request_id"] = privacy_request.id
+            logger.error("EmailDispatchException: %s", exc)
+            failure = {
+                "message": "Verification email could not be sent.",
+                "data": kwargs,
+            }
+            failed.append(failure)
         except common_exceptions.RedisConnectionError as exc:
-            logger.error("RedisConnectionError: %s", exc)
+            logger.error("RedisConnectionError: %s", Pii(str(exc)))
             # Thrown when cache.ping() fails on cache connection retrieval
             raise HTTPException(
                 status_code=HTTP_424_FAILED_DEPENDENCY,
                 detail=exc.args[0],
             )
         except Exception as exc:
-            logger.error("Exception: %s", exc)
+            logger.error("Exception: %s", Pii(str(exc)))
             failure = {
                 "message": "This record could not be added",
                 "data": kwargs,
@@ -229,6 +256,23 @@ def create_privacy_request(
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,
+    )
+
+
+def _send_verification_code_to_user(
+    db: Session, privacy_request: PrivacyRequest, email: Optional[str]
+) -> None:
+    """Generate and cache a verification code, and then email to the user"""
+    verification_code: str = generate_id_verification_code()
+    privacy_request.cache_identity_verification_code(verification_code)
+    dispatch_email(
+        db=db,
+        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        to_email=email,
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        ),
     )
 
 
@@ -521,7 +565,7 @@ def get_request_status(
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 
-    logger.info(f"Finding all request statuses with pagination params {params}")
+    logger.info("Finding all request statuses with pagination params %s", params)
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         db,
@@ -584,7 +628,9 @@ def get_request_status_logs(
     get_privacy_request_or_error(db, privacy_request_id)
 
     logger.info(
-        f"Finding all execution logs for privacy request {privacy_request_id} with params '{params}'"
+        "Finding all execution logs for privacy request %s with params '%s'",
+        privacy_request_id,
+        params,
     )
 
     return paginate(
@@ -661,7 +707,7 @@ def get_request_preview_queries(
             for key, value in queries.items()
         ]
     except TraversalError as err:
-        logger.info(f"Dry run failed: {err}")
+        logger.info("Dry run failed: %s", err)
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Dry run failed",
@@ -696,7 +742,9 @@ def resume_privacy_request(
         )
 
     logger.info(
-        f"Resuming privacy request '{privacy_request_id}' from webhook '{webhook.key}'"
+        "Resuming privacy request '%s' from webhook '%s'",
+        privacy_request_id,
+        webhook.key,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
@@ -732,7 +780,6 @@ def validate_manual_input(
 def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
-    cache: FidesopsRedis,
     expected_paused_step: PausedStep,
     manual_rows: List[Row] = [],
     manual_count: Optional[int] = None,
@@ -781,19 +828,25 @@ def resume_privacy_request_with_manual_input(
     if paused_step == PausedStep.access:
         validate_manual_input(manual_rows, paused_collection, dataset_graph)
         logger.info(
-            f"Caching manual input for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+            "Caching manual input for privacy request '%s', collection: '%s'",
+            privacy_request_id,
+            paused_collection,
         )
         privacy_request.cache_manual_input(paused_collection, manual_rows)
 
     elif paused_step == PausedStep.erasure:
         logger.info(
-            f"Caching manually erased row count for privacy request '{privacy_request_id}', collection: '{paused_collection}'"
+            "Caching manually erased row count for privacy request '%s', collection: '%s'",
+            privacy_request_id,
+            paused_collection,
         )
         privacy_request.cache_manual_erasure_count(paused_collection, manual_count)  # type: ignore
 
     logger.info(
-        f"Resuming privacy request '{privacy_request_id}', {paused_step.value} step, from collection "
-        f"'{paused_collection.value}'"
+        "Resuming privacy request '%s', %s step, from collection '%s'",
+        privacy_request_id,
+        paused_step.value,
+        paused_collection.value,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
@@ -829,7 +882,6 @@ def resume_with_manual_input(
     return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        cache=cache,
         expected_paused_step=PausedStep.access,
         manual_rows=manual_rows,
     )
@@ -857,7 +909,6 @@ def resume_with_erasure_confirmation(
     return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        cache=cache,
         expected_paused_step=PausedStep.erasure,
         manual_count=manual_count.row_count,
     )
@@ -875,7 +926,6 @@ def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-    cache: FidesopsRedis = Depends(deps.get_cache),
 ) -> PrivacyRequestResponse:
     """Restart a privacy request from failure"""
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
@@ -901,7 +951,10 @@ def restart_privacy_request_from_failure(
     failed_collection: CollectionAddress = failed_details.collection
 
     logger.info(
-        f"Restarting failed privacy request '{privacy_request_id}' from '{failed_step} step, 'collection '{failed_collection}'"
+        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
+        privacy_request_id,
+        failed_step,
+        failed_collection,
     )
 
     privacy_request.status = PrivacyRequestStatus.in_processing
@@ -960,6 +1013,51 @@ def review_privacy_request(
         succeeded=succeeded,
         failed=failed,
     )
+
+
+@router.post(
+    PRIVACY_REQUEST_VERIFY_IDENTITY,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestResponse,
+)
+def verify_identification_code(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    provided_code: VerificationCode,
+) -> PrivacyRequestResponse:
+    """Verify the supplied identity verification code.
+
+    If successful, and we don't need separate manual request approval, queue the privacy request
+    for execution.
+    """
+
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    try:
+        privacy_request.verify_identity(db, provided_code.code)
+    except IdentityVerificationException as exc:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
+    except PermissionError as exc:
+        logger.info("Invalid verification code provided for %s.", privacy_request.id)
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
+
+    logger.info("Identity verified for %s.", privacy_request.id)
+
+    if not config.execution.require_manual_request_approval:
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
+        queue_privacy_request(privacy_request.id)
+
+    return privacy_request
 
 
 @router.patch(

@@ -22,3 +22,8 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 Unless otherwise specified below, all unit tests should be colocated in the directory with the file(s) they are testing, in a `__tests__` subfolder.
 
 The sole exception to this is the `pages` directory. Tests for Next.js pages live in the root `__tests__/pages` directory. Otherwise, Next.js attempts to include them in final build output, which breaks the build.
+
+## Feature flags
+During the software development process, one or more features may not be visible at runtime. To toggle a given feature, find the given feature flag `name` key located in the [flags.json](/clients/ops/admin-ui/src/flags.json) file. Update the `isActive` key value to `true/false`. If `true`, feature will be visible at runtime. Otherwise, feature will not be visible at runtime.
+
+For techinical reference implementation, please reference [react-feature-flags](https://github.com/romaindso/react-feature-flags).

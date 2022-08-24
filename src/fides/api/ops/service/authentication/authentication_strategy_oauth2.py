@@ -22,8 +22,8 @@ from fides.api.ops.service.authentication.authentication_strategy import (
 from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fides.api.ops.util.logger import NotPii
-from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +104,8 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         """Check if the access_token will expire in the next 10 minutes"""
         if expires_at is None:
             logger.info(
-                f"The expires_at value is not defined for {connection_config.key}, skipping token refresh"
+                "The expires_at value is not defined for %s, skipping token refresh",
+                connection_config.key,
             )
             return False
 
@@ -121,7 +122,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         and connection config secrets.
         """
 
-        logger.info(f"Attempting {action} token request for {connection_config.key}")
+        logger.info("Attempting %s token request for %s", action, connection_config.key)
 
         # get the client config from the token request or default to the
         # protocol and host specified by the root client config (no auth)
@@ -158,8 +159,8 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
             logger.error(
                 "Error occurred during the %s request for %s: %s",
                 action,
-                NotPii(connection_config.key),
-                str(exc),
+                connection_config.key,
+                Pii(str(exc)),
             )
             raise OAuth2TokenException(
                 f"Error occurred during the {action} request for {connection_config.key}: {str(exc)}"
@@ -227,7 +228,7 @@ class OAuth2AuthenticationStrategy(AuthenticationStrategy):
         updated_secrets = {**connection_config.secrets, **data}  # type: ignore
         connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(
-            f"Successfully updated the OAuth2 token(s) for {connection_config.key}"
+            "Successfully updated the OAuth2 token(s) for %s", connection_config.key
         )
 
         return access_token

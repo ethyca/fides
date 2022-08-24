@@ -222,10 +222,10 @@ def test_segment_saas_erasure_request_task(
     # Assert erasure request made to segment_user - cannot verify success immediately as this can take
     # days, weeks to process
     assert x == {
-        "segment_connector_example:segment_user": 1,
-        "segment_connector_example:traits": 0,
-        "segment_connector_example:external_ids": 0,
-        "segment_connector_example:track_events": 0,
+        "segment_instance:segment_user": 1,
+        "segment_instance:traits": 0,
+        "segment_instance:external_ids": 0,
+        "segment_instance:track_events": 0,
     }
 
     config.execution.masking_strict = True  # Reset

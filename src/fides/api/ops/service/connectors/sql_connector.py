@@ -85,7 +85,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
-        logger.info(f"Starting test connection to {self.configuration.key}")
+        logger.info("Starting test connection to %s", self.configuration.key)
 
         try:
             engine = self.client()
@@ -117,7 +117,7 @@ class SQLConnector(BaseConnector[Engine]):
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
-        logger.info(f"Starting data retrieval for {node.address}")
+        logger.info("Starting data retrieval for %s", node.address)
         with client.connect() as connection:
             results = connection.execute(stmt)
             return self.cursor_result_to_rows(results)
@@ -146,7 +146,7 @@ class SQLConnector(BaseConnector[Engine]):
     def close(self) -> None:
         """Close any held resources"""
         if self.db_client:
-            logger.debug(f" disposing of {self.__class__}")
+            logger.debug(" disposing of %s", self.__class__)
             self.db_client.dispose()
 
 
@@ -305,7 +305,7 @@ class RedshiftConnector(SQLConnector):
         if stmt is None:
             return []
 
-        logger.info(f"Starting data retrieval for {node.address}")
+        logger.info("Starting data retrieval for %s", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(stmt)

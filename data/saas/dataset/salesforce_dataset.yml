@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: salesforce_connector_example
+  - fides_key: <instance_fides_key>
     name: Salesforce Example Dataset
     description: A sample dataset representing the Salesforce connector for Fidesops
     collections:

@@ -4,10 +4,12 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
-from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionType
+from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fidesops.ops.schemas.connection_configuration import connection_secrets_schemas
+from fidesops.ops.schemas.dataset import FidesopsDataset
+from fidesops.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
+from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class CreateConnectionConfiguration(BaseModel):
@@ -98,3 +100,18 @@ class BulkPutConnectionConfiguration(BulkResponse):
 
     succeeded: List[ConnectionConfigurationResponse]
     failed: List[BulkUpdateFailed]
+
+
+class SaasConnectionTemplateValues(BaseModel):
+    """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
+
+    name: str  # For ConnectionConfig
+    key: Optional[FidesOpsKey]  # For ConnectionConfig
+    description: Optional[str]  # For ConnectionConfig
+    secrets: connection_secrets_schemas  # For ConnectionConfig
+    instance_key: FidesOpsKey  # For DatasetConfig.fides_key
+
+
+class SaasConnectionTemplateResponse(BaseModel):
+    connection: ConnectionConfigurationResponse
+    dataset: FidesopsDataset

@@ -65,10 +65,12 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
         </Button>
         <Spacer />
         <Button
-          onClick={handleDone}
-          size="xs"
           backgroundColor="primary.800"
           color="white"
+          onClick={handleDone}
+          size="xs"
+          _hover={{ bg: "primary.400" }}
+          _active={{ bg: "primary.500" }}
         >
           Done
         </Button>
