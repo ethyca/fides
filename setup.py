@@ -21,13 +21,11 @@ setup(
     name="ethyca-fides",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="CLI for Fides",
+    description="Ecosystem for data privacy as code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
-    entry_points={
-        "console_scripts": ["fidesctl=fidesctl.cli:cli", "fides=fidesctl.cli:cli"]
-    },
+    entry_points={"console_scripts": ["fides=fidesctl.cli:cli"]},
     python_requires=">=3.9, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
