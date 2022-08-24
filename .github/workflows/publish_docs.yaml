@@ -16,8 +16,11 @@ jobs:
         with:
           python-version: 3.9
           cache: "pip"
+      - name: Install Nox
+        run: pip install nox>=2022
+      - name: Install dependencies
       - run: pip install -r docs/fidesops/requirements.txt
       - name: Build docs
-        run: make docs-build
+        run: nox -s docs_build
       - name: Publish docs
         run: mkdocs gh-deploy -v -f docs/fidesops/mkdocs.yml --force
