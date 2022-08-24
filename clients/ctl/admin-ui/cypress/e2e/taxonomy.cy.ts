@@ -416,5 +416,25 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("toast-success-msg").should("not.exist");
       cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
     });
+
+    it.only("Will only show either the add or the edit form", () => {
+      cy.getByTestId(`tab-Data Categories`).click();
+      const openEditForm = () => {
+        cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
+        cy.getByTestId("edit-btn").click();
+      };
+      const openCreateForm = () => {
+        cy.getByTestId("add-taxonomy-btn").click();
+      };
+      openEditForm();
+      cy.getByTestId("edit-taxonomy-form");
+      cy.getByTestId("create-taxonomy-form").should("not.exist");
+      openCreateForm();
+      cy.getByTestId("edit-taxonomy-form").should("not.exist");
+      cy.getByTestId("create-taxonomy-form");
+      openEditForm();
+      cy.getByTestId("edit-taxonomy-form");
+      cy.getByTestId("create-taxonomy-form").should("not.exist");
+    });
   });
 });
