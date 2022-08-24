@@ -47,6 +47,7 @@ The types of changes are:
 * Reduced number of connections opened against app db during health checks [#1107](https://github.com/ethyca/fidesops/pull/1107)
 * Fix FIDESOPS__ROOT_USER__ANALYTICS_ID generation when env var is set [#1113](https://github.com/ethyca/fidesops/pull/1113) 
 * Set localhost to None for non-endpoint events [#1130](https://github.com/ethyca/fidesops/pull/1130)
+* Added future annotatioins to privacy_request.py for backwards compatibility [#1136](https://github.com/ethyca/fidesops/pull/1136)
 
 ### Changed
 
