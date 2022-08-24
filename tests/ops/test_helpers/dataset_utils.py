@@ -10,16 +10,9 @@ from fides.api.ops.graph.config import (
     ObjectField,
     ScalarField,
 )
-from fides.api.ops.graph.data_type import (
-    DataType,
-    get_data_type,
-    to_data_type_string,
-)
+from fides.api.ops.graph.data_type import DataType, get_data_type, to_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.models.datasetconfig import (
-    DatasetConfig,
-    convert_dataset_to_graph,
-)
+from fides.api.ops.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.util.collection_util import Row
 

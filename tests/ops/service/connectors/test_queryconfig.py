@@ -16,18 +16,9 @@ from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.schemas.masking.masking_configuration import (
-    HashMaskingConfiguration,
-)
-from fides.api.ops.schemas.masking.masking_secrets import (
-    MaskingSecretCache,
-    SecretType,
-)
-from fides.api.ops.schemas.saas.saas_config import (
-    ParamValue,
-    SaaSConfig,
-    SaaSRequest,
-)
+from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import (
     MongoQueryConfig,

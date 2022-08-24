@@ -15,13 +15,7 @@ from fides.api.ops.api.v1.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.policy import (
-    ActionType,
-    DrpAction,
-    Policy,
-    Rule,
-    RuleTarget,
-)
+from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NULL_REWRITE_STRATEGY_NAME,
 )

@@ -5,11 +5,7 @@ from pydantic import ValidationError
 
 from fides.api.ops.graph.config import CollectionAddress, FieldAddress
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
-from fides.api.ops.schemas.saas.saas_config import (
-    ParamValue,
-    SaaSConfig,
-    SaaSRequest,
-)
+from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 
 
 @pytest.mark.unit_saas

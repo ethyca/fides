@@ -2,11 +2,7 @@ import json
 
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.urn_registry import (
-    MASKING,
-    MASKING_STRATEGY,
-    V1_URL_PREFIX,
-)
+from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 from fides.api.ops.schemas.masking.masking_api import MaskingAPIResponse
 from fides.api.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
