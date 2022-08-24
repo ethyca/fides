@@ -23,7 +23,7 @@ class FidesctlSecuritySettings(SecuritySettings):
         """
         Override SecuritySettings root validator to set secret hash.
         SecuritySettings expects oauth_root_client_secret to be set while
-        fidesctl config is expected to work with class defaults.
+        fides config is expected to work with class defaults.
         """
         value = values.get("oauth_root_client_secret") or "testrootclientsecret"
         encoding = values.get("encoding", "UTF-8")

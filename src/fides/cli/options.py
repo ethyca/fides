@@ -118,11 +118,11 @@ def output_directory_option(command: Callable) -> Callable:
 
 
 def credentials_id_option(command: Callable) -> Callable:
-    "Use credentials defined within fidesctl config."
+    "Use credentials defined within fides config."
     command = click.option(
         "--credentials-id",
         type=str,
-        help="Use credentials defined within fidesctl config",
+        help="Use credentials defined within fides config",
     )(command)
     return command
 

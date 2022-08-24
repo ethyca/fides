@@ -32,7 +32,7 @@ from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_f
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.ctl.core.config import FidesctlConfig, get_config
 
-app = FastAPI(title="fidesctl")
+app = FastAPI(title="fides")
 CONFIG: FidesctlConfig = get_config()
 ROUTERS = (
     crud.routers

@@ -1,4 +1,4 @@
-"""Contains all of the core CLI commands for Fidesctl."""
+"""Contains all of the core CLI commands for fides."""
 from typing import Optional
 
 import click
@@ -31,7 +31,7 @@ from fides.ctl.core.utils import git_is_dirty
 def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Validate local manifest files and persist any changes via the API server.
-    Deprecated in favor of `fidesctl push` command.
+    Deprecated in favor of `fides push` command.
     """
 
     echo_red("Use the 'push' command instead.")

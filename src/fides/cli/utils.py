@@ -134,20 +134,20 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
             update_config_file(config_updates, config_path)
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
-            click.echo("Run 'fidesctl init' to create a configuration file.")
+            click.echo("Run 'fides init' to create a configuration file.")
 
 
 def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) -> None:
     """
     Create a new `AnalyticsClient` and send an `AnalyticsEvent` representing
-    the execution of `fidesctl init` by a user.
+    the execution of `fides init` by a user.
     """
 
     if opt_out is not False:
         return
 
     analytics_id = get_config_from_file(config_path, "cli", "analytics_id")
-    app_name = fidesctl.__name__
+    app_name = fides.__name__
 
     try:
         client = AnalyticsClient(
@@ -161,7 +161,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
         event = AnalyticsEvent(
             "cli_command_executed",
             executed_at,
-            command="fidesctl init",
+            command="fides init",
             docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
             resource_counts=None,  # TODO: Figure out if it's possible to capture this
         )
@@ -217,7 +217,7 @@ def with_analytics(func: Callable) -> Callable:
 
 def print_divider(character: str = "-", character_length: int = 10) -> None:
     """
-    Returns a consistent divider to print to the console for use within fidesctl
+    Returns a consistent divider to print to the console for use within fides
 
     Defaults to using a hyphen of length 10, however this can optionally be
     overridden as required.

@@ -220,7 +220,7 @@ def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     logger.info("Starting webserver...")
     uvicorn.run(
-        "fidesctl.api.main:app",
+        "fides.api.main:app",
         host="0.0.0.0",
         port=config.port,
         log_config=None,

@@ -455,7 +455,7 @@ def _check_okta_connector_import() -> None:
     try:
         import fides.ctl.connectors.okta  # pylint: disable=unused-import
     except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[okta]"')
+        echo_red('Packages not found, try: pip install "fides[okta]"')
         raise SystemExit
 
 
@@ -464,5 +464,5 @@ def _check_aws_connector_import() -> None:
     try:
         import fides.ctl.connectors.aws  # pylint: disable=unused-import
     except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fidesctl[aws]"')
+        echo_red('Packages not found, try: pip install "fides[aws]"')
         raise SystemExit

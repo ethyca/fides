@@ -109,7 +109,7 @@ def annotate_dataset(
     # Make the user aware of the data_categories visualizer
     visualization_endpoint = "/<resource_type>/visualize/graphs/"
     echo_green(
-        f"For reference, you can use the Taxonomy explorer at the '{visualization_endpoint}' endpoint on a running fidesctl webserver."
+        f"For reference, you can use the Taxonomy explorer at the '{visualization_endpoint}' endpoint on a running fides webserver."
     )
 
     datasets = core_parse.ingest_manifests(dataset_file)["dataset"]

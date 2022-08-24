@@ -1,4 +1,4 @@
-"""Contains all of the Utility-type CLI commands for Fidesctl."""
+"""Contains all of the Utility-type CLI commands for fides."""
 import os
 from datetime import datetime, timezone
 
@@ -21,8 +21,8 @@ from fides.ctl.core.utils import echo_green
 @click.argument("fides_directory_location", default=".", type=click.Path(exists=True))
 def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
-    Initializes a Fidesctl instance, creating the default directory (`.fides/`) and
-    the configuration file (`fidesctl.toml`) if necessary.
+    Initializes a fides instance, creating the default directory (`.fides/`) and
+    the configuration file (`fides.toml`) if necessary.
 
     Additionally, requests the ability to respectfully collect anonymous usage data.
     """
@@ -31,7 +31,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     separate = lambda: print("-" * 10, end=None)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fidesctl.toml"
+    config_file_name = "fides.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
@@ -53,7 +53,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         "user": {"analytics_opt_out"},
     }
     click.echo(FIDESCTL_ASCII_ART)
-    click.echo("Initializing Fidesctl...")
+    click.echo("Initializing fides...")
     separate()
 
     # create the .fides dir if it doesn't exist
@@ -65,7 +65,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     separate()
 
-    # create a fidesctl.toml config file if it doesn't exist
+    # create a fides.toml config file if it doesn't exist
     if not os.path.isfile(config_path):
         # request explicit consent for analytics collection
         click.echo(OPT_OUT_COPY, nl=False)
@@ -77,8 +77,8 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
 
-        echo_green(f"Created a fidesctl config file: {config_path}")
-        click.echo("To learn more about configuring fidesctl, see:")
+        echo_green(f"Created a fides config file: {config_path}")
+        click.echo("To learn more about configuring fides, see:")
         click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
 
     else:
@@ -91,7 +91,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
 
-    echo_green("Fidesctl initialization complete.")
+    echo_green("fides initialization complete.")
 
 
 @click.command()
@@ -99,10 +99,10 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 @with_analytics
 def status(ctx: click.Context) -> None:
     """
-    Sends a request to the Fidesctl API healthcheck endpoint and prints the response.
+    Sends a request to the fides API healthcheck endpoint and prints the response.
     """
     config = ctx.obj["CONFIG"]
-    cli_version = fidesctl.__version__
+    cli_version = fides.__version__
     server_url = config.cli.server_url
     click.echo("Getting server status...")
     check_server(
@@ -116,7 +116,7 @@ def status(ctx: click.Context) -> None:
 @with_analytics
 def webserver(ctx: click.Context) -> None:
     """
-    Starts the fidesctl API server using Uvicorn on port 8080.
+    Starts the fides API server using Uvicorn on port 8080.
     """
     # This has to be here to avoid a circular dependency
     from fides.api.main import start_webserver

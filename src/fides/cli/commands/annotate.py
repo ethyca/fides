@@ -1,4 +1,4 @@
-"""Contains the annotate group of CLI commands for Fidesctl."""
+"""Contains the annotate group of CLI commands for fides."""
 
 import click
 
@@ -10,7 +10,7 @@ from fides.ctl.core import annotate_dataset as _annotate_dataset
 @click.pass_context
 def annotate(ctx: click.Context) -> None:
     """
-    Annotate fidesctl resource types
+    Annotate fides resource types
     """
 
 

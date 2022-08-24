@@ -1,4 +1,4 @@
-"""Contains the db group of the commands for Fidesctl."""
+"""Contains the db group of the commands for fides."""
 import click
 
 from fides.cli.options import yes_flag
@@ -20,7 +20,7 @@ def database(ctx: click.Context) -> None:
 @with_analytics
 def db_init(ctx: click.Context) -> None:
     """
-    Initialize the Fidesctl database.
+    Initialize the fides database.
     """
     config = ctx.obj["CONFIG"]
     handle_cli_response(

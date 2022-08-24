@@ -1,4 +1,4 @@
-"""Contains all of the CRUD-type CLI commands for Fidesctl."""
+"""Contains all of the CRUD-type CLI commands for fides."""
 
 import click
 

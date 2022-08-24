@@ -20,7 +20,7 @@ from .logging_settings import FidesctlLoggingSettings
 from .security_settings import FidesctlSecuritySettings
 from .user_settings import FidesctlUserSettings
 
-DEFAULT_CONFIG_PATH = ".fides/fidesctl.toml"
+DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
 
 class FidesctlConfig(BaseModel):

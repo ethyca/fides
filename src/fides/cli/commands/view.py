@@ -1,4 +1,4 @@
-"""Contains the view group of the commands for Fidesctl."""
+"""Contains the view group of the commands for fides."""
 
 import click
 
@@ -23,7 +23,7 @@ def view(ctx: click.Context) -> None:
 @with_analytics
 def view_config(ctx: click.Context, exclude_unset: bool = False) -> None:
     """
-    Prints the fidesctl configuration values.
+    Prints the fides configuration values.
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)

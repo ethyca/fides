@@ -1,4 +1,4 @@
-"""Contains the scan group of the commands for Fidesctl."""
+"""Contains the scan group of the commands for fides."""
 
 import click
 
@@ -28,7 +28,7 @@ from fides.ctl.core import system as _system
 @click.pass_context
 def scan(ctx: click.Context) -> None:
     """
-    Scan external resource coverage against fidesctl resources
+    Scan external resource coverage against fides resources
     """
 
 
@@ -36,7 +36,7 @@ def scan(ctx: click.Context) -> None:
 @click.pass_context
 def scan_dataset(ctx: click.Context) -> None:
     """
-    Scan fidesctl Dataset resources
+    Scan fides Dataset resources
     """
 
 
@@ -57,7 +57,7 @@ def scan_dataset_db(
     """
     Connect to a database directly via a SQLAlchemy-style connection string and
     compare the database objects to existing datasets. Connection string can be
-    supplied as an option or a credentials reference to fidesctl config.
+    supplied as an option or a credentials reference to fides config.
 
     If there are fields within the database that aren't listed and categorized
     within one of the datasets, this counts as lacking coverage.
@@ -85,7 +85,7 @@ def scan_dataset_db(
 @click.pass_context
 def scan_system(ctx: click.Context) -> None:
     """
-    Scan fidesctl System resources
+    Scan fides System resources
     """
 
 
@@ -110,7 +110,7 @@ def scan_system_okta(
     """
     Scans your existing systems and compares them to found Okta applications.
     Connect to an Okta admin account by providing an organization url and
-    auth token or a credentials reference to fidesctl config. Auth token and
+    auth token or a credentials reference to fides config. Auth token and
     organization url can also be supplied by setting environment variables
     as defined by the okta python sdk.
 
@@ -155,7 +155,7 @@ def scan_system_aws(
 ) -> None:
     """
     Connect to an aws account and compares tracked resources to existing systems.
-    Credentials can be supplied as options, a credentials reference to fidesctl
+    Credentials can be supplied as options, a credentials reference to fides
     config, or boto3 environment configuration.
     Tracked resources: [Redshift, RDS, DynamoDb, S3]
 

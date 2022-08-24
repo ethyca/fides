@@ -26,4 +26,4 @@ async def db_action(action: DBActions) -> Dict:
         database.reset_db(CONFIG.database.sync_database_uri)
         action_text = DBActions.reset
     await database.configure_db(CONFIG.database.sync_database_uri)
-    return {"data": {"message": f"Fidesctl database {action_text}"}}
+    return {"data": {"message": f"fides database {action_text}"}}

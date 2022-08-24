@@ -35,9 +35,9 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [
-            "fidesctl.api.ops.tasks",
-            "fidesctl.api.ops.tasks.scheduled",
-            "fidesctl.api.ops.service.privacy_request",
+            "fides.api.ops.tasks",
+            "fides.api.ops.tasks.scheduled",
+            "fides.api.ops.service.privacy_request",
         ]
     )
     return app

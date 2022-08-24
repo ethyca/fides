@@ -32,7 +32,7 @@ def route_requires_aws_connector(func: Callable) -> Callable:
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Packages not found, ensure aws is included: fidesctl[aws]",
+                detail="Packages not found, ensure aws is included: fides[aws]",
             )
         return func(*args, **kwargs)
 
@@ -51,7 +51,7 @@ def route_requires_okta_connector(func: Callable) -> Callable:
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Packages not found, ensure aws is included: fidesctl[okta]",
+                detail="Packages not found, ensure aws is included: fides[okta]",
             )
         return func(*args, **kwargs)
 
@@ -70,7 +70,7 @@ def route_requires_bigquery_connector(func: Callable) -> Callable:
         except ModuleNotFoundError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Packages not found, ensure BigQuery is included: fidesctl[bigquery]",
+                detail="Packages not found, ensure BigQuery is included: fides[bigquery]",
             )
         return func(*args, **kwargs)
 

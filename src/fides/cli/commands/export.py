@@ -1,4 +1,4 @@
-"""Contains the export group of CLI commands for Fidesctl."""
+"""Contains the export group of CLI commands for fides."""
 import click
 
 from fides.cli.options import (
@@ -16,7 +16,7 @@ from fides.ctl.core import parse as _parse
 @click.pass_context
 def export(ctx: click.Context) -> None:
     """
-    Export fidesctl resource types
+    Export fides resource types
     """
 
 

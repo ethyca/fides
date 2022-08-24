@@ -29,7 +29,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fidesctl.api.
+    Supported types to which we can connect fides.api.
     """
 
     postgres = "postgres"

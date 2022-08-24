@@ -48,7 +48,7 @@ async def health() -> Dict:
     database_health = get_db_health(CONFIG.database.sync_database_uri)
     response = {
         "status": "healthy",
-        "version": str(fidesctl.__version__),
+        "version": str(fides.__version__),
         "database": database_health,
     }
 
