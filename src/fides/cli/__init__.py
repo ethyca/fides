@@ -6,7 +6,7 @@ from platform import system
 import click
 from fideslog.sdk.python.client import AnalyticsClient
 
-import fidesctl
+import fides
 from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
 
@@ -43,14 +43,14 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status"]
 ]
-VERSION = fidesctl.__version__
-APP = fidesctl.__name__
+VERSION = fides.__version__
+APP = fides.__name__
 
 
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
-    name="fidesctl",
+    name="fides",
 )
 @click.version_option(version=VERSION)
 @click.option(
@@ -58,7 +58,7 @@ APP = fidesctl.__name__
     "-f",
     "config_path",
     default="",
-    help="Path to a configuration file. Use 'fidesctl view-config' to print the config. Not compatible with the 'fidesctl webserver' subcommand.",
+    help="Path to a configuration file. Use 'fides view-config' to print the config. Not compatible with the 'fides webserver' subcommand.",
 )
 @click.option(
     "--local",
@@ -68,7 +68,7 @@ APP = fidesctl.__name__
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    The parent group for the Fidesctl CLI.
+    The parent group for the Fides CLI.
     """
 
     ctx.ensure_object(dict)

@@ -6,7 +6,7 @@ import click
 import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
-import fidesctl
+import fides
 from fides.cli.utils import (
     FIDESCTL_ASCII_ART,
     check_server,
