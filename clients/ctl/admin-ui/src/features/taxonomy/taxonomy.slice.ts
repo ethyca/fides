@@ -4,16 +4,20 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { AppState } from "~/app/store";
 import { DataCategory } from "~/types/api";
 
+import { TaxonomyTypes } from "./types";
+
 export interface State {
   dataCategories: DataCategory[];
+  activeTaxonomyType: TaxonomyTypes;
 }
 
 const initialState: State = {
   dataCategories: [],
+  activeTaxonomyType: "DataCategory",
 };
 
-export const dataCategoriesApi = createApi({
-  reducerPath: "dataCategoriesApi",
+export const taxonomyApi = createApi({
+  reducerPath: "taxonomyApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
@@ -41,21 +45,28 @@ export const dataCategoriesApi = createApi({
 });
 
 export const { useGetAllDataCategoriesQuery, useUpdateDataCategoryMutation } =
-  dataCategoriesApi;
+  taxonomyApi;
 
-export const dataCategoriesSlice = createSlice({
-  name: "dataCategories",
+export const taxonomySlice = createSlice({
+  name: "taxonomy",
   initialState,
   reducers: {
     setDataCategories: (state, action: PayloadAction<DataCategory[]>) => ({
       ...state,
       dataCategories: action.payload,
     }),
+    setActiveTaxonomyType: (state, action: PayloadAction<TaxonomyTypes>) => ({
+      ...state,
+      activeTaxonomyType: action.payload,
+    }),
   },
 });
 
-export const { setDataCategories } = dataCategoriesSlice.actions;
+export const { setDataCategories, setActiveTaxonomyType } =
+  taxonomySlice.actions;
 export const selectDataCategories = (state: AppState) =>
   state.dataCategories.dataCategories;
+export const selectActiveTaxonomyType = (state: AppState) =>
+  state.dataCategories.activeTaxonomyType;
 
-export const { reducer } = dataCategoriesSlice;
+export const { reducer } = taxonomySlice;

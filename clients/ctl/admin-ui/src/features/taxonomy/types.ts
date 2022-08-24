@@ -28,3 +28,9 @@ export type TaxonomyRTKResult = Promise<
     }
   | { error: RTKErrorResult["error"] }
 >;
+
+export type TaxonomyTypes =
+  | "DataCategory"
+  | "DataQualifier"
+  | "DataSubject"
+  | "DataUse";
