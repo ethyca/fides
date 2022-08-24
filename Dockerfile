@@ -99,7 +99,7 @@ FROM backend as prod
 
 # Install without a symlink
 RUN python setup.py sdist
-RUN pip install dist/fidesctl-*.tar.gz
+RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Copy frontend build over
 COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/ops/build/static/

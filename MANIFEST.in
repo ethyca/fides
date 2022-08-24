@@ -3,17 +3,17 @@ include README.md
 include requirements.txt
 include dev-requirements.txt
 include versioneer.py
-include src/fidesctl/ops/alembic.ini
-include src/fidesctl/api/ctl/alembic.ini
-include src/fidesctl/_version.py
-include src/fidesctl/py.typed
-include src/fidesctl/templates/fides_datamap_template.xlsx
+include src/fides/ops/alembic.ini
+include src/fides/api/ctl/alembic.ini
+include src/fides/_version.py
+include src/fides/py.typed
+include src/fides/templates/fides_datamap_template.xlsx
 
-recursive-include src/fidesctl/ui-build *
+recursive-include src/fides/ui-build *
 
-graft src/fidesctl/ops/migrations
+graft src/fides/ops/migrations
 
-exclude src/fidesctl/ops/migrations/README
-exclude src/fidesctl/ops/migrations/script.py.mako
+exclude src/fides/ops/migrations/README
+exclude src/fides/ops/migrations/script.py.mako
 
 global-exclude *.pyc

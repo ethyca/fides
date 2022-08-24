@@ -1,8 +1,8 @@
 # Ignore existing build artifacts
 build/
 dist/
-src/fidesctl.egg-info/
-src/fidesctl/ui-build/
+src/fides.egg-info/
+src/fides/ui-build/
 src/ui-build/
 
 # Ignore Python-Specific Files
