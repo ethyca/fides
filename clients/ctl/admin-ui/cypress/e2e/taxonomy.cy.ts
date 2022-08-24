@@ -344,13 +344,11 @@ describe("Taxonomy management page", () => {
         {
           tab: "Data Categories",
           name: "Data category",
-          parent: { name: "Account Data", key: "account" },
           request: "@postDataCategory",
         },
         {
           tab: "Data Uses",
           name: "Data use",
-          parent: { name: "Improve the Capability", key: "improve" },
           request: "@postDataUse",
         },
         {
@@ -361,7 +359,6 @@ describe("Taxonomy management page", () => {
         {
           tab: "Identifiability",
           name: "Data qualifier",
-          parent: { name: "Aggregated Data", key: "aggregated" },
           request: "@postDataQualifier",
         },
       ];
@@ -381,6 +378,7 @@ describe("Taxonomy management page", () => {
           const { body } = interception.request;
           expect(body.fides_key).to.eql("foo");
           expect(body.parent_key).to.equal(undefined);
+          expect(body.is_default).to.equal(false);
         });
         cy.getByTestId("toast-success-msg").should("exist");
 
@@ -395,6 +393,7 @@ describe("Taxonomy management page", () => {
           const { body } = interception.request;
           expect(body.fides_key).to.eql("foo.bar.baz");
           expect(body.parent_key).to.equal("foo.bar");
+          expect(body.is_default).to.equal(false);
         });
         cy.getByTestId("toast-success-msg").should("exist");
       });
