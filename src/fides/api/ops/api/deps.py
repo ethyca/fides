@@ -3,15 +3,9 @@ from typing import Generator
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-<<<<<<< HEAD:src/fides/api/ops/api/deps.py
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured
 from fides.api.ops.core.config import config
 from fides.api.ops.util.cache import get_cache as get_redis_connection
-=======
-from fidesops.ops.common_exceptions import FunctionalityNotConfigured
-from fidesops.ops.core.config import FidesopsConfig, config
-from fidesops.ops.util.cache import get_cache as get_redis_connection
->>>>>>> fidesops/main:src/fidesops/ops/api/deps.py
 
 _engine = None
 
