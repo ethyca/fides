@@ -38,9 +38,9 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.api.ctl.sql_models import ClientDetail, FidesUser, FidesUserPermissions
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.sql_models import ClientDetail, FidesUser, FidesUserPermissions
+from fides.ctl.core.config import FidesctlConfig
 from tests.ctl.conftest import generate_auth_header_for_user
 
 URL = f"{API_PREFIX}{USERS}"
