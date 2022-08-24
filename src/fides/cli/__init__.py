@@ -45,6 +45,7 @@ SERVER_CHECK_COMMAND_NAMES = [
 ]
 VERSION = fides.__version__
 APP = fides.__name__
+PACKAGE = "ethyca-fides"
 
 
 @click.group(
@@ -105,7 +106,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
                 developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
                 os=system(),
                 product_name=APP + "-cli",
-                production_version=version(APP),
+                production_version=version(PACKAGE),
             )
 
 
