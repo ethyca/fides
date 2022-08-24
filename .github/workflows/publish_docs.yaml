@@ -19,7 +19,7 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
       - name: Install dependencies
-      - run: pip install -r docs/fidesops/requirements.txt
+        run: pip install -r docs/fidesops/requirements.txt
       - name: Build docs
         run: nox -s docs_build
       - name: Publish docs
