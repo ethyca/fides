@@ -59,7 +59,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets import (
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.logger import Pii 
+from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
