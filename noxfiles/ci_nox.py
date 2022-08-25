@@ -182,6 +182,7 @@ def pytest_unit(session: nox.Session) -> None:
         *RUN_OPS_NO_DEPS,
         "pytest",
         OPS_TEST_DIR,
+        "-x",
         "-m",
         "not integration and not integration_external and not integration_saas",
     )

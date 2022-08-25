@@ -32,7 +32,7 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
-router = APIRouter(tags=["Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
+router = APIRouter(tags=["DSR Policy Webhooks"], prefix=f"{urls.V1_URL_PREFIX}/dsr")
 
 logger = logging.getLogger(__name__)
 

@@ -237,7 +237,8 @@ async def setup_server() -> None:
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
-            await configure_db(config.database.sqlalchemy_database_uri)
+            await configure_db(CONFIG.database.sqlalchemy_database_uri)
+            logger.info("Finished migrations")
         except Exception as error:  # pylint: disable=broad-except
             logger.error("Connection to database failed: %s", Pii(str(error)))
             return

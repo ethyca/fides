@@ -87,7 +87,6 @@ def db() -> Generator:
         logger.debug("Database at: %s already exists", engine.url)
 
     migrate_test_db()
-    raise SystemExit(1)
     scheduler.start()
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()

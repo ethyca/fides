@@ -50,7 +50,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
-router = APIRouter(tags=["email"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["Email"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
 
 

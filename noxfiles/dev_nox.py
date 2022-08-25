@@ -35,7 +35,7 @@ def dev(session: nox.Session) -> None:
                 session.run(*START_APP_UI, external=True)
                 session.run(*RUN, "/bin/bash", external=True)
         else:
-            session.run("docker-compose", "up", service, external=True)
+            session.run("docker", "compose", "up", service, external=True)
     else:
         # Run the webserver with additional datastores
         run_infrastructure(
@@ -48,7 +48,7 @@ def dev_with_worker(session: nox.Session) -> None:
     """Spin up the entire application and open a development shell."""
     build(session, "dev")
     session.notify("teardown")
-    session.run("docker-compose", "up", "worker", "--wait", external=True)
+    session.run("docker", "compose", "up", "worker", "--wait", external=True)
     session.run(
         "docker-compose",
         "run",
