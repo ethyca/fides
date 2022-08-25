@@ -18,7 +18,7 @@ import { successToastParams } from "~/features/common/toast";
 import { RTKErrorResult } from "~/types/errors";
 
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
-import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
+import { Labels, RTKResult, TaxonomyEntity } from "./types";
 
 export type FormValues = Partial<TaxonomyEntity> &
   Pick<TaxonomyEntity, "fides_key">;
@@ -27,7 +27,7 @@ interface Props {
   entity: TaxonomyEntity;
   labels: Labels;
   onCancel: () => void;
-  onEdit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
+  onEdit: (entity: TaxonomyEntity) => RTKResult<TaxonomyEntity>;
   extraFormFields?: ReactNode;
   initialValues: FormValues;
 }
