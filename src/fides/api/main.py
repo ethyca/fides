@@ -1,17 +1,29 @@
 """
 Contains the code that sets up the API.
 """
-from datetime import datetime
+import logging
+import os
+import re
+import subprocess
+from datetime import datetime, timezone
 from logging import WARNING
-from typing import Callable
+from pathlib import Path
+from typing import Callable, Optional, Union
 
+import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
+from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
+from redis.exceptions import ResponseError
+from starlette.background import BackgroundTask
+from starlette.middleware.cors import CORSMiddleware
+from starlette.status import HTTP_404_NOT_FOUND
 from uvicorn import Config, Server
 
 from fides.api.ctl import view
@@ -30,31 +42,6 @@ from fides.api.ctl.routes import (
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
 from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.ctl.core.config import FidesctlConfig, get_config as get_ctl_config
-
-import logging
-import os
-import re
-import subprocess
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Callable, Optional, Union
-
-import uvicorn
-from fastapi import FastAPI, Request, Response
-from fastapi.exceptions import HTTPException
-from fastapi.responses import FileResponse
-from fideslib.oauth.api.deps import get_config as lib_get_config
-from fideslib.oauth.api.deps import get_db as lib_get_db
-from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
-from fideslib.oauth.api.routes.user_endpoints import router as user_router
-from fideslog.sdk.python.event import AnalyticsEvent
-from redis.exceptions import ResponseError
-from starlette.background import BackgroundTask
-from starlette.middleware.cors import CORSMiddleware
-from starlette.status import HTTP_404_NOT_FOUND
-
-from fides.api.ctl.database.database import configure_db
 from fides.api.ops.analytics import (
     accessed_through_local_host,
     in_docker_container,
@@ -79,6 +66,8 @@ from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intak
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import get_config as get_ctl_config
 
 logging.basicConfig(level=ops_config.security.log_level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
@@ -155,9 +144,10 @@ async def setup_server() -> None:
 
     scheduler.start()
 
-    if ops_config.database.enabled:
-        logger.info("Starting scheduled request intake...")
-        initiate_scheduled_request_intake()
+    # TODO: Fix this, this line is preventing the webserver from starting properly
+    # if ops_config.database.enabled:
+    #     logger.info("Starting scheduled request intake...")
+    #     initiate_scheduled_request_intake()
 
     send_analytics_event(
         AnalyticsEvent(
@@ -178,7 +168,6 @@ async def setup_server() -> None:
     )
 
     log.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
-    await configure_db(CONFIG.database.sync_database_uri)
 
 
 @app.middleware("http")
