@@ -6,34 +6,18 @@ import {
   AccordionPanel,
   Box,
   BoxProps,
-  Button,
-  ButtonGroup,
   Text,
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
 
-import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
-
-interface ActionButtonProps {
-  node: TaxonomyEntityNode;
-  onEdit: (node: TaxonomyEntityNode) => void;
-}
-const ActionButtons = ({ node, onEdit }: ActionButtonProps) => (
-  <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
-    <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
-      Edit
-    </Button>
-    <Button data-testid="delete-btn">Delete</Button>
-  </ButtonGroup>
-);
 
 interface Props {
   nodes: TreeNode[];
-  onEdit: (node: TaxonomyEntityNode) => void;
   focusedKey?: string;
+  renderHover?: (node: TreeNode) => React.ReactNode;
 }
-const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
+const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -58,6 +42,7 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
         setHoverNode(undefined);
       },
     };
+    const hoverContent = isHovered && renderHover ? renderHover(node) : null;
 
     if (node.children.length === 0) {
       return (
@@ -68,9 +53,7 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
           >
             {node.label}
           </Text>
-          {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
-          ) : null}
+          {hoverContent}
         </Box>
       );
     }
@@ -90,9 +73,7 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
             <AccordionIcon />
             {node.label}
           </AccordionButton>
-          {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
-          ) : null}
+          {hoverContent}
         </Box>
 
         <AccordionPanel p={0}>

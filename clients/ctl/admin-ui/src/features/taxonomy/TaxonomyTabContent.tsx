@@ -1,9 +1,21 @@
-import { Center, SimpleGrid, Spinner, Text } from "@fidesui/react";
+import {
+  Center,
+  SimpleGrid,
+  Spinner,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@fidesui/react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import AccordionTree from "~/features/common/AccordionTree";
+import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { isErrorResult } from "~/types/errors";
 
-import AccordionTree from "../common/AccordionTree";
+import ActionButtons from "./ActionButtons";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
 import { selectIsAddFormOpen, setIsAddFormOpen } from "./taxonomy.slice";
@@ -27,8 +39,9 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     isLoading,
     data,
     labels,
-    edit: onEdit,
-    onCreate,
+    handleCreate: createEntity,
+    handleEdit,
+    handleDelete: deleteEntity,
     extraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -40,6 +53,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+
   const isAdding = useAppSelector(selectIsAddFormOpen);
 
   useEffect(() => {
@@ -53,6 +67,15 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     dispatch(setIsAddFormOpen(false));
   };
 
+  const [deleteKey, setDeleteKey] = useState<string | null>(null);
+
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
+  const toast = useToast();
+
   if (isLoading) {
     return (
       <Center>
@@ -64,6 +87,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return <Text>Could not find data.</Text>;
   }
 
+  const taxonomyType = labels.fides_key.toLocaleLowerCase();
+
   const handleSetEditEntity = (node: TaxonomyEntityNode) => {
     if (isAdding) {
       closeAddForm();
@@ -72,35 +97,76 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     setEditEntity(entity);
   };
 
-  const handleCreate = (entity: TaxonomyEntity) => onCreate(entity);
+  const handleSetDeleteKey = (node: TaxonomyEntityNode) => {
+    setDeleteKey(node.value);
+    onDeleteOpen();
+  };
+
+  const handleDelete = async () => {
+    if (deleteKey) {
+      const result = await deleteEntity(deleteKey);
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(successToastParams(`Successfully deleted ${taxonomyType}`));
+      }
+      onDeleteClose();
+      setEditEntity(null);
+    }
+  };
 
   return (
-    <SimpleGrid columns={2} spacing={2}>
-      <AccordionTree
-        nodes={taxonomyNodes}
-        onEdit={handleSetEditEntity}
-        focusedKey={editEntity?.fides_key}
+    <>
+      <SimpleGrid columns={2} spacing={2}>
+        <AccordionTree
+          nodes={taxonomyNodes}
+          focusedKey={editEntity?.fides_key}
+          renderHover={(node) => (
+            <ActionButtons
+              onDelete={handleSetDeleteKey}
+              onEdit={handleSetEditEntity}
+              node={node}
+            />
+          )}
+        />
+        {editEntity ? (
+          <TaxonomyFormBase
+            labels={labels}
+            onCancel={() => setEditEntity(null)}
+            onSubmit={handleEdit}
+            extraFormFields={extraFormFields}
+            initialValues={transformEntityToInitialValues(editEntity)}
+          />
+        ) : null}
+        {isAdding ? (
+          <TaxonomyFormBase
+            labels={labels}
+            onCancel={closeAddForm}
+            onSubmit={createEntity}
+            extraFormFields={extraFormFields}
+            initialValues={transformEntityToInitialValues(
+              DEFAULT_INITIAL_VALUES
+            )}
+            isCreate
+          />
+        ) : null}
+      </SimpleGrid>
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={onDeleteClose}
+        onConfirm={handleDelete}
+        title={`Delete ${taxonomyType}`}
+        message={
+          <Text>
+            You are about to permanently delete the {taxonomyType}{" "}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {deleteKey}
+            </Text>{" "}
+            from your taxonomy. Are you sure you would like to continue?
+          </Text>
+        }
       />
-      {editEntity ? (
-        <TaxonomyFormBase
-          labels={labels}
-          onCancel={() => setEditEntity(null)}
-          onSubmit={onEdit}
-          extraFormFields={extraFormFields}
-          initialValues={transformEntityToInitialValues(editEntity)}
-        />
-      ) : null}
-      {isAdding ? (
-        <TaxonomyFormBase
-          labels={labels}
-          onCancel={closeAddForm}
-          onSubmit={handleCreate}
-          extraFormFields={extraFormFields}
-          initialValues={transformEntityToInitialValues(DEFAULT_INITIAL_VALUES)}
-          isCreate
-        />
-      ) : null}
-    </SimpleGrid>
+    </>
   );
 };
 

@@ -21,7 +21,7 @@ import { RTKErrorResult } from "~/types/errors";
 
 import { parentKeyFromFidesKey } from "./helpers";
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
-import { Labels, TaxonomyEntity, TaxonomyRTKResult } from "./types";
+import { Labels, RTKResult, TaxonomyEntity } from "./types";
 
 export type FormValues = Partial<TaxonomyEntity> &
   Pick<TaxonomyEntity, "fides_key">;
@@ -29,7 +29,7 @@ export type FormValues = Partial<TaxonomyEntity> &
 interface Props {
   labels: Labels;
   onCancel: () => void;
-  onSubmit: (entity: TaxonomyEntity) => TaxonomyRTKResult;
+  onSubmit: (entity: TaxonomyEntity) => RTKResult<TaxonomyEntity>;
   extraFormFields?: ReactNode;
   initialValues: FormValues;
   isCreate?: boolean;

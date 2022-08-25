@@ -39,11 +39,21 @@ export const taxonomyApi = createApi({
       }),
       invalidatesTags: ["Data Categories"],
     }),
+
     createDataCategory: build.mutation<DataCategory, DataCategory>({
       query: (dataCategory) => ({
         url: `data_category/`,
         method: "POST",
         body: dataCategory,
+      }),
+      invalidatesTags: ["Data Categories"],
+    }),
+
+    deleteDataCategory: build.mutation<string, string>({
+      query: (key) => ({
+        url: `data_category/${key}`,
+        params: { resource_type: "data_category" },
+        method: "DELETE",
       }),
       invalidatesTags: ["Data Categories"],
     }),
@@ -53,6 +63,7 @@ export const taxonomyApi = createApi({
 export const {
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
+  useDeleteDataCategoryMutation,
   useCreateDataCategoryMutation,
 } = taxonomyApi;
 

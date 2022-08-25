@@ -22,9 +22,9 @@ export interface Labels {
   parent_key?: string;
 }
 
-export type TaxonomyRTKResult = Promise<
+export type RTKResult<T> = Promise<
   | {
-      data: TaxonomyEntity;
+      data: T;
     }
   | { error: RTKErrorResult["error"] }
 >;
