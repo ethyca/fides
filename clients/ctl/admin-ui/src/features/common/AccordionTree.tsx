@@ -10,13 +10,12 @@ import {
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
 
-import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
 
 interface Props {
   nodes: TreeNode[];
   focusedKey?: string;
-  renderHover?: (node: TaxonomyEntityNode) => React.ReactNode;
+  renderHover?: (node: TreeNode) => React.ReactNode;
 }
 const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);

@@ -23,6 +23,7 @@ export const transformTaxonomyEntityToNodes = (
       label: thisLevelEntity.name ?? thisLevelEntity.fides_key,
       description: thisLevelEntity.description,
       children: transformTaxonomyEntityToNodes(entities, thisLevelKey),
+      is_default: thisLevelEntity.is_default ?? false,
     };
   });
   return nodes;
