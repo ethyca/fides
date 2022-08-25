@@ -594,7 +594,7 @@ def test_create_and_process_access_request_saas_hubspot(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
-    assert len(results.keys()) == 3
+    assert len(results.keys()) == 4
 
     for key in results.keys():
         assert results[key] is not None

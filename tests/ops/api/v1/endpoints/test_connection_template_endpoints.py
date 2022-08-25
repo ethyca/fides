@@ -230,14 +230,14 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "hapikey": {"title": "Hapikey", "type": "string"},
+                "private_app_token": {"title": "Private App Token", "type": "string"},
                 "domain": {
                     "title": "Domain",
                     "default": "api.hubapi.com",
                     "type": "string",
                 },
             },
-            "required": ["hapikey"],
+            "required": ["private_app_token"],
             "additionalProperties": False,
         }
 
