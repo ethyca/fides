@@ -83,6 +83,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
         toast(successToastParams(`Successfully deleted ${taxonomyType}`));
       }
       onDeleteClose();
+      setEditEntity(null);
     }
   };
 
