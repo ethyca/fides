@@ -15,22 +15,26 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "../../constants";
-import { logout, selectUser } from "../auth";
+import { logout, selectUser, useLogoutMutation } from "../auth";
 import { UserIcon } from "./Icon";
 import Image from "./Image";
 
 const useHeader = () => {
-  const dispatch = useDispatch();
-  const handleLogout = () => dispatch(logout());
   const { username } = useSelector(selectUser) ?? { username: "" };
-  return {
-    handleLogout,
-    username,
-  };
+  return { username };
 };
 
 const Header: React.FC = () => {
-  const { handleLogout, username } = useHeader();
+  const { username } = useHeader();
+  const [logoutMutation] = useLogoutMutation();
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    logoutMutation({})
+      .unwrap()
+      .then(() => dispatch(logout()));
+  };
+
   return (
     <header>
       <Flex
