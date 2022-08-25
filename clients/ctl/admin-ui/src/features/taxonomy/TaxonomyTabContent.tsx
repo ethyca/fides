@@ -8,12 +8,12 @@ import {
 } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
+import AccordionTree from "~/features/common/AccordionTree";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
-import AccordionTree from "../common/AccordionTree";
-import { getErrorMessage } from "../common/helpers";
-import { errorToastParams, successToastParams } from "../common/toast";
 import ActionButtons from "./ActionButtons";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
