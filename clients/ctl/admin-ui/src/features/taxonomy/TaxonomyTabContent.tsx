@@ -29,8 +29,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     isLoading,
     data,
     labels,
-    onEdit,
-    onDelete,
+    handleEdit,
+    handleDelete: deleteEntity,
     extraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
@@ -76,7 +76,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
 
   const handleDelete = async () => {
     if (deleteKey) {
-      const result = await onDelete(deleteKey);
+      const result = await deleteEntity(deleteKey);
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
@@ -105,7 +105,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             labels={labels}
             entity={editEntity}
             onCancel={() => setEditEntity(null)}
-            onEdit={onEdit}
+            onEdit={handleEdit}
             extraFormFields={extraFormFields}
             initialValues={transformEntityToInitialValues(editEntity)}
           />

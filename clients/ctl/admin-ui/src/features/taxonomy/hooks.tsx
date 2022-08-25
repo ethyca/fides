@@ -44,8 +44,8 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
   isLoading: boolean;
   labels: Labels;
-  onEdit: (entity: T) => RTKResult<TaxonomyEntity>;
-  onDelete: (key: string) => RTKResult<string>;
+  handleEdit: (entity: T) => RTKResult<TaxonomyEntity>;
+  handleDelete: (key: string) => RTKResult<string>;
   extraFormFields?: ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
@@ -81,8 +81,8 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
     data,
     isLoading,
     labels,
-    onEdit: editDataCategory,
-    onDelete: deleteDataCategory,
+    handleEdit: editDataCategory,
+    handleDelete: deleteDataCategory,
     transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };
@@ -103,10 +103,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       "Legitimate interest impact assessment",
   };
 
-  const [onEdit] = useUpdateDataUseMutation();
-  const [onDelete] = useDeleteDataUseMutation();
+  const [edit] = useUpdateDataUseMutation();
+  const [handleDelete] = useDeleteDataUseMutation();
   const handleEdit = (entity: DataUse) =>
-    onEdit({
+    edit({
       ...entity,
       // text inputs don't like having undefined, so we originally converted
       // to "", but on submission we need to convert back to undefined
@@ -160,8 +160,8 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     data,
     isLoading,
     labels,
-    onEdit: handleEdit,
-    onDelete,
+    handleEdit,
+    handleDelete,
     extraFormFields,
     transformEntityToInitialValues,
   };
@@ -180,8 +180,8 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     automatic_decisions: "Automatic decisions or profiling",
   };
 
-  const [onEdit] = useUpdateDataSubjectMutation();
-  const [onDelete] = useDeleteDataSubjectMutation();
+  const [edit] = useUpdateDataSubjectMutation();
+  const [handleDelete] = useDeleteDataSubjectMutation();
 
   const handleEdit = (entity: TaxonomyEntity) => {
     const transformedEntity = {
@@ -195,7 +195,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     };
     // @ts-ignore for the same reason as above
     delete transformedEntity.strategy;
-    return onEdit(transformedEntity);
+    return edit(transformedEntity);
   };
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
@@ -228,8 +228,8 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     data,
     isLoading,
     labels,
-    onEdit: handleEdit,
-    onDelete,
+    handleEdit,
+    handleDelete,
     extraFormFields,
     transformEntityToInitialValues,
   };
@@ -245,15 +245,15 @@ export const useDataQualifier = (): TaxonomyHookData<DataQualifier> => {
     parent_key: "Parent data qualifier",
   };
 
-  const [onEdit] = useUpdateDataQualifierMutation();
-  const [onDelete] = useDeleteDataQualifierMutation();
+  const [handleEdit] = useUpdateDataQualifierMutation();
+  const [handleDelete] = useDeleteDataQualifierMutation();
 
   return {
     data,
     isLoading,
     labels,
-    onEdit,
-    onDelete,
+    handleEdit,
+    handleDelete,
     transformEntityToInitialValues: transformTaxonomyBaseToInitialValues,
   };
 };
