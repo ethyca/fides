@@ -17,7 +17,10 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.1...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
+
+
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
 ### Added
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
