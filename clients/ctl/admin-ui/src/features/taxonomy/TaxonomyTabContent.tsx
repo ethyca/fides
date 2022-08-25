@@ -14,6 +14,7 @@ import { isErrorResult } from "~/types/errors";
 import AccordionTree from "../common/AccordionTree";
 import { getErrorMessage } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
+import ActionButtons from "./ActionButtons";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
 import TaxonomyFormBase from "./TaxonomyFormBase";
@@ -90,9 +91,14 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       <SimpleGrid columns={2} spacing={2}>
         <AccordionTree
           nodes={taxonomyNodes}
-          onEdit={handleSetEditEntity}
-          onDelete={handleSetDeleteKey}
           focusedKey={editEntity?.fides_key}
+          renderHover={(node) => (
+            <ActionButtons
+              onDelete={handleSetDeleteKey}
+              onEdit={handleSetEditEntity}
+              node={node}
+            />
+          )}
         />
         {editEntity ? (
           <TaxonomyFormBase

@@ -6,8 +6,6 @@ import {
   AccordionPanel,
   Box,
   BoxProps,
-  Button,
-  ButtonGroup,
   Text,
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
@@ -15,40 +13,12 @@ import { Fragment, useState } from "react";
 import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
 
-interface ActionButtonProps {
-  node: TaxonomyEntityNode;
-  onEdit: (node: TaxonomyEntityNode) => void;
-  onDelete: (node: TaxonomyEntityNode) => void;
-}
-const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => {
-  const showDelete = node.children.length === 0;
-  return (
-    <ButtonGroup
-      size="xs"
-      isAttached
-      variant="outline"
-      data-testid="action-btns"
-      mr="2"
-    >
-      <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
-        Edit
-      </Button>
-      {showDelete ? (
-        <Button data-testid="delete-btn" onClick={() => onDelete(node)}>
-          Delete
-        </Button>
-      ) : null}
-    </ButtonGroup>
-  );
-};
-
 interface Props {
   nodes: TreeNode[];
-  onEdit: (node: TaxonomyEntityNode) => void;
-  onDelete: (node: TaxonomyEntityNode) => void;
   focusedKey?: string;
+  renderHover?: (node: TaxonomyEntityNode) => React.ReactNode;
 }
-const AccordionTree = ({ nodes, onEdit, onDelete, focusedKey }: Props) => {
+const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -73,6 +43,7 @@ const AccordionTree = ({ nodes, onEdit, onDelete, focusedKey }: Props) => {
         setHoverNode(undefined);
       },
     };
+    const hoverContent = isHovered && renderHover ? renderHover(node) : null;
 
     if (node.children.length === 0) {
       return (
@@ -83,13 +54,7 @@ const AccordionTree = ({ nodes, onEdit, onDelete, focusedKey }: Props) => {
           >
             {node.label}
           </Text>
-          {isHovered ? (
-            <ActionButtons
-              node={hoverNode}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ) : null}
+          {hoverContent}
         </Box>
       );
     }
@@ -109,13 +74,7 @@ const AccordionTree = ({ nodes, onEdit, onDelete, focusedKey }: Props) => {
             <AccordionIcon />
             {node.label}
           </AccordionButton>
-          {isHovered ? (
-            <ActionButtons
-              node={hoverNode}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ) : null}
+          {hoverContent}
         </Box>
 
         <AccordionPanel p={0}>
