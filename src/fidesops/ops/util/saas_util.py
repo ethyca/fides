@@ -39,7 +39,7 @@ def load_config_with_replacement(
 ) -> Dict:
     """Loads the saas config from the yaml file and replaces any string with the given value"""
     yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
+        string_to_replace, f'"{replacement}"'
     )
     return yaml.safe_load(yaml_str).get("saas_config", [])
 
@@ -55,7 +55,7 @@ def load_dataset_with_replacement(
 ) -> Dict:
     """Loads the dataset from the yaml file and replaces any string with the given value"""
     yaml_str: str = load_yaml_as_string(filename).replace(
-        string_to_replace, replacement
+        string_to_replace, f'"{replacement}"'
     )
     return yaml.safe_load(yaml_str).get("dataset", [])
 
