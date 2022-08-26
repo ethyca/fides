@@ -38,6 +38,14 @@ export const dataQualifierApi = createApi({
       }),
       invalidatesTags: ["Data Qualifiers"],
     }),
+    createDataQualifier: build.mutation<DataQualifier, DataQualifier>({
+      query: (dataQualifier) => ({
+        url: `data_qualifier/`,
+        method: "POST",
+        body: dataQualifier,
+      }),
+      invalidatesTags: ["Data Qualifiers"],
+    }),
     deleteDataQualifier: build.mutation<string, string>({
       query: (key) => ({
         url: `data_qualifier/${key}`,
@@ -52,6 +60,7 @@ export const dataQualifierApi = createApi({
 export const {
   useGetAllDataQualifiersQuery,
   useUpdateDataQualifierMutation,
+  useCreateDataQualifierMutation,
   useDeleteDataQualifierMutation,
 } = dataQualifierApi;
 

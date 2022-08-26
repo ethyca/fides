@@ -37,6 +37,14 @@ export const dataUseApi = createApi({
       }),
       invalidatesTags: ["Data Uses"],
     }),
+    createDataUse: build.mutation<DataUse, DataUse>({
+      query: (dataUse) => ({
+        url: `data_use/`,
+        method: "POST",
+        body: dataUse,
+      }),
+      invalidatesTags: ["Data Uses"],
+    }),
     deleteDataUse: build.mutation<string, string>({
       query: (key) => ({
         url: `data_use/${key}`,
@@ -51,6 +59,7 @@ export const dataUseApi = createApi({
 export const {
   useGetAllDataUsesQuery,
   useUpdateDataUseMutation,
+  useCreateDataUseMutation,
   useDeleteDataUseMutation,
 } = dataUseApi;
 

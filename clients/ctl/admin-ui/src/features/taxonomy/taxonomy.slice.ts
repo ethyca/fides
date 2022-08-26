@@ -6,14 +6,16 @@ import { DataCategory } from "~/types/api";
 
 export interface State {
   dataCategories: DataCategory[];
+  isAddFormOpen: boolean;
 }
 
 const initialState: State = {
   dataCategories: [],
+  isAddFormOpen: false,
 };
 
-export const dataCategoriesApi = createApi({
-  reducerPath: "dataCategoriesApi",
+export const taxonomyApi = createApi({
+  reducerPath: "taxonomyApi",
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_FIDESCTL_API,
   }),
@@ -37,6 +39,16 @@ export const dataCategoriesApi = createApi({
       }),
       invalidatesTags: ["Data Categories"],
     }),
+
+    createDataCategory: build.mutation<DataCategory, DataCategory>({
+      query: (dataCategory) => ({
+        url: `data_category/`,
+        method: "POST",
+        body: dataCategory,
+      }),
+      invalidatesTags: ["Data Categories"],
+    }),
+
     deleteDataCategory: build.mutation<string, string>({
       query: (key) => ({
         url: `data_category/${key}`,
@@ -52,21 +64,28 @@ export const {
   useGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
   useDeleteDataCategoryMutation,
-} = dataCategoriesApi;
+  useCreateDataCategoryMutation,
+} = taxonomyApi;
 
-export const dataCategoriesSlice = createSlice({
-  name: "dataCategories",
+export const taxonomySlice = createSlice({
+  name: "taxonomy",
   initialState,
   reducers: {
     setDataCategories: (state, action: PayloadAction<DataCategory[]>) => ({
       ...state,
       dataCategories: action.payload,
     }),
+    setIsAddFormOpen: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      isAddFormOpen: action.payload,
+    }),
   },
 });
 
-export const { setDataCategories } = dataCategoriesSlice.actions;
+export const { setDataCategories, setIsAddFormOpen } = taxonomySlice.actions;
 export const selectDataCategories = (state: AppState) =>
-  state.dataCategories.dataCategories;
+  state.taxonomy.dataCategories;
+export const selectIsAddFormOpen = (state: AppState) =>
+  state.taxonomy.isAddFormOpen;
 
-export const { reducer } = dataCategoriesSlice;
+export const { reducer } = taxonomySlice;

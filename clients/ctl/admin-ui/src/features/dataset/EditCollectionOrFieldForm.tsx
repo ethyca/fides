@@ -3,7 +3,7 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
+import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";

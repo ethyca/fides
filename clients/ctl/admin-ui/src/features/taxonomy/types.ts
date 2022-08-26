@@ -19,7 +19,7 @@ export interface Labels {
   fides_key: string;
   name: string;
   description: string;
-  parent_key: string;
+  parent_key?: string;
 }
 
 export type RTKResult<T> = Promise<

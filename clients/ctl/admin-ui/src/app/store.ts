@@ -22,10 +22,7 @@ import {
   reducer as organizationReducer,
 } from "~/features/organization";
 import { systemApi } from "~/features/system";
-import {
-  dataCategoriesApi,
-  reducer as dataCategoriesReducer,
-} from "~/features/taxonomy";
+import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
 const makeStore = () => {
@@ -34,7 +31,7 @@ const makeStore = () => {
       configWizard: configWizardReducer,
       user: userReducer,
       dataset: datasetReducer,
-      dataCategories: dataCategoriesReducer,
+      taxonomy: taxonomyReducer,
       dataQualifier: dataQualifierReducer,
       dataSubjects: dataSubjectsReducer,
       dataUse: dataUseReducer,
@@ -43,7 +40,7 @@ const makeStore = () => {
       [organizationApi.reducerPath]: organizationApi.reducer,
       [scannerApi.reducerPath]: scannerApi.reducer,
       [systemApi.reducerPath]: systemApi.reducer,
-      [dataCategoriesApi.reducerPath]: dataCategoriesApi.reducer,
+      [taxonomyApi.reducerPath]: taxonomyApi.reducer,
       [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
       [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
       [dataUseApi.reducerPath]: dataUseApi.reducer,
@@ -54,7 +51,7 @@ const makeStore = () => {
         organizationApi.middleware,
         scannerApi.middleware,
         systemApi.middleware,
-        dataCategoriesApi.middleware,
+        taxonomyApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
         dataUseApi.middleware
