@@ -46,9 +46,7 @@ def test_check_server_version_comparisons(
 ) -> None:
     """Check that comparing versions works"""
     fake_url = "http://fake_address:8080"
-    requests_mock.get(
-        f"{fake_url}{API_PREFIX}/health", json={"version": server_version}
-    )
+    requests_mock.get(f"{fake_url}/health", json={"version": server_version})
     utils.check_server(cli_version, "http://fake_address:8080", quiet=quiet)
     captured = capsys.readouterr()
     if expected_output is None:
