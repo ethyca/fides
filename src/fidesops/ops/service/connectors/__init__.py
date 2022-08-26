@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.email_connector import EmailConnector
 from fidesops.ops.service.connectors.http_connector import HTTPSConnector
 from fidesops.ops.service.connectors.manual_connector import ManualConnector
 from fidesops.ops.service.connectors.mongodb_connector import MongoDBConnector
@@ -28,6 +29,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.manual.value: ManualConnector,
+    ConnectionType.email.value: EmailConnector,
 }
 
 

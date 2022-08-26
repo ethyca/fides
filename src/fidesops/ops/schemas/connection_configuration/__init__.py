@@ -8,6 +8,10 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_bigquery i
     BigQueryDocsSchema,
     BigQuerySchema,
 )
+from fidesops.ops.schemas.connection_configuration.connection_secrets_email import (
+    EmailDocsSchema,
+    EmailSchema,
+)
 from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema,
     MariaDBSchema,
@@ -56,6 +60,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.mariadb.value: MariaDBSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.saas.value: SaaSSchema,
+    ConnectionType.email.value: EmailSchema,
 }
 
 
@@ -95,4 +100,5 @@ connection_secrets_schemas = Union[
     MariaDBDocsSchema,
     BigQueryDocsSchema,
     SaaSSchema,
+    EmailDocsSchema,
 ]

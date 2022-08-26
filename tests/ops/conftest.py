@@ -29,6 +29,7 @@ from fidesops.ops.util.cache import get_cache
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
+from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
 from .fixtures.mariadb_fixtures import *
