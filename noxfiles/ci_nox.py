@@ -223,6 +223,7 @@ def pytest_external(session: nox.Session) -> None:
         "-x",
         "-m",
         "external",
+        "tests/ctl",
     )
     session.run(*run_command, external=True)
 
