@@ -12,7 +12,7 @@ Follow our [Using Postman](../postman/using_postman.md) guide to learn more abou
 
 ### API URLs
 
-We define API URLs for specific API versions as constants within `fidesops.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
+We define API URLs for specific API versions as constants within `fides.api.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
 ```
 PRIVACY_REQUEST = "/privacy-request"

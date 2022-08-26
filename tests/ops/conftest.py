@@ -19,6 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ctl.database.database import get_alembic_config, upgrade_db
+from fides.ctl.core.api import db_action
+from fides.ctl.core.config import get_config as get_ctl_config
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
@@ -55,17 +57,15 @@ from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
+CTL_CONFIG = get_ctl_config()
 
 
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
-    logger.debug("Applying migrations...")
+    logger.debug("Setting up the database...")
     assert config.is_test_mode
     if config.database.enabled:
-        alembic_config = get_alembic_config(
-            config.database.sqlalchemy_test_database_uri
-        )
-        upgrade_db(alembic_config)
+        yield db_action(CTL_CONFIG.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
 
@@ -77,14 +77,6 @@ def db() -> Generator:
     engine = get_db_engine(
         database_uri=config.database.sqlalchemy_test_database_uri,
     )
-
-    logger.debug("Configuring database at: %s", engine.url)
-    if not database_exists(engine.url):
-        logger.debug("Creating database at: %s", engine.url)
-        create_database(engine.url)
-        logger.debug("Database at: %s successfully created", engine.url)
-    else:
-        logger.debug("Database at: %s already exists", engine.url)
 
     migrate_test_db()
     scheduler.start()

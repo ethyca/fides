@@ -19,7 +19,7 @@ from fides.api.ops.schemas.email.email import (
 from fides.api.ops.service.email.email_dispatch_service import dispatch_email
 
 
-@mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher")
 def test_email_dispatch_mailgun_success(
     mock_mailgun_dispatcher: Mock, db: Session, email_config
 ) -> None:
@@ -43,7 +43,7 @@ def test_email_dispatch_mailgun_success(
     )
 
 
-@mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher")
 def test_email_dispatch_mailgun_config_not_found(
     mock_mailgun_dispatcher: Mock, db: Session
 ) -> None:
@@ -62,7 +62,7 @@ def test_email_dispatch_mailgun_config_not_found(
     mock_mailgun_dispatcher.assert_not_called()
 
 
-@mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher")
 def test_email_dispatch_mailgun_config_no_secrets(
     mock_mailgun_dispatcher: Mock, db: Session
 ) -> None:
