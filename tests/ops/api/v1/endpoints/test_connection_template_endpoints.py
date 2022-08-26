@@ -503,43 +503,6 @@ class TestInstantiateConnectionFromTemplate:
         ).first()
         assert dataset_config is None
 
-    def test_instantiate_connection_from_template_integer_key(
-        self, db, generate_auth_header, api_client, base_url
-    ):
-        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
-        request_body = {
-            "instance_key": "111",
-            "secrets": {
-                "domain": "test_mailchimp_domain",
-                "username": "test_mailchimp_username",
-                "api_key": "test_mailchimp_api_key",
-            },
-            "name": "Mailchimp Connector",
-            "description": "Mailchimp ConnectionConfig description",
-            "key": "mailchimp_connection_config",
-        }
-        resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
-            headers=auth_header,
-            json=request_body,
-        )
-
-        connection_config = ConnectionConfig.filter(
-            db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
-        ).first()
-        dataset_config = DatasetConfig.filter(
-            db=db,
-            conditions=(DatasetConfig.fides_key == "111"),
-        ).first()
-
-        saas_config_fides_key = connection_config.saas_config["fides_key"]
-        dataset_fides_key = dataset_config.fides_key
-        embedded_dataset_fides_key = dataset_config.dataset["fides_key"]
-
-        assert saas_config_fides_key == dataset_fides_key == embedded_dataset_fides_key
-        dataset_config.delete(db)
-        connection_config.delete(db)
-
     def test_instantiate_connection_from_template(
         self, db, generate_auth_header, api_client, base_url
     ):
@@ -605,12 +568,6 @@ class TestInstantiateConnectionFromTemplate:
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.dataset is not None
-
-        saas_config_fides_key = connection_config.saas_config["fides_key"]
-        dataset_fides_key = dataset_config.fides_key
-        embedded_dataset_fides_key = dataset_config.dataset["fides_key"]
-
-        assert saas_config_fides_key == dataset_fides_key == embedded_dataset_fides_key
 
         dataset_config.delete(db)
         connection_config.delete(db)
