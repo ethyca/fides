@@ -49,7 +49,7 @@ FIDESCTL_ASCII_ART = """
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    healthcheck_url = server_url + API_PREFIX + "/health"
+    healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:

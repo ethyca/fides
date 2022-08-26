@@ -5,7 +5,8 @@ from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
-    "docker-compose",
+    "docker",
+    "compose",
     "-f",
     COMPOSE_FILE,
     "-f",

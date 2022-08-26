@@ -23,11 +23,11 @@ services:
       FIDESCTL__CLI__SERVER_PORT: "8080"
       FIDESCTL__DATABASE__SERVER: "fides-db"
       FIDESCTL_TEST_MODE: "True"
-      FIDESOPS__DEV_MODE: True
+      FIDESOPS__DEV_MODE: "True"
       FIDESOPS__LOG_PII: ${FIDESOPS__LOG_PII}
       FIDESOPS__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
       FIDESOPS__ROOT_USER__ANALYTICS_ID: "internal"
-      FIDESOPS__EXECUTION__WORKER_ENABLED: True
+      FIDESOPS__EXECUTION__WORKER_ENABLED: "True"
     volumes:
       - type: bind
         source: .

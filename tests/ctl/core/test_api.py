@@ -205,15 +205,15 @@ def test_api_ping(
         return database_health
 
     monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
-    response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
+    response = test_client.get(test_config.cli.server_url + "/health")
     assert response.status_code == expected_status_code
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("endpoint_name", ["organization", "health"])
+@pytest.mark.parametrize("endpoint_name", [f"{API_PREFIX}/organization", "/health"])
 def test_trailing_slash(test_config: FidesctlConfig, endpoint_name: str) -> None:
     """URLs both with and without a trailing slash should resolve and not 404"""
-    url = f"{test_config.cli.server_url}{API_PREFIX}/{endpoint_name}"
+    url = f"{test_config.cli.server_url}{endpoint_name}"
     response = requests.get(url)
     assert response.status_code == 200
     response = requests.get(f"{url}/")
