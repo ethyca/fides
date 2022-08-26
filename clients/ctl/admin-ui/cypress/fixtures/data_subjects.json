@@ -151,5 +151,15 @@
     "rights": null,
     "automated_decisions_or_profiling": null,
     "is_default": true
+  },
+  {
+    "fides_key": "custom",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom field",
+    "description": "Custom field for tests",
+    "rights": null,
+    "automated_decisions_or_profiling": null,
+    "is_default": false
   }
 ]

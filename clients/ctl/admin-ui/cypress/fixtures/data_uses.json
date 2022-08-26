@@ -320,5 +320,33 @@
     "legitimate_interest": false,
     "legitimate_interest_impact_assessment": null,
     "is_default": true
+  },
+  {
+    "fides_key": "custom",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom field",
+    "description": "Custom field for tests",
+    "parent_key": null,
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": false
+  },
+  {
+    "fides_key": "custom.foo",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom foo",
+    "description": "Custom foo for tests",
+    "parent_key": "custom",
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": false
   }
 ]
