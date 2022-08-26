@@ -20,11 +20,22 @@ export const transformTaxonomyEntityToNodes = (
     const thisLevelKey = thisLevelEntity.fides_key;
     return {
       value: thisLevelEntity.fides_key,
-      label: thisLevelEntity.name ?? thisLevelEntity.fides_key,
+      label:
+        thisLevelEntity.name === "" || thisLevelEntity.name == null
+          ? thisLevelEntity.fides_key
+          : thisLevelEntity.name,
       description: thisLevelEntity.description,
       children: transformTaxonomyEntityToNodes(entities, thisLevelKey),
       is_default: thisLevelEntity.is_default ?? false,
     };
   });
   return nodes;
+};
+
+export const parentKeyFromFidesKey = (fidesKey: string) => {
+  const split = fidesKey.split(".");
+  if (split.length === 1) {
+    return "";
+  }
+  return split.slice(0, split.length - 1).join(".");
 };

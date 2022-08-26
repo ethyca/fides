@@ -1,1 +1,1 @@
-export * from "./data-categories.slice";
+export * from "./taxonomy.slice";

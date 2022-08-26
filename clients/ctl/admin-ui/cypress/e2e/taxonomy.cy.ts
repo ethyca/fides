@@ -148,18 +148,20 @@ describe("Taxonomy management page", () => {
           "have.value",
           tabValue.description
         );
-        cy.getByTestId("input-parent_key").should(
-          "have.value",
-          tabValue.parentKey
-        );
-        cy.getByTestId("input-parent_key").should("be.disabled");
-        cy.getByTestId("update-btn").should("be.disabled");
+        if (tabValue.tab !== "Data Subjects") {
+          cy.getByTestId("input-parent_key").should(
+            "have.value",
+            tabValue.parentKey
+          );
+          cy.getByTestId("input-parent_key").should("be.disabled");
+        }
+        cy.getByTestId("submit-btn").should("be.disabled");
 
         // make an edit
         const addedText = "foo";
         cy.getByTestId("input-name").type(addedText);
-        cy.getByTestId("update-btn").should("be.enabled");
-        cy.getByTestId("update-btn").click();
+        cy.getByTestId("submit-btn").should("be.enabled");
+        cy.getByTestId("submit-btn").click();
         cy.wait(tabValue.request).then((interception) => {
           const { body } = interception.request;
           expect(body.name).to.eql(`${tabValue.name}${addedText}`);
@@ -207,7 +209,7 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("input-legitimate_interest_impact_assessment")
         .clear()
         .type("foo");
-      cy.getByTestId("update-btn").click();
+      cy.getByTestId("submit-btn").click();
       cy.wait("@putDataUse").then((interception) => {
         const { body } = interception.request;
         const expected = {
@@ -216,7 +218,6 @@ describe("Taxonomy management page", () => {
           description:
             "Provide, give, or make available the product, service, application or system.",
           is_default: true,
-          parent_key: null,
           legal_basis: "Legitimate Interests",
           special_category: "Vital Interests",
           recipients: ["marketing team", "dog shelter"],
@@ -260,7 +261,7 @@ describe("Taxonomy management page", () => {
 
       // trigger a PUT
       cy.getByTestId("input-name").clear().type("foo");
-      cy.getByTestId("update-btn").click();
+      cy.getByTestId("submit-btn").click();
       cy.wait("@putDataSubject").then((interception) => {
         const { body } = interception.request;
         const expected = {
@@ -298,11 +299,137 @@ describe("Taxonomy management page", () => {
 
       const addedText = "foo";
       cy.getByTestId("input-name").type(addedText);
-      cy.getByTestId("update-btn").click();
+      cy.getByTestId("submit-btn").click();
 
       cy.wait("@putDataCategoryError");
       cy.getByTestId("toast-success-msg").should("not.exist");
       cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
+    });
+  });
+
+  describe("Can create data", () => {
+    beforeEach(() => {
+      cy.visit("/taxonomy");
+      const taxonomyPayload = {
+        statusCode: 200,
+        body: {
+          fides_key: "key",
+          organization_fides_key: "default_organization",
+          name: "name",
+          description: "description",
+          parent_key: undefined,
+        },
+      };
+      cy.intercept("POST", "/api/v1/data_category*", taxonomyPayload).as(
+        "postDataCategory"
+      );
+      cy.intercept("POST", "/api/v1/data_use*", taxonomyPayload).as(
+        "postDataUse"
+      );
+      cy.intercept("POST", "/api/v1/data_subject*", taxonomyPayload).as(
+        "postDataSubject"
+      );
+      cy.intercept("POST", "/api/v1/data_qualifier*", taxonomyPayload).as(
+        "postDataQualifier"
+      );
+    });
+
+    it("Can open a create form for each taxonomy entity", () => {
+      const expectedTabValues = [
+        {
+          tab: "Data Categories",
+          name: "Data category",
+          request: "@postDataCategory",
+        },
+        {
+          tab: "Data Uses",
+          name: "Data use",
+          request: "@postDataUse",
+        },
+        {
+          tab: "Data Subjects",
+          name: "Data subject",
+          request: "@postDataSubject",
+        },
+        {
+          tab: "Identifiability",
+          name: "Data qualifier",
+          request: "@postDataQualifier",
+        },
+      ];
+      expectedTabValues.forEach((tabValue) => {
+        cy.getByTestId(`tab-${tabValue.tab}`).click();
+        cy.getByTestId("add-taxonomy-btn").click();
+        cy.getByTestId("create-taxonomy-form");
+        cy.getByTestId("form-heading").should("contain", tabValue.name);
+
+        // add a root value
+        cy.getByTestId("input-fides_key").type("foo");
+        if (tabValue.tab !== "Data Subjects") {
+          cy.getByTestId("input-parent_key").should("have.value", "");
+        }
+        cy.getByTestId("submit-btn").click();
+        cy.wait(tabValue.request).then((interception) => {
+          const { body } = interception.request;
+          expect(body.fides_key).to.eql("foo");
+          expect(body.parent_key).to.equal(undefined);
+          expect(body.is_default).to.equal(false);
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+
+        // add a child value
+        cy.getByTestId("add-taxonomy-btn").click();
+        cy.getByTestId("input-fides_key").type("foo.bar.baz");
+        if (tabValue.tab !== "Data Subjects") {
+          cy.getByTestId("input-parent_key").should("have.value", "foo.bar");
+        }
+        cy.getByTestId("submit-btn").click();
+        cy.wait(tabValue.request).then((interception) => {
+          const { body } = interception.request;
+          expect(body.fides_key).to.eql("foo.bar.baz");
+          expect(body.parent_key).to.equal("foo.bar");
+          expect(body.is_default).to.equal(false);
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+      });
+    });
+
+    it("Can trigger an error", () => {
+      const errorMsg = "Internal Server Error";
+      cy.intercept("POST", "/api/v1/data_category*", {
+        statusCode: 500,
+        body: errorMsg,
+      }).as("postDataCategoryError");
+
+      cy.getByTestId(`tab-Data Categories`).click();
+      cy.getByTestId("add-taxonomy-btn").click();
+
+      cy.getByTestId("input-fides_key").type("foo");
+      cy.getByTestId("submit-btn").click();
+
+      cy.wait("@postDataCategoryError");
+      cy.getByTestId("toast-success-msg").should("not.exist");
+      cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
+    });
+
+    it("Will only show either the add or the edit form", () => {
+      cy.getByTestId(`tab-Data Categories`).click();
+      const openEditForm = () => {
+        cy.getByTestId("accordion-item-System Data").trigger("mouseover");
+        cy.getByTestId("edit-btn").click();
+      };
+      const openCreateForm = () => {
+        cy.getByTestId("add-taxonomy-btn").click();
+      };
+      openEditForm();
+      cy.getByTestId("edit-taxonomy-form");
+      cy.getByTestId("create-taxonomy-form").should("not.exist");
+      openCreateForm();
+      cy.getByTestId("edit-taxonomy-form").should("not.exist");
+      cy.getByTestId("create-taxonomy-form");
+      openEditForm();
+      cy.getByTestId("edit-taxonomy-form");
+      cy.getByTestId("create-taxonomy-form").should("not.exist");
     });
   });
 
@@ -344,25 +471,19 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("accordion-item-User Data").trigger("mouseover");
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn");
     });
 
     it("Can delete a data category", () => {
       cy.getByTestId(`tab-Data Categories`).click();
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataCategory").then((interception) => {
         const { url } = interception.request;
-        expect(url).to.contain("user.provided.nonidentifiable");
+        expect(url).to.contain("user.biometric");
       });
       cy.getByTestId("toast-success-msg");
     });
@@ -416,10 +537,7 @@ describe("Taxonomy management page", () => {
       }).as("deleteDataCategoryError");
       cy.getByTestId(`tab-Data Categories`).click();
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataCategoryError");

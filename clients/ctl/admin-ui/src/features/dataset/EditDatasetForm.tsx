@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import { COUNTRY_OPTIONS } from "~/features/common/countries";
-import { selectDataCategories } from "~/features/taxonomy/data-categories.slice";
+import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { Dataset } from "~/types/api";
 
 import {

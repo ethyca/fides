@@ -6,8 +6,9 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import AccordionTree from "~/features/common/AccordionTree";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -18,6 +19,7 @@ import { isErrorResult } from "~/types/errors";
 import ActionButtons from "./ActionButtons";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 import { TaxonomyHookData } from "./hooks";
+import { selectIsAddFormOpen, setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyFormBase from "./TaxonomyFormBase";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
@@ -25,11 +27,20 @@ interface Props {
   useTaxonomy: () => TaxonomyHookData<TaxonomyEntity>;
 }
 
+const DEFAULT_INITIAL_VALUES: TaxonomyEntity = {
+  fides_key: "",
+  parent_key: "",
+  name: "",
+  description: "",
+};
+
 const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
+  const dispatch = useAppDispatch();
   const {
     isLoading,
     data,
     labels,
+    handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
     extraFormFields,
@@ -43,6 +54,20 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+
+  const isAdding = useAppSelector(selectIsAddFormOpen);
+
+  useEffect(() => {
+    // prevent both the add and edit forms being opened at once
+    if (isAdding) {
+      setEditEntity(null);
+    }
+  }, [isAdding]);
+
+  const closeAddForm = () => {
+    dispatch(setIsAddFormOpen(false));
+  };
+
   const [deleteKey, setDeleteKey] = useState<string | null>(null);
 
   const {
@@ -66,6 +91,9 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   const taxonomyType = labels.fides_key.toLocaleLowerCase();
 
   const handleSetEditEntity = (node: TreeNode) => {
+    if (isAdding) {
+      closeAddForm();
+    }
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
     setEditEntity(entity);
   };
@@ -105,11 +133,21 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
         {editEntity ? (
           <TaxonomyFormBase
             labels={labels}
-            entity={editEntity}
             onCancel={() => setEditEntity(null)}
-            onEdit={handleEdit}
+            onSubmit={handleEdit}
             extraFormFields={extraFormFields}
             initialValues={transformEntityToInitialValues(editEntity)}
+          />
+        ) : null}
+        {isAdding ? (
+          <TaxonomyFormBase
+            labels={labels}
+            onCancel={closeAddForm}
+            onSubmit={createEntity}
+            extraFormFields={extraFormFields}
+            initialValues={transformEntityToInitialValues(
+              DEFAULT_INITIAL_VALUES
+            )}
           />
         ) : null}
       </SimpleGrid>
