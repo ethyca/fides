@@ -6,7 +6,8 @@
     "name": "Anonymous User",
     "description": "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "citizen_voter",
@@ -18,7 +19,8 @@
       "strategy": "INCLUDE",
       "values": ["Informed", "Access", "Rectification", "Erasure", "Object"]
     },
-    "automated_decisions_or_profiling": true
+    "automated_decisions_or_profiling": true,
+    "is_default": true
   },
   {
     "fides_key": "commuter",
@@ -27,7 +29,8 @@
     "name": "Commuter",
     "description": "An individual that is traveling or transiting in the context of location tracking.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "consultant",
@@ -36,7 +39,8 @@
     "name": "Consultant",
     "description": "An individual employed in a consultative/temporary capacity by the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "customer",
@@ -45,7 +49,8 @@
     "name": "Customer",
     "description": "An individual or other organization that purchases goods or services from the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "employee",
@@ -54,7 +59,8 @@
     "name": "Employee",
     "description": "An individual employed by the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "job_applicant",
@@ -63,7 +69,8 @@
     "name": "Job Applicant",
     "description": "An individual applying for employment to the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "next_of_kin",
@@ -72,7 +79,8 @@
     "name": "Next of Kin",
     "description": "A relative of any other individual subject where such a relationship is known.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "passenger",
@@ -81,7 +89,8 @@
     "name": "Passenger",
     "description": "An individual traveling on some means of provided transport.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "patient",
@@ -90,7 +99,8 @@
     "name": "Patient",
     "description": "An individual identified for the purposes of any medical care.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "prospect",
@@ -99,7 +109,8 @@
     "name": "Prospect",
     "description": "An individual or organization to whom an organization is selling goods or services.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "shareholder",
@@ -108,7 +119,8 @@
     "name": "Shareholder",
     "description": "An individual or organization that holds equity in the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "supplier_vendor",
@@ -117,7 +129,8 @@
     "name": "Supplier/Vendor",
     "description": "An individual or organization that provides services or goods to the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "trainee",
@@ -126,7 +139,8 @@
     "name": "Trainee",
     "description": "An individual undergoing training by the organization.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   },
   {
     "fides_key": "visitor",
@@ -135,6 +149,7 @@
     "name": "Visitor",
     "description": "An individual visiting a location.",
     "rights": null,
-    "automated_decisions_or_profiling": null
+    "automated_decisions_or_profiling": null,
+    "is_default": true
   }
 ]
