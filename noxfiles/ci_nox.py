@@ -220,7 +220,6 @@ def pytest_external(session: nox.Session) -> None:
         CI_ARGS,
         IMAGE_NAME,
         "pytest",
-        "-x",
         "-m",
         "external",
         "tests/ctl",
