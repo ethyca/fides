@@ -12,8 +12,6 @@ services:
     depends_on:
       fides-db:
         condition: service_healthy
-      redis:
-        condition: service_started
       worker:
         condition: service_started
     expose:

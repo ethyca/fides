@@ -20,7 +20,6 @@ def dev(session: nox.Session) -> None:
     build(session, "ui")
     session.notify("teardown")
 
-    service = "fidesops" if "fidesops" in session.posargs else "fides"
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
@@ -28,14 +27,10 @@ def dev(session: nox.Session) -> None:
     open_shell = "shell" in session.posargs
     if not datastores:
         if open_shell:
-            if service == "fidesops":
-                session.run(*START_APP_OPS, external=True)
-                session.run(*RUN_OPS, "/bin/bash", external=True)
-            else:
-                session.run(*START_APP_UI, external=True)
-                session.run(*RUN, "/bin/bash", external=True)
+            session.run(*START_APP_UI, external=True)
+            session.run(*RUN, "/bin/bash", external=True)
         else:
-            session.run("docker", "compose", "up", service, external=True)
+            session.run("docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True)
     else:
         # Run the webserver with additional datastores
         run_infrastructure(
