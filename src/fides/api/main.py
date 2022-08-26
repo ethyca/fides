@@ -28,7 +28,10 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.deps import get_db, verify_oauth_client
+from fides.api.ctl.deps import (
+    get_db as get_ctl_db,
+    verify_oauth_client as verify_ctl_oauth_client,
+)
 from fides.api.ctl.routes import (
     admin,
     crud,
@@ -113,9 +116,9 @@ def configure_routes() -> None:
 
 # Configure the routes here so we can generate the openapi json file
 configure_routes()
-app.dependency_overrides[lib_get_config] = get_config
-app.dependency_overrides[lib_get_db] = get_db
-app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
+app.dependency_overrides[lib_get_config] = get_ctl_config
+app.dependency_overrides[lib_get_db] = get_ctl_db
+app.dependency_overrides[lib_verify_oauth_client] = verify_ctl_oauth_client
 
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
@@ -130,6 +133,8 @@ async def setup_server() -> None:
             "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
         )
         ops_config.log_all_config_values()
+
+    await configure_db(CONFIG.database.sync_database_uri)
 
     logger.info("Validating SaaS connector templates...")
     load_registry(registry_file)
@@ -159,7 +164,7 @@ async def setup_server() -> None:
 
     if not ops_config.execution.worker_enabled:
         logger.info("Starting worker...")
-        subprocess.Popen(["fidesops", "worker"])  # pylint: disable=consider-using-with
+        subprocess.Popen(["fides", "worker"])  # pylint: disable=consider-using-with
 
     setup_logging(
         CONFIG.logging.level,
@@ -172,7 +177,7 @@ async def setup_server() -> None:
 
 @app.middleware("http")
 async def log_request(request: Request, call_next: Callable) -> Response:
-    "Log basic information about every request handled by the server."
+    """Log basic information about every request handled by the server."""
     start = datetime.now()
     response = await call_next(request)
     handler_time = datetime.now() - start
