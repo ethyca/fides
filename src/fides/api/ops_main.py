@@ -83,7 +83,7 @@ def prepare_and_log_request(
 def start_webserver() -> None:
     """Run any pending DB migrations and start the webserver."""
     uvicorn.run(
-        "fides.api.ops_main:app",
+        "fides.api.main:app",
         host="0.0.0.0",
         port=config.port,
         log_config=None,

@@ -380,7 +380,7 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fides.api.ops_main.prepare_and_log_request")
+    @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -402,7 +402,7 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fides.api.ops_main.prepare_and_log_request")
+    @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
         mocked_prepare_and_log_request,
