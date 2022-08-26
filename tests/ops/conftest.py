@@ -19,8 +19,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ctl.database.database import get_alembic_config, upgrade_db
-from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config as get_ctl_config
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
@@ -28,6 +26,8 @@ from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops_main import app
+from fides.ctl.core.api import db_action
+from fides.ctl.core.config import get_config as get_ctl_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *

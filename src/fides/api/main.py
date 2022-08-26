@@ -2,17 +2,12 @@
 Contains the code that sets up the API.
 """
 import logging
-import os
-import re
 import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
-from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Callable
 
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request, Response, status
-from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
@@ -21,17 +16,13 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
-from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
-from starlette.status import HTTP_404_NOT_FOUND
 from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.deps import (
-    get_db as get_ctl_db,
-    verify_oauth_client as verify_ctl_oauth_client,
-)
+from fides.api.ctl.deps import get_db as get_ctl_db
+from fides.api.ctl.deps import verify_oauth_client as verify_ctl_oauth_client
 from fides.api.ctl.routes import (
     admin,
     crud,
@@ -45,30 +36,22 @@ from fides.api.ctl.routes import (
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
 from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.api.ops.analytics import (
-    accessed_through_local_host,
-    in_docker_container,
-    send_analytics_event,
-)
-from fides.api.ops.api.deps import get_config, get_db
+from fides.api.ops.analytics import in_docker_container, send_analytics_event
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
 from fides.api.ops.core.config import config as ops_config
-from fides.api.ops.schemas.analytics import Event, ExtraData
+from fides.api.ops.schemas.analytics import Event
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesctlConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 

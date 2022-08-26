@@ -9,7 +9,6 @@ from fides.api.ctl.database.database import get_db_health
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.common_exceptions import RedisConnectionError
 from fides.api.ops.core.config import config as ops_config
-from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import FidesctlConfig, get_config
