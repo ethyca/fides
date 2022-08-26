@@ -41,18 +41,15 @@ describe("Taxonomy management page", () => {
 
     it("Can open up accordion to see taxonomy entities", () => {
       // should only see the 3 root level taxonomy
-      cy.getByTestId("accordion-item-Account Data").should("be.visible");
       cy.getByTestId("accordion-item-System Data").should("be.visible");
       cy.getByTestId("accordion-item-User Data").should("be.visible");
       cy.getByTestId("accordion-item-Payment Data").should("not.be.visible");
 
       // clicking should open up accordions to render more items visible
-      cy.getByTestId("accordion-item-Account Data").click();
-      cy.getByTestId("accordion-item-Payment Data").should("be.visible");
-      cy.getByTestId("accordion-item-Payment Data").click();
-      cy.getByTestId("item-Account Payment Financial Account Number").should(
-        "be.visible"
-      );
+      cy.getByTestId("accordion-item-User Data").click();
+      cy.getByTestId("accordion-item-Credentials").should("be.visible");
+      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("item-Password").should("be.visible");
     });
 
     it("Can render accordion elements on flat structures", () => {
@@ -63,7 +60,7 @@ describe("Taxonomy management page", () => {
 
     it("Can render action buttons on hover", () => {
       cy.getByTestId("action-btns").should("not.exist");
-      cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
+      cy.getByTestId("accordion-item-System Data").trigger("mouseover");
       cy.getByTestId("action-btns").should("exist");
     });
   });
@@ -99,9 +96,9 @@ describe("Taxonomy management page", () => {
       const expectedTabValues = [
         {
           tab: "Data Categories",
-          name: "Account Data",
-          key: "account",
-          description: "Data related to a system account.",
+          name: "System Data",
+          key: "system",
+          description: "Data unique to, and under control of the system.",
           parentKey: "",
           isParent: true,
           request: "@putDataCategory",
@@ -175,15 +172,13 @@ describe("Taxonomy management page", () => {
 
     it("Can render the parent field", () => {
       cy.getByTestId("tab-Data Categories").click();
-      cy.getByTestId(`accordion-item-Account Data`).click();
-      cy.getByTestId("accordion-item-Payment Data").click();
-      cy.getByTestId("item-Account Payment Financial Account Number").trigger(
-        "mouseover"
-      );
+      cy.getByTestId(`accordion-item-User Data`).click();
+      cy.getByTestId("accordion-item-Credentials").click();
+      cy.getByTestId("item-Password").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-parent_key").should(
         "have.value",
-        "account.payment"
+        "user.credentials"
       );
     });
 
@@ -222,7 +217,7 @@ describe("Taxonomy management page", () => {
           name: "Provide the capability",
           description:
             "Provide, give, or make available the product, service, application or system.",
-          is_default: false,
+          is_default: true,
           legal_basis: "Legitimate Interests",
           special_category: "Vital Interests",
           recipients: ["marketing team", "dog shelter"],
@@ -274,7 +269,7 @@ describe("Taxonomy management page", () => {
           description:
             "An individual registered to voter with a state or authority.",
           fides_key: "citizen_voter",
-          is_default: false,
+          is_default: true,
           name: "foo",
           rights: {
             values: rightValues,
@@ -299,7 +294,7 @@ describe("Taxonomy management page", () => {
       }).as("putDataCategoryError");
 
       cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
+      cy.getByTestId("accordion-item-System Data").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
 
       const addedText = "foo";
@@ -420,7 +415,7 @@ describe("Taxonomy management page", () => {
     it("Will only show either the add or the edit form", () => {
       cy.getByTestId(`tab-Data Categories`).click();
       const openEditForm = () => {
-        cy.getByTestId("accordion-item-Account Data").trigger("mouseover");
+        cy.getByTestId("accordion-item-System Data").trigger("mouseover");
         cy.getByTestId("edit-btn").click();
       };
       const openCreateForm = () => {
@@ -476,25 +471,19 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("accordion-item-User Data").trigger("mouseover");
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn");
     });
 
     it("Can delete a data category", () => {
       cy.getByTestId(`tab-Data Categories`).click();
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataCategory").then((interception) => {
         const { url } = interception.request;
-        expect(url).to.contain("user.provided.nonidentifiable");
+        expect(url).to.contain("user.biometric");
       });
       cy.getByTestId("toast-success-msg");
     });
@@ -548,10 +537,7 @@ describe("Taxonomy management page", () => {
       }).as("deleteDataCategoryError");
       cy.getByTestId(`tab-Data Categories`).click();
       cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-User Provided Data").click();
-      cy.getByTestId("item-User Provided Non-Identifiable Data").trigger(
-        "mouseover"
-      );
+      cy.getByTestId("item-Biometric Data").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataCategoryError");
