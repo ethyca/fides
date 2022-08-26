@@ -27,10 +27,6 @@ The types of changes are:
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 
 
-### Fixed
-* Accounts for integer "instance_fides_keys" when creating a saas connector from a template [#1166](https://github.com/ethyca/fidesops/pull/1166)
-
-
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
 ### Added
