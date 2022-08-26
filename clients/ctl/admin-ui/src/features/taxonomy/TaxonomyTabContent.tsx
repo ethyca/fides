@@ -2,6 +2,7 @@ import {
   Center,
   SimpleGrid,
   Spinner,
+  Tag,
   Text,
   useDisclosure,
   useToast,
@@ -22,6 +23,20 @@ import { TaxonomyHookData } from "./hooks";
 import { selectIsAddFormOpen, setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyFormBase from "./TaxonomyFormBase";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
+
+const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
+  const { is_default: isDefault } = node;
+  return !isDefault ? (
+    <Tag
+      backgroundColor="gray.500"
+      color="white"
+      size="sm"
+      height="fit-content"
+    >
+      Custom
+    </Tag>
+  ) : null;
+};
 
 interface Props {
   useTaxonomy: () => TaxonomyHookData<TaxonomyEntity>;
@@ -129,6 +144,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
               node={node as TaxonomyEntityNode}
             />
           )}
+          renderTag={(node) => <CustomTag node={node as TaxonomyEntityNode} />}
         />
         {editEntity ? (
           <TaxonomyFormBase

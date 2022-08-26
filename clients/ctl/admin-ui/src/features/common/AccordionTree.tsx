@@ -16,8 +16,14 @@ interface Props {
   nodes: TreeNode[];
   focusedKey?: string;
   renderHover?: (node: TreeNode) => React.ReactNode;
+  renderTag?: (node: TreeNode) => React.ReactNode;
 }
-const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
+const AccordionTree = ({
+  nodes,
+  focusedKey,
+  renderHover,
+  renderTag,
+}: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -47,12 +53,16 @@ const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
     if (node.children.length === 0) {
       return (
         <Box py={2} {...itemProps} data-testid={`item-${node.label}`}>
-          <Text
-            pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
-            color={isFocused ? "complimentary.500" : undefined}
-          >
-            {node.label}
-          </Text>
+          <Box display="flex" alignItems="center">
+            <Text
+              pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
+              color={isFocused ? "complimentary.500" : undefined}
+              mr={2}
+            >
+              {node.label}
+            </Text>
+            {renderTag ? renderTag(node) : null}
+          </Box>
           {hoverContent}
         </Box>
       );
@@ -71,7 +81,8 @@ const AccordionTree = ({ nodes, focusedKey, renderHover }: Props) => {
             color={isFocused ? "complimentary.500" : undefined}
           >
             <AccordionIcon />
-            {node.label}
+            <Text mr={2}>{node.label}</Text>
+            {renderTag ? renderTag(node) : null}
           </AccordionButton>
           {hoverContent}
         </Box>
