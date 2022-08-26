@@ -11,9 +11,7 @@ from constants_nox import (
     INTEGRATION_COMPOSE_FILE,
     RUN,
     RUN_NO_DEPS,
-    RUN_OPS_NO_DEPS,
     START_APP,
-    START_APP_OPS,
     WITH_TEST_CONFIG,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
@@ -105,7 +103,7 @@ def xenon(session: nox.Session) -> None:
         "--max-modules B",
         "--max-average A",
         "--ignore 'data, docs'",
-        "--exclude src/fidesops/_version.py",
+        "--exclude src/fides/_version.py",
     )
     session.run(*command)
 
@@ -176,9 +174,9 @@ def pytest(session: nox.Session, mark: str) -> None:
 def pytest_unit(session: nox.Session) -> None:
     """Runs fidesops unit tests."""
     session.notify("teardown")
-    session.run(*START_APP_OPS, external=True)
+    session.run(*START_APP, external=True)
     run_command = (
-        *RUN_OPS_NO_DEPS,
+        *RUN_NO_DEPS,
         "pytest",
         OPS_TEST_DIR,
         "-m",

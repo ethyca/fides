@@ -13,7 +13,7 @@ def test_config_from_default() -> None:
     "Test building a config from default local TOML"
     config = get_config(FidesopsConfig, file_names=["fidesops.toml"])
 
-    assert config.database.server == "db"
+    assert config.database.server == "fides-db"
     assert config.redis.host == "redis"
     assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 

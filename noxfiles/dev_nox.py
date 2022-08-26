@@ -5,8 +5,6 @@ from constants_nox import (
     ANALYTICS_OPT_OUT,
     COMPOSE_SERVICE_NAME,
     RUN,
-    RUN_OPS,
-    START_APP_OPS,
     START_APP_UI,
 )
 from docker_nox import build
