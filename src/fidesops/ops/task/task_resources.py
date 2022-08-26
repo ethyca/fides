@@ -16,6 +16,7 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
+    EmailConnector,
     ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -72,6 +73,8 @@ class Connections:
             return SaaSConnector(connection_config)
         if connection_config.connection_type == ConnectionType.manual:
             return ManualConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.email:
+            return EmailConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
