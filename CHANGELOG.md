@@ -25,6 +25,10 @@ The types of changes are:
 ### Added
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 
+### Fixed
+* Accounts for integer "instance_fides_keys" when creating a saas connector from a template [#1166](https://github.com/ethyca/fidesops/pull/1166)
+
+
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
 ### Added
