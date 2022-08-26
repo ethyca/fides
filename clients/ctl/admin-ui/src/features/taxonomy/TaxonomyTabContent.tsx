@@ -147,7 +147,6 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             initialValues={transformEntityToInitialValues(
               DEFAULT_INITIAL_VALUES
             )}
-            isCreate
           />
         ) : null}
       </SimpleGrid>

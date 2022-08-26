@@ -32,21 +32,20 @@ interface Props {
   onSubmit: (entity: TaxonomyEntity) => RTKResult<TaxonomyEntity>;
   extraFormFields?: ReactNode;
   initialValues: FormValues;
-  isCreate?: boolean;
 }
-const EditTaxonomyForm = ({
+const TaxonomyFormBase = ({
   labels,
   onCancel,
   onSubmit,
   extraFormFields,
   initialValues,
-  isCreate = false,
 }: Props) => {
   const toast = useToast();
   const [formError, setFormError] = useState<string | null>(null);
   const ValidationSchema = Yup.object().shape({
     fides_key: Yup.string().required().label(labels.fides_key),
   });
+  const isCreate = initialValues.fides_key === "";
 
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error);
@@ -174,4 +173,4 @@ const EditTaxonomyForm = ({
   );
 };
 
-export default EditTaxonomyForm;
+export default TaxonomyFormBase;
