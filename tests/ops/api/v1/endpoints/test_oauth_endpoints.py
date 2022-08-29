@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
+from fides.ctl.core.api import get
 
 import pytest
 from fideslib.cryptography.schemas.jwt import (
@@ -35,6 +36,9 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.common_exceptions import OAuth2TokenException
 from fides.api.ops.core.config import config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.ctl.core.config import get_config
+
+CTL_CONFIG = get_config()
 
 
 class TestCreateClient:

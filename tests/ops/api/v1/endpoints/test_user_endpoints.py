@@ -44,9 +44,11 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from tests.ops.conftest import generate_auth_header_for_user
 
 page_size = Params().size
+CTL_CONFIG = get_config()
 
 
 class TestCreateUser:
@@ -60,6 +62,7 @@ class TestCreateUser:
 
     def test_create_user_wrong_scope(self, url, api_client, generate_auth_header):
         auth_header = generate_auth_header([STORAGE_READ])
+        print(auth_header)
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
@@ -242,7 +245,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -297,7 +300,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -692,7 +695,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, config.security.app_encryption_key)
+            extract_payload(token, CTL_CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
         assert token_data["scopes"] == [
@@ -733,7 +736,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, config.security.app_encryption_key)
+            extract_payload(token, CTL_CONFIG.security.app_encryption_key)
         )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
@@ -761,7 +764,7 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -793,7 +796,7 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code

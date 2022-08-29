@@ -16,9 +16,7 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fides.api.ctl.database.database import get_alembic_config, upgrade_db
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.core.config import config
@@ -154,7 +152,7 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
 
 
@@ -172,7 +170,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt

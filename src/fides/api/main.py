@@ -23,7 +23,7 @@ from uvicorn import Config, Server
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.deps import get_db as get_ctl_db
-from fides.api.ctl.deps import verify_oauth_client as verify_ctl_oauth_client
+from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ctl.routes import (
     admin,
     crud,
@@ -172,7 +172,7 @@ def configure_routes() -> None:
 configure_routes()
 app.dependency_overrides[lib_get_config] = get_ctl_config
 app.dependency_overrides[lib_get_db] = get_ctl_db
-app.dependency_overrides[lib_verify_oauth_client] = verify_ctl_oauth_client
+app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)

@@ -10,6 +10,9 @@ from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 
 from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
+
+CTL_CONFIG = get_config()
 
 
 def test_jwe_create_and_extract() -> None:
