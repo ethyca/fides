@@ -67,7 +67,7 @@ def run_infrastructure(
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(
-        f"docker-compose {path} up {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)} -d"
+        f"docker compose {path} up -d {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
     )
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
@@ -120,7 +120,7 @@ def seed_initial_data(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
             )
             _run_cmd_or_err(
-                f'docker-compose {path} run {service_name} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
+                f'docker compose {path} run {service_name} python {setup_path} || echo "no custom setup logic found for {datastore}, skipping"'
             )
 
 
@@ -158,8 +158,8 @@ def _run_quickstart(
     Invokes the Fidesops command line quickstart
     """
     _run_cmd_or_err('echo "Running the quickstart..."')
-    _run_cmd_or_err(f"docker-compose {path} up -d")
-    _run_cmd_or_err(f"docker-compose run {service_name} python scripts/quickstart.py")
+    _run_cmd_or_err(f"docker compose {path} up -d")
+    _run_cmd_or_err(f"docker compose run {service_name} python scripts/quickstart.py")
 
 
 def _run_create_test_data(
@@ -170,9 +170,9 @@ def _run_create_test_data(
     Invokes the Fidesops create_user_and_client command
     """
     _run_cmd_or_err('echo "Running create test data..."')
-    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(f"docker compose {path} up -d")
     _run_cmd_or_err(
-        f"docker-compose run {service_name} python scripts/create_test_data.py"
+        f"docker compose run {service_name} python scripts/create_test_data.py"
     )
 
 
@@ -184,7 +184,7 @@ def _open_shell(
     Opens a bash shell on the container at `service_name`
     """
     _run_cmd_or_err(f'echo "Opening bash shell on {service_name}"')
-    _run_cmd_or_err(f"docker-compose {path} run {service_name} /bin/bash")
+    _run_cmd_or_err(f"docker compose {path} run {service_name} /bin/bash")
 
 
 def _run_application(docker_compose_path: str) -> None:
@@ -192,7 +192,7 @@ def _run_application(docker_compose_path: str) -> None:
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
     _run_cmd_or_err('echo "Running application"')
-    _run_cmd_or_err(f"docker-compose {docker_compose_path} up")
+    _run_cmd_or_err(f"docker compose {docker_compose_path} up")
 
 
 def _run_tests(
@@ -237,11 +237,11 @@ def _run_tests(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
     )
     _run_cmd_or_err(
-        f"docker-compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {pytest_path}"
     )
 
     # Now tear down the infrastructure
-    _run_cmd_or_err(f"docker-compose {docker_compose_path} down --remove-orphans")
+    _run_cmd_or_err(f"docker compose {docker_compose_path} down --remove-orphans")
     _run_cmd_or_err('echo "fin."')
 
 
