@@ -1,20 +1,23 @@
-Fidesops' SaaS configuration supports authentication via `oauth2`. For more authentication options, see the [config guide](./saas_config.md#client-config).
+SaaS connectors support two OAuth2 flows:
 
-!!! Tip "Fidesops currently supports the [Authorization Code](https://oauth.net/2/grant-types/authorization-code/) flow, with additional methods planned for the future."
+- [Authorization Code](https://oauth.net/2/grant-types/authorization-code/): `oauth2_authorization_code`
+- [Client Credentials](https://oauth.net/2/grant-types/client-credentials/): `oauth2_client_credentials`
 
-This authentication strategy has the following configuration values:
+This Authentication Code flow has the following configuration values:
 
 - `authorization_request`: The request to build the URL that is presented to the user to authenticate this connection.
 - `token_request`: The request made to retrieve the access token after the authorization code is returned via the `/oauth/callback` endpoint.
 - `refresh_request` (_optional_): The request to refresh an access token.
 - `expires_in` (_optional_): The lifetime of an access token (in seconds). This is used if the OAuth2 workflow in use does not provide expiration information ([RFC 6749 Section 5.1](https://datatracker.ietf.org/doc/html/rfc6749#section-5.1)).
 
+The Client Credential flow has all these values except for `authorization_request` since it is not required for this flow.
+
 ## Sample Configuration
 Each OAuth2 request is fully configurable to account for the different ways the parameters can be mapped to a request. The following examples demonstrate the requests generated from sample configuration files.
  
-```yaml title="OAuth2 authentication strategy"
+```yaml title="OAuth2 Authorization Code example"
 authentication:
-  strategy: oauth2
+  strategy: oauth2_authorization_code
   configuration:
     authorization_request:
       ...
@@ -110,7 +113,7 @@ This is called automatically when the `access_token` is about to expire. The exp
 
 ```yaml
 authentication:
-  strategy: oauth2
+  strategy: oauth2_authorization_code
   configuration:
     expires_in: 3600
     authorization_request:
@@ -124,17 +127,20 @@ authentication:
 ## Usage Checklist
 To use OAuth2 as a connection strategy, the following must be configured first:
 
-#### One-time configuration
-- A callback server or network rules are required to forward the callback response from the SaaS providers to an instance of Fidesops. This is dependent on the user environment where Fidesops is deployed, and is out of scope for this documentation.
-- These incoming requests must be routed to `https://{{host}}/api/v1/oauth/callback`.
-
-#### Per-connector configuration
+### For All OAuth2 Flows
+#### Per-connector Configuration
 - Fidesops must be able to connect to the SaaS provider (Outreach, Salesforce, etc.).
 - A **Client ID** and **Client Secret** must be generated within the SaaS provider’s admin console.
     - This is dependent on the individual SaaS provider. Refer to the provider's documentation.
-- The **Redirect URI** must be registered within the SaaS provider's admin console.
 - The connector using OAuth2 is configured using the steps for [how to configure a SaaS connector](../saas_connectors/#how-to-configure-a-saas-connector).
+### Additional Steps for Authentication Code Flow
+#### One-time Configuration
+- A callback server or network rules are required to forward the callback response from the SaaS providers to an instance of Fidesops. This is dependent on the user environment where Fidesops is deployed, and is out of scope for this documentation.
+- These incoming requests must be routed to `https://{{host}}/api/v1/oauth/callback`.
+
+#### Per-connector Configuration
+- The **Redirect URI** must be registered within the SaaS provider's admin console.
 - The OAuth2 workflow is initialized by following the URL returned from `https://{{domain}}/api/v1/connection/{{connection_key}}/authorize`.
 
-## OAuth2 Workflow Diagram
+## OAuth2 Authentication Code Flow Diagram
 ![OAuth2 Workflow](../img/oauth2_workflow.png "OAuth2 Workflow")

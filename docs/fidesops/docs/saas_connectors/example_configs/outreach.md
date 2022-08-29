@@ -39,7 +39,7 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: oauth2
+      strategy: oauth2_authorization_code
       configuration:
         authorization_request:
           method: GET

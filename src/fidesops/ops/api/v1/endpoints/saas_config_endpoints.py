@@ -47,8 +47,8 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2 import (
-    OAuth2AuthenticationStrategy,
+from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
@@ -88,8 +88,8 @@ def verify_oauth_connection_config(
 ) -> None:
     """
     Verifies that the connection config is present and contains
-    the necessary configurations for OAuth2 authentication. Returns
-    an HTTPException with the appropriate error message indicating
+    the necessary configurations for OAuth2 Authorization Code authentication.
+    Returns an HTTPException with the appropriate error message indicating
     which configurations are missing or incorrect.
     """
 
@@ -113,10 +113,13 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+    if (
+        authentication.strategy
+        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
+    ):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The connection config does not use OAuth2 authentication.",
+            detail="The connection config does not use OAuth2 Authorization Code authentication.",
         )
 
 
@@ -259,7 +262,7 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)

@@ -33,6 +33,9 @@ The types of changes are:
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
+### Breaking Changes
+The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order to make a distinction between the newly introduced `oauth2_client_credentials` strategy [#1159](https://github.com/ethyca/fidesops/pull/1159)
+
 ### Added
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
