@@ -20,16 +20,14 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
 ### Docs
-
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
-
+* Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
 
 ## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
 
 ### Added
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
-
 
 ## [1.7.1](https://github.com/ethyca/fidesops/compare/1.7.0...1.7.1)
 
