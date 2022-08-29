@@ -458,7 +458,7 @@ class TestCallback:
         }
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state(
         self,
@@ -466,13 +466,13 @@ class TestCallback:
         db,
         api_client: TestClient,
         callback_url,
-        oauth2_connection_config,
+        oauth2_authorization_code_connection_config,
     ):
         get_access_token_mock.return_value = None
         authentication_request = AuthenticationRequest.create_or_update(
             db,
             data={
-                "connection_key": oauth2_connection_config.key,
+                "connection_key": oauth2_authorization_code_connection_config.key,
                 "state": "new_request",
             },
         )
@@ -485,7 +485,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_access_token"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state_with_token_error(
         self,
@@ -493,7 +493,7 @@ class TestCallback:
         db,
         api_client: TestClient,
         callback_url,
-        oauth2_connection_config,
+        oauth2_authorization_code_connection_config,
     ):
         get_access_token_mock.side_effect = OAuth2TokenException(
             "Unable to retrieve access token."
@@ -501,7 +501,7 @@ class TestCallback:
         authentication_request = AuthenticationRequest.create_or_update(
             db,
             data={
-                "connection_key": oauth2_connection_config.key,
+                "connection_key": oauth2_authorization_code_connection_config.key,
                 "state": "new_request",
             },
         )
