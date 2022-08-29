@@ -57,19 +57,18 @@ def run_infrastructure(
 
     # De-duplicate datastores
     datastores = list(set(datastores))
+    docker_datastores = [
+        f"{datastore}_example"
+        for datastore in datastores
+        if datastore in DOCKERFILE_DATASTORES
+    ]
 
     # Configure docker-compose path
     path: str = get_path_for_datastores(datastores)
 
-    _run_cmd_or_err(f'echo "infrastructure path: {path}"')
-    if "mssql" not in datastores:
-        _run_cmd_or_err(
-            f'docker-compose {path} build --build-arg SKIP_MSSQL_INSTALLATION="true"'
-        )
-    else:
-        _run_cmd_or_err(f"docker-compose {path} build")
-
-    _run_cmd_or_err(f"docker-compose {path} up -d")
+    _run_cmd_or_err(
+        f"docker-compose {path} up {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)} -d"
+    )
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
     print(f"Sleeping for: {wait} while infrastructure loads...")
