@@ -25,7 +25,7 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops_main import app
+from fides.api.main import app
 from fides.ctl.core.api import db_action
 from fides.ctl.core.config import get_config as get_ctl_config
 
