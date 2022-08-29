@@ -17,9 +17,11 @@ CTL_CONFIG = get_config()
 
 def test_jwe_create_and_extract() -> None:
     payload = {"hello": "hi there"}
-    jwt_string = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    jwt_string = generate_jwe(
+        json.dumps(payload), CTL_CONFIG.security.app_encryption_key
+    )
     payload_from_svc = json.loads(
-        extract_payload(jwt_string, config.security.app_encryption_key)
+        extract_payload(jwt_string, CTL_CONFIG.security.app_encryption_key)
     )
     assert payload_from_svc["hello"] == payload["hello"]
 
@@ -32,10 +34,12 @@ def test_token_expired(oauth_client):
     }
 
     # Create a token with a very old issued at date.
-    access_token = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    access_token = generate_jwe(
+        json.dumps(payload), CTL_CONFIG.security.app_encryption_key
+    )
 
     extracted = json.loads(
-        extract_payload(access_token, config.security.app_encryption_key)
+        extract_payload(access_token, CTL_CONFIG.security.app_encryption_key)
     )
     assert extracted[JWE_PAYLOAD_CLIENT_ID] == oauth_client.id
     issued_at = datetime.fromisoformat(extracted[JWE_ISSUED_AT])
@@ -48,10 +52,10 @@ def test_token_expired(oauth_client):
 
     # Create a token now
     access_token = oauth_client.create_access_code_jwe(
-        config.security.app_encryption_key
+        CTL_CONFIG.security.app_encryption_key
     )
     extracted = json.loads(
-        extract_payload(access_token, config.security.app_encryption_key)
+        extract_payload(access_token, CTL_CONFIG.security.app_encryption_key)
     )
     assert (
         is_token_expired(

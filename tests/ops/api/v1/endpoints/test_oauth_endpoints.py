@@ -64,7 +64,7 @@ class TestCreateClient:
         # Build auth header without client
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
 
         response = api_client.post(url, headers=auth_header)
@@ -80,7 +80,7 @@ class TestCreateClient:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
@@ -405,12 +405,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            == json.loads(extract_payload(jwt, CTL_CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            json.loads(extract_payload(jwt, CTL_CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == SCOPE_REGISTRY
@@ -433,12 +433,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            == json.loads(extract_payload(jwt, CTL_CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            json.loads(extract_payload(jwt, CTL_CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == []

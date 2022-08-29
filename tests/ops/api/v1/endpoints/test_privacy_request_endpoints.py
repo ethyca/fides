@@ -1654,7 +1654,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1694,7 +1694,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request_status_pending.id]}
@@ -1795,7 +1795,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1846,7 +1846,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
         }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
@@ -1902,7 +1902,8 @@ class TestResumePrivacyRequest:
         auth_header = {
             "Authorization": "Bearer "
             + generate_jwe(
-                json.dumps({"unexpected": "format"}), config.security.app_encryption_key
+                json.dumps({"unexpected": "format"}),
+                CTL_CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1930,7 +1931,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CTL_CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1954,7 +1955,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CTL_CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
