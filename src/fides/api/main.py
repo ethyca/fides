@@ -23,7 +23,6 @@ from uvicorn import Config, Server
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.deps import get_db as get_ctl_db
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ctl.routes import (
     admin,
     crud,
@@ -57,6 +56,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
+from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesctlConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 
