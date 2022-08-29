@@ -181,6 +181,7 @@ def pytest_unit(session: nox.Session) -> None:
         OPS_TEST_DIR,
         "-m",
         "not integration and not integration_external and not integration_saas",
+        "-x",
     )
     session.run(*run_command, external=True)
 

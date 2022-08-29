@@ -79,7 +79,8 @@ def db() -> Generator:
     )
 
     migrate_test_db()
-    scheduler.start()
+    if not scheduler.running:
+        scheduler.start()
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
     # Setup above...
@@ -90,7 +91,6 @@ def db() -> Generator:
     logger.debug("Dropping database at: %s", engine.url)
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
-    drop_database(engine.url)
     logger.debug("Database at: %s successfully dropped", engine.url)
 
 

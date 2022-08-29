@@ -58,7 +58,7 @@ EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "The security token included in the request is invalid.",
     "okta": "Invalid token provided",
-    "db": '(psycopg2.OperationalError) connection to server at "postgres-test" (172.18.0.3), port 5432 failed: FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
+    "db": '(psycopg2.OperationalError) connection to server at "postgres-test" (172.18.0.2), port 5432 failed: FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
     "bigquery": "Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
 }
 

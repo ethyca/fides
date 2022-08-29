@@ -5,7 +5,7 @@ import logging
 import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
-from typing import Callable
+from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
@@ -16,6 +16,7 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
+from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
@@ -36,7 +37,11 @@ from fides.api.ctl.routes import (
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
 from fides.api.ctl.utils.logger import setup as setup_logging
-from fides.api.ops.analytics import in_docker_container, send_analytics_event
+from fides.api.ops.analytics import (
+    accessed_through_local_host,
+    in_docker_container,
+    send_analytics_event,
+)
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
@@ -44,7 +49,7 @@ from fides.api.ops.common_exceptions import (
     RedisConnectionError,
 )
 from fides.api.ops.core.config import config as ops_config
-from fides.api.ops.schemas.analytics import Event
+from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
@@ -74,6 +79,72 @@ ROUTERS = (
         view.router,
     ]
 )
+
+
+@app.middleware("http")
+async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
+    """
+    HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
+    :param request: Request to fidesops api
+    :param call_next: Callable api endpoint
+    :return: Response
+    """
+    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
+    now: datetime = datetime.now(tz=timezone.utc)
+    endpoint = f"{request.method}: {request.url}"
+
+    try:
+        response = await call_next(request)
+        # HTTPExceptions are considered a handled err by default so are not thrown here.
+        # Accepted workaround is to inspect status code of response.
+        # More context- https://github.com/tiangolo/fastapi/issues/1840
+        response.background = BackgroundTask(
+            prepare_and_log_request,
+            endpoint,
+            request.url.hostname,
+            response.status_code,
+            now,
+            fides_source,
+            "HTTPException" if response.status_code >= 400 else None,
+        )
+        return response
+
+    except Exception as e:
+        prepare_and_log_request(
+            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
+        )
+        raise
+
+
+def prepare_and_log_request(
+    endpoint: str,
+    hostname: Optional[str],
+    status_code: int,
+    event_created_at: datetime,
+    fides_source: Optional[str],
+    error_class: Optional[str],
+) -> None:
+    """
+    Prepares and sends analytics event provided the user is not opted out of analytics.
+    """
+
+    # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
+    if ops_config.root_user.analytics_opt_out:
+        return
+    send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.endpoint_call.value,
+            event_created_at=event_created_at,
+            local_host=accessed_through_local_host(hostname),
+            endpoint=endpoint,
+            status_code=status_code,
+            error=error_class or None,
+            extra_data={ExtraData.fides_source.value: fides_source}
+            if fides_source
+            else None,
+        )
+    )
 
 
 # Set all CORS enabled origins
@@ -130,7 +201,8 @@ async def setup_server() -> None:
             logger.error("Connection to cache failed: %s", Pii(str(e)))
             return
 
-    scheduler.start()
+    if not scheduler.running:
+        scheduler.start()
 
     # TODO: Fix this, this line is preventing the webserver from starting properly
     # if ops_config.database.enabled:
