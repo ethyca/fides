@@ -13,6 +13,7 @@ import AccordionTree from "~/features/common/AccordionTree";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { TreeNode } from "~/features/common/types";
 import { isErrorResult } from "~/types/errors";
 
 import ActionButtons from "./ActionButtons";
@@ -89,7 +90,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
 
   const taxonomyType = labels.fides_key.toLocaleLowerCase();
 
-  const handleSetEditEntity = (node: TaxonomyEntityNode) => {
+  const handleSetEditEntity = (node: TreeNode) => {
     if (isAdding) {
       closeAddForm();
     }
@@ -97,7 +98,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     setEditEntity(entity);
   };
 
-  const handleSetDeleteKey = (node: TaxonomyEntityNode) => {
+  const handleSetDeleteKey = (node: TreeNode) => {
     setDeleteKey(node.value);
     onDeleteOpen();
   };
@@ -125,7 +126,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <ActionButtons
               onDelete={handleSetDeleteKey}
               onEdit={handleSetEditEntity}
-              node={node}
+              node={node as TaxonomyEntityNode}
             />
           )}
         />
