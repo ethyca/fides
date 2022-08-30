@@ -43,7 +43,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     handleCreate: createEntity,
     handleEdit,
     handleDelete: deleteEntity,
-    extraFormFields,
+    renderExtraFormFields,
     transformEntityToInitialValues,
   } = useTaxonomy();
   const taxonomyNodes = useMemo(() => {
@@ -135,7 +135,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             labels={labels}
             onCancel={() => setEditEntity(null)}
             onSubmit={handleEdit}
-            extraFormFields={extraFormFields}
+            renderExtraFormFields={renderExtraFormFields}
             initialValues={transformEntityToInitialValues(editEntity)}
           />
         ) : null}
@@ -144,7 +144,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             labels={labels}
             onCancel={closeAddForm}
             onSubmit={createEntity}
-            extraFormFields={extraFormFields}
+            renderExtraFormFields={renderExtraFormFields}
             initialValues={transformEntityToInitialValues(
               DEFAULT_INITIAL_VALUES
             )}

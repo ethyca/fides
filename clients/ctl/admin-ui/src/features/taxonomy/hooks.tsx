@@ -53,7 +53,7 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   handleCreate: (entity: T) => RTKResult<TaxonomyEntity>;
   handleEdit: (entity: T) => RTKResult<TaxonomyEntity>;
   handleDelete: (key: string) => RTKResult<string>;
-  extraFormFields?: ReactNode;
+  renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
@@ -151,7 +151,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const legalBases = enumToOptions(LegalBasisEnum);
   const specialCategories = enumToOptions(SpecialCategoriesEnum);
 
-  const extraFormFields = (
+  const renderExtraFormFields = (formValues: DataUse) => (
     <>
       <CustomSelect
         name="legal_basis"
@@ -174,10 +174,13 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         label={labels.legitimate_interest}
         options={YesNoOptions}
       />
-      <CustomTextInput
-        name="legitimate_interest_impact_assessment"
-        label={labels.legitimate_interest_impact_assessment}
-      />
+      {formValues.legitimate_interest &&
+      formValues.legitimate_interest.toString() === "true" ? (
+        <CustomTextInput
+          name="legitimate_interest_impact_assessment"
+          label={labels.legitimate_interest_impact_assessment}
+        />
+      ) : null}
     </>
   );
 
@@ -188,7 +191,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     handleCreate,
     handleEdit,
     handleDelete,
-    extraFormFields,
+    renderExtraFormFields,
     transformEntityToInitialValues,
   };
 };
@@ -247,18 +250,21 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     };
   };
 
-  const extraFormFields = (
+  const renderExtraFormFields = (entity: DataSubject) => (
     <>
       <CustomMultiSelect
         name="rights"
         label={labels.rights}
         options={enumToOptions(DataSubjectRightsEnum)}
       />
-      <CustomSelect
-        name="strategy"
-        label={labels.strategy}
-        options={enumToOptions(IncludeExcludeEnum)}
-      />
+      {/* @ts-ignore because of discrepancy between form and entity type, again */}
+      {entity.rights && entity.rights.length ? (
+        <CustomSelect
+          name="strategy"
+          label={labels.strategy}
+          options={enumToOptions(IncludeExcludeEnum)}
+        />
+      ) : null}
       <CustomRadioGroup
         name="automatic_decisions"
         label={labels.automatic_decisions}
@@ -274,7 +280,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     handleCreate,
     handleEdit,
     handleDelete,
-    extraFormFields,
+    renderExtraFormFields,
     transformEntityToInitialValues,
   };
 };
