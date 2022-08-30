@@ -29,7 +29,6 @@ from fides.api.ops.schemas.external_https import WebhookJWE
 from fides.ctl.core.config import get_config
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
-CTL_CONFIG = get_config()
 
 
 # TODO: include list of all scopes in the docs via the scopes={} dict
@@ -82,7 +81,7 @@ def verify_callback_oauth(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, CTL_CONFIG.security.app_encryption_key)
+        extract_payload(authorization, config.security.app_encryption_key)
     )
     try:
         token = WebhookJWE(**token_data)
@@ -120,7 +119,7 @@ async def verify_oauth_client(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, CTL_CONFIG.security.app_encryption_key)
+        extract_payload(authorization, config.security.app_encryption_key)
     )
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
@@ -129,7 +128,7 @@ async def verify_oauth_client(
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        CTL_CONFIG.security.oauth_access_token_expire_minutes,
+        config.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 
@@ -143,7 +142,7 @@ async def verify_oauth_client(
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
     client = ClientDetail.get(
-        db, object_id=client_id, config=CTL_CONFIG, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
     )
 
     if not client:

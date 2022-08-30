@@ -45,10 +45,12 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.core.config import config
 from fides.ctl.core.config import get_config
+from fides.ctl.core.config import get_config as get_ctl_config
 from tests.ops.conftest import generate_auth_header_for_user
 
+CTL_CONFIG = get_ctl_config()
+
 page_size = Params().size
-CTL_CONFIG = get_config()
 
 
 class TestCreateUser:
@@ -245,7 +247,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -300,7 +302,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -801,9 +803,11 @@ class TestUserLogout:
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
-    def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
+    def test_logout(
+        self, db, url, api_client, generate_auth_header_ctl_config, oauth_client
+    ):
         oauth_client_id = oauth_client.id
-        auth_header = generate_auth_header([STORAGE_READ])
+        auth_header = generate_auth_header_ctl_config([STORAGE_READ])
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_204_NO_CONTENT == response.status_code
 

@@ -55,6 +55,7 @@ from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
+
 CTL_CONFIG = get_ctl_config()
 
 
@@ -63,7 +64,7 @@ def migrate_test_db() -> None:
     logger.debug("Setting up the database...")
     assert config.is_test_mode
     if config.database.enabled:
-        yield db_action(CTL_CONFIG.cli.server_url, "reset")
+        yield db_action(config.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
 
@@ -158,10 +159,17 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
 
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
-    return _generate_auth_header(oauth_client)
+    return _generate_auth_header(oauth_client, config.security.app_encryption_key)
 
 
-def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
+@pytest.fixture
+def generate_auth_header_ctl_config(oauth_client) -> Callable[[Any], Dict[str, str]]:
+    return _generate_auth_header(oauth_client, CTL_CONFIG.security.app_encryption_key)
+
+
+def _generate_auth_header(
+    oauth_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
     client_id = oauth_client.id
 
     def _build_jwt(scopes: List[str]) -> Dict[str, str]:
@@ -170,7 +178,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt

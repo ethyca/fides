@@ -38,8 +38,6 @@ from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.ctl.core.api import get
 from fides.ctl.core.config import get_config
 
-CTL_CONFIG = get_config()
-
 
 class TestCreateClient:
     @pytest.fixture(scope="function")
@@ -64,7 +62,7 @@ class TestCreateClient:
         # Build auth header without client
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
 
         response = api_client.post(url, headers=auth_header)
@@ -80,7 +78,7 @@ class TestCreateClient:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
