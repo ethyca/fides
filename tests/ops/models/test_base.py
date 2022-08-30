@@ -9,6 +9,7 @@ from fideslib.exceptions import KeyValidationError
 from sqlalchemy.orm import Session
 
 from fidesops.ops.models.storage import StorageConfig
+from fidesops.ops.schemas.storage.storage import StorageType
 
 
 def test_get_key_from_data_method_invalid_key() -> None:
@@ -27,7 +28,7 @@ def test_create_key(db: Session):
         StorageConfig.create(
             db,
             data={
-                "type": "s3",
+                "type": StorageType.s3.value,
                 "details": {
                     "bucket": "some-bucket",
                 },
@@ -40,7 +41,7 @@ def test_create_key(db: Session):
         db,
         data={
             "name": "test dest",
-            "type": "s3",
+            "type": StorageType.s3.value,
             "details": {
                 "bucket": "some-bucket",
                 "object_name": "requests",

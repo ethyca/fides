@@ -1,13 +1,14 @@
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from botocore.exceptions import ClientError
 from requests import RequestException
 
 from fidesops.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
+    S3AuthMethod,
+    StorageSecrets,
     StorageSecretsOnetrust,
-    StorageSecretsS3,
     StorageType,
 )
 from fidesops.ops.util.storage_authenticator import (
@@ -27,13 +28,10 @@ def secrets_are_valid(
     return uploader(secrets)
 
 
-def _s3_authenticator(secrets: StorageSecretsS3) -> bool:
+def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
-        get_s3_session(
-            aws_access_key_id=secrets.aws_access_key_id,
-            aws_secret_access_key=secrets.aws_secret_access_key,
-        )
+        get_s3_session(S3AuthMethod.SECRET_KEYS, secrets)
         return True
     except ClientError:
         return False

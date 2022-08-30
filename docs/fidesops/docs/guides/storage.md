@@ -34,6 +34,7 @@ Let's get started. To create a new StorageConfig, use the following endpoint ([A
         "format": str
         "details": {
           # s3
+          "auth_method": str,
           "bucket": str,
           "naming": str,
           # onetrust
@@ -56,6 +57,7 @@ Params:
 
 Additional params needed for S3:
 
+- `auth_method`: Authentication method for creating a session with S3, either `automatic` or `secret_keys`.
 - `bucket`: Name of bucket in S3.
 - `naming`: This defines how the uploaded files will be named. Currently, fidesops only supports upload file naming by `request_id`. Use this value for all your storage destinations.
 
@@ -79,6 +81,7 @@ On success, the response from the above endpoint will include a `storage_key` fo
             "name": "s3 storage 2",
             "type": "s3",
             "details": {
+                "auth_method": "secret_keys",
                 "bucket": "my-bucket",
                 "naming": "request_id",
                 "object_name": "requests"
@@ -114,12 +117,12 @@ Use the `storage_key` obtained from above in the following endpoint ([API docs h
 ```
 
 Params needed for S3:
-
 - `aws_access_key_id`: AWS access key id, obtained from AWS console.
 - `aws_secret_access_key`: AWS secret access key, obtained from AWS console.
 
-Params needed for OneTrust:
+Fidesops also supports automatically creating a session for S3. If your `auth_method` is set to `automatic`, no secrets need to be provided. Boto3 will look for credentials on the server.
 
+Params needed for OneTrust:
 - `onetrust_hostname`: Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. `my-company.onetrust`
 - `onetrust_client_id`: OneTrust client id, obtained from OneTrust portal.
 - `onetrust_client_secret`: OneTrust client id, obtained from OneTrust portal.

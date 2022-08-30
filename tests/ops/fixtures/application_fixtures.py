@@ -43,6 +43,7 @@ from fidesops.ops.schemas.email.email import (
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
+    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -123,6 +124,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
