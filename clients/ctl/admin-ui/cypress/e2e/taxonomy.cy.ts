@@ -63,6 +63,14 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("accordion-item-System Data").trigger("mouseover");
       cy.getByTestId("action-btns").should("exist");
     });
+
+    it("Can render a 'custom' tag for custom fields", () => {
+      cy.getByTestId("tab-Data Categories").click();
+      cy.getByTestId("accordion-item-Custom field").click();
+      cy.getByTestId("custom-tag-Custom field");
+      cy.getByTestId("custom-tag-Custom foo");
+      cy.getByTestId("custom-tag-System Data").should("not.exist");
+    });
   });
 
   describe("Can edit data", () => {

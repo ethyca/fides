@@ -32,6 +32,7 @@ const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
       color="white"
       size="sm"
       height="fit-content"
+      data-testid={`custom-tag-${node.label}`}
     >
       Custom
     </Tag>
