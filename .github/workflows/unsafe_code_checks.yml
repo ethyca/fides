@@ -1,4 +1,4 @@
-name: Fidesops CI Checks - Unsafe
+name: Unsafe Code Checks
 on:
   push:
     branches:
@@ -7,8 +7,8 @@ on:
     types: [labeled]
 
 env:
-  CONTAINER: fidesops-local
-  IMAGE: ethyca/fidesops:local
+  CONTAINER: fides-local
+  IMAGE: ethyca/fides:local
 
 jobs:
   Build:
@@ -22,7 +22,7 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build fidesops container
+      - name: Build container
         uses: docker/build-push-action@v3
         with:
           builder: ${{ steps.buildx.outputs.name }}
@@ -32,7 +32,7 @@ jobs:
           push: false
           tags: ${{ env.IMAGE }}
 
-      - name: Upload fidesops container
+      - name: Upload container
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
@@ -44,13 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     steps:
-      - name: Download fidesops container
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fidesops image
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Checkout
@@ -76,13 +76,13 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Download fidesops container
+      - name: Download container
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.CONTAINER }}
           path: /tmp/
 
-      - name: Load fidesops image
+      - name: Load image
         run: docker load --input /tmp/${{ env.CONTAINER }}.tar
 
       - name: Install Nox
