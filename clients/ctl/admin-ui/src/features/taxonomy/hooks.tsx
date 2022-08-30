@@ -11,9 +11,11 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
+import { YesNoOptions } from "../common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
+  CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
@@ -137,7 +139,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       legal_basis: du.legal_basis,
       special_category: du.special_category,
       recipients: du.recipients ?? [],
-      legitimate_interest: du.legitimate_interest,
+      legitimate_interest:
+        du.legitimate_interest == null
+          ? "false"
+          : du.legitimate_interest.toString(),
       legitimate_interest_impact_assessment:
         du.legitimate_interest_impact_assessment ?? "",
     };
@@ -160,11 +165,15 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       />
       <CustomCreatableMultiSelect
         name="recipients"
-        label="Recipients"
+        label={labels.recipient}
         options={[]}
         size="sm"
       />
-      {/* TODO: legitimate interest: boolean field */}
+      <CustomRadioGroup
+        name="legitimate_interest"
+        label={labels.legitimate_interest}
+        options={YesNoOptions}
+      />
       <CustomTextInput
         name="legitimate_interest_impact_assessment"
         label={labels.legitimate_interest_impact_assessment}
@@ -203,12 +212,16 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const transformFormValuesToEntity = (entity: TaxonomyEntity) => {
     const transformedEntity = {
       ...entity,
-      // @ts-ignore because DataSubjects have their rights field nested, which
-      // does not work well when being passed into a form. We unnest them in
-      // transformEntityToInitialValues, and it is the unnested value we get back
-      // here, but it would make the types of our other components much more complicated
-      // to properly type just for this special case
-      rights: { values: entity.rights, strategy: entity.strategy },
+      rights:
+        // @ts-ignore because DataSubjects have their rights field nested, which
+        // does not work well when being passed into a form. We unnest them in
+        // transformEntityToInitialValues, and it is the unnested value we get back
+        // here, but it would make the types of our other components much more complicated
+        // to properly type just for this special case
+        entity.rights.length
+          ? // @ts-ignore for the same reason as above
+            { values: entity.rights, strategy: entity.strategy }
+          : undefined,
     };
     // @ts-ignore for the same reason as above
     delete transformedEntity.strategy;
@@ -227,7 +240,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       ...base,
       rights: ds.rights?.values ?? [],
       strategy: ds.rights?.strategy,
-      automatic_decisions: ds.automated_decisions_or_profiling,
+      automatic_decisions:
+        ds.automated_decisions_or_profiling == null
+          ? "false"
+          : ds.automated_decisions_or_profiling.toString(),
     };
   };
 
@@ -243,7 +259,11 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         label={labels.strategy}
         options={enumToOptions(IncludeExcludeEnum)}
       />
-      {/* TODO: automatic decisions: boolean field */}
+      <CustomRadioGroup
+        name="automatic_decisions"
+        label={labels.automatic_decisions}
+        options={YesNoOptions}
+      />
     </>
   );
 
