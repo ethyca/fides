@@ -6,7 +6,7 @@ import React, { ReactElement } from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
 
-import Header from "./Header";
+import Header from "../Header";
 
 interface NavLinkProps {
   title: string;

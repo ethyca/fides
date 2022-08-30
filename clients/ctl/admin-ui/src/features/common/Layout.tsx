@@ -2,7 +2,7 @@ import { Box } from "@fidesui/react";
 import Head from "next/head";
 import React from "react";
 
-import NavBar from "./NavBar";
+import NavBar from "./nav/NavBar";
 
 const Layout = ({
   title,

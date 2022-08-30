@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { SessionProvider } from "next-auth/react";
 
-import NavBar from "~/features/common/NavBar";
+import NavBar from "~/features/common/nav/NavBar";
 import { mockNextUseRouter } from "~/test-utils";
 
 describe("Home", () => {
