@@ -446,7 +446,11 @@ export const CustomRadioGroup = ({
         >
           <Stack direction="row">
             {options.map((o) => (
-              <Radio key={o.value} value={o.value}>
+              <Radio
+                key={o.value}
+                value={o.value}
+                data-testid={`option-${o.value}`}
+              >
                 {o.label}
               </Radio>
             ))}
