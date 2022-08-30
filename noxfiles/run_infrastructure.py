@@ -71,7 +71,7 @@ def run_infrastructure(
     )
 
     wait = min(DOCKER_WAIT * len(datastores), 15)
-    print(f"Sleeping for: {wait} while infrastructure loads...")
+    print(f"Sleeping for {wait} seconds while infrastructure loads...")
     sleep(wait)
 
     seed_initial_data(
