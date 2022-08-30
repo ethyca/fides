@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "8d7f46be-8de5-45a5-88e3-a4860feb1b42",
+		"_postman_id": "20bfd0a9-15a2-4333-8c3c-2cc3d8ed31f5",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "1984786"
+		"_exporter_id": "13396647"
 	},
 	"item": [
 		{
@@ -4297,6 +4297,40 @@
 								"config",
 								"{{email_config_key}}",
 								"secret"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Identity Verification",
+			"item": [
+				{
+					"name": "Get Identity Verification Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/id-verification/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"id-verification",
+								"config",
+								""
 							]
 						}
 					},

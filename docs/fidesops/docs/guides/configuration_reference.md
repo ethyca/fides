@@ -97,6 +97,7 @@ root_password = "Testpassword1!"
 [execution]
 masking_strict = true
 require_manual_request_approval = true
+subject_identity_verification_required = false
 task_retry_count = 3
 task_retry_delay = 20
 task_retry_backoff = 2
