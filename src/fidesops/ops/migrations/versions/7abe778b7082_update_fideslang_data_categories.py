@@ -178,7 +178,8 @@ def run_migration(migration_direction: str) -> None:
                 if counter % 10 == 0:
                     logger.info("Upgrading fideslang categories")
 
-                collections = dataset.get("collections")
+                dataset_json = dataset.dataset
+                collections = dataset_json.get("collections")
 
                 if collections:
                     for collection in collections:
