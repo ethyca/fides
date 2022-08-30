@@ -26,7 +26,6 @@ from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.ctl.core.config import get_config
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
