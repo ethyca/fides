@@ -123,6 +123,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       formValues.legitimate_interest_impact_assessment === ""
         ? undefined
         : formValues.legitimate_interest_impact_assessment,
+    legitimate_interest: !!(
+      formValues.legitimate_interest &&
+      formValues.legitimate_interest.toString() === "true"
+    ),
   });
 
   const [handleDelete] = useDeleteDataUseMutation();
@@ -212,29 +216,34 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const [create] = useCreateDataSubjectMutation();
   const [handleDelete] = useDeleteDataSubjectMutation();
 
-  const transformFormValuesToEntity = (entity: TaxonomyEntity) => {
-    const transformedEntity = {
+  const transformFormValuesToEntity = (entity: DataSubject) => {
+    const transformedEntity: DataSubject = {
       ...entity,
+      // @ts-ignore because DataSubjects have their rights field nested, which
+      // does not work well when being passed into a form. We unnest them in
+      // transformEntityToInitialValues, and it is the unnested value we get back
+      // here, but it would make the types of our other components much more complicated
+      // to properly type just for this special case
       rights:
-        // @ts-ignore because DataSubjects have their rights field nested, which
-        // does not work well when being passed into a form. We unnest them in
-        // transformEntityToInitialValues, and it is the unnested value we get back
-        // here, but it would make the types of our other components much more complicated
-        // to properly type just for this special case
+        // @ts-ignore for the same reason as above
         entity.rights.length
           ? // @ts-ignore for the same reason as above
             { values: entity.rights, strategy: entity.strategy }
           : undefined,
+      automatic_decisions_or_profiling: !!(
+        entity.automated_decisions_or_profiling &&
+        entity.automated_decisions_or_profiling.toString() === "true"
+      ),
     };
     // @ts-ignore for the same reason as above
     delete transformedEntity.strategy;
     return transformedEntity;
   };
 
-  const handleEdit = (entity: TaxonomyEntity) =>
+  const handleEdit = (entity: DataSubject) =>
     edit(transformFormValuesToEntity(entity));
 
-  const handleCreate = (entity: TaxonomyEntity) =>
+  const handleCreate = (entity: DataSubject) =>
     create(transformFormValuesToEntity(entity));
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
@@ -243,7 +252,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       ...base,
       rights: ds.rights?.values ?? [],
       strategy: ds.rights?.strategy,
-      automatic_decisions:
+      automatic_decisions_or_profiling:
         ds.automated_decisions_or_profiling == null
           ? "false"
           : ds.automated_decisions_or_profiling.toString(),
@@ -266,7 +275,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         />
       ) : null}
       <CustomRadioGroup
-        name="automatic_decisions"
+        name="automatic_decisions_or_profiling"
         label={labels.automatic_decisions}
         options={YesNoOptions}
       />
