@@ -1,12 +1,9 @@
 import { Button, Flex } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import React, { ReactElement } from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
-
-import Header from "../Header";
 
 interface NavLinkProps {
   title: string;
@@ -49,39 +46,24 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
   );
 };
 
-const NavBar = () => {
-  const { data: session } = useSession();
-  // TODO: what should be displayed if there is no user name?
-  const username = session?.user?.name ?? "";
-
-  return (
-    <>
-      <Header username={username} />
-      <Flex
-        borderBottom="1px"
-        borderTop="1px"
-        px={9}
-        py={1}
-        borderColor="gray.100"
-      >
-        <nav>
-          <NavLink title="Systems" href="/system" disabled />
-          <NavLink title="Datasets" href="/dataset" />
-          <NavLink title="Policies" href="/policy" disabled />
-          <NavLink title="Taxonomy" href="/taxonomy" />
-          <NavLink title="User Management" href="/user-management" disabled />
-          {/* This is a temporary link to the config wizard while it's still in progress */}
-          <NavLink title="Config Wizard" href="/config-wizard" />
-          <NavLink
-            title="More"
-            href="#"
-            rightIcon={<ArrowDownLineIcon />}
-            disabled
-          />
-        </nav>
-      </Flex>
-    </>
-  );
-};
+const NavBar = () => (
+  <Flex borderBottom="1px" borderTop="1px" px={9} py={1} borderColor="gray.100">
+    <nav>
+      <NavLink title="Systems" href="/system" disabled />
+      <NavLink title="Datasets" href="/dataset" />
+      <NavLink title="Policies" href="/policy" disabled />
+      <NavLink title="Taxonomy" href="/taxonomy" />
+      <NavLink title="User Management" href="/user-management" disabled />
+      {/* This is a temporary link to the config wizard while it's still in progress */}
+      <NavLink title="Config Wizard" href="/config-wizard" />
+      <NavLink
+        title="More"
+        href="#"
+        rightIcon={<ArrowDownLineIcon />}
+        disabled
+      />
+    </nav>
+  </Flex>
+);
 
 export default NavBar;
