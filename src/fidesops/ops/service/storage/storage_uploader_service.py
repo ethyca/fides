@@ -29,9 +29,7 @@ def upload(
     if config is None:
         logger.warning("Storage type not found: %s", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
-    if config.secrets is None and config.type != StorageType.local:
-        logger.warning("Storage secrets not found: %s", storage_key)
-        raise StorageUploadError("Storage secrets not found")
+
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
     return uploader(db, config, data, request_id)
 
@@ -76,8 +74,10 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
     file_key: str = _construct_file_key(request_id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
+    auth_method = config.details[StorageDetails.AUTH_METHOD.value]
+
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, request_id  # type: ignore
+        config.secrets, data, bucket_name, file_key, config.format.value, request_id, auth_method  # type: ignore
     )
 
 

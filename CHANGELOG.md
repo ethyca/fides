@@ -77,6 +77,7 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 * Update backend routing to handle dynamic frontend routes [#1033](https://github.com/ethyca/fidesops/pull/1033)
 * Make connection type search case-insensitive [#1133](https://github.com/ethyca/fidesops/pull/1133)
 * Adjust log formatting to be %-style instead of f-string [#1132](https://github.com/ethyca/fidesops/pull/1132)
+* Update `StorageConfig` to support multiple auth methods for S3 [#1140](https://github.com/ethyca/fidesops/pull/1140)
 
 ### Docs
 
