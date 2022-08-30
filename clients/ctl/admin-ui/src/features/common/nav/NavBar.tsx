@@ -1,9 +1,11 @@
-import { Button, Flex } from "@fidesui/react";
+import { Flex } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { ReactElement } from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
+
+import { NavButton } from "./NavButton";
 
 interface NavLinkProps {
   title: string;
@@ -21,27 +23,21 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
   } else {
     isActive = router.pathname.startsWith(href);
   }
-  const NavButton = (
-    <Button
-      as="a"
-      variant="ghost"
-      disabled={disabled}
-      mr={4}
-      colorScheme={isActive ? "complimentary" : "ghost"}
-      rightIcon={rightIcon}
-      data-testid={`nav-link-${title}`}
-      isActive={isActive}
-      _active={{ bg: "transparent" }}
-    >
-      {title}
-    </Button>
-  );
+
   if (disabled) {
-    return NavButton;
+    return (
+      <NavButton
+        disabled={disabled}
+        isActive={isActive}
+        rightIcon={rightIcon}
+        title={title}
+      />
+    );
   }
+
   return (
     <NextLink href={href} passHref>
-      {NavButton}
+      <NavButton isActive={isActive} rightIcon={rightIcon} title={title} />
     </NextLink>
   );
 };
