@@ -22,9 +22,8 @@ class FidesctlUserSettings(FidesSettings):
 
     # Automatically generate the request_headers on object creation
     @validator("request_headers", pre=True, always=True)
-    def get_request_headers(
-        cls: BaseModel, value: Optional[Dict], values: Dict
-    ) -> Dict[str, str]:
+    @classmethod
+    def get_request_headers(cls, value: Optional[Dict], values: Dict) -> Dict[str, str]:
         return generate_request_headers(values["user_id"], values["api_key"])
 
     class Config:
