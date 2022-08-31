@@ -5,9 +5,10 @@ from fastapi.params import Security
 
 from fides.api.ops.api.v1 import scope_registry as scopes
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.ctl.core.config import get_config, censor_config
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import censor_config
+from fides.ctl.core.config import get_config as get_app_config
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -22,5 +23,5 @@ logger = logging.getLogger(__name__)
 def get_config() -> Dict[str, Any]:
     """Returns the current API exposable Fidesops configuration."""
     logger.info("Getting the exposable Fidesops configuration")
-    config = censor_config(get_config())
+    config = censor_config(get_app_config())
     return config

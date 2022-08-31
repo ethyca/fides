@@ -814,9 +814,9 @@ def test_generate_dataset_bigquery_credentials_id(
     os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PROJECT_ID"] = config_data_decoded[
         "project_id"
     ]
-    os.environ[
-        "FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY_ID"
-    ] = config_data_decoded["private_key_id"]
+    os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY_ID"] = config_data_decoded[
+        "private_key_id"
+    ]
     os.environ["FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY"] = config_data_decoded[
         "private_key"
     ]
