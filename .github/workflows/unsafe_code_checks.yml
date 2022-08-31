@@ -62,9 +62,9 @@ jobs:
       - name: Integration Tests (External)
         env:
           REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
-          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
-          BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
+          BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
         run: nox -s pytest_integration_external
 
