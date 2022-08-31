@@ -4,7 +4,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import validator
 
 from fidesctl.ctl.core.utils import generate_request_headers
 
