@@ -124,8 +124,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         ? undefined
         : formValues.legitimate_interest_impact_assessment,
     legitimate_interest: !!(
-      formValues.legitimate_interest &&
-      formValues.legitimate_interest.toString() === "true"
+      formValues.legitimate_interest?.toString() === "true"
     ),
   });
 
@@ -144,7 +143,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       special_category: du.special_category,
       recipients: du.recipients ?? [],
       legitimate_interest:
-        du.legitimate_interest == null
+        du.legitimate_interest === undefined
           ? "false"
           : du.legitimate_interest.toString(),
       legitimate_interest_impact_assessment:
@@ -178,8 +177,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         label={labels.legitimate_interest}
         options={YesNoOptions}
       />
-      {formValues.legitimate_interest &&
-      formValues.legitimate_interest.toString() === "true" ? (
+      {formValues.legitimate_interest?.toString() === "true" ? (
         <CustomTextInput
           name="legitimate_interest_impact_assessment"
           label={labels.legitimate_interest_impact_assessment}
@@ -231,8 +229,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
             { values: entity.rights, strategy: entity.strategy }
           : undefined,
       automatic_decisions_or_profiling: !!(
-        entity.automated_decisions_or_profiling &&
-        entity.automated_decisions_or_profiling.toString() === "true"
+        entity.automated_decisions_or_profiling?.toString() === "true"
       ),
     };
     // @ts-ignore for the same reason as above
@@ -253,7 +250,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       rights: ds.rights?.values ?? [],
       strategy: ds.rights?.strategy,
       automatic_decisions_or_profiling:
-        ds.automated_decisions_or_profiling == null
+        ds.automated_decisions_or_profiling === undefined
           ? "false"
           : ds.automated_decisions_or_profiling.toString(),
     };
