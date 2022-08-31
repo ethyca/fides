@@ -7,7 +7,7 @@ from fideslang import FidesModel, model_list
 
 from fides.ctl.core import api as _api
 from fides.ctl.core import api_helpers as _api_helpers
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work
@@ -29,7 +29,7 @@ else:
 # Fixtures
 @pytest.fixture
 def created_resources(
-    test_config: FidesctlConfig, resources_dict: Dict, request: FixtureRequest
+    test_config: FidesConfig, resources_dict: Dict, request: FixtureRequest
 ) -> Generator:
     """
     Fixture that creates and tears down a set of resources for each test run.
@@ -62,7 +62,7 @@ def created_resources(
         )
 
 
-def delete_resource_type(test_config: FidesctlConfig, resource_type: str) -> None:
+def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
     """Deletes all of the resources of a certain type."""
     url = test_config.cli.server_url
     fides_keys = [
@@ -88,7 +88,7 @@ class TestGetServerResource:
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
     def test_get_server_resource_found_resource(
-        self, test_config: FidesctlConfig, created_resources: List
+        self, test_config: FidesConfig, created_resources: List
     ) -> None:
         """
         Tests that an existing resource is returned by helper
@@ -105,7 +105,7 @@ class TestGetServerResource:
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resource_missing_resource(
-        self, test_config: FidesctlConfig, resource_type: str
+        self, test_config: FidesConfig, resource_type: str
     ) -> None:
         """
         Tests that a missing resource returns None
@@ -127,7 +127,7 @@ class TestGetServerResources:
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
     def test_get_server_resources_found_resources(
-        self, test_config: FidesctlConfig, created_resources: List
+        self, test_config: FidesConfig, created_resources: List
     ) -> None:
         """
         Tests that existing resources are returned by helper
@@ -144,7 +144,7 @@ class TestGetServerResources:
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resources_missing_resources(
-        self, test_config: FidesctlConfig, resource_type: str
+        self, test_config: FidesConfig, resource_type: str
     ) -> None:
         """
         Tests that a missing resource returns an empty list
@@ -161,7 +161,7 @@ class TestGetServerResources:
 
 @pytest.mark.integration
 class TestListServerResources:
-    def test_list_server_resources_passing(self, test_config: FidesctlConfig) -> None:
+    def test_list_server_resources_passing(self, test_config: FidesConfig) -> None:
         resource_type = "data_category"
         result: List[FidesModel] = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
@@ -171,7 +171,7 @@ class TestListServerResources:
         )
         assert len(result) > 1
 
-    def test_list_server_resources_none(self, test_config: FidesctlConfig) -> None:
+    def test_list_server_resources_none(self, test_config: FidesConfig) -> None:
         resource_type = "system"
         delete_resource_type(test_config, resource_type)
         result: List[FidesModel] = _api_helpers.list_server_resources(

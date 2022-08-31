@@ -19,7 +19,7 @@ from fideslang.models import (
 )
 
 from fides.ctl.core import evaluate
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 
 # Helpers
@@ -86,7 +86,7 @@ def create_policy_rule_with_keys(
 
 
 @pytest.mark.integration
-def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
+def test_get_all_server_policies(test_config: FidesConfig) -> None:
     result = evaluate.get_all_server_policies(
         url=test_config.cli.server_url, headers=test_config.user.request_headers
     )
@@ -94,7 +94,7 @@ def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
 
 
 @pytest.mark.integration
-def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> None:
+def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
     """
     Test that populate_referenced_keys works recursively. It should be able to
     find the keys in the declaration and also populate any keys which those reference.
@@ -149,7 +149,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
 
 @pytest.mark.integration
 def test_populate_referenced_keys_fails_missing_keys(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Test that populate_referenced_keys will fail if missing keys
@@ -181,7 +181,7 @@ def test_populate_referenced_keys_fails_missing_keys(
 
 
 @pytest.mark.integration
-def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
+def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
     dehydrated_taxonomy = Taxonomy(
         data_category=[
             DataCategory(
@@ -260,7 +260,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> None:
+def test_get_evaluation_policies_with_no_key(test_config: FidesConfig) -> None:
     """
     Test that when no fides key is supplied all local and server policies are
     returned.

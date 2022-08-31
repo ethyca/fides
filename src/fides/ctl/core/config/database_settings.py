@@ -8,8 +8,10 @@ from typing import Dict, Optional
 from fideslib.core.config import DatabaseSettings
 from pydantic import PostgresDsn, validator
 
+ENV_PREFIX = "FIDES__DATABASE__"
 
-class FidesctlDatabaseSettings(DatabaseSettings):
+
+class FidesDatabaseSettings(DatabaseSettings):
     """Configuration settings for Postgres."""
 
     user: str = "postgres"
@@ -33,7 +35,7 @@ class FidesctlDatabaseSettings(DatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDESCTL_TEST_MODE") == "True"
+            if os.getenv("FIDES_TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(
@@ -56,7 +58,7 @@ class FidesctlDatabaseSettings(DatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDESCTL_TEST_MODE") == "True"
+            if os.getenv("FIDES_TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(
@@ -69,4 +71,4 @@ class FidesctlDatabaseSettings(DatabaseSettings):
         )
 
     class Config:
-        env_prefix = "FIDESCTL__DATABASE__"
+        env_prefix = ENV_PREFIX

@@ -14,7 +14,7 @@ from fideslang.models import (
 )
 
 from fides.ctl.core import export
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture()
@@ -91,7 +91,7 @@ def test_sample_dataset_taxonomy() -> Generator:
 
 @pytest.mark.unit
 def test_system_records_to_export(
-    test_sample_system_taxonomy: Generator, test_config: FidesctlConfig
+    test_sample_system_taxonomy: Generator, test_config: FidesConfig
 ) -> None:
     """
     Asserts that unique records are returned properly (including

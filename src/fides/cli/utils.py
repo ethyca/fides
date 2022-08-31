@@ -25,7 +25,7 @@ from fideslog.sdk.python.utils import (
 import fides
 from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config.credentials_settings import (
     get_config_aws_credentials,
     get_config_bigquery_credentials,
@@ -35,13 +35,13 @@ from fides.ctl.core.config.credentials_settings import (
 from fides.ctl.core.config.utils import get_config_from_file, update_config_file
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
-FIDESCTL_ASCII_ART = """
-███████╗██╗██████╗ ███████╗███████╗ ██████╗████████╗██╗     
-██╔════╝██║██╔══██╗██╔════╝██╔════╝██╔════╝╚══██╔══╝██║     
-█████╗  ██║██║  ██║█████╗  ███████╗██║        ██║   ██║     
-██╔══╝  ██║██║  ██║██╔══╝  ╚════██║██║        ██║   ██║     
-██║     ██║██████╔╝███████╗███████║╚██████╗   ██║   ███████╗
-╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝                                                      
+FIDES_ASCII_ART = """
+███████╗██╗██████╗ ███████╗███████╗
+██╔════╝██║██╔══██╗██╔════╝██╔════╝
+█████╗  ██║██║  ██║█████╗  ███████╗
+██╔══╝  ██║██║  ██║██╔══╝  ╚════██║
+██║     ██║██████╔╝███████╗███████║
+╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝
 """
 
 
@@ -120,7 +120,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         "cli",
         "analytics_id",
     ) in ("", None)
-    is_analytics_opt_out_env_var_set = getenv("FIDESCTL__CLI__ANALYTICS_ID")
+    is_analytics_opt_out_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
         not is_analytics_opt_out
         and is_analytics_opt_out_config_empty
@@ -151,7 +151,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
+            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
             os=system(),
             product_name=app_name + "-cli",
             production_version=version(app_name),
@@ -225,7 +225,7 @@ def print_divider(character: str = "-", character_length: int = 10) -> None:
 
 
 def handle_database_credentials_options(
-    fides_config: FidesctlConfig, connection_string: str, credentials_id: str
+    fides_config: FidesConfig, connection_string: str, credentials_id: str
 ) -> str:
     """
     Handles the mutually exclusive database connections options connetion-string and credentials-id.
@@ -251,7 +251,7 @@ def handle_database_credentials_options(
 
 
 def handle_okta_credentials_options(
-    fides_config: FidesctlConfig, token: str, org_url: str, credentials_id: str
+    fides_config: FidesConfig, token: str, org_url: str, credentials_id: str
 ) -> Optional[OktaConfig]:
     """
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
@@ -278,7 +278,7 @@ def handle_okta_credentials_options(
 
 
 def handle_aws_credentials_options(
-    fides_config: FidesctlConfig,
+    fides_config: FidesConfig,
     access_key_id: str,
     secret_access_key: str,
     region: str,
@@ -314,7 +314,7 @@ def handle_aws_credentials_options(
 
 
 def handle_bigquery_config_options(
-    fides_config: FidesctlConfig,
+    fides_config: FidesConfig,
     dataset: str,
     keyfile_path: str,
     credentials_id: str,

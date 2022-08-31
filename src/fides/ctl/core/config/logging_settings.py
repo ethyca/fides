@@ -9,8 +9,10 @@ from pydantic import validator
 
 from .fides_settings import FidesSettings
 
+ENV_PREFIX = "FIDES__LOGGING__"
 
-class FidesctlLoggingSettings(FidesSettings):
+
+class FidesLoggingSettings(FidesSettings):
     """Class used to store values from the 'logging' section of the config."""
 
     # Logging
@@ -32,7 +34,7 @@ class FidesctlLoggingSettings(FidesSettings):
         Ensures that the string-form of a valid logging._Level is
         always returned.
         """
-        if os.getenv("FIDESCTL_TEST_MODE", "false").lower() == "true":
+        if os.getenv("FIDES_TEST_MODE", "false").lower() == "true":
             return getLevelName(DEBUG)
 
         if isinstance(value, str):
@@ -49,4 +51,4 @@ class FidesctlLoggingSettings(FidesSettings):
         return value if value == "json" else ""
 
     class Config:
-        env_prefix = "FIDESCTL__LOGGING__"
+        env_prefix = ENV_PREFIX

@@ -13,25 +13,25 @@ from pydantic import BaseModel
 
 from fides.ctl.core.utils import echo_red
 
-from .cli_settings import FidesctlCLISettings
+from .cli_settings import FidesCLISettings
 from .credentials_settings import merge_credentials_environment
-from .database_settings import FidesctlDatabaseSettings
-from .logging_settings import FidesctlLoggingSettings
-from .security_settings import FidesctlSecuritySettings
-from .user_settings import FidesctlUserSettings
+from .database_settings import FidesDatabaseSettings
+from .logging_settings import FidesLoggingSettings
+from .security_settings import FidesSecuritySettings
+from .user_settings import FidesUserSettings
 
-DEFAULT_CONFIG_PATH = ".fides/fidesctl.toml"
+DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
 
-class FidesctlConfig(BaseModel):
+class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    cli: FidesctlCLISettings = FidesctlCLISettings()
-    user: FidesctlUserSettings = FidesctlUserSettings()
+    cli: FidesCLISettings = FidesCLISettings()
+    user: FidesUserSettings = FidesUserSettings()
     credentials: Dict[str, Dict] = {}
-    database: FidesctlDatabaseSettings = FidesctlDatabaseSettings()
-    security: FidesctlSecuritySettings = FidesctlSecuritySettings()
-    logging: FidesctlLoggingSettings = FidesctlLoggingSettings()
+    database: FidesDatabaseSettings = FidesDatabaseSettings()
+    security: FidesSecuritySettings = FidesSecuritySettings()
+    logging: FidesLoggingSettings = FidesLoggingSettings()
 
 
 def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
@@ -56,7 +56,7 @@ def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
     Custom logic for handling deprecated ENV variable configuration.
     """
 
-    deprecated_env_vars = regex(r"FIDESCTL__API__(\w+)")
+    deprecated_env_vars = regex(r"FIDES__API__(\w+)")
 
     for key, val in environ.items():
         match = deprecated_env_vars.search(key)
@@ -76,7 +76,7 @@ def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
 
 
 @lru_cache(maxsize=1)
-def get_config(config_path_override: str = "") -> FidesctlConfig:
+def get_config(config_path_override: str = "") -> FidesConfig:
     """
     Attempt to load user-defined configuration.
 
@@ -104,13 +104,13 @@ def get_config(config_path_override: str = "") -> FidesctlConfig:
             credentials_dict=config_environment_dict
         )
 
-        fidesctl_config = FidesctlConfig.parse_obj(settings)
-        return fidesctl_config
+        config = FidesConfig.parse_obj(settings)
+        return config
     except FileNotFoundError:
         echo_red("No config file found")
     except IOError:
         echo_red("Error reading config file")
 
-    fidesctl_config = FidesctlConfig()
+    config = FidesConfig()
     print("Using default configuration values.")
-    return fidesctl_config
+    return config

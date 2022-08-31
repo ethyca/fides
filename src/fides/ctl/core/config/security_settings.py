@@ -7,8 +7,10 @@ from fideslib.core.config import SecuritySettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from pydantic import root_validator
 
+ENV_PREFIX = "FIDES__SECURITY__"
 
-class FidesctlSecuritySettings(SecuritySettings):
+
+class FidesSecuritySettings(SecuritySettings):
     """Configuration settings for Security variables."""
 
     oauth_root_client_secret: str = "testrootclientsecret"
@@ -34,4 +36,4 @@ class FidesctlSecuritySettings(SecuritySettings):
         return values
 
     class Config:
-        env_prefix = "FIDESCTL__SECURITY__"
+        env_prefix = ENV_PREFIX

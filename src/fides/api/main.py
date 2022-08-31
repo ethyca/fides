@@ -57,7 +57,7 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 
 logging.basicConfig(level=ops_config.security.log_level)
@@ -65,7 +65,7 @@ logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
-CONFIG: FidesctlConfig = get_ctl_config()
+CONFIG: FidesConfig = get_ctl_config()
 ROUTERS = (
     crud.routers
     + visualize.routers

@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 
 from fides.api.ctl.routes.generate import GenerateResponse
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
@@ -74,7 +74,7 @@ EXPECTED_FAILURE_MESSAGES = {
     ],
 )
 def test_generate(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     generate_type: str,
     generate_target: str,
     test_client: TestClient,
@@ -110,7 +110,7 @@ def test_generate(
     ],
 )
 def test_generate_failure(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     generate_type: str,
     generate_target: str,
     test_client: TestClient,

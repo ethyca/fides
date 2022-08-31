@@ -1,1 +1,18 @@
-# This new file has configuration options for all of the possible places to configure things
+[database]
+server = "fides-db"
+user = "postgres"
+password = "fides"
+port = "5432"
+db = "fides"
+test_db = "fides_test"
+
+[logging]
+level = "INFO"
+
+[cli]
+server_host = "localhost"
+server_port = 8080
+analytics_id = "21f583bde9f9344424a51878bd97ddca"
+
+[user]
+analytics_opt_out = false

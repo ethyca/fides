@@ -7,9 +7,10 @@ from pydantic import AnyHttpUrl, validator
 from .fides_settings import FidesSettings
 
 # pylint: disable=C0115,C0116, E0213
+ENV_PREFIX = "FIDES__CLI__"
 
 
-class FidesctlCLISettings(FidesSettings):
+class FidesCLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
     local_mode: bool = False
@@ -43,4 +44,4 @@ class FidesctlCLISettings(FidesSettings):
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
 
     class Config:
-        env_prefix = "FIDESCTL__CLI__"
+        env_prefix = ENV_PREFIX

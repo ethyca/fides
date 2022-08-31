@@ -12,7 +12,7 @@ from fides.ctl.connectors.models import (
     OktaConfig,
 )
 
-CREDENTIALS_ENV_PREFIX = "FIDESCTL__CREDENTIALS__"
+CREDENTIALS_ENV_PREFIX = "FIDES__CREDENTIALS__"
 NESTED_KEY_DELIMITER = "__"
 
 
@@ -21,9 +21,9 @@ def merge_credentials_environment(credentials_dict: Dict) -> Dict:
     Given a dict of config settings, merges configs which are found
     in environment variables. Environment variable configs are treated
     as overrides. Environment variables muse use the prefix
-    FIDESCTL__CREDENTIALS__ and use the delimiter __ to override nested keys.
+    FIDES__CREDENTIALS__ and use the delimiter __ to override nested keys.
     Example:
-    FIDESCTL__CREDENTIALS__POSTGRES_1_CONNECTION_STRING="MY_CONN"
+    FIDES__CREDENTIALS__POSTGRES_1_CONNECTION_STRING="MY_CONN"
 
     Merges:
     {"postgres_1" : { "connection_string": "MY_CONN"}}

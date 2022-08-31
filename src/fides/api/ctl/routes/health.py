@@ -11,9 +11,9 @@ from fides.api.ops.common_exceptions import RedisConnectionError
 from fides.api.ops.core.config import config as ops_config
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG: FidesctlConfig = get_config()
+CONFIG: FidesConfig = get_config()
 
 router = APIRouter(tags=["Health"])
 
