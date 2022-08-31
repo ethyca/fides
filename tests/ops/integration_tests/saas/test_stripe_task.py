@@ -16,7 +16,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
-def test_stripe_access_request_task(
+async def test_stripe_access_request_task(
     db,
     policy,
     stripe_connection_config,
@@ -35,7 +35,7 @@ def test_stripe_access_request_task(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -634,7 +634,7 @@ def test_stripe_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
-def test_stripe_erasure_request_task(
+async def test_stripe_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -655,7 +655,7 @@ def test_stripe_erasure_request_task(
     merged_graph = stripe_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -1076,7 +1076,7 @@ def test_stripe_erasure_request_task(
     # Run erasure with masking_strict = False so both update and delete actions can be used
     config.execution.masking_strict = False
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

@@ -18,7 +18,7 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_access_request_task(
+async def test_sentry_access_request_task(
     db,
     policy,
     sentry_connection_config,
@@ -37,7 +37,7 @@ def test_sentry_access_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -265,7 +265,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
-def test_sentry_erasure_request_task(
+async def test_sentry_erasure_request_task(
     db, policy, sentry_connection_config, sentry_dataset_config
 ) -> None:
     """Full erasure request based on the Sentry SaaS config. Also verifies issue data in access request"""
@@ -283,7 +283,7 @@ def test_sentry_erasure_request_task(
     merged_graph = sentry_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -364,7 +364,7 @@ def test_sentry_erasure_request_task(
 
     assert v[f"{dataset_name}:issues"][0]["assignedTo"]["email"] == erasure_email
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,

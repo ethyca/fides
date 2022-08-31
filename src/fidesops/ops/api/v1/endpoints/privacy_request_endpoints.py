@@ -133,7 +133,7 @@ def get_privacy_request_or_error(
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
-def create_privacy_request(
+async def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
@@ -719,7 +719,7 @@ def get_request_preview_queries(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
-def resume_privacy_request(
+async def resume_privacy_request(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -777,7 +777,7 @@ def validate_manual_input(
                 )
 
 
-def resume_privacy_request_with_manual_input(
+async def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
     expected_paused_step: PausedStep,
@@ -868,7 +868,7 @@ def resume_privacy_request_with_manual_input(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-def resume_with_manual_input(
+async def resume_with_manual_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -879,7 +879,7 @@ def resume_with_manual_input(
 
     If there's no manual data to submit, pass in an empty list to resume the privacy request.
     """
-    return resume_privacy_request_with_manual_input(
+    return await resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
         expected_paused_step=PausedStep.access,
@@ -895,7 +895,7 @@ def resume_with_manual_input(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-def resume_with_erasure_confirmation(
+async def resume_with_erasure_confirmation(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -906,7 +906,7 @@ def resume_with_erasure_confirmation(
 
     If no rows were masked, pass in a 0 to resume the privacy request.
     """
-    return resume_privacy_request_with_manual_input(
+    return await resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
         expected_paused_step=PausedStep.erasure,
@@ -922,7 +922,7 @@ def resume_with_erasure_confirmation(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-def restart_privacy_request_from_failure(
+async def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -1020,7 +1020,7 @@ def review_privacy_request(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
-def verify_identification_code(
+async def verify_identification_code(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),

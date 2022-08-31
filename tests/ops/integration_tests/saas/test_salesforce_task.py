@@ -23,7 +23,7 @@ def test_salesforce_connection_test(salesforce_connection_config) -> None:
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
-def test_salesforce_access_request_task(
+async def test_salesforce_access_request_task(
     policy,
     salesforce_identity_email,
     salesforce_connection_config,
@@ -42,7 +42,7 @@ def test_salesforce_access_request_task(
     merged_graph = salesforce_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -371,7 +371,7 @@ def test_salesforce_access_request_task(
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
-def test_salesforce_erasure_request_task(
+async def test_salesforce_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -400,7 +400,7 @@ def test_salesforce_erasure_request_task(
     merged_graph = salesforce_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -713,7 +713,7 @@ def test_salesforce_erasure_request_task(
     masking_strict = config.execution.masking_strict
     config.execution.masking_strict = True
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

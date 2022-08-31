@@ -20,7 +20,7 @@ from ..task.traversal_data import postgres_and_manual_nodes
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures("postgres_integration_db")
-def test_postgres_with_manual_input_access_request_task(
+async def test_postgres_with_manual_input_access_request_task(
     db,
     policy,
     integration_postgres_config,
@@ -33,7 +33,7 @@ def test_postgres_with_manual_input_access_request_task(
 
     # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -64,7 +64,7 @@ def test_postgres_with_manual_input_access_request_task(
 
     # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -96,7 +96,7 @@ def test_postgres_with_manual_input_access_request_task(
     )
 
     # Attempt 3 - All manual data has been retrieved.
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -218,7 +218,7 @@ def test_postgres_with_manual_input_access_request_task(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures("postgres_integration_db")
-def test_no_manual_input_found(
+async def test_no_manual_input_found(
     policy,
     db,
     integration_postgres_config,
@@ -231,7 +231,7 @@ def test_no_manual_input_found(
 
     # ATTEMPT 1 - storage unit node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -255,7 +255,7 @@ def test_no_manual_input_found(
 
     # Attempt 2 - Filing cabinet node will throw an exception. Waiting on manual input.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -277,7 +277,7 @@ def test_no_manual_input_found(
     )
 
     # Attempt 3 - All manual data has been retrieved/attempted to be retrieved
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -311,7 +311,7 @@ def test_no_manual_input_found(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_collections_with_manual_erasure_confirmation(
+async def test_collections_with_manual_erasure_confirmation(
     db,
     erasure_policy,
     integration_postgres_config,
@@ -396,7 +396,7 @@ def test_collections_with_manual_erasure_confirmation(
     # ATTEMPT 1 - erasure request will pause to wait for confirmation that data has been destroyed from
     # the filing cabinet
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_erasure(
+        await graph_task.run_erasure(
             privacy_request,
             erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -426,7 +426,7 @@ def test_collections_with_manual_erasure_confirmation(
 
     # Attempt 2 - erasure request will pause, waiting for confirmation that the box in the storage unit is destroyed.
     with pytest.raises(PrivacyRequestPaused):
-        graph_task.run_erasure(
+        await graph_task.run_erasure(
             privacy_request,
             erasure_policy,
             postgres_and_manual_nodes("postgres_example", "manual_example"),
@@ -454,7 +454,7 @@ def test_collections_with_manual_erasure_confirmation(
     )
 
     # Attempt 3 - We've confirmed data has been removed for manual nodes so we can proceed with the rest of the erasure
-    v = graph_task.run_erasure(
+    v = await graph_task.run_erasure(
         privacy_request,
         erasure_policy,
         postgres_and_manual_nodes("postgres_example", "manual_example"),

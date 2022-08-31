@@ -55,7 +55,7 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestDRPStatusResponse,
 )
-def create_drp_privacy_request(
+async def create_drp_privacy_request(
     *,
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
