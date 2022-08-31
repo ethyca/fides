@@ -25,7 +25,7 @@ from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config as get_ctl_config
+from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -56,13 +56,13 @@ from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
 
-CTL_CONFIG = get_ctl_config()
+CONFIG = get_config()
 
 
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
-    assert config.is_test_mode
+    assert CONFIG.test_mode
     if config.database.enabled:
         yield db_action(config.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
@@ -72,7 +72,7 @@ def migrate_test_db() -> None:
 def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
-    assert config.is_test_mode
+    assert CONFIG.test_mode
     engine = get_db_engine(
         database_uri=config.database.sqlalchemy_test_database_uri,
     )

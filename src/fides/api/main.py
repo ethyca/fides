@@ -205,17 +205,17 @@ async def setup_server() -> None:
         scheduler.start()
 
     # TODO: Fix this, this line is preventing the webserver from starting properly
-    # if ops_config.database.enabled:
-    #     logger.info("Starting scheduled request intake...")
-    #     initiate_scheduled_request_intake()
+    # logger.info("Starting scheduled request intake...")
+    # initiate_scheduled_request_intake()
 
-    send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
+    # TODO: Fix this
+    # send_analytics_event(
+    #     AnalyticsEvent(
+    #         docker=in_docker_container(),
+    #         event=Event.server_start.value,
+    #         event_created_at=datetime.now(tz=timezone.utc),
+    #     )
+    # )
 
     if not CONFIG.execution.worker_enabled:
         logger.info("Starting worker...")

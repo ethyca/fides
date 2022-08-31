@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from fides.ctl.core.config import get_config
-from fides.ctl.core.config.database_settings import FidesDatabaseSettings
+from fides.ctl.core.config.database_settings import DatabaseSettings
 
 
 # Unit
@@ -148,7 +148,7 @@ def test_config_from_env_vars() -> None:
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
     os.environ["FIDES_TEST_MODE"] = "False"
-    database_settings = FidesDatabaseSettings(
+    database_settings = DatabaseSettings(
         user="postgres",
         password="fides",
         server="fides-db",
