@@ -9,15 +9,15 @@ from fides.ctl.core.config import get_config
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 alembic_config = context.config
-fidesctl_config = get_config()
+fides_config = get_config()
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 fileConfig(alembic_config.config_file_name)
 setup_fidesapi_logger(
-    fidesctl_config.logging.level,
-    serialize=fidesctl_config.logging.serialization,
-    desination=fidesctl_config.logging.destination,
+    fides_config.logging.level,
+    serialize=fides_config.logging.serialization,
+    desination=fides_config.logging.destination,
 )
 
 # add your model's MetaData object here
@@ -46,7 +46,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = fidesctl_config.database.sync_database_uri
+    url = fides_config.database.sync_database_uri
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -66,7 +66,7 @@ def run_migrations_online():
 
     """
     configuration = alembic_config.get_section(alembic_config.config_ini_section)
-    configuration["sqlalchemy.url"] = fidesctl_config.database.sync_database_uri
+    configuration["sqlalchemy.url"] = fides_config.database.sync_database_uri
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
