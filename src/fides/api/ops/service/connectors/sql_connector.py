@@ -429,11 +429,12 @@ class SnowflakeConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with Snowflake"""
         config = SnowflakeSchema(**self.configuration.secrets or {})
         uri: str = config.url or self.build_uri()
-        return create_engine(
+        snowflake_engine = create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+        return snowflake_engine
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""

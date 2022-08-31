@@ -243,8 +243,10 @@ def pytest_integration(session: nox.Session) -> None:
 def pytest_integration_external(session: nox.Session) -> None:
     """Run all tests that rely on the third-party databases and services."""
     session.notify("teardown")
+    session.run(*START_APP, external=True)
     run_command = (
-        "docker-compose",
+        "docker",
+        "compose",
         "run",
         "-e",
         "ANALYTICS_OPT_OUT",
