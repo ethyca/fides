@@ -2,10 +2,11 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
+import logging
 from functools import lru_cache
-from os import environ
+from os import environ, getenv
 from re import compile as regex
-from typing import Dict, MutableMapping
+from typing import Any, Dict, MutableMapping, Optional
 
 import toml
 from fideslib.core.config import load_toml
@@ -13,12 +14,17 @@ from pydantic import BaseModel
 
 from fides.ctl.core.utils import echo_red
 
-from .cli_settings import FidesCLISettings
+from .admin_ui_settings import AdminUISettings
+from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
-from .database_settings import FidesDatabaseSettings
-from .logging_settings import FidesLoggingSettings
-from .security_settings import FidesSecuritySettings
-from .user_settings import FidesUserSettings
+from .database_settings import DatabaseSettings
+from .execution_settings import ExecutionSettings
+from .logging_settings import LoggingSettings
+from .redis_settings import RedisSettings
+from .security_settings import SecuritySettings
+from .user_settings import UserSettings
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
@@ -26,12 +32,52 @@ DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
-    cli: FidesCLISettings = FidesCLISettings()
-    user: FidesUserSettings = FidesUserSettings()
+    cli: CLISettings = CLISettings()
+    user: UserSettings = UserSettings()
     credentials: Dict[str, Dict] = {}
-    database: FidesDatabaseSettings = FidesDatabaseSettings()
-    security: FidesSecuritySettings = FidesSecuritySettings()
-    logging: FidesLoggingSettings = FidesLoggingSettings()
+    database: DatabaseSettings = DatabaseSettings()
+    security: SecuritySettings = SecuritySettings()
+    logging: LoggingSettings = LoggingSettings()
+    redis: RedisSettings = RedisSettings()
+    execution: ExecutionSettings = ExecutionSettings()
+    admin_ui: AdminUISettings = AdminUISettings()
+
+    test_mode: bool = getenv("FIDES_TEST_MODE", "").lower() == "true"
+    hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
+    dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
+    oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
+
+    class Config:  # pylint: disable=C0115
+        case_sensitive = True
+
+    logger.warning(
+        "Startup configuration: reloading = %s, dev_mode = %s", hot_reloading, dev_mode
+    )
+    logger.warning(
+        "Startup configuration: pii logging = %s",
+        getenv("FIDES__LOG_PII", "").lower() == "true",
+    )
+
+    def log_all_config_values(self) -> None:
+        """Output DEBUG logs of all the config values."""
+        for settings in [
+            self.cli,
+            self.user,
+            self.logging,
+            self.credentials,
+            self.database,
+            self.redis,
+            self.security,
+            self.execution,
+            self.admin_ui,
+        ]:
+            for key, value in settings.dict().items():  # type: ignore
+                logger.debug(
+                    "Using config: %s%s = %s",
+                    settings.Config.env_prefix,  # type: ignore
+                    key,
+                    value,
+                )
 
 
 def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
@@ -75,6 +121,55 @@ def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
     return settings
 
 
+CONFIG_KEY_ALLOWLIST = {
+    "cli": ["server_host", "server_port"],
+    "user": ["analytics_opt_out"],
+    "logging": ["level"],
+    "database": [
+        "server",
+        "user",
+        "port",
+        "db",
+        "test_db",
+    ],
+    "redis": [
+        "host",
+        "port",
+        "charset",
+        "decode_responses",
+        "default_ttl_seconds",
+        "db_index",
+    ],
+    "security": [
+        "cors_origins",
+        "encoding",
+        "oauth_access_token_expire_minutes",
+    ],
+    "execution": [
+        "task_retry_count",
+        "task_retry_delay",
+        "task_retry_backoff",
+        "require_manual_request_approval",
+    ],
+}
+
+
+def censor_config(config: FidesConfig) -> Dict[str, Any]:
+    """
+    Returns a config that is safe to expose over the API. This function will
+    strip out any keys not specified in the `CONFIG_KEY_ALLOWLIST` above.
+    """
+    as_dict = config.dict()
+    filtered: Dict[str, Any] = {}
+    for key, value in CONFIG_KEY_ALLOWLIST.items():
+        data = as_dict[key]
+        filtered[key] = {}
+        for field in value:
+            filtered[key][field] = data[field]
+
+    return filtered
+
+
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "") -> FidesConfig:
     """
@@ -84,6 +179,7 @@ def get_config(config_path_override: str = "") -> FidesConfig:
 
     On failure, returns default configuration.
     """
+    # TODO: Add the ability to censor the config
 
     try:
         settings = (

@@ -1,16 +1,18 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict
+from typing import Dict, List, Optional
 
-from fideslib.core.config import SecuritySettings
+from fideslib.core.config import SecuritySettings as FideslibSecuritySettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from pydantic import root_validator
+
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 ENV_PREFIX = "FIDES__SECURITY__"
 
 
-class FidesSecuritySettings(SecuritySettings):
+class SecuritySettings(FideslibSecuritySettings):
     """Configuration settings for Security variables."""
 
     oauth_root_client_secret: str = "testrootclientsecret"
@@ -18,6 +20,7 @@ class FidesSecuritySettings(SecuritySettings):
     drp_jwt_secret: str = "testdrpsecret"
     oauth_root_client_id: str = "testrootclientid"
     encoding: str = "UTF-8"
+    root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
 
     @root_validator(pre=True)
     @classmethod

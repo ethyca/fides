@@ -4,12 +4,14 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 
 logger = get_task_logger(__name__)
 
+CONFIG = get_config()
 
-def _create_celery(config_path: str = config.execution.celery_config_path) -> Celery:
+
+def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -18,8 +20,8 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
-        "broker_url": config.redis.connection_url,
-        "result_backend": config.redis.connection_url,
+        "broker_url": CONFIG.redis.connection_url,
+        "result_backend": CONFIG.redis.connection_url,
     }
 
     try:

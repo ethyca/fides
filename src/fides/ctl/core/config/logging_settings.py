@@ -12,7 +12,7 @@ from .fides_settings import FidesSettings
 ENV_PREFIX = "FIDES__LOGGING__"
 
 
-class FidesLoggingSettings(FidesSettings):
+class LoggingSettings(FidesSettings):
     """Class used to store values from the 'logging' section of the config."""
 
     # Logging

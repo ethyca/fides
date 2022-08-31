@@ -13,7 +13,7 @@ from .fides_settings import FidesSettings
 ENV_PREFIX = "FIDES__USER__"
 
 
-class FidesUserSettings(FidesSettings):
+class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
     user_id: str = "1"

@@ -26,7 +26,6 @@ services:
       FIDESOPS__DEV_MODE: "True"
       FIDESOPS__LOG_PII: ${FIDESOPS__LOG_PII}
       FIDESOPS__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
-      FIDESOPS__ROOT_USER__ANALYTICS_ID: "internal"
       FIDESOPS__EXECUTION__WORKER_ENABLED: "True"
     volumes:
       - type: bind

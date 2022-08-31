@@ -10,7 +10,7 @@ from .fides_settings import FidesSettings
 ENV_PREFIX = "FIDES__CLI__"
 
 
-class FidesCLISettings(FidesSettings):
+class CLISettings(FidesSettings):
     """Class used to store values from the 'cli' section of the config."""
 
     local_mode: bool = False

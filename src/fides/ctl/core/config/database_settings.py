@@ -2,16 +2,19 @@
 
 # pylint: disable=C0115,C0116, E0213
 
+import logging
 import os
 from typing import Dict, Optional
 
-from fideslib.core.config import DatabaseSettings
+from fideslib.core.config import DatabaseSettings as FideslibDatabaseSettings
 from pydantic import PostgresDsn, validator
+
+logger = logging.getLogger(__name__)
 
 ENV_PREFIX = "FIDES__DATABASE__"
 
 
-class FidesDatabaseSettings(DatabaseSettings):
+class DatabaseSettings(FideslibDatabaseSettings):
     """Configuration settings for Postgres."""
 
     user: str = "postgres"
