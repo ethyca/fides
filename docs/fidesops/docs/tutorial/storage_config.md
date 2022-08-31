@@ -32,7 +32,7 @@ def create_local_storage(key, format, access_token):
         headers=oauth_headers(access_token=access_token),
         json=storage_create_data,
     )
-    logger.info(f"Defining an upload location. Status {response.status_code}")
+    logger.info("Defining an upload location. Status %s", response.status_code)
     return response.json()
 
 ```

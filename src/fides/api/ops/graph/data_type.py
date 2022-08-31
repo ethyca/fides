@@ -30,7 +30,8 @@ class DataTypeConverter(ABC, Generic[T]):
     def truncate(self, length: int, val: T) -> T:
         """Truncates value to given length"""
         logger.warning(
-            f"{self.name} does not support length truncation. Using original masked value instead for update query."
+            "%s does not support length truncation. Using original masked value instead for update query.",
+            self.name,
         )
         return val
 

@@ -29,9 +29,10 @@ from fides.api.ops.schemas import policy as schemas
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
-router = APIRouter(tags=["Policy"], prefix=urls.V1_URL_PREFIX)
+router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +51,14 @@ def get_policy_list(
     """
     Return a paginated list of all Policy records in this system
     """
-    logger.info(f"Finding all policies with pagination params '{params}'")
+    logger.info("Finding all policies with pagination params '%s'", params)
     policies = Policy.query(db=db).order_by(Policy.created_at.desc())
     return paginate(policies, params=params)
 
 
 def get_policy_or_error(db: Session, policy_key: FidesOpsKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
-    logger.info(f"Finding policy with key '{policy_key}'")
+    logger.info("Finding policy with key '%s'", policy_key)
     policy = Policy.get_by(db=db, field="key", value=policy_key)
     if not policy:
         raise HTTPException(
@@ -105,7 +106,7 @@ def create_or_update_policies(
     """
     created_or_updated: List[Policy] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(data)} policies")
+    logger.info("Starting bulk upsert for %s policies", len(data))
 
     for policy_schema in data:
         policy_data: Dict[str, Any] = dict(policy_schema)
@@ -124,7 +125,7 @@ def create_or_update_policies(
             DrpActionValidationError,
             IntegrityError,
         ) as exc:
-            logger.warning("Create/update failed for policy: %s", exc)
+            logger.warning("Create/update failed for policy: %s", Pii(str(exc)))
             failure = {
                 "message": exc.args[0],
                 "data": policy_data,
@@ -132,7 +133,7 @@ def create_or_update_policies(
             failed.append(BulkUpdateFailed(**failure))
             continue
         except PolicyValidationError as exc:
-            logger.warning("Create/update failed for policy: %s", exc)
+            logger.warning("Create/update failed for policy: %s", Pii(str(exc)))
             failure = {
                 "message": "This record could not be added because the data provided was invalid.",
                 "data": policy_data,
@@ -167,7 +168,7 @@ def create_or_update_rules(
     Given a list of Rule data elements, create or update corresponding Rule objects
     or report failure
     """
-    logger.info(f"Finding policy with key '{policy_key}'")
+    logger.info("Finding policy with key '%s'", policy_key)
 
     policy = get_policy_or_error(db, policy_key)
 
@@ -175,7 +176,7 @@ def create_or_update_rules(
     failed: List[BulkUpdateFailed] = []
 
     logger.info(
-        f"Starting bulk upsert for {len(input_data)} rules on policy {policy_key}"
+        "Starting bulk upsert for %s rules on policy %s", len(input_data), policy_key
     )
 
     for schema in input_data:
@@ -191,7 +192,7 @@ def create_or_update_rules(
             )
             if not associated_storage_config:
                 logger.warning(
-                    f"No storage config found with key {storage_destination_key}"
+                    "No storage config found with key %s", storage_destination_key
                 )
                 failure = {
                     "message": f"A StorageConfig with key {storage_destination_key} does not exist",
@@ -223,7 +224,10 @@ def create_or_update_rules(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s' on policy %s: %s",
+                schema.key,
+                policy_key,
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -233,7 +237,10 @@ def create_or_update_rules(
             continue
         except RuleValidationError as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s' on policy %s: %s",
+                schema.key,
+                policy_key,
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -243,7 +250,10 @@ def create_or_update_rules(
             continue
         except ValueError as exc:
             logger.warning(
-                f"Create/update failed for rule '{schema.key}' on policy {policy_key}: {exc}"
+                "Create/update failed for rule '%s' on policy %s: %s",
+                schema.key,
+                policy_key,
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -273,7 +283,7 @@ def delete_rule(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
 
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
@@ -284,7 +294,7 @@ def delete_rule(
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Deleting rule with key '{rule_key}'")
+    logger.info("Deleting rule with key '%s'", rule_key)
     rule.delete(db=db)
 
 
@@ -309,7 +319,7 @@ def create_or_update_rule_targets(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
     ).first()
@@ -322,7 +332,7 @@ def create_or_update_rule_targets(
     created_or_updated = []
     failed = []
     logger.info(
-        f"Starting bulk upsert for {len(input_data)} rule targets on rule {rule_key}"
+        "Starting bulk upsert for %s rule targets on rule %s", len(input_data), rule_key
     )
     for schema in input_data:
         try:
@@ -338,7 +348,10 @@ def create_or_update_rule_targets(
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                rule_key,
+                exc,
             )
             failure = {
                 "message": exc.args[0],
@@ -352,7 +365,10 @@ def create_or_update_rule_targets(
             RuleTargetValidationError,
         ) as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                rule_key,
+                Pii(str(exc)),
             )
             failure = {
                 "message": exc.args[0],
@@ -362,7 +378,10 @@ def create_or_update_rule_targets(
             continue
         except IntegrityError as exc:
             logger.warning(
-                f"Create/update failed for rule target {schema.key} on rule {rule_key}: {exc}"
+                "Create/update failed for rule target %s on rule %s: %s",
+                schema.key,
+                rule_key,
+                Pii(str(exc)),
             )
             failure = {
                 "message": f"DataCategory {schema.data_category} is already specified on Rule with ID {rule.id}",
@@ -395,7 +414,7 @@ def delete_rule_target(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(f"Finding rule with key '{rule_key}'")
+    logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
     ).first()
@@ -405,7 +424,7 @@ def delete_rule_target(
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Finding rule target with key '{rule_target_key}'")
+    logger.info("Finding rule target with key '%s'", rule_target_key)
     target = RuleTarget.filter(
         db=db,
         conditions=(
@@ -418,6 +437,6 @@ def delete_rule_target(
             detail=f"No RuleTarget found for key {rule_target_key} at Rule {rule_key} on Policy {policy_key}.",
         )
 
-    logger.info(f"Deleting rule target with key '{rule_target_key}'")
+    logger.info("Deleting rule target with key '%s'", rule_target_key)
 
     target.delete(db=db)

@@ -1,9 +1,7 @@
-import { Box, Center, Image, SimpleGrid } from "@fidesui/react";
-import {
-  CONNECTION_TYPE_LOGO_MAP,
-  CONNECTOR_LOGOS_PATH,
-  FALLBACK_CONNECTOR_LOGOS_PATH,
-} from "datastore-connections/constants";
+import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
+import { capitalize } from "common/utils";
+import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import Link from "next/link";
 import React from "react";
 
 import { ConnectionOption } from "../../connection-type/types";
@@ -12,26 +10,26 @@ type ConnectionTypeListProps = {
   items: ConnectionOption[];
 };
 
-const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => {
-  const getImageSrc = (value: string): string => {
-    const item = [...CONNECTION_TYPE_LOGO_MAP].find(
-      ([k]) => k.toLowerCase() === value.toLowerCase()
-    );
-    const path = item
-      ? CONNECTOR_LOGOS_PATH + item[1]
-      : FALLBACK_CONNECTOR_LOGOS_PATH;
-    return path;
-  };
-
-  return (
-    <SimpleGrid columns={4} spacing="16px">
-      {items.map((i) => (
+const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
+  <SimpleGrid minChildWidth="232px" spacing="16px">
+    {items.map((i) => (
+      <Link
+        href={{
+          pathname: window.location.pathname,
+          query: { step: 2, connectorType: JSON.stringify(i) },
+        }}
+        key={i.identifier}
+        passHref
+      >
         <Box
           boxShadow="base"
           borderRadius="5px"
-          key={JSON.stringify(i)}
           maxWidth="232px"
           overflow="hidden"
+          _hover={{
+            boxShadow: "lg",
+            cursor: "pointer",
+          }}
         >
           <Center
             color="gray.700"
@@ -41,20 +39,13 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => {
             lineHeight="20px"
             h="80px"
           >
-            <Image
-              boxSize="32px"
-              marginRight="12px"
-              objectFit="cover"
-              src={`/${getImageSrc(i.identifier)}`}
-              fallbackSrc={`/${FALLBACK_CONNECTOR_LOGOS_PATH}`}
-              alt={i.identifier}
-            />
-            {i.identifier}
+            <ConnectionTypeLogo data={i.identifier} />
+            <Text ml="12px">{capitalize(i.identifier)}</Text>
           </Center>
         </Box>
-      ))}
-    </SimpleGrid>
-  );
-};
+      </Link>
+    ))}
+  </SimpleGrid>
+);
 
 export default ConnectionTypeList;

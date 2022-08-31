@@ -23,6 +23,7 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class StorageConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error("Error: %s", exc)
+            logger.error("Error: %s", Pii(str(exc)))
             # We don't want to handle these explicitly here, only in the API view
             raise
 

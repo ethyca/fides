@@ -466,3 +466,12 @@ class TestPrivacyRequestCacheFailedStep:
 
         cached_data = privacy_request.get_failed_collection_details()
         assert cached_data is None
+
+
+class TestCacheIdentityVerificationCode:
+    def test_cache_code(self, privacy_request):
+        assert not privacy_request.get_cached_verification_code()
+
+        privacy_request.cache_identity_verification_code("123456")
+
+        assert privacy_request.get_cached_verification_code() == "123456"

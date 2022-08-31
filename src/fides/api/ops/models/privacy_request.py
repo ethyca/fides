@@ -26,7 +26,10 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
-from fides.api.ops.common_exceptions import PrivacyRequestPaused
+from fides.api.ops.common_exceptions import (
+    IdentityVerificationException,
+    PrivacyRequestPaused,
+)
 from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
@@ -104,6 +107,7 @@ class StoppedCollection(BaseSchema):
 class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
+    identity_unverified = "identity_unverified"
     pending = "pending"
     approved = "approved"
     denied = "denied"
@@ -196,6 +200,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         FidesUser, backref=backref("privacy_request", passive_deletes=True)
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
+    identity_verified_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
@@ -264,6 +269,29 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 field.encrypted_value["value"],
             )
         return schema
+
+    def verify_identity(self, db: Session, provided_code: str) -> "PrivacyRequest":
+        """Verify the identification code supplied by the user
+        If verified, change the status of the request to "pending", and set the datetime the identity was verified.
+        """
+        if not self.status == PrivacyRequestStatus.identity_unverified:
+            raise IdentityVerificationException(
+                f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
+            )
+
+        code: Optional[str] = self.get_cached_verification_code()
+        if not code:
+            raise IdentityVerificationException(
+                f"Identification code expired for {self.id}."
+            )
+
+        if code != provided_code:
+            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+
+        self.status = PrivacyRequestStatus.pending
+        self.identity_verified_at = datetime.utcnow()
+        self.save(db)
+        return self
 
     def cache_task_id(self, task_id: str) -> None:
         """Sets a task_id for this privacy request's asynchronous execution."""
@@ -451,6 +479,26 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
+    def cache_identity_verification_code(self, value: str) -> None:
+        """Cache the generated identity verification code for later comparison"""
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}",
+            value,
+            config.redis.identity_verification_code_ttl_seconds,
+        )
+
+    def get_cached_verification_code(self) -> Optional[str]:
+        """Retrieve the generated identity verification code if it exists"""
+        cache: FidesopsRedis = get_cache()
+        values: Optional[Dict[str, Any]] = (
+            cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
+        )
+        if not values:
+            return None
+
+        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
+
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
@@ -478,7 +526,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "reply-to-token": generate_request_callback_jwe(webhook),
             }
 
-        logger.info(f"Calling webhook {webhook.key} for privacy_request {self.id}")
+        logger.info(
+            "Calling webhook '%s' for privacy_request '%s'", webhook.key, self.id
+        )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
             response_expected=response_expected,
@@ -494,7 +544,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             [response_body.derived_identity.dict().values()]
         ):
             logger.info(
-                f"Updating known identities on privacy request {self.id} from webhook {webhook.key}."
+                "Updating known identities on privacy request '%s' from webhook '%s'.",
+                self.id,
+                webhook.key,
             )
             # Don't persist derived identities because they aren't provided directly
             # by the end user
@@ -503,7 +555,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         # Pause execution if instructed
         if response_body.halt and is_pre_webhook:
             raise PrivacyRequestPaused(
-                f"Halt instruction received on privacy request {self.id}."
+                f"Halt instruction received on privacy request '{self.id}'."
             )
 
         return
@@ -536,7 +588,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info(f"Revoking task {task_id} for request {self.id}")
+                logger.info("Revoking task %s for request %s", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 

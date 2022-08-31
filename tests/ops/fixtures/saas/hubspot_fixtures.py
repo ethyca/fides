@@ -14,8 +14,10 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors import SaaSConnector
-from fides.api.ops.util.saas_util import format_body, load_config
-from tests.ops.fixtures.application_fixtures import load_dataset
+from fides.api.ops.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -46,12 +48,20 @@ def hubspot_erasure_identity_email():
 
 @pytest.fixture
 def hubspot_config() -> Dict[str, Any]:
-    return load_config("data/saas/config/hubspot_config.yml")
+    return load_config_with_replacement(
+        "data/saas/config/hubspot_config.yml",
+        "<instance_fides_key>",
+        "hubspot_instance",
+    )
 
 
 @pytest.fixture
 def hubspot_dataset() -> Dict[str, Any]:
-    return load_dataset("data/saas/dataset/hubspot_dataset.yml")[0]
+    return load_dataset_with_replacement(
+        "data/saas/dataset/hubspot_dataset.yml",
+        "<instance_fides_key>",
+        "hubspot_instance",
+    )[0]
 
 
 @pytest.fixture(scope="function")

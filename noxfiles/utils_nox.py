@@ -5,7 +5,8 @@ from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
-    "docker-compose",
+    "docker",
+    "compose",
     "-f",
     COMPOSE_FILE,
     "-f",
@@ -24,12 +25,6 @@ COMPOSE_DOWN = (
     "--remove-orphans",
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
-
-
-@nox.session()
-def create_user(session: nox.Session) -> None:
-    """Create a super user in the fidesops database."""
-    run_infrastructure(datastores=["postgres"], run_create_superuser=True)
 
 
 @nox.session()

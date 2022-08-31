@@ -59,7 +59,7 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets import (
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.logger import NotPii
+from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
@@ -72,7 +72,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info(f"Finding connection configuration with key '{connection_key}'")
+    logger.info("Finding connection configuration with key '%s'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -108,7 +108,9 @@ def get_connections(
     into an "or" query.
     """
     logger.info(
-        f"Finding connection configurations with pagination params {params} and search query: '{search if search else ''}'."
+        "Finding connection configurations with pagination params %s and search query: '%s'.",
+        params,
+        search if search else "",
     )
     query = ConnectionConfig.query(db)
 
@@ -188,7 +190,7 @@ def patch_connections(
     """
     created_or_updated: List[ConnectionConfig] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(f"Starting bulk upsert for {len(configs)} connection configuration(s)")
+    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
 
     for config in configs:
         orig_data = config.dict().copy()
@@ -199,7 +201,9 @@ def patch_connections(
             created_or_updated.append(connection_config)
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                f"Create/update failed for connection config with key '{config.key}': {exc}"
+                "Create/update failed for connection config with key '%s': %s",
+                config.key,
+                exc,
             )
             failed.append(
                 BulkUpdateFailed(
@@ -209,7 +213,7 @@ def patch_connections(
             )
         except Exception:
             logger.warning(
-                f"Create/update failed for connection config with key '{config.key}'."
+                "Create/update failed for connection config with key '%s'.", config.key
             )
             failed.append(
                 BulkUpdateFailed(
@@ -234,7 +238,7 @@ def delete_connection(
 ) -> None:
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
-    logger.info(f"Deleting connection config with key '{connection_key}'.")
+    logger.info("Deleting connection config with key '%s'.", connection_key)
     connection_config.delete(db)
 
 
@@ -255,7 +259,8 @@ def validate_secrets(
     try:
         schema = get_connection_secrets_validator(connection_type.value, saas_config)  # type: ignore
         logger.info(
-            f"Validating secrets on connection config with key '{connection_config.key}'"
+            "Validating secrets on connection config with key '%s'",
+            connection_config.key,
         )
         connection_secrets = schema.parse_obj(request_body)
     except ValidationError as e:
@@ -278,8 +283,8 @@ def connection_status(
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
             "Connection test failed on %s: %s",
-            NotPii(connection_config.key),
-            str(exc),
+            connection_config.key,
+            Pii(str(exc)),
         )
         connection_config.update_test_status(
             test_status=ConnectionTestStatus.failed, db=db
@@ -290,7 +295,7 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info(f"Connection test {status.value} on {connection_config.key}")  # type: ignore
+    logger.info("Connection test %s on %s", status.value, connection_config.key)  # type: ignore
     connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
@@ -324,7 +329,7 @@ async def put_connection_config_secrets(
         unvalidated_secrets, connection_config
     ).dict()
     # Save validated secrets, regardless of whether they've been verified.
-    logger.info(f"Updating connection config secrets for '{connection_key}'")
+    logger.info("Updating connection config secrets for '%s'", connection_key)
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."

@@ -23,7 +23,6 @@ from fideslog.sdk.python.utils import (
 )
 
 import fides
-from fides.api.ctl.routes.util import API_PREFIX
 from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesctlConfig
@@ -49,7 +48,7 @@ FIDESCTL_ASCII_ART = """
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    healthcheck_url = server_url + API_PREFIX + "/health"
+    healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:

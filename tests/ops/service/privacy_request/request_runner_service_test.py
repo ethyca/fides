@@ -256,7 +256,7 @@ def get_privacy_request_results(
 @mock.patch(
     "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
 )
-def test_create_and_process_access_request(
+def test_create_and_process_access_request_postgres(
     trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
     postgres_integration_db,
@@ -323,6 +323,7 @@ def test_create_and_process_access_request(
 
 
 @pytest.mark.integration
+@pytest.mark.integration_mssql
 @mock.patch(
     "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
 )
@@ -371,6 +372,7 @@ def test_create_and_process_access_request_mssql(
 
 
 @pytest.mark.integration
+@pytest.mark.integration_mysql
 @mock.patch(
     "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
 )
@@ -505,7 +507,7 @@ def test_create_and_process_access_request_saas_mailchimp(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_connector_example:"
+    result_key_prefix = f"EN_{pr.id}__access_request__mailchimp_instance:"
     member_key = result_key_prefix + "member"
     assert results[member_key][0]["email_address"] == customer_email
 
@@ -614,7 +616,7 @@ def test_create_and_process_access_request_saas_hubspot(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_connector_example:"
+    result_key_prefix = f"EN_{pr.id}__access_request__hubspot_instance:"
     contacts_key = result_key_prefix + "contacts"
     assert results[contacts_key][0]["properties"]["email"] == customer_email
 
@@ -646,6 +648,7 @@ def test_create_and_process_erasure_request_specific_category_postgres(
 
     stmt = select("*").select_from(table("customer"))
     res = postgres_integration_db.execute(stmt).all()
+    print(f"The full customer table:\n{str(res)}")
 
     pr = get_privacy_request_results(
         db,
@@ -660,10 +663,13 @@ def test_create_and_process_erasure_request_specific_category_postgres(
         column("name"),
     ).select_from(table("customer"))
     res = postgres_integration_db.execute(stmt).all()
+    print(f"The customer table after deletion:\n{str(res)}")
 
     customer_found = False
+    print(f"Looking for customer_id: {customer_id}")
     for row in res:
-        if customer_id in row:
+        print(f"In row: {str(row)}")
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -705,7 +711,7 @@ def test_create_and_process_erasure_request_specific_category_mssql(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -747,7 +753,7 @@ def test_create_and_process_erasure_request_specific_category_mysql(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -789,7 +795,7 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -838,7 +844,7 @@ def test_create_and_process_erasure_request_generic_category(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `email` field is `None` and that its data category
             # ("user.contact.email") has been erased by the parent
@@ -893,7 +899,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `email` field is not original val and that its data category
             # ("user.contact.email") has been erased by the parent
@@ -1001,7 +1007,7 @@ def test_create_and_process_erasure_request_read_access(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
             # "read" access
@@ -1561,7 +1567,7 @@ def test_privacy_request_log_failure(
         assert sent_event.event == "privacy_request_execution_failure"
         assert sent_event.event_created_at is not None
 
-        assert sent_event.local_host is False
+        assert sent_event.local_host is None
         assert sent_event.endpoint is None
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"

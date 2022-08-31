@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: zendesk_connector_example
+  fides_key: <instance_fides_key>
   name: Zendesk SaaS Config
   type: zendesk
   description: A sample schema representing the Zendesk connector for Fidesops
@@ -46,7 +46,7 @@ saas_config:
           param_values:
             - name: user_id
               references:
-                - dataset: zendesk_connector_example
+                - dataset: <instance_fides_key>
                   field: users.id
                   direction: from
     - name: user_identities
@@ -60,7 +60,7 @@ saas_config:
           param_values:
             - name: user_id
               references:
-                - dataset: zendesk_connector_example
+                - dataset: <instance_fides_key>
                   field: users.id
                   direction: from
             - name: page_size
@@ -82,7 +82,7 @@ saas_config:
           param_values:
             - name: user_id
               references:
-                - dataset: zendesk_connector_example
+                - dataset: <instance_fides_key>
                   field: users.id
                   direction: from
             - name: page_size
@@ -99,7 +99,7 @@ saas_config:
           param_values:
             - name: ticket_id
               references:
-                - dataset: zendesk_connector_example
+                - dataset: <instance_fides_key>
                   field: tickets.id
                   direction: from
     - name: ticket_comments
@@ -113,7 +113,7 @@ saas_config:
           param_values:
             - name: ticket_id
               references:
-                - dataset: zendesk_connector_example
+                - dataset: <instance_fides_key>
                   field: tickets.id
                   direction: from
             - name: page_size

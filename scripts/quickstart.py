@@ -13,9 +13,9 @@ from typing import Optional
 import requests
 import yaml
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import ConnectionType
-from fidesops.ops.models.policy import ActionType
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import ConnectionType
+from fides.api.ops.models.policy import ActionType
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -317,7 +317,7 @@ def create_policy(key: str):
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info(f"Created fidesops policy with key={key} via /api/v1/policy")
+            logger.info("Created fidesops policy with key=%s via /api/v1/policy", key)
             return response.json()
 
     raise RuntimeError(

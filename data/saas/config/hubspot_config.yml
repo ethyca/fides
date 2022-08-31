@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: hubspot_connector_example
+  fides_key: <instance_fides_key>
   name: Hubspot SaaS Config
   type: hubspot
   description: A sample schema representing the Hubspot connector for Fidesops
@@ -64,7 +64,7 @@ saas_config:
           param_values:
             - name: contactId
               references:
-                - dataset: hubspot_connector_example
+                - dataset: <instance_fides_key>
                   field: contacts.id
                   direction: from
     - name: owners
@@ -113,7 +113,7 @@ saas_config:
               identity: email
             - name: subscriptionId
               references:
-                - dataset: hubspot_connector_example
+                - dataset: <instance_fides_key>
                   field: subscription_preferences.id
                   direction: from
           postprocessors:

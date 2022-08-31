@@ -17,4 +17,4 @@ class TestFailedGraphAnalyticsEvent:
         assert analytics_event.error == "FidesopsException"
         assert analytics_event.status_code == 500
         assert analytics_event.endpoint is None
-        assert analytics_event.local_host is False
+        assert analytics_event.local_host is None

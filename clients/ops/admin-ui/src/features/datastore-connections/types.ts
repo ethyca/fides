@@ -22,6 +22,9 @@ export type DatastoreConnection = {
   saas_config?: SaasConfig;
 };
 
+export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
+  (obj as DatastoreConnection).connection_type !== undefined;
+
 export type DatastoreConnectionParams = {
   search: string;
   connection_type?: ConnectionType[];
@@ -54,5 +57,21 @@ export type DatastoreConnectionUpdate = {
 };
 
 export type SaasConfig = {
+  fides_key: string;
+  name: string;
   type: SaasType;
+};
+
+export type SassConnectionConfigRequest = {
+  name: string;
+  description: string;
+  instance_key: string;
+  saas_connector_type: SaasType;
+  secrets: {
+    [key: string]: any;
+  };
+};
+
+export type SassConnectionConfigResponse = {
+  connection: DatastoreConnection;
 };

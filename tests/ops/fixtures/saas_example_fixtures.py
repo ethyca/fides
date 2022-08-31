@@ -14,7 +14,6 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthenticationConfiguration,
 )
-from fides.api.ops.util.logger import NotPii
 from fides.api.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 
@@ -232,5 +231,5 @@ def saas_config() -> Dict[str, Any]:
     try:
         saas_config: Dict[str, Any] = load_toml(["saas_config.toml"])
     except FileNotFoundError as e:
-        logger.warning("saas_config.toml could not be loaded: %s", NotPii(e))
+        logger.warning("saas_config.toml could not be loaded: %s", e)
     return saas_config

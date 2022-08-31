@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: outreach_connector_example
+  fides_key: <instance_fides_key>
   name: Outreach Example Config
   type: outreach
   description: A sample schema representing the Outreach connector for Fidesops

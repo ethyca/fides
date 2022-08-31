@@ -99,7 +99,6 @@ disable=[
     "import-outside-toplevel",
     "invalid-name",
     "line-too-long",
-    "logging-fstring-interpolation",
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",

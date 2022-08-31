@@ -3,7 +3,6 @@ include README.md
 include requirements.txt
 include dev-requirements.txt
 include versioneer.py
-include src/fides/ops/alembic.ini
 include src/fides/api/ctl/alembic.ini
 include src/fides/_version.py
 include src/fides/py.typed
@@ -11,9 +10,6 @@ include src/fides/templates/fides_datamap_template.xlsx
 
 recursive-include src/fides/ui-build *
 
-graft src/fides/ops/migrations
-
-exclude src/fides/ops/migrations/README
-exclude src/fides/ops/migrations/script.py.mako
+graft src/fides/api/ops/email_templates/templates
 
 global-exclude *.pyc

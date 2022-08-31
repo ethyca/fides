@@ -44,11 +44,15 @@ The `fidesops.toml` file should specify the following variables:
 | `oauth_root_client_id` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID` | string | fidesopsadmin | N/A | The value used to identify the fidesops application root API client |
 | `oauth_root_client_secret` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET` | string | fidesopsadminsecret | N/A | The secret value used to authenticate the fidesops application root API client |
 | `oauth_access_token_expire_minutes` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period fidesops API tokens will be valid |
+| `root_username` | `FIDESOPS__SECURITY__ROOT_USERNAME` | string | root_user | None | If set this can be used in conjunction with `root_password` to log in as a root user without first needing to create a user in the database. |
+| `root_password` | `FIDESOPS__SECURITY__ROOT_PASSWORD` | string | apassword | None | If set this can be used in conjunction with `root_username` to log in as a root user without first needing to create a user in the database. |
+| `root_user_scopes` | `FIDESOPS__SECURITY__ROOT_USER_SCOPES` | list of strings | ["client:create", "client:update"] | All available scopes | The scopes granted to the root user when logging in with `root_username` and `root_password`. |
 | Execution Variables |---|---|---|---|---|
 |`privacy_request_delay_timeout` | `FIDESOPS__EXECUTION__PRIVACY_REQUEST_DELAY_TIMEOUT` | int | 3600 | 3600 | The amount of time to wait for actions delaying privacy requests, for example pre and post processing webhooks.
 |`task_retry_count` | `FIDESOPS__EXECUTION__TASK_RETRY_COUNT` | int | 5 | 0 | The number of times a failed request will be retried
 |`task_retry_delay` | `FIDESOPS__EXECUTION__TASK_RETRY_DELAY` | int | 20 | 1 | The delays between retries in seconds
 |`task_retry_backoff` | `FIDESOPS__EXECUTION__TASK_RETRY_BACKOFF` | int | 2 | 1 | The backoff factor for retries, to space out repeated retries.
+|`subject_identity_verification_required` | `FIDESOPS__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED` | bool | False | False | Whether privacy requests require user identity verification
 |`require_manual_request_approval` | `FIDESOPS__EXECUTION__REQUIRE_MANUAL_REQUEST_APPROVAL` | bool | False | False | Whether privacy requests require explicit approval to execute
 |`masking_strict` | `FIDESOPS__EXECUTION__MASKING_STRICT` | bool | True | True | If masking_strict is True, we only use "update" requests to mask data. (For third-party integrations, you should define an `update` endpoint to use.)  If masking_strict is False, you are allowing fidesops to use any defined DELETE or GDPR DELETE endpoints to remove PII. In this case, you should define `delete` or `data_protection_request` endpoints for your third-party integrations.  Note that setting masking_strict to False means that data may be deleted beyond the specific data categories that you've configured in your Policy.
 |`celery_config_path` | `FIDESOPS__EXECUTION__CELERY_CONFIG_PATH` | string | data/config/celery.toml | N/A | An optional override for the [Celery](#celery-configuration) configuration file path.
@@ -87,6 +91,8 @@ encoding = "UTF-8"
 oauth_root_client_id = "fidesopsadmin"
 oauth_root_client_secret = "fidesopsadminsecret"
 log_level = "INFO"
+root_username = "root_user"
+root_password = "Testpassword1!"
 
 [execution]
 masking_strict = true

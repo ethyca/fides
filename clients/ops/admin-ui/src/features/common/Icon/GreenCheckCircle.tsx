@@ -1,7 +1,7 @@
 import { createIcon } from "@chakra-ui/react";
 
 export default createIcon({
-  displayName: "GreenCheckCircle",
+  displayName: "GreenCheckCircleIcon",
   viewBox: "0 0 16 16",
   defaultProps: {
     width: "16px",

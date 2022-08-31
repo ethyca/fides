@@ -26,7 +26,7 @@ def create_postgres_connection(key, access_token):
         headers=oauth_headers(access_token=access_token),
         json=connection_create_data,
     )
-    logger.info(f"Creating PostgreSQL ConnectionConfig. Status {response.status_code}")
+    logger.info("Creating PostgreSQL ConnectionConfig. Status %s", response.status_code)
     return response.json()
 
 ```
@@ -52,7 +52,7 @@ def configure_postgres_connection(
         headers=oauth_headers(access_token=access_token),
         json=connection_secrets_data,
     )
-    logger.info(f"Updating PostgreSQL Secrets. Status {response.status_code}.")
+    logger.info("Updating PostgreSQL Secrets. Status %s.", response.status_code)
     return response.json()
 ```
 

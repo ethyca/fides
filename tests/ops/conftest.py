@@ -16,16 +16,16 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fides.api.ctl.database.database import get_alembic_config, upgrade_db
+from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops_main import app
+from fides.ctl.core.api import db_action
+from fides.ctl.core.config import get_config as get_ctl_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -56,16 +56,15 @@ from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
 
+CTL_CONFIG = get_ctl_config()
+
 
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
-    logger.debug("Applying migrations...")
+    logger.debug("Setting up the database...")
     assert config.is_test_mode
     if config.database.enabled:
-        alembic_config = get_alembic_config(
-            config.database.sqlalchemy_test_database_uri
-        )
-        upgrade_db(alembic_config)
+        yield db_action(config.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
 
@@ -78,17 +77,9 @@ def db() -> Generator:
         database_uri=config.database.sqlalchemy_test_database_uri,
     )
 
-    logger.debug(f"Configuring database at: {engine.url}")
-    if not database_exists(engine.url):
-        logger.debug(f"Creating database at: {engine.url}")
-        create_database(engine.url)
-        logger.debug(f"Database at: {engine.url} successfully created")
-    else:
-        logger.debug(f"Database at: {engine.url} already exists")
-
     migrate_test_db()
-    raise SystemExit(1)
-    scheduler.start()
+    if not scheduler.running:
+        scheduler.start()
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
     # Setup above...
@@ -96,11 +87,10 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug(f"Dropping database at: {engine.url}")
+    logger.debug("Dropping database at: %s", engine.url)
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
-    drop_database(engine.url)
-    logger.debug(f"Database at: {engine.url} successfully dropped")
+    logger.debug("Database at: %s successfully dropped", engine.url)
 
 
 @pytest.fixture(autouse=True)
@@ -163,16 +153,23 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
 
 
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
-    return _generate_auth_header(oauth_client)
+    return _generate_auth_header(oauth_client, config.security.app_encryption_key)
 
 
-def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
+@pytest.fixture
+def generate_auth_header_ctl_config(oauth_client) -> Callable[[Any], Dict[str, str]]:
+    return _generate_auth_header(oauth_client, CTL_CONFIG.security.app_encryption_key)
+
+
+def _generate_auth_header(
+    oauth_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
     client_id = oauth_client.id
 
     def _build_jwt(scopes: List[str]) -> Dict[str, str]:
@@ -181,7 +178,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
@@ -235,3 +232,21 @@ def analytics_opt_out():
     config.root_user.analytics_opt_out = True
     yield
     config.root_user.analytics_opt_out = original_value
+
+
+@pytest.fixture(scope="function")
+def require_manual_request_approval():
+    """Require manual request approval"""
+    original_value = config.execution.require_manual_request_approval
+    config.execution.require_manual_request_approval = True
+    yield
+    config.execution.require_manual_request_approval = original_value
+
+
+@pytest.fixture(autouse=True, scope="session")
+def subject_identity_verification_required():
+    """Disable identity verification for most tests unless overridden"""
+    original_value = config.execution.subject_identity_verification_required
+    config.execution.subject_identity_verification_required = False
+    yield
+    config.execution.subject_identity_verification_required = original_value

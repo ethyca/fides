@@ -34,7 +34,9 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
             masking_strategy.strategy, masking_strategy.configuration
         )
         logger.info(
-            f"Starting masking of {len(values)} value(s) with strategy {masking_strategy.strategy}"
+            "Starting masking of %s value(s) with strategy %s",
+            len(values),
+            masking_strategy.strategy,
         )
         masked_values = strategy.mask(values, None)
         return MaskingAPIResponse(plain=values, masked_values=masked_values)

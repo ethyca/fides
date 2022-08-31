@@ -1,12 +1,11 @@
 # Execute a Privacy Request
 
-
-## See a Privacy Request in Action 
+## See a Privacy Request in Action
 
 To summarize so far, we have:
 
   1. Created a client for authentication
-  2. Created a connection from fidesops to our Flask App's Postgres Database
+  2. Created a connection from fides.api to our Flask App's Postgres Database
   3. Uploaded an annotated Dataset to fidesops so it knows how to traverse through the Flask App's tables
   4. Defined where to upload our user data after we've retrieved it from the Flask App
   5. Defined Policies describing what data we're looking for and what to do with that data.
@@ -37,14 +36,14 @@ def create_privacy_request(email, policy_key):
         f"{FIDESOPS_URL}/api/v1/privacy-request",
         json=privacy_request_data,
     )
-    logger.info(f"Executing a Privacy Request. Status {response.status_code}")
-    logger.info(f"Check fidesdemo/fides_uploads for upload package.")
+    logger.info("Executing a Privacy Request. Status %s", response.status_code)
+    logger.info("Check fidesdemo/fides_uploads for upload package.")
     return response.json()
 ```
 
 ### Call the helper method to run the Privacy Request
 
-This will create a request to fetch for all user data with category `user` associated 
+This will create a request to fetch for all user data with category `user` associated
 with email `user@example.com` and save it to our local Storage destination, by specifying the email and the Policy.
 
 ```python
@@ -83,7 +82,7 @@ INFO:__main__:Executing a Privacy Request. Status 200
 INFO:__main__:Check fidesdemo/fidesuploads for upload package.
 ```
 
-Check your `fidesdemo/fides_uploads` directory for your data package (you may have to wait a few 
+Check your `fidesdemo/fides_uploads` directory for your data package (you may have to wait a few
 moments for the file to appear):
 
 ```json
@@ -116,16 +115,19 @@ moments for the file to appear):
 ```
 
 ## Issues?
+
 - Is `nox -s dev` running?
 - [Reference the full script here](https://github.com/ethyca/fidesdemo/blob/main/flaskr/fidesops.py) for pieces you may be missing.
-    - This script has more detailed logging and error handling.
+  - This script has more detailed logging and error handling.
 - [Make sure your dataset is annotated properly](https://github.com/ethyca/fidesdemo/blob/main/fides_resources/flaskr_postgres_dataset.yml)
 - Add breakpoints by inserting `import pdb; pdb.set_trace()` into the line where you want the breakpoint to set, then run your script.
-    - Many of the endpoints used here are Bulk endpoints that return a 200 and then a mixture of a succeeded/failed resources.
+  - Many of the endpoints used here are Bulk endpoints that return a 200 and then a mixture of a succeeded/failed resources.
 - Check the docker logs:
+
 ```bash
 docker ps
 ```
+
 ```bash
         Name                      Command               State                         Ports
 ------------------------------------------------------------------------------------------------------------------
@@ -134,6 +136,7 @@ fidesdemo_fidesctl_1   fidesctl webserver               Up      0.0.0.0:8080->80
 fidesdemo_fidesops_1   fidesops webserver               Up      8000/tcp, 0.0.0.0:8000->8080/tcp,:::8000->8080/tcp
 fidesdemo_redis_1      docker-entrypoint.sh redis ...   Up      0.0.0.0:6379->6379/tcp,:::6379->6379/tcp 
 ```
+
 ```bash
 docker logs fidesdemo_fidesops_1
 ```

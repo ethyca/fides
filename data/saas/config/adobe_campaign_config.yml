@@ -1,5 +1,5 @@
 saas_config:
-  fides_key: adobe_campaign_connector_example
+  fides_key: <instance_fides_key>
   name: Adobe Campaign SaaS Config
   type: adobe_campaign
   description: A schema representing the Adobe Campaign connector for Fidesops

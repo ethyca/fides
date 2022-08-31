@@ -6,7 +6,11 @@ import { SystemType } from "datastore-connections/constants";
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
-import { ConnectionOption, ConnectionTypeParams } from "./types";
+import {
+  AllConnectionTypesResponse,
+  ConnectionTypeParams,
+  ConnectionTypeSecretSchemaReponse,
+} from "./types";
 
 // Helpers
 const mapFiltersToSearchParams = ({
@@ -69,7 +73,7 @@ export const connectionTypeApi = createApi({
   tagTypes: ["ConnectionType"],
   endpoints: (build) => ({
     getAllConnectionTypes: build.query<
-      ConnectionOption[],
+      AllConnectionTypesResponse,
       Partial<ConnectionTypeParams>
     >({
       query: (filters) => ({
@@ -77,7 +81,19 @@ export const connectionTypeApi = createApi({
       }),
       providesTags: () => ["ConnectionType"],
     }),
+    getConnectionTypeSecretSchema: build.query<
+      ConnectionTypeSecretSchemaReponse,
+      string
+    >({
+      query: (connectionType) => ({
+        url: `${CONNECTION_TYPE_ROUTE}/${connectionType}/secret`,
+      }),
+      providesTags: () => ["ConnectionType"],
+    }),
   }),
 });
 
-export const { useGetAllConnectionTypesQuery } = connectionTypeApi;
+export const {
+  useGetAllConnectionTypesQuery,
+  useGetConnectionTypeSecretSchemaQuery,
+} = connectionTypeApi;

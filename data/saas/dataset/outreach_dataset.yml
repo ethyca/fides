@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: outreach_connector_example
+  - fides_key: <instance_fides_key>
     name: Outreach Dataset
     description: A sample dataset representing the Outreach connector for Fidesops
     collections:

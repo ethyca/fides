@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: segment_connector_example
+  - fides_key: <instance_fides_key>
     name: Segment Dataset
     description: A sample dataset representing the Segment connector for Fidesops
     collections:

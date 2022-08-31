@@ -12,7 +12,7 @@ Follow our [Using Postman](../postman/using_postman.md) guide to learn more abou
 
 ### API URLs
 
-We define API URLs for specific API versions as constants within `fidesops.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
+We define API URLs for specific API versions as constants within `fides.api.ops.api.v1.urn_registry` (where `v1` can be substituted for that particular API version), then import those URLs into their specific API views. Since we are on the first version, there is no clear precedent set for overriding URLs between versions yet. The most likely change is that we'll override the `APIRouter` class instantiation with a different base path (ie. `/api/v2` instead of `/api/v1`). For example:
 
 ```
 PRIVACY_REQUEST = "/privacy-request"
@@ -48,7 +48,7 @@ When models are added to the project, we must then add them to the database in a
 
 Once you've added database tables via project models, you're ready to read, write and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
 
-- Import our application's database session: `from fidesops.ops.db.session import get_db_session`
+- Import our application's database session: `from fides.api.ops.db.session import get_db_session`
 - Instantiate the database interaction object:
 
 ```

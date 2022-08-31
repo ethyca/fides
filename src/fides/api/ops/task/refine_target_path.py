@@ -101,7 +101,7 @@ def refine_target_path(
         IndexError,
         TypeError,
     ):  # No/invalid field path. Expected when the path has been eliminated.
-        logger.warning(f"Could not locate target path {target_path} on row")
+        logger.warning("Could not locate target path %s on row", target_path)
         return []
 
     if isinstance(current_elem, dict):

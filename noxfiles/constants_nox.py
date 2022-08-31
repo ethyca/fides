@@ -56,16 +56,6 @@ RUN = (
     CI_ARGS,
     COMPOSE_SERVICE_NAME,
 )
-RUN_OPS = (
-    "docker",
-    "compose",
-    "run",
-    "--rm",
-    *ANALYTICS_ID_OVERRIDE,
-    *ANALYTICS_OPT_OUT,
-    CI_ARGS,
-    "fidesops",
-)
 RUN_NO_DEPS = (
     "docker",
     "compose",
@@ -76,18 +66,7 @@ RUN_NO_DEPS = (
     CI_ARGS,
     IMAGE_NAME,
 )
-RUN_OPS_NO_DEPS = (
-    "docker",
-    "compose",
-    "run",
-    "--no-deps",
-    "--rm",
-    *ANALYTICS_ID_OVERRIDE,
-    CI_ARGS,
-    "fidesops",
-)
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
-START_APP_OPS = ("docker", "compose", "up", "--wait", "fidesops")
 START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker",

@@ -31,7 +31,7 @@ def create_policy(key, access_token):
         headers=oauth_headers(access_token=access_token),
         json=policy_create_data,
     )
-    logger.info(f"Creating a Policy. Status {response.status_code}")
+    logger.info("Creating a Policy. Status %s", response.status_code)
     return response.json()
 ```   
 
@@ -58,7 +58,7 @@ def create_policy_rule(
         json=rule_create_data,
     )
 
-    logger.info(f"Creating a rule. Status {response.status_code}")
+    logger.info("Creating a rule. Status %s", response.status_code)
     return response.json()
 ```    
 
@@ -80,7 +80,7 @@ def create_policy_rule_target(policy_key, rule_key, data_category, access_token)
         json=target_create_data,
     )
 
-    logger.info(f"Creating a Rule Target. Status {response.status_code}")
+    logger.info("Creating a Rule Target. Status %s", response.status_code)
     return response.json()
 ```
 ```python

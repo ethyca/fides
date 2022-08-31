@@ -881,7 +881,7 @@ class TestPrepareRerunAccessGraphEvent:
         assert analytics_event.error is None
         assert analytics_event.status_code is None
         assert analytics_event.endpoint is None
-        assert analytics_event.local_host is False
+        assert analytics_event.local_host is None
 
     def test_rerun_erasure_graph_analytics_event(
         self, privacy_request, env_a_b, env_a_b_c, resources
@@ -914,4 +914,4 @@ class TestPrepareRerunAccessGraphEvent:
         assert analytics_event.error is None
         assert analytics_event.status_code is None
         assert analytics_event.endpoint is None
-        assert analytics_event.local_host is False
+        assert analytics_event.local_host is None
