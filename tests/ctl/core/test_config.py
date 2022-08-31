@@ -49,12 +49,12 @@ def test_get_deprecated_api_config_from_file(test_deprecated_config_path: str) -
 @patch.dict(
     os.environ,
     {
-        "FIDESCTL__API__DATABASE_HOST": "test_host",
-        "FIDESCTL__API__DATABASE_NAME": "test_db_name",
-        "FIDESCTL__API__DATABASE_PASSWORD": "test_password",
-        "FIDESCTL__API__DATABASE_PORT": "1234",
-        "FIDESCTL__API__DATABASE_TEST_DATABASE_NAME": "test_test_db_name",
-        "FIDESCTL__API__DATABASE_USER": "phil_rules",
+        "FIDES__API__DATABASE_HOST": "test_host",
+        "FIDES__API__DATABASE_NAME": "test_db_name",
+        "FIDES__API__DATABASE_PASSWORD": "test_password",
+        "FIDES__API__DATABASE_PORT": "1234",
+        "FIDES__API__DATABASE_TEST_DATABASE_NAME": "test_test_db_name",
+        "FIDES__API__DATABASE_USER": "phil_rules",
     },
     clear=True,
 )
@@ -76,7 +76,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 
 @patch.dict(
     os.environ,
-    {"FIDESCTL_CONFIG_PATH": ""},
+    {"FIDES_CONFIG_PATH": ""},
     clear=True,
 )
 @pytest.mark.unit
@@ -119,10 +119,10 @@ def test_default_config() -> None:
     os.environ,
     {
         "FIDES__CONFIG_PATH": "/fides/.fides/",
-        "FIDESCTL__USER__USER_ID": "2",
-        "FIDESCTL__CLI__SERVER_HOST": "test",
-        "FIDESCTL__CLI__SERVER_PORT": "8080",
-        "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
+        "FIDES__USER__USER_ID": "2",
+        "FIDES__CLI__SERVER_HOST": "test",
+        "FIDES__CLI__SERVER_PORT": "8080",
+        "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
     },
     clear=True,
 )
@@ -147,7 +147,7 @@ def test_config_from_env_vars() -> None:
 )
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
-    os.environ["FIDESCTL_TEST_MODE"] = "False"
+    os.environ["FIDES_TEST_MODE"] = "False"
     database_settings = FidesDatabaseSettings(
         user="postgres",
         password="fides",

@@ -41,8 +41,8 @@ IMAGE_LATEST = f"{IMAGE}:latest"
 # The else statement is required due to the way commmands are structured and is arbitrary.
 CI_ARGS = "-T" if getenv("CI") else "--user=root"
 
-# If FIDESCTL__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
-ANALYTICS_ID_OVERRIDE = ("-e", "FIDESCTL__CLI__ANALYTICS_ID")
+# If FIDES__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
+ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
 
 # Reusable Commands
