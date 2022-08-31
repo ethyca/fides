@@ -18,6 +18,8 @@ nav:
           - Managing Datastores: ui/datastores.md
           - User Management: ui/user_management.md
   - How-To Guides:
+      - View Available Connection Types: guides/connection_types.md
+      - Configure Email Communications: guides/email_communications.md
       - Annotate Complex Fields: guides/complex_fields.md
       - Configure Data Masking: guides/masking_strategies.md
       - Configure Storage Destinations: guides/storage.md
