@@ -2,6 +2,7 @@ import {
   Center,
   SimpleGrid,
   Spinner,
+  Tag,
   Text,
   useDisclosure,
   useToast,
@@ -13,6 +14,7 @@ import AccordionTree from "~/features/common/AccordionTree";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { TreeNode } from "~/features/common/types";
 import { isErrorResult } from "~/types/errors";
 
 import ActionButtons from "./ActionButtons";
@@ -21,6 +23,21 @@ import { TaxonomyHookData } from "./hooks";
 import { selectIsAddFormOpen, setIsAddFormOpen } from "./taxonomy.slice";
 import TaxonomyFormBase from "./TaxonomyFormBase";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
+
+const CustomTag = ({ node }: { node: TaxonomyEntityNode }) => {
+  const { is_default: isDefault } = node;
+  return !isDefault ? (
+    <Tag
+      backgroundColor="gray.500"
+      color="white"
+      size="sm"
+      height="fit-content"
+      data-testid={`custom-tag-${node.label}`}
+    >
+      Custom
+    </Tag>
+  ) : null;
+};
 
 interface Props {
   useTaxonomy: () => TaxonomyHookData<TaxonomyEntity>;
@@ -89,7 +106,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
 
   const taxonomyType = labels.fides_key.toLocaleLowerCase();
 
-  const handleSetEditEntity = (node: TaxonomyEntityNode) => {
+  const handleSetEditEntity = (node: TreeNode) => {
     if (isAdding) {
       closeAddForm();
     }
@@ -97,7 +114,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     setEditEntity(entity);
   };
 
-  const handleSetDeleteKey = (node: TaxonomyEntityNode) => {
+  const handleSetDeleteKey = (node: TreeNode) => {
     setDeleteKey(node.value);
     onDeleteOpen();
   };
@@ -125,9 +142,10 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <ActionButtons
               onDelete={handleSetDeleteKey}
               onEdit={handleSetEditEntity}
-              node={node}
+              node={node as TaxonomyEntityNode}
             />
           )}
+          renderTag={(node) => <CustomTag node={node as TaxonomyEntityNode} />}
         />
         {editEntity ? (
           <TaxonomyFormBase

@@ -8,7 +8,7 @@ interface ActionButtonProps {
   onDelete: (node: TaxonomyEntityNode) => void;
 }
 const ActionButtons = ({ node, onEdit, onDelete }: ActionButtonProps) => {
-  const showDelete = node.children.length === 0;
+  const showDelete = node.children.length === 0 && !node.is_default;
   return (
     <ButtonGroup
       size="xs"

@@ -40,6 +40,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Provided Non-Specific Age",
     organization_fides_key: "default_organization",
     parent_key: "user.provided.identifiable",
+    is_default: true,
   },
   {
     description: "Data related to the individual's political opinions.",
@@ -47,6 +48,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Political Opinion",
     organization_fides_key: "default_organization",
     parent_key: "user.provided.identifiable",
+    is_default: true,
   },
   {
     description:
@@ -55,6 +57,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Provided Non-Identifiable Data",
     organization_fides_key: "default_organization",
     parent_key: "user.provided",
+    is_default: true,
   },
   {
     description: "Data related to a system account.",
@@ -62,6 +65,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Account Data",
     organization_fides_key: "default_organization",
     parent_key: null,
+    is_default: true,
   },
   {
     description: "Contact data related to a system account.",
@@ -69,6 +73,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Account Contact Data",
     organization_fides_key: "default_organization",
     parent_key: "account",
+    is_default: true,
   },
   {
     description: "Account's city level address data.",
@@ -76,6 +81,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Account City",
     organization_fides_key: "default_organization",
     parent_key: "account.contact",
+    is_default: true,
   },
   {
     description: "Data unique to, and under control of the system.",
@@ -83,6 +89,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "System Data",
     organization_fides_key: "default_organization",
     parent_key: null,
+    is_default: true,
   },
   {
     description: "Data used to manage access to the system.",
@@ -90,6 +97,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Authentication Data",
     organization_fides_key: "default_organization",
     parent_key: "system",
+    is_default: true,
   },
   {
     description:
@@ -98,6 +106,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Data",
     organization_fides_key: "default_organization",
     parent_key: null,
+    is_default: true,
   },
   {
     description:
@@ -106,6 +115,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "Derived Data",
     organization_fides_key: "default_organization",
     parent_key: "user",
+    is_default: true,
   },
   {
     description: "Data provided or created directly by a user of the system.",
@@ -113,6 +123,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Provided Data",
     organization_fides_key: "default_organization",
     parent_key: "user",
+    is_default: true,
   },
   {
     description:
@@ -121,6 +132,7 @@ export const MOCK_DATA_CATEGORIES = [
     name: "User Provided Identifiable Data",
     organization_fides_key: "default_organization",
     parent_key: "user.provided",
+    is_default: true,
   },
 ];
 
@@ -134,6 +146,7 @@ export const MOCK_DATA_SUBJECTS = [
       "An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification",
     rights: null,
     automated_decisions_or_profiling: null,
+    is_default: true,
   },
   {
     fides_key: "citizen_voter",
@@ -143,6 +156,7 @@ export const MOCK_DATA_SUBJECTS = [
     description: "An individual registered to voter with a state or authority.",
     rights: null,
     automated_decisions_or_profiling: null,
+    is_default: true,
   },
   {
     fides_key: "commuter",
@@ -153,6 +167,7 @@ export const MOCK_DATA_SUBJECTS = [
       "An individual that is traveling or transiting in the context of location tracking.",
     rights: null,
     automated_decisions_or_profiling: null,
+    is_default: true,
   },
 ];
 
