@@ -53,6 +53,11 @@ config = "data/saas/config/sentry_config.yml"
 dataset = "data/saas/dataset/sentry_dataset.yml"
 icon = "data/saas/icon/sentry.svg"
 
+[shopify]
+config = "data/saas/config/shopify_config.yml"
+dataset = "data/saas/dataset/shopify_dataset.yml"
+icon = "data/saas/icon/default.svg"
+
 [stripe]
 config = "data/saas/config/stripe_config.yml"
 dataset = "data/saas/dataset/stripe_dataset.yml"
