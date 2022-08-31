@@ -143,7 +143,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       special_category: du.special_category,
       recipients: du.recipients ?? [],
       legitimate_interest:
-        du.legitimate_interest === undefined
+        du.legitimate_interest == null
           ? "false"
           : du.legitimate_interest.toString(),
       legitimate_interest_impact_assessment:
@@ -250,7 +250,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       rights: ds.rights?.values ?? [],
       strategy: ds.rights?.strategy,
       automatic_decisions_or_profiling:
-        ds.automated_decisions_or_profiling === undefined
+        ds.automated_decisions_or_profiling == null
           ? "false"
           : ds.automated_decisions_or_profiling.toString(),
     };
