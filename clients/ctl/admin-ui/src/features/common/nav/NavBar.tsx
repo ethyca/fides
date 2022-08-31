@@ -1,15 +1,22 @@
 import { Flex } from "@fidesui/react";
+import dynamic from "next/dynamic";
 import React from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
 
-import { NavLink } from "./NavLink";
+// Cross-zone navigation requires building URLs from the current `window.location`
+// which is not available in Server-Side-Rendered components.
+const NavLink = dynamic(() => import("./NavLink"), { ssr: false });
 
 const NavBar = () => (
   <Flex borderBottom="1px" borderTop="1px" px={9} py={1} borderColor="gray.100">
     <nav>
       <NavLink title="Systems" href="/system" disabled />
       <NavLink title="Datasets" href="/dataset" />
+
+      {/* Links under the datamap zone: */}
+      <NavLink title="Data Map" href="/datamap" />
+
       <NavLink title="Policies" href="/policy" disabled />
       <NavLink title="Taxonomy" href="/taxonomy" />
       <NavLink title="User Management" href="/user-management" disabled />
