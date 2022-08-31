@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import re
@@ -92,13 +93,13 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
         return response
 
     except Exception as e:
-        prepare_and_log_request(
+        await prepare_and_log_request(
             endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
         )
         raise
 
 
-def prepare_and_log_request(
+async def prepare_and_log_request(
     endpoint: str,
     hostname: Optional[str],
     status_code: int,
@@ -113,7 +114,7 @@ def prepare_and_log_request(
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
     if config.root_user.analytics_opt_out:
         return
-    send_analytics_event(
+    await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
             event=Event.endpoint_call.value,
@@ -255,11 +256,13 @@ def start_webserver() -> None:
         logger.info("Starting scheduled request intake...")
         initiate_scheduled_request_intake()
 
-    send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
+    asyncio.run(
+        send_analytics_event(
+            AnalyticsEvent(
+                docker=in_docker_container(),
+                event=Event.server_start.value,
+                event_created_at=datetime.now(tz=timezone.utc),
+            )
         )
     )
 

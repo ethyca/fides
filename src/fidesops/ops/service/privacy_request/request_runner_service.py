@@ -49,6 +49,7 @@ from fidesops.ops.util.cache import (
 )
 from fidesops.ops.util.collection_util import Row
 from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
+from fidesops.ops.util.wrappers import sync
 
 logger = get_task_logger(__name__)
 
@@ -189,7 +190,8 @@ class DatabaseTask(Task):  # pylint: disable=W0223
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-def run_privacy_request(
+@sync
+async def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
@@ -202,6 +204,9 @@ def run_privacy_request(
         2. Take the provided identity data
         3. Start the access request / erasure request execution
         4. When finished, upload the results to the configured storage destination if applicable
+
+    Celery does not like for the function to be async so the @sync decorator runs the
+    coroutine for it.
     """
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
@@ -248,7 +253,7 @@ def run_privacy_request(
             if (
                 from_step != PausedStep.erasure
             ):  # Skip if we're resuming from erasure step
-                access_result: Dict[str, List[Row]] = run_access_request(
+                access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -267,7 +272,7 @@ def run_privacy_request(
 
             if policy.get_rules_for_action(action_type=ActionType.erasure):
                 # We only need to run the erasure once until masking strategies are handled
-                run_erasure(
+                await run_erasure(
                     privacy_request=privacy_request,
                     policy=policy,
                     graph=dataset_graph,
@@ -287,7 +292,9 @@ def run_privacy_request(
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
-            fideslog_graph_failure(failed_graph_analytics_event(privacy_request, exc))
+            await fideslog_graph_failure(
+                failed_graph_analytics_event(privacy_request, exc)
+            )
             _log_exception(exc, config.dev_mode)
             return
 

@@ -1,5 +1,6 @@
 # pylint: disable=unused-wildcard-import, wildcard-import
 
+import asyncio
 import json
 import logging
 from typing import Any, Callable, Dict, Generator, List
@@ -250,3 +251,13 @@ def subject_identity_verification_not_required():
     config.execution.subject_identity_verification_required = False
     yield
     config.execution.subject_identity_verification_required = original_value
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()

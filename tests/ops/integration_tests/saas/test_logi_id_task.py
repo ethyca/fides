@@ -22,7 +22,7 @@ def test_logi_id_connection_test(logi_id_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_logi_id
-def test_logi_id_access_request_task(
+async def test_logi_id_access_request_task(
     db,
     policy,
     logi_id_connection_config,
@@ -41,7 +41,7 @@ def test_logi_id_access_request_task(
     merged_graph = logi_id_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -93,7 +93,7 @@ def test_logi_id_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_logi_id
-def test_logi_id_erasure_request_task(
+async def test_logi_id_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -115,7 +115,7 @@ def test_logi_id_erasure_request_task(
     merged_graph = logi_id_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -144,7 +144,7 @@ def test_logi_id_erasure_request_task(
 
     temp_masking = config.execution.masking_strict
     config.execution.masking_strict = False  # Allow delete
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
