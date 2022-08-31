@@ -21,6 +21,11 @@ The types of changes are:
 
 * Added more taxonomy fields that can be edited via the UI [#1000](https://github.com/ethyca/fides/pull/1000)
 
+### Fixed
+
+* Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+
+
 ## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
 ### Added
