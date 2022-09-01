@@ -60,7 +60,7 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import PausedStep, Policy, PolicyPreWebhook
+from fidesops.ops.models.policy import CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
@@ -79,6 +79,7 @@ from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    CollectionActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     PrivacyRequestCreate,
@@ -86,7 +87,6 @@ from fidesops.ops.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
     RowCountRequest,
-    StoppedCollection,
     VerificationCode,
 )
 from fidesops.ops.service.email.email_dispatch_service import dispatch_email
@@ -492,7 +492,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     about how to resume manually if applicable.
     """
     resume_endpoint: Optional[str] = None
-    stopped_collection_details: Optional[StoppedCollection] = None
+    stopped_collection_details: Optional[CollectionActionRequired] = None
 
     if privacy_request.status == PrivacyRequestStatus.paused:
         stopped_collection_details = privacy_request.get_paused_collection_details()
@@ -501,7 +501,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
             # Graph is paused on a specific collection
             resume_endpoint = (
                 PRIVACY_REQUEST_MANUAL_ERASURE
-                if stopped_collection_details.step == PausedStep.erasure
+                if stopped_collection_details.step == CurrentStep.erasure
                 else PRIVACY_REQUEST_MANUAL_INPUT
             )
         else:
@@ -780,7 +780,7 @@ def validate_manual_input(
 async def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
-    expected_paused_step: PausedStep,
+    expected_paused_step: CurrentStep,
     manual_rows: List[Row] = [],
     manual_count: Optional[int] = None,
 ) -> PrivacyRequest:
@@ -796,7 +796,7 @@ async def resume_privacy_request_with_manual_input(
         )
 
     paused_details: Optional[
-        StoppedCollection
+        CollectionActionRequired
     ] = privacy_request.get_paused_collection_details()
     if not paused_details:
         raise HTTPException(
@@ -804,14 +804,14 @@ async def resume_privacy_request_with_manual_input(
             detail=f"Cannot resume privacy request '{privacy_request.id}'; no paused details.",
         )
 
-    paused_step: PausedStep = paused_details.step
+    paused_step: CurrentStep = paused_details.step
     paused_collection: CollectionAddress = paused_details.collection
 
     if paused_step != expected_paused_step:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Collection '{paused_collection}' is paused at the {paused_step.value} step. Pass in manual data instead to "
-            f"'{PRIVACY_REQUEST_MANUAL_ERASURE if paused_step == PausedStep.erasure else PRIVACY_REQUEST_MANUAL_INPUT}' to resume.",
+            f"'{PRIVACY_REQUEST_MANUAL_ERASURE if paused_step == CurrentStep.erasure else PRIVACY_REQUEST_MANUAL_INPUT}' to resume.",
         )
 
     datasets = DatasetConfig.all(db=db)
@@ -825,7 +825,7 @@ async def resume_privacy_request_with_manual_input(
             detail=f"Cannot save manual data. No collection in graph with name: '{paused_collection.value}'.",
         )
 
-    if paused_step == PausedStep.access:
+    if paused_step == CurrentStep.access:
         validate_manual_input(manual_rows, paused_collection, dataset_graph)
         logger.info(
             "Caching manual input for privacy request '%s', collection: '%s'",
@@ -834,7 +834,7 @@ async def resume_privacy_request_with_manual_input(
         )
         privacy_request.cache_manual_input(paused_collection, manual_rows)
 
-    elif paused_step == PausedStep.erasure:
+    elif paused_step == CurrentStep.erasure:
         logger.info(
             "Caching manually erased row count for privacy request '%s', collection: '%s'",
             privacy_request_id,
@@ -882,7 +882,7 @@ async def resume_with_manual_input(
     return await resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        expected_paused_step=PausedStep.access,
+        expected_paused_step=CurrentStep.access,
         manual_rows=manual_rows,
     )
 
@@ -909,7 +909,7 @@ async def resume_with_erasure_confirmation(
     return await resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
-        expected_paused_step=PausedStep.erasure,
+        expected_paused_step=CurrentStep.erasure,
         manual_count=manual_count.row_count,
     )
 
@@ -939,7 +939,7 @@ async def restart_privacy_request_from_failure(
         )
 
     failed_details: Optional[
-        StoppedCollection
+        CollectionActionRequired
     ] = privacy_request.get_failed_collection_details()
     if not failed_details:
         raise HTTPException(
@@ -947,7 +947,7 @@ async def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
 
-    failed_step: PausedStep = failed_details.step
+    failed_step: CurrentStep = failed_details.step
     failed_collection: CollectionAddress = failed_details.collection
 
     logger.info(

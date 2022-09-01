@@ -5,7 +5,7 @@ import pytest
 from fidesops.ops.common_exceptions import PrivacyRequestPaused
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.policy import PausedStep
+from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -46,7 +46,7 @@ async def test_postgres_with_manual_input_access_request_task(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "storage_unit"
     )
-    assert paused_details.step == PausedStep.access
+    assert paused_details.step == CurrentStep.access
     assert len(paused_details.action_needed) == 1
 
     assert paused_details.action_needed[0].locators == {
@@ -77,7 +77,7 @@ async def test_postgres_with_manual_input_access_request_task(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "filing_cabinet"
     )
-    assert paused_details.step == PausedStep.access
+    assert paused_details.step == CurrentStep.access
     assert len(paused_details.action_needed) == 1
     assert paused_details.action_needed[0].locators == {"customer_id": [1]}
 
@@ -244,7 +244,7 @@ async def test_no_manual_input_found(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "storage_unit"
     )
-    assert paused_details.step == PausedStep.access
+    assert paused_details.step == CurrentStep.access
 
     # Mock user retrieving storage unit data by adding manual data to cache,
     # In this case, no data was found in the storage unit, so we pass in an empty list.
@@ -268,7 +268,7 @@ async def test_no_manual_input_found(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "filing_cabinet"
     )
-    assert paused_details.step == PausedStep.access
+    assert paused_details.step == CurrentStep.access
 
     # No filing cabinet input found
     privacy_request.cache_manual_input(
@@ -410,7 +410,7 @@ async def test_collections_with_manual_erasure_confirmation(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "filing_cabinet"
     )
-    assert paused_details.step == PausedStep.erasure
+    assert paused_details.step == CurrentStep.erasure
     assert len(paused_details.action_needed) == 1
 
     assert paused_details.action_needed[0].locators == {"id": 1}
@@ -440,7 +440,7 @@ async def test_collections_with_manual_erasure_confirmation(
     assert paused_details.collection == CollectionAddress(
         "manual_example", "storage_unit"
     )
-    assert paused_details.step == PausedStep.erasure
+    assert paused_details.step == CurrentStep.erasure
     assert len(paused_details.action_needed) == 1
 
     assert paused_details.action_needed[0].locators == {"box_id": 5}

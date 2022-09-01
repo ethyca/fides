@@ -81,8 +81,14 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
-        """Execute a masking request. Return the number of rows that have been updated"""
+        """Execute a masking request. Return the number of rows that have been updated
+
+        "rows" are the data retrieved from the access portion of the request that will be considered for masking.
+        Some connector types won't have data from the "access" portion, so we pass in the same input_data that
+        was passed into "retrieve_data" for use in querying for data.
+        """
 
     def dry_run_query(self, node: TraversalNode) -> Optional[str]:
         """Generate a dry-run query to display action that will be taken"""
