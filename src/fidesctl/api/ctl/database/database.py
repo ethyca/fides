@@ -20,7 +20,7 @@ from fidesctl.api.ctl.utils.errors import (
 )
 from fidesctl.ctl.core.utils import get_db_engine
 
-from .crud import create_resource, upsert_resources
+from .crud import create_resource, list_resource, upsert_resources
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -87,10 +87,23 @@ async def load_default_taxonomy() -> None:
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
     upsert_resource_types.remove("organization")
 
-    log.info("UPSERTING the remaining default fideslang taxonomy resources")
+    log.info("INSERTING new default fideslang taxonomy resources")
     for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
-        resources = list(map(dict, DEFAULT_TAXONOMY.dict()[resource_type]))
+        default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
+        default_keys = {item["fides_key"] for item in default_resources}
+        existing_resources = await list_resource(sql_model_map[resource_type])
+        existing_keys = {item.fides_key for item in existing_resources}
+        new_default_keys = default_keys.difference(existing_keys)
+        resources = [
+            resource
+            for resource in default_resources
+            if resource["fides_key"] in new_default_keys
+        ]
+
+        if len(resources) == 0:
+            log.info(f"No new {resource_type} resources to add from default taxonomy.")
+            continue
 
         try:
             result = await upsert_resources(sql_model_map[resource_type], resources)
