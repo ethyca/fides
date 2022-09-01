@@ -2,7 +2,6 @@ import pytest
 
 from fides.api.ops.api.deps import get_cache, get_db
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured
-
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()

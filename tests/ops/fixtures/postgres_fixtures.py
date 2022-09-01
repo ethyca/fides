@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -22,6 +21,7 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.service.connectors import PostgreSQLConnector
+from fides.ctl.core.config import get_config
 
 from .application_fixtures import integration_secrets
 

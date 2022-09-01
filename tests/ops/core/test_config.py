@@ -24,7 +24,7 @@ def test_config_from_default() -> None:
     clear=True,
 )
 def test_config_from_path() -> None:
-    """Test reading config using the FIDESOPS__CONFIG_PATH option."""
+    """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     assert config.database.server == "testserver"
     assert config.redis.host == "testredis"
@@ -35,8 +35,8 @@ def test_config_from_path() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDESOPS__DATABASE__SERVER": "envserver",
-        "FIDESOPS__REDIS__HOST": "envhost",
+        "FIDES__DATABASE__SERVER": "envserver",
+        "FIDES__REDIS__HOST": "envhost",
     },
     clear=True,
 )
@@ -55,7 +55,7 @@ def test_config_app_encryption_key_validation() -> None:
     with patch.dict(
         os.environ,
         {
-            "FIDESOPS__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
+            "FIDES__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
         },
         clear=True,
     ):
@@ -72,7 +72,7 @@ def test_config_app_encryption_key_validation_length_error(app_encryption_key) -
     with patch.dict(
         os.environ,
         {
-            "FIDESOPS__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
+            "FIDES__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
         },
         clear=True,
     ):
@@ -97,7 +97,7 @@ def test_config_log_level(log_level, expected_log_level):
     with patch.dict(
         os.environ,
         {
-            "FIDESOPS__SECURITY__LOG_LEVEL": log_level,
+            "FIDES__SECURITY__LOG_LEVEL": log_level,
         },
         clear=True,
     ):
@@ -109,7 +109,7 @@ def test_config_log_level_invalid():
     with patch.dict(
         os.environ,
         {
-            "FIDESOPS__SECURITY__LOG_LEVEL": "INVALID",
+            "FIDES__SECURITY__LOG_LEVEL": "INVALID",
         },
         clear=True,
     ):

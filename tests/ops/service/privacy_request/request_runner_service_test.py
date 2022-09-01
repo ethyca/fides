@@ -15,7 +15,6 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import PausedStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,
@@ -47,6 +46,7 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5

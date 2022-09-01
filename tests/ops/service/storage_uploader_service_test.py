@@ -12,7 +12,6 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
@@ -32,6 +31,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 

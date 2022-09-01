@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional, Set
 
 import pytest
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
@@ -30,6 +29,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets

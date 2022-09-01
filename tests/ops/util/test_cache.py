@@ -1,8 +1,8 @@
 import random
 from typing import Any, List
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.util.cache import FidesopsRedis
+from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import faker
 

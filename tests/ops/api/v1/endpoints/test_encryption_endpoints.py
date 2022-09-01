@@ -16,13 +16,14 @@ from fides.api.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
+
 
 class TestGetEncryptionKey:
     @pytest.fixture

@@ -6,7 +6,6 @@ import pytest
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,6 +13,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import MySQLConnector
+from fides.ctl.core.config import get_config
 
 from .application_fixtures import integration_secrets
 

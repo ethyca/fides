@@ -24,8 +24,8 @@ services:
       FIDES__DATABASE__SERVER: "fides-db"
       FIDES__DEV_MODE: "True"
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-      FIDES__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
-      FIDES__LOG_PII: ${FIDESOPS__LOG_PII}
+      FIDES__HOT_RELOAD: ${HOT_RELOAD}
+      FIDES__LOG_PII: ${LOG_PII}
       FIDES_TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
@@ -81,9 +81,9 @@ services:
       - ./:/fides
     environment:
       - FIDES__DEV_MODE=True
-      - FIDES__LOG_PII=${FIDESOPS__LOG_PII}
-      - FIDES__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
-      - FIDES__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDES__LOG_PII=${LOG_PII}
+      - FIDES__HOT_RELOAD=${HOT_RELOAD}
+      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID}
       - FIDES__EXECUTION__WORKER_ENABLED=True
 
   redis:
