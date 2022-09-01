@@ -19,11 +19,6 @@ def get_config() -> FidesConfig:
 
 def get_db() -> Generator:
     """Return our database session"""
-    if not CONFIG.database.enabled:
-        raise FunctionalityNotConfigured(
-            "Application database required, but it is currently disabled! Please update your application configuration to enable integration with an application database."
-        )
-
     try:
         db = _get_session()
         yield db

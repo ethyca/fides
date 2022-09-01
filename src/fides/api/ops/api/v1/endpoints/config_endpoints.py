@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
     response_model=Dict[str, Any],
 )
 def get_config() -> Dict[str, Any]:
-    """Returns the current API exposable Fidesops configuration."""
-    logger.info("Getting the exposable Fidesops configuration")
+    """Returns the current API exposable Fides configuration."""
+    logger.info("Getting the exposable Fides configuration")
     config = censor_config(get_app_config())
     return config

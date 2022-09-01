@@ -184,7 +184,7 @@ async def setup_server() -> None:
     if logger.getEffectiveLevel() == logging.DEBUG:
         logger.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
-            "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
+            "Set FIDES__SECURITY__LOG_LEVEL to INFO or higher in production."
         )
         CONFIG.log_all_config_values()
 
