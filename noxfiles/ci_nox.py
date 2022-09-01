@@ -161,7 +161,6 @@ def pytest(session: nox.Session, mark: str) -> None:
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
-        "-x",
         "-m",
         mark,
     )
@@ -204,7 +203,6 @@ def pytest_external(session: nox.Session) -> None:
         CI_ARGS,
         IMAGE_NAME,
         "pytest",
-        "-x",
         "-m",
         "external",
     )

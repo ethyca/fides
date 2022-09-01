@@ -24,6 +24,8 @@ The types of changes are:
 ### Fixed
 
 * Fixed failing mypy tests [#1030](https://github.com/ethyca/fides/pull/1030)
+* Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+
 
 ## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
