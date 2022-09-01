@@ -100,6 +100,7 @@ disable=[
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
+    "missing-timeout",
     "no-self-argument",
     "no-self-use",
     "raise-missing-from",
