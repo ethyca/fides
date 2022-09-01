@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -13,6 +13,7 @@ from tests.ops.fixtures.saas.logi_id_fixtures import user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
+CONFIG = get_config()
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas
@@ -142,8 +143,8 @@ def test_logi_id_erasure_request_task(
         ],
     )
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow delete
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow delete
     erasure = graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -167,4 +168,4 @@ def test_logi_id_erasure_request_task(
         existence_desired=False,
     )
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking

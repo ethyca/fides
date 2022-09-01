@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -11,6 +11,7 @@ from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
@@ -98,7 +99,7 @@ def test_outreach_erasure_request_task(
     outreach_create_erasure_data,
 ) -> None:
     """Full erasure request based on the Outreach SaaS config"""
-    config.execution.masking_strict = False  # Allow Delete
+    CONFIG.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_outreach_erasure_request_task_{random.randint(0, 1000)}"
@@ -145,4 +146,4 @@ def test_outreach_erasure_request_task(
     # cannot verify success immediately as this can take days, weeks to process
     assert x == {f"{dataset_name}:prospects": 1, f"{dataset_name}:recipients": 1}
 
-    config.execution.masking_strict = True
+    CONFIG.execution.masking_strict = True

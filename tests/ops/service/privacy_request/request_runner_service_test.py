@@ -15,7 +15,7 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import PausedStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,
@@ -48,6 +48,7 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 )
 from fides.api.ops.util.data_category import DataCategory
 
+CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
@@ -1431,7 +1432,7 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-        config.redis.default_ttl_seconds = (
+        CONFIG.redis.default_ttl_seconds = (
             1  # Set redis cache to expire very quickly for testing purposes
         )
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(

@@ -6,7 +6,7 @@ from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import (
@@ -29,6 +29,8 @@ from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
+
+CONFIG = get_config()
 
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):

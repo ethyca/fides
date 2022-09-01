@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -10,6 +10,8 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
 
 
 @pytest.mark.skip(reason="Only staging credentials available")
@@ -169,8 +171,8 @@ def test_adobe_campaign_saas_erasure_request_task(
     adobe_campaign_erasure_data,
 ) -> None:
     """Full erasure request based on the Adobe Campaign SaaS config"""
-    masking_strict = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow GDPR Delete
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow GDPR Delete
 
     # Create user for GDPR delete
     erasure_email = adobe_campaign_erasure_identity_email
@@ -309,4 +311,4 @@ def test_adobe_campaign_saas_erasure_request_task(
         "adobe_instance:marketing_history": 0,
     }
 
-    config.execution.masking_strict = masking_strict  # Reset
+    CONFIG.execution.masking_strict = masking_strict  # Reset

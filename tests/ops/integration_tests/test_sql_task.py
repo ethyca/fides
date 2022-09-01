@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -36,6 +36,7 @@ from ..graph.graph_test_util import (
 )
 from ..task.traversal_data import integration_db_dataset, integration_db_graph
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -972,9 +973,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.task_retry_count = 1
-        config.execution.task_retry_delay = 0.1
-        config.execution.task_retry_backoff = 0.01
+        CONFIG.execution.task_retry_count = 1
+        CONFIG.execution.task_retry_delay = 0.1
+        CONFIG.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
@@ -1024,9 +1025,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.task_retry_count = 2
-        config.execution.task_retry_delay = 0.1
-        config.execution.task_retry_backoff = 0.01
+        CONFIG.execution.task_retry_count = 2
+        CONFIG.execution.task_retry_delay = 0.1
+        CONFIG.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)

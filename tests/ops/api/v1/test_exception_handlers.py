@@ -10,23 +10,25 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core import config
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 @pytest.fixture
 def mock_config_db_disabled():
-    db_enabled = config.config.database.enabled
-    config.config.database.enabled = False
+    db_enabled = CONFIG.database.enabled
+    CONFIG.database.enabled = False
     yield
-    config.config.database.enabled = db_enabled
+    CONFIG.database.enabled = db_enabled
 
 
 @pytest.fixture
 def mock_config_redis_disabled():
-    redis_enabled = config.config.redis.enabled
-    config.config.redis.enabled = False
+    redis_enabled = CONFIG.redis.enabled
+    CONFIG.redis.enabled = False
     yield
-    config.config.redis.enabled = redis_enabled
+    CONFIG.redis.enabled = redis_enabled
 
 
 class TestExceptionHandlers:

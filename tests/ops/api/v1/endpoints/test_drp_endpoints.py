@@ -19,7 +19,7 @@ from fides.api.ops.api.v1.urn_registry import (
     DRP_STATUS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import DrpAction
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
@@ -27,6 +27,8 @@ from fides.api.ops.util.cache import (
     get_drp_request_body_cache_key,
     get_identity_cache_key,
 )
+
+CONFIG = get_config()
 
 
 class TestCreateDrpPrivacyRequest:
@@ -53,7 +55,7 @@ class TestCreateDrpPrivacyRequest:
             "phone_number": TEST_PHONE_NUMBER,
         }
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="HS256"
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -120,7 +122,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com", "address": "something"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="HS256"
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -181,8 +183,8 @@ class TestCreateDrpPrivacyRequest:
         policy_drp_action,
     ):
 
-        original_secret = config.security.drp_jwt_secret
-        config.security.drp_jwt_secret = None
+        original_secret = CONFIG.security.drp_jwt_secret
+        CONFIG.security.drp_jwt_secret = None
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(identity, "secret", algorithm="HS256")
         data = {
@@ -193,7 +195,7 @@ class TestCreateDrpPrivacyRequest:
         }
         resp = api_client.post(url, json=data)
         assert resp.status_code == 500
-        config.security.drp_jwt_secret = original_secret
+        CONFIG.security.drp_jwt_secret = original_secret
 
     def test_create_drp_privacy_request_no_exercise(
         self,
@@ -205,7 +207,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="HS256"
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -226,7 +228,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="HS256"
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},
@@ -247,7 +249,7 @@ class TestCreateDrpPrivacyRequest:
 
         identity = {"email": "test@example.com"}
         encoded_identity: str = jwt.encode(
-            identity, config.security.drp_jwt_secret, algorithm="HS256"
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
         )
         data = {
             "meta": {"version": "0.5"},

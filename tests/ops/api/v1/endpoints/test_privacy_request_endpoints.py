@@ -44,7 +44,7 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -72,6 +72,7 @@ from fides.api.ops.util.cache import (
 from fides.ctl.core.config import get_config
 
 page_size = Params().size
+CONFIG = get_config()
 
 
 def stringify_date(log_date: datetime) -> str:
@@ -1652,7 +1653,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1692,7 +1693,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request_status_pending.id]}
@@ -1793,7 +1794,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1844,7 +1845,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
@@ -1901,7 +1902,7 @@ class TestResumePrivacyRequest:
             "Authorization": "Bearer "
             + generate_jwe(
                 json.dumps({"unexpected": "format"}),
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1929,7 +1930,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -1953,7 +1954,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -2543,10 +2544,10 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def subject_identity_verification_required(self):
         """Override autouse fixture to enable identity verification for tests"""
-        original_value = config.execution.subject_identity_verification_required
-        config.execution.subject_identity_verification_required = True
+        original_value = CONFIG.execution.subject_identity_verification_required
+        CONFIG.execution.subject_identity_verification_required = True
         yield
-        config.execution.subject_identity_verification_required = original_value
+        CONFIG.execution.subject_identity_verification_required = original_value
 
     def test_create_privacy_request_no_email_config(
         self,
@@ -2624,7 +2625,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert call_args["to_email"] == "test@example.com"
         assert call_args["email_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
         pr.delete(db=db)

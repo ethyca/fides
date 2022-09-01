@@ -80,11 +80,11 @@ services:
       - ./docs/fides:/docs
       - ./:/fides
     environment:
-      - FIDESOPS__DEV_MODE=True
-      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
-      - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
-      - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
-      - FIDESOPS__EXECUTION__WORKER_ENABLED=True
+      - FIDES__DEV_MODE=True
+      - FIDES__LOG_PII=${FIDESOPS__LOG_PII}
+      - FIDES__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
+      - FIDES__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
+      - FIDES__EXECUTION__WORKER_ENABLED=True
 
   redis:
     image: "redis:6.2.5-alpine"
