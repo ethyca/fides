@@ -2,8 +2,8 @@
 import os
 from unittest.mock import patch
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from fides.ctl.core.config import get_config
 from fides.ctl.core.config.database_settings import DatabaseSettings
