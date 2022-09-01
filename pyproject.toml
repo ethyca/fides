@@ -92,3 +92,4 @@ markers = [
     "mssql: only runs the integration tests for sqlserver/mssql",
     "mysql: only runs the integration tests for mysql"
 ]
+asyncio_mode = "auto"
