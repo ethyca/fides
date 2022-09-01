@@ -2,6 +2,7 @@
 import os
 from unittest.mock import patch
 
+from pydantic import ValidationError
 import pytest
 
 from fides.ctl.core.config import get_config
@@ -118,7 +119,6 @@ def test_default_config() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": "/fides/.fides/",
         "FIDES__USER__USER_ID": "2",
         "FIDES__CLI__SERVER_HOST": "test",
         "FIDES__CLI__SERVER_PORT": "8080",
@@ -168,12 +168,12 @@ def test_database_url_test_mode_disabled() -> None:
     clear=True,
 )
 def test_config_from_default() -> None:
-    "Test building a config from default local TOML"
+    """Test building a config from the local project TOML."""
     config = get_config()
 
     assert config.database.server == "fides-db"
     assert config.redis.host == "redis"
-    assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
+    assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 
 @patch.dict(
@@ -258,19 +258,19 @@ def test_config_log_level(log_level, expected_log_level):
     with patch.dict(
         os.environ,
         {
-            "FIDES__SECURITY__LOG_LEVEL": log_level,
+            "FIDES__LOGGING__LEVEL": log_level,
         },
         clear=True,
     ):
         config = get_config()
-        assert config.security.log_level == expected_log_level
+        assert config.logging.level == expected_log_level
 
 
 def test_config_log_level_invalid():
     with patch.dict(
         os.environ,
         {
-            "FIDES__SECURITY__LOG_LEVEL": "INVALID",
+            "FIDES__LOGGING__LEVEL": "INVALID",
         },
         clear=True,
     ):

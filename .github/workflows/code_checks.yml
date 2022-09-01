@@ -210,7 +210,7 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run unit test suite
+      - name: Run non-external test suite
         run: nox -s "pytest(not-external)"
 
   Pytest-Ctl-External:

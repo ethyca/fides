@@ -35,7 +35,6 @@ encoding = "UTF-8"
 oauth_root_client_id = "fidesopsadmin"
 oauth_root_client_secret = "fidesopsadminsecret"
 drp_jwt_secret = "secret"
-log_level = "INFO"
 root_username = "root_user"
 root_password = "Testpassword1!"
 
