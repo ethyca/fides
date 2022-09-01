@@ -22,11 +22,12 @@ services:
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
       FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DEV_MODE: "True"
+      FIDES__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
+      FIDES__LOG_PII: ${FIDESOPS__LOG_PII}
       FIDES_TEST_MODE: "True"
-      FIDESOPS__DEV_MODE: "True"
-      FIDESOPS__LOG_PII: ${FIDESOPS__LOG_PII}
-      FIDESOPS__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
-      FIDESOPS__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
         source: .

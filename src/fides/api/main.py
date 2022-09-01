@@ -208,14 +208,13 @@ async def setup_server() -> None:
     # logger.info("Starting scheduled request intake...")
     # initiate_scheduled_request_intake()
 
-    # TODO: Fix this
-    # send_analytics_event(
-    #     AnalyticsEvent(
-    #         docker=in_docker_container(),
-    #         event=Event.server_start.value,
-    #         event_created_at=datetime.now(tz=timezone.utc),
-    #     )
-    # )
+    send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
 
     if not CONFIG.execution.worker_enabled:
         logger.info("Starting worker...")
