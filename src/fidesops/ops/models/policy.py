@@ -26,7 +26,7 @@ from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.data_category import _validate_data_category
 
 
-class PausedStep(EnumType):
+class CurrentStep(EnumType):
     access = "access"
     erasure = "erasure"
 

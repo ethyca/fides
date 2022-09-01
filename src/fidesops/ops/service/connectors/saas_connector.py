@@ -261,6 +261,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
 

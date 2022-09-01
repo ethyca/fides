@@ -12,8 +12,12 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.policy import PausedStep, Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.policy import CurrentStep, Policy
+from fidesops.ops.models.privacy_request import (
+    CollectionActionRequired,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
@@ -370,7 +374,7 @@ class TestCachePausedLocation:
     def test_privacy_request_cache_paused_location(self, privacy_request):
         assert privacy_request.get_paused_collection_details() is None
 
-        paused_step = PausedStep.erasure
+        paused_step = CurrentStep.erasure
         privacy_request.cache_paused_collection_details(
             step=paused_step,
             collection=paused_location,
@@ -453,11 +457,11 @@ class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
 
         privacy_request.cache_failed_collection_details(
-            step=PausedStep.erasure, collection=paused_location
+            step=CurrentStep.erasure, collection=paused_location
         )
 
         cached_data = privacy_request.get_failed_collection_details()
-        assert cached_data.step == PausedStep.erasure
+        assert cached_data.step == CurrentStep.erasure
         assert cached_data.collection == paused_location
         assert cached_data.action_needed is None
 
@@ -475,3 +479,41 @@ class TestCacheIdentityVerificationCode:
         privacy_request.cache_identity_verification_code("123456")
 
         assert privacy_request.get_cached_verification_code() == "123456"
+
+
+class TestCacheEmailConnectorTemplateContents:
+    def test_cache_template_contents(self, privacy_request):
+        assert (
+            privacy_request.get_email_connector_template_contents_by_dataset(
+                CurrentStep.erasure, "email_dataset"
+            )
+            == {}
+        )
+
+        privacy_request.cache_email_connector_template_contents(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "test_collection"),
+            action_needed=[
+                ManualAction(
+                    locators={"email": "test@example.com"},
+                    get=None,
+                    update={"phone": "null_rewrite"},
+                )
+            ],
+        )
+
+        assert privacy_request.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        ) == {
+            "test_collection": CollectionActionRequired(
+                step=CurrentStep.erasure,
+                collection=CollectionAddress("email_dataset", "test_collection"),
+                action_needed=[
+                    ManualAction(
+                        locators={"email": "test@example.com"},
+                        get=None,
+                        update={"phone": "null_rewrite"},
+                    )
+                ],
+            )
+        }

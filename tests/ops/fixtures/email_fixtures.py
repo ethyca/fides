@@ -21,7 +21,7 @@ def email_connection_config(db: Session) -> Generator:
             "name": name,
             "key": "my_email_connection_config",
             "connection_type": ConnectionType.email,
-            "access": AccessLevel.read,
+            "access": AccessLevel.write,
         },
     )
     yield connection_config

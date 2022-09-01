@@ -16,6 +16,8 @@ dataset:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
+          - name: scholarship
+            data_categories: [user.childrens]
       - name: children
         fields:
           - name: id
@@ -30,10 +32,33 @@ dataset:
             data_categories: [user.childrens]
             fidesops_meta:
               data_type: string
+          - name: report_card
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: grades
+                data_categories: [ user.childrens ]
+              - name: behavior_issues
+                data_categories: [ user.childrens ]
+              - name: disciplinary_action
+                data_categories: [ user.childrens ]
+              - name: test_scores
+                data_categories: [ user.childrens ]
           - name: parent_id
-            data_categories: [user]
             fidesops_meta:
               references:
                 - dataset: email_dataset
                   field: daycare_customer.id
                   direction: from
+      - name: payment
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              primary_key: true
+          - name: payer_email
+            data_categories: [ user.contact.email ]
+            fidesops_meta:
+              identity: email
+          - name: ccn
+            data_categories: [user.financial.account_number]

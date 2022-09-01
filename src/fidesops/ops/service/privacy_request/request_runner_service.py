@@ -26,7 +26,7 @@ from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.policy import (
     ActionType,
-    PausedStep,
+    CurrentStep,
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
@@ -211,7 +211,7 @@ async def run_privacy_request(
     if from_step is not None:
         # Re-cast `from_step` into an Enum to enforce the validation since unserializable objects
         # can't be passed into and between tasks
-        from_step = PausedStep(from_step)  # type: ignore
+        from_step = CurrentStep(from_step)  # type: ignore
 
     with self.session as session:
 
@@ -251,7 +251,7 @@ async def run_privacy_request(
             connection_configs = ConnectionConfig.all(db=session)
 
             if (
-                from_step != PausedStep.erasure
+                from_step != CurrentStep.erasure
             ):  # Skip if we're resuming from erasure step
                 access_result: Dict[str, List[Row]] = await run_access_request(
                     privacy_request=privacy_request,

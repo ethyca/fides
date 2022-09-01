@@ -15,11 +15,11 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import PausedStep
+from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
+    CollectionActionRequired,
     ExecutionLog,
     PrivacyRequest,
-    StoppedCollection,
 )
 from fidesops.ops.schemas.dataset import FidesopsDataset
 from fidesops.ops.task import graph_task
@@ -632,8 +632,8 @@ async def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
     ]
-    assert privacy_request.get_failed_collection_details() == StoppedCollection(
-        step=PausedStep.access,
+    assert privacy_request.get_failed_collection_details() == CollectionActionRequired(
+        step=CurrentStep.access,
         collection=CollectionAddress("mongo_test", "customer_details"),
     )
 

@@ -74,6 +74,18 @@ class TraversalNode:
             for _, parent_field_path, self_field_path in tuples
         }
 
+    def incoming_edges_from_same_dataset(self) -> Set[Edge]:
+        """Return the incoming edges from the same dataset"""
+        return {
+            Edge(
+                p_collection_address.field_address(parent_field_path),
+                self.address.field_address(self_field_path),
+            )
+            for p_collection_address, tuples in self.parents.items()
+            if p_collection_address.dataset == self.address.dataset
+            for _, parent_field_path, self_field_path in tuples
+        }
+
     def outgoing_edges(self) -> Set[Edge]:
         """Return the outgoing edges to this traversal_node,in (self.address -> other.address) order."""
         return {

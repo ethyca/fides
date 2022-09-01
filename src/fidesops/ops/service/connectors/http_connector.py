@@ -89,6 +89,7 @@ class HTTPSConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         """Currently not supported as webhooks are not called at the collection level"""
         raise NotImplementedError(
