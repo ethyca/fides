@@ -2,8 +2,6 @@ name: Docker Build & Push Privacy Center
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "*"
 
@@ -12,7 +10,7 @@ env:
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
-  push-fidesops-privacy-center-image:
+  push-fides-privacy-center-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +25,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ethyca/fidesops-privacy-center
+          images: ethyca/fides-privacy-center
 
       - name: Build and publish
         uses: docker/build-push-action@v3

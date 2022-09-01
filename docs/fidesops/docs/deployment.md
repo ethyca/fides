@@ -155,13 +155,13 @@ You now have a functional `fidesops` server running! Now you can use the API to 
 
 First, ensure that Docker is running on your host, with a minimum version of `20.10.8`.
 
-You can `docker pull ethyca/fidesops-privacy-center` to get the latest image from Ethyca's Docker Hub here: [ethyca/fidesops-privacy-center](https://hub.docker.com/r/ethyca/fidesops-privacy-center).
+You can `docker pull ethyca/fides-privacy-center` to get the latest image from Ethyca's Docker Hub here: [ethyca/fides-privacy-center](https://hub.docker.com/r/ethyca/fides-privacy-center).
 
 ```
-docker pull ethyca/fidesops-privacy-center
+docker pull ethyca/fides-privacy-center
 ```
 
-Once pulled, you can run `docker run -rm -p 3000:3000 ethyca/fidesops-privacy-center:latest` to start the server.
+Once pulled, you can run `docker run -rm -p 3000:3000 ethyca/fides-privacy-center:latest` to start the server.
 
 To configure the privacy center for your environment create a project directory, i.e. `~/custom-privacy-center`, and within
 this directory create a `config` directory. Copy the [config.json](https://github.com/ethyca/fidesops/blob/main/clients/ops/privacy-center/config/config.json)
@@ -172,5 +172,5 @@ After the configuration is updated the docker image can be run using your custom
 directory name to match the name you used) start the docker container:
 
 ```
-docker run --rm -v $(pwd)/config:/app/config -p 3000:3000 ethyca/fidesops-privacy-center:latest`.
+docker run --rm -v $(pwd)/config:/app/config -p 3000:3000 ethyca/fides-privacy-center:latest`.
 ```
