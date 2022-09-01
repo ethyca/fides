@@ -17,12 +17,12 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FideslibDatabaseSettings):
     """Configuration settings for Postgres."""
 
-    user: str = "postgres"
-    password: str = "fides"
-    server: str = "fides-db"
+    user: str = "defaultuser"
+    password: str = "defaultpassword"
+    server: str = "default-db"
     port: str = "5432"
-    db: str = "fides"
-    test_db: str = "fides_test"
+    db: str = "default_db"
+    test_db: str = "default_test_db"
 
     async_database_uri: Optional[PostgresDsn]
     sync_database_uri: Optional[PostgresDsn]

@@ -61,7 +61,7 @@ from fides.ctl.core.config import get_config as get_ctl_config
 
 CONFIG: FidesConfig = get_ctl_config()
 
-logging.basicConfig(level=CONFIG.security.log_level)
+logging.basicConfig(level=CONFIG.logging.level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ async def setup_server() -> None:
     if logger.getEffectiveLevel() == logging.DEBUG:
         logger.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
-            "Set FIDES__SECURITY__LOG_LEVEL to INFO or higher in production."
+            "Set FIDES__LOGGING__LEVEL to INFO or higher in production."
         )
         CONFIG.log_all_config_values()
 

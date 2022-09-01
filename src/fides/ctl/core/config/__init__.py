@@ -65,7 +65,6 @@ class FidesConfig(BaseModel):
             self.cli,
             self.user,
             self.logging,
-            self.credentials,
             self.database,
             self.redis,
             self.security,
@@ -76,7 +75,7 @@ class FidesConfig(BaseModel):
                 logger.debug(
                     "Using config: %s%s = %s",
                     settings.Config.env_prefix,  # type: ignore
-                    key,
+                    key.upper(),
                     value,
                 )
 
@@ -180,13 +179,15 @@ def get_config(config_path_override: str = "") -> FidesConfig:
 
     On failure, returns default configuration.
     """
-    # TODO: Add the ability to censor the config
 
+    env_config_path = getenv("FIDES__CONFIG_PATH")
+    config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
+    print(f"Loading config from: {config_path}")
     try:
         settings = (
-            toml.load(config_path_override)
+            toml.load(config_path)
             if config_path_override
-            else load_toml(file_names=[DEFAULT_CONFIG_PATH])
+            else load_toml(file_names=[config_path])
         )
 
         # credentials specific logic for populating environment variable configs.
