@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, TypeVar
 import pydash
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
@@ -18,9 +17,11 @@ from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util import saas_util
 from fides.api.ops.util.collection_util import Row, merge_dicts
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS, unflatten_dict
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
 T = TypeVar("T")
 
 
@@ -75,7 +76,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         gdpr_delete: Optional[SaaSRequest] = None
         delete: Optional[SaaSRequest] = None
 
-        if not config.execution.masking_strict:
+        if not CONFIG.execution.masking_strict:
             gdpr_delete = self.data_protection_request
             delete = self.get_request_by_action("delete")
 

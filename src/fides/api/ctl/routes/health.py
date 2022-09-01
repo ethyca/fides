@@ -8,12 +8,11 @@ import fides
 from fides.api.ctl.database.database import get_db_health
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ops.common_exceptions import RedisConnectionError
-from fides.api.ops.core.config import config as ops_config
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG: FidesctlConfig = get_config()
+CONFIG: FidesConfig = get_config()
 
 router = APIRouter(tags=["Health"])
 
@@ -25,7 +24,7 @@ logging.getLogger("alembic").setLevel(logging.WARNING)
 
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
-    if not ops_config.redis.enabled:
+    if not CONFIG.redis.enabled:
         return "no cache configured"
     try:
         get_cache()

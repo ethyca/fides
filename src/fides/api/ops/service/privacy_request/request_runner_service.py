@@ -16,7 +16,6 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
@@ -49,8 +48,11 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
+from fides.ctl.core.config import get_config
 
 logger = get_task_logger(__name__)
+
+CONFIG = get_config()
 
 
 def run_webhooks_and_report_status(
@@ -182,7 +184,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     def session(self) -> ContextManager[Session]:
         """Creates Session once per process"""
         if self._session is None:
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             self._session = SessionLocal()
 
         return self._session
@@ -281,14 +283,14 @@ def run_privacy_request(
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
-            _log_warning(exc, config.dev_mode)
+            _log_warning(exc, CONFIG.dev_mode)
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
             fideslog_graph_failure(failed_graph_analytics_event(privacy_request, exc))
-            _log_exception(exc, config.dev_mode)
+            _log_exception(exc, CONFIG.dev_mode)
             return
 
         # Run post-execution webhooks
@@ -323,13 +325,13 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
         id=privacy_request.id,
         replace_existing=True,
         trigger="date",
-        run_date=(datetime.now() + timedelta(seconds=config.redis.default_ttl_seconds)),
+        run_date=(datetime.now() + timedelta(seconds=CONFIG.redis.default_ttl_seconds)),
     )
 
 
 def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
-    SessionLocal = get_db_session(config)
+    SessionLocal = get_db_session(CONFIG)
     db = SessionLocal()
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:

@@ -23,9 +23,9 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG: FidesctlConfig = get_config()
+CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):

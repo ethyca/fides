@@ -8,7 +8,6 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -17,6 +16,9 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 @register("mailchimp_messages_access", [SaaSRequestType.READ])
@@ -68,7 +70,7 @@ def mailchimp_messages_access(
             # by the AuthenticatedClient. Extenders can chose to handle errors within
             # their implementation as they wish.
             except Exception as exc:  # pylint: disable=W0703
-                if config.dev_mode:  # pylint: disable=R1720
+                if CONFIG.dev_mode:  # pylint: disable=R1720
                     raise ConnectionException(
                         f"Operational Error connecting to Mailchimp API with error: {exc}"
                     )
@@ -120,7 +122,7 @@ def mailchimp_member_update(
         # by the AuthenticatedClient. Extenders can chose to handle errors within
         # their implementation as they wish.
         except Exception as e:
-            if config.dev_mode:  # pylint: disable=R1720
+            if CONFIG.dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to mailchimp API with error: {e}"
                 )

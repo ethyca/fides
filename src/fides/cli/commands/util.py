@@ -8,7 +8,7 @@ from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fides
 from fides.cli.utils import (
-    FIDESCTL_ASCII_ART,
+    FIDES_ASCII_ART,
     check_server,
     send_init_analytics,
     with_analytics,
@@ -31,7 +31,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     separate = lambda: print("-" * 10, end=None)
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fidesctl.toml"
+    config_file_name = "fides.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
@@ -52,7 +52,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
         "cli": {"server_protocol", "server_host", "server_port", "analytics_id"},
         "user": {"analytics_opt_out"},
     }
-    click.echo(FIDESCTL_ASCII_ART)
+    click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
     separate()
 

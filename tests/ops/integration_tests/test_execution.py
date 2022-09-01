@@ -6,7 +6,6 @@ from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import (
@@ -24,11 +23,14 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
+
+CONFIG = get_config()
 
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
@@ -133,7 +135,7 @@ class TestDeleteCollection:
             Delete the mongo connection in a separate session, for testing purposes, while the privacy request
             is in progress. Arbitrarily hooks into the log_start method to do this.
             """
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             new_session = SessionLocal()
             try:
                 reloaded_config = new_session.query(ConnectionConfig).get(
@@ -401,7 +403,7 @@ class TestSkipDisabledCollection:
             in a new session, to mimic the ConnectionConfig being disabled by a separate request while request
             is in progress.
             """
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             new_session = SessionLocal()
             reloaded_config = new_session.query(ConnectionConfig).get(
                 mongo_connection_config.id

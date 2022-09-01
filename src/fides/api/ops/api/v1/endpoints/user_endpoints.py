@@ -17,12 +17,14 @@ from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import USER_PASSWORD_RESET, USER_UPDATE
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.core.config import config
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import get_current_user, verify_oauth_client
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+
+CONFIG = get_config()
 
 
 def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
@@ -86,7 +88,7 @@ def update_user_password(
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), config.security.encoding
+        b64_str_to_str(data.old_password), CONFIG.security.encoding
     ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."

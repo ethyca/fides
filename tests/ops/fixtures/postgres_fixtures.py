@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -22,10 +21,12 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.service.connectors import PostgreSQLConnector
+from fides.ctl.core.config import get_config
 
 from .application_fixtures import integration_secrets
 
 logger = logging.getLogger(__name__)
+CONFIG = get_config()
 
 
 @pytest.fixture
@@ -193,7 +194,7 @@ def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)
     SessionLocal = get_db_session(
-        config=config,
+        config=CONFIG,
         engine=engine,
         autocommit=True,
         autoflush=True,

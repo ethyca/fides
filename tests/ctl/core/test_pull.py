@@ -1,7 +1,7 @@
 import pytest
 from git.repo import Repo
 
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.pull import pull_existing_resources
 
 
@@ -13,7 +13,7 @@ def git_reset(change_dir: str) -> None:
 
 
 @pytest.mark.unit
-def test_pull_existing_resources(test_config: FidesctlConfig) -> None:
+def test_pull_existing_resources(test_config: FidesConfig) -> None:
     """Placeholder test."""
     test_dir = ".fides/"
     existing_keys = pull_existing_resources(

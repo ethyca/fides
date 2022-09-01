@@ -38,7 +38,6 @@ from fides.api.ops.common_exceptions import (
     FidesopsException,
     OAuth2TokenException,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.client import ClientCreatedResponse
@@ -50,10 +49,13 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2 import 
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import get_config
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
 logger = logging.getLogger(__name__)
+
+CONFIG = get_config()
 
 
 @router.post(
@@ -81,7 +83,7 @@ async def acquire_access_token(
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
     client_detail = ClientDetail.get(
-        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
 
     if client_detail is None:
@@ -92,7 +94,7 @@ async def acquire_access_token(
 
     logger.info("Creating access token")
     access_code = client_detail.create_access_code_jwe(
-        config.security.app_encryption_key
+        CONFIG.security.app_encryption_key
     )
     return AccessToken(access_token=access_code)
 
@@ -117,8 +119,8 @@ def create_client(
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
-        config.security.oauth_client_id_length_bytes,
-        config.security.oauth_client_secret_length_bytes,
+        CONFIG.security.oauth_client_id_length_bytes,
+        CONFIG.security.oauth_client_secret_length_bytes,
         scopes=scopes,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)
@@ -130,7 +132,7 @@ def create_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=config)
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return
     logging.info("Deleting client")
@@ -144,7 +146,7 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
 )
 def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str]:
     """Returns a list of the scopes associated with the client. Returns an empty list if client does not exist."""
-    client = ClientDetail.get(db, object_id=client_id, config=config)
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return []
 
@@ -163,7 +165,7 @@ def set_client_scopes(
     db: Session = Depends(get_db),
 ) -> None:
     """Overwrites the client's scopes with those provided. Does nothing if the client doesn't exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=config)
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return
 

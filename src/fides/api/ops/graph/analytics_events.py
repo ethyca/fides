@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from fideslog.sdk.python.event import AnalyticsEvent
 
 from fides.api.ops.analytics import in_docker_container, send_analytics_event
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import (
     GraphDiffSummary,
@@ -16,14 +15,17 @@ from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
+from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.task.graph_task import GraphTask
 
+CONFIG = get_config()
+
 
 def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if privacy request execution has failed"""
-    if config.root_user.analytics_opt_out or not event:
+    if CONFIG.user.analytics_opt_out or not event:
         return
 
     send_analytics_event(event)
@@ -31,7 +33,7 @@ def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
 
 def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
-    if config.root_user.analytics_opt_out or not event:
+    if CONFIG.user.analytics_opt_out or not event:
         return
 
     send_analytics_event(event)

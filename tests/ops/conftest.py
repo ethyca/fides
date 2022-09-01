@@ -19,13 +19,12 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config as get_ctl_config
+from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -56,15 +55,14 @@ from .fixtures.snowflake_fixtures import *
 
 logger = logging.getLogger(__name__)
 
-CTL_CONFIG = get_ctl_config()
+CONFIG = get_config()
 
 
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
-    assert config.is_test_mode
-    if config.database.enabled:
-        yield db_action(config.cli.server_url, "reset")
+    assert CONFIG.test_mode
+    yield db_action(CONFIG.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
 
@@ -72,15 +70,15 @@ def migrate_test_db() -> None:
 def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
-    assert config.is_test_mode
+    assert CONFIG.test_mode
     engine = get_db_engine(
-        database_uri=config.database.sqlalchemy_test_database_uri,
+        database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
     migrate_test_db()
     if not scheduler.running:
         scheduler.start()
-    SessionLocal = get_db_session(config, engine=engine)
+    SessionLocal = get_db_session(CONFIG, engine=engine)
     the_session = SessionLocal()
     # Setup above...
     yield the_session
@@ -153,18 +151,18 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload), CTL_CONFIG.security.app_encryption_key)
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
 
 
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
-    return _generate_auth_header(oauth_client, config.security.app_encryption_key)
+    return _generate_auth_header(oauth_client, CONFIG.security.app_encryption_key)
 
 
 @pytest.fixture
 def generate_auth_header_ctl_config(oauth_client) -> Callable[[Any], Dict[str, str]]:
-    return _generate_auth_header(oauth_client, CTL_CONFIG.security.app_encryption_key)
+    return _generate_auth_header(oauth_client, CONFIG.security.app_encryption_key)
 
 
 def _generate_auth_header(
@@ -228,25 +226,25 @@ def run_privacy_request_task(celery_session_app):
 @pytest.fixture(autouse=True, scope="session")
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
-    original_value = config.root_user.analytics_opt_out
-    config.root_user.analytics_opt_out = True
+    original_value = CONFIG.user.analytics_opt_out
+    CONFIG.user.analytics_opt_out = True
     yield
-    config.root_user.analytics_opt_out = original_value
+    CONFIG.user.analytics_opt_out = original_value
 
 
 @pytest.fixture(scope="function")
 def require_manual_request_approval():
     """Require manual request approval"""
-    original_value = config.execution.require_manual_request_approval
-    config.execution.require_manual_request_approval = True
+    original_value = CONFIG.execution.require_manual_request_approval
+    CONFIG.execution.require_manual_request_approval = True
     yield
-    config.execution.require_manual_request_approval = original_value
+    CONFIG.execution.require_manual_request_approval = original_value
 
 
 @pytest.fixture(autouse=True, scope="session")
 def subject_identity_verification_required():
     """Disable identity verification for most tests unless overridden"""
-    original_value = config.execution.subject_identity_verification_required
-    config.execution.subject_identity_verification_required = False
+    original_value = CONFIG.execution.subject_identity_verification_required
+    CONFIG.execution.subject_identity_verification_required = False
     yield
-    config.execution.subject_identity_verification_required = original_value
+    CONFIG.execution.subject_identity_verification_required = original_value

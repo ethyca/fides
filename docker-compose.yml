@@ -4,7 +4,7 @@ services:
     command: uvicorn --host 0.0.0.0 --port 8080 --reload fides.api.main:app
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
-      interval: 15s
+      interval: 20s
       timeout: 5s
       retries: 5
     ports:
@@ -17,17 +17,17 @@ services:
     expose:
       - 8080
     environment:
-      FIDES__CONFIG_PATH: "/fides/.fides/"
-      FIDESCTL__CLI__ANALYTICS_ID: ${FIDESCTL__CLI__ANALYTICS_ID}
-      FIDESCTL__CLI__SERVER_HOST: "fides"
-      FIDESCTL__CLI__SERVER_PORT: "8080"
-      FIDESCTL__DATABASE__SERVER: "fides-db"
-      FIDESCTL_TEST_MODE: "True"
-      FIDESOPS__DEV_MODE: "True"
-      FIDESOPS__LOG_PII: ${FIDESOPS__LOG_PII}
-      FIDESOPS__HOT_RELOAD: ${FIDESOPS__HOT_RELOAD}
-      FIDESOPS__ROOT_USER__ANALYTICS_ID: "internal"
-      FIDESOPS__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID}
+      FIDES__CLI__SERVER_HOST: "fides"
+      FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DEV_MODE: "True"
+      FIDES__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__HOT_RELOAD: ${HOT_RELOAD}
+      FIDES__LOG_PII: ${LOG_PII}
+      FIDES_TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
         source: .
@@ -80,11 +80,11 @@ services:
       - ./docs/fides:/docs
       - ./:/fides
     environment:
-      - FIDESOPS__DEV_MODE=True
-      - FIDESOPS__LOG_PII=${FIDESOPS__LOG_PII}
-      - FIDESOPS__HOT_RELOAD=${FIDESOPS__HOT_RELOAD}
-      - FIDESOPS__ROOT_USER__ANALYTICS_ID=${FIDESOPS__ROOT_USER__ANALYTICS_ID}
-      - FIDESOPS__EXECUTION__WORKER_ENABLED=True
+      - FIDES__DEV_MODE=True
+      - FIDES__LOG_PII=${LOG_PII}
+      - FIDES__HOT_RELOAD=${HOT_RELOAD}
+      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID}
+      - FIDES__EXECUTION__WORKER_ENABLED=True
 
   redis:
     image: "redis:6.2.5-alpine"

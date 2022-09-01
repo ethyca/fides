@@ -47,7 +47,6 @@ from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
 )
-from fides.api.ops.core.config import config as ops_config
 from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
@@ -57,15 +56,16 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 
-logging.basicConfig(level=ops_config.security.log_level)
+CONFIG: FidesConfig = get_ctl_config()
+
+logging.basicConfig(level=CONFIG.logging.level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
-CONFIG: FidesctlConfig = get_ctl_config()
 ROUTERS = (
     crud.routers
     + visualize.routers
@@ -129,7 +129,7 @@ def prepare_and_log_request(
     """
 
     # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
-    if ops_config.root_user.analytics_opt_out:
+    if CONFIG.user.analytics_opt_out:
         return
     send_analytics_event(
         AnalyticsEvent(
@@ -149,10 +149,10 @@ def prepare_and_log_request(
 
 # Set all CORS enabled origins
 
-if ops_config.security.cors_origins:
+if CONFIG.security.cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in ops_config.security.cors_origins],
+        allow_origins=[str(origin) for origin in CONFIG.security.cors_origins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -184,16 +184,16 @@ async def setup_server() -> None:
     if logger.getEffectiveLevel() == logging.DEBUG:
         logger.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
-            "Set FIDESOPS__SECURITY__LOG_LEVEL to INFO or higher in production."
+            "Set FIDES__LOGGING__LEVEL to INFO or higher in production."
         )
-        ops_config.log_all_config_values()
+        CONFIG.log_all_config_values()
 
     await configure_db(CONFIG.database.sync_database_uri)
 
     logger.info("Validating SaaS connector templates...")
     load_registry(registry_file)
 
-    if ops_config.redis.enabled:
+    if CONFIG.redis.enabled:
         logger.info("Running Redis connection test...")
         try:
             get_cache()
@@ -205,9 +205,8 @@ async def setup_server() -> None:
         scheduler.start()
 
     # TODO: Fix this, this line is preventing the webserver from starting properly
-    # if ops_config.database.enabled:
-    #     logger.info("Starting scheduled request intake...")
-    #     initiate_scheduled_request_intake()
+    # logger.info("Starting scheduled request intake...")
+    # initiate_scheduled_request_intake()
 
     send_analytics_event(
         AnalyticsEvent(
@@ -217,7 +216,7 @@ async def setup_server() -> None:
         )
     )
 
-    if not ops_config.execution.worker_enabled:
+    if not CONFIG.execution.worker_enabled:
         logger.info("Starting worker...")
         subprocess.Popen(["fides", "worker"])  # pylint: disable=consider-using-with
 

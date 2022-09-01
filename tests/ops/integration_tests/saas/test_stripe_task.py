@@ -4,14 +4,16 @@ from typing import List
 import pytest
 import requests
 
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -1074,7 +1076,7 @@ def test_stripe_erasure_request_task(
     )
 
     # Run erasure with masking_strict = False so both update and delete actions can be used
-    config.execution.masking_strict = False
+    CONFIG.execution.masking_strict = False
 
     x = graph_task.run_erasure(
         privacy_request,
@@ -1173,4 +1175,4 @@ def test_stripe_erasure_request_task(
     assert subscriptions == []
 
     # reset
-    config.execution.masking_strict = True
+    CONFIG.execution.masking_strict = True

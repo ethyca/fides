@@ -1,12 +1,14 @@
 import pytest
 
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import *
 from fides.api.ops.graph.traversal import *
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.task.graph_task import retry
 from fides.api.ops.task.task_resources import TaskResources
+from fides.ctl.core.config import get_config
 from tests.ops.task.traversal_data import integration_db_graph
+
+CONFIG = get_config()
 
 t1 = Collection(
     name="t1",
@@ -70,9 +72,9 @@ def test_retry_decorator(privacy_request, policy, db):
         CollectionAddress("postgres_example", "payment_card")
     ]
 
-    config.execution.task_retry_count = 5
-    config.execution.task_retry_delay = 0.1
-    config.execution.task_retry_backoff = 0.01
+    CONFIG.execution.task_retry_count = 5
+    CONFIG.execution.task_retry_delay = 0.1
+    CONFIG.execution.task_retry_backoff = 0.01
 
     class TestRetryDecorator:
         def __init__(self):

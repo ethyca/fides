@@ -42,7 +42,7 @@ def dev_with_worker(session: nox.Session) -> None:
         "run",
         *ANALYTICS_OPT_OUT,
         "-e",
-        "FIDESOPS__EXECUTION__WORKER_ENABLED=True",
+        "FIDES__EXECUTION__WORKER_ENABLED=True",
         COMPOSE_SERVICE_NAME,
         external=True,
     )

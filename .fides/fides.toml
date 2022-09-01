@@ -1,5 +1,3 @@
-port = 8080
-
 [database]
 server = "fides-db"
 user = "postgres"
@@ -7,7 +5,17 @@ password = "fides"
 port = "5432"
 db = "fides"
 test_db = "fides_test"
-enabled = true
+
+[logging]
+level = "INFO"
+
+[cli]
+server_host = "localhost"
+server_port = 8080
+analytics_id = "2e43c0133a39f77d548c87416924e479"
+
+[user]
+analytics_opt_out = false
 
 [redis]
 host = "redis"
@@ -27,20 +35,16 @@ encoding = "UTF-8"
 oauth_root_client_id = "fidesopsadmin"
 oauth_root_client_secret = "fidesopsadminsecret"
 drp_jwt_secret = "secret"
-log_level = "INFO"
 root_username = "root_user"
 root_password = "Testpassword1!"
 
 [execution]
 masking_strict = true
 require_manual_request_approval = false
+task_retry_backoff = 1
 task_retry_count = 0
 task_retry_delay = 1
-task_retry_backoff = 1
 worker_enabled = false
-
-[root_user]
-analytics_opt_out = true
 
 [admin_ui]
 enabled = true

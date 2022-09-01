@@ -8,7 +8,9 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
 
 from fides import __version__ as fides_version
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +28,8 @@ def accessed_through_local_host(hostname: Optional[str]) -> bool:
 
 
 analytics_client = AnalyticsClient(
-    client_id=config.root_user.analytics_id,
-    developer_mode=config.dev_mode,
+    client_id=CONFIG.cli.analytics_id,
+    developer_mode=CONFIG.dev_mode,
     extra_data=None,
     os=system(),
     product_name="fidesops",
@@ -36,7 +38,7 @@ analytics_client = AnalyticsClient(
 
 
 def send_analytics_event(event: AnalyticsEvent) -> None:
-    if config.root_user.analytics_opt_out:
+    if CONFIG.user.analytics_opt_out:
         return
     try:
         analytics_client.send(event)

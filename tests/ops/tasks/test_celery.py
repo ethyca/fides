@@ -1,5 +1,7 @@
-from fides.api.ops.core.config import config
 from fides.api.ops.tasks import _create_celery
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 def test_create_task(celery_session_app, celery_session_worker):
@@ -16,8 +18,8 @@ def test_create_task(celery_session_app, celery_session_worker):
 
 def test_celery_default_config() -> None:
     celery_app = _create_celery()
-    assert celery_app.conf["broker_url"] == config.redis.connection_url
-    assert celery_app.conf["result_backend"] == config.redis.connection_url
+    assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
+    assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
     assert celery_app.conf["event_queue_prefix"] == "fidesops_worker"
     assert celery_app.conf["default_queue_name"] == "fidesops"
 

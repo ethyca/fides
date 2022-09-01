@@ -13,12 +13,14 @@ from typing import Optional
 import requests
 import yaml
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.models.policy import ActionType
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+CONFIG = get_config()
 
 
 def get_access_token(client_id: str, client_secret: str) -> str:
@@ -540,8 +542,8 @@ if __name__ == "__main__":
     input()
 
     root_token = get_access_token(
-        client_id=config.security.oauth_root_client_id,
-        client_secret=config.security.oauth_root_client_secret,
+        client_id=CONFIG.security.oauth_root_client_id,
+        client_secret=CONFIG.security.oauth_root_client_secret,
     )
     root_oauth_header = {"Authorization": f"Bearer {root_token}"}
     client = create_oauth_client()

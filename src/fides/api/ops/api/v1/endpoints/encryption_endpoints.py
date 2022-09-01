@@ -12,7 +12,6 @@ from fides.api.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.schemas.encryption_request import (
     AesDecryptionRequest,
     AesDecryptionResponse,
@@ -27,11 +26,12 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import get_config
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
-
-
 logger = logging.getLogger(__name__)
+
+CONFIG = get_config()
 
 
 @router.get(
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 def get_encryption_key() -> str:
     logger.info("Generating encryption key")
     return cryptographic_util.generate_secure_random_string(
-        config.security.aes_encryption_key_length
+        CONFIG.security.aes_encryption_key_length
     )
 
 
@@ -53,7 +53,7 @@ def get_encryption_key() -> str:
 )
 def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionResponse:
     logger.info("Starting AES Encryption")
-    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
+    nonce: bytes = secrets.token_bytes(CONFIG.security.aes_gcm_nonce_length)
 
     encrypted_value: str = aes_gcm_encrypt(
         encryption_request.value,
@@ -76,7 +76,7 @@ def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionRespon
 
     decrypted_value: str = aes_gcm_decrypt(
         decryption_request.value,
-        decryption_request.key.encode(config.security.encoding),
+        decryption_request.key.encode(CONFIG.security.encoding),
         nonce,
     )
     return AesDecryptionResponse(decrypted_value=decrypted_value)

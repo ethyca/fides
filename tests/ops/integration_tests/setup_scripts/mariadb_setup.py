@@ -5,14 +5,15 @@ import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.ops.service.connectors.sql_connector import MariaDBConnector
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 integration_config = load_toml(["fidesops-integration.toml"])
 
 
@@ -61,7 +62,7 @@ def setup():
 
     engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
-        config=config,
+        config=CONFIG,
         engine=engine,
         autocommit=True,
         autoflush=True,

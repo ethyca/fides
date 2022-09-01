@@ -3,7 +3,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.mark.integration
@@ -15,11 +15,12 @@ from fides.ctl.core.config import FidesctlConfig
     ],
 )
 def test_datamap(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     organization_fides_key: str,
     expected_status_code: int,
     test_client: TestClient,
 ) -> None:
+    print(test_config)
     response = test_client.get(
         test_config.cli.server_url + API_PREFIX + "/datamap/" + organization_fides_key,
         headers=test_config.user.request_headers,
