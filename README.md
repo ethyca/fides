@@ -1,7 +1,5 @@
 # Meet Fides: Privacy Policies as Code
 
-Another merge
-
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
 [![Docs][docs-workflow-image]][docs-actions-url]
