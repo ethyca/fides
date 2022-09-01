@@ -21,7 +21,8 @@ class LoggingSettings(FidesSettings):
     serialization: str = ""
 
     @validator("destination", pre=True)
-    def get_destination(cls: FidesSettings, value: str) -> str:
+    @classmethod
+    def get_destination(cls, value: str) -> str:
         """
         Print logs to sys.stdout, unless a valid file path is specified.
         """
@@ -51,7 +52,8 @@ class LoggingSettings(FidesSettings):
         return value
 
     @validator("serialization", pre=True)
-    def get_serialization(cls: FidesSettings, value: str) -> str:
+    @classmethod
+    def get_serialization(cls, value: str) -> str:
         """
         Ensure that only JSON serialization, or no serialization, is used.
         """

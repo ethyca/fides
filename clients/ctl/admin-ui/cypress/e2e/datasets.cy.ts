@@ -98,7 +98,7 @@ describe("Dataset", () => {
       );
       cy.getByTestId("input-data_qualifier").should("contain", "Identified");
       cy.getByTestId("selected-categories").children().should("have.length", 1);
-      cy.getByTestId("taxonomy-entity-user.derived.identifiable.unique_id");
+      cy.getByTestId("taxonomy-entity-user.unique_id");
     });
 
     it("Can render an edit form for a dataset collection with existing values", () => {
@@ -434,21 +434,11 @@ describe("Dataset", () => {
         "have.attr",
         "data-checked"
       );
-      const ancestors = [
-        "User Data",
-        "Derived Data",
-        "Derived User Identifiable Data",
-      ];
-      ancestors.forEach((a) => {
-        cy.get(`[data-testid='checkbox-${a}'] > span`).should(
-          "have.attr",
-          "data-indeterminate"
-        );
-      });
-      cy.getByTestId("selected-categories").should(
-        "contain",
-        "user.derived.identifiable.unique_id"
+      cy.get(`[data-testid='checkbox-User Data'] > span`).should(
+        "have.attr",
+        "data-indeterminate"
       );
+      cy.getByTestId("selected-categories").should("contain", "user.unique_id");
     });
 
     it("Can deselect data categories", () => {
@@ -479,24 +469,18 @@ describe("Dataset", () => {
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Telemetry Data").click();
-      cy.getByTestId("checkbox-Account Data").click();
+      cy.getByTestId("checkbox-System Data").click();
       cy.getByTestId("data-category-done-btn").click();
-      cy.getByTestId("selected-categories").should(
-        "contain",
-        "user.derived.identifiable.unique_id"
-      );
-      cy.getByTestId("selected-categories").should(
-        "contain",
-        "user.derived.identifiable.telemetry"
-      );
-      cy.getByTestId("selected-categories").should("contain", "account");
+      cy.getByTestId("selected-categories").should("contain", "user.unique_id");
+      cy.getByTestId("selected-categories").should("contain", "user.telemetry");
+      cy.getByTestId("selected-categories").should("contain", "system");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
         expect(body.collections[0].fields[5].data_categories).to.eql([
-          "user.derived.identifiable.unique_id",
-          "user.derived.identifiable.telemetry",
-          "account",
+          "user.unique_id",
+          "user.telemetry",
+          "system",
         ]);
       });
     });
@@ -505,40 +489,41 @@ describe("Dataset", () => {
       cy.visit("/dataset/demo_users");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
-      // expand account data
-      cy.getByTestId("expand-Account Data").click();
+      // expand system data
+      cy.getByTestId("expand-System Data").click();
       // select 1/2 children
-      cy.getByTestId("checkbox-Account Contact Data").click();
-      cy.get("[data-testid='checkbox-Account Contact Data'] > span").should(
+      cy.getByTestId("checkbox-Authentication Data").click();
+      cy.get("[data-testid='checkbox-Authentication Data'] > span").should(
         "have.attr",
         "data-checked"
       );
       // parent should be indeterminate since not all children are checked
-      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+      cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
         "data-indeterminate"
       );
       // now select all children
-      cy.getByTestId("checkbox-Payment Data").click();
+      cy.getByTestId("checkbox-Operations Data").click();
       // parent should be checked since all children are checked
-      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+      cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
         "data-checked"
       );
-      // the children's children should be disabled and checked since the parent is selected
-      cy.get("[data-testid='checkbox-Account City'] > span").should(
+      // the children of selected parents should be disabled
+      cy.getByTestId("checkbox-Credentials").click();
+      cy.get("[data-testid='checkbox-Password'] > span").should(
         "have.attr",
         "data-checked"
       );
-      cy.get("[data-testid='checkbox-Account City'] > span").should(
+      cy.get("[data-testid='checkbox-Biometric Credentials'] > span").should(
         "have.attr",
         "data-disabled"
       );
       cy.getByTestId("data-category-done-btn").click();
       const expectedSelected = [
-        "account.contact",
-        "account.payment",
-        "user.derived.identifiable.unique_id",
+        "system.authentication",
+        "system.operations",
+        "user.credentials",
       ];
       expectedSelected.forEach((e) => {
         cy.getByTestId("selected-categories").should("contain", e);
@@ -549,27 +534,24 @@ describe("Dataset", () => {
       cy.visit("/dataset/demo_users");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
-      cy.getByTestId("checkbox-Account Data").click();
-      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+      cy.getByTestId("checkbox-System Data").click();
+      cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
         "data-checked"
       );
       cy.getByTestId("data-category-done-btn").click();
-      cy.getByTestId("selected-categories").should(
-        "contain",
-        "user.derived.identifiable.unique_id"
-      );
-      cy.getByTestId("selected-categories").should("contain", "account");
+      cy.getByTestId("selected-categories").should("contain", "user.unique_id");
+      cy.getByTestId("selected-categories").should("contain", "system");
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("data-category-clear-btn").click();
-      cy.get("[data-testid='checkbox-Account Data'] > span").should(
+      cy.get("[data-testid='checkbox-System Data'] > span").should(
         "not.have.attr",
         "data-checked"
       );
       cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
-        "user.derived.identifiable.unique_id"
+        "user.unique_id"
       );
     });
   });

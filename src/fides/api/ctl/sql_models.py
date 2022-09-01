@@ -240,3 +240,9 @@ sql_model_map: Dict = {
     "system": System,
     "evaluation": Evaluation,
 }
+
+models_with_default_field = [
+    sql_model_map[model_name]
+    for model_name in sql_model_map
+    if hasattr(sql_model_map[model_name], "is_default")
+]
