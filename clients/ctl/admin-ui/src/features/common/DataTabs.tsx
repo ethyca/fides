@@ -8,7 +8,7 @@ import {
 } from "@fidesui/react";
 import { ReactNode } from "react";
 
-interface TabData {
+export interface TabData {
   label: string;
   content: ReactNode;
 }

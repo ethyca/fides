@@ -26,8 +26,10 @@ from fides.api.ops.schemas.storage.data_upload_location_response import DataUplo
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
+    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
+    StorageSecretsS3,
     StorageType,
 )
 
@@ -106,8 +108,9 @@ class TestPatchStorageConfig:
         return [
             {
                 "name": "test destination",
-                "type": "s3",
+                "type": StorageType.s3.value,
                 "details": {
+                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "object_name": "requests",
                     "naming": "some-filename-convention-enum",
@@ -277,8 +280,9 @@ class TestPatchStorageConfig:
             "succeeded": [
                 {
                     "name": "test destination",
-                    "type": "s3",
+                    "type": StorageType.s3.value,
                     "details": {
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
                         "bucket": "some-bucket",
                         "naming": "some-filename-convention-enum",
                         "max_retries": 10,
@@ -291,6 +295,32 @@ class TestPatchStorageConfig:
             "failed": [],
         }
         assert expected_response == response_body
+        storage_config.delete(db)
+
+    @pytest.mark.parametrize(
+        "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
+    )
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+    )
+    def test_patch_storage_config_with_different_auth_methods(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        auth_method,
+    ):
+        payload[0]["key"] = "my_s3_bucket"
+        payload[0]["details"]["auth_method"] = auth_method
+        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
+        assert auth_method == response_body["succeeded"][0]["details"]["auth_method"]
         storage_config.delete(db)
 
     @mock.patch(
@@ -309,8 +339,9 @@ class TestPatchStorageConfig:
             {
                 "key": key,
                 "name": "my-test-dest",
-                "type": "s3",
+                "type": StorageType.s3.value,
                 "details": {
+                    "auth_method": S3AuthMethod.SECRET_KEYS.value,
                     "bucket": "some-bucket",
                     "object_name": "requests",
                     "naming": "some-filename-convention-enum",
@@ -353,11 +384,12 @@ class TestPatchStorageConfig:
             headers=auth_header,
             json=[
                 {
-                    "key": "my_onetrust_upload",
+                    "key": "my_s3_upload",
                     "name": "my-test-dest",
-                    "type": "s3",
+                    "type": StorageType.s3.value,
                     "details": {
                         # "bucket": "removed-from-payload",
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
                         "object_name": "some-object",
                         "naming": "request_id",
                         "max_retries": 10,
@@ -521,7 +553,13 @@ class TestPutStorageConfigSecretsS3:
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        get_s3_session_mock.assert_called_once_with(**payload)
+        get_s3_session_mock.assert_called_once_with(
+            S3AuthMethod.SECRET_KEYS,
+            StorageSecretsS3(
+                aws_access_key_id=payload["aws_access_key_id"],
+                aws_secret_access_key=payload["aws_secret_access_key"],
+            ),
+        )
 
     @mock.patch(
         "fides.api.ops.service.storage.storage_authenticator_service.get_onetrust_access_token"
@@ -713,7 +751,11 @@ class TestGetStorageConfigs:
                     "key": "my_test_config",
                     "name": storage_config.name,
                     "type": storage_config.type.value,
-                    "details": {"bucket": "test_bucket", "naming": "request_id"},
+                    "details": {
+                        "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                        "bucket": "test_bucket",
+                        "naming": "request_id",
+                    },
                     "format": "json",
                 }
             ],
@@ -762,8 +804,12 @@ class TestGetStorageConfig:
 
         assert response_body == {
             "name": storage_config.name,
-            "type": "s3",
-            "details": {"bucket": "test_bucket", "naming": "request_id"},
+            "type": StorageType.s3.value,
+            "details": {
+                "auth_method": S3AuthMethod.SECRET_KEYS.value,
+                "bucket": "test_bucket",
+                "naming": "request_id",
+            },
             "key": "my_test_config",
             "format": "json",
         }

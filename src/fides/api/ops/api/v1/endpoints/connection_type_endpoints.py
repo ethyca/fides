@@ -49,6 +49,7 @@ def get_connection_types(
                     ConnectionType.saas,
                     ConnectionType.https,
                     ConnectionType.manual,
+                    ConnectionType.email,
                 ]
                 and is_match(conn_type.value)
             ]

@@ -37,10 +37,31 @@ export const dataUseApi = createApi({
       }),
       invalidatesTags: ["Data Uses"],
     }),
+    createDataUse: build.mutation<DataUse, DataUse>({
+      query: (dataUse) => ({
+        url: `data_use/`,
+        method: "POST",
+        body: dataUse,
+      }),
+      invalidatesTags: ["Data Uses"],
+    }),
+    deleteDataUse: build.mutation<string, string>({
+      query: (key) => ({
+        url: `data_use/${key}`,
+        params: { resource_type: "data_use" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Data Uses"],
+    }),
   }),
 });
 
-export const { useGetAllDataUsesQuery, useUpdateDataUseMutation } = dataUseApi;
+export const {
+  useGetAllDataUsesQuery,
+  useUpdateDataUseMutation,
+  useCreateDataUseMutation,
+  useDeleteDataUseMutation,
+} = dataUseApi;
 
 export const dataUseSlice = createSlice({
   name: "dataUse",

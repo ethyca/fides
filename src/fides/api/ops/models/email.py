@@ -21,9 +21,8 @@ from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_s
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
 
-logger = logging.getLogger(__name__)
-
 CONFIG = get_config()
+logger = logging.getLogger(__name__)
 
 
 def get_schema_for_secrets(

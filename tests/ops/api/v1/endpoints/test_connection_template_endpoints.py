@@ -51,7 +51,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 21
+        assert len(data) == 22
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -138,7 +138,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 13
+        assert len(data) == 14
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
@@ -230,14 +230,14 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "hapikey": {"title": "Hapikey", "type": "string"},
+                "private_app_token": {"title": "Private App Token", "type": "string"},
                 "domain": {
                     "title": "Domain",
                     "default": "api.hubapi.com",
                     "type": "string",
                 },
             },
-            "required": ["hapikey"],
+            "required": ["private_app_token"],
             "additionalProperties": False,
         }
 

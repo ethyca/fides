@@ -9,8 +9,9 @@
     "legal_basis": "Legitimate Interests",
     "special_category": "Vital Interests",
     "recipients": ["marketing team", "dog shelter"],
-    "legitimate_interest": true,
-    "legitimate_interest_impact_assessment": "https://example.org/legitimate_interest_assessment"
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": "https://example.org/legitimate_interest_assessment",
+    "is_default": true
   },
   {
     "fides_key": "provide.service",
@@ -23,7 +24,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "provide.service.operations",
@@ -36,7 +38,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "provide.service.operations.support",
@@ -49,7 +52,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "provide.service.operations.support.optimization",
@@ -62,124 +66,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "improve",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "Improve the capability",
-    "description": "Improve the product, service, application or system.",
-    "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "improve.system",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "System",
-    "description": "The source system, product, service or application being improved.",
-    "parent_key": "improve",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "personalize",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "Personalize the capability",
-    "description": "Personalize the product, service, application or system.",
-    "parent_key": null,
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "personalize.system",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "System",
-    "description": "The source system, product, service or application being personalized.",
-    "parent_key": "personalize",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "provide.system",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "System",
-    "description": "The source system, product, service or application being provided to the user.",
-    "parent_key": "provide",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "provide.system.operations",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "System Operations",
-    "description": "Use of specified data categories to operate and protect the system in order to provide the service.",
-    "parent_key": "provide.system",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "provide.system.operations.support",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "Operations Support",
-    "description": "Use of specified data categories to provide support for operation and protection of the system in order to provide the service.",
-    "parent_key": "provide.system.operations",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "provide.system.operations.support.optimization",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "Support Optimization",
-    "description": "Use of specified data categories to optimize and improve support operations in order to provide the service.",
-    "parent_key": "provide.system.operations.support",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
-  },
-  {
-    "fides_key": "provide.system.upgrades",
-    "organization_fides_key": "default_organization",
-    "tags": null,
-    "name": "Offer Upgrades",
-    "description": "Offer upgrades or upsales such as increased capacity for the service based on monitoring of service usage.",
-    "parent_key": "provide.system",
-    "legal_basis": null,
-    "special_category": null,
-    "recipients": null,
-    "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "provide.service.upgrades",
@@ -192,7 +80,64 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
+  },
+  {
+    "fides_key": "improve",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Improve the capability",
+    "description": "Improve the product, service, application or system.",
+    "parent_key": null,
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
+  },
+  {
+    "fides_key": "improve.system",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "System",
+    "description": "The source system, product, service or application being improved.",
+    "parent_key": "improve",
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
+  },
+  {
+    "fides_key": "personalize",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Personalize the capability",
+    "description": "Personalize the product, service, application or system.",
+    "parent_key": null,
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
+  },
+  {
+    "fides_key": "personalize.system",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "System",
+    "description": "The source system, product, service or application being personalized.",
+    "parent_key": "personalize",
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising",
@@ -205,7 +150,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising.first_party",
@@ -218,7 +164,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising.third_party",
@@ -231,7 +178,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising.first_party.contextual",
@@ -244,7 +192,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising.first_party.personalized",
@@ -257,7 +206,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "advertising.third_party.personalized",
@@ -270,7 +220,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "third_party_sharing",
@@ -283,7 +234,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "third_party_sharing.payment_processing",
@@ -296,7 +248,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "third_party_sharing.personalized_advertising",
@@ -309,7 +262,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "third_party_sharing.fraud_detection",
@@ -322,7 +276,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "third_party_sharing.legal_obligation",
@@ -335,7 +290,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "collect",
@@ -348,7 +304,8 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
   },
   {
     "fides_key": "train_ai_system",
@@ -361,6 +318,35 @@
     "special_category": null,
     "recipients": null,
     "legitimate_interest": false,
-    "legitimate_interest_impact_assessment": null
+    "legitimate_interest_impact_assessment": null,
+    "is_default": true
+  },
+  {
+    "fides_key": "custom",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom field",
+    "description": "Custom field for tests",
+    "parent_key": null,
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": false
+  },
+  {
+    "fides_key": "custom.foo",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom foo",
+    "description": "Custom foo for tests",
+    "parent_key": "custom",
+    "legal_basis": null,
+    "special_category": null,
+    "recipients": null,
+    "legitimate_interest": false,
+    "legitimate_interest_impact_assessment": null,
+    "is_default": false
   }
 ]

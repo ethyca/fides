@@ -11,7 +11,7 @@ from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
 
 from .commands.annotate import annotate
-from .commands.core import apply, evaluate, parse, pull, push
+from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get, ls
 from .commands.db import database
 from .commands.export import export
@@ -27,7 +27,6 @@ LOCAL_COMMAND_DICT = {
 }
 API_COMMANDS = [
     annotate,
-    apply,
     database,
     delete,
     export,

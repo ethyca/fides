@@ -17,7 +17,7 @@ CONFIG = get_config()
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sendgrid
-def test_sendgrid_access_request_task(
+async def test_sendgrid_access_request_task(
     db,
     policy,
     sendgrid_connection_config,
@@ -35,7 +35,7 @@ def test_sendgrid_access_request_task(
     merged_graph = sendgrid_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -71,7 +71,7 @@ def test_sendgrid_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sendgrid
-def test_sendgrid_erasure_request_task(
+async def test_sendgrid_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -93,7 +93,7 @@ def test_sendgrid_erasure_request_task(
     graph = DatasetGraph(merged_graph)
 
     # access our erasure identity
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -128,7 +128,7 @@ def test_sendgrid_erasure_request_task(
     )
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

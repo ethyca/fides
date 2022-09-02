@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from fides.api.ops.common_exceptions import PrivacyRequestPaused
 from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.policy import PausedStep, Policy
+from fides.api.ops.models.policy import CurrentStep, Policy
 from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
@@ -58,7 +58,7 @@ class ManualConnector(BaseConnector[None]):
             input_data, policy
         )
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=node.address,
             action_needed=[action_needed] if action_needed else None,
         )
@@ -73,6 +73,7 @@ class ManualConnector(BaseConnector[None]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> Optional[int]:
         """If erasure confirmation has been added to the manual cache, continue, otherwise,
         pause and wait for manual input.
@@ -98,7 +99,7 @@ class ManualConnector(BaseConnector[None]):
                 action_needed.append(action)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.erasure,
+            step=CurrentStep.erasure,
             collection=node.address,
             action_needed=action_needed if action_needed else None,
         )

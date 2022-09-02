@@ -58,7 +58,7 @@ The `fidesops.toml` file should specify the following variables:
 |`celery_config_path` | `FIDESOPS__EXECUTION__CELERY_CONFIG_PATH` | string | data/config/celery.toml | N/A | An optional override for the [Celery](#celery-configuration) configuration file path.
 |`worker_enabled` | `FIDESOPS__EXECUTION__WORKER_ENABLED` | bool | True | True | By default, fidesops uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `worker_enabled` to `False` will run the worker on the same node as the webserver.
 |Analytics |---|---|---|---|---|
-|`analytics_opt_out` | `FIDESOPS__USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
+|`analytics_opt_out` | `FIDESOPS__ROOT_USER__ANALYTICS_OPT_OUT` | bool | False | False | Opt out of sending anonymous usage data to Ethyca to improve the product experience.
 | Admin UI Variables|---|---|---|---|---|
 |`enabled` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
 
@@ -97,6 +97,7 @@ root_password = "Testpassword1!"
 [execution]
 masking_strict = true
 require_manual_request_approval = true
+subject_identity_verification_required = false
 task_retry_count = 3
 task_retry_delay = 20
 task_retry_backoff = 2

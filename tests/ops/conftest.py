@@ -1,5 +1,6 @@
 # pylint: disable=unused-wildcard-import, wildcard-import
 
+import asyncio
 import json
 import logging
 from typing import Any, Callable, Dict, Generator, List
@@ -28,6 +29,7 @@ from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
+from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
 from .fixtures.mariadb_fixtures import *
@@ -48,6 +50,7 @@ from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
+from .fixtures.saas.shopify_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
@@ -88,6 +91,7 @@ def db() -> Generator:
     logger.debug("Dropping database at: %s", engine.url)
     # We don't need to perform any extra checks before dropping the DB
     # here since we know the engine will always be connected to the test DB
+    drop_database(engine.url)
     logger.debug("Database at: %s successfully dropped", engine.url)
 
 
@@ -242,7 +246,7 @@ def require_manual_request_approval():
 
 
 @pytest.fixture(autouse=True, scope="session")
-def subject_identity_verification_required():
+def disable_subject_identity_verification():
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = False

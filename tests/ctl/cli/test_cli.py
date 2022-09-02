@@ -80,42 +80,6 @@ def test_init_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 @pytest.mark.integration
-def test_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "demo_resources/"]
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "--dry", "demo_resources/"]
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "--diff", "demo_resources/"]
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_dry_diff_apply(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "apply", "--dry", "--diff", "demo_resources/"]
-    )
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
 def test_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
         cli, ["-f", test_config_path, "push", "demo_resources/"]

@@ -6,34 +6,24 @@ import {
   AccordionPanel,
   Box,
   BoxProps,
-  Button,
-  ButtonGroup,
   Text,
 } from "@fidesui/react";
 import { Fragment, useState } from "react";
 
-import { TaxonomyEntityNode } from "../taxonomy/types";
 import { TreeNode } from "./types";
-
-interface ActionButtonProps {
-  node: TaxonomyEntityNode;
-  onEdit: (node: TaxonomyEntityNode) => void;
-}
-const ActionButtons = ({ node, onEdit }: ActionButtonProps) => (
-  <ButtonGroup size="xs" isAttached variant="outline" data-testid="action-btns">
-    <Button data-testid="edit-btn" onClick={() => onEdit(node)}>
-      Edit
-    </Button>
-    <Button data-testid="delete-btn">Delete</Button>
-  </ButtonGroup>
-);
 
 interface Props {
   nodes: TreeNode[];
-  onEdit: (node: TaxonomyEntityNode) => void;
   focusedKey?: string;
+  renderHover?: (node: TreeNode) => React.ReactNode;
+  renderTag?: (node: TreeNode) => React.ReactNode;
 }
-const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
+const AccordionTree = ({
+  nodes,
+  focusedKey,
+  renderHover,
+  renderTag,
+}: Props) => {
   const [hoverNode, setHoverNode] = useState<TreeNode | undefined>(undefined);
   /**
    * Recursive function to generate the accordion tree
@@ -58,19 +48,22 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
         setHoverNode(undefined);
       },
     };
+    const hoverContent = isHovered && renderHover ? renderHover(node) : null;
 
     if (node.children.length === 0) {
       return (
         <Box py={2} {...itemProps} data-testid={`item-${node.label}`}>
-          <Text
-            pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
-            color={isFocused ? "complimentary.500" : undefined}
-          >
-            {node.label}
-          </Text>
-          {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
-          ) : null}
+          <Box display="flex" alignItems="center">
+            <Text
+              pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
+              color={isFocused ? "complimentary.500" : undefined}
+              mr={2}
+            >
+              {node.label}
+            </Text>
+            {renderTag ? renderTag(node) : null}
+          </Box>
+          {hoverContent}
         </Box>
       );
     }
@@ -88,11 +81,10 @@ const AccordionTree = ({ nodes, onEdit, focusedKey }: Props) => {
             color={isFocused ? "complimentary.500" : undefined}
           >
             <AccordionIcon />
-            {node.label}
+            <Text mr={2}>{node.label}</Text>
+            {renderTag ? renderTag(node) : null}
           </AccordionButton>
-          {isHovered ? (
-            <ActionButtons node={hoverNode} onEdit={onEdit} />
-          ) : null}
+          {hoverContent}
         </Box>
 
         <AccordionPanel p={0}>

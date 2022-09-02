@@ -44,10 +44,11 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
+from fides.api.ops.email_templates import get_email_template
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType, PausedStep
+from fides.api.ops.models.policy import ActionType, CurrentStep
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -1178,7 +1179,7 @@ class TestGetPrivacyRequests:
         # Mock the privacy request being in a paused state waiting for manual input to the "manual_collection"
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
-        paused_step = PausedStep.access
+        paused_step = CurrentStep.access
         paused_collection = CollectionAddress("manual_dataset", "manual_collection")
         privacy_request.cache_paused_collection_details(
             step=paused_step,
@@ -1219,7 +1220,7 @@ class TestGetPrivacyRequests:
         # Mock the privacy request being in a paused state waiting for manual erasure confirmation to the "another_collection"
         privacy_request.status = PrivacyRequestStatus.paused
         privacy_request.save(db)
-        paused_step = PausedStep.erasure
+        paused_step = CurrentStep.erasure
         paused_collection = CollectionAddress("manual_dataset", "another_collection")
         privacy_request.cache_paused_collection_details(
             step=paused_step,
@@ -1278,7 +1279,7 @@ class TestGetPrivacyRequests:
         privacy_request.status = PrivacyRequestStatus.error
         privacy_request.save(db)
         privacy_request.cache_failed_collection_details(
-            step=PausedStep.erasure,
+            step=CurrentStep.erasure,
             collection=CollectionAddress("manual_example", "another_collection"),
         )
 
@@ -2086,7 +2087,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
 
@@ -2116,7 +2117,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
 
@@ -2149,7 +2150,7 @@ class TestResumeAccessRequestWithManualInput:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
 
@@ -2272,7 +2273,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.erasure,
+            step=CurrentStep.erasure,
             collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
 
@@ -2294,7 +2295,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=CollectionAddress("manual_example", "filing_cabinet"),
         )
         response = api_client.post(url, headers=auth_header, json={"row_count": 0})
@@ -2327,7 +2328,7 @@ class TestResumeErasureRequestWithManualConfirmation:
         privacy_request.save(db)
 
         privacy_request.cache_paused_collection_details(
-            step=PausedStep.erasure,
+            step=CurrentStep.erasure,
             collection=CollectionAddress("manual_input", "filing_cabinet"),
         )
         response = api_client.post(
@@ -2401,7 +2402,7 @@ class TestRestartFromFailure:
         privacy_request.save(db)
 
         privacy_request.cache_failed_collection_details(
-            step=PausedStep.access,
+            step=CurrentStep.access,
             collection=CollectionAddress("test_dataset", "test_collection"),
         )
 
@@ -2413,7 +2414,7 @@ class TestRestartFromFailure:
 
         submit_mock.assert_called_with(
             privacy_request_id=privacy_request.id,
-            from_step=PausedStep.access.value,
+            from_step=CurrentStep.access.value,
             from_webhook_id=None,
         )
 

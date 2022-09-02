@@ -23,20 +23,20 @@ if TYPE_CHECKING:
 CONFIG = get_config()
 
 
-def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
+async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if privacy request execution has failed"""
     if CONFIG.user.analytics_opt_out or not event:
         return
 
-    send_analytics_event(event)
+    await send_analytics_event(event)
 
 
-def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
+async def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
     if CONFIG.user.analytics_opt_out or not event:
         return
 
-    send_analytics_event(event)
+    await send_analytics_event(event)
 
 
 def prepare_rerun_graph_analytics_event(

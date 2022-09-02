@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "645bae7d-d9af-4b08-84cf-b98d9ae26014",
+		"_postman_id": "20bfd0a9-15a2-4333-8c3c-2cc3d8ed31f5",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "1984786"
+		"_exporter_id": "13396647"
 	},
 	"item": [
 		{
@@ -73,7 +73,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
+							"raw": "[\n    \"client:create\",\n    \"client:update\",\n    \"client:read\",\n    \"client:delete\",\n    \"config:read\",\n    \"connection_type:read\",\n    \"connection:read\",\n    \"connection:create_or_update\",\n    \"connection:delete\",\n    \"connection:instantiate\",\n    \"dataset:create_or_update\",\n    \"dataset:delete\",\n    \"dataset:read\",\n    \"encryption:exec\",\n    \"email:create_or_update\",\n    \"email:read\",\n    \"email:delete\",\n    \"policy:create_or_update\",\n    \"policy:read\",\n    \"policy:delete\",\n    \"privacy-request:read\",\n    \"privacy-request:delete\",\n    \"rule:create_or_update\",\n    \"rule:read\",\n    \"rule:delete\",\n    \"scope:read\",\n    \"storage:create_or_update\",\n    \"storage:delete\",\n    \"storage:read\",\n    \"privacy-request:resume\",\n    \"webhook:create_or_update\",\n    \"webhook:read\",\n    \"webhook:delete\",\n    \"saas_config:create_or_update\",\n    \"saas_config:read\",\n    \"saas_config:delete\",\n    \"privacy-request:review\",\n    \"user:create\",\n    \"user:delete\"\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2388,6 +2388,124 @@
 			]
 		},
 		{
+			"name": "Email ConnectionConfig",
+			"item": [
+				{
+					"name": "Create/Update Connection Configs: BigQuery Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"read\",\n    \"email_service_type\": \"mailgun\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secrets: BigQuery Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"to_email\": \"customer-1@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{email_connection_config_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{email_connection_config_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Email Dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n   {\n      \"fides_key\":\"email_dataset\",\n      \"name\":\"An example of a dataset not automatically accessible\",\n      \"description\":\"Example of a email dataset with a collection waiting on postgres input\",\n      \"collections\":[\n         {\n            \"name\":\"daycare_customer\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ],\n                  \"fidesops_meta\":{\n                     \"primary_key\":true\n                  }\n               },\n               {\n                  \"name\":\"customer_id\",\n                  \"data_categories\":[\n                     \"user\"\n                  ],\n                  \"fidesops_meta\":{\n                     \"references\":[\n                        {\n                           \"dataset\":\"postgres_example\",\n                           \"field\":\"customer.id\",\n                           \"direction\":\"from\"\n                        }\n                     ]\n                  }\n               }\n            ]\n         },\n         {\n            \"name\":\"children\",\n            \"fields\":[\n               {\n                  \"name\":\"id\",\n                  \"data_categories\":[\n                     \"system.operations\"\n                  ],\n                  \"fidesops_meta\":{\n                     \"primary_key\":true\n                  }\n               },\n               {\n                  \"name\":\"first_name\",\n                  \"data_categories\":[\n                     \"user.childrens\"\n                  ]\n               },\n               {\n                  \"name\":\"last_name\",\n                  \"data_categories\":[\n                     \"user.childrens\"\n                  ]\n               },\n               {\n                  \"name\":\"birthday\",\n                  \"data_categories\":[\n                     \"user.childrens\"\n                  ],\n                  \"fidesops_meta\":{\n                     \"data_type\":\"string\"\n                  }\n               },\n               {\n                  \"name\":\"parent_id\",\n                  \"data_categories\":[\n                     \"user\"\n                  ],\n                  \"fidesops_meta\":{\n                     \"references\":[\n                        {\n                           \"dataset\":\"email_dataset\",\n                           \"field\":\"daycare_customer.id\",\n                           \"direction\":\"from\"\n                        }\n                     ]\n                  }\n               }\n            ]\n         }\n      ]\n   }\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{email_connection_config_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{email_connection_config_key}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "SaaS",
 			"item": [
 				{
@@ -3971,7 +4089,7 @@
 			]
 		},
 		{
-			"name": "Email Config",
+			"name": "Primary Email Config",
 			"item": [
 				{
 					"name": "Post Email Config",
@@ -4179,6 +4297,40 @@
 								"config",
 								"{{email_config_key}}",
 								"secret"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Identity Verification",
+			"item": [
+				{
+					"name": "Get Identity Verification Config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/id-verification/config/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"id-verification",
+								"config",
+								""
 							]
 						}
 					},
@@ -4430,6 +4582,21 @@
 		{
 			"key": "saas_connector_type",
 			"value": "mailchimp",
+			"type": "string"
+		},
+		{
+			"key": "email_connection_config_key",
+			"value": "email_connection_config_key",
+			"type": "string"
+		},
+		{
+			"key": "mailgun_domain",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "mailgun_api_key",
+			"value": "",
 			"type": "string"
 		}
 	]

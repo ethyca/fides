@@ -42,6 +42,7 @@ root_password = "Testpassword1!"
 masking_strict = true
 require_manual_request_approval = false
 task_retry_backoff = 1
+subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
 worker_enabled = false

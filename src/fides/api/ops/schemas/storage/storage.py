@@ -32,6 +32,8 @@ class StorageDetails(Enum):
     OBJECT_NAME = "object_name"
     NAMING = "naming"
     MAX_RETRIES = "max_retries"
+    AUTH_METHOD = "auth_method"
+
     # onetrust-specific
     SERVICE_NAME = "service_name"
     ONETRUST_POLLING_HR = "onetrust_polling_hr"
@@ -62,12 +64,21 @@ class FileBasedStorageDetails(BaseModel):
         extra = Extra.forbid
 
 
+class S3AuthMethod(Enum):
+    AUTOMATIC = "automatic"
+    SECRET_KEYS = "secret_keys"
+
+
 class StorageDetailsS3(FileBasedStorageDetails):
     """The details required to represent an AWS S3 storage bucket."""
 
+    auth_method: S3AuthMethod
     bucket: str
     object_name: str
     max_retries: Optional[int] = 0
+
+    class Config:
+        use_enum_values = True
 
 
 class StorageDetailsLocal(FileBasedStorageDetails):

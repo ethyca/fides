@@ -15,7 +15,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fides.api.ops.models.storage import ResponseFormat
-from fides.api.ops.schemas.storage.storage import StorageSecrets
+from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
 from fides.api.ops.util.cache import get_cache, get_encryption_cache_key
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
@@ -103,16 +103,12 @@ def upload_to_s3(  # pylint: disable=R0913
     file_key: str,
     resp_format: str,
     request_id: str,
+    auth_method: S3AuthMethod,
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of %s", file_key)
     try:
-        my_session = get_s3_session(
-            aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],  # type: ignore
-            aws_secret_access_key=storage_secrets[
-                StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
-            ],
-        )
+        my_session = get_s3_session(auth_method, storage_secrets)
 
         s3 = my_session.client("s3")
 

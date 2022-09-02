@@ -24,7 +24,7 @@ def test_adobe_campaign_connection_test(adobe_campaign_connection_config) -> Non
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
 @pytest.mark.integration_adobe_campaign
-def test_adobe_campaign_access_request_task(
+async def test_adobe_campaign_access_request_task(
     policy,
     adobe_campaign_identity_email,
     adobe_campaign_connection_config,
@@ -43,7 +43,7 @@ def test_adobe_campaign_access_request_task(
     merged_graph = adobe_campaign_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -162,7 +162,7 @@ def test_adobe_campaign_access_request_task(
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
 @pytest.mark.integration_adobe_campaign
-def test_adobe_campaign_saas_erasure_request_task(
+async def test_adobe_campaign_saas_erasure_request_task(
     db,
     policy,
     adobe_campaign_connection_config,
@@ -186,7 +186,7 @@ def test_adobe_campaign_saas_erasure_request_task(
     merged_graph = adobe_campaign_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -295,7 +295,7 @@ def test_adobe_campaign_saas_erasure_request_task(
         ],
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,

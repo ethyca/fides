@@ -8,9 +8,9 @@ from pydantic import Field, validator
 
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
+    CollectionActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,
-    StoppedCollection,
 )
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
@@ -137,7 +137,7 @@ class RowCountRequest(BaseSchema):
     row_count: int
 
 
-class StoppedCollectionDetails(StoppedCollection):
+class CollectionActionRequiredDetails(CollectionActionRequired):
 
     collection: Optional[str] = None  # type: ignore
 
@@ -168,7 +168,7 @@ class PrivacyRequestResponse(BaseSchema):
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
     policy: PolicySchema
-    stopped_collection_details: Optional[StoppedCollectionDetails] = None
+    stopped_collection_details: Optional[CollectionActionRequiredDetails] = None
     resume_endpoint: Optional[str]
 
     class Config:

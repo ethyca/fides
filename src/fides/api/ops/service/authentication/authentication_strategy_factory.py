@@ -16,8 +16,11 @@ from fides.api.ops.service.authentication.authentication_strategy_basic import (
 from fides.api.ops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
-from fides.api.ops.service.authentication.authentication_strategy_oauth2 import (
-    OAuth2AuthenticationStrategy,
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
+    OAuth2ClientCredentialsAuthenticationStrategy,
 )
 from fides.api.ops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
@@ -34,7 +37,8 @@ class SupportedAuthenticationStrategies(Enum):
     basic = BasicAuthenticationStrategy
     bearer = BearerAuthenticationStrategy
     query_param = QueryParamAuthenticationStrategy
-    oauth2 = OAuth2AuthenticationStrategy
+    oauth2_authorization_code = OAuth2AuthorizationCodeAuthenticationStrategy
+    oauth2_client_credentials = OAuth2ClientCredentialsAuthenticationStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

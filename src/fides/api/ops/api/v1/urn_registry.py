@@ -49,6 +49,9 @@ PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
 
+# Identity Verification URLs
+ID_VERIFICATION_CONFIG = "/id-verification/config"
+
 # Rule URLs
 RULE_LIST = "/dsr/policy/{policy_key}/rule"
 RULE_DETAIL = "/dsr/policy/{policy_key}/rule/{rule_key}"

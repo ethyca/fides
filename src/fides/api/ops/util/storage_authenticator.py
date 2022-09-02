@@ -1,24 +1,48 @@
+import logging
+from typing import Any, Dict
+
 import boto3
 import requests
 from boto3 import Session
 from requests import Response
 
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
 from fides.api.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 
+logger = logging.getLogger(__name__)
 
-def get_s3_session(aws_access_key_id: str, aws_secret_access_key: str) -> Session:
+
+def get_s3_session(
+    auth_method: S3AuthMethod, storage_secrets: Dict[StorageSecrets, Any]
+) -> Session:
     """Abstraction to retrieve s3 session using secrets"""
-    session = boto3.session.Session(
-        aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key,
-    )
+    if auth_method == S3AuthMethod.SECRET_KEYS.value:
 
-    # Check that credentials are valid
-    client = session.client("sts")
-    client.get_caller_identity()
+        if storage_secrets is None:
+            err_msg = "Storage secrets not found for S3 storage."
+            logger.warning(err_msg)
+            raise StorageUploadError(err_msg)
 
-    # Returns session
-    return session
+        session = boto3.session.Session(
+            aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],  # type: ignore
+            aws_secret_access_key=storage_secrets[
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
+            ],
+        )
+
+        # Check that credentials are valid
+        client = session.client("sts")
+        client.get_caller_identity()
+        return session
+
+    if auth_method == S3AuthMethod.AUTOMATIC.value:
+        session = boto3.session.Session()
+        logger.info("Successfully created automatic session")
+        return session
+
+    logger.error("No S3 session created. Auth method used: %s", auth_method)
+    raise ValueError(f"No S3 session created. Auth method used: {auth_method}")
 
 
 def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:

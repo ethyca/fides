@@ -128,6 +128,7 @@ class SQLConnector(BaseConnector[Engine]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
@@ -318,6 +319,7 @@ class RedshiftConnector(SQLConnector):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked
 
@@ -380,6 +382,7 @@ class BigQueryConnector(SQLConnector):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)

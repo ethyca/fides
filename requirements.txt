@@ -9,11 +9,11 @@ cryptography~=3.4.8
 dask==2022.8.0
 deepdiff==5.8.0
 emails
-fastapi[all]==0.79.1
+fastapi[all]==0.81.0
 fastapi-caching[redis]
 fastapi-pagination[sqlalchemy]~= 0.9.3
 fideslang==1.2.0
-fideslib==3.1.0
+fideslib==3.1.1
 fideslog==1.2.3
 GitPython==3.1.27
 hvac==0.11.2

@@ -115,6 +115,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""
