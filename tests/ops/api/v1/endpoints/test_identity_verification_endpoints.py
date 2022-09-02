@@ -15,7 +15,7 @@ class TestGetIdentityVerificationConfig:
     @pytest.fixture(scope="function")
     def subject_identity_verification_required(self):
         """Override autouse fixture to enable identity verification for tests"""
-        original_value = config.execution.subject_identity_verification_required
+        original_value = CONFIG.execution.subject_identity_verification_required
         CONFIG.execution.subject_identity_verification_required = True
         yield
         CONFIG.execution.subject_identity_verification_required = original_value

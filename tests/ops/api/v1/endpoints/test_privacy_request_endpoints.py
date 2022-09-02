@@ -2463,7 +2463,7 @@ class TestVerifyIdentity:
         )
 
     @mock.patch(
-        "fides.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_identity_no_admin_approval_needed(
         self, mock_run_privacy_request, db, api_client, url, privacy_request
@@ -2497,7 +2497,7 @@ class TestVerifyIdentity:
         assert mock_run_privacy_request.called
 
     @mock.patch(
-        "fides.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     def test_verify_identity_admin_approval_needed(
         self,
@@ -2579,9 +2579,11 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         pr.delete(db=db)
 
     @mock.patch(
-        "fides.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    @mock.patch("fides.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email")
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_email,
