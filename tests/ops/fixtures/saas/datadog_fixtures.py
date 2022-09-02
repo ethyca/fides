@@ -10,8 +10,8 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )

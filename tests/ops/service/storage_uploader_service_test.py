@@ -86,7 +86,7 @@ def test_uploader_s3_success_secrets_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_automatic_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:

@@ -42,7 +42,7 @@ def get_cache_health() -> str:
             "content": {
                 "application/json": {
                     "example": {
-                        "status": "healthy",
+                        "webserver": "healthy",
                         "version": "1.0.0",
                         "database": "healthy",
                         "cache": "healthy",
@@ -55,7 +55,7 @@ def get_cache_health() -> str:
                 "application/json": {
                     "example": {
                         "detail": {
-                            "status": "healthy",
+                            "webserver": "healthy",
                             "version": "1.0.0",
                             "database": "unhealthy",
                             "cache": "healthy",
@@ -71,7 +71,7 @@ async def health() -> Dict:
     database_health = get_db_health(CONFIG.database.sync_database_uri)
     cache_health = get_cache_health()
     response = {
-        "status": "healthy",
+        "webserver": "healthy",
         "version": str(fides.__version__),
         "database": database_health,
         "cache": cache_health,

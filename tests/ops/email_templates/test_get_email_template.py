@@ -1,9 +1,9 @@
 import pytest
 from jinja2 import Template
 
-from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
-from fidesops.ops.email_templates import get_email_template
-from fidesops.ops.schemas.email.email import EmailActionType
+from fides.api.ops.common_exceptions import EmailTemplateUnhandledActionType
+from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.schemas.email.email import EmailActionType
 
 
 def test_get_email_template_returns_template():

@@ -44,33 +44,33 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
-from fidesops.ops.core.config import config
-from fidesops.ops.email_templates import get_email_template
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType, CurrentStep
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import ActionType, CurrentStep
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.dataset import DryRunDatasetResponse
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.schemas.dataset import DryRunDatasetResponse
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.schemas.masking.masking_secrets import SecretType
-from fidesops.ops.schemas.policy import PolicyResponse
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.util.cache import (
+from fides.api.ops.schemas.masking.masking_secrets import SecretType
+from fides.api.ops.schemas.policy import PolicyResponse
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
+from fides.ctl.core.config import get_config
 
 page_size = Params().size
 CONFIG = get_config()

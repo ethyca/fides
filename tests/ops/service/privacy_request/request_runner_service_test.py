@@ -15,6 +15,15 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.ops.models.privacy_request import (
+    ActionType,
+    ExecutionLog,
+    PolicyPreWebhook,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+)
 from fides.api.ops.schemas.external_https import SecondPartyResponseFormat
 from fides.api.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -39,15 +48,6 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
-from fidesops.ops.models.privacy_request import (
-    ActionType,
-    ExecutionLog,
-    PolicyPreWebhook,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
 
 CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5

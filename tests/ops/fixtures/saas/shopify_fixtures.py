@@ -6,13 +6,13 @@ from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )

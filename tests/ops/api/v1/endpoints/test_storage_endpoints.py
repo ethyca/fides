@@ -301,7 +301,7 @@ class TestPatchStorageConfig:
         "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
     )
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
+        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
     def test_patch_storage_config_with_different_auth_methods(
         self,

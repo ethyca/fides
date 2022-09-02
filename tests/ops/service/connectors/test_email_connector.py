@@ -1,17 +1,17 @@
 import pytest
 
-from fidesops.ops.graph.config import (
+from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     Collection,
     Dataset,
     FieldAddress,
     ScalarField,
 )
-from fidesops.ops.graph.graph import Edge, Node
-from fidesops.ops.graph.traversal import TraversalNode, artificial_traversal_node
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import ManualAction
-from fidesops.ops.service.connectors import EmailConnector
+from fides.api.ops.graph.graph import Edge, Node
+from fides.api.ops.graph.traversal import TraversalNode, artificial_traversal_node
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.privacy_request import ManualAction
+from fides.api.ops.service.connectors import EmailConnector
 
 from ...graph.graph_test_util import erasure_policy
 

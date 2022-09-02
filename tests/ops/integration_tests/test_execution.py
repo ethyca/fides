@@ -13,17 +13,17 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.task import graph_task
-from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.privacy_request import (
     CollectionActionRequired,
     ExecutionLog,
     PrivacyRequest,
 )
+from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.task import graph_task
+from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (

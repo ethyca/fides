@@ -1,12 +1,12 @@
 import pytest as pytest
 
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import CollectionActionRequired, ManualAction
-from fidesops.ops.schemas.dataset import FidesopsDataset
-from fidesops.ops.task import graph_task
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.privacy_request import CollectionActionRequired, ManualAction
+from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.task import graph_task
 
 
 @pytest.mark.integration_postgres

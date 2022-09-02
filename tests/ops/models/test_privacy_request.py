@@ -11,16 +11,16 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.policy import CurrentStep, Policy
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.policy import CurrentStep, Policy
+from fides.api.ops.models.privacy_request import (
     CollectionActionRequired,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.service.connectors.manual_connector import ManualAction
-from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.service.connectors.manual_connector import ManualAction
+from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
