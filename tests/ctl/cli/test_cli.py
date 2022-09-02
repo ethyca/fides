@@ -78,6 +78,7 @@ def test_init_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
     print(result.output)
     assert result.exit_code == 0
 
+
 @pytest.mark.integration
 def test_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(

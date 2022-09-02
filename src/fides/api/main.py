@@ -1,7 +1,6 @@
 """
 Contains the code that sets up the API.
 """
-import asyncio
 import logging
 import subprocess
 from datetime import datetime, timezone

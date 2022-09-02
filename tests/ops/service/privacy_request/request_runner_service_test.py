@@ -15,7 +15,6 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,

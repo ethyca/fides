@@ -44,7 +44,6 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.email_templates import get_email_template
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
