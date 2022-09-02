@@ -163,7 +163,7 @@ class TestCrud:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
 
@@ -177,7 +177,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
@@ -193,7 +193,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
@@ -207,7 +207,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -228,7 +228,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -249,7 +249,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         _api.create(
@@ -270,7 +270,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
