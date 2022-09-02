@@ -104,6 +104,7 @@ class Policy(Base):
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     drp_action = Column(EnumColumn(DrpAction), index=True, unique=True, nullable=True)
+    execution_timeframe = Column(Integer, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),

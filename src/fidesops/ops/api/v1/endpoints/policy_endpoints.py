@@ -118,6 +118,7 @@ def create_or_update_policies(
                     "key": policy_data.get("key"),
                     "client_id": client.id,
                     "drp_action": policy_data.get("drp_action"),
+                    "execution_timeframe": policy_data.get("execution_timeframe"),
                 },
             )
         except (

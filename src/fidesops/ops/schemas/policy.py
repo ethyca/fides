@@ -85,6 +85,7 @@ class Policy(BaseSchema):
     name: str
     key: Optional[FidesOpsKey]
     drp_action: Optional[DrpAction]
+    execution_timeframe: Optional[int]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""

@@ -231,6 +231,7 @@ class TestCreatePolicies:
                 "name": "policy 2",
                 "action_type": "access",
                 "data_category": DataCategory("user").value,
+                "execution_timeframe": 5,
                 "storage_destination_key": storage_config.key,
             },
         ]
@@ -285,6 +286,9 @@ class TestCreatePolicies:
 
         data = resp.json()
         assert len(data["succeeded"]) == 2
+
+        assert data["succeeded"][0]["execution_timeframe"] is None
+        assert data["succeeded"][1]["execution_timeframe"] == 5
 
         elements = data["succeeded"]
         for el in elements:
