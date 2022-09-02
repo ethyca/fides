@@ -4,36 +4,19 @@ from typing import Any, Dict, List, Literal, Optional
 
 from sqlalchemy.orm import Session
 
-<<<<<<<< HEAD:src/fides/api/ops/service/authentication/authentication_strategy_oauth2.py
 from fides.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fides.api.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthenticationConfiguration,
-    StrategyConfiguration,
-)
+from fides.api.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
 from fides.api.ops.service.authentication.authentication_strategy import (
-========
-from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesops.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
-from fidesops.ops.service.authentication.authentication_strategy import (
->>>>>>>> fidesops/main:src/fides/api/ops/service/authentication/authentication_strategy_oauth2_base.py
     AuthenticationStrategy,
 )
 from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-<<<<<<<< HEAD:src/fides/api/ops/service/authentication/authentication_strategy_oauth2.py
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 from fides.ctl.core.config import get_config
-========
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
->>>>>>>> fidesops/main:src/fides/api/ops/service/authentication/authentication_strategy_oauth2_base.py
 
 logger = logging.getLogger(__name__)
 
@@ -51,67 +34,10 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         self.token_request = configuration.token_request
         self.refresh_request = configuration.refresh_request
 
-<<<<<<<< HEAD:src/fides/api/ops/service/authentication/authentication_strategy_oauth2.py
-    def add_authentication(
-        self, request: PreparedRequest, connection_config: ConnectionConfig
-    ) -> PreparedRequest:
-        """
-        Checks the expiration date on the existing access token and refreshes if necessary.
-        The existing/updated access token is then added to the request as a bearer token.
-        """
-
-        # make sure required secrets have been provided
-        self._check_required_secrets(connection_config)
-
-        access_token = connection_config.secrets.get("access_token")  # type: ignore
-        if not access_token:
-            raise FidesopsException(
-                f"OAuth2 access token not found for {connection_config.key}, please "
-                f"authenticate connection via /api/v1/connection/{connection_config.key}/authorize"
-            )
-
-        # The refresh request is optional since the OAuth2 spec does not require
-        # a refresh token to be returned as part of an access token request
-        #
-        # https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
-
-        if self.refresh_request:
-            expires_at = connection_config.secrets.get("expires_at")  # type: ignore
-            if self._close_to_expiration(expires_at, connection_config):
-                refresh_response = self._call_token_request(
-                    "refresh", self.refresh_request, connection_config
-                )
-                access_token = self._validate_and_store_response(
-                    None, refresh_response, connection_config
-                )
-
-        # add access_token to request
-        request.headers["Authorization"] = "Bearer " + access_token
-        return request
-
-    @staticmethod
-    def _generate_state() -> str:
-        """
-        Generates a string value to associate the authentication request
-        with an eventual OAuth2 callback response.
-
-        If an oauth_instance name is defined then the name is added as a
-        prefix to the generated state. The state prefix can be used by a
-        proxy server to route the callback response to a specific Fidesops
-        instance. This functionality is not part of the OAuth2 specification
-        but it can be used for local testing of OAuth2 workflows.
-        """
-
-        state = str(uuid4())
-        if CONFIG.oauth_instance:
-            state = f"{CONFIG.oauth_instance}-{state}"
-        return state
-========
     @property
     def _required_secrets(self) -> List[str]:
         """A list of required secrets for the given OAuth2 strategy."""
         return ["client_id", "client_secret"]
->>>>>>>> fidesops/main:src/fides/api/ops/service/authentication/authentication_strategy_oauth2_base.py
 
     @staticmethod
     def _close_to_expiration(

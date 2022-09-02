@@ -16,11 +16,11 @@ from fides.api.ops.graph.config import (
     FieldAddress,
     generate_field,
 )
-from fidesops.ops.graph.data_type import parse_data_type_string
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.saas_util import merge_datasets
+from fides.api.ops.graph.data_type import parse_data_type_string
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
 

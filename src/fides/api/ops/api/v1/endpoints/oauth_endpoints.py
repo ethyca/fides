@@ -44,7 +44,7 @@ from fides.api.ops.schemas.client import ClientCreatedResponse
 from fides.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 from fides.api.ops.util.api_router import APIRouter

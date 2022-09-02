@@ -44,6 +44,7 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
+from fides.ctl.core.config import get_config
 from fidesops.ops.core.config import config
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
@@ -70,7 +71,6 @@ from fidesops.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fides.ctl.core.config import get_config
 
 page_size = Params().size
 CONFIG = get_config()
@@ -2582,9 +2582,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    @mock.patch(
-        "fides.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
-    )
+    @mock.patch("fides.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email")
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_email,

@@ -22,7 +22,8 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.util.logger import Pii
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 

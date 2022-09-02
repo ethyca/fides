@@ -6,9 +6,8 @@ from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import (
     CollectionActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,

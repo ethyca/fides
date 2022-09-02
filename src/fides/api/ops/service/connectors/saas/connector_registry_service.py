@@ -7,18 +7,18 @@ from fideslib.core.config import load_toml
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
 
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fidesops.ops.schemas.dataset import FidesopsDataset
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
-from fidesops.ops.util.saas_util import (
+from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.util.saas_util import (
     load_config,
     load_config_with_replacement,
     load_dataset,

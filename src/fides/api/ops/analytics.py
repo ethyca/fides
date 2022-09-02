@@ -37,7 +37,7 @@ analytics_client = AnalyticsClient(
 )
 
 
-def send_analytics_event(event: AnalyticsEvent) -> None:
+async def send_analytics_event(event: AnalyticsEvent) -> None:
     if CONFIG.user.analytics_opt_out:
         return
     try:

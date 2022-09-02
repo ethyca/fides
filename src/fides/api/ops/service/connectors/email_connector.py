@@ -1,14 +1,14 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fidesops.ops.graph.config import FieldPath
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.policy import CurrentStep, Policy, Rule
-from fidesops.ops.models.privacy_request import ManualAction, PrivacyRequest
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.query_config import ManualQueryConfig
-from fidesops.ops.util.collection_util import Row, append
+from fides.api.ops.graph.config import FieldPath
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.policy import CurrentStep, Policy, Rule
+from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.query_config import ManualQueryConfig
+from fides.api.ops.util.collection_util import Row, append
 
 logger = logging.getLogger(__name__)
 

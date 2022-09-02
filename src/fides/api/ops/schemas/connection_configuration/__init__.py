@@ -8,11 +8,11 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery 
     BigQueryDocsSchema,
     BigQuerySchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_email import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
     EmailDocsSchema,
     EmailSchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema,
     MariaDBSchema,
 )

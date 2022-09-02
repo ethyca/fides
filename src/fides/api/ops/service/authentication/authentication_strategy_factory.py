@@ -16,10 +16,10 @@ from fides.api.ops.service.authentication.authentication_strategy_basic import (
 from fides.api.ops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
     OAuth2ClientCredentialsAuthenticationStrategy,
 )
 from fides.api.ops.service.authentication.authentication_strategy_query_param import (

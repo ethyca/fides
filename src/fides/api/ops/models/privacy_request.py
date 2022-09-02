@@ -27,16 +27,15 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
     PrivacyRequestPaused,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph_differences import GraphRepr
-from fidesops.ops.models.policy import (
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
     Policy,

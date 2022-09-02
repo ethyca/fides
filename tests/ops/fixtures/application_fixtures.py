@@ -22,6 +22,16 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
+    HMAC_STRATEGY_NAME,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+    NULL_REWRITE_STRATEGY_NAME,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+    STRING_REWRITE_STRATEGY_NAME,
+)
+from fides.api.ops.util.data_category import DataCategory
 from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import (
@@ -48,16 +58,6 @@ from fidesops.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
-)
-from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
-)
-from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
-    STRING_REWRITE_STRATEGY_NAME,
-)
-from fides.api.ops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
