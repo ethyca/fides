@@ -246,7 +246,7 @@ def require_manual_request_approval():
 
 
 @pytest.fixture(autouse=True, scope="session")
-def subject_identity_verification_required():
+def disable_subject_identity_verification():
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
     CONFIG.execution.subject_identity_verification_required = False
