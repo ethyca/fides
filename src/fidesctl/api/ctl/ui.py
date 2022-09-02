@@ -2,27 +2,34 @@
 
 import importlib.util
 import re
+from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Dict, Optional, Union
 
 from fastapi import Response
 from fastapi.responses import FileResponse
 
+FIDESCTL_DIRECTORY = "src/fidesctl"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
-def get_path_to_ui_file(package_name: str, path: str) -> Optional[Path]:
-    """Return a path to a UI file within a given package"""
+def get_package_path() -> Optional[Path]:
+    """Returns a Path to the root directory of this package's installation, if it exists."""
+    package_name = __package__.split(".")[0]
     spec = importlib.util.find_spec(package_name)
-    if spec is None:
-        return None
-    return Path(spec.origin).parent / path if spec.origin else None
+    if spec and spec.origin:
+        return Path(spec.origin).parent
+
+    return None
 
 
 def get_path_to_admin_ui_file(path: str) -> Optional[Path]:
-    """Return a path to an admin UI file."""
-    package_name = __package__.split(".")[0]
-    return get_path_to_ui_file(package_name, ADMIN_UI_DIRECTORY + path)
+    """Return a path to a packaged admin UI file."""
+    package_path = get_package_path()
+    if package_path is None:
+        return None
+
+    return package_path / ADMIN_UI_DIRECTORY / path
 
 
 def get_admin_index_as_response() -> Response:
@@ -33,12 +40,28 @@ def get_admin_index_as_response() -> Response:
     return FileResponse(index) if index and index.is_file() else Response(placeholder)
 
 
-def generate_route_file_map(ui_directory: str) -> Dict[re.Pattern, Path]:
+@lru_cache
+def get_local_file_map() -> Dict[re.Pattern, Path]:
+    """Get the Admin UI route map for the local build."""
+    return generate_route_file_map(Path(FIDESCTL_DIRECTORY) / ADMIN_UI_DIRECTORY)
+
+
+@lru_cache
+def get_package_file_map() -> Dict[re.Pattern, Path]:
+    """Get the Admin UI route map from the installed package's static files."""
+    package_path = get_package_path()
+    if package_path is None:
+        return {}
+
+    return generate_route_file_map(package_path / ADMIN_UI_DIRECTORY)
+
+
+def generate_route_file_map(ui_directory: Union[str, Path]) -> Dict[re.Pattern, Path]:
     """
     Generates a map of route patterns to the paths of files that route should serve.
     The returned paths are absolute (not relative to ui_directory or CWD).
 
-    :param ui_directory: The path
+    :param ui_directory: The path (or str) of the directory to search for route-able files.
     """
     ui_path = Path(ui_directory)
     if not ui_path.exists():
@@ -79,6 +102,7 @@ def generate_route_file_map(ui_directory: str) -> Dict[re.Pattern, Path]:
 
 
 def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[Path]:
+    """Match a route against a route file map and return the first match, if any."""
     for pattern, path in route_file_map.items():
         if re.fullmatch(pattern, route):
             return path
