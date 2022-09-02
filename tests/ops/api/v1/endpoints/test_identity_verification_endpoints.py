@@ -2,7 +2,9 @@ import pytest
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.urn_registry import ID_VERIFICATION_CONFIG, V1_URL_PREFIX
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 class TestGetIdentityVerificationConfig:
@@ -14,9 +16,9 @@ class TestGetIdentityVerificationConfig:
     def subject_identity_verification_required(self):
         """Override autouse fixture to enable identity verification for tests"""
         original_value = config.execution.subject_identity_verification_required
-        config.execution.subject_identity_verification_required = True
+        CONFIG.execution.subject_identity_verification_required = True
         yield
-        config.execution.subject_identity_verification_required = original_value
+        CONFIG.execution.subject_identity_verification_required = original_value
 
     def test_get_config_with_verification_required_no_email_config(
         self,

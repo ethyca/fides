@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
@@ -13,6 +13,8 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+
+CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -167,8 +169,8 @@ async def test_saas_erasure_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow delete
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow delete
     erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -178,7 +180,7 @@ async def test_saas_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking
 
     # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
     assert erasure == {

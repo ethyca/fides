@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -28,7 +28,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if config.execution.subject_identity_verification_required
+        if CONFIG.execution.subject_identity_verification_required
         else PrivacyRequestStatus.pending
     )
     return {

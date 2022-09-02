@@ -209,13 +209,12 @@ async def setup_server() -> None:
     # logger.info("Starting scheduled request intake...")
     # initiate_scheduled_request_intake()
 
-    asyncio.run(
-        send_analytics_event(
-            AnalyticsEvent(
-                docker=in_docker_container(),
-                event=Event.server_start.value,
-                event_created_at=datetime.now(tz=timezone.utc),
-            )
+    logging.debug("Sending startup analytics events...")
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
         )
     )
 
