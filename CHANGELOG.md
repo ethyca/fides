@@ -20,6 +20,10 @@ The types of changes are:
 ### Added
 
 * Added more taxonomy fields that can be edited via the UI [#1000](https://github.com/ethyca/fides/pull/1000)
+* Added initial support for enabling Fides Plus [#1037](https://github.com/ethyca/fides/pull/1037)
+  * The `useFeatures` hook can be used to check if `plus` is enabled.
+  * Navigating to/from the Data Map page is gated behind this feature.
+  * Plus endpoints are served from the private Plus image.
 
 ### Fixed
 
