@@ -15,7 +15,7 @@ openpyxl==3.0.9
 pandas==1.4
 plotly==5.4
 psycopg2-binary==2.9.1
-pydantic>=1.8.1,<2.0.0 # Required by fastapi
+pydantic>=1.8.1,<1.10.0 # Required by fastapi
 PyJWT==2.4.0
 pyyaml>=5,<6
 requests>=2,<3
