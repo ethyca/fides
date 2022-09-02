@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.ops.schemas.email.email import SubjectIdentityVerificationBodyParams
+from fidesops.ops.schemas.email.email import SubjectIdentityVerificationBodyParams
 
 
 @pytest.mark.parametrize("ttl, expected", [(600, 10), (155, 2), (33, 0)])

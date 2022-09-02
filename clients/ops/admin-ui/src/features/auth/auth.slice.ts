@@ -10,7 +10,12 @@ import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import { utf8ToB64 } from "../common/utils";
 import { User } from "../user-management/types";
-import { LoginRequest, LoginResponse } from "./types";
+import {
+  LoginRequest,
+  LoginResponse,
+  LogoutRequest,
+  LogoutResponse,
+} from "./types";
 
 export interface AuthState {
   user: User | null;
@@ -93,8 +98,15 @@ export const authApi = createApi({
       }),
       invalidatesTags: () => ["Auth"],
     }),
+    logout: build.mutation<LogoutResponse, LogoutRequest>({
+      query: () => ({
+        url: "logout",
+        method: "POST",
+      }),
+      invalidatesTags: () => ["Auth"],
+    }),
   }),
 });
 
-export const { useLoginMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation } = authApi;
 export const { reducer } = authSlice;

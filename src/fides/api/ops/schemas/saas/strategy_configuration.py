@@ -116,14 +116,22 @@ class QueryParamAuthenticationConfiguration(StrategyConfiguration):
     value: str
 
 
-class OAuth2AuthenticationConfiguration(StrategyConfiguration):
+class OAuth2BaseConfiguration(StrategyConfiguration):
     """
-    OAuth2 endpoints for authentication, token retrieval, and token refresh.
+    OAuth2 endpoints for token retrieval, and token refresh.
     Includes an optional expires_in parameter (in seconds) for OAuth2 integrations that
     do not specify a TTL for the access tokens.
     """
 
     expires_in: Optional[int]
-    authorization_request: SaaSRequest
     token_request: SaaSRequest
     refresh_request: Optional[SaaSRequest]
+
+
+class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
+    """
+    The standard OAuth2 configuration but with an additional property to configure
+    the authorization request for the Authorization Code flow.
+    """
+
+    authorization_request: SaaSRequest

@@ -4,24 +4,24 @@ import pytest
 from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.connectionconfig import (
+from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.connection_configuration.connection_config import (
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
@@ -51,7 +51,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 21
+        assert len(data) == 22
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -138,7 +138,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 13
+        assert len(data) == 14
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
@@ -230,14 +230,14 @@ class TestGetConnectionSecretSchema:
             "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
-                "hapikey": {"title": "Hapikey", "type": "string"},
+                "private_app_token": {"title": "Private App Token", "type": "string"},
                 "domain": {
                     "title": "Domain",
                     "default": "api.hubapi.com",
                     "type": "string",
                 },
             },
-            "required": ["hapikey"],
+            "required": ["private_app_token"],
             "additionalProperties": False,
         }
 

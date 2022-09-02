@@ -16,41 +16,41 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1.scope_registry import (
+from fidesops.ops.api import deps
+from fidesops.ops.api.v1.scope_registry import (
     EMAIL_CREATE_OR_UPDATE,
     EMAIL_DELETE,
     EMAIL_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     EMAIL_BY_KEY,
     EMAIL_CONFIG,
     EMAIL_SECRETS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import (
+from fidesops.ops.common_exceptions import (
     EmailConfigAlreadyExistsException,
     EmailConfigNotFoundException,
 )
-from fides.api.ops.models.email import EmailConfig, get_schema_for_secrets
-from fides.api.ops.schemas.email.email import (
+from fidesops.ops.models.email import EmailConfig, get_schema_for_secrets
+from fidesops.ops.schemas.email.email import (
     EmailConfigRequest,
     EmailConfigResponse,
     TestEmailStatusMessage,
 )
-from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-from fides.api.ops.service.email.email_crud_service import (
+from fidesops.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fidesops.ops.service.email.email_crud_service import (
     create_email_config,
     delete_email_config,
     get_email_config_by_key,
     update_email_config,
 )
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
-router = APIRouter(tags=["Email"], prefix=V1_URL_PREFIX)
+router = APIRouter(tags=["email"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)
 
 

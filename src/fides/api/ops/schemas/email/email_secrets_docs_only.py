@@ -1,7 +1,7 @@
 from typing import Union
 
-from fides.api.ops.schemas.base_class import NoValidationSchema
-from fides.api.ops.schemas.email.email import EmailServiceSecretsMailgun
+from fidesops.ops.schemas.base_class import NoValidationSchema
+from fidesops.ops.schemas.email.email import EmailServiceSecretsMailgun
 
 
 class EmailSecretsMailgunDocs(EmailServiceSecretsMailgun, NoValidationSchema):

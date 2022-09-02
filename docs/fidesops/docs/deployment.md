@@ -10,6 +10,8 @@ Fully deployed, `fidesops` has three individual systems you'll need to run:
 
 ![Deployment Diagram](img/Deployment_Diagram.png)
 
+Optionally the frontend [privacy center](#step-4-setup-privacy-center-\(optional\)) can be deployed as a pre-built way to handle privacy requests.
+
 Let's review each individually.
 
 ## Step 1: Setup Hosted Database
@@ -146,3 +148,29 @@ Note that there's no need for a persistent volume mount for the web server, it's
 To test that your server is running, visit `http://{server_url}/health` in your browser (e.g. http://0.0.0.0:8080/health) and you should see `{"webserver": "healthy", "database": "healthy", "cache": "healthy"}`.
 
 You now have a functional `fidesops` server running! Now you can use the API to set up your OAuth clients, connect to databases, configure policies, execute privacy requests, etc. To learn more, head to the [How-To Guides](guides/oauth.md) for details.
+
+## Step 4: Setup Privacy Center (Optional)
+
+### Install the fidesops privacy center via Docker
+
+First, ensure that Docker is running on your host, with a minimum version of `20.10.8`.
+
+You can `docker pull ethyca/fides-privacy-center` to get the latest image from Ethyca's Docker Hub here: [ethyca/fides-privacy-center](https://hub.docker.com/r/ethyca/fides-privacy-center).
+
+```
+docker pull ethyca/fides-privacy-center
+```
+
+Once pulled, you can run `docker run -rm -p 3000:3000 ethyca/fides-privacy-center:latest` to start the server.
+
+To configure the privacy center for your environment create a project directory, i.e. `~/custom-privacy-center`, and within
+this directory create a `config` directory. Copy the [config.json](https://github.com/ethyca/fidesops/blob/main/clients/ops/privacy-center/config/config.json)
+and [config.css](https://github.com/ethyca/fidesops/blob/main/clients/ops/privacy-center/config/config.css) into the `config`
+directory and modify to fit your needs. More information about the configuration options can be found [here](https://ethyca.github.io/fidesops/ui/privacy_center/).
+
+After the configuration is updated the docker image can be run using your custom settings. From within the `~/custom-privacy-center` directory (modify this
+directory name to match the name you used) start the docker container:
+
+```
+docker run --rm -v $(pwd)/config:/app/config -p 3000:3000 ethyca/fides-privacy-center:latest`.
+```

@@ -17,7 +17,7 @@ CONFIG = get_config()
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_outreach
-def test_outreach_access_request_task(
+async def test_outreach_access_request_task(
     db,
     policy,
     outreach_connection_config,
@@ -36,7 +36,7 @@ def test_outreach_access_request_task(
     merged_graph = outreach_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -90,7 +90,7 @@ def test_outreach_access_request_task(
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_outreach
-def test_outreach_erasure_request_task(
+async def test_outreach_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -112,7 +112,7 @@ def test_outreach_erasure_request_task(
     merged_graph = outreach_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -133,7 +133,7 @@ def test_outreach_erasure_request_task(
         keys=["type", "id", "attributes", "links"],
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

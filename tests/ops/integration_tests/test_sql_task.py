@@ -56,7 +56,7 @@ sample_postgres_configuration_policy = erasure_policy(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_sql_erasure_ignores_collections_without_pk(
+async def test_sql_erasure_ignores_collections_without_pk(
     db, postgres_inserts, integration_postgres_config
 ):
     seed_email = postgres_inserts["customer"][0]["email"]
@@ -77,7 +77,7 @@ def test_sql_erasure_ignores_collections_without_pk(
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -85,7 +85,7 @@ def test_sql_erasure_ignores_collections_without_pk(
         {"email": seed_email},
         db,
     )
-    v = graph_task.run_erasure(
+    v = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
@@ -123,7 +123,7 @@ def test_sql_erasure_ignores_collections_without_pk(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_composite_key_erasure(
+async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
 ) -> None:
@@ -176,7 +176,7 @@ def test_composite_key_erasure(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -191,7 +191,7 @@ def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -209,7 +209,7 @@ def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=f"test_postgres_task_{random.randint(0,1000)}")
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -228,7 +228,7 @@ def test_composite_key_erasure(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
+async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     seed_email = postgres_inserts["customer"][0]["email"]
 
     policy = erasure_policy("A", "B")
@@ -243,7 +243,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -251,7 +251,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
         {"email": seed_email},
         db,
     )
-    v = graph_task.run_erasure(
+    v = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
@@ -271,7 +271,7 @@ def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_postgres_access_request_task(
+async def test_postgres_access_request_task(
     db,
     policy,
     integration_postgres_config,
@@ -282,7 +282,7 @@ def test_postgres_access_request_task(
         id=f"test_postgres_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("postgres_example"),
@@ -360,7 +360,7 @@ def test_postgres_access_request_task(
 
 @pytest.mark.integration_mssql
 @pytest.mark.integration
-def test_mssql_access_request_task(
+async def test_mssql_access_request_task(
     db,
     policy,
     connection_config_mssql,
@@ -371,7 +371,7 @@ def test_mssql_access_request_task(
         id=f"test_mssql_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_mssql_db_1"),
@@ -449,7 +449,7 @@ def test_mssql_access_request_task(
 
 @pytest.mark.integration_mysql
 @pytest.mark.integration
-def test_mysql_access_request_task(
+async def test_mysql_access_request_task(
     db,
     policy,
     connection_config_mysql,
@@ -460,7 +460,7 @@ def test_mysql_access_request_task(
         id=f"test_mysql_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_mysql_db_1"),
@@ -538,7 +538,7 @@ def test_mysql_access_request_task(
 
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
-def test_mariadb_access_request_task(
+async def test_mariadb_access_request_task(
     db,
     policy,
     connection_config_mariadb,
@@ -548,7 +548,7 @@ def test_mariadb_access_request_task(
         id=f"test_mariadb_access_request_task_{random.randint(0, 1000)}"
     )
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         integration_db_graph("my_maria_db_1"),
@@ -625,7 +625,7 @@ def test_mariadb_access_request_task(
 
 
 @pytest.mark.integration
-def test_filter_on_data_categories(
+async def test_filter_on_data_categories(
     db,
     privacy_request,
     connection_config,
@@ -660,7 +660,7 @@ def test_filter_on_data_categories(
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -765,7 +765,7 @@ def test_filter_on_data_categories(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-def test_access_erasure_type_conversion(
+async def test_access_erasure_type_conversion(
     db,
     integration_postgres_config: ConnectionConfig,
 ) -> None:
@@ -812,7 +812,7 @@ def test_access_erasure_type_conversion(
         connection_key=integration_postgres_config.key,
     )
 
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -828,7 +828,7 @@ def test_access_erasure_type_conversion(
     assert link["id"] == "1"
 
     # erasure
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -963,7 +963,7 @@ class TestRetryIntegration:
     @mock.patch(
         "fides.api.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
     )
-    def test_retry_access_request(
+    async def test_retry_access_request(
         self,
         mock_retrieve,
         db,
@@ -986,7 +986,7 @@ class TestRetryIntegration:
 
         # Call run_access_request with an email that isn't in the database
         with pytest.raises(Exception) as exc:
-            graph_task.run_access_request(
+            await graph_task.run_access_request(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,
@@ -1015,7 +1015,7 @@ class TestRetryIntegration:
         ]
 
     @mock.patch("fides.api.ops.service.connectors.sql_connector.SQLConnector.mask_data")
-    def test_retry_erasure(
+    async def test_retry_erasure(
         self,
         mock_mask: Mock,
         db,
@@ -1038,7 +1038,7 @@ class TestRetryIntegration:
 
         # Call run_erasure with an email that isn't in the database
         with pytest.raises(Exception):
-            graph_task.run_erasure(
+            await graph_task.run_erasure(
                 privacy_request,
                 sample_postgres_configuration_policy,
                 dataset_graph,

@@ -32,7 +32,7 @@ class FidesopsRedis(Redis):
     ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
         if not expire_time:
-            expire_time = CONFIG.redis.default_ttl_seconds
+            expire_time = config.redis.default_ttl_seconds
         return self.set(key, value, ex=expire_time)
 
     def get_keys_by_prefix(self, prefix: str, chunk_size: int = 1000) -> List[str]:

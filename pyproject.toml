@@ -102,6 +102,7 @@ disable=[
     "missing-class-docstring",
     "missing-function-docstring",
     "missing-module-docstring",
+    "missing-timeout",
     "no-self-argument",
     "no-self-use",
     "raise-missing-from",
@@ -175,9 +176,11 @@ markers = [
     "integration_segment",
     "integration_sendgrid",
     "integration_auth0",
+    "integration_shopify",
     "integration_outreach",
     "integration_salesforce",
     "integration_logi_id",
     "integration_adobe_campaign",
     "unit_saas"
 ]
+asyncio_mode = "auto"

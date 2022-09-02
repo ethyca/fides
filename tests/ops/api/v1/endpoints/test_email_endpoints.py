@@ -5,19 +5,19 @@ from fastapi_pagination import Params
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api.ops.api.v1.scope_registry import (
+from fidesops.ops.api.v1.scope_registry import (
     EMAIL_CREATE_OR_UPDATE,
     EMAIL_DELETE,
     EMAIL_READ,
 )
-from fides.api.ops.api.v1.urn_registry import (
+from fidesops.ops.api.v1.urn_registry import (
     EMAIL_BY_KEY,
     EMAIL_CONFIG,
     EMAIL_SECRETS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.email import EmailConfig
-from fides.api.ops.schemas.email.email import (
+from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,

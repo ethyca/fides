@@ -7,16 +7,16 @@ import requests_mock
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import EmailDispatchException
-from fides.api.ops.models.email import EmailConfig
-from fides.api.ops.schemas.email.email import (
+from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceType,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 
 
 @mock.patch("fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher")

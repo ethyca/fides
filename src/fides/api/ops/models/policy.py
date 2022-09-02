@@ -28,7 +28,7 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 
-class PausedStep(EnumType):
+class CurrentStep(EnumType):
     access = "access"
     erasure = "erasure"
 

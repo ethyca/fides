@@ -17,7 +17,7 @@ CONFIG = get_config()
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
-def test_zendesk_access_request_task(
+async def test_zendesk_access_request_task(
     db,
     policy,
     zendesk_connection_config,
@@ -36,7 +36,7 @@ def test_zendesk_access_request_task(
     merged_graph = zendesk_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -180,7 +180,7 @@ def test_zendesk_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
-def test_zendesk_erasure_request_task(
+async def test_zendesk_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -204,7 +204,7 @@ def test_zendesk_erasure_request_task(
 
     # Since we sometimes get response: b'Number of allowed API requests per minute exceeded' so adding this line to avoid it
     time.sleep(60)
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -298,7 +298,7 @@ def test_zendesk_erasure_request_task(
         ],
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,

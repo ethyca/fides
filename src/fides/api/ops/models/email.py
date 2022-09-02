@@ -11,19 +11,17 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.schemas.email.email import (
+from fidesops.ops.core.config import config
+from fidesops.ops.db.base_class import JSONTypeOverride
+from fidesops.ops.schemas.email.email import (
     SUPPORTED_EMAIL_SERVICE_SECRETS,
     EmailServiceSecretsMailgun,
     EmailServiceType,
 )
-from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
-from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import get_config
+from fidesops.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
-
-CONFIG = get_config()
 
 
 def get_schema_for_secrets(
@@ -63,7 +61,7 @@ class EmailConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

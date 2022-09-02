@@ -36,7 +36,7 @@ empty_policy = Policy()
 
 
 @pytest.mark.integration
-def test_combined_erasure_task(
+async def test_combined_erasure_task(
     db,
     mongo_inserts,
     postgres_inserts,
@@ -104,7 +104,7 @@ def test_combined_erasure_task(
 
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -113,7 +113,7 @@ def test_combined_erasure_task(
         db,
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
@@ -143,7 +143,7 @@ def test_combined_erasure_task(
     privacy_request = PrivacyRequest(
         id=f"test_sql_erasure_task_{random.randint(0, 1000)}"
     )
-    rerun_access = graph_task.run_access_request(
+    rerun_access = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -251,7 +251,7 @@ def test_combined_erasure_task(
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
+async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
     seed_email = mongo_inserts["customer"][0]["email"]
     privacy_request = PrivacyRequest(
@@ -266,7 +266,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     field([dataset], "mongo_test", "address", "zip").data_categories = ["C"]
     field([dataset], "mongo_test", "customer", "name").data_categories = ["A"]
 
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -274,7 +274,7 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
         {"email": seed_email},
         db,
     )
-    v = graph_task.run_erasure(
+    v = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
@@ -293,10 +293,12 @@ def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_dask_mongo_task(db, integration_mongodb_config: ConnectionConfig) -> None:
+async def test_dask_mongo_task(
+    db, integration_mongodb_config: ConnectionConfig
+) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         empty_policy,
         integration_db_graph("mongo_test", integration_mongodb_config.key),
@@ -327,7 +329,7 @@ def test_dask_mongo_task(db, integration_mongodb_config: ConnectionConfig) -> No
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_composite_key_erasure(
+async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
@@ -378,7 +380,7 @@ def test_composite_key_erasure(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -394,7 +396,7 @@ def test_composite_key_erasure(
     assert composite_pk_test["customer_id"] == 1
 
     # erasure
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -409,7 +411,7 @@ def test_composite_key_erasure(
     # re-run access request. Description has been
     # nullified here.
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -423,7 +425,7 @@ def test_composite_key_erasure(
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
-def test_access_erasure_type_conversion(
+async def test_access_erasure_type_conversion(
     db,
     integration_mongodb_config: ConnectionConfig,
 ) -> None:
@@ -472,7 +474,7 @@ def test_access_erasure_type_conversion(
         connection_key=integration_mongodb_config.key,
     )
 
-    access_request_data = graph_task.run_access_request(
+    access_request_data = await graph_task.run_access_request(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -488,7 +490,7 @@ def test_access_erasure_type_conversion(
     assert link["_id"] == ObjectId("000000000000000000000001")
 
     # erasure
-    erasure = graph_task.run_erasure(
+    erasure = await graph_task.run_erasure(
         privacy_request,
         policy,
         DatasetGraph(dataset),
@@ -502,7 +504,7 @@ def test_access_erasure_type_conversion(
 
 
 @pytest.mark.integration
-def test_object_querying_mongo(
+async def test_object_querying_mongo(
     db,
     privacy_request,
     example_datasets,
@@ -521,7 +523,7 @@ def test_object_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -598,7 +600,7 @@ def test_object_querying_mongo(
 
 
 @pytest.mark.integration
-def test_get_cached_data_for_erasures(
+async def test_get_cached_data_for_erasures(
     integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
@@ -608,7 +610,7 @@ def test_get_cached_data_for_erasures(
     )
     graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -641,7 +643,7 @@ def test_get_cached_data_for_erasures(
 
 
 @pytest.mark.integration
-def test_return_all_elements_config_access_request(
+async def test_return_all_elements_config_access_request(
     db,
     privacy_request,
     example_datasets,
@@ -666,7 +668,7 @@ def test_return_all_elements_config_access_request(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -693,7 +695,7 @@ def test_return_all_elements_config_access_request(
 
 
 @pytest.mark.integration
-def test_return_all_elements_config_erasure(
+async def test_return_all_elements_config_erasure(
     db,
     mongo_inserts,
     postgres_inserts,
@@ -727,7 +729,7 @@ def test_return_all_elements_config_erasure(
     seed_email = postgres_inserts["customer"][0]["email"]
     seed_phone = mongo_inserts["rewards"][0]["owner"][0]["phone"]
 
-    graph_task.run_access_request(
+    await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,
@@ -736,7 +738,7 @@ def test_return_all_elements_config_erasure(
         db,
     )
 
-    x = graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         policy,
         graph,
@@ -771,7 +773,7 @@ def test_return_all_elements_config_erasure(
 
 
 @pytest.mark.integration
-def test_array_querying_mongo(
+async def test_array_querying_mongo(
     db,
     privacy_request,
     example_datasets,
@@ -789,7 +791,7 @@ def test_array_querying_mongo(
     )
     dataset_graph = DatasetGraph(*[graph, mongo_graph])
 
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,
@@ -1035,7 +1037,7 @@ def test_array_querying_mongo(
 
     # Run again with different email
     privacy_request = PrivacyRequest(id=f"test_mongo_task_{random.randint(0,1000)}")
-    access_request_results = graph_task.run_access_request(
+    access_request_results = await graph_task.run_access_request(
         privacy_request,
         policy,
         dataset_graph,

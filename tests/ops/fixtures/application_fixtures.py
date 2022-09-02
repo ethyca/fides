@@ -22,9 +22,9 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.email import EmailConfig
-from fides.api.ops.models.policy import (
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -32,16 +32,18 @@ from fides.api.ops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.models.storage import ResponseFormat, StorageConfig
-from fides.api.ops.schemas.email.email import (
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fidesops.ops.models.storage import ResponseFormat, StorageConfig
+from fidesops.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
+    EmailServiceSecretsMailgun,
     EmailServiceType,
 )
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fides.api.ops.schemas.storage.storage import (
+from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.storage.storage import (
     FileNaming,
+    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -122,6 +124,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
+                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -1059,6 +1062,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/mariadb_example_test_dataset.yml",
         "data/dataset/bigquery_example_test_dataset.yml",
         "data/dataset/manual_dataset.yml",
+        "data/dataset/email_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

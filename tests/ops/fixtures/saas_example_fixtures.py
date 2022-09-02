@@ -10,11 +10,11 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.saas.strategy_configuration import (
-    OAuth2AuthenticationConfiguration,
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.schemas.saas.strategy_configuration import (
+    OAuth2AuthorizationCodeConfiguration,
 )
-from fides.api.ops.util.saas_util import load_config
+from fidesops.ops.util.saas_util import load_config
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def saas_example_connection_config_with_invalid_saas_config(
 
 
 @pytest.fixture(scope="function")
-def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
+def oauth2_authorization_code_configuration() -> OAuth2AuthorizationCodeConfiguration:
     return {
         "authorization_request": {
             "method": "GET",
@@ -181,7 +181,9 @@ def oauth2_configuration() -> OAuth2AuthenticationConfiguration:
 
 
 @pytest.fixture(scope="function")
-def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
+def oauth2_authorization_code_connection_config(
+    db: Session, oauth2_authorization_code_configuration
+) -> Generator:
     secrets = {
         "domain": "localhost",
         "client_id": "client",
@@ -191,8 +193,8 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
         "refresh_token": "refresh",
     }
     saas_config = {
-        "fides_key": "oauth2_connector",
-        "name": "OAuth2 Connector",
+        "fides_key": "oauth2_authorization_code_connector",
+        "name": "OAuth2 Auth Code Connector",
         "type": "custom",
         "description": "Generic OAuth2 connector for testing",
         "version": "0.0.1",
@@ -201,8 +203,8 @@ def oauth2_connection_config(db: Session, oauth2_configuration) -> Generator:
             "protocol": "https",
             "host": secrets["domain"],
             "authentication": {
-                "strategy": "oauth2",
-                "configuration": oauth2_configuration,
+                "strategy": "oauth2_authorization_code",
+                "configuration": oauth2_authorization_code_configuration,
             },
         },
         "endpoints": [],

@@ -14,9 +14,9 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api.ops.api import deps
-from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
-from fides.api.ops.api.v1.scope_registry import (
+from fidesops.ops.api import deps
+from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
+from fidesops.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -31,14 +31,14 @@ from fides.api.ops.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.connection_configuration.connection_config import (
+from fidesops.ops.common_exceptions import FidesopsException
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.schemas.saas.saas_config import (
+from fidesops.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
@@ -47,8 +47,16 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.authentication.authentication_strategy_factory import (
     get_strategy,
 )
-from fides.api.ops.service.authentication.authentication_strategy_oauth2 import (
-    OAuth2AuthenticationStrategy,
+from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    ConnectorTemplate,
+    create_connection_config_from_template_no_save,
+    create_dataset_config_from_template,
+    load_registry,
+    registry_file,
 )
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
@@ -88,8 +96,8 @@ def verify_oauth_connection_config(
 ) -> None:
     """
     Verifies that the connection config is present and contains
-    the necessary configurations for OAuth2 authentication. Returns
-    an HTTPException with the appropriate error message indicating
+    the necessary configurations for OAuth2 Authorization Code authentication.
+    Returns an HTTPException with the appropriate error message indicating
     which configurations are missing or incorrect.
     """
 
@@ -113,10 +121,13 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if authentication.strategy != OAuth2AuthenticationStrategy.strategy_name:
+    if (
+        authentication.strategy
+        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
+    ):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="The connection config does not use OAuth2 authentication.",
+            detail="The connection config does not use OAuth2 Authorization Code authentication.",
         )
 
 
@@ -259,7 +270,7 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)

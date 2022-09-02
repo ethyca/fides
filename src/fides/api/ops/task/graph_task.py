@@ -23,22 +23,21 @@ from fides.api.ops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
-from fides.api.ops.graph.graph_differences import format_graph_for_caching
-from fides.api.ops.graph.traversal import Traversal, TraversalNode
-from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
-from fides.api.ops.models.policy import ActionType, Policy
-from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-from fides.api.ops.service.connectors import BaseConnector
-from fides.api.ops.task.consolidate_query_matches import consolidate_query_matches
-from fides.api.ops.task.filter_element_match import filter_element_match
-from fides.api.ops.task.refine_target_path import FieldPathNodeInput
-from fides.api.ops.task.task_resources import TaskResources
-from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
-from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.ctl.core.config import get_config
+from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.ops.graph.graph_differences import format_graph_for_caching
+from fidesops.ops.graph.traversal import Traversal, TraversalNode
+from fidesops.ops.models.connectionconfig import AccessLevel, ConnectionConfig
+from fidesops.ops.models.policy import ActionType, Policy
+from fidesops.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
+from fidesops.ops.service.connectors import BaseConnector
+from fidesops.ops.task.consolidate_query_matches import consolidate_query_matches
+from fidesops.ops.task.filter_element_match import filter_element_match
+from fidesops.ops.task.refine_target_path import FieldPathNodeInput
+from fidesops.ops.task.task_resources import TaskResources
+from fidesops.ops.util.cache import get_cache
+from fidesops.ops.util.collection_util import NodeInput, Row, append, partition
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +492,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
-    def erasure_request(self, retrieved_data: List[Row]) -> int:
+    def erasure_request(self, retrieved_data: List[Row], *inputs: List[Row]) -> int:
         """Run erasure request"""
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -524,11 +523,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
+        )
+
         output = self.connector.mask_data(
             self.traversal_node,
             self.resources.policy,
             self.resources.request,
             retrieved_data,
+            formatted_input_data,
         )
         self.log_end(ActionType.erasure)
         self.resources.cache_erasure(
@@ -585,7 +589,7 @@ def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, An
     return g
 
 
-def run_access_request(
+async def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -625,7 +629,7 @@ def run_access_request(
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *end_nodes)
         update_mapping_from_cache(dsk, resources, start_function)
 
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.access
             )
@@ -669,7 +673,7 @@ def update_erasure_mapping_from_cache(
         )
 
 
-def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
+async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
@@ -702,13 +706,28 @@ def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
             The termination function just returns this tuple of ints."""
             return dependent_values
 
+        access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
+
         dsk: Dict[CollectionAddress, Any] = {
-            k: (t.erasure_request, access_request_data[str(k)]) for k, t in env.items()
+            k: (
+                t.erasure_request,
+                access_request_data[
+                    str(k)
+                ],  # Pass in the results of the access request for this collection
+                *[
+                    access_request_data[
+                        str(upstream_key)
+                    ]  # Additionally pass in the original input data we used for the access request. It's helpful in
+                    # cases like the EmailConnector where the access request doesn't actually retrieve data.
+                    for upstream_key in t.input_keys
+                ],
+            )
+            for k, t in env.items()
         }
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *env.keys())
         update_erasure_mapping_from_cache(dsk, resources, start_function)
-        fideslog_graph_rerun(
+        await fideslog_graph_rerun(
             prepare_rerun_graph_analytics_event(
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )

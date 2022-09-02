@@ -11,3 +11,6 @@ export interface LoginResponse {
     access_token: string;
   };
 }
+
+export interface LogoutRequest {}
+export interface LogoutResponse {}

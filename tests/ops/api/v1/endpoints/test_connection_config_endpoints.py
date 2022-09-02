@@ -241,6 +241,12 @@ class TestPatchConnections:
                 "access": "write",
                 "description": "Backup snowflake db",
             },
+            {
+                "key": "email_connector",
+                "name": "Third Party Email Connector",
+                "connection_type": "email",
+                "access": "write",
+            },
         ]
 
         response = api_client.patch(
@@ -250,7 +256,7 @@ class TestPatchConnections:
         assert 200 == response.status_code
         response_body = json.loads(response.text)
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 8
+        assert len(response_body["succeeded"]) == 9
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -325,6 +331,15 @@ class TestPatchConnections:
         assert snowflake_resource.description == "Backup snowflake db"
         assert "secrets" not in snowflake_connection
 
+        email_connection = response_body["succeeded"][8]
+        assert email_connection["access"] == "write"
+        assert email_connection["updated_at"] is not None
+        email_resource = (
+            db.query(ConnectionConfig).filter_by(key="email_connector").first()
+        )
+        assert email_resource.access.value == "write"
+        assert "secrets" not in email_connection
+
         postgres_resource.delete(db)
         mongo_resource.delete(db)
         redshift_resource.delete(db)
@@ -333,6 +348,7 @@ class TestPatchConnections:
         mysql_resource.delete(db)
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
+        email_resource.delete(db)
 
     @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
@@ -1131,3 +1147,37 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
+
+    def test_put_email_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        email_connection_config,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"url": None, "to_email": "test@example.com"}
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
+
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {email_connection_config.key}."
+        )
+        assert body["test_status"] == "skipped" ""
+        db.refresh(email_connection_config)
+        assert email_connection_config.secrets == {
+            "to_email": "test@example.com",
+            "url": None,
+            "test_email": None,
+        }
+        assert email_connection_config.last_test_timestamp is None
+        assert email_connection_config.last_test_succeeded is None

@@ -14,7 +14,7 @@ The FidesOps Admin UI is designed to provide easy, at-a-glance access to submitt
 | Download | Download a `.csv` of the shown requests. |
 | Clear | Remove all search options and filters. |
 
-## Approve or deny Requests
+## Approve or deny requests
 
 ![approve or deny requests](../img/admin_ui/approve_deny.png)
 
@@ -26,6 +26,12 @@ Hovering over a request row will provide access to the **approve** and **deny** 
 
 ![request denial](../img/admin_ui/request_denial.png)
 
-## View Request details
+## View request details
 ![subject request details](../img/admin_ui/subject_request_details.png)
-Double-clicking a request row will display the request detail page, which allows access to additional information about the request, as well as the request ID and status. 
+Double-clicking a request row will display the request detail page, which allows access to additional information about the request, including the request ID, request type, and current status. 
+
+Requests with a status of **Error** can also be retried from this panel by selecting the **Retry** button.
+
+The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event. **View Log** displays a detailed event log, which includes fidesops' traversal through third-party connections and collections.
+
+![subject request log](../img/admin_ui/subject_request_log.png)

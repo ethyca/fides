@@ -39,11 +39,10 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.cache import FidesopsRedis
-from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.cache import FidesopsRedis
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
@@ -56,7 +55,7 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestDRPStatusResponse,
 )
-def create_drp_privacy_request(
+async def create_drp_privacy_request(
     *,
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),

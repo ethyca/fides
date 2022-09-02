@@ -6,6 +6,7 @@ from fides.api.ops.api.v1.endpoints import (
     drp_endpoints,
     email_endpoints,
     encryption_endpoints,
+    identity_verification_endpoints,
     masking_endpoints,
     oauth_endpoints,
     policy_endpoints,
@@ -30,6 +31,7 @@ api_router.include_router(oauth_endpoints.router)
 api_router.include_router(policy_endpoints.router)
 api_router.include_router(policy_webhook_endpoints.router)
 api_router.include_router(privacy_request_endpoints.router)
+api_router.include_router(identity_verification_endpoints.router)
 api_router.include_router(storage_endpoints.router)
 api_router.include_router(email_endpoints.router)
 api_router.include_router(saas_config_endpoints.router)

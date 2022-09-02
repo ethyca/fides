@@ -15,8 +15,9 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.ops.models.policy import PausedStep, PolicyPostWebhook
-from fides.api.ops.models.privacy_request import (
+from fidesops.ops.core.config import config
+from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
+from fidesops.ops.models.privacy_request import (
     ActionType,
     ExecutionLog,
     PolicyPreWebhook,
@@ -145,7 +146,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
-        from_step=PausedStep.access.value,
+        from_step=CurrentStep.access.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     db.refresh(privacy_request)
@@ -183,7 +184,7 @@ def test_resume_privacy_request_from_erasure(
 
     run_privacy_request_task.delay(
         privacy_request_id=privacy_request.id,
-        from_step=PausedStep.erasure.value,
+        from_step=CurrentStep.erasure.value,
     ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
 
     db.refresh(privacy_request)
@@ -611,7 +612,7 @@ def test_create_and_process_access_request_saas_hubspot(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_results()
-    assert len(results.keys()) == 3
+    assert len(results.keys()) == 4
 
     for key in results.keys():
         assert results[key] is not None

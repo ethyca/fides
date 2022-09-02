@@ -11,8 +11,8 @@ from fides.api.ops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
-from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
-from fides.api.ops.util.logger import Pii
+from fidesops.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

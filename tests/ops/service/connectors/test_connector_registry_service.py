@@ -1,4 +1,4 @@
-from fides.api.ops.service.connectors.saas.connector_registry_service import (
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorTemplate,
     load_registry,
     registry_file,

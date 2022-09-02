@@ -15,9 +15,9 @@ from fides.api.ops.graph.config import (
     FieldAddress,
     FieldPath,
 )
-from fides.api.ops.graph.graph import DatasetGraph, Edge, Node
-from fides.api.ops.util.collection_util import Row, append
-from fides.api.ops.util.matching_queue import MatchingQueue
+from fidesops.ops.graph.graph import DatasetGraph, Edge, Node
+from fidesops.ops.util.collection_util import Row, append
+from fidesops.ops.util.matching_queue import MatchingQueue
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +71,18 @@ class TraversalNode:
                 self.address.field_address(self_field_path),
             )
             for p_collection_address, tuples in self.parents.items()
+            for _, parent_field_path, self_field_path in tuples
+        }
+
+    def incoming_edges_from_same_dataset(self) -> Set[Edge]:
+        """Return the incoming edges from the same dataset"""
+        return {
+            Edge(
+                p_collection_address.field_address(parent_field_path),
+                self.address.field_address(self_field_path),
+            )
+            for p_collection_address, tuples in self.parents.items()
+            if p_collection_address.dataset == self.address.dataset
             for _, parent_field_path, self_field_path in tuples
         }
 

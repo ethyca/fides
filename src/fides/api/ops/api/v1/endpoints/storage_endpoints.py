@@ -50,14 +50,12 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fides.api.ops.service.storage.storage_authenticator_service import (
-    secrets_are_valid,
-)
-from fides.api.ops.service.storage.storage_uploader_service import upload
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.logger import Pii
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fidesops.ops.service.storage.storage_authenticator_service import secrets_are_valid
+from fidesops.ops.service.storage.storage_uploader_service import upload
+from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fidesops.ops.util.api_router import APIRouter
+from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

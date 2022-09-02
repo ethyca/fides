@@ -12,9 +12,9 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
-from fides.api.ops.service.connectors.base_connector import BaseConnector
-from fides.api.ops.service.connectors.query_config import MongoQueryConfig, QueryConfig
-from fides.api.ops.util.logger import Pii
+from fidesops.ops.service.connectors.base_connector import BaseConnector
+from fidesops.ops.service.connectors.query_config import MongoQueryConfig, QueryConfig
+from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +115,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         policy: Policy,
         privacy_request: PrivacyRequest,
         rows: List[Row],
+        input_data: Dict[str, List[Any]],
     ) -> int:
         # pylint: disable=too-many-locals
         """Execute a masking request"""

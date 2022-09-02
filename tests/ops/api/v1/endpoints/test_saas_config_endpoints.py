@@ -418,9 +418,11 @@ class TestDeleteSaaSConfig:
 
 class TestAuthorizeConnection:
     @pytest.fixture
-    def authorize_url(self, oauth2_connection_config) -> str:
+    def authorize_url(self, oauth2_authorization_code_connection_config) -> str:
         path = V1_URL_PREFIX + AUTHORIZE
-        path_params = {"connection_key": oauth2_connection_config.key}
+        path_params = {
+            "connection_key": oauth2_authorization_code_connection_config.key
+        }
         return path.format(**path_params)
 
     def test_client_not_authenticated(self, api_client: TestClient, authorize_url):
@@ -435,7 +437,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthenticationStrategy.get_authorization_url"
+        "fides.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,
