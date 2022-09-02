@@ -4980,7 +4980,7 @@
           "Sub-Processor"
         ],
         "type": "string",
-        "description": "\n    The model defining the responsibility or role over\n    the system that processes personal data.\n\n    Used to identify whether the organization is a\n    Controller, Processor, or Sub-Processor of the data\n    "
+        "description": "The model defining the responsibility or role over\nthe system that processes personal data.\n\nUsed to identify whether the organization is a\nController, Processor, or Sub-Processor of the data"
       },
       "DataSubject": {
         "title": "DataSubject",
@@ -5081,7 +5081,7 @@
           "Object to Automated Processing"
         ],
         "type": "string",
-        "description": "\n    The model for data subject rights over\n    personal data.\n\n    Based upon chapter 3 of the GDPR\n    "
+        "description": "The model for data subject rights over\npersonal data.\n\nBased upon chapter 3 of the GDPR"
       },
       "DataUse": {
         "title": "DataUse",
@@ -5448,7 +5448,7 @@
           "text"
         ],
         "type": "string",
-        "description": "\n    Figure Type Enum to capture the discrete possible values\n    for a valid figure type to be visualized\n    "
+        "description": "Figure Type Enum to capture the discrete possible values\nfor a valid figure type to be visualized"
       },
       "Generate": {
         "title": "Generate",
@@ -5531,7 +5531,7 @@
           "datasets"
         ],
         "type": "string",
-        "description": "\n    Generate Type Enum to capture the discrete possible values\n    for a valid type of resource to generate.\n    "
+        "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
       },
       "HTTPValidationError": {
         "title": "HTTPValidationError",
@@ -5555,7 +5555,7 @@
           "NONE"
         ],
         "type": "string",
-        "description": "\n    Determine whether or not defined rights are\n    being included or excluded.\n    "
+        "description": "Determine whether or not defined rights are\nbeing included or excluded."
       },
       "KeyfileCreds": {
         "title": "KeyfileCreds",
@@ -5618,7 +5618,7 @@
           "Legitimate Interests"
         ],
         "type": "string",
-        "description": "\n    The model for allowable legal basis categories\n\n    Based upon article 6 of the GDPR\n    "
+        "description": "The model for allowable legal basis categories\n\nBased upon article 6 of the GDPR"
       },
       "MatchesEnum": {
         "title": "MatchesEnum",
@@ -5629,7 +5629,7 @@
           "OTHER"
         ],
         "type": "string",
-        "description": "\n    The MatchesEnum resource model.\n\n    Determines how the listed resources are matched in the evaluation logic.\n    "
+        "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
       "OktaConfig": {
         "title": "OktaConfig",
@@ -6049,7 +6049,7 @@
           "Public Health Interest"
         ],
         "type": "string",
-        "description": "\n    The model for processing special categories\n    of personal data.\n\n    Based upon article 9 of the GDPR\n    "
+        "description": "The model for processing special categories\nof personal data.\n\nBased upon article 9 of the GDPR"
       },
       "StatusEnum": {
         "title": "StatusEnum",
@@ -6365,7 +6365,7 @@
           "bigquery"
         ],
         "type": "string",
-        "description": "\n    Validation of targets attempted to generate resources from\n    "
+        "description": "Validation of targets attempted to generate resources from"
       },
       "ValidateRequest": {
         "title": "ValidateRequest",
@@ -6453,7 +6453,7 @@
           "failure"
         ],
         "type": "string",
-        "description": "\n    Validate endpoint response status\n    "
+        "description": "Validate endpoint response status"
       },
       "ValidationTarget": {
         "title": "ValidationTarget",
@@ -6463,7 +6463,7 @@
           "bigquery"
         ],
         "type": "string",
-        "description": "\n    Allowed targets for the validate endpoint\n    "
+        "description": "Allowed targets for the validate endpoint"
       },
       "Violation": {
         "title": "Violation",
