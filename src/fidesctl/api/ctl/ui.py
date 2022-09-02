@@ -1,8 +1,9 @@
 """Various functions to help serve the UI from our server"""
 
 import importlib.util
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 
 from fastapi import Response
 from fastapi.responses import FileResponse
@@ -30,3 +31,55 @@ def get_admin_index_as_response() -> Response:
     placeholder = "<h1>Privacy is a Human Right!</h1>"
     index = get_path_to_admin_ui_file("index.html")
     return FileResponse(index) if index and index.is_file() else Response(placeholder)
+
+
+def generate_route_file_map(ui_directory: str) -> Dict[re.Pattern, Path]:
+    """
+    Generates a map of route patterns to the paths of files that route should serve.
+    The returned paths are absolute (not relative to ui_directory or CWD).
+
+    :param ui_directory: The path
+    """
+    ui_path = Path(ui_directory)
+    if not ui_path.exists():
+        return {}
+
+    exact_pattern = r"\[[a-zA-Z]+\]"
+    nested_pattern = r"\[...[a-zA-Z]+\]"
+
+    exact_pattern_replacement = r"[a-zA-Z10-9-_]+"
+    nested_pattern_replacement = r"[a-zA-Z10-9-_/]+"
+
+    route_file_map = {}
+
+    for filepath in ui_path.glob("**/*.html"):
+        # Ignore directory root.
+        if filepath == ui_path:
+            continue
+
+        # Path within the ui_directory, with the file extension (.html) removed.
+        relative_path = filepath.relative_to(ui_path).with_suffix("")
+
+        route = str(relative_path)
+        if re.search(exact_pattern, str(relative_path)):
+            route = re.sub(exact_pattern, exact_pattern_replacement, str(relative_path))
+        if re.search(nested_pattern, str(filepath)):
+            route = re.sub(
+                nested_pattern,
+                nested_pattern_replacement,
+                str(relative_path),
+            )
+
+        # Full match, allowing trailing slash.
+        pattern = re.compile(r"^" + route + r"/?$")
+
+        route_file_map[pattern] = filepath
+
+    return route_file_map
+
+
+def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[Path]:
+    for pattern, path in route_file_map.items():
+        if re.fullmatch(pattern, route):
+            return path
+    return None
