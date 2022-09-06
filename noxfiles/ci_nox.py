@@ -218,6 +218,7 @@ def pytest_external(session: nox.Session) -> None:
     ],
 )
 def python_build(session: nox.Session, dist: str) -> None:
+    "Build the Python distribution."
     session.run(
         *RUN_NO_DEPS,
         "python",
