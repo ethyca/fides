@@ -213,7 +213,6 @@ async def delete_resource(sql_model: Base, fides_key: str) -> Base:
                     print(query)
                     await session.execute(query)
                 except SQLAlchemyError:
-                    log.exception("??")
                     error = errors.QueryError()
                     log.bind(error=error.detail["error"]).error(
                         "Failed to delete resource"

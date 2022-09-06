@@ -10,8 +10,8 @@ from fidesctl.ctl.core.config import FidesctlConfig
 from tests.ctl.types import FixtureRequest
 
 
-@pytest.fixture
-def created_resources(
+@pytest.fixture(name="created_resources")
+def fixture_created_resources(
     test_config: FidesctlConfig, request: FixtureRequest
 ) -> Generator:
     """
@@ -52,6 +52,7 @@ def created_resources(
     indirect=["created_resources"],
 )
 async def test_cascade_delete_taxonomy_children(created_resources: List) -> None:
+    """Deleting a parent taxonomy should delete all of its children too"""
     resource_type, keys = created_resources
     sql_model = sql_models.sql_model_map[resource_type]
     await delete_resource(sql_model, keys[0])
