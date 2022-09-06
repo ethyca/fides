@@ -23,6 +23,7 @@ def test_salesforce_connection_test(salesforce_connection_config) -> None:
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
+@pytest.mark.asyncio
 async def test_salesforce_access_request_task(
     policy,
     salesforce_identity_email,
@@ -371,6 +372,7 @@ async def test_salesforce_access_request_task(
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
+@pytest.mark.asyncio
 async def test_salesforce_erasure_request_task(
     db,
     policy,

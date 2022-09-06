@@ -97,6 +97,7 @@ class TestDeleteCollection:
         assert pr.get_results() == {}
 
     @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
         self,
         mocked_log_start,
@@ -183,6 +184,7 @@ class TestDeleteCollection:
 
         db.delete(mongo_connection_config)
 
+    @pytest.mark.asyncio
     async def test_collection_omitted_on_restart_from_failure(
         self,
         db,
@@ -314,6 +316,7 @@ class TestDeleteCollection:
 
 @pytest.mark.integration
 class TestSkipDisabledCollection:
+    @pytest.mark.asyncio
     async def test_skip_collection_new_request(
         self,
         db,
@@ -359,6 +362,7 @@ class TestSkipDisabledCollection:
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
     @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @pytest.mark.asyncio
     async def test_run_disabled_collections_in_progress(
         self,
         mocked_log_start,
@@ -449,6 +453,7 @@ class TestSkipDisabledCollection:
 
         db.delete(mongo_connection_config)
 
+    @pytest.mark.asyncio
     async def test_skip_collection_on_restart(
         self,
         db,
@@ -581,6 +586,7 @@ class TestSkipDisabledCollection:
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_restart_graph_from_failure(
     db,
     policy,
@@ -717,6 +723,7 @@ async def test_restart_graph_from_failure(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_restart_graph_from_failure_during_erasure(
     db,
     policy,

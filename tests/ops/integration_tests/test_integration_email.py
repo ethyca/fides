@@ -11,6 +11,7 @@ from fidesops.ops.task import graph_task
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_collections_with_manual_erasure_confirmation(
     db,
     erasure_policy,

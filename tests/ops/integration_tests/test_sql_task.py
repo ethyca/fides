@@ -55,6 +55,7 @@ sample_postgres_configuration_policy = erasure_policy(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_sql_erasure_ignores_collections_without_pk(
     db, postgres_inserts, integration_postgres_config
 ):
@@ -122,6 +123,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
@@ -227,6 +229,7 @@ async def test_composite_key_erasure(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_config):
     seed_email = postgres_inserts["customer"][0]["email"]
 
@@ -270,6 +273,7 @@ async def test_sql_erasure_task(db, postgres_inserts, integration_postgres_confi
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_postgres_access_request_task(
     db,
     policy,
@@ -359,6 +363,7 @@ async def test_postgres_access_request_task(
 
 @pytest.mark.integration_mssql
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_mssql_access_request_task(
     db,
     policy,
@@ -448,6 +453,7 @@ async def test_mssql_access_request_task(
 
 @pytest.mark.integration_mysql
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_mysql_access_request_task(
     db,
     policy,
@@ -537,6 +543,7 @@ async def test_mysql_access_request_task(
 
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_mariadb_access_request_task(
     db,
     policy,
@@ -624,6 +631,7 @@ async def test_mariadb_access_request_task(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_filter_on_data_categories(
     db,
     privacy_request,
@@ -764,6 +772,7 @@ async def test_filter_on_data_categories(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_access_erasure_type_conversion(
     db,
     integration_postgres_config: ConnectionConfig,
@@ -962,6 +971,7 @@ class TestRetryIntegration:
     @mock.patch(
         "fidesops.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
     )
+    @pytest.mark.asyncio
     async def test_retry_access_request(
         self,
         mock_retrieve,
@@ -1014,6 +1024,7 @@ class TestRetryIntegration:
         ]
 
     @mock.patch("fidesops.ops.service.connectors.sql_connector.SQLConnector.mask_data")
+    @pytest.mark.asyncio
     async def test_retry_erasure(
         self,
         mock_mask: Mock,

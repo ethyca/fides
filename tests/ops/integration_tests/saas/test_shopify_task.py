@@ -18,7 +18,8 @@ def test_shopify_connection_test(shopify_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_shopify
-def test_shopify_access_request_task(
+@pytest.mark.asyncio
+async def test_shopify_access_request_task(
     db,
     policy,
     shopify_connection_config,
@@ -37,7 +38,7 @@ def test_shopify_access_request_task(
     merged_graph = shopify_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    v = graph_task.run_access_request(
+    v = await graph_task.run_access_request(
         privacy_request,
         policy,
         graph,

@@ -20,6 +20,7 @@ from ..task.traversal_data import postgres_and_manual_nodes
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures("postgres_integration_db")
+@pytest.mark.asyncio
 async def test_postgres_with_manual_input_access_request_task(
     db,
     policy,
@@ -218,6 +219,7 @@ async def test_postgres_with_manual_input_access_request_task(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures("postgres_integration_db")
+@pytest.mark.asyncio
 async def test_no_manual_input_found(
     policy,
     db,
@@ -311,6 +313,7 @@ async def test_no_manual_input_found(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_collections_with_manual_erasure_confirmation(
     db,
     erasure_policy,

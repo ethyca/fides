@@ -15,6 +15,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
+@pytest.mark.asyncio
 async def test_zendesk_access_request_task(
     db,
     policy,
@@ -178,6 +179,7 @@ async def test_zendesk_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
+@pytest.mark.asyncio
 async def test_zendesk_erasure_request_task(
     db,
     policy,

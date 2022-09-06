@@ -15,6 +15,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
+@pytest.mark.asyncio
 async def test_segment_saas_access_request_task(
     db,
     policy,
@@ -140,6 +141,7 @@ async def test_segment_saas_access_request_task(
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
+@pytest.mark.asyncio
 async def test_segment_saas_erasure_request_task(
     db,
     policy,

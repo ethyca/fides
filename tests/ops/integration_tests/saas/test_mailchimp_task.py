@@ -12,6 +12,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
+@pytest.mark.asyncio
 async def test_mailchimp_access_request_task(
     db,
     policy,
@@ -123,6 +124,7 @@ async def test_mailchimp_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_mailchimp
+@pytest.mark.asyncio
 async def test_mailchimp_erasure_request_task(
     db,
     policy,

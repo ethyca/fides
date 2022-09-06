@@ -22,6 +22,7 @@ def test_adobe_campaign_connection_test(adobe_campaign_connection_config) -> Non
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
 @pytest.mark.integration_adobe_campaign
+@pytest.mark.asyncio
 async def test_adobe_campaign_access_request_task(
     policy,
     adobe_campaign_identity_email,
@@ -160,6 +161,7 @@ async def test_adobe_campaign_access_request_task(
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
 @pytest.mark.integration_adobe_campaign
+@pytest.mark.asyncio
 async def test_adobe_campaign_saas_erasure_request_task(
     db,
     policy,

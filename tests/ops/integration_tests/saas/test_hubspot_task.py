@@ -23,6 +23,7 @@ def test_hubspot_connection_test(connection_config_hubspot) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
+@pytest.mark.asyncio
 async def test_saas_access_request_task(
     db,
     policy,
@@ -128,6 +129,7 @@ async def test_saas_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
+@pytest.mark.asyncio
 async def test_saas_erasure_request_task(
     db,
     policy,

@@ -29,6 +29,7 @@ as the standard Mailchimp config.
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
+@pytest.mark.asyncio
 async def test_mailchimp_override_access_request_task(
     db,
     policy,
@@ -140,6 +141,7 @@ async def test_mailchimp_override_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
+@pytest.mark.asyncio
 async def test_mailchimp_erasure_request_task(
     db,
     policy,
