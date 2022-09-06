@@ -79,12 +79,10 @@ services:
     volumes:
       - ./docs/fides:/docs
       - ./:/fides
-    environment:
-      - FIDES__DEV_MODE=True
-      - FIDES__LOG_PII=${LOG_PII}
-      - FIDES__HOT_RELOAD=${HOT_RELOAD}
-      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID}
-      - FIDES__EXECUTION__WORKER_ENABLED=True
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
 
   redis:
     image: "redis:6.2.5-alpine"
