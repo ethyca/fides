@@ -62,7 +62,7 @@ from fides.api.ops.util.data_category import DataCategory
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
-integration_config = load_toml(["fidesops-integration.toml"])
+integration_config = load_toml(["tests/ops/integration_test_config.toml"])
 
 logger = logging.getLogger(__name__)
 
