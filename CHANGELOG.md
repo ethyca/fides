@@ -22,7 +22,8 @@ The types of changes are:
 ### Developer Experience
 
 * Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
-* Adds email scopes to postman collection [1241](https://github.com/ethyca/fidesops/pull/1241)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
 
 
 ### Added
