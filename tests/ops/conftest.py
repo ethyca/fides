@@ -197,7 +197,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config():
-    yield load_toml(["fidesops-integration.toml"])
+    yield load_toml(["tests/ops/integration_test_config.toml"])
 
 
 @pytest.fixture(autouse=True, scope="session")

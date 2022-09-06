@@ -14,7 +14,7 @@ from fides.api.ops.service.connectors.sql_connector import MariaDBConnector
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-integration_config = load_toml(["fidesops-integration.toml"])
+integration_config = load_toml(["tests/ops/integration_test_config.toml"])
 
 
 def truncate_tables(db_session):

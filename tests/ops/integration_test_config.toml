@@ -1,3 +1,4 @@
+# This file contains credentials for ops the integration tests
 [postgres_example]
 server="postgres_example"
 user="postgres"
