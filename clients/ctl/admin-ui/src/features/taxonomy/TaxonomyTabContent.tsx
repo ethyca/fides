@@ -2,6 +2,7 @@ import {
   Center,
   SimpleGrid,
   Spinner,
+  Stack,
   Tag,
   Text,
   useDisclosure,
@@ -14,7 +15,6 @@ import AccordionTree from "~/features/common/AccordionTree";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { TreeNode } from "~/features/common/types";
 import { isErrorResult } from "~/types/errors";
 
 import ActionButtons from "./ActionButtons";
@@ -69,22 +69,23 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
     return null;
   }, [data]);
 
-  const [editEntity, setEditEntity] = useState<TaxonomyEntity | null>(null);
+  const [entityToEdit, setEntityToEdit] = useState<TaxonomyEntity | null>(null);
+  const [nodeToDelete, setNodeToDelete] = useState<TaxonomyEntityNode | null>(
+    null
+  );
 
   const isAdding = useAppSelector(selectIsAddFormOpen);
 
   useEffect(() => {
     // prevent both the add and edit forms being opened at once
     if (isAdding) {
-      setEditEntity(null);
+      setEntityToEdit(null);
     }
   }, [isAdding]);
 
   const closeAddForm = () => {
     dispatch(setIsAddFormOpen(false));
   };
-
-  const [deleteKey, setDeleteKey] = useState<string | null>(null);
 
   const {
     isOpen: deleteIsOpen,
@@ -106,29 +107,29 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
 
   const taxonomyType = labels.fides_key.toLocaleLowerCase();
 
-  const handleSetEditEntity = (node: TreeNode) => {
+  const handleSetEntityToEdit = (node: TaxonomyEntityNode) => {
     if (isAdding) {
       closeAddForm();
     }
     const entity = data?.find((d) => d.fides_key === node.value) ?? null;
-    setEditEntity(entity);
+    setEntityToEdit(entity);
   };
 
-  const handleSetDeleteKey = (node: TreeNode) => {
-    setDeleteKey(node.value);
+  const handleSetNodeToDelete = (node: TaxonomyEntityNode) => {
+    setNodeToDelete(node);
     onDeleteOpen();
   };
 
   const handleDelete = async () => {
-    if (deleteKey) {
-      const result = await deleteEntity(deleteKey);
+    if (nodeToDelete) {
+      const result = await deleteEntity(nodeToDelete.value);
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
         toast(successToastParams(`Successfully deleted ${taxonomyType}`));
       }
       onDeleteClose();
-      setEditEntity(null);
+      setEntityToEdit(null);
     }
   };
 
@@ -137,23 +138,23 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       <SimpleGrid columns={2} spacing={2}>
         <AccordionTree
           nodes={taxonomyNodes}
-          focusedKey={editEntity?.fides_key}
+          focusedKey={entityToEdit?.fides_key}
           renderHover={(node) => (
             <ActionButtons
-              onDelete={handleSetDeleteKey}
-              onEdit={handleSetEditEntity}
+              onDelete={handleSetNodeToDelete}
+              onEdit={handleSetEntityToEdit}
               node={node as TaxonomyEntityNode}
             />
           )}
           renderTag={(node) => <CustomTag node={node as TaxonomyEntityNode} />}
         />
-        {editEntity ? (
+        {entityToEdit ? (
           <TaxonomyFormBase
             labels={labels}
-            onCancel={() => setEditEntity(null)}
+            onCancel={() => setEntityToEdit(null)}
             onSubmit={handleEdit}
             renderExtraFormFields={renderExtraFormFields}
-            initialValues={transformEntityToInitialValues(editEntity)}
+            initialValues={transformEntityToInitialValues(entityToEdit)}
           />
         ) : null}
         {isAdding ? (
@@ -168,21 +169,34 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           />
         ) : null}
       </SimpleGrid>
-      <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
-        onConfirm={handleDelete}
-        title={`Delete ${taxonomyType}`}
-        message={
-          <Text>
-            You are about to permanently delete the {taxonomyType}{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
-              {deleteKey}
-            </Text>{" "}
-            from your taxonomy. Are you sure you would like to continue?
-          </Text>
-        }
-      />
+      {nodeToDelete ? (
+        <ConfirmationModal
+          isOpen={deleteIsOpen}
+          onClose={onDeleteClose}
+          onConfirm={handleDelete}
+          title={`Delete ${taxonomyType}`}
+          message={
+            <Stack>
+              <Text>
+                You are about to permanently delete the {taxonomyType}{" "}
+                <Text color="complimentary.500" as="span" fontWeight="bold">
+                  {nodeToDelete.value}
+                </Text>{" "}
+                from your taxonomy. Are you sure you would like to continue?
+              </Text>
+              {nodeToDelete.children.length ? (
+                <Text color="red">
+                  Deleting{" "}
+                  <Text as="span" fontWeight="bold">
+                    {nodeToDelete.value}
+                  </Text>{" "}
+                  will also delete all of its children.
+                </Text>
+              ) : null}
+            </Stack>
+          }
+        />
+      ) : null}
     </>
   );
 };
