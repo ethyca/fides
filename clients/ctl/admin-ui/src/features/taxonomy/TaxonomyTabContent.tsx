@@ -185,7 +185,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
                 from your taxonomy. Are you sure you would like to continue?
               </Text>
               {nodeToDelete.children.length ? (
-                <Text color="red">
+                <Text color="red" data-testid="delete-children-warning">
                   Deleting{" "}
                   <Text as="span" fontWeight="bold">
                     {nodeToDelete.value}
