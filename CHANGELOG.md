@@ -15,6 +15,11 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.3...main)
+
+### Fixed
+* Fixed navigating directly to frontend routes loading index page instead of the correct static page for the route.
+
 ## [1.8.3](https://github.com/ethyca/fides/compare/1.8.2...1.8.3) - 2022-09-06
 
 ### Added
