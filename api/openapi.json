@@ -57,7 +57,7 @@
           "DataCategory"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_category_put",
         "parameters": [
           {
@@ -92,6 +92,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_category",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -109,7 +123,7 @@
           "DataCategory"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_data_category_post",
         "parameters": [
           {
@@ -140,6 +154,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataCategory"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_category",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -214,7 +242,7 @@
           "DataCategory"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_data_category__fides_key__delete",
         "parameters": [
           {
@@ -246,6 +274,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_category",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -265,7 +307,7 @@
           "DataCategory"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_category_upsert_post",
         "parameters": [
           {
@@ -315,6 +357,20 @@
                   "message": "Upserted 3 data_category(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -384,7 +440,7 @@
           "DataQualifier"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_qualifier_put",
         "parameters": [
           {
@@ -419,6 +475,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -436,7 +506,7 @@
           "DataQualifier"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_data_qualifier_post",
         "parameters": [
           {
@@ -467,6 +537,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataQualifier"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -541,7 +625,7 @@
           "DataQualifier"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_data_qualifier__fides_key__delete",
         "parameters": [
           {
@@ -573,6 +657,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_qualifier",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -592,7 +690,7 @@
           "DataQualifier"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_qualifier_upsert_post",
         "parameters": [
           {
@@ -642,6 +740,20 @@
                   "message": "Upserted 3 data_qualifier(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -711,7 +823,7 @@
           "DataSubject"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_subject_put",
         "parameters": [
           {
@@ -746,6 +858,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_subject",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -763,7 +889,7 @@
           "DataSubject"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_data_subject_post",
         "parameters": [
           {
@@ -794,6 +920,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataSubject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_subject",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -868,7 +1008,7 @@
           "DataSubject"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_data_subject__fides_key__delete",
         "parameters": [
           {
@@ -900,6 +1040,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_subject",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -919,7 +1073,7 @@
           "DataSubject"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_subject_upsert_post",
         "parameters": [
           {
@@ -969,6 +1123,20 @@
                   "message": "Upserted 3 data_subject(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1038,7 +1206,7 @@
           "DataUse"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_data_use_put",
         "parameters": [
           {
@@ -1073,6 +1241,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_use",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1090,7 +1272,7 @@
           "DataUse"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_data_use_post",
         "parameters": [
           {
@@ -1121,6 +1303,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataUse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_use",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1195,7 +1391,7 @@
           "DataUse"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_data_use__fides_key__delete",
         "parameters": [
           {
@@ -1227,6 +1423,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "data_use",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1246,7 +1456,7 @@
           "DataUse"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_data_use_upsert_post",
         "parameters": [
           {
@@ -1296,6 +1506,20 @@
                   "message": "Upserted 3 data_use(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1365,7 +1589,7 @@
           "Dataset"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_dataset_put",
         "parameters": [
           {
@@ -1400,6 +1624,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "dataset",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1417,7 +1655,7 @@
           "Dataset"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_dataset_post",
         "parameters": [
           {
@@ -1448,6 +1686,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "dataset",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1522,7 +1774,7 @@
           "Dataset"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_dataset__fides_key__delete",
         "parameters": [
           {
@@ -1554,6 +1806,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "dataset",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1573,7 +1839,7 @@
           "Dataset"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_dataset_upsert_post",
         "parameters": [
           {
@@ -1623,6 +1889,20 @@
                   "message": "Upserted 3 dataset(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1692,7 +1972,7 @@
           "Organization"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_organization_put",
         "parameters": [
           {
@@ -1727,6 +2007,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1744,7 +2038,7 @@
           "Organization"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_organization_post",
         "parameters": [
           {
@@ -1775,6 +2069,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -1849,7 +2157,7 @@
           "Organization"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_organization__fides_key__delete",
         "parameters": [
           {
@@ -1881,6 +2189,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "organization",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1900,7 +2222,7 @@
           "Organization"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_organization_upsert_post",
         "parameters": [
           {
@@ -1950,6 +2272,20 @@
                   "message": "Upserted 3 organization(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2019,7 +2355,7 @@
           "Policy"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_policy_put",
         "parameters": [
           {
@@ -2054,6 +2390,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2071,7 +2421,7 @@
           "Policy"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_policy_post",
         "parameters": [
           {
@@ -2102,6 +2452,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2176,7 +2540,7 @@
           "Policy"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_policy__fides_key__delete",
         "parameters": [
           {
@@ -2208,6 +2572,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "policy",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2227,7 +2605,7 @@
           "Policy"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_policy_upsert_post",
         "parameters": [
           {
@@ -2277,6 +2655,20 @@
                   "message": "Upserted 3 policy(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2346,7 +2738,7 @@
           "Registry"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_registry_put",
         "parameters": [
           {
@@ -2381,6 +2773,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2398,7 +2804,7 @@
           "Registry"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_registry_post",
         "parameters": [
           {
@@ -2429,6 +2835,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Registry"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2503,7 +2923,7 @@
           "Registry"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_registry__fides_key__delete",
         "parameters": [
           {
@@ -2535,6 +2955,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "registry",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2554,7 +2988,7 @@
           "Registry"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_registry_upsert_post",
         "parameters": [
           {
@@ -2604,6 +3038,20 @@
                   "message": "Upserted 3 registry(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2673,7 +3121,7 @@
           "System"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_system_put",
         "parameters": [
           {
@@ -2708,6 +3156,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2725,7 +3187,7 @@
           "System"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_system_post",
         "parameters": [
           {
@@ -2756,6 +3218,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/System"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -2830,7 +3306,7 @@
           "System"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_system__fides_key__delete",
         "parameters": [
           {
@@ -2862,6 +3338,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "system",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -2881,7 +3371,7 @@
           "System"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_system_upsert_post",
         "parameters": [
           {
@@ -2931,6 +3421,20 @@
                   "message": "Upserted 3 system(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -3000,7 +3504,7 @@
           "Evaluation"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.",
+        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "update_api_v1_evaluation_put",
         "parameters": [
           {
@@ -3035,6 +3539,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "evaluation",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -3052,7 +3570,7 @@
           "Evaluation"
         ],
         "summary": "Create",
-        "description": "Create a resource.",
+        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
         "operationId": "create_api_v1_evaluation_post",
         "parameters": [
           {
@@ -3083,6 +3601,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "evaluation",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -3157,7 +3689,7 @@
           "Evaluation"
         ],
         "summary": "Delete",
-        "description": "Delete a resource by its fides_key.",
+        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
         "operationId": "delete_api_v1_evaluation__fides_key__delete",
         "parameters": [
           {
@@ -3189,6 +3721,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "evaluation",
+                    "fides_key": "example.key"
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -3208,7 +3754,7 @@
           "Evaluation"
         ],
         "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
         "operationId": "upsert_api_v1_evaluation_upsert_post",
         "parameters": [
           {
@@ -3258,6 +3804,20 @@
                   "message": "Upserted 3 evaluation(s)",
                   "inserted": 1,
                   "updated": 2
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "error": "user does not have permission to modify this resource",
+                    "resource_type": "DataCategory",
+                    "fides_key": "example.key"
+                  }
                 }
               }
             }
@@ -3520,8 +4080,8 @@
                     "system.data_protection_impact_assessment.is_required": "Data Protection Impact Assessment required?",
                     "system.data_protection_impact_assessment.progress": "Data Protection Impact Assessment progress",
                     "system.data_protection_impact_assessment.link": "Link to Data Protection Impact Assessment",
-                    "system.fides_key": "The fides key for the system",
-                    "dataset.fides_key": "The fides key for the dataset (if applicable)",
+                    "system.fides_key": "System Fides Key",
+                    "dataset.fides_key": "Dataset Fides Key (if applicable)",
                     "system.system_dependencies": "Related cross-system dependencies",
                     "system.description": "Description of the System"
                   },
