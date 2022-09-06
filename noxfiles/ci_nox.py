@@ -207,3 +207,22 @@ def pytest_external(session: nox.Session) -> None:
         "external",
     )
     session.run(*run_command, external=True)
+
+
+@nox.session()
+@nox.parametrize(
+    "dist",
+    [
+        nox.param("sdist", id="source"),
+        nox.param("bdist_wheel", id="wheel"),
+    ],
+)
+def python_build(session: nox.Session, dist: str) -> None:
+    "Build the Python distribution."
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "setup.py",
+        dist,
+        external=True,
+    )
