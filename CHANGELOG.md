@@ -34,14 +34,16 @@ The types of changes are:
 
 * Fixed failing mypy tests [#1030](https://github.com/ethyca/fides/pull/1030)
 * Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+* Pinned pydantic version to < 1.10.0 to fix an error in finding referenced fides keys [#1045](https://github.com/ethyca/fides/pull/1045)
 
 
 ## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
 ### Added
 
-* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977) 
+* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977)
 * New column `is_default` added to DataCategory, DataUse, DataSubject, and DataQualifier tables [#976](https://github.com/ethyca/fides/pull/976)
+
 ### Changed
 
 * Upgraded base Docker version to Python 3.9 and updated all other references from 3.8 -> 3.9 [#974](https://github.com/ethyca/fides/pull/974)
