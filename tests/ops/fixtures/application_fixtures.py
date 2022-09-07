@@ -508,6 +508,7 @@ def policy(
             "name": "example access request policy",
             "key": "example_access_request_policy",
             "client_id": oauth_client.id,
+            "execution_timeframe": 7,
         },
     )
 

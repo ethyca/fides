@@ -32,13 +32,14 @@ The types of changes are:
 * Foundations for a new email connector type [#1142](https://github.com/ethyca/fidesops/pull/1142)
 * Have the new email connector cache action needed for each collection [#1168](https://github.com/ethyca/fidesops/pull/1168)
 * Added `execution_timeframe` to Policy model and schema [#1244](https://github.com/ethyca/fidesops/pull/1244)
+* Added `due_date` to Privacy request model [#1259](https://github.com/ethyca/fidesops/pull/1259)
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
 
 ### Docs
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)
 * Added how to view a subject request history and reprocess a subject request [#1164](https://github.com/ethyca/fidesops/pull/1164)
-* Adds section on email communications, and exposes previously hidden guides in nav bar [1233](https://github.com/ethyca/fidesops/pull/1233)
+* Adds section on email communications, and exposes previously hidden guides in nav bar [#1233](https://github.com/ethyca/fidesops/pull/1233)
 
 ### Fixed
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
@@ -65,6 +65,7 @@ from fidesops.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.constants import API_DATE_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +210,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
+    due_date = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
@@ -218,6 +220,19 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         if data.get("requested_at", None) is None:
             data["requested_at"] = datetime.utcnow()
+
+        policy: Policy = Policy.get_by(
+            db=db,
+            field="id",
+            value=data["policy_id"],
+        )
+
+        if policy.execution_timeframe:
+            requested_at = data["requested_at"]
+            if isinstance(requested_at, str):
+                requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
+            data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
+
         return super().create(db=db, data=data)
 
     def delete(self, db: Session) -> None:

@@ -585,7 +585,7 @@ class TestGetPrivacyRequests:
                     "reviewer": None,
                     "policy": {
                         "drp_action": None,
-                        "execution_timeframe": None,
+                        "execution_timeframe": 7,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
@@ -640,7 +640,7 @@ class TestGetPrivacyRequests:
                     "paused_at": None,
                     "reviewer": None,
                     "policy": {
-                        "execution_timeframe": None,
+                        "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -996,7 +996,7 @@ class TestGetPrivacyRequests:
                     "paused_at": None,
                     "reviewer": None,
                     "policy": {
-                        "execution_timeframe": None,
+                        "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
@@ -2044,7 +2044,7 @@ class TestResumePrivacyRequest:
             "reviewer": None,
             "paused_at": None,
             "policy": {
-                "execution_timeframe": None,
+                "execution_timeframe": 7,
                 "drp_action": None,
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
