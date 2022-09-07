@@ -5,7 +5,7 @@ import { System } from "~/types/api";
 interface Props {
   systems: System[] | undefined;
 }
-const SystemsTable = ({ systems }: Props) => {
+const SystemsGrid = ({ systems }: Props) => {
   if (!systems || !systems.length) {
     return <div data-testid="empty-state">Empty state</div>;
   }
@@ -29,4 +29,4 @@ const SystemsTable = ({ systems }: Props) => {
   );
 };
 
-export default SystemsTable;
+export default SystemsGrid;
