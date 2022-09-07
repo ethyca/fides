@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
 import type { RootState } from "../../app/store";
-import { BASE_API_URN, BASE_URL } from "../../constants";
+import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import {
   DenyPrivacyRequest,
@@ -124,7 +124,7 @@ export const requestCSVDownload = async ({
   }
 
   return fetch(
-    `${BASE_API_URN}/privacy-request?${new URLSearchParams({
+    `${BASE_URL}/privacy-request?${new URLSearchParams({
       ...mapFiltersToSearchParams({
         id,
         from,
