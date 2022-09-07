@@ -21,7 +21,7 @@ const Systems: NextPage = () => {
   return (
     <Layout title="Systems">
       <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Systems
+        System Management
       </Heading>
       {isLoading ? <Spinner /> : <SystemsGrid systems={systems} />}
     </Layout>
