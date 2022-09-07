@@ -10,7 +10,11 @@ import dask
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
+from fidesops.ops.common_exceptions import (
+    CollectionDisabled,
+    PrivacyRequestErasureEmailSendRequired,
+    PrivacyRequestPaused,
+)
 from fidesops.ops.core.config import config
 from fidesops.ops.graph.analytics_events import (
     fideslog_graph_rerun,
@@ -63,7 +67,7 @@ def retry(
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def result(*args: Any, **kwargs: Any) -> List[Optional[Row]]:
+        def result(*args: Any, **kwargs: Any) -> Any:
             func_delay = config.execution.task_retry_delay
             method_name = func.__name__
             self = args[0]
@@ -88,6 +92,12 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
+                except PrivacyRequestErasureEmailSendRequired as exc:
+                    self.log_end(action_type, ex=None, success_override_msg=exc)
+                    self.resources.cache_erasure(
+                        f"{self.traversal_node.address.value}", 0
+                    )  # Cache that the erasure was performed in case we need to restart
+                    return 0
                 except CollectionDisabled as exc:
                     logger.warning(
                         "Skipping disabled collection %s for privacy_request: %s",
@@ -108,7 +118,7 @@ def retry(
                     raised_ex = ex
 
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_collection_details(
+            self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.
@@ -363,7 +373,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
     def log_end(
-        self, action_type: ActionType, ex: Optional[BaseException] = None
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException] = None,
+        success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -378,7 +391,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         else:
             logger.info("Ending %s, %s", self.resources.request.id, self.key)
             self.update_status(
-                "success",
+                str(success_override_msg) if success_override_msg else "success",
                 build_affected_field_logs(
                     self.traversal_node.node, self.resources.policy, action_type
                 ),

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>Erasure request</title>
+   </head>
+   <body>
+      <main>
+         <p>Please locate and erase the associated records from the following collections:</p>
+         {% for collection_address, action_required in dataset_collection_action_required.items() -%}
+         <p><b>{{ collection_address.collection }}</b></p>
+         {% for action in action_required.action_needed -%}
+         <p>Locate the relevant records with:</p>
+         <ul>
+            {% for field, values in action.locators.items() -%}
+            <li> Field: <i>{{ field }}</i>, Values: {{ values|join(', ') }} </li>
+            {%- endfor %}
+         </ul>
+         {% if action.update -%}
+         <p>Erase the following fields:</p>
+         <ul>
+            {% for field_name, masking_strategy in action.update.items() -%}
+            <li><i>{{field_name}}</i></li>
+            {%- endfor %}
+         </ul>
+         {%- endif %}
+          {%- endfor %} {%- endfor %}
+      </main>
+   </body>
+</html>

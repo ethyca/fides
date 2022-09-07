@@ -9,7 +9,7 @@ from pydantic import Field, validator
 from fidesops.ops.core.config import config
 from fidesops.ops.models.policy import ActionType
 from fidesops.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
@@ -133,7 +133,7 @@ class RowCountRequest(BaseSchema):
     row_count: int
 
 
-class CollectionActionRequiredDetails(CollectionActionRequired):
+class CheckpointActionRequiredDetails(CheckpointActionRequired):
 
     collection: Optional[str] = None  # type: ignore
 
@@ -164,7 +164,7 @@ class PrivacyRequestResponse(BaseSchema):
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
     policy: PolicySchema
-    stopped_collection_details: Optional[CollectionActionRequiredDetails] = None
+    action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
 
     class Config:

@@ -27,8 +27,11 @@ from fidesops.ops.util.data_category import _validate_data_category
 
 
 class CurrentStep(EnumType):
+    pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    erasure_email_post_send = "erasure_email_post_send"
+    post_webhooks = "post_webhooks"
 
 
 class ActionType(str, EnumType):

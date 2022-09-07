@@ -5,6 +5,7 @@ from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fidesops.ops.email_templates.template_names import (
+    EMAIL_ERASURE_REQUEST_FULFILLMENT,
     SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
 )
 from fidesops.ops.schemas.email.email import EmailActionType
@@ -22,6 +23,8 @@ template_env = Environment(
 def get_email_template(action_type: EmailActionType) -> Template:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
+    if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
+        return template_env.get_template(EMAIL_ERASURE_REQUEST_FULFILLMENT)
 
     logger.error("No corresponding template linked to the %s", action_type)
     raise EmailTemplateUnhandledActionType(

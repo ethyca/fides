@@ -19,6 +19,7 @@ class EmailActionType(Enum):
 
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
+    EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
 
 
 class EmailTemplateBodyParams(Enum):

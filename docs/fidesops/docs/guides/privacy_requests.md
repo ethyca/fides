@@ -43,13 +43,13 @@ A full list of attributes available to set on the Privacy Request can be found i
 ## Subject Identity Verification 
 
 To have users verify their identity before their Privacy Request is executed, set the `subject_identity_verification_required` 
-variable in your `fidesops.toml` to `TRUE`. You must also set up an EmailConfig that lets Fidesops send automated emails 
+variable in your `fidesops.toml` to `TRUE`. You must also set up an [EmailConfig](./email_communications.md) that lets fidesops send automated emails 
 to your users.
 
-When a user submits a PrivacyRequest, they will be emailed a six-digit code.  They must supply that verification code to Fidesops
+When a user submits a PrivacyRequest, they will be emailed a six-digit code.  They must supply that verification code to fidesops
 to continue privacy request execution.  Until the Privacy Request identity is verified, it will have a status of: `identity_unverified`.
 
-```json title="<code>POST api/v1/privacy-request/<privacy_request_id>/verify</code>"
+```json title="<code>POST api/v1/privacy-request/{privacy_request_id}/verify</code>"
 {"code": "<verification code here>"}
 ```
 

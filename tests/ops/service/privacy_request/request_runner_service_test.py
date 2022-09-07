@@ -16,14 +16,19 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
+from fidesops.ops.graph.config import CollectionAddress
+from fidesops.ops.models.connectionconfig import AccessLevel
+from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fidesops.ops.models.privacy_request import (
     ActionType,
+    CheckpointActionRequired,
     ExecutionLog,
     PolicyPreWebhook,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
+from fidesops.ops.schemas.email.email import EmailForActionType
 from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
 from fidesops.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
@@ -1446,6 +1451,10 @@ class TestRunPrivacyRequestRunsWebhooks:
         assert not proceed
         assert privacy_request.status == PrivacyRequestStatus.error
         assert privacy_request.finished_processing_at is not None
+        assert (
+            privacy_request.get_failed_checkpoint_details()
+            == CheckpointActionRequired(step=CurrentStep.pre_webhooks)
+        )
         assert privacy_request.paused_at is None
 
     @mock.patch(
@@ -1550,3 +1559,221 @@ def test_privacy_request_log_failure(
         assert sent_event.status_code == 500
         assert sent_event.error == "KeyError"
         assert sent_event.extra_data == {"privacy_request": pr.id}
+
+
+class TestPrivacyRequestsEmailConnector:
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_create_and_process_erasure_request_email_connector(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        postgres_example_test_dataset_config_read_access,
+        email_config,
+        db,
+    ):
+        """
+        Asserts that mailgun was called and verifies email template renders without error
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        pr.delete(db=db)
+        assert mailgun_send.called
+        kwargs = mailgun_send.call_args.kwargs
+        assert type(kwargs["email_config"]) == EmailConfig
+        assert type(kwargs["email"]) == EmailForActionType
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_create_and_process_erasure_request_email_connector_email_send_error(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Force error by having no email config setup
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.error
+        assert pr.get_failed_checkpoint_details() == CheckpointActionRequired(
+            step=CurrentStep.erasure_email_post_send,
+            collection=None,
+            action_needed=None,
+        )
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert set(cached_email_contents.keys()) == {
+            CollectionAddress("email_dataset", "payment"),
+            CollectionAddress("email_dataset", "children"),
+            CollectionAddress("email_dataset", "daycare_customer"),
+        }
+        pr.delete(db=db)
+        assert mailgun_send.called is False
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_email_connector_read_only_permissions(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        email_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Set email config to read only - don't send email in this case.
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.childrens"
+        target.save(db=db)
+
+        email_connection_config.access = AccessLevel.read
+        email_connection_config.save(db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert (
+            set(cached_email_contents.keys()) == set()
+        ), "No data cached to erase, because this connector is read-only"
+
+        pr.delete(db=db)
+        assert (
+            mailgun_send.called is False
+        ), "Email not sent because the connection was read only"
+
+    @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")
+    @pytest.mark.integration
+    def test_email_connector_no_updates_needed(
+        self,
+        mailgun_send,
+        email_connection_config,
+        erasure_policy,
+        integration_postgres_config,
+        run_privacy_request_task,
+        email_dataset_config,
+        email_config,
+        postgres_example_test_dataset_config_read_access,
+        db,
+    ):
+        """
+        Don't send an email when there are no erasures needed
+        """
+        rule = erasure_policy.rules[0]
+        target = rule.targets[0]
+        target.data_category = "user.job_title"  # Add a data category that does not apply to the email dataset
+        target.save(db=db)
+
+        email = "customer-1@example.com"
+        data = {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": email},
+        }
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            data,
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, "email_dataset"
+        )
+        assert set(cached_email_contents.keys()) == {
+            CollectionAddress("email_dataset", "payment"),
+            CollectionAddress("email_dataset", "children"),
+            CollectionAddress("email_dataset", "daycare_customer"),
+        }
+        assert (
+            cached_email_contents[CollectionAddress("email_dataset", "payment")]
+            .action_needed[0]
+            .update
+            is None
+        )
+        assert (
+            cached_email_contents[CollectionAddress("email_dataset", "children")]
+            .action_needed[0]
+            .update
+            is None
+        )
+        assert (
+            cached_email_contents[
+                CollectionAddress("email_dataset", "daycare_customer")
+            ]
+            .action_needed[0]
+            .update
+            is None
+        )
+
+        pr.delete(db=db)
+        assert (
+            mailgun_send.called is False
+        ), "Email not sent because no updates are needed. Data category doesn't apply to any of the collections."

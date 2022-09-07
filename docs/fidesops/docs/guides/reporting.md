@@ -222,7 +222,7 @@ To retrieve information to resume or retry a privacy request, the following endp
 
 ### Paused access request example
 
-The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `stopped_collection_details` key, we can see that the request
+The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `action_required_details` key, we can see that the request
 paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  The `action_needed.locators` field shows the user they should
 fetch the record in the filing cabinet with a `customer_id` of `72909`, and pull the `authorized_user`, `customer_id`, `id`, and `payment_card_id` fields
 from that record.  These values should be manually uploaded to the `resume_endpoint`.  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-access-privacy-request) 
@@ -237,7 +237,7 @@ guides for more information on resuming a paused access request.
             "created_at": "2022-06-06T20:12:28.809815+00:00",
             "started_processing_at": "2022-06-06T20:12:28.986462+00:00",
             ...,
-            "stopped_collection_details": {
+            "action_required_details": {
                 "step": "access",
                 "collection": "manual_key:filing_cabinet",
                 "action_needed": [
@@ -268,7 +268,7 @@ guides for more information on resuming a paused access request.
 
 ### Paused erasure request example
 
-The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `stopped_collection_details` shows us that the request
+The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `action_required_details` shows us that the request
 paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
 see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
 A confirmation of the masked records count should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
@@ -284,7 +284,7 @@ guides for more information on resuming a paused erasure request.
             "finished_processing_at": null,
             "status": "paused",
             ...,
-            "stopped_collection_details": {
+            "action_required_details": {
                 "step": "erasure",
                 "collection": "manual_key:filing_cabinet",
                 "action_needed": [
@@ -325,7 +325,7 @@ After troubleshooting the issues with your postgres connection, you would resume
             "finished_processing_at": null,
             "status": "error",
             ...,
-            "stopped_collection_details": {
+            "action_required_details": {
               "step": "erasure",
               "collection": "postgres_dataset:payment_card",
               "action_needed": null

@@ -14,9 +14,10 @@ from fidesops.ops.common_exceptions import (
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.policy import CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     PrivacyRequest,
     PrivacyRequestStatus,
+    can_run_checkpoint,
 )
 from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
@@ -456,19 +457,19 @@ class TestCacheManualErasureCount:
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
 
-        privacy_request.cache_failed_collection_details(
+        privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure, collection=paused_location
         )
 
-        cached_data = privacy_request.get_failed_collection_details()
+        cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data.step == CurrentStep.erasure
         assert cached_data.collection == paused_location
         assert cached_data.action_needed is None
 
     def test_cache_null_step_and_location(self, privacy_request):
-        privacy_request.cache_failed_collection_details()
+        privacy_request.cache_failed_checkpoint_details()
 
-        cached_data = privacy_request.get_failed_collection_details()
+        cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data is None
 
 
@@ -505,7 +506,9 @@ class TestCacheEmailConnectorTemplateContents:
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         ) == {
-            "test_collection": CollectionActionRequired(
+            CollectionAddress(
+                "email_dataset", "test_collection"
+            ): CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
@@ -517,3 +520,40 @@ class TestCacheEmailConnectorTemplateContents:
                 ],
             )
         }
+
+
+class TestCanRunFromCheckpoint:
+    def test_can_run_from_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure_email_post_send,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
+        )
+
+    def test_can_run_from_equivalent_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
+        )
+
+    def test_cannot_run_from_completed_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is False
+        )
+
+    def test_can_run_if_no_saved_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+            )
+            is True
+        )

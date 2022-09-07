@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.privacy_request import EmailRequestFulfillmentBodyParams
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
@@ -25,7 +26,10 @@ def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Union[SubjectIdentityVerificationBodyParams],
+    email_body_params: Union[
+        SubjectIdentityVerificationBodyParams,
+        EmailRequestFulfillmentBodyParams,
+    ],
 ) -> None:
     if not to_email:
         raise EmailDispatchException("No email supplied.")
@@ -57,7 +61,7 @@ def dispatch_email(
 
 def _build_email(
     action_type: EmailActionType,
-    body_params: Union[SubjectIdentityVerificationBodyParams],
+    body_params: Any,
 ) -> EmailForActionType:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
@@ -68,6 +72,14 @@ def _build_email(
                     "code": body_params.verification_code,
                     "minutes": body_params.get_verification_code_ttl_minutes(),
                 }
+            ),
+        )
+    if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Data erasure request",
+            body=base_template.render(
+                {"dataset_collection_action_required": body_params}
             ),
         )
     logger.error("Email action type %s is not implemented", action_type)

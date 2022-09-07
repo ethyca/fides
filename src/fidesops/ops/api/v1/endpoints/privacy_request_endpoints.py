@@ -79,7 +79,7 @@ from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
-    CollectionActionRequired,
+    CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     PrivacyRequestCreate,
@@ -492,16 +492,16 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     about how to resume manually if applicable.
     """
     resume_endpoint: Optional[str] = None
-    stopped_collection_details: Optional[CollectionActionRequired] = None
+    action_required_details: Optional[CheckpointActionRequired] = None
 
     if privacy_request.status == PrivacyRequestStatus.paused:
-        stopped_collection_details = privacy_request.get_paused_collection_details()
+        action_required_details = privacy_request.get_paused_collection_details()
 
-        if stopped_collection_details:
+        if action_required_details:
             # Graph is paused on a specific collection
             resume_endpoint = (
                 PRIVACY_REQUEST_MANUAL_ERASURE
-                if stopped_collection_details.step == CurrentStep.erasure
+                if action_required_details.step == CurrentStep.erasure
                 else PRIVACY_REQUEST_MANUAL_INPUT
             )
         else:
@@ -509,16 +509,16 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
             resume_endpoint = PRIVACY_REQUEST_RESUME
 
     elif privacy_request.status == PrivacyRequestStatus.error:
-        stopped_collection_details = privacy_request.get_failed_collection_details()
+        action_required_details = privacy_request.get_failed_checkpoint_details()
         resume_endpoint = PRIVACY_REQUEST_RETRY
 
-    if stopped_collection_details:
-        stopped_collection_details.step = stopped_collection_details.step.value  # type: ignore
-        stopped_collection_details.collection = (
-            stopped_collection_details.collection.value  # type: ignore
+    if action_required_details:
+        action_required_details.step = action_required_details.step.value  # type: ignore
+        action_required_details.collection = (
+            action_required_details.collection.value if action_required_details.collection else None  # type: ignore
         )
 
-    privacy_request.stopped_collection_details = stopped_collection_details
+    privacy_request.action_required_details = action_required_details
     # replaces the placeholder in the url with the privacy request id
     privacy_request.resume_endpoint = (
         resume_endpoint.format(privacy_request_id=privacy_request.id)
@@ -784,7 +784,10 @@ async def resume_privacy_request_with_manual_input(
     manual_rows: List[Row] = [],
     manual_count: Optional[int] = None,
 ) -> PrivacyRequest:
-    """Resume privacy request after validating and caching manual data for an access or an erasure request."""
+    """Resume privacy request after validating and caching manual data for an access or an erasure request.
+
+    This assumes the privacy request is being resumed from a specific collection in the graph.
+    """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )
@@ -796,7 +799,7 @@ async def resume_privacy_request_with_manual_input(
         )
 
     paused_details: Optional[
-        CollectionActionRequired
+        CheckpointActionRequired
     ] = privacy_request.get_paused_collection_details()
     if not paused_details:
         raise HTTPException(
@@ -805,7 +808,7 @@ async def resume_privacy_request_with_manual_input(
         )
 
     paused_step: CurrentStep = paused_details.step
-    paused_collection: CollectionAddress = paused_details.collection
+    paused_collection: Optional[CollectionAddress] = paused_details.collection
 
     if paused_step != expected_paused_step:
         raise HTTPException(
@@ -817,6 +820,12 @@ async def resume_privacy_request_with_manual_input(
     datasets = DatasetConfig.all(db=db)
     dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
     dataset_graph = DatasetGraph(*dataset_graphs)
+
+    if not paused_collection:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Cannot save manual data on paused collection. No paused collection saved'.",
+        )
 
     node: Optional[Node] = dataset_graph.nodes.get(paused_collection)
     if not node:
@@ -939,8 +948,8 @@ async def restart_privacy_request_from_failure(
         )
 
     failed_details: Optional[
-        CollectionActionRequired
-    ] = privacy_request.get_failed_collection_details()
+        CheckpointActionRequired
+    ] = privacy_request.get_failed_checkpoint_details()
     if not failed_details:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -948,7 +957,7 @@ async def restart_privacy_request_from_failure(
         )
 
     failed_step: CurrentStep = failed_details.step
-    failed_collection: CollectionAddress = failed_details.collection
+    failed_collection: Optional[CollectionAddress] = failed_details.collection
 
     logger.info(
         "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
@@ -964,7 +973,7 @@ async def restart_privacy_request_from_failure(
         from_step=failed_step.value,
     )
 
-    privacy_request.cache_failed_collection_details()  # Reset failed step and collection to None
+    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
     return privacy_request
 

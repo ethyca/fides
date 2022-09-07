@@ -19,7 +19,6 @@ nav:
           - User Management: ui/user_management.md
   - How-To Guides:
       - View Available Connection Types: guides/connection_types.md
-      - Configure Email Communications: guides/email_communications.md
       - Annotate Complex Fields: guides/complex_fields.md
       - Configure Data Masking: guides/masking_strategies.md
       - Configure Storage Destinations: guides/storage.md
@@ -28,6 +27,7 @@ nav:
       - Configure OneTrust Integration: guides/onetrust.md
       - Preview Query Execution: guides/query_execution.md
       - Data Rights Protocol: guides/data_rights_protocol.md
+      - Configure Automatic Emails: guides/email_communications.md
   - SaaS Connectors:
       - Connect to SaaS Applications: saas_connectors/saas_connectors.md
       - SaaS Configuration: saas_connectors/saas_config.md

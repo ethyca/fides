@@ -1,27 +1,43 @@
+from unittest import mock
+
 import pytest as pytest
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import CollectionActionRequired, ManualAction
+from fidesops.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    ExecutionLog,
+    ExecutionLogStatus,
+    ManualAction,
+)
 from fidesops.ops.schemas.dataset import FidesopsDataset
+from fidesops.ops.schemas.email.email import EmailActionType
+from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
 from fidesops.ops.task import graph_task
 
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
+@mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
 @pytest.mark.asyncio
-async def test_collections_with_manual_erasure_confirmation(
+async def test_email_connector_cache_and_delayed_send(
+    mock_email_dispatch,
     db,
     erasure_policy,
     integration_postgres_config,
     email_connection_config,
     privacy_request,
     example_datasets,
+    email_dataset_config,
+    email_config,
 ) -> None:
     """Run an erasure privacy request with a postgres dataset and an email dataset.
     The email dataset has three separate collections.
+
+    Call the email send and verify what would have been emailed
     """
     privacy_request.policy = erasure_policy
     rule = erasure_policy.rules[0]
@@ -94,7 +110,7 @@ async def test_collections_with_manual_erasure_confirmation(
     )
 
     assert raw_email_template_values == {
-        "children": CollectionActionRequired(
+        CollectionAddress("email_dataset", "children"): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "children"),
             action_needed=[
@@ -115,7 +131,9 @@ async def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-        "daycare_customer": CollectionActionRequired(
+        CollectionAddress(
+            "email_dataset", "daycare_customer"
+        ): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "daycare_customer"),
             action_needed=[
@@ -128,7 +146,7 @@ async def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-        "payment": CollectionActionRequired(
+        CollectionAddress("email_dataset", "payment"): CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "payment"),
             action_needed=[
@@ -140,3 +158,34 @@ async def test_collections_with_manual_erasure_confirmation(
             ],
         ),
     }, "Only two collections need masking, but all are included in case they include relevant data locators."
+
+    children_logs = db.query(ExecutionLog).filter(
+        ExecutionLog.privacy_request_id == privacy_request.id,
+        ExecutionLog.dataset_name == email_dataset_config.fides_key,
+        ExecutionLog.collection_name == "children",
+    )
+    assert {"starting", "email prepared"} == {
+        log.message for log in children_logs
+    }, "Execution Log given unique message"
+    assert {ExecutionLogStatus.in_processing, ExecutionLogStatus.complete} == {
+        log.status for log in children_logs
+    }
+
+    email_connector_erasure_send(db, privacy_request)
+    assert mock_email_dispatch.called
+    call_args = mock_email_dispatch.call_args[1]
+    assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+    assert call_args["to_email"] == "test@example.com"
+    assert call_args["email_body_params"] == raw_email_template_values
+
+    created_email_audit_log = (
+        db.query(AuditLog)
+        .filter(AuditLog.privacy_request_id == privacy_request.id)
+        .all()[0]
+    )
+    assert (
+        created_email_audit_log.message
+        == "Erasure email instructions dispatched for 'email_dataset'"
+    )
+    assert created_email_audit_log.user_id == "system"
+    assert created_email_audit_log.action == AuditLogAction.email_sent

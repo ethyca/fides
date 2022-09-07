@@ -18,7 +18,11 @@ from fidesops.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fidesops.ops.models.policy import CurrentStep
+from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
+from fidesops.ops.schemas.email.email import EmailActionType
 
 page_size = Params().size
 
@@ -1148,8 +1152,10 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
+    @mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
     def test_put_email_connection_config_secrets(
         self,
+        mock_dispatch_email,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
@@ -1157,7 +1163,11 @@ class TestPutConnectionConfigSecrets:
         url,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"url": None, "to_email": "test@example.com"}
+        payload = {
+            "url": None,
+            "to_email": "test1@example.com",
+            "test_email": "test@example.com",
+        }
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
 
         resp = api_client.put(
@@ -1172,12 +1182,34 @@ class TestPutConnectionConfigSecrets:
             body["msg"]
             == f"Secrets updated for ConnectionConfig with key: {email_connection_config.key}."
         )
-        assert body["test_status"] == "skipped" ""
+        assert body["test_status"] == "succeeded"
         db.refresh(email_connection_config)
         assert email_connection_config.secrets == {
-            "to_email": "test@example.com",
+            "to_email": "test1@example.com",
             "url": None,
-            "test_email": None,
+            "test_email": "test@example.com",
         }
-        assert email_connection_config.last_test_timestamp is None
-        assert email_connection_config.last_test_succeeded is None
+        assert email_connection_config.last_test_timestamp is not None
+        assert email_connection_config.last_test_succeeded is not None
+
+        assert mock_dispatch_email.called
+        kwargs = mock_dispatch_email.call_args.kwargs
+        assert (
+            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+        )
+        assert kwargs["to_email"] == "test@example.com"
+        assert kwargs["email_body_params"] == {
+            CollectionAddress(
+                "test_dataset", "test_collection"
+            ): CheckpointActionRequired(
+                step=CurrentStep.erasure,
+                collection=CollectionAddress("test_dataset", "test_collection"),
+                action_needed=[
+                    ManualAction(
+                        locators={"id": ["example_id"]},
+                        get=None,
+                        update={"test_field": "null_rewrite"},
+                    )
+                ],
+            )
+        }

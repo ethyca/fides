@@ -17,7 +17,7 @@ from fidesops.ops.models.connectionconfig import (
 from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
 )
@@ -638,7 +638,7 @@ async def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
     ]
-    assert privacy_request.get_failed_collection_details() == CollectionActionRequired(
+    assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
         step=CurrentStep.access,
         collection=CollectionAddress("mongo_test", "customer_details"),
     )

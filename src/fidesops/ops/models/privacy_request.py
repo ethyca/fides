@@ -68,6 +68,15 @@ from fidesops.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
+# Locations from which privacy request execution can be resumed, in order.
+EXECUTION_CHECKPOINTS = [
+    CurrentStep.pre_webhooks,
+    CurrentStep.access,
+    CurrentStep.erasure,
+    CurrentStep.erasure_email_post_send,
+    CurrentStep.post_webhooks,
+]
+
 
 class ManualAction(BaseSchema):
     """Surface how to retrieve or mask data in a database-agnostic way
@@ -82,8 +91,8 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CollectionActionRequired(BaseSchema):
-    """Describes actions needed on a given collection.
+class CheckpointActionRequired(BaseSchema):
+    """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that
     needs to be restarted, or a collection where instructions need to be emailed to a third
@@ -91,11 +100,16 @@ class CollectionActionRequired(BaseSchema):
     """
 
     step: CurrentStep
-    collection: CollectionAddress
+    collection: Optional[CollectionAddress]
     action_needed: Optional[List[ManualAction]] = None
 
     class Config:
         arbitrary_types_allowed = True
+
+
+EmailRequestFulfillmentBodyParams = Dict[
+    CollectionAddress, Optional[CheckpointActionRequired]
+]
 
 
 class PrivacyRequestStatus(str, EnumType):
@@ -380,14 +394,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> Dict[str, Optional[CollectionActionRequired]]:
+    ) -> EmailRequestFulfillmentBodyParams:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
         return {
-            k.split("__")[-1]: CollectionActionRequired.parse_obj(v) if v else None
+            CollectionAddress(
+                k.split("__")[-2], k.split("__")[-1]
+            ): CheckpointActionRequired.parse_obj(v)
+            if v
+            else None
             for k, v in email_contents.items()
         }
 
@@ -409,7 +427,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_paused_collection_details(
         self,
-    ) -> Optional[CollectionActionRequired]:
+    ) -> Optional[CheckpointActionRequired]:
         """Return details about the paused step, paused collection, and any action needed to resume the paused privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -418,14 +436,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         return get_action_required_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
 
-    def cache_failed_collection_details(
+    def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
         collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache details about the failed step and failed collection details. No specific input data is required to resume
-        a failed request, so action_needed is None.
+        Cache a checkpoint where the privacy request failed so we can later resume from this failure point.
+
+        Cache details about the failed step and failed collection details (where applicable).
+        No specific input data is required to resume a failed request, so action_needed is None.
         """
         cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
@@ -434,9 +454,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             action_needed=None,
         )
 
-    def get_failed_collection_details(
+    def get_failed_checkpoint_details(
         self,
-    ) -> Optional[CollectionActionRequired]:
+    ) -> Optional[CheckpointActionRequired]:
         """Get details about the failed step (access or erasure) and collection that triggered failure.
 
         The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -704,21 +724,21 @@ def cache_action_required(
     The "step" describes whether action is needed in the access or the erasure portion of the request.
     """
     cache: FidesopsRedis = get_cache()
-    current_collection: Optional[CollectionActionRequired] = None
-    if collection and step:
-        current_collection = CollectionActionRequired(
+    action_required: Optional[CheckpointActionRequired] = None
+    if step:
+        action_required = CheckpointActionRequired(
             step=step, collection=collection, action_needed=action_needed
         )
 
     cache.set_encoded_object(
         cache_key,
-        current_collection.dict() if current_collection else None,
+        action_required.dict() if action_required else None,
     )
 
 
 def get_action_required_details(
     cached_key: str,
-) -> Optional[CollectionActionRequired]:
+) -> Optional[CheckpointActionRequired]:
     """Get details about the action required for a given collection.
 
     The "step" lets us know if action is needed in the "access" or the "erasure" portion of the privacy request flow.
@@ -726,11 +746,11 @@ def get_action_required_details(
     performed to complete the request.
     """
     cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[CollectionActionRequired] = cache.get_encoded_by_key(
+    cached_stopped: Optional[CheckpointActionRequired] = cache.get_encoded_by_key(
         cached_key
     )
     return (
-        CollectionActionRequired.parse_obj(cached_stopped) if cached_stopped else None
+        CheckpointActionRequired.parse_obj(cached_stopped) if cached_stopped else None
     )
 
 
@@ -778,3 +798,17 @@ class ExecutionLog(Base):
         nullable=False,
         index=True,
     )
+
+
+def can_run_checkpoint(
+    request_checkpoint: CurrentStep, from_checkpoint: Optional[CurrentStep] = None
+) -> bool:
+    """Determine whether we should run a specific checkpoint in privacy request execution
+
+    If there's no from_checkpoint specified we should always run the current checkpoint.
+    """
+    if not from_checkpoint:
+        return True
+    return EXECUTION_CHECKPOINTS.index(
+        request_checkpoint
+    ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)

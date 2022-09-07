@@ -101,6 +101,10 @@ class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
+class PrivacyRequestErasureEmailSendRequired(BaseException):
+    """Erasure requests will need to be fulfilled by email send.  Exception is raised to change ExecutionLog details"""
+
+
 class SaaSConfigNotFoundException(FidesopsException):
     """Custom Exception - SaaS Config Not Found"""
 
