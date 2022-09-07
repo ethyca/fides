@@ -1,10 +1,11 @@
 import { RTKErrorResult } from "~/types/errors";
 
-export interface TaxonomyEntityNode {
-  value: string;
-  label: string;
+import { TreeNode } from "../common/types";
+
+export interface TaxonomyEntityNode extends TreeNode {
   description?: string;
   children: TaxonomyEntityNode[];
+  is_default: boolean;
 }
 
 export interface TaxonomyEntity {

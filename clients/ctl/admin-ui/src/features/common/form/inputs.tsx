@@ -8,6 +8,9 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Radio,
+  RadioGroup,
+  Stack,
   Textarea,
   TextareaProps,
 } from "@fidesui/react";
@@ -403,6 +406,57 @@ export const CustomTextArea = ({
       ) : (
         InnerTextArea
       )}
+      {isInvalid ? (
+        <FormErrorMessage data-testid={`error-${field.name}`}>
+          {meta.error}
+        </FormErrorMessage>
+      ) : null}
+    </FormControl>
+  );
+};
+
+interface CustomRadioGroupProps {
+  label: string;
+  options: Option[];
+}
+export const CustomRadioGroup = ({
+  label,
+  options,
+  ...props
+}: CustomRadioGroupProps & FieldHookConfig<string>) => {
+  const [field, meta] = useField(props);
+  const isInvalid = !!(meta.touched && meta.error);
+  const selected = options.find((o) => o.value === field.value) ?? options[0];
+
+  const handleChange = (o: string) => {
+    field.onChange(props.name)(o);
+  };
+
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr">
+        <FormLabel htmlFor={props.id || props.name} size="sm">
+          {label}
+        </FormLabel>
+        <RadioGroup
+          onChange={handleChange}
+          value={selected.value}
+          data-testid={`input-${field.name}`}
+          colorScheme="secondary"
+        >
+          <Stack direction="row">
+            {options.map((o) => (
+              <Radio
+                key={o.value}
+                value={o.value}
+                data-testid={`option-${o.value}`}
+              >
+                {o.label}
+              </Radio>
+            ))}
+          </Stack>
+        </RadioGroup>
+      </Grid>
       {isInvalid ? (
         <FormErrorMessage data-testid={`error-${field.name}`}>
           {meta.error}

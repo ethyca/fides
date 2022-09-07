@@ -30,14 +30,14 @@ interface Props {
   labels: Labels;
   onCancel: () => void;
   onSubmit: (entity: TaxonomyEntity) => RTKResult<TaxonomyEntity>;
-  extraFormFields?: ReactNode;
+  renderExtraFormFields?: (entity: FormValues) => ReactNode;
   initialValues: FormValues;
 }
 const TaxonomyFormBase = ({
   labels,
   onCancel,
   onSubmit,
-  extraFormFields,
+  renderExtraFormFields,
   initialValues,
 }: Props) => {
   const toast = useToast();
@@ -140,7 +140,7 @@ const TaxonomyFormBase = ({
                     disabled={!isCreate}
                   />
                 ))}
-              {extraFormFields}
+              {renderExtraFormFields ? renderExtraFormFields(values) : null}
             </Stack>
 
             {formError ? (

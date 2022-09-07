@@ -502,5 +502,23 @@
     "description": "Data related to the individual's political opinions.",
     "parent_key": "user",
     "is_default": true
+  },
+  {
+    "fides_key": "custom",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom field",
+    "description": "Custom field for tests",
+    "parent_key": null,
+    "is_default": false
+  },
+  {
+    "fides_key": "custom.foo",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Custom foo",
+    "description": "Custom foo for tests",
+    "parent_key": "custom",
+    "is_default": false
   }
 ]

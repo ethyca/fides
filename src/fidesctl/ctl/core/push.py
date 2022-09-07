@@ -22,7 +22,7 @@ def sort_create_update(
     new lists for resource creation or updating.
 
     The `diff` flag will print out the differences between the
-    server resources the local resource files.
+    server resources and the local resource files.
     """
 
     server_resource_dict = {
@@ -39,15 +39,15 @@ def sort_create_update(
             server_resource = server_resource_dict[resource_key]
 
             if diff:
-                print(
-                    f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
+                resource_diff = DeepDiff(
+                    manifest_resource.dict(),
+                    server_resource.dict(),
                 )
-                pprint(
-                    DeepDiff(
-                        manifest_resource.dict(exclude_unset=True),
-                        server_resource.dict(exclude_unset=True),
+                if resource_diff:
+                    print(
+                        f"\nUpdated resource with fides_key: {manifest_resource.fides_key}"
                     )
-                )
+                    pprint(resource_diff)
 
             update_list.append(manifest_resource)
 

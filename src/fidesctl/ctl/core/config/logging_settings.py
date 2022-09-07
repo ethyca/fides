@@ -19,14 +19,16 @@ class FidesctlLoggingSettings(FidesSettings):
     serialization: str = ""
 
     @validator("destination", pre=True)
-    def get_destination(cls: FidesSettings, value: str) -> str:
+    @classmethod
+    def get_destination(cls, value: str) -> str:
         """
         Print logs to sys.stdout, unless a valid file path is specified.
         """
         return value if os.path.exists(value) else ""
 
     @validator("level", pre=True)
-    def get_level(cls: FidesSettings, value: str) -> str:
+    @classmethod
+    def get_level(cls, value: str) -> str:
         """
         Set the logging level to DEBUG if in test mode, INFO by default.
         Ensures that the string-form of a valid logging._Level is
@@ -41,7 +43,8 @@ class FidesctlLoggingSettings(FidesSettings):
         return value if getLevelName(value) != f"Level {value}" else getLevelName(INFO)
 
     @validator("serialization", pre=True)
-    def get_serialization(cls: FidesSettings, value: str) -> str:
+    @classmethod
+    def get_serialization(cls, value: str) -> str:
         """
         Ensure that only JSON serialization, or no serialization, is used.
         """

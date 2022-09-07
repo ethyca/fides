@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
+import { plusApi } from "~/features/common/features.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -44,6 +45,7 @@ const makeStore = () => {
       [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
       [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
       [dataUseApi.reducerPath]: dataUseApi.reducer,
+      [plusApi.reducerPath]: plusApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -54,7 +56,8 @@ const makeStore = () => {
         taxonomyApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
-        dataUseApi.middleware
+        dataUseApi.middleware,
+        plusApi.middleware
       ),
   });
   setupListeners(store.dispatch);

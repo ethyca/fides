@@ -11,9 +11,11 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
+import { YesNoOptions } from "../common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
+  CustomRadioGroup,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
@@ -51,7 +53,7 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   handleCreate: (entity: T) => RTKResult<TaxonomyEntity>;
   handleEdit: (entity: T) => RTKResult<TaxonomyEntity>;
   handleDelete: (key: string) => RTKResult<string>;
-  extraFormFields?: ReactNode;
+  renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
 
@@ -121,6 +123,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       formValues.legitimate_interest_impact_assessment === ""
         ? undefined
         : formValues.legitimate_interest_impact_assessment,
+    legitimate_interest: !!(
+      formValues.legitimate_interest?.toString() === "true"
+    ),
   });
 
   const [handleDelete] = useDeleteDataUseMutation();
@@ -137,7 +142,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       legal_basis: du.legal_basis,
       special_category: du.special_category,
       recipients: du.recipients ?? [],
-      legitimate_interest: du.legitimate_interest,
+      legitimate_interest:
+        du.legitimate_interest == null
+          ? "false"
+          : du.legitimate_interest.toString(),
       legitimate_interest_impact_assessment:
         du.legitimate_interest_impact_assessment ?? "",
     };
@@ -146,7 +154,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const legalBases = enumToOptions(LegalBasisEnum);
   const specialCategories = enumToOptions(SpecialCategoriesEnum);
 
-  const extraFormFields = (
+  const renderExtraFormFields = (formValues: DataUse) => (
     <>
       <CustomSelect
         name="legal_basis"
@@ -160,15 +168,21 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
       />
       <CustomCreatableMultiSelect
         name="recipients"
-        label="Recipients"
+        label={labels.recipient}
         options={[]}
         size="sm"
       />
-      {/* TODO: legitimate interest: boolean field */}
-      <CustomTextInput
-        name="legitimate_interest_impact_assessment"
-        label={labels.legitimate_interest_impact_assessment}
+      <CustomRadioGroup
+        name="legitimate_interest"
+        label={labels.legitimate_interest}
+        options={YesNoOptions}
       />
+      {formValues.legitimate_interest?.toString() === "true" ? (
+        <CustomTextInput
+          name="legitimate_interest_impact_assessment"
+          label={labels.legitimate_interest_impact_assessment}
+        />
+      ) : null}
     </>
   );
 
@@ -179,7 +193,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     handleCreate,
     handleEdit,
     handleDelete,
-    extraFormFields,
+    renderExtraFormFields,
     transformEntityToInitialValues,
   };
 };
@@ -200,25 +214,33 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const [create] = useCreateDataSubjectMutation();
   const [handleDelete] = useDeleteDataSubjectMutation();
 
-  const transformFormValuesToEntity = (entity: TaxonomyEntity) => {
-    const transformedEntity = {
+  const transformFormValuesToEntity = (entity: DataSubject) => {
+    const transformedEntity: DataSubject = {
       ...entity,
       // @ts-ignore because DataSubjects have their rights field nested, which
       // does not work well when being passed into a form. We unnest them in
       // transformEntityToInitialValues, and it is the unnested value we get back
       // here, but it would make the types of our other components much more complicated
       // to properly type just for this special case
-      rights: { values: entity.rights, strategy: entity.strategy },
+      rights:
+        // @ts-ignore for the same reason as above
+        entity.rights.length
+          ? // @ts-ignore for the same reason as above
+            { values: entity.rights, strategy: entity.strategy }
+          : undefined,
+      automatic_decisions_or_profiling: !!(
+        entity.automated_decisions_or_profiling?.toString() === "true"
+      ),
     };
     // @ts-ignore for the same reason as above
     delete transformedEntity.strategy;
     return transformedEntity;
   };
 
-  const handleEdit = (entity: TaxonomyEntity) =>
+  const handleEdit = (entity: DataSubject) =>
     edit(transformFormValuesToEntity(entity));
 
-  const handleCreate = (entity: TaxonomyEntity) =>
+  const handleCreate = (entity: DataSubject) =>
     create(transformFormValuesToEntity(entity));
 
   const transformEntityToInitialValues = (ds: DataSubject) => {
@@ -227,23 +249,33 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
       ...base,
       rights: ds.rights?.values ?? [],
       strategy: ds.rights?.strategy,
-      automatic_decisions: ds.automated_decisions_or_profiling,
+      automatic_decisions_or_profiling:
+        ds.automated_decisions_or_profiling == null
+          ? "false"
+          : ds.automated_decisions_or_profiling.toString(),
     };
   };
 
-  const extraFormFields = (
+  const renderExtraFormFields = (entity: DataSubject) => (
     <>
       <CustomMultiSelect
         name="rights"
         label={labels.rights}
         options={enumToOptions(DataSubjectRightsEnum)}
       />
-      <CustomSelect
-        name="strategy"
-        label={labels.strategy}
-        options={enumToOptions(IncludeExcludeEnum)}
+      {/* @ts-ignore because of discrepancy between form and entity type, again */}
+      {entity.rights && entity.rights.length ? (
+        <CustomSelect
+          name="strategy"
+          label={labels.strategy}
+          options={enumToOptions(IncludeExcludeEnum)}
+        />
+      ) : null}
+      <CustomRadioGroup
+        name="automatic_decisions_or_profiling"
+        label={labels.automatic_decisions}
+        options={YesNoOptions}
       />
-      {/* TODO: automatic decisions: boolean field */}
     </>
   );
 
@@ -254,7 +286,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     handleCreate,
     handleEdit,
     handleDelete,
-    extraFormFields,
+    renderExtraFormFields,
     transformEntityToInitialValues,
   };
 };

@@ -63,6 +63,14 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("accordion-item-System Data").trigger("mouseover");
       cy.getByTestId("action-btns").should("exist");
     });
+
+    it("Can render a 'custom' tag for custom fields", () => {
+      cy.getByTestId("tab-Data Categories").click();
+      cy.getByTestId("accordion-item-Custom field").click();
+      cy.getByTestId("custom-tag-Custom field");
+      cy.getByTestId("custom-tag-Custom foo");
+      cy.getByTestId("custom-tag-System Data").should("not.exist");
+    });
   });
 
   describe("Can edit data", () => {
@@ -200,6 +208,13 @@ describe("Taxonomy management page", () => {
       );
       cy.getByTestId("input-recipients").should("contain", "marketing team");
       cy.getByTestId("input-recipients").should("contain", "dog shelter");
+      cy.getByTestId("input-legitimate_interest").within(() => {
+        cy.getByTestId("option-false").should("have.attr", "data-checked");
+        cy.getByTestId("option-true").click();
+        cy.getByTestId("option-true").should("have.attr", "data-checked");
+        cy.getByTestId("option-false").should("not.have.attr", "data-checked");
+      });
+
       cy.getByTestId("input-legitimate_interest_impact_assessment").should(
         "have.value",
         "https://example.org/legitimate_interest_assessment"
@@ -236,8 +251,7 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("input-special_category").should("contain", "Select...");
       cy.getByTestId("input-recipients").should("contain", "Select...");
       cy.getByTestId("input-legitimate_interest_impact_assessment").should(
-        "have.value",
-        ""
+        "not.exist"
       );
     });
 
@@ -258,6 +272,12 @@ describe("Taxonomy management page", () => {
         cy.getByTestId("input-rights").should("contain", v);
       });
       cy.getByTestId("input-strategy").should("contain", "INCLUDE");
+      cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
+        cy.getByTestId("option-true").should("have.attr", "data-checked");
+        cy.getByTestId("option-false").click();
+        cy.getByTestId("option-false").should("have.attr", "data-checked");
+        cy.getByTestId("option-true").should("not.have.attr", "data-checked");
+      });
 
       // trigger a PUT
       cy.getByTestId("input-name").clear().type("foo");
@@ -265,7 +285,7 @@ describe("Taxonomy management page", () => {
       cy.wait("@putDataSubject").then((interception) => {
         const { body } = interception.request;
         const expected = {
-          automatic_decisions: true,
+          automatic_decisions_or_profiling: false,
           description:
             "An individual registered to voter with a state or authority.",
           fides_key: "citizen_voter",
@@ -283,7 +303,7 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("item-Anonymous User").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-rights").should("contain", "Select...");
-      cy.getByTestId("input-strategy").should("contain", "Select...");
+      cy.getByTestId("input-strategy").should("not.exist");
     });
 
     it("Can trigger an error", () => {
@@ -466,66 +486,53 @@ describe("Taxonomy management page", () => {
       );
     });
 
-    it("Only renders delete button on nodes without children", () => {
+    it("Only renders delete button on custom fields without children", () => {
       cy.getByTestId(`tab-Data Categories`).click();
+      // try default fields first
       cy.getByTestId("accordion-item-User Data").trigger("mouseover");
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("accordion-item-User Data").click();
       cy.getByTestId("item-Biometric Data").trigger("mouseover");
+      cy.getByTestId("delete-btn").should("not.exist");
+
+      // now try custom fields
+      cy.getByTestId("accordion-item-Custom field").trigger("mouseover");
+      cy.getByTestId("delete-btn").should("not.exist");
+      cy.getByTestId("accordion-item-Custom field").click();
+      cy.getByTestId("item-Custom foo").trigger("mouseover");
       cy.getByTestId("delete-btn");
     });
 
-    it("Can delete a data category", () => {
-      cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("item-Biometric Data").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteDataCategory").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain("user.biometric");
+    it("Can delete from each taxonomy type (except Data Subject)", () => {
+      // Data Subject is slightly different than the others since it doesn't have
+      // a parent field, so easiest to split it out into its own test
+      const tabValues = [
+        { tab: "Data Categories", request: "@deleteDataCategory" },
+        { tab: "Data Uses", request: "@deleteDataUse" },
+        { tab: "Identifiability", request: "@deleteDataQualifier" },
+      ];
+      tabValues.forEach((tabValue) => {
+        cy.getByTestId(`tab-${tabValue.tab}`).click();
+        cy.getByTestId("accordion-item-Custom field").click();
+        cy.getByTestId("item-Custom foo").trigger("mouseover");
+        cy.getByTestId("delete-btn").click();
+        cy.getByTestId("continue-btn").click();
+        cy.wait(tabValue.request).then((interception) => {
+          const { url } = interception.request;
+          expect(url).to.contain("custom.foo");
+        });
+        cy.getByTestId("toast-success-msg");
       });
-      cy.getByTestId("toast-success-msg");
     });
 
-    it("Can delete a data use", () => {
-      cy.getByTestId(`tab-Data Uses`).click();
-      cy.getByTestId("item-Collect").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteDataUse").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain("collect");
-      });
-      cy.getByTestId("toast-success-msg");
-    });
-
-    it("Can delete a data subject", () => {
+    it("Can delete taxonomy field from Data Subject", () => {
       cy.getByTestId(`tab-Data Subjects`).click();
-      cy.getByTestId("item-Commuter").trigger("mouseover");
+      cy.getByTestId("item-Custom field").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataSubject").then((interception) => {
         const { url } = interception.request;
-        expect(url).to.contain("commuter");
-      });
-      cy.getByTestId("toast-success-msg");
-    });
-
-    it("Can delete a data qualifier", () => {
-      cy.getByTestId(`tab-Identifiability`).click();
-      cy.getByTestId("accordion-item-Aggregated Data").click();
-      cy.getByTestId("accordion-item-Anonymized Data").click();
-      cy.getByTestId("accordion-item-Unlinked Pseudonymized Data").click();
-      cy.getByTestId("accordion-item-Pseudonymized Data").click();
-      cy.getByTestId("item-Identified Data").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteDataQualifier").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain(
-          "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified"
-        );
+        expect(url).to.contain("custom");
       });
       cy.getByTestId("toast-success-msg");
     });
@@ -536,8 +543,8 @@ describe("Taxonomy management page", () => {
         body: "Internal Server Error",
       }).as("deleteDataCategoryError");
       cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("item-Biometric Data").trigger("mouseover");
+      cy.getByTestId("accordion-item-Custom field").click();
+      cy.getByTestId("item-Custom foo").trigger("mouseover");
       cy.getByTestId("delete-btn").click();
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataCategoryError");
