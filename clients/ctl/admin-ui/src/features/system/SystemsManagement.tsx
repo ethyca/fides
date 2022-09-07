@@ -8,10 +8,13 @@ import {
   MenuList,
   Text,
 } from "@fidesui/react";
+import { useMemo, useState } from "react";
 
 import BorderGrid from "~/features/common/BorderGrid";
 import { MoreIcon } from "~/features/common/Icon";
 import { System } from "~/types/api";
+
+import SearchBar from "../common/SearchBar";
 
 interface SystemCardProps {
   system: System;
@@ -48,21 +51,44 @@ const SystemCard = ({ system }: SystemCardProps) => {
   );
 };
 
+const SEARCH_FILTER = (system: System, search: string) =>
+  system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+  system.description?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+
 interface Props {
   systems: System[] | undefined;
 }
-const SystemsGrid = ({ systems }: Props) => {
+const SystemsManagement = ({ systems }: Props) => {
+  const [searchFilter, setSearchFilter] = useState("");
+
+  const filteredSystems = useMemo(() => {
+    if (!systems) {
+      return [];
+    }
+
+    return systems.filter((s) => SEARCH_FILTER(s, searchFilter));
+  }, [systems, searchFilter]);
+
   if (!systems || !systems.length) {
     return <div data-testid="empty-state">Empty state</div>;
   }
 
   return (
-    <BorderGrid<System>
-      columns={3}
-      items={systems}
-      renderItem={(system) => <SystemCard system={system} />}
-    />
+    <Box>
+      <Box mb={4} data-testid="system-filters">
+        <SearchBar
+          search={searchFilter}
+          onChange={setSearchFilter}
+          maxWidth="30vw"
+        />
+      </Box>
+      <BorderGrid<System>
+        columns={3}
+        items={filteredSystems}
+        renderItem={(system) => <SystemCard system={system} />}
+      />
+    </Box>
   );
 };
 
-export default SystemsGrid;
+export default SystemsManagement;

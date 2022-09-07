@@ -4,9 +4,9 @@ import React from "react";
 
 import Layout from "~/features/common/Layout";
 import { useGetAllSystemsQuery } from "~/features/system";
-import SystemsGrid from "~/features/system/SystemsGrid";
+import SystemsManagement from "~/features/system/SystemsManagement";
 
-const useSystemsGrid = () => {
+const useSystemsData = () => {
   const { data, isLoading } = useGetAllSystemsQuery();
 
   return {
@@ -16,14 +16,14 @@ const useSystemsGrid = () => {
 };
 
 const Systems: NextPage = () => {
-  const { isLoading, systems } = useSystemsGrid();
+  const { isLoading, systems } = useSystemsData();
 
   return (
     <Layout title="Systems">
       <Heading mb={8} fontSize="2xl" fontWeight="semibold">
         System Management
       </Heading>
-      {isLoading ? <Spinner /> : <SystemsGrid systems={systems} />}
+      {isLoading ? <Spinner /> : <SystemsManagement systems={systems} />}
     </Layout>
   );
 };
