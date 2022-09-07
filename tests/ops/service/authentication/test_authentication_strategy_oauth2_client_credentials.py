@@ -13,8 +13,8 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fidesops.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
     OAuth2ClientCredentialsAuthenticationStrategy,
@@ -118,7 +118,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -146,8 +146,10 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         authenticated_request = auth_strategy.add_authentication(
             req, oauth2_client_credentials_connection_config
@@ -173,7 +175,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -195,8 +197,10 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             auth_strategy.add_authentication(
@@ -228,7 +232,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -262,7 +266,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -292,7 +296,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         with pytest.raises(OAuth2TokenException) as exc:
@@ -331,8 +335,10 @@ class TestAccessTokenRequest:
             "expires_in": expires_in,
         }
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
@@ -380,8 +386,10 @@ class TestAccessTokenRequest:
         }
 
         oauth2_client_credentials_configuration["expires_in"] = 3600
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
@@ -411,8 +419,10 @@ class TestAccessTokenRequest:
         oauth2_client_credentials_connection_config.secrets["client_id"] = None
         oauth2_client_credentials_connection_config.secrets["client_secret"] = ""
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             auth_strategy.get_access_token(

@@ -7,8 +7,8 @@ from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fidesops.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
@@ -29,8 +29,10 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         authenticated_request = auth_strategy.add_authentication(
             req, oauth2_authorization_code_connection_config
@@ -50,7 +52,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         with pytest.raises(FidesopsException) as exc:
@@ -72,7 +74,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         with pytest.raises(FidesopsException) as exc:
@@ -95,7 +97,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         with pytest.raises(FidesopsException) as exc:
@@ -128,7 +130,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -163,7 +165,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -193,7 +195,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_authorization_code", oauth2_authorization_code_configuration
         )
         with pytest.raises(OAuth2TokenException) as exc:
@@ -223,8 +225,10 @@ class TestAuthorizationUrl:
     ):
         state = "unique_value"
         mock_state.return_value = state
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         assert (
             auth_strategy.get_authorization_url(
@@ -251,8 +255,10 @@ class TestAuthorizationUrl:
         oauth2_authorization_code_connection_config.secrets["client_id"] = None
         oauth2_authorization_code_connection_config.secrets["client_secret"] = ""
 
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             auth_strategy.get_authorization_url(
@@ -290,8 +296,10 @@ class TestAccessTokenRequest:
             "expires_in": expires_in,
         }
 
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         oauth2_authorization_code_connection_config.secrets = {
             **oauth2_authorization_code_connection_config.secrets,
@@ -345,8 +353,10 @@ class TestAccessTokenRequest:
         }
 
         oauth2_authorization_code_configuration["expires_in"] = 3600
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         oauth2_authorization_code_connection_config.secrets = {
             **oauth2_authorization_code_connection_config.secrets,
@@ -382,8 +392,10 @@ class TestAccessTokenRequest:
         oauth2_authorization_code_connection_config.secrets["client_id"] = None
         oauth2_authorization_code_connection_config.secrets["client_secret"] = ""
 
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
-            "oauth2_authorization_code", oauth2_authorization_code_configuration
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_authorization_code", oauth2_authorization_code_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             oauth2_authorization_code_connection_config.secrets = {

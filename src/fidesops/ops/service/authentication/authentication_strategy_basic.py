@@ -3,7 +3,6 @@ from requests import PreparedRequest
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.schemas.saas.strategy_configuration import (
     BasicAuthenticationConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -17,7 +16,8 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
     and uses them to add a basic authentication header to the incoming request.
     """
 
-    strategy_name = "basic"
+    name = "basic"
+    configuration_model = BasicAuthenticationConfiguration
 
     def __init__(self, configuration: BasicAuthenticationConfiguration):
         self.username = configuration.username
@@ -36,7 +36,3 @@ class BasicAuthenticationStrategy(AuthenticationStrategy):
             )
         )
         return request
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return BasicAuthenticationConfiguration  # type: ignore

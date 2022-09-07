@@ -169,28 +169,31 @@ strategies available, along with their configuration options.
 ## Extensibility
 
 In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`.
-`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these
+`MaskingStrategy` has four methods - `mask`, `secrets_required`, `get_description`, and `data_type_supported`. For more detail on these
 methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
 `RandomStringRewriteMaskingStrategy` below:
 
 ```python
 import string
-from typing import Optional
 from secrets import choice
+from typing import List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import RandomStringMaskingConfiguration, MaskingConfiguration
-from fidesops.ops.schemas.masking.masking_strategy_description import MaskingStrategyDescription
+from fidesops.ops.schemas.masking.masking_configuration import (
+    RandomStringMaskingConfiguration,
+)
+from fidesops.ops.schemas.masking.masking_strategy_description import (
+    MaskingStrategyConfigurationDescription,
+    MaskingStrategyDescription,
+)
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 
-RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
-@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
-    """Masks a value with a random string of the length specified in the configuration."""
+    """Masks each provied value with a random string of the length specified in the configuration."""
+
+    name = "random_string_rewrite"
+    configuration_model = RandomStringMaskingConfiguration
 
     def __init__(
         self,
@@ -199,7 +202,9 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
         self.length = configuration.length
         self.format_preservation = configuration.format_preservation
 
-    def mask(self, values: Optional[List[str]], privacy_request_id: Optional[str]) -> Optional[List[str]]:
+    def mask(
+        self, values: Optional[List[str]], request_id: Optional[str]
+    ) -> Optional[List[str]]:
         """Replaces the value with a random lowercase string of the configured length"""
         if values is None:
             return None
@@ -217,12 +222,11 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
             masked_values.append(masked)
         return masked_values
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
+    def secrets_required(self) -> bool:
         """Not covered in this example"""
 
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         """Not covered in this example"""
 
     @staticmethod
@@ -241,6 +245,4 @@ any defaults that should be applied in their absence. All configuration classes 
 
 ### Integrate the masking strategy factory
 
-In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
-
-The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the same value defined by [callers](#using-fidesops-as-a-masking-service) in the `"masking_strategy"."strategy"` field.
+In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be imported into the application runtime. Also, the `MaskingStrategy` class must define two class variables: `name`, which is the unique, registered name that [callers](#using-fidesops-as-a-masking-service) will use in their `"masking_strategy"."strategy"` field to invoke the strategy; and `configuration_model`, which references the configuration class used to parameterize the strategy.

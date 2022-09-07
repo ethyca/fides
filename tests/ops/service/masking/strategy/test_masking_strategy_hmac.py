@@ -1,7 +1,6 @@
 from fidesops.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
 )
 
@@ -17,13 +16,13 @@ def test_hmac_sha_256():
 
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
         secret="test_salt",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
@@ -40,13 +39,13 @@ def test_mask_sha512():
 
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
         secret="test_salt",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
@@ -63,13 +62,13 @@ def test_mask_sha256_default():
 
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
         secret="test_salt",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
@@ -87,13 +86,13 @@ def test_mask_sha256_default_multi_value():
 
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
         secret="test_salt",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)
@@ -111,13 +110,13 @@ def test_mask_arguments_null():
 
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_salt = MaskingSecretCache[str](
         secret="test_salt",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.salt,
     )
     cache_secret(secret_salt, request_id)

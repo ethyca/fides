@@ -52,8 +52,8 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.ops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
-            get_strategy,
+        from fidesops.ops.service.authentication.authentication_strategy import (  # pylint: disable=R0401
+            AuthenticationStrategy,
         )
 
         req: PreparedRequest = Request(
@@ -66,7 +66,7 @@ class AuthenticatedClient:
 
         # add authentication if provided
         if self.client_config.authentication:
-            auth_strategy = get_strategy(
+            auth_strategy = AuthenticationStrategy.get_strategy(
                 self.client_config.authentication.strategy,
                 self.client_config.authentication.configuration,
             )

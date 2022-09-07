@@ -15,10 +15,10 @@ from fidesops.ops.models.policy import (
     _is_ancestor_of_contained_categories,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
-    HASH_STRATEGY_NAME,
+    HashMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fidesops.ops.util.data_category import DataCategory
 from fidesops.ops.util.text import to_snake_case
@@ -88,7 +88,7 @@ def test_create_erasure_rule_with_destination_is_invalid(
                 "policy_id": policy.id,
                 "storage_destination_id": policy.rules[0].storage_destination.id,
                 "masking_strategy": {
-                    "strategy": HASH_STRATEGY_NAME,
+                    "strategy": HashMaskingStrategy.name,
                     "configuration": {
                         "algorithm": "SHA-512",
                         "format_preservation": {"suffix": "@masked.com"},
@@ -216,7 +216,7 @@ def test_create_erasure_rule(
             "name": "Valid Erasure Rule",
             "policy_id": policy.id,
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         },
@@ -313,7 +313,7 @@ def test_validate_policy(
             "name": "Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         },
@@ -336,7 +336,7 @@ def test_validate_policy(
             "name": "Another Erasure Rule",
             "policy_id": erasure_policy.id,
             "masking_strategy": {
-                "strategy": NULL_REWRITE_STRATEGY_NAME,
+                "strategy": NullMaskingStrategy.name,
                 "configuration": {},
             },
         },

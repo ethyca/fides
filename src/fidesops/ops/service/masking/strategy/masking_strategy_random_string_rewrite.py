@@ -1,9 +1,8 @@
 import string
 from secrets import choice
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fidesops.ops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     RandomStringMaskingConfiguration,
 )
 from fidesops.ops.schemas.masking.masking_strategy_description import (
@@ -12,16 +11,13 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
-
-RANDOM_STRING_REWRITE_STRATEGY_NAME = "random_string_rewrite"
 
 
-@MaskingStrategyFactory.register(RANDOM_STRING_REWRITE_STRATEGY_NAME)
 class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     """Masks each provied value with a random string of the length specified in the configuration."""
+
+    name = "random_string_rewrite"
+    configuration_model = RandomStringMaskingConfiguration
 
     def __init__(
         self,
@@ -53,14 +49,10 @@ class RandomStringRewriteMaskingStrategy(MaskingStrategy):
     def secrets_required(self) -> bool:
         return False
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return RandomStringMaskingConfiguration  # type: ignore
-
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=RANDOM_STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a random string of a specified length",
             configurations=[
                 MaskingStrategyConfigurationDescription(

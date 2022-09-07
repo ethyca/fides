@@ -1,10 +1,10 @@
 import pytest
 
 from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationError
+from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
 from fidesops.ops.service.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
-from fidesops.ops.service.pagination.pagination_strategy_factory import get_strategy
 from fidesops.ops.service.pagination.pagination_strategy_link import (
     LinkPaginationStrategy,
 )
@@ -19,27 +19,35 @@ def test_get_strategy_offset():
         "increment_by": 1,
         "limit": 100,
     }
-    strategy = get_strategy(strategy_name="offset", configuration=config)
+    strategy = PaginationStrategy.get_strategy(
+        strategy_name="offset", configuration=config
+    )
     assert isinstance(strategy, OffsetPaginationStrategy)
 
 
 def test_get_strategy_link():
     config = {"source": "body", "path": "body.next_link"}
-    strategy = get_strategy(strategy_name="link", configuration=config)
+    strategy = PaginationStrategy.get_strategy(
+        strategy_name="link", configuration=config
+    )
     assert isinstance(strategy, LinkPaginationStrategy)
 
 
 def test_get_strategy_cursor():
     config = {"cursor_param": "after", "field": "id"}
-    strategy = get_strategy(strategy_name="cursor", configuration=config)
+    strategy = PaginationStrategy.get_strategy(
+        strategy_name="cursor", configuration=config
+    )
     assert isinstance(strategy, CursorPaginationStrategy)
 
 
 def test_get_strategy_invalid_config():
     with pytest.raises(ValidationError):
-        get_strategy(strategy_name="offset", configuration={"invalid": "thing"})
+        PaginationStrategy.get_strategy(
+            strategy_name="offset", configuration={"invalid": "thing"}
+        )
 
 
 def test_get_strategy_invalid_strategy():
     with pytest.raises(NoSuchStrategyException):
-        get_strategy("invalid", {})
+        PaginationStrategy.get_strategy("invalid", {})

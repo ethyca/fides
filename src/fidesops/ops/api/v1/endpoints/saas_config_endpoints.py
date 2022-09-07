@@ -44,8 +44,8 @@ from fidesops.ops.schemas.saas.saas_config import (
     ValidateSaaSConfigResponse,
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fidesops.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
@@ -113,10 +113,7 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if (
-        authentication.strategy
-        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
-    ):
+    if authentication.strategy != OAuth2AuthorizationCodeAuthenticationStrategy.name:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="The connection config does not use OAuth2 Authorization Code authentication.",
@@ -262,7 +259,7 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)

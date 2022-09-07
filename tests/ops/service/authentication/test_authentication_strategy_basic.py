@@ -4,8 +4,8 @@ from requests import PreparedRequest, Request
 
 from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fidesops.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 
 
@@ -16,7 +16,7 @@ def test_basic_auth_with_username_and_password():
     password = "sufficientlylongpassword"
     secrets = {"username": username, "password": password}
 
-    authenticated_request = get_strategy(
+    authenticated_request = AuthenticationStrategy.get_strategy(
         "basic", {"username": "<username>", "password": "<password>"}
     ).add_authentication(req, ConnectionConfig(secrets=secrets))
     assert (
@@ -31,7 +31,7 @@ def test_basic_auth_with_username_only():
     username = "admin"
     secrets = {"username": username}
 
-    authenticated_request = get_strategy(
+    authenticated_request = AuthenticationStrategy.get_strategy(
         "basic", {"username": "<username>"}
     ).add_authentication(req, ConnectionConfig(secrets=secrets))
     # The requests library still calls str(password) even if the password is None
@@ -45,4 +45,6 @@ def test_basic_auth_with_no_credentials():
     req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
     with pytest.raises(FidesopsValidationError):
-        get_strategy("basic", {}).add_authentication(req, ConnectionConfig(secrets={}))
+        AuthenticationStrategy.get_strategy("basic", {}).add_authentication(
+            req, ConnectionConfig(secrets={})
+        )

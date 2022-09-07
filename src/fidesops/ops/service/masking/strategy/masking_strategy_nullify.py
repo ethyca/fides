@@ -1,23 +1,17 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
-    NullMaskingConfiguration,
-)
+from fidesops.ops.schemas.masking.masking_configuration import NullMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
-
-NULL_REWRITE_STRATEGY_NAME = "null_rewrite"
 
 
-@MaskingStrategyFactory.register(NULL_REWRITE_STRATEGY_NAME)
 class NullMaskingStrategy(MaskingStrategy):
     """Masks provided values each with a null value."""
+
+    name = "null_rewrite"
+    configuration_model = NullMaskingConfiguration
 
     def __init__(
         self,
@@ -39,14 +33,10 @@ class NullMaskingStrategy(MaskingStrategy):
     def secrets_required(self) -> bool:
         return False
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return NullMaskingConfiguration  # type: ignore
-
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=NULL_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a null value",
             configurations=[],
         )

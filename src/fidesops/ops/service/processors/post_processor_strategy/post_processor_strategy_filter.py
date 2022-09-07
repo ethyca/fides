@@ -7,13 +7,10 @@ from fidesops.ops.common_exceptions import FidesopsException
 from fidesops.ops.schemas.saas.shared_schemas import IdentityParamRef
 from fidesops.ops.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
-    StrategyConfiguration,
 )
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-
-STRATEGY_NAME = "filter"
 
 logger = logging.getLogger(__name__)
 
@@ -44,14 +41,14 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     }
     """
 
+    name = "filter"
+    configuration_model = FilterPostProcessorConfiguration
+
     def __init__(self, configuration: FilterPostProcessorConfiguration):
         self.field = configuration.field
         self.value = configuration.value
         self.exact = configuration.exact
         self.case_sensitive = configuration.case_sensitive
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def process(
         self,
@@ -75,7 +72,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 logger.warning(
                     "Could not retrieve identity reference '%s' due to missing identity data for the following post processing strategy: %s",
                     self.value.identity,
-                    self.get_strategy_name(),
+                    self.name,
                 )
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
@@ -106,7 +103,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             logger.warning(
                 "%s could not be found on data for the following post processing strategy: %s",
                 self.field,
-                self.get_strategy_name(),
+                self.name,
             )
             return []
 
@@ -159,7 +156,3 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
 
         # base case, compare filter_value to a single string
         return filter_value == target if exact else filter_value in target
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return FilterPostProcessorConfiguration  # type: ignore

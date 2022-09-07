@@ -6,10 +6,9 @@ from fidesops.ops.schemas.masking.masking_secrets import (
     SecretType,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AES_ENCRYPT_STRATEGY_NAME,
+    AesEncryptionMaskingStrategy,
 )
 from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
-    HMAC_STRATEGY_NAME,
     HmacMaskingStrategy,
 )
 from fidesops.ops.util.encryption.secrets_util import SecretsUtil
@@ -23,7 +22,7 @@ def test_get_secret_from_cache_str() -> None:
     # build masking secret meta for HMAC key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[str](
-            masking_strategy=HMAC_STRATEGY_NAME,
+            masking_strategy=HmacMaskingStrategy.name,
             generate_secret_func=SecretsUtil.generate_secret_string,
         )
     }
@@ -31,7 +30,7 @@ def test_get_secret_from_cache_str() -> None:
     # cache secrets for HMAC
     secret_key = MaskingSecretCache[str](
         secret="test_key",
-        masking_strategy=HMAC_STRATEGY_NAME,
+        masking_strategy=HmacMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
@@ -47,7 +46,7 @@ def test_get_secret_from_cache_bytes() -> None:
     # build masking secret meta for AES key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[bytes](
-            masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+            masking_strategy=AesEncryptionMaskingStrategy.name,
             generate_secret_func=SecretsUtil.generate_secret_bytes,
         )
     }
@@ -55,7 +54,7 @@ def test_get_secret_from_cache_bytes() -> None:
     # cache secret AES key
     secret_key = MaskingSecretCache[str](
         secret=b"\x94Y\xa8Z",
-        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        masking_strategy=AesEncryptionMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
@@ -71,7 +70,7 @@ def test_generate_secret() -> None:
     # build masking secret meta for HMAC key
     masking_meta_key: Dict[SecretType, MaskingSecretMeta] = {
         SecretType.key: MaskingSecretMeta[str](
-            masking_strategy=HMAC_STRATEGY_NAME,
+            masking_strategy=HmacMaskingStrategy.name,
             generate_secret_func=SecretsUtil.generate_secret_string,
         )
     }

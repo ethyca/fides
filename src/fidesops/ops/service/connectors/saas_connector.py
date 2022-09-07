@@ -18,14 +18,8 @@ from fidesops.ops.service.connectors.saas.authenticated_client import (
 )
 from fidesops.ops.service.connectors.saas_query_config import SaaSQueryConfig
 from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.ops.service.pagination.pagination_strategy_factory import (
-    get_strategy as get_pagination_strategy,
-)
 from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
-)
-from fidesops.ops.service.processors.post_processor_strategy.post_processor_strategy_factory import (
-    get_strategy as get_postprocessor_strategy,
 )
 from fidesops.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
@@ -189,7 +183,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         # use the pagination strategy (if available) to get the next request
         next_request = None
         if saas_request.pagination:
-            strategy: PaginationStrategy = get_pagination_strategy(
+            strategy: PaginationStrategy = PaginationStrategy.get_strategy(
                 saas_request.pagination.strategy,
                 saas_request.pagination.configuration,
             )
@@ -222,7 +216,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows: List[Row] = []
         processed_data = response_data
         for postprocessor in postprocessors or []:
-            strategy: PostProcessorStrategy = get_postprocessor_strategy(
+            strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(

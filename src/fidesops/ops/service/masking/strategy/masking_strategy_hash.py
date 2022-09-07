@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
 from fidesops.ops.core.config import config
-from fidesops.ops.schemas.masking.masking_configuration import (
-    HashMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fidesops.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fidesops.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
@@ -19,17 +16,14 @@ from fidesops.ops.schemas.masking.masking_strategy_description import (
 )
 from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fidesops.ops.util.encryption.secrets_util import SecretsUtil
 
-HASH_STRATEGY_NAME = "hash"
 
-
-@MaskingStrategyFactory.register(HASH_STRATEGY_NAME)
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
+
+    name = "hash"
+    configuration_model = HashMaskingConfiguration
 
     def __init__(
         self,
@@ -76,16 +70,12 @@ class HashMaskingStrategy(MaskingStrategy):
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HashMaskingConfiguration  # type: ignore
-
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HASH_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value by returning a hashed version of the input value",
             configurations=[
                 MaskingStrategyConfigurationDescription(
@@ -120,11 +110,13 @@ class HashMaskingStrategy(MaskingStrategy):
             (value + salt).encode(config.security.encoding)
         ).hexdigest()
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HASH_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             )
         }
