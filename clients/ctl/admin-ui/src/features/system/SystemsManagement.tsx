@@ -1,55 +1,10 @@
-import {
-  Box,
-  Heading,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-} from "@fidesui/react";
+import { Box } from "@fidesui/react";
 import { useMemo, useState } from "react";
 
 import BorderGrid from "~/features/common/BorderGrid";
-import { MoreIcon } from "~/features/common/Icon";
+import SearchBar from "~/features/common/SearchBar";
+import SystemCard from "~/features/system/SystemCard";
 import { System } from "~/types/api";
-
-import SearchBar from "../common/SearchBar";
-
-interface SystemCardProps {
-  system: System;
-}
-const SystemCard = ({ system }: SystemCardProps) => {
-  // TODO fides#1035, fides#1036
-  const handleEdit = () => {};
-  const handleDelete = () => {};
-
-  return (
-    <Box display="flex" p={4} data-testid={`system-${system.fides_key}`}>
-      <Box flexGrow={1}>
-        <Heading as="h2" fontSize="16px" mb={2}>
-          {system.name}
-        </Heading>
-        <Box color="gray.600" fontSize="14px">
-          <Text>{system.description}</Text>
-        </Box>
-      </Box>
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          icon={<MoreIcon />}
-          aria-label="more actions"
-          variant="unstyled"
-          size="sm"
-        />
-        <MenuList>
-          <MenuItem onClick={handleEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleDelete}>Delete</MenuItem>
-        </MenuList>
-      </Menu>
-    </Box>
-  );
-};
 
 const SEARCH_FILTER = (system: System, search: string) =>
   system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
