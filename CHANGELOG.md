@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.8.3...main)
 
+### Added
+
+* Initial system management page [#1054](https://github.com/ethyca/fides/pull/1054)
+
 ### Fixed
 
 * Fixed navigating directly to frontend routes loading index page instead of the correct static page for the route.
