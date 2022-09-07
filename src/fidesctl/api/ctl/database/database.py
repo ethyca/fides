@@ -91,14 +91,12 @@ async def load_default_taxonomy() -> None:
     for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
         default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
-        default_keys = {item["fides_key"] for item in default_resources}
         existing_resources = await list_resource(sql_model_map[resource_type])
-        existing_keys = {item.fides_key for item in existing_resources}
-        new_default_keys = default_keys.difference(existing_keys)
+        existing_keys = [item.fides_key for item in existing_resources]
         resources = [
             resource
             for resource in default_resources
-            if resource["fides_key"] in new_default_keys
+            if resource["fides_key"] not in existing_keys
         ]
 
         if len(resources) == 0:

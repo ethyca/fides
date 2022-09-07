@@ -55,7 +55,7 @@ class TestLoadDefaultTaxonomy:
             data_category.fides_key,
             headers=test_config.user.request_headers,
         )
-        assert result.status_code != 404
+        assert result.status_code == 200
 
     async def test_does_not_override_user_changes(
         self, test_config: FidesctlConfig
@@ -106,4 +106,4 @@ class TestLoadDefaultTaxonomy:
             data_category.fides_key,
             headers=test_config.user.request_headers,
         )
-        assert result.status_code != 404
+        assert result.status_code == 200
