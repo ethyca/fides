@@ -139,7 +139,7 @@ app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
 
-WEBAPP_DIRECTORY = Path("src/fidesops/ops/build/static")
+WEBAPP_DIRECTORY = Path("/admin_ui")
 WEBAPP_INDEX = WEBAPP_DIRECTORY / "index.html"
 
 if config.admin_ui.enabled:
@@ -155,7 +155,10 @@ if config.admin_ui.enabled:
         nested_pattern_replacement = "[a-zA-Z10-9-_/]+"
 
         for filepath in WEBAPP_DIRECTORY.glob("**/*.html"):
-            relative_web_dir_path = str(filepath.relative_to(WEBAPP_DIRECTORY))[:-5]
+            # Strip off the file extenstion and convert to a string
+            relative_web_dir_path = str(
+                filepath.relative_to(WEBAPP_DIRECTORY).with_suffix("")
+            )
             if filepath != WEBAPP_INDEX:
                 path = None
                 if re.search(exact_pattern, str(filepath)):
@@ -173,7 +176,9 @@ if config.admin_ui.enabled:
 
                 rule = re.compile(r"^" + path)
 
-                route_file_map[rule] = FileResponse(str(filepath.relative_to(".")))
+                route_file_map[rule] = FileResponse(
+                    f"{WEBAPP_DIRECTORY}/{str(filepath.relative_to(WEBAPP_DIRECTORY))}"
+                )
 
     @app.on_event("startup")
     def check_if_admin_ui_index_exists() -> None:

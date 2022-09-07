@@ -70,8 +70,7 @@ ENV PYTHONUNBUFFERED=TRUE
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
-# Make a static files directory
-RUN mkdir -p /fidesops/src/fidesops/ops/build/static/
+COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /admin_ui
 
 EXPOSE 8080
 CMD [ "fidesops", "webserver" ]
@@ -93,4 +92,4 @@ RUN python setup.py sdist
 RUN pip install dist/fidesops-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/ops/build/static/
+COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /admin_ui
