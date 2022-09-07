@@ -1,6 +1,22 @@
-import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import { Box, Heading, Text } from "@fidesui/react";
 
+import BorderGrid from "~/features/common/BorderGrid";
 import { System } from "~/types/api";
+
+interface SystemBoxProps {
+  system: System;
+}
+const SystemBox = ({ system }: SystemBoxProps) => (
+  <Box p={4} data-testid={`system-${system.fides_key}`}>
+    <Heading as="h2" fontSize="16px" mb={2}>
+      {system.name}
+    </Heading>
+    <Box color="gray.600" fontSize="14px">
+      <Text>{system.description}</Text>
+      <Text>{system.fides_key}</Text>
+    </Box>
+  </Box>
+);
 
 interface Props {
   systems: System[] | undefined;
@@ -9,23 +25,13 @@ const SystemsGrid = ({ systems }: Props) => {
   if (!systems || !systems.length) {
     return <div data-testid="empty-state">Empty state</div>;
   }
+
   return (
-    <Table size="sm" data-testid="systems-table">
-      <Thead>
-        <Tr>
-          <Th>Name</Th>
-          <Th>Description</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {systems.map((system) => (
-          <Tr key={system.fides_key} data-testid="systems-row">
-            <Td>{system.name}</Td>
-            <Td>{system.description}</Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
+    <BorderGrid<System>
+      columns={3}
+      items={systems}
+      renderItem={(system) => <SystemBox system={system} />}
+    />
   );
 };
 
