@@ -97,6 +97,7 @@ theme:
   features:
     - navigation.top
     - navigation.instant
+    - navigation.tabs
   custom_dir: overrides
 
 markdown_extensions:
