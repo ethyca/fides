@@ -37,10 +37,15 @@ const SystemCard = ({ system }: SystemCardProps) => {
           aria-label="more actions"
           variant="unstyled"
           size="sm"
+          data-testid="more-btn"
         />
         <MenuList>
-          <MenuItem onClick={handleEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleDelete}>Delete</MenuItem>
+          <MenuItem onClick={handleEdit} data-testid="edit-btn">
+            Edit
+          </MenuItem>
+          <MenuItem onClick={handleDelete} data-testid="delete-btn">
+            Delete
+          </MenuItem>
         </MenuList>
       </Menu>
     </Box>

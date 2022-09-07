@@ -29,12 +29,14 @@ const SystemsManagement = ({ systems }: Props) => {
   }
 
   return (
-    <Box>
+    <Box data-testid="system-management">
       <Box mb={4} data-testid="system-filters">
         <SearchBar
           search={searchFilter}
           onChange={setSearchFilter}
           maxWidth="30vw"
+          placeholder="Search system name or description"
+          data-testid="system-search"
         />
       </Box>
       <BorderGrid<System>
