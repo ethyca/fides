@@ -1,4 +1,4 @@
-import { Box, Button, Spinner, Text, useToast } from "@fidesui/react";
+import { Box, Button, Text, useToast, VStack } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Form, Formik, FormikHelpers } from "formik";
@@ -34,6 +34,8 @@ const DatabaseConnectForm = () => {
   const organizationKey = "default_organization";
   const [generate, { isLoading: isGenerating }] = useGenerateDatasetMutation();
   const [createDataset, { isLoading: isCreating }] = useCreateDatasetMutation();
+  const isLoading = isGenerating || isCreating;
+
   const toast = useToast();
   const router = useRouter();
 
@@ -91,27 +93,28 @@ const DatabaseConnectForm = () => {
     >
       {({ isSubmitting }) => (
         <Form>
-          <Text size="sm" color="gray.700" mb={8}>
-            Connect to one of your databases using a connection URL. You may
-            have received this URL from a colleague or your Ethyca developer
-            support engineer.
-          </Text>
-          <Box mb={8}>
-            <CustomTextInput name="url" label="Database URL" />
-          </Box>
-          <Box display="flex" alignItems="center">
-            <Button
-              size="sm"
-              colorScheme="primary"
-              type="submit"
-              disabled={isSubmitting}
-              mr="2"
-              data-testid="create-dataset-btn"
-            >
-              Create dataset
-            </Button>
-            {isGenerating || isCreating ? <Spinner /> : null}
-          </Box>
+          <VStack spacing={8} align="left">
+            <Text size="sm" color="gray.700">
+              Connect to one of your databases using a connection URL. You may
+              have received this URL from a colleague or your Ethyca developer
+              support engineer.
+            </Text>
+            <Box>
+              <CustomTextInput name="url" label="Database URL" />
+            </Box>
+            <Box>
+              <Button
+                size="sm"
+                colorScheme="primary"
+                type="submit"
+                isLoading={isSubmitting || isLoading}
+                isDisabled={isSubmitting || isLoading}
+                data-testid="create-dataset-btn"
+              >
+                Generate dataset
+              </Button>
+            </Box>
+          </VStack>
         </Form>
       )}
     </Formik>
