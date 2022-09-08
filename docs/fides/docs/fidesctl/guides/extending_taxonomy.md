@@ -8,7 +8,7 @@ If you have suggestions for core categories that should ship with the taxonomy, 
 
 ## Implementing a custom Data Use
 
- A Data Use is a label that denotes the way data is used in your system. The following is an example of extending the default [Data Use taxonomy](../language/taxonomy/data_uses.md):
+ A Data Use is a label that denotes the way data is used in your system. The following is an example of extending the default [Data Use taxonomy](https://ethyca.github.io/fideslang/taxonomy/data_uses/):
 
 ```yaml title="data_use.yml"
 data_use:
@@ -48,7 +48,7 @@ The above example uses the existing `demo_data_uses.yml` from the [Fides project
 
 ## Implementing a custom Data Subject
 
-A Data Subject is a label that describes a segment of individuals whose data you store. The following is an example of extending the [Data Subject taxonomy](../language/taxonomy/data_subjects.md):
+A Data Subject is a label that describes a segment of individuals whose data you store. The following is an example of extending the [Data Subject taxonomy](https://ethyca.github.io/fideslang/taxonomy/data_subjects/):
 
 ```yaml title="data_subject.yml"
 data_subject:
@@ -77,4 +77,4 @@ The above example uses the existing `demo_data_subjects.yml` from the [Fides pro
 
 ## Next Steps
 
-Once created, your new Data Subject or Data Use can be referenced as part of a [privacy declaration in a system](../language/resources/system.md), throughout your [policies](../language/resources/policy.md), and in other Fides [resources](../language/resources/dataset.md).
+Once created, your new Data Subject or Data Use can be referenced as part of a [privacy declaration in a system](https://ethyca.github.io/fideslang/resources/system), throughout your [policies](https://ethyca.github.io/fideslang/resources/policy), and in other Fides [resources](https://ethyca.github.io/fideslang/resources/dataset).

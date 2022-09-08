@@ -1,6 +1,6 @@
 # Generating a Data Map
 
-Fides is capable of exporting a data map of your [resources](./../language/resources/system.md) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
+Fides is capable of exporting a data map of your [resources](https://ethyca.github.io/fideslang/resources/system) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
 To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
@@ -18,7 +18,7 @@ This will export a data map to the `demo_resources/` directory.
 
 ### Organization
 
-The header block at the top of a data map is composed of properties found in the [Organization resource](./../language/resources/organization.md). In a production deployment, this would be composed of publicly available information for your company/organization, but has been pre-populated here to allow exploration.
+The header block at the top of a data map is composed of properties found in the [Organization resource](https://ethyca.github.io/fideslang/resources/organization). In a production deployment, this would be composed of publicly available information for your company/organization, but has been pre-populated here to allow exploration.
 
 ![Organization Contact Info](../img/datamap_organization_contact.png)
 
@@ -117,7 +117,7 @@ Each populated property is referenced directly from an associated label in `fide
 
 ## Extend the Default Taxonomy
 
-In your initial export, several data map columns are populated with `N/A`. The default [Fides Taxonomy](./../language/taxonomy/overview.md) can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.
+In your initial export, several data map columns are populated with `N/A`. The default [Fides Taxonomy](https://ethyca.github.io/fideslang/taxonomy/overview) can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.
 
 Example manifest updates are included in `demo_resources/demo_extended_taxonomy.yml`.
 
@@ -157,7 +157,7 @@ customer missing automated_decisions_or_profiling in Demo Marketing System.
 10 issue(s) were detected in auditing system completeness.
 ```
 ### Data Use
-Below is an extended [Data Use](./../language/taxonomy/data_uses.md) example. Each of these properties is responsible for populating a field on your data map.
+Below is an extended [Data Use](https://ethyca.github.io/fideslang/taxonomy/data_uses) example. Each of these properties is responsible for populating a field on your data map.
 
 ```yaml title="Extended Data Use"
 data_use:
@@ -179,7 +179,7 @@ Replace the Demo Marketing System's Data Use of `advertising` with the above fid
 
 ### Data Subject
 
-A [Data Subject](./../language/taxonomy/data_subjects.md), shown below, can also be extended to populate your data map with additional information.
+A [Data Subject](https://ethyca.github.io/fideslang/taxonomy/data_subjects), shown below, can also be extended to populate your data map with additional information.
 
 ```yaml title="Extended Data Subject"
 data_subject:

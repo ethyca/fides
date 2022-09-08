@@ -6,9 +6,9 @@
 
 ### Postman API Collection
 
-Our [fidesops Postman Collection](../postman/Fidesops.postman_collection.json) can be used to test fidesops endpoints.
+Our [fidesops Postman Collection](../fidesops/postman/Fidesops.postman_collection.json) can be used to test fidesops endpoints.
 
-Follow our [Using Postman](../postman/using_postman.md) guide to learn more about the how to use the collection.
+Follow our [Using Postman](../fidesops/postman/using_postman.md) guide to learn more about the how to use the collection.
 
 ### API URLs
 

@@ -1,6 +1,6 @@
 # Managing Datasets 
 
-The Admin UI's Datasets panel allows you to easily view, add, edit, and configure your existing [datasets](../language/resources/dataset.md) and their connections.
+The Admin UI's Datasets panel allows you to easily view, add, edit, and configure your existing [datasets](https://ethyca.github.io/fideslang/resources/dataset/) and their connections.
 
 ## Adding a dataset 
 

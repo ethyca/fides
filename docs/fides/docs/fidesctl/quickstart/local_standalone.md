@@ -1,6 +1,8 @@
 # Running Fidesctl Locally (Standalone)
 
-This method of running fidesctl requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible quick start and is not designed for production-grade deployments.
+The fastest way to get fidesctl running with a local, standalone installation. For guides on setting up a complete installation, see the [Docker instructions](docker.md), or the [local full-installation instructions](local_full.md).
+
+This method requires zero dependencies outside of Python and a default pip installation of fidesctl. It is intended as the fastest possible way to get started, and is not designed for production-grade deployments.
 
 To run in standalone mode, use one of the following methods:
 
@@ -70,4 +72,4 @@ That's it! Your local standalone installation of fidesctl is up and running.
 
 ## Next Steps
 
-See the [Tutorial](../tutorial/index.md) page for a step-by-step guide on setting up a Fides data privacy workflow.
+See the [full installation](../installation/configuration.md) for a step-by-step guide to setting up a Fides data privacy workflow.

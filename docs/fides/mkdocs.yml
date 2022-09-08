@@ -8,10 +8,17 @@ edit_uri: blob/main/docs/fides/docs/
 
 # Navigation
 nav:
+  - Fides:
+      - What is Fides?: index.md
+      - Fides Control: fidesctl/index.md
+      - Fides Ops: fidesops/index.md
+      - Fides Lang: https://ethyca.github.io/fideslang/
+      - Development: development/overview.md
+      - Community: community/overview.md
+      - About Ethyca: ethyca.md
   - Fides Control: 
-      - What is Fides?: fidesctl/index.md
+      - What is Fidesctl?: fidesctl/index.md
       - Quick Start:
-          - Overview: fidesctl/quickstart/overview.md
           - Running Fidesctl Locally (Standalone): fidesctl/quickstart/local_standalone.md
           - Running Fidesctl Locally (Full Installation): fidesctl/quickstart/local_full.md
           - Running Fidesctl in Docker: fidesctl/quickstart/docker.md
@@ -101,10 +108,13 @@ nav:
           - Configure a Storage Destination: fidesops/tutorial/storage_config.md
           - Define a Policy: fidesops/tutorial/define_policy.md
           - Execute a Privacy Request: fidesops/tutorial/execute_privacy_request.md
+  - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
+      - Contributing Details: development/contributing_details.md
       - Code Style: development/code_style.md
+      - Fideslog Analytics: development/fideslog.md
       - Database Migration: development/database_migration.md
       - Documentation: development/documentation.md
       - Testing: development/testing.md
@@ -170,8 +180,6 @@ extra:
   version:
     provider: mike
     default: stable
-extra:
-  homepage: fidesctl
 
 plugins:
   # The "Last Update" footer only shows in production

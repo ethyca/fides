@@ -20,7 +20,7 @@ Go to: **Settings/Preferences** -> **Docker** -> **+**
 
 See the screenshot below:
 
-![Screenshot of IDE Docker setup](../img/ide/docker.png)
+![Screenshot of IDE Docker setup](../fidesops/img/ide/docker.png)
 
 ### Configure Python Remote Interpreter
 
@@ -36,9 +36,9 @@ After clicking **OK** the Remote Python Docker Compose should be listed as an SD
 
 See screenshots below:
 
-![Screenshot of Add Python Interpreter](../img/ide/add_python_interpreter.png)
+![Screenshot of Add Python Interpreter](../fidesops/img/ide/add_python_interpreter.png)
 
-![Screenshot of Project Structure SDKs](../img/ide/SDKs.png)
+![Screenshot of Project Structure SDKs](../fidesops/img/ide/SDKs.png)
 
 ### Run/Debug Configuration
 
@@ -52,7 +52,7 @@ Go to: **Run/Debug Configurations** -> **+** -> **Python**
 
 See screenshot below:
 
-![Screenshot of Run/Debug Configuration for main.py](../img/ide/debug_config.png)
+![Screenshot of Run/Debug Configuration for main.py](../fidesops/img/ide/debug_config.png)
 
 ## Hit a Breakpoint
 
@@ -64,7 +64,7 @@ There is a postman collection in this repo: `docs/fidesops/docs/postman/Fidesops
 
 Screenshot of hit breakpoint below:
 
-![Screenshot of Debugging from IntelliJ](../img/ide/debugging.png)
+![Screenshot of Debugging from IntelliJ](../fidesops/img/ide/debugging.png)
 
 ## Links
 

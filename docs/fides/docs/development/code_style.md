@@ -1,7 +1,4 @@
 # Code Style
-
----
-
 ## General
 
 ### Docstrings
@@ -76,7 +73,7 @@ foods_list: List[str] = ["apple", "banana"]
 
 ## Pre-Commit Hooks
 
-Fidesctl includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `dev-requirements.txt`. Once that is installed, follow these steps to get up and running:
+Fides includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `dev-requirements.txt`. Once that is installed, follow these steps to get up and running:
 
 1. `pre-commit install` - This is a one-time setup step to create the git pre-commit hooks.
 1. These pre-commit hooks will now run automatically. However you can also use `pre-commit run` to run them manually once all of your changes have been staged.
@@ -99,18 +96,18 @@ nox -s xenon
 
 ### Black formatting
 
-Fidesctl's code is formatted using the [black](https://github.com/ambv/black) style. This style is checked in a CI step, and merges to master are prevented if code does not conform.
+Fides' code is formatted using the [black](https://github.com/ambv/black) style. This style is checked in a CI step, and merges to master are prevented if code does not conform.
 
 A number of extensions are available for popular editors that will automatically apply black to your code.
 
 ### Pylint
 
-Fidesctl's code is linted using [pylint](https://pylint.org/). Linter checks run as part of a CI step and merges to master are prevented if code does not conform.
+Fides' code is linted using [pylint](https://pylint.org/). Linter checks run as part of a CI step and merges to master are prevented if code does not conform.
 
 ### Mypy
 
-Fidesctl's code is statically-typed using [mypy](http://mypy-lang.org/). Type checking is validated as a CI step, and merges to master are prevented if code does not pass type checks. As a general rule, mypy typing requires all function arguments and return values to be annotated.
+Fides' code is statically-typed using [mypy](http://mypy-lang.org/). Type checking is validated as a CI step, and merges to master are prevented if code does not pass type checks. As a general rule, mypy typing requires all function arguments and return values to be annotated.
 
 ### Xenon
 
-Fidesctl's code is checked for its cyclomatic-complexity by Xenon. If a single logical piece of code is deemed too complex, then a CI step will fail, at which point the focus should be on breaking up said complex function/method/class.
+Fides' code is checked for its cyclomatic-complexity by Xenon. If a single logical piece of code is deemed too complex, then a CI step will fail, at which point the focus should be on breaking up said complex function/method/class.
