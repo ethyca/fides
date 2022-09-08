@@ -1,25 +1,9 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { useGetHealthQuery } from "./plus.slice";
 
-interface HealthResponse {
-  core_fidesctl_version: string;
-  status: "healthy";
-}
-
-export const plusApi = createApi({
-  reducerPath: "plusApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
-  }),
-  tagTypes: ["Plus"],
-  endpoints: (build) => ({
-    getHealth: build.query<HealthResponse, void>({
-      query: () => "health",
-    }),
-  }),
-});
-
-const { useGetHealthQuery } = plusApi;
-
+/**
+ * Features are currently stateless and only use the Plus API. However, this a ".slice" file because
+ * it is likely the feature toggles will require state and/or the use of other APIs
+ */
 export interface Features {
   plus: boolean;
 }
