@@ -17,7 +17,7 @@ class SaaSRequestType(Enum):
     An `Enum` containing the different possible types of SaaS requests
     """
 
-    READ = "read'"
+    READ = "read"
     UPDATE = "update"
     DATA_PROTECTION_REQUEST = "data_protection_request"
     DELETE = "delete"
