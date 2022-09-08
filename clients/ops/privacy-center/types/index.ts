@@ -10,4 +10,5 @@ export enum PrivacyRequestStatus {
   CANCELED = "canceled",
   PENDING = "pending",
   IDENTITY_UNVERIFIED = "identity_unverified",
+  REQUIRES_INPUT = "requires_input",
 }

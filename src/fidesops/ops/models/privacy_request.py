@@ -117,6 +117,7 @@ class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
     identity_unverified = "identity_unverified"
+    requires_input = "requires_input"
     pending = "pending"
     approved = "approved"
     denied = "denied"

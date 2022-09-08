@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "20bfd0a9-15a2-4333-8c3c-2cc3d8ed31f5",
+		"_postman_id": "8ba07963-3895-4ace-a8f7-645554cd9fd3",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "13396647"
@@ -2391,7 +2391,7 @@
 			"name": "Email ConnectionConfig",
 			"item": [
 				{
-					"name": "Create/Update Connection Configs: BigQuery Copy",
+					"name": "Create/Update Email ConnectionConfig",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2407,7 +2407,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"read\",\n    \"email_service_type\": \"mailgun\"\n}]",
+							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"write\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2428,7 +2428,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Connection Secrets: BigQuery Copy",
+					"name": "Update Email Connection Config Secrets",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2444,7 +2444,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"to_email\": \"customer-1@example.com\"\n}",
+							"raw": "{\n    \"to_email\": \"customer-1@example.com\",\n    \"test_email\": \"\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2498,6 +2498,182 @@
 								"connection",
 								"{{email_connection_config_key}}",
 								"dataset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Manual Webhooks",
+			"item": [
+				{
+					"name": "Create/Update Manual Webhook ConnectionConfig",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"Manual Webhook ConnectionConfig\",\n    \"key\": \"{{manual_webhook_key}}\",\n    \"connection_type\": \"manual_webhook\",\n    \"access\": \"read\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fields\": [\n        {\"pii_field\": \"First Name\", \"dsr_package_label\": \"first_name\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fields\": [\n        {\"pii_field\": \"First Name\", \"dsr_package_label\": \"first_name\"},\n        {\"pii_field\": \"Last Name\", \"dsr_package_label\": \"last_name\"},\n        {\"pii_field\": \"Phone Number\", \"dsr_package_label\": null},\n        {\"pii_field\": \"Height\", \"dsr_package_label\": \"height\"}\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Manual Webhook",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/connection/{{manual_webhook_key}}/access_manual_webhook",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{manual_webhook_key}}",
+								"access_manual_webhook"
 							]
 						}
 					},
@@ -4597,6 +4773,11 @@
 		{
 			"key": "mailgun_api_key",
 			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "manual_webhook_key",
+			"value": "manual_webhook_key",
 			"type": "string"
 		}
 	]

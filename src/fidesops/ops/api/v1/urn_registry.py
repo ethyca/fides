@@ -81,6 +81,9 @@ CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_TEST = "/connection/{connection_key}/test"
 AUTHORIZE = "/connection/{connection_key}/authorize"
 
+# Manual Webhooks
+ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
+
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 DATASETS = CONNECTION_BY_KEY + "/dataset"

@@ -44,8 +44,9 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
-    manual = "manual"
+    manual = "manual"  # Run as part of the traversal
     email = "email"
+    manual_webhook = "manual_webhook"  # Run before the traversal
 
 
 class AccessLevel(enum.Enum):

@@ -42,6 +42,10 @@ export const statusPropMap: {
     bg: "red.400",
     label: "Unverified",
   },
+  requires_input: {
+    bg: "yellow.400",
+    label: "Requires Input",
+  },
 };
 
 interface RequestBadgeProps {

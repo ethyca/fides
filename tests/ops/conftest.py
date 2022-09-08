@@ -33,6 +33,7 @@ from .fixtures.bigquery_fixtures import *
 from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
+from .fixtures.manual_webhook_fixtures import *
 from .fixtures.mariadb_fixtures import *
 from .fixtures.mongodb_fixtures import *
 from .fixtures.mssql_fixtures import *

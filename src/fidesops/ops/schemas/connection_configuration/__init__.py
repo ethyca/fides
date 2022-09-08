@@ -12,6 +12,10 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_email impo
     EmailDocsSchema,
     EmailSchema,
 )
+from fidesops.ops.schemas.connection_configuration.connection_secrets_manual_webhook import (
+    ManualWebhookSchema,
+    ManualWebhookSchemaforDocs,
+)
 from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema,
     MariaDBSchema,
@@ -61,6 +65,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.saas.value: SaaSSchema,
     ConnectionType.email.value: EmailSchema,
+    ConnectionType.manual_webhook.value: ManualWebhookSchema,
 }
 
 
@@ -101,4 +106,5 @@ connection_secrets_schemas = Union[
     BigQueryDocsSchema,
     SaaSSchema,
     EmailDocsSchema,
+    ManualWebhookSchemaforDocs,
 ]

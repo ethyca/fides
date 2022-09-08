@@ -50,6 +50,7 @@ def get_connection_types(
                     ConnectionType.https,
                     ConnectionType.manual,
                     ConnectionType.email,
+                    ConnectionType.manual_webhook,
                 ]
                 and is_match(conn_type.value)
             ]
@@ -72,6 +73,22 @@ def get_connection_types(
             [
                 ConnectionSystemTypeMap(identifier=item, type=SystemType.saas)
                 for item in saas_types
+            ]
+        )
+
+    if system_type == SystemType.manual or system_type is None:
+        manual_types: List[str] = sorted(
+            [
+                manual_type.value
+                for manual_type in ConnectionType
+                if manual_type == ConnectionType.manual_webhook
+                and is_match(manual_type.value)
+            ]
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(identifier=item, type=SystemType.manual)
+                for item in manual_types
             ]
         )
 
