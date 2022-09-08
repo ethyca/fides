@@ -5,6 +5,8 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { useFeatures } from "~/features/common/features.slice";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import {
   Dataset,
   GenerateResponse,
@@ -12,7 +14,7 @@ import {
   ValidTargets,
 } from "~/types/api";
 
-import { CustomTextInput } from "../common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "../common/form/inputs";
 import { getErrorMessage } from "../common/helpers";
 import { successToastParams } from "../common/toast";
 import {
@@ -21,7 +23,7 @@ import {
   useGenerateDatasetMutation,
 } from "./dataset.slice";
 
-const initialValues = { url: "" };
+const initialValues = { url: "", classify: false };
 
 type FormValues = typeof initialValues;
 
@@ -30,14 +32,13 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const DatabaseConnectForm = () => {
-  // TODO: where should this come from?
-  const organizationKey = "default_organization";
   const [generate, { isLoading: isGenerating }] = useGenerateDatasetMutation();
   const [createDataset, { isLoading: isCreating }] = useCreateDatasetMutation();
   const isLoading = isGenerating || isCreating;
 
   const toast = useToast();
   const router = useRouter();
+  const features = useFeatures();
 
   const handleSubmit = async (
     values: FormValues,
@@ -67,7 +68,7 @@ const DatabaseConnectForm = () => {
     };
 
     const response = await generate({
-      organization_key: organizationKey,
+      organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       generate: {
         config: { connection_string: values.url },
         target: ValidTargets.DB,
@@ -85,7 +86,7 @@ const DatabaseConnectForm = () => {
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ ...initialValues, classify: features.plus }}
       validationSchema={ValidationSchema}
       onSubmit={handleSubmit}
       validateOnChange={false}
@@ -102,6 +103,15 @@ const DatabaseConnectForm = () => {
             <Box>
               <CustomTextInput name="url" label="Database URL" />
             </Box>
+
+            {features.plus ? (
+              <CustomSwitch
+                name="classify"
+                label="Classify dataset"
+                tooltip="In addition to generating the Dataset, Fidescls will scan the database to determine the locations of possible PII and suggest labels based on the contents of your tables."
+              />
+            ) : null}
+
             <Box>
               <Button
                 size="sm"
