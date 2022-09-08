@@ -37,6 +37,7 @@ The types of changes are:
 * Wrap up the email connector - it sends an email with erasure instructions as part of request execution [#1246](https://github.com/ethyca/fidesops/pull/1246)
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 
 ### Docs
 

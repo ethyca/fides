@@ -28,6 +28,7 @@ async def test_saas_access_request_task(
     datadog_connection_config,
     datadog_dataset_config,
     datadog_identity_email,
+    datadog_access_data,
 ) -> None:
     """Full access request based on the Datadog SaaS config"""
 
@@ -51,9 +52,10 @@ async def test_saas_access_request_task(
         {"email": datadog_identity_email},
         db,
     )
+    key = f"{dataset_name}:events"
 
     assert_rows_match(
-        v[f"{dataset_name}:events"],
+        v[key],
         min_size=1,
         keys=[
             "attributes",
@@ -62,7 +64,7 @@ async def test_saas_access_request_task(
         ],
     )
 
-    for item in v[f"{dataset_name}:events"]:
+    for item in v[key]:
         assert_rows_match(
             [item["attributes"]],
             min_size=1,
@@ -74,5 +76,5 @@ async def test_saas_access_request_task(
             ],
         )
 
-    for item in v[f"{dataset_name}:events"]:
+    for item in v[key]:
         assert datadog_identity_email in item["attributes"]["message"]
