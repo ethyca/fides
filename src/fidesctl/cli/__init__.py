@@ -59,6 +59,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     The parent group for the Fidesctl CLI.
     """
 
+    # Echo a warning about package deprecation
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
