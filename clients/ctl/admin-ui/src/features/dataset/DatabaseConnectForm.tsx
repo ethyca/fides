@@ -1,27 +1,23 @@
 import { Box, Button, Text, useToast, VStack } from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
 import { useFeatures } from "~/features/common/features.slice";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import {
-  Dataset,
-  GenerateResponse,
-  GenerateTypes,
-  ValidTargets,
-} from "~/types/api";
+import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
 
-import { CustomSwitch, CustomTextInput } from "../common/form/inputs";
-import { getErrorMessage } from "../common/helpers";
-import { successToastParams } from "../common/toast";
 import {
   setActiveDataset,
   useCreateDatasetMutation,
   useGenerateDatasetMutation,
 } from "./dataset.slice";
+
+const isDataset = (sd: System | Dataset): sd is Dataset =>
+  !("system_type" in sd);
 
 const initialValues = { url: "", classify: false };
 
@@ -32,42 +28,30 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const DatabaseConnectForm = () => {
-  const [generate, { isLoading: isGenerating }] = useGenerateDatasetMutation();
-  const [createDataset, { isLoading: isCreating }] = useCreateDatasetMutation();
+  const [generateMutation, { isLoading: isGenerating }] =
+    useGenerateDatasetMutation();
+  const [createMutation, { isLoading: isCreating }] =
+    useCreateDatasetMutation();
   const isLoading = isGenerating || isCreating;
 
   const toast = useToast();
   const router = useRouter();
   const features = useFeatures();
 
-  const handleSubmit = async (
-    values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
-  ) => {
-    const { setErrors } = formikHelpers;
-
-    const handleError = (error: FetchBaseQueryError | SerializedError) => {
-      const errorMessage = getErrorMessage(error);
-      setErrors({ url: errorMessage });
-    };
-
-    const handleGenerateResults = async (
-      results: GenerateResponse["generate_results"]
-    ) => {
-      if (results && results.length) {
-        const newDataset = results[0] as Dataset;
-        const createResult = await createDataset(newDataset);
-        if ("error" in createResult) {
-          handleError(createResult.error);
-        } else {
-          toast(successToastParams("Successfully loaded new dataset"));
-          setActiveDataset(createResult.data);
-          router.push(`/dataset/${createResult.data.fides_key}`);
-        }
+  /**
+   * Trigger the generate mutation and pick out the result dataset or the error if generate failed.
+   */
+  const generate = async (
+    values: FormValues
+  ): Promise<
+    | {
+        error: string;
       }
-    };
-
-    const response = await generate({
+    | {
+        dataset: Dataset;
+      }
+  > => {
+    const result = await generateMutation({
       organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       generate: {
         config: { connection_string: values.url },
@@ -76,12 +60,67 @@ const DatabaseConnectForm = () => {
       },
     });
 
-    if ("error" in response) {
-      const errorMessage = getErrorMessage(response.error);
-      setErrors({ url: errorMessage });
-    } else {
-      handleGenerateResults(response.data.generate_results);
+    if ("error" in result) {
+      return {
+        error: getErrorMessage(result.error),
+      };
     }
+
+    const dataset = result.data.generate_results?.[0];
+    if (!(dataset && isDataset(dataset))) {
+      return {
+        error: "Unable to generate a dataset with this connection.",
+      };
+    }
+
+    return {
+      dataset,
+    };
+  };
+
+  /**
+   * Trigger the create mutation and pick out the result or error. The datasetBody is a Dateset that
+   * has not yet been persisted.
+   */
+  const create = async (
+    datasetBody: Dataset
+  ): Promise<
+    | {
+        error: string;
+      }
+    | {
+        dataset: Dataset;
+      }
+  > => {
+    const result = await createMutation(datasetBody);
+
+    if ("error" in result) {
+      return {
+        error: getErrorMessage(result.error),
+      };
+    }
+
+    return {
+      dataset: result.data,
+    };
+  };
+
+  const handleSubmit = async (values: FormValues) => {
+    const generateResult = await generate(values);
+    if ("error" in generateResult) {
+      toast(errorToastParams(generateResult.error));
+      return;
+    }
+
+    const createResult = await create(generateResult.dataset);
+    if ("error" in createResult) {
+      toast(errorToastParams(createResult.error));
+      return;
+    }
+
+    toast(successToastParams("Successfully loaded new dataset"));
+    setActiveDataset(createResult.dataset);
+    router.push(`/dataset/${createResult.dataset.fides_key}`);
   };
 
   return (
