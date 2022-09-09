@@ -8,7 +8,6 @@ import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { QuestionIcon } from "~/features/common/Icon";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import { System } from "~/types/api";
 
 import {
   CustomCreatableMultiSelect,
@@ -18,7 +17,15 @@ import {
 import { useCreateSystemMutation } from "../system/system.slice";
 import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
-type FormValues = Partial<System>;
+const initialValues = {
+  description: "",
+  fides_key: "",
+  name: "",
+  organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+  tags: [],
+  system_type: "",
+};
+type FormValues = typeof initialValues;
 
 const DescribeSystemsForm = ({
   handleCancelSetup,
@@ -31,15 +38,6 @@ const DescribeSystemsForm = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const toast = useToast();
-
-  const initialValues = {
-    description: "",
-    fides_key: "",
-    name: "",
-    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-    tags: [],
-    system_type: "",
-  };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = {
