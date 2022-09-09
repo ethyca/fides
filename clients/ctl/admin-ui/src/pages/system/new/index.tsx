@@ -12,6 +12,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import SystemYamlForm from "~/features/system/SystemYamlForm";
 
 const NewSystem: NextPage = () => {
   const [generateMethod, setGenerateMethod] = useState<
@@ -55,7 +56,7 @@ const NewSystem: NextPage = () => {
           </Button>
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
-          {generateMethod === "yaml" ? <div>yaml form</div> : null}
+          {generateMethod === "yaml" ? <SystemYamlForm /> : null}
         </Box>
       </Stack>
     </Layout>
