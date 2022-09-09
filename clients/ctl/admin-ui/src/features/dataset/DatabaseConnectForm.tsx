@@ -1,11 +1,13 @@
 import { Box, Button, Text, useToast, VStack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
+import { useCreateClassificationMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
@@ -32,11 +34,14 @@ const DatabaseConnectForm = () => {
     useGenerateDatasetMutation();
   const [createMutation, { isLoading: isCreating }] =
     useCreateDatasetMutation();
-  const isLoading = isGenerating || isCreating;
+  const [classifyMutation, { isLoading: isClassifying }] =
+    useCreateClassificationMutation();
+  const isLoading = isGenerating || isCreating || isClassifying;
 
   const toast = useToast();
   const router = useRouter();
   const features = useFeatures();
+  const dispatch = useDispatch();
 
   /**
    * Trigger the generate mutation and pick out the result dataset or the error if generate failed.
@@ -105,6 +110,33 @@ const DatabaseConnectForm = () => {
     };
   };
 
+  /**
+   * Trigger the classify mutation and pick out the result or error. The Dataset should be already
+   * have been created.
+   */
+  const classify = async (
+    dataset: Dataset
+  ): Promise<
+    | {
+        error: string;
+      }
+    | {
+        status: string;
+      }
+  > => {
+    const result = await classifyMutation({ fides_key: dataset.fides_key });
+
+    if ("error" in result) {
+      return {
+        error: getErrorMessage(result.error),
+      };
+    }
+
+    return {
+      status: result.data.status,
+    };
+  };
+
   const handleSubmit = async (values: FormValues) => {
     const generateResult = await generate(values);
     if ("error" in generateResult) {
@@ -118,9 +150,25 @@ const DatabaseConnectForm = () => {
       return;
     }
 
-    toast(successToastParams("Successfully loaded new dataset"));
-    setActiveDataset(createResult.dataset);
-    router.push(`/dataset/${createResult.dataset.fides_key}`);
+    // Default generate flow:
+    if (!values.classify) {
+      toast(
+        successToastParams(`Generated ${createResult.dataset.name} dataset`)
+      );
+      router.push(`/dataset/${createResult.dataset.fides_key}`);
+      return;
+    }
+
+    // Additional steps when using classify:
+    const classifyResult = await classify(createResult.dataset);
+    if ("error" in classifyResult) {
+      toast(errorToastParams(classifyResult.error));
+      return;
+    }
+
+    toast(successToastParams(`Generate and classify are now in progress`));
+    dispatch(setActiveDataset(createResult.dataset));
+    router.push(`/dataset`);
   };
 
   return (
