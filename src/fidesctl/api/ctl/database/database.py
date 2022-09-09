@@ -20,7 +20,7 @@ from fidesctl.api.ctl.utils.errors import (
 )
 from fidesctl.ctl.core.utils import get_db_engine
 
-from .crud import create_resource, list_resource, upsert_resources
+from .crud import create_resource, list_resource
 
 
 def get_alembic_config(database_url: str) -> Config:
