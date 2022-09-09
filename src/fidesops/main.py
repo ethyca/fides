@@ -252,7 +252,7 @@ def start_webserver() -> None:
         try:
             get_cache()
         except (RedisConnectionError, ResponseError) as e:
-            logger.error("Connection to cache failed: %s", Pii(str(e)))
+            logger.error("Connection to cache failed: %s", e)
             return
 
     scheduler.start()
