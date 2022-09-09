@@ -8,6 +8,7 @@ from fideslib.db.base import Base
 from loguru import logger as log
 from sqlalchemy import column
 from sqlalchemy import delete as _delete
+from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import SQLAlchemyError
@@ -181,15 +182,34 @@ async def upsert_resources(
 
 
 async def delete_resource(sql_model: Base, fides_key: str) -> Base:
-    """Delete a resource by its fides_key."""
+    """
+    Delete a resource by its fides_key.
+
+    If the resource has child keys referring to it, also delete those.
+    """
 
     with log.contextualize(sql_model=sql_model.__name__, fides_key=fides_key):
         sql_resource = await get_resource(sql_model, fides_key)
         async with async_session() as session:
             async with session.begin():
                 try:
-                    log.debug("Deleting resource")
-                    query = _delete(sql_model).where(sql_model.fides_key == fides_key)
+                    if hasattr(sql_model, "parent_key"):
+                        log.debug("Deleting resource and its children")
+                        query = (
+                            _delete(sql_model)
+                            .where(
+                                or_(
+                                    sql_model.fides_key == fides_key,
+                                    sql_model.fides_key.like(f"{fides_key}.%"),
+                                )
+                            )
+                            .execution_options(synchronize_session=False)
+                        )
+                    else:
+                        log.debug("Deleting resource")
+                        query = _delete(sql_model).where(
+                            sql_model.fides_key == fides_key
+                        )
                     print(query)
                     await session.execute(query)
                 except SQLAlchemyError:
