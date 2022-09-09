@@ -26,6 +26,7 @@ The types of changes are:
 
 ### Changed
 
+* Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 * Deleting a taxonomy field with children will now cascade delete all of its children as well. [#1042](https://github.com/ethyca/fides/pull/1042)
 
 ### Fixed
