@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+from itertools import product
 from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
@@ -17,7 +18,13 @@ from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fidesops.ops.service.connectors.query_config import QueryConfig
 from fidesops.ops.util import saas_util
 from fidesops.ops.util.collection_util import Row, merge_dicts
-from fidesops.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS, unflatten_dict
+from fidesops.ops.util.saas_util import (
+    ALL_OBJECT_FIELDS,
+    FIDESOPS_GROUPED_INPUTS,
+    MASKED_OBJECT_FIELDS,
+    PRIVACY_REQUEST_ID,
+    unflatten_dict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -106,27 +113,90 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
     def generate_requests(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
     ) -> List[SaaSRequestParams]:
-        """Takes the input_data and uses it to generate a list of SaaS request params"""
+        """
+        Takes the identity and reference values from input_data and combines them
+        with the connector_param values in use by the current request to generate
+        a list of request params.
+        """
 
-        filtered_data = self.node.typed_filtered_values(input_data)
+        current_request: Optional[SaaSRequest] = self.get_request_by_action("read")
+        if not current_request:
+            raise FidesopsException(
+                f"The 'read' action is not defined for the '{self.collection_name}' "
+                f"endpoint in {self.node.node.dataset.connection_key}"
+            )
 
         request_params = []
 
-        # Build SaaS requests for fields that are independent of each other
-        for string_path, reference_values in filtered_data.items():
-            for value in reference_values:
+        filtered_secrets = self._filtered_secrets(current_request)
+        grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
+
+        # unpack the inputs
+        # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
+        for param_value in current_request.param_values or []:
+            if param_value.unpack:
+                value = param_value.name
+                input_data[value] = pydash.flatten(input_data.get(value))
+
+        # we want to preserve the grouped_input relationships so we take each
+        # individual group and generate the product with the ungrouped inputs
+        for grouped_inputs in grouped_inputs_list or [{}]:
+            param_value_maps = self._generate_product_list(
+                input_data, filtered_secrets, grouped_inputs
+            )
+            for param_value_map in param_value_maps:
                 request_params.append(
-                    self.generate_query({string_path: [value]}, policy)
+                    self.generate_query(
+                        {name: [value] for name, value in param_value_map.items()},
+                        policy,
+                    )
                 )
 
-        # Build SaaS requests for fields that are dependent on each other
-        grouped_input_data: List[Dict[str, Any]] = input_data.get(
-            FIDESOPS_GROUPED_INPUTS, []
-        )
-        for dependent_data in grouped_input_data:
-            request_params.append(self.generate_query(dependent_data, policy))
-
         return request_params
+
+    def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
+        """Return a filtered map of secrets used by the request"""
+
+        param_names = [
+            param_value.connector_param
+            for param_value in current_request.param_values or []
+        ]
+        return {
+            name: value for name, value in self.secrets.items() if name in param_names
+        }
+
+    @staticmethod
+    def _generate_product_list(*args: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Accepts a variable number of dicts and produces the product of the values from all the dicts.
+
+        Example:
+
+            `_generate_product_list({ "first": ["a", "b"] }, { "second": ["1", "2", "3"] })`
+
+        Returns:
+        ```
+            [
+                { "first": "a", "second": "1" }
+                { "first": "a", "second": "2" }
+                { "first": "a", "second": "3" }
+                { "first": "b", "second": "1" }
+                { "first": "b", "second": "2" }
+                { "first": "b", "second": "3" }
+            ]
+        ```
+        """
+
+        merged_dicts = merge_dicts(*args)
+        return [
+            dict(zip(merged_dicts.keys(), values))
+            for values in product(
+                *(
+                    value if isinstance(value, list) else [value]
+                    for value in merged_dicts.values()
+                )
+            )
+        ]
 
     def generate_query(
         self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
@@ -137,7 +207,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         query statement (select statement, where clause, limit, offset, etc.)
         """
 
-        current_request: SaaSRequest | None = self.get_request_by_action("read")
+        current_request: Optional[SaaSRequest] = self.get_request_by_action("read")
         if not current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
@@ -149,18 +219,16 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values: Dict[str, Any] = {}
         for param_value in current_request.param_values or []:
             if param_value.references or param_value.identity:
-                # TODO: how to handle missing reference or identity values in a way
-                # in a way that is obvious based on configuration
                 input_list = input_data.get(param_value.name)
                 if input_list:
                     param_values[param_value.name] = input_list[0]
             elif param_value.connector_param:
                 param_values[param_value.name] = pydash.get(
-                    self.secrets, param_value.connector_param
-                )
+                    input_data, param_value.connector_param
+                )[0]
 
         if self.privacy_request:
-            param_values["privacy_request_id"] = self.privacy_request.id
+            param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -226,7 +294,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 )
 
         if self.privacy_request:
-            param_values["privacy_request_id"] = self.privacy_request.id
+            param_values[PRIVACY_REQUEST_ID] = self.privacy_request.id
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
@@ -247,8 +315,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             merge_dicts(all_value_map, update_value_map)
         )
 
-        param_values["masked_object_fields"] = masked_object
-        param_values["all_object_fields"] = complete_object
+        param_values[MASKED_OBJECT_FIELDS] = masked_object
+        param_values[ALL_OBJECT_FIELDS] = complete_object
 
         return param_values
 
@@ -261,12 +329,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """
 
         # removes outer {} wrapper from body for greater flexibility in custom body config
-        param_values["masked_object_fields"] = json.dumps(
-            param_values["masked_object_fields"]
+        param_values[MASKED_OBJECT_FIELDS] = json.dumps(
+            param_values[MASKED_OBJECT_FIELDS]
         )[1:-1]
-        param_values["all_object_fields"] = json.dumps(
-            param_values["all_object_fields"]
-        )[1:-1]
+        param_values[ALL_OBJECT_FIELDS] = json.dumps(param_values[ALL_OBJECT_FIELDS])[
+            1:-1
+        ]
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(

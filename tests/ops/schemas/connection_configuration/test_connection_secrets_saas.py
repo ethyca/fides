@@ -7,7 +7,7 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_saas impor
     SaaSSchema,
     SaaSSchemaFactory,
 )
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fidesops.ops.schemas.saas.saas_config import ConnectorParam, SaaSConfig
 
 
 @pytest.mark.unit_saas
@@ -72,3 +72,42 @@ class TestSaaSConnectionSecrets:
         del saas_example_secrets["domain"]
         config = saas_example_secrets
         schema.parse_obj(config)
+
+    def test_value_in_options(self, saas_config: SaaSConfig):
+        saas_config.connector_params = [
+            ConnectorParam(name="account_type", options=["checking", "savings"])
+        ]
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        schema.parse_obj({"account_type": "checking"})
+
+    def test_value_in_options_with_multiselect(self, saas_config: SaaSConfig):
+        saas_config.connector_params = [
+            ConnectorParam(
+                name="account_type", options=["checking", "savings"], multiselect=True
+            )
+        ]
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        schema.parse_obj({"account_type": ["checking", "savings"]})
+
+    def test_value_not_in_options(self, saas_config: SaaSConfig):
+        saas_config.connector_params = [
+            ConnectorParam(name="account_type", options=["checking", "savings"])
+        ]
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        with pytest.raises(ValidationError) as exc:
+            schema.parse_obj({"account_type": "investment"})
+        assert "'account_type' must be one of [checking, savings]" in str(exc.value)
+
+    def test_value_not_in_options_with_multiselect(self, saas_config: SaaSConfig):
+        saas_config.connector_params = [
+            ConnectorParam(
+                name="account_type", options=["checking", "savings"], multiselect=True
+            )
+        ]
+        schema = SaaSSchemaFactory(saas_config).get_saas_schema()
+        with pytest.raises(ValidationError) as exc:
+            schema.parse_obj({"account_type": ["checking", "investment"]})
+        assert (
+            "[investment] are not valid options, 'account_type' must be a list of values from [checking, savings]"
+            in str(exc.value)
+        )

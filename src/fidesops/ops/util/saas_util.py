@@ -19,6 +19,9 @@ from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
 logger = logging.getLogger(__name__)
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
+PRIVACY_REQUEST_ID = "privacy_request_id"
+MASKED_OBJECT_FIELDS = "masked_object_fields"
+ALL_OBJECT_FIELDS = "all_object_fields"
 
 
 def load_yaml_as_string(filename: str) -> str:

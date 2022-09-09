@@ -38,6 +38,7 @@ The types of changes are:
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
+* Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 
 ### Docs
 

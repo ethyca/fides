@@ -26,6 +26,7 @@ class ParamValue(BaseModel):
     identity: Optional[str]
     references: Optional[List[FidesopsDatasetReference]]
     connector_param: Optional[str]
+    unpack: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(
@@ -201,8 +202,45 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
-    default_value: Optional[str]
+    options: Optional[List[str]]  # list of possible values for the connector param
+    default_value: Optional[Union[str, List[str]]]
+    multiselect: Optional[bool] = False
     description: Optional[str]
+
+    @root_validator
+    def validate_connector_param(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        """Verify the default_value is one of the values specified in the options list"""
+
+        name = values.get("name")
+        options: Optional[List[str]] = values.get("options")
+        default_value: Optional[Union[str, List[str]]] = values.get("default_value")
+        multiselect: Optional[bool] = values.get("multiselect")
+
+        if options:
+            if isinstance(default_value, str) and default_value not in options:
+                raise ValueError(
+                    f"'{default_value}' is not a valid option, default_value must be a value from [{', '.join(options)}]"
+                )
+            if isinstance(default_value, list):
+                if not multiselect:
+                    raise ValueError(
+                        f"The default_value for the {name} connector_param must be a single value when multiselect is not enabled, not a list"
+                    )
+
+                invalid_options = [
+                    value for value in default_value if value not in options
+                ]
+                if invalid_options:
+                    raise ValueError(
+                        f"[{', '.join(invalid_options)}] are not valid options, default_value must be a list of values from [{', '.join(options)}]"
+                    )
+
+        if multiselect and not options:
+            raise ValueError(
+                f"The 'multiselect' field in the {name} connector_param must be accompanied by an 'options' field containing a list of values."
+            )
+
+        return values
 
 
 class SaaSType(Enum):

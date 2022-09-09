@@ -5,7 +5,12 @@ from pydantic import ValidationError
 
 from fidesops.ops.graph.config import CollectionAddress, FieldAddress
 from fidesops.ops.schemas.dataset import FidesopsDatasetReference
-from fidesops.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fidesops.ops.schemas.saas.saas_config import (
+    ConnectorParam,
+    ParamValue,
+    SaaSConfig,
+    SaaSRequest,
+)
 
 
 @pytest.mark.unit_saas
@@ -137,3 +142,65 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
     member_endpoint = next(end for end in saas_config.endpoints if end.name == "member")
     # Not specified on member read endpoint - defaults to False
     assert not member_endpoint.requests["read"].ignore_errors
+
+
+@pytest.mark.unit_saas
+class TestConnectorParam:
+    def test_name_only(self):
+        ConnectorParam(name="account_type")
+
+    def test_single_default_value(self):
+        ConnectorParam(name="account_type", default_value="checking")
+
+    def test_list_default_values(self):
+        ConnectorParam(name="account_types", default_value=["checking", "savings"])
+
+    def test_missing_name(self):
+        with pytest.raises(ValidationError) as exc:
+            ConnectorParam(default_value="checking")
+        assert "field required" in str(exc.value)
+
+    def test_default_value_not_in_options(self):
+        with pytest.raises(ValidationError) as exc:
+            ConnectorParam(
+                name="account_types",
+                default_value="roth",
+                options=["checking", "savings"],
+            )
+        assert (
+            "'roth' is not a valid option, default_value must be a value from [checking, savings]"
+            in str(exc.value)
+        )
+
+    def test_default_values_not_in_options(self):
+        with pytest.raises(ValidationError) as exc:
+            ConnectorParam(
+                name="account_types",
+                default_value=["roth", "401k"],
+                options=["checking", "savings"],
+                multiselect=True,
+            )
+        assert (
+            "[roth, 401k] are not valid options, default_value must be a list of values from [checking, savings]"
+            in str(exc.value)
+        )
+
+    def test_multiselect_without_options(self):
+        with pytest.raises(ValidationError) as exc:
+            ConnectorParam(name="account_types", multiselect=True)
+        assert (
+            "The 'multiselect' field in the account_types connector_param must be accompanied by an 'options' field containing a list of values."
+            in str(exc.value)
+        )
+
+    def test_default_value_list_without_multiselect(self):
+        with pytest.raises(ValidationError) as exc:
+            ConnectorParam(
+                name="account_types",
+                default_value=["checking", "savings"],
+                options=["checking", "savings"],
+            )
+        assert (
+            "The default_value for the account_types connector_param must be a single value when multiselect is not enabled, not a list"
+            in str(exc.value)
+        )

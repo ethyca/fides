@@ -180,6 +180,9 @@ dataset:
                 data_categories: [user.device.ip_address]
           - name: email
             data_categories: [user.contact.email]
+          - name: list_ids
+            fidesops_meta:
+              data_type: string[]
       - name: customer
         fields:
           - name: id
@@ -205,5 +208,19 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: accounts
+        fields:
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: mailing_lists
+        fields:
+          - name: list_id
+            fidesops_meta:
+              data_type: string
+          - name: mailing_list_name
             fidesops_meta:
               data_type: string

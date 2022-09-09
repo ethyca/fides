@@ -12,6 +12,9 @@ saas_config:
     - name: api_key
     - name: api_version
     - name: page_size
+    - name: account_types
+      options: [checking, savings, investment]
+      multiselect: True
 
   client_config:
     protocol: https
@@ -38,10 +41,8 @@ saas_config:
                 - dataset: saas_connector_example
                   field: conversations.id
                   direction: from
+          data_path: conversation_messages
           postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: conversation_messages
             - strategy: filter
               configuration:
                 field: from_email
@@ -61,10 +62,7 @@ saas_config:
           param_values:
             - name: placeholder
               identity: email
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: conversations
+          data_path: conversations
     - name: member
       requests:
         read:
@@ -76,10 +74,7 @@ saas_config:
           param_values:
             - name: email
               identity: email
-          postprocessors:
-            - strategy: unwrap
-              configuration:
-                data_path: exact_matches.members
+          data_path: exact_matches.members
         update:
           method: PUT
           path: /3.0/lists/<list_id>/members/<subscriber_hash>
@@ -201,3 +196,39 @@ saas_config:
             {
               "unique_id": "<privacy_request_id>"
             }
+    - name: accounts
+      requests:
+        read:
+          method: GET
+          path: /v1/<customer_id>/account
+          grouped_inputs: [customer_id, customer_name]
+          query_params:
+            - name: account_type
+              value: <account_type>
+            - name: customer_name
+              value: <customer_name>
+          param_values:
+            - name: account_type
+              connector_param: account_types
+            - name: customer_id
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
+            - name: customer_name
+              references:
+                - dataset: saas_connector_example
+                  field: customer.name
+                  direction: from
+    - name: mailing_lists
+      requests:
+        read:
+          method: GET
+          path: /v1/mailing_list/<list_id>
+          param_values:
+            - name: list_id
+              references:
+                - dataset: saas_connector_example
+                  field: users.list_ids
+                  direction: from
+              unpack: True
