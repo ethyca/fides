@@ -27,7 +27,7 @@ The types of changes are:
 ### Changed
 
 * Deleting a taxonomy field with children will now cascade delete all of its children as well. [#1042](https://github.com/ethyca/fides/pull/1042)
-* 
+
 ### Fixed
 
 * Fixed navigating directly to frontend routes loading index page instead of the correct static page for the route.
