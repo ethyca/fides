@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.8.3...main)
 
+### Added
+
+* Initial system management page [#1054](https://github.com/ethyca/fides/pull/1054)
+
 ### Changed
 
 * Deleting a taxonomy field with children will now cascade delete all of its children as well. [#1042](https://github.com/ethyca/fides/pull/1042)
