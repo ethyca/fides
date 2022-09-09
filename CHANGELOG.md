@@ -23,6 +23,7 @@ The types of changes are:
 ### Added
 
 * Initial system management page [#1054](https://github.com/ethyca/fides/pull/1054)
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
 
 ### Changed
 
