@@ -486,7 +486,7 @@ describe("Taxonomy management page", () => {
       );
     });
 
-    it("Only renders delete button on custom fields without children", () => {
+    it("Only renders delete button on custom fields", () => {
       cy.getByTestId(`tab-Data Categories`).click();
       // try default fields first
       cy.getByTestId("accordion-item-User Data").trigger("mouseover");
@@ -497,10 +497,15 @@ describe("Taxonomy management page", () => {
 
       // now try custom fields
       cy.getByTestId("accordion-item-Custom field").trigger("mouseover");
-      cy.getByTestId("delete-btn").should("not.exist");
+      cy.getByTestId("delete-btn").click();
+      // parent custom fields should render with a warning
+      cy.getByTestId("delete-children-warning");
+      cy.getByTestId("cancel-btn").click();
       cy.getByTestId("accordion-item-Custom field").click();
       cy.getByTestId("item-Custom foo").trigger("mouseover");
-      cy.getByTestId("delete-btn");
+      cy.getByTestId("delete-btn").click();
+      // leaf nodes do not need a warning though
+      cy.getByTestId("delete-children-warning").should("not.exist");
     });
 
     it("Can delete from each taxonomy type (except Data Subject)", () => {

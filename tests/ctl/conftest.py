@@ -4,10 +4,11 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, Generator, Union
+from typing import Any, AsyncGenerator, Dict, Generator, Union
 from uuid import uuid4
 
 import pytest
@@ -26,7 +27,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fidesctl.api import main
-from fidesctl.api.ctl.database.session import sync_session
+from fidesctl.api.ctl.database.session import engine, sync_session
 from fidesctl.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fidesctl.ctl.core import api
 from fidesctl.ctl.core.config import FidesctlConfig, get_config
@@ -403,3 +404,23 @@ def application_user(db: Session, oauth_client: ClientDetail) -> FidesUser:
 @pytest.fixture(autouse=True)
 def clear_get_config_cache() -> None:
     get_config.cache_clear()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop() -> Generator:
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(autouse=True)
+async def async_db() -> AsyncGenerator:
+    """
+    Makes sure to clean up the engine event loop to avoid async tests
+    attaching to the wrong event loop
+    """
+    yield
+    await engine.dispose()
