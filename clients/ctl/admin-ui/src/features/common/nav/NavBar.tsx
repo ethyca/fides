@@ -21,7 +21,7 @@ const NavBar = () => {
       borderColor="gray.100"
     >
       <nav>
-        <NavLink title="Systems" href="/system" disabled />
+        <NavLink title="Systems" href="/system" />
         <NavLink title="Datasets" href="/dataset" />
 
         {/* Links under the datamap zone: */}
