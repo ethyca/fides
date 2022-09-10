@@ -4,5 +4,7 @@
     "lib": ["es5", "dom"],
     "types": ["cypress", "node"]
   },
-  "include": ["**/*.ts", "../cypress.config.ts"]
+  "include": ["**/*.ts",
+    "../../../admin-ui/cypress.config.ts"
+  ]
 }

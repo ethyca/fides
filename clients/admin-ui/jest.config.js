@@ -26,6 +26,7 @@ module.exports = {
     "^privacy-requests/(.*)$": "<rootDir>/src/features/privacy-requests/$1",
     "^subject-request/(.*)$": "<rootDir>/src/features/subject-request/$1",
     "^user-management/(.*)$": "<rootDir>/src/features/user-management/$1",
+    "^~/(.*)$": "<rootDir>/src/$1",
   },
   // Add more setup options before each test is run
   setupFilesAfterEnv: ["<rootDir>/__tests__/jest.setup.ts"],

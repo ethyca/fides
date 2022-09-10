@@ -5,15 +5,20 @@
     "prettier",
     "next/core-web-vitals"
   ],
-  "plugins": ["simple-import-sort"],
+  "plugins": [
+    "simple-import-sort"
+  ],
   "root": true,
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "__dirname"
   },
   "rules": {
     // causes bug in re-exporting default exports, see
     // https://github.com/eslint/eslint/issues/15617
-    "no-restricted-exports": [0],
+    "no-restricted-exports": [
+      0
+    ],
     "react/function-component-definition": [
       2,
       {

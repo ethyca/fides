@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { defineConfig } from "cypress";
+import { defineConfig } from "../ctl/admin-ui/cypress";
 
 export default defineConfig({
   e2e: {
