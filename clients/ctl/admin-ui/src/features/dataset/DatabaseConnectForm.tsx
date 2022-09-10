@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 import * as Yup from "yup";
 
+import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -21,12 +22,19 @@ import {
 const isDataset = (sd: System | Dataset): sd is Dataset =>
   !("system_type" in sd);
 
-const initialValues = { url: "", classify: false };
+const initialValues = { url: "", classify: false, classifyConfirmed: false };
 
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   url: Yup.string().required().label("Database URL"),
+  classify: Yup.boolean(),
+  // If classify is true, then the choice must be confirmed. The URL is also tested so that we don't
+  // show the confirmation modal if the form is invalid.
+  classifyConfirmed: Yup.boolean().when(["url", "classify"], {
+    is: (url: string, classify: boolean) => url && classify,
+    then: Yup.boolean().equals([true]),
+  }),
 });
 
 const DatabaseConnectForm = () => {
@@ -179,7 +187,14 @@ const DatabaseConnectForm = () => {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ isSubmitting }) => (
+      {({
+        isSubmitting,
+        errors,
+        values,
+        submitForm,
+        resetForm,
+        setFieldValue,
+      }) => (
         <Form>
           <VStack spacing={8} align="left">
             <Text size="sm" color="gray.700">
@@ -212,6 +227,23 @@ const DatabaseConnectForm = () => {
               </Button>
             </Box>
           </VStack>
+          <ConfirmationModal
+            title="Generate and classify this dataset"
+            message="You have chosen to generate and classify this dataset. This process may take several minutes. In the meantime you can continue using Fides. You will receive a notification when the process is complete."
+            isOpen={errors.classifyConfirmed !== undefined}
+            onClose={() => {
+              resetForm({ values: { ...values, classifyConfirmed: false } });
+            }}
+            onConfirm={() => {
+              setFieldValue("classifyConfirmed", true);
+
+              // Formik needs a moment after setting the field before it can submit.
+              // https://github.com/jaredpalmer/formik/issues/529#issuecomment-740042815
+              setTimeout(() => {
+                submitForm();
+              }, 0);
+            }}
+          />
         </Form>
       )}
     </Formik>
