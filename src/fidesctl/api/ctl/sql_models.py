@@ -92,13 +92,14 @@ class ClassificationDetail(Base):
     """
 
     __tablename__ = "cls_classification_detail"
-
-    classification_detail_id = Column(Integer, primary_key=True, autoincrement=True)
-    classification_detail_status_id = Column(Integer)
-    classification_dataset = Column(Text)
-    classification_collection = Column(Text)
-    classification_field = Column(Text)
-    classification_labels = Column(JSON)
+    instance_id = Column(
+        Integer,
+    )
+    status = Column(Text)
+    dataset = Column(Text)
+    collection = Column(Text)
+    field = Column(Text)
+    labels = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
@@ -115,30 +116,10 @@ class ClassificationInstance(Base):
 
     __tablename__ = "cls_classification_instance"
 
-    classification_instance_id = Column(Integer, primary_key=True, autoincrement=True)
-    classification_status_id = Column(Integer)
+    status = Column(Text)
     organization_key = Column(Text)
-    classification_target = Column(Text)
-    classification_type = Column(Text)
-    # update with metadata here to remove the need for a classification table (can join on similar attrs maybe)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-    )
-
-
-class ClassificationState(Base):
-    """
-    The SQL model for a classification instance
-    """
-
-    __tablename__ = "cls_classification_status"
-
-    classification_status_id = Column(Integer, primary_key=True, autoincrement=True)
-    classification_status = Column(Text)
-    classification_status_is_active = Column(BOOLEAN)
+    target = Column(Text)
+    type = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
