@@ -5,6 +5,6 @@
     "types": ["cypress", "node"]
   },
   "include": ["**/*.ts",
-    "../../../admin-ui/cypress.config.ts"
+    "../cypress.config.ts"
   ]
 }
