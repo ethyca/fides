@@ -8,12 +8,12 @@
  */
 
 import { Box, Checkbox, IconButton } from "@fidesui/react";
-import { Fragment, ReactNode, useEffect, useState } from "react";
-
 import {
   ArrowDownLineIcon,
   ArrowUpLineIcon,
-} from "../../../../ctl/admin-ui/src/features/common/Icon";
+} from "common/Icon";
+import { Fragment, ReactNode, useEffect, useState } from "react";
+
 import { TreeNode } from "./types";
 
 export const getAncestorsAndCurrent = (nodeName: string) => {

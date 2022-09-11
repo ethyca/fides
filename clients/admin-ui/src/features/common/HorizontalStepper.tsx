@@ -1,7 +1,6 @@
 import { Stack, Text } from "@fidesui/react";
+import { HorizontalLineIcon } from "common/Icon";
 import React from "react";
-
-import { HorizontalLineIcon } from "../../../../ctl/admin-ui/src/features/common/Icon";
 
 interface Props {
   activeStep: number | null;

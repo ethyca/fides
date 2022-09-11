@@ -1,8 +1,7 @@
 import { Box } from "@fidesui/react";
+import NavBar from "common/NavBar";
 import Head from "next/head";
 import React from "react";
-
-import NavBar from "../../../../ctl/admin-ui/src/features/common/NavBar";
 
 const Layout = ({
   title,

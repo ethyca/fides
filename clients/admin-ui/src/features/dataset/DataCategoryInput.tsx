@@ -13,12 +13,12 @@ import {
   Text,
 } from "@fidesui/react";
 import CheckboxTree from "common/CheckboxTree";
+import { ArrowDownLineIcon } from "common/Icon";
 import QuestionTooltip from "common/QuestionTooltip";
 import { useMemo } from "react";
 
 import { DataCategory } from "~/types/api";
 
-import { ArrowDownLineIcon } from "../../../../ctl/admin-ui/src/features/common/Icon";
 import { transformTaxonomyEntityToNodes } from "../taxonomy/helpers";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 

@@ -1,11 +1,10 @@
 import { Box, Stack, Text } from "@fidesui/react";
-import React from "react";
-
 import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
   VerticalLineIcon,
-} from "../../../../ctl/admin-ui/src/features/common/Icon";
+} from "common/Icon";
+import React from "react";
 
 interface Props {
   activeStep: number | null;
