@@ -24,6 +24,7 @@ import {
   reducer as userManagementReducer,
   userApi,
 } from "user-management/index";
+import { dispatch } from "jest-circus/build/state";
 
 const reducer = {
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
@@ -73,6 +74,9 @@ if (typeof window !== "undefined" && "localStorage" in window) {
 const store = makeStore({
   auth: storedAuthState,
 });
+
+type AppStore = ReturnType<typeof makeStore>;
+export type AppDispatch = AppStore["dispatch"];
 
 setupListeners(store.dispatch);
 
