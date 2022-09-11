@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { HYDRATE } from "next-redux-wrapper";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 export interface State {
@@ -142,11 +142,11 @@ export const {
   setActiveCollectionIndex,
   setActiveFieldIndex,
 } = datasetSlice.actions;
-export const selectActiveDataset = (state: AppState) =>
+export const selectActiveDataset = (state: RootState) =>
   state.dataset.activeDataset;
-export const selectActiveCollectionIndex = (state: AppState) =>
+export const selectActiveCollectionIndex = (state: RootState) =>
   state.dataset.activeCollectionIndex;
-export const selectActiveFieldIndex = (state: AppState) =>
+export const selectActiveFieldIndex = (state: RootState) =>
   state.dataset.activeFieldIndex;
 
 export const { reducer } = datasetSlice;

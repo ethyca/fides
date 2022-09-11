@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { DataUse } from "~/types/api";
 
 export interface State {
@@ -75,6 +75,6 @@ export const dataUseSlice = createSlice({
 });
 
 export const { setDataUses } = dataUseSlice.actions;
-export const selectDataUses = (state: AppState) => state.dataUse.dataUses;
+export const selectDataUses = (state: RootState) => state.dataUse.dataUses;
 
 export const { reducer } = dataUseSlice;

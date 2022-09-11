@@ -1,6 +1,6 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Organization, System } from "~/types/api";
 
@@ -103,7 +103,7 @@ export const {
 
 export const { reducer } = slice;
 
-const selectConfigWizard = (state: AppState) => state.configWizard;
+const selectConfigWizard = (state: RootState) => state.configWizard;
 
 export const selectStep = createSelector(
   selectConfigWizard,

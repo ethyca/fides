@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { DataQualifier } from "~/types/api";
 
 export interface State {
@@ -76,7 +76,7 @@ export const dataQualifierSlice = createSlice({
 });
 
 export const { setDataQualifiers } = dataQualifierSlice.actions;
-export const selectDataQualifiers = (state: AppState) =>
+export const selectDataQualifiers = (state: RootState) =>
   state.dataQualifier.dataQualifier;
 
 export const { reducer } = dataQualifierSlice;
