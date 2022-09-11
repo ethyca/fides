@@ -1,4 +1,5 @@
 import { extendTheme } from "@fidesui/react";
+import Button from "~/theme/components/button";
 
 const theme = extendTheme({
   styles: {
@@ -12,6 +13,7 @@ const theme = extendTheme({
     },
   },
   components: {
+    Button,
     Spinner: {
       baseStyle: {
         color: "secondary.500",
