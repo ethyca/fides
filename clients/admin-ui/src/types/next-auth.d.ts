@@ -1,6 +1,5 @@
 // required import to teach TypeScript to pick up the types
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import NextAuth from "~/types/next-auth";
 
 declare module "~/types/next-auth" {
   /**

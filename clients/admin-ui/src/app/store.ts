@@ -8,7 +8,6 @@ import {
   datastoreConnectionApi,
   reducer as datastoreConnectionReducer,
 } from "datastore-connections/index";
-import { dispatch } from "jest-circus/build/state";
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
