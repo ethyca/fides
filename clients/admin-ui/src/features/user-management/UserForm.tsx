@@ -10,6 +10,7 @@ import {
 } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -17,7 +18,6 @@ import React from "react";
 import * as Yup from "yup";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
-import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { CustomTextInput } from "./form/inputs";
 import { User } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";

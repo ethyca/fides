@@ -11,10 +11,9 @@ import {
   InputGroup,
   InputRightElement,
 } from "@fidesui/react";
+import { EyeIcon } from "common/Icon";
 import { FieldHookConfig, useField } from "formik";
 import { useState } from "react";
-
-import { EyeIcon } from "common/Icon";
 
 interface InputProps {
   disabled?: boolean;

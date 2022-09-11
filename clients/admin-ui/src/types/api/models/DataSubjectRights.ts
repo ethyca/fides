@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DataSubjectRightsEnum } from './DataSubjectRightsEnum';
-import type { IncludeExcludeEnum } from './IncludeExcludeEnum';
+import type { DataSubjectRightsEnum } from "./DataSubjectRightsEnum";
+import type { IncludeExcludeEnum } from "./IncludeExcludeEnum";
 
 /**
  * The DataSubjectRights resource model.

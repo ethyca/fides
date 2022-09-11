@@ -1,9 +1,9 @@
 import { Text, useToast } from "@fidesui/react";
+import { errorToastParams, successToastParams } from "common/toast";
 import { useSelector } from "react-redux";
 
 import { DatasetCollection } from "~/types/api";
 
-import { errorToastParams, successToastParams } from "common/toast";
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,

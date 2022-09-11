@@ -5,12 +5,12 @@ import {
   BreadcrumbLink,
   Heading,
 } from "@fidesui/react";
+import NavBar from "common/NavBar";
 import Link from "next/link";
 import React from "react";
 
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
 import ProtectedRoute from "../auth/ProtectedRoute";
-import NavBar from "common/NavBar";
 
 interface Props {
   title: string;

@@ -1,8 +1,8 @@
 import { Box, Button } from "@fidesui/react";
+import DataTabs, { TabData } from "common/DataTabs";
 
 import { useAppDispatch } from "~/app/hooks";
 
-import DataTabs, { TabData } from "common/DataTabs";
 import {
   useDataCategory,
   useDataQualifier,

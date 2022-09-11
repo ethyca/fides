@@ -1,15 +1,5 @@
 import { configureStore, StateFromReducersMapObject } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-
-// import { createWrapper } from "next-redux-wrapper";
-
-import { STORED_CREDENTIALS_KEY } from "../constants";
-import {
-  authApi,
-  AuthState,
-  credentialStorage,
-  reducer as authReducer,
-} from "../features/auth";
 import {
   connectionTypeApi,
   reducer as connectionTypeReducer,
@@ -18,6 +8,7 @@ import {
   datastoreConnectionApi,
   reducer as datastoreConnectionReducer,
 } from "datastore-connections/index";
+import { dispatch } from "jest-circus/build/state";
 import {
   privacyRequestApi,
   reducer as privacyRequestsReducer,
@@ -26,7 +17,7 @@ import {
   reducer as userManagementReducer,
   userApi,
 } from "user-management/index";
-import { dispatch } from "jest-circus/build/state";
+
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -49,6 +40,15 @@ import {
 import { systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
+
+// import { createWrapper } from "next-redux-wrapper";
+import { STORED_CREDENTIALS_KEY } from "../constants";
+import {
+  authApi,
+  AuthState,
+  credentialStorage,
+  reducer as authReducer,
+} from "../features/auth";
 
 const reducer = {
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,

@@ -20,7 +20,6 @@ npm run openapi:generate
 
 **The fidesctl server must be running on `localhost:8080`**. This will read the schema hosted at http://localhost:8080/docs and generate all TS files under `clients/ctl/admin-ui/src/types/api/`.
 
-
 ## Resources
 
 - [FastAPI Client Generation](https://fastapi.tiangolo.com/advanced/generate-clients/?h=typescript#install-openapi-typescript-codegen)

@@ -7,14 +7,13 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
-import { useRetryMutation } from "privacy-requests/privacy-requests.slice";
-import { useState } from "react";
-
 import ClipboardButton from "common/ClipboardButton";
+import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import RequestStatusBadge from "common/RequestStatusBadge";
 import RequestType from "common/RequestType";
+import { useRetryMutation } from "privacy-requests/privacy-requests.slice";
 import { PrivacyRequest } from "privacy-requests/types";
+import { useState } from "react";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequest;

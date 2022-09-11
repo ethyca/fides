@@ -1,9 +1,8 @@
 import { Divider, Flex, Heading, Text } from "@fidesui/react";
-import React from "react";
-
 import PII from "common/PII";
 import PIIToggle from "common/PIIToggle";
 import { PrivacyRequest } from "privacy-requests/types";
+import React from "react";
 
 type SubjectIdentitiesProps = {
   subjectRequest: PrivacyRequest;

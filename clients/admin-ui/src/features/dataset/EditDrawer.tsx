@@ -10,11 +10,10 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
+import ConfirmationModal from "common/ConfirmationModal";
 import { ReactNode } from "react";
 
 import { CloseSolidIcon, TrashCanSolidIcon } from "~/features/common/Icon";
-
-import ConfirmationModal from "common/ConfirmationModal";
 
 interface Props {
   header: string;

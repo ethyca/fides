@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatasetField } from './DatasetField';
+import type { DatasetField } from "./DatasetField";
 
 /**
  * The DatasetCollection resource model.

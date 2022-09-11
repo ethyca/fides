@@ -1,9 +1,9 @@
 import { Box, Button, Heading, Stack, Text } from "@fidesui/react";
+import Head from "common/Head";
+import Image from "common/Image";
 import NextLink from "next/link";
 
 import { INDEX_ROUTE } from "../constants";
-import Head from "common/Head";
-import Image from "common/Image";
 
 const Custom404 = () => (
   <div>

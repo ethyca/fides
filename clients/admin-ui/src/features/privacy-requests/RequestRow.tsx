@@ -15,13 +15,13 @@ import {
   useClipboard,
   useToast,
 } from "@fidesui/react";
+import { MoreIcon } from "common/Icon";
+import PII from "common/PII";
+import RequestStatusBadge from "common/RequestStatusBadge";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 
-import { MoreIcon } from "common/Icon";
-import PII from "common/PII";
-import RequestStatusBadge from "common/RequestStatusBadge";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import {
   useApproveRequestMutation,

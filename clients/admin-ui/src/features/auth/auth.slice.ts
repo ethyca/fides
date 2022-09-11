@@ -4,12 +4,12 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-import type { RootState } from "../../app/store";
-import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 import { User } from "user-management/types";
+
+import type { RootState } from "../../app/store";
+import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
 import {
   LoginRequest,
   LoginResponse,

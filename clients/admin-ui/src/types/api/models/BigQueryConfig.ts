@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { KeyfileCreds } from './KeyfileCreds';
+import type { KeyfileCreds } from "./KeyfileCreds";
 
 /**
  * The model for the connection config for BigQuery

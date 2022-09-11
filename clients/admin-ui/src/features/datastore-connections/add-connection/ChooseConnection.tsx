@@ -9,16 +9,16 @@ import {
 } from "@fidesui/react";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-
-import { useAppSelector } from "../../../app/hooks";
 import {
   selectConnectionTypeFilters,
   setSearch,
   useGetAllConnectionTypesQuery,
 } from "connection-type/index";
 import { ConnectionTypeParams } from "connection-type/types";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "../../../app/hooks";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
 import { AddConnectionStep } from "./types";

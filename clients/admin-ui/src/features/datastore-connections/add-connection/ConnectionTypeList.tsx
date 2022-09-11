@@ -1,10 +1,9 @@
 import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
 import { capitalize } from "common/utils";
+import { ConnectionOption } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import Link from "next/link";
 import React from "react";
-
-import { ConnectionOption } from "connection-type/types";
 
 type ConnectionTypeListProps = {
   items: ConnectionOption[];

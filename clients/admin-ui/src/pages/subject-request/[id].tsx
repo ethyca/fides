@@ -8,16 +8,16 @@ import {
   Spinner,
   Text,
 } from "@fidesui/react";
+import Head from "common/Head";
+import NavBar from "common/NavBar";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
 import React from "react";
+import SubjectRequest from "subject-request/SubjectRequest";
 
 import { INDEX_ROUTE } from "../../constants";
 import ProtectedRoute from "../../features/auth/ProtectedRoute";
-import Head from "common/Head";
-import NavBar from "common/NavBar";
-import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
-import SubjectRequest from "subject-request/SubjectRequest";
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();

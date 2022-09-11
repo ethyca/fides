@@ -1,5 +1,4 @@
 import React from "react";
-
 import NewUserForm from "user-management/NewUserForm";
 import UserManagementLayout from "user-management/UserManagementLayout";
 

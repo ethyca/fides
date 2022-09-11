@@ -1,7 +1,6 @@
 import { Badge } from "@fidesui/react";
-import { ComponentProps } from "react";
-
 import { PrivacyRequestStatus } from "privacy-requests/types";
+import { ComponentProps } from "react";
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: ComponentProps<typeof Badge>;

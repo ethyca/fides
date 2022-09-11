@@ -1,7 +1,7 @@
 import { Button, Menu, MenuButton, MenuList, Portal } from "@fidesui/react";
+import { MoreIcon } from "common/Icon";
 import React from "react";
 
-import { MoreIcon } from "common/Icon";
 import { AccessLevel, ConnectionType } from "./constants";
 import DeleteConnectionModal from "./DeleteConnectionModal";
 import DisableConnectionModal from "./DisableConnectionModal";

@@ -1,8 +1,8 @@
 import { Flex, Input, InputGroup, InputLeftElement } from "@fidesui/react";
+import { SearchLineIcon } from "common/Icon";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SearchLineIcon } from "common/Icon";
 import {
   selectDatastoreConnectionFilters,
   setSearch,

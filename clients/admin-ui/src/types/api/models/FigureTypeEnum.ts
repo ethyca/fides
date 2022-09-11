@@ -7,6 +7,6 @@
  * for a valid figure type to be visualized
  */
 export enum FigureTypeEnum {
-  GRAPHS = 'graphs',
-  TEXT = 'text',
+  GRAPHS = "graphs",
+  TEXT = "text",
 }

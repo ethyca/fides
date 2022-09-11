@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "../../constants";
 import { logout, selectUser, useLogoutMutation } from "../auth";
-import { UserIcon, QuestionIcon } from "./Icon";
+import { QuestionIcon,UserIcon } from "./Icon";
 import Image from "./Image";
 
 const useHeader = () => {

@@ -1,7 +1,6 @@
 import { Box, Tag } from "@fidesui/react";
-import React from "react";
-
 import { ActionType, Rule } from "privacy-requests/types";
+import React from "react";
 
 type RequestTypeProps = {
   rules: Rule[];

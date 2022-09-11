@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { addCommonHeaders } from "common/CommonHeaders";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
-import { addCommonHeaders } from "common/CommonHeaders";
 import {
   ConnectionType,
   DisabledStatus,

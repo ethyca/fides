@@ -1,9 +1,9 @@
 import { Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
+import PaginationFooter from "common/PaginationFooter";
 import { debounce } from "common/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import PaginationFooter from "common/PaginationFooter";
 import {
   selectPrivacyRequestFilters,
   setPage,

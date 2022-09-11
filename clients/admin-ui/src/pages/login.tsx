@@ -11,6 +11,8 @@ import {
   Stack,
   useToast,
 } from "@fidesui/react";
+import Head from "common/Head";
+import Image from "common/Image";
 import { Formik } from "formik";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -19,8 +21,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { INDEX_ROUTE } from "../constants";
 import { login, selectToken, useLoginMutation } from "../features/auth";
-import Head from "common/Head";
-import Image from "common/Image";
 
 const useLogin = () => {
   const [loginRequest, { isLoading }] = useLoginMutation();

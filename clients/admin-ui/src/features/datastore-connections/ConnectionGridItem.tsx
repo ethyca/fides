@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
+import { capitalize, formatDate } from "common/utils";
 import React from "react";
 
-import { capitalize, formatDate } from "common/utils";
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";

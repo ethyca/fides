@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { UserResponse } from './UserResponse';
+import type { UserResponse } from "./UserResponse";
 
 export type Page_UserResponse_ = {
   items: Array<UserResponse>;

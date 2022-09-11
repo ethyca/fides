@@ -1,12 +1,12 @@
 import { Box, Heading } from "@fidesui/react";
-import type { NextPage } from "next";
-import React from "react";
-
-import ProtectedRoute from "../../features/auth/ProtectedRoute";
 import Head from "common/Head";
 import NavBar from "common/NavBar";
+import type { NextPage } from "next";
+import React from "react";
 import UserManagementTable from "user-management/UserManagementTable";
 import UserManagementTableActions from "user-management/UserManagementTableActions";
+
+import ProtectedRoute from "../../features/auth/ProtectedRoute";
 
 const UserManagement: NextPage = () => (
   <ProtectedRoute>

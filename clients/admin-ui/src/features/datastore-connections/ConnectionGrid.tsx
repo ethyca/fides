@@ -1,10 +1,10 @@
 import { chunk } from "@chakra-ui/utils";
 import { Box, SimpleGrid } from "@fidesui/react";
+import PaginationFooter from "common/PaginationFooter";
 import React from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "../../app/hooks";
-import PaginationFooter from "common/PaginationFooter";
 import classes from "./ConnectionGrid.module.css";
 import ConnectionGridItem from "./ConnectionGridItem";
 import {

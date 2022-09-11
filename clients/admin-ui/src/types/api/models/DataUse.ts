@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { LegalBasisEnum } from './LegalBasisEnum';
-import type { SpecialCategoriesEnum } from './SpecialCategoriesEnum';
+import type { LegalBasisEnum } from "./LegalBasisEnum";
+import type { SpecialCategoriesEnum } from "./SpecialCategoriesEnum";
 
 /**
  * The DataUse resource model.

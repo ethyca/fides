@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ResourceFilter } from './ResourceFilter';
+import type { ResourceFilter } from "./ResourceFilter";
 
 /**
  * The OrganizationMetadata resource model.

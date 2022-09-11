@@ -1,9 +1,9 @@
 import { Box, Heading, SimpleGrid, Text } from "@fidesui/react";
+import CheckboxTree from "common/CheckboxTree";
 import { useMemo, useState } from "react";
 
 import { DataCategory } from "~/types/api";
 
-import CheckboxTree from "common/CheckboxTree";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 
 interface Props {

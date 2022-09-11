@@ -1,3 +1,4 @@
+import { YesNoOptions } from "common/constants";
 import { ReactNode } from "react";
 
 import {
@@ -11,7 +12,6 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
-import { YesNoOptions } from "common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,

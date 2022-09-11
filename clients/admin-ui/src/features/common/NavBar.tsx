@@ -1,7 +1,7 @@
 import { Button, Flex } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, {ReactElement} from "react";
+import React, { ReactElement } from "react";
 
 import {
   DATASTORE_CONNECTION_ROUTE,
@@ -52,8 +52,7 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
   );
 };
 
-const NavBar = () => {
-  return (
+const NavBar = () => (
     <>
       <Header />
       <Flex
@@ -87,6 +86,5 @@ const NavBar = () => {
       </Flex>
     </>
   );
-};
 
 export default NavBar;

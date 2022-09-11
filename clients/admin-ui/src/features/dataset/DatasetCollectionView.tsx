@@ -1,4 +1,5 @@
 import { Box, Select, Spinner, useToast } from "@fidesui/react";
+import { successToastParams } from "common/toast";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +9,6 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-import { successToastParams } from "common/toast";
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollectionIndex,

@@ -10,11 +10,11 @@ import {
   Text,
   Tr,
 } from "@fidesui/react";
+import { MoreIcon } from "common/Icon";
 import { useRouter } from "next/router";
 import React from "react";
 
 import { USER_MANAGEMENT_ROUTE } from "../../constants";
-import { MoreIcon } from "common/Icon";
 import DeleteUserModal from "./DeleteUserModal";
 import { User } from "./types";
 

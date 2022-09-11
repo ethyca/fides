@@ -1,6 +1,6 @@
-import { RTKErrorResult } from "~/types/errors";
-
 import { TreeNode } from "common/types";
+
+import { RTKErrorResult } from "~/types/errors";
 
 export interface TaxonomyEntityNode extends TreeNode {
   description?: string;

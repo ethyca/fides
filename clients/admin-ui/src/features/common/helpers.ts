@@ -1,5 +1,10 @@
+/**
+ * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
+ */
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { YAMLException } from "js-yaml";
 import { narrow } from "narrow-minded";
+
 import {
   isAlreadyExistsErrorData,
   isAPIError,
@@ -35,12 +40,6 @@ export const getErrorMessage = (
 
 export const isYamlException = (error: unknown): error is YAMLException =>
   narrow({ name: "string" }, error) && error.name === "YAMLException";
-
-/**
- * Taken from https://redux-toolkit.js.org/rtk-query/usage-with-typescript#inline-error-handling-example
- */
-
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 /**
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`

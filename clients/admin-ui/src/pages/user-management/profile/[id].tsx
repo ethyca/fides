@@ -1,7 +1,6 @@
 import { Spinner } from "@fidesui/react";
 import { useRouter } from "next/router";
 import React from "react";
-
 import EditUserForm from "user-management/EditUserForm";
 import {
   useGetUserByIdQuery,

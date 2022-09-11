@@ -1,7 +1,7 @@
 import { Divider, Heading } from "@fidesui/react";
+import { utf8ToB64 } from "common/utils";
 import React from "react";
 
-import { utf8ToB64 } from "common/utils";
 import { useCreateUserMutation } from "./user-management.slice";
 import UserForm, { FormValues } from "./UserForm";
 
