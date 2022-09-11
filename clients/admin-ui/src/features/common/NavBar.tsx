@@ -54,37 +54,37 @@ const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
 };
 
 const NavBar = () => (
-    <>
-      <Header />
-      <Flex
-        borderBottom="1px"
-        borderTop="1px"
-        px={9}
-        py={1}
-        borderColor="gray.100"
-      >
-        <nav>
-          <NavLink title="Subject Requests" href={INDEX_ROUTE} exact />
-          <NavLink
-            title="Datastore Connections"
-            href={DATASTORE_CONNECTION_ROUTE}
-          />
-          <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />
-          <NavLink title="Systems" href="/system" disabled />
-          <NavLink title="Datasets" href="/dataset" />
-          <NavLink title="Policies" href="/policy" disabled />
-          <NavLink title="Taxonomy" href="/taxonomy" />
-          {/* This is a temporary link to the config wizard while it's still in progress */}
-          <NavLink title="Config Wizard" href="/config-wizard" />
-          <NavLink
-            title="More"
-            href="#"
-            rightIcon={<ArrowDownLineIcon />}
-            disabled
-          />
-        </nav>
-      </Flex>
-    </>
-  );
+  <>
+    <Header />
+    <Flex
+      borderBottom="1px"
+      borderTop="1px"
+      px={9}
+      py={1}
+      borderColor="gray.100"
+    >
+      <nav>
+        <NavLink title="Subject Requests" href={INDEX_ROUTE} exact />
+        <NavLink
+          title="Datastore Connections"
+          href={DATASTORE_CONNECTION_ROUTE}
+        />
+        <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />
+        <NavLink title="Systems" href="/system" disabled />
+        <NavLink title="Datasets" href="/dataset" />
+        <NavLink title="Policies" href="/policy" disabled />
+        <NavLink title="Taxonomy" href="/taxonomy" />
+        {/* This is a temporary link to the config wizard while it's still in progress */}
+        <NavLink title="Config Wizard" href="/config-wizard" />
+        <NavLink
+          title="More"
+          href="#"
+          rightIcon={<ArrowDownLineIcon />}
+          disabled
+        />
+      </nav>
+    </Flex>
+  </>
+);
 
 export default NavBar;

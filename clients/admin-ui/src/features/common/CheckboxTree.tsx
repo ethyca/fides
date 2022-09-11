@@ -8,10 +8,7 @@
  */
 
 import { Box, Checkbox, IconButton } from "@fidesui/react";
-import {
-  ArrowDownLineIcon,
-  ArrowUpLineIcon,
-} from "common/Icon";
+import { ArrowDownLineIcon, ArrowUpLineIcon } from "common/Icon";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
 import { TreeNode } from "./types";
