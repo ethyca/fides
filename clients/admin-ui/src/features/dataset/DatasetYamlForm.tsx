@@ -1,9 +1,6 @@
 import { Box, Button, Text, useToast } from "@fidesui/react";
 import { CustomTextArea } from "common/form/inputs";
-import {
-  getErrorMessage,
-  isYamlException,
-} from "common/helpers";
+import { getErrorMessage, isYamlException } from "common/helpers";
 import { successToastParams } from "common/toast";
 import { Form, Formik, FormikHelpers } from "formik";
 import yaml from "js-yaml";
