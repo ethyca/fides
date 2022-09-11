@@ -27,3 +27,28 @@ The sole exception to this is the `pages` directory. Tests for Next.js pages liv
 During the software development process, one or more features may not be visible at runtime. To toggle a given feature, find the given feature flag `name` key located in the [flags.json](/clients/admin-ui/srcgs.json) file. Update the `isActive` key value to `true/false`. If `true`, feature will be visible at runtime. Otherwise, feature will not be visible at runtime.
 
 For techinical reference implementation, please reference [react-feature-flags](https://github.com/romaindso/react-feature-flags).
+
+
+
+
+
+
+# FidesCtl Readme
+# Admin UI
+
+Admin UI for managing Fidesctl.
+
+## Running Locally
+
+1. Run `nox -s dev` in top-level `fides` directory
+1. Navigate to `http://localhost:3000/`.
+
+## Preparing for production
+
+To view a production version of this site, including the backend:
+
+1. Run `npm prod-export`. This will
+   1. Export the static site to `out/`
+   1. Copy the build from `out/` to the folder in the backend which will serve static assets at `/`
+1. Run `nox -s api` in the top-level `fides` directory.
+1. Navigate to `http://localhost:8000`

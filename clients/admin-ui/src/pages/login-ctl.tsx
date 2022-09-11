@@ -75,7 +75,7 @@ const useLogin = () => {
   return { ...formik, isLoading };
 };
 
-const Login: NextPage = () => {
+const LoginCtl: NextPage = () => {
   const {
     errors,
     handleBlur,
@@ -213,4 +213,4 @@ const Login: NextPage = () => {
   );
 };
 
-export default Login;
+export default LoginCtl;
