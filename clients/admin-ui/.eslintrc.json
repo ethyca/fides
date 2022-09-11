@@ -11,7 +11,7 @@
   "root": true,
   "parserOptions": {
     "project": "./tsconfig.json",
-    "tsconfigRootDir": "__dirname"
+//    "tsconfigRootDir": "__dirname"
   },
   "rules": {
     // causes bug in re-exporting default exports, see

@@ -11,7 +11,7 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
-import { YesNoOptions } from "../common/constants";
+import { YesNoOptions } from "common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,

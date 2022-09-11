@@ -1,7 +1,7 @@
 import { TooltipProps } from "@chakra-ui/react";
 import { Tooltip } from "@fidesui/react";
 
-import { QuestionIcon } from "./Icon";
+import { QuestionIcon } from "../../../../ctl/admin-ui/src/features/common/Icon";
 
 const QuestionTooltip = ({ ...props }: Omit<TooltipProps, "children">) => (
   <Tooltip {...props}>

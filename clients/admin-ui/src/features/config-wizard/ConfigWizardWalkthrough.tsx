@@ -5,8 +5,8 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
 
-import HorizontalStepper from "../common/HorizontalStepper";
-import Stepper from "../common/Stepper";
+import HorizontalStepper from "common/HorizontalStepper";
+import Stepper from "common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {

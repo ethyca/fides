@@ -5,7 +5,7 @@ import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
   VerticalLineIcon,
-} from "./Icon";
+} from "../../../../ctl/admin-ui/src/features/common/Icon";
 
 interface Props {
   activeStep: number | null;

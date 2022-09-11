@@ -8,7 +8,7 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-import { successToastParams } from "../common/toast";
+import { successToastParams } from "common/toast";
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollectionIndex,

@@ -2,7 +2,7 @@ import { Box, Button } from "@fidesui/react";
 
 import { useAppDispatch } from "~/app/hooks";
 
-import DataTabs, { TabData } from "../common/DataTabs";
+import DataTabs, { TabData } from "common/DataTabs";
 import {
   useDataCategory,
   useDataQualifier,

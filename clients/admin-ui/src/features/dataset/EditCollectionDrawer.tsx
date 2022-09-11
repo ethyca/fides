@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 
 import { DatasetCollection } from "~/types/api";
 
-import { errorToastParams, successToastParams } from "../common/toast";
+import { errorToastParams, successToastParams } from "common/toast";
 import {
   selectActiveCollectionIndex,
   selectActiveDataset,

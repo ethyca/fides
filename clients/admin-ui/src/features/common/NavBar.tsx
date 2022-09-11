@@ -1,7 +1,7 @@
 import { Button, Flex } from "@fidesui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
+import React, {ReactElement} from "react";
 
 import {
   DATASTORE_CONNECTION_ROUTE,
@@ -11,9 +11,48 @@ import {
 import Header from "./Header";
 import { ArrowDownLineIcon } from "./Icon";
 
-const NavBar = () => {
-  const router = useRouter();
+interface NavLinkProps {
+  title: string;
+  href: string;
+  disabled?: boolean;
+  rightIcon?: ReactElement;
+  exact?: boolean;
+}
 
+const NavLink = ({ title, href, disabled, rightIcon, exact }: NavLinkProps) => {
+  const router = useRouter();
+  let isActive = false;
+  if (exact) {
+    isActive = router.pathname === href;
+  } else {
+    isActive = router.pathname.startsWith(href);
+  }
+  const NavButton = (
+    <Button
+      as="a"
+      variant="ghost"
+      disabled={disabled}
+      mr={4}
+      colorScheme={isActive ? "complimentary" : "ghost"}
+      rightIcon={rightIcon}
+      data-testid={`nav-link-${title}`}
+      isActive={isActive}
+      _active={{ bg: "transparent" }}
+    >
+      {title}
+    </Button>
+  );
+  if (disabled) {
+    return NavButton;
+  }
+  return (
+    <NextLink href={href} passHref>
+      {NavButton}
+    </NextLink>
+  );
+};
+
+const NavBar = () => {
   return (
     <>
       <Header />
@@ -24,61 +63,27 @@ const NavBar = () => {
         py={1}
         borderColor="gray.100"
       >
-        <NextLink href={INDEX_ROUTE} passHref>
-          <Button
-            as="a"
-            variant="ghost"
-            mr={4}
-            colorScheme={
-              router && router.pathname === INDEX_ROUTE
-                ? "complimentary"
-                : "ghost"
-            }
-          >
-            Subject Requests
-          </Button>
-        </NextLink>
-
-        <NextLink href={DATASTORE_CONNECTION_ROUTE} passHref>
-          <Button
-            as="a"
-            variant="ghost"
-            mr={4}
-            colorScheme={
-              router && router.pathname.startsWith(DATASTORE_CONNECTION_ROUTE)
-                ? "complimentary"
-                : "ghost"
-            }
-          >
-            Datastore Connections
-          </Button>
-        </NextLink>
-
-        <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-          <Button
-            as="a"
-            variant="ghost"
-            mr={4}
-            colorScheme={
-              router && router.pathname.startsWith(USER_MANAGEMENT_ROUTE)
-                ? "complimentary"
-                : "ghost"
-            }
-          >
-            User Management
-          </Button>
-        </NextLink>
-
-        <NextLink href="#" passHref>
-          <Button
-            as="a"
-            variant="ghost"
-            disabled
+        <nav>
+          <NavLink title="Subject Requests" href={INDEX_ROUTE} exact />
+          <NavLink
+            title="Datastore Connections"
+            href={DATASTORE_CONNECTION_ROUTE}
+          />
+          <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />
+          <NavLink title="Systems" href="/system" disabled />
+          <NavLink title="Datasets" href="/dataset" />
+          <NavLink title="Policies" href="/policy" disabled />
+          <NavLink title="Taxonomy" href="/taxonomy" />
+          <NavLink title="User Management" href="/user-management" disabled />
+          {/* This is a temporary link to the config wizard while it's still in progress */}
+          <NavLink title="Config Wizard" href="/config-wizard" />
+          <NavLink
+            title="More"
+            href="#"
             rightIcon={<ArrowDownLineIcon />}
-          >
-            More
-          </Button>
-        </NextLink>
+            disabled
+          />
+        </nav>
       </Flex>
     </>
   );

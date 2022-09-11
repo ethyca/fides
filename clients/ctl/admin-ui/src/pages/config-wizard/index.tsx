@@ -5,7 +5,7 @@ import Header from "~/features/common/Header";
 import Layout from "~/features/common/Layout";
 import ConfigWizardWalkthrough from "~/features/config-wizard/ConfigWizardWalkthrough";
 
-import Setup from "../../features/config-wizard/setup";
+import Setup from "../../../../../admin-ui/src/features/config-wizard/setup";
 
 const ConfigWizard: NextPage = () => {
   const [configWizardStep, setConfigWizardStep] = useState(false);

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
 
-import type { AppState } from "../../app/store";
+import type { AppState } from "../../../../ctl/admin-ui/src/app/store";
 
 export interface State {
   token: string | null;

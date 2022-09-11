@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { DataCategory } from "~/types/api";
 
-import CheckboxTree from "../common/CheckboxTree";
+import CheckboxTree from "common/CheckboxTree";
 import { transformTaxonomyEntityToNodes } from "./helpers";
 
 interface Props {

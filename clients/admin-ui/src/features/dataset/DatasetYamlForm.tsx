@@ -6,8 +6,11 @@ import { useRouter } from "next/router";
 import { Dataset } from "~/types/api";
 
 import { CustomTextArea } from "../common/form/inputs";
-import { getErrorMessage, isYamlException } from "../common/helpers";
-import { successToastParams } from "../common/toast";
+import {
+  getErrorMessage,
+  isYamlException,
+} from "../../../../ctl/admin-ui/src/features/common/helpers";
+import { successToastParams } from "common/toast";
 import { setActiveDataset, useCreateDatasetMutation } from "./dataset.slice";
 
 const initialValues = { datasetYaml: "" };
