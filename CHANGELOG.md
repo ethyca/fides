@@ -19,6 +19,7 @@ The types of changes are:
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
