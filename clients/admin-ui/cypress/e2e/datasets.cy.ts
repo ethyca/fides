@@ -12,7 +12,7 @@ describe("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    it("Can navigate to the datasets list view", () => {
+    it.skip("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");
