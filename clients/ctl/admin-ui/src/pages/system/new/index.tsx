@@ -55,7 +55,9 @@ const NewSystem: NextPage = () => {
             variant="outline"
             data-testid="manually-generate-btn"
           >
-            Manually generate a system
+            <NextLink href="/system/new/configure">
+              Manually generate a system
+            </NextLink>
           </Button>
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
