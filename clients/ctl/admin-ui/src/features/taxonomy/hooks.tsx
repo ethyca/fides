@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 
+import { RTKResult } from "~/features/common/types";
 import {
   DataCategory,
   DataQualifier,
@@ -44,7 +45,7 @@ import {
   useUpdateDataCategoryMutation,
 } from "./taxonomy.slice";
 import type { FormValues } from "./TaxonomyFormBase";
-import { Labels, RTKResult, TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity } from "./types";
 
 export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
