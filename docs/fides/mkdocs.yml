@@ -8,60 +8,113 @@ edit_uri: blob/main/docs/fides/docs/
 
 # Navigation
 nav:
-  - What is Fides?: index.md
-  - Quick Start:
-      - Overview: quickstart/overview.md
-      - Running Fidesctl Locally (Standalone): quickstart/local_standalone.md
-      - Running Fidesctl Locally (Full Installation): quickstart/local_full.md
-      - Running Fidesctl in Docker: quickstart/docker.md
-  - Installation:
-      - Installation Overview: installation/installation.md
-      - Prerequisites & Dependencies: installation/prerequisites_dependencies.md
-      - Installation from PyPI: installation/pypi.md
-      - Installation from Docker: installation/docker.md
-      - Setting up the database: installation/database.md
-      - Configuration: installation/configuration.md
-  - Tutorial:
-      - Overview: tutorial/index.md
-      - Add Fidesctl to the App: tutorial/add.md
-      - Annotate the Dataset: tutorial/dataset.md
-      - Annotate the System: tutorial/system.md
-      - Write a Policy: tutorial/policy.md
-      - Add Google Analytics: tutorial/google.md
-      - Manage Google Analytics with Fidesctl: tutorial/pass.md
-  - How-To Guides:
-      - Generating Resources: guides/generate_resources.md
-      - Example Policies: guides/policies.md
-      - Extending the Taxonomy: guides/extending_taxonomy.md
-      - Generating a Data Map: guides/generating_datamap.md
-  - Fides UI:
-      - Overview: admin_ui/overview.md
-      - Configuration Wizard: admin_ui/wizard.md
-      - Managing Datasets: admin_ui/datasets.md
-  - CI/CD Integration:
-      - Overview: cicd/overview.md
-      - Example Integrations: cicd/examples.md
-  - Fides Language:
-      - Overview: language/overview.md
-      - Syntax: language/syntax.md
-      - Resources:
-          - Organization: language/resources/organization.md
-          - Policy: language/resources/policy.md
-          - Registry: language/resources/registry.md
-          - System: language/resources/system.md
-          - Dataset: language/resources/dataset.md
-      - Taxonomy:
-          - Overview: language/taxonomy/overview.md
-          - Taxonomy Explorer: language/taxonomy/explorer.md
-          - Data Categories: language/taxonomy/data_categories.md
-          - Data Uses: language/taxonomy/data_uses.md
-          - Data Subjects: language/taxonomy/data_subjects.md
-          - Data Qualifiers: language/taxonomy/data_qualifiers.md
-  - CLI: cli.md
+  - Fides:
+      - What is Fides?: index.md
+      - Fides Control: fidesctl/index.md
+      - Fides Ops: fidesops/index.md
+      - Fides Lang: https://ethyca.github.io/fideslang/
+      - Development: development/overview.md
+      - Community: community/overview.md
+      - About Ethyca: ethyca.md
+  - Fides Control: 
+      - What is Fidesctl?: fidesctl/index.md
+      - Quick Start:
+          - Running Fidesctl Locally (Standalone): fidesctl/quickstart/local_standalone.md
+          - Running Fidesctl Locally (Full Installation): fidesctl/quickstart/local_full.md
+          - Running Fidesctl in Docker: fidesctl/quickstart/docker.md
+      - Installation:
+          - Installation Overview: fidesctl/installation/installation.md
+          - Prerequisites & Dependencies: fidesctl/installation/prerequisites_dependencies.md
+          - Installation from PyPI: fidesctl/installation/pypi.md
+          - Installation from Docker: fidesctl/installation/docker.md
+          - Setting up the database: fidesctl/installation/database.md
+          - Configuration: fidesctl/installation/configuration.md
+      - Tutorial:
+          - Overview: fidesctl/tutorial/index.md
+          - Add Fidesctl to the App: fidesctl/tutorial/add.md
+          - Annotate the Dataset: fidesctl/tutorial/dataset.md
+          - Annotate the System: fidesctl/tutorial/system.md
+          - Write a Policy: fidesctl/tutorial/policy.md
+          - Add Google Analytics: fidesctl/tutorial/google.md
+          - Manage Google Analytics with Fidesctl: fidesctl/tutorial/pass.md
+      - How-To Guides:
+          - Generating Resources: fidesctl/guides/generate_resources.md
+          - Example Policies: fidesctl/guides/policies.md
+          - Extending the Taxonomy: fidesctl/guides/extending_taxonomy.md
+          - Generating a Data Map: fidesctl/guides/generating_datamap.md
+      - Fides UI:
+          - Overview: fidesctl/admin_ui/overview.md
+          - Configuration Wizard: fidesctl/admin_ui/wizard.md
+          - Managing Datasets: fidesctl/admin_ui/datasets.md
+      - CI/CD Integration:
+          - Overview: fidesctl/cicd/overview.md
+          - Example Integrations: fidesctl/cicd/examples.md
+      - CLI: fidesctl/cli.md
+  - Fides Ops:
+      - What is Fidesops?: fidesops/index.md
+      - Use Cases: fidesops/use_cases.md
+      - Installation and Use:
+          - Getting Started: fidesops/getting_started.md
+          - Authenticate with OAuth: fidesops/guides/oauth.md
+          - Connect to Databases: fidesops/guides/database_connectors.md
+          - Define Datasets: fidesops/guides/datasets.md
+          - Configure Policies: fidesops/guides/policies.md
+          - Execute Privacy Requests: fidesops/guides/privacy_requests.md
+      - Fidesops UI:
+          - Overview: fidesops/ui/overview.md
+          - Privacy Center: fidesops/ui/privacy_center.md
+          - Admin UI:
+              - Subject Requests: fidesops/ui/subject_requests.md
+              - Managing Datastores: fidesops/ui/datastores.md
+              - User Management: fidesops/ui/user_management.md
+      - How-To Guides:
+          - View Available Connection Types: fidesops/guides/connection_types.md
+          - Configure Email Communications: fidesops/guides/email_communications.md
+          - Annotate Complex Fields: fidesops/guides/complex_fields.md
+          - Configure Data Masking: fidesops/guides/masking_strategies.md
+          - Configure Storage Destinations: fidesops/guides/storage.md
+          - Configure Policy Webhooks: fidesops/guides/policy_webhooks.md
+          - Report on Privacy Requests: fidesops/guides/reporting.md
+          - Configure OneTrust Integration: fidesops/guides/onetrust.md
+          - Preview Query Execution: fidesops/guides/query_execution.md
+          - Data Rights Protocol: fidesops/guides/data_rights_protocol.md
+      - SaaS Connectors:
+          - Connect to SaaS Applications: fidesops/saas_connectors/saas_connectors.md
+          - SaaS Configuration: fidesops/saas_connectors/saas_config.md
+          - SaaS OAuth2 Configuration: fidesops/saas_connectors/saas_oauth2.md
+          - SaaS Post-Processors: fidesops/saas_connectors/saas_postprocessors.md
+          - SaaS Pagination: fidesops/saas_connectors/saas_pagination.md
+          - Connection Examples:
+              - Adobe Campaign: fidesops/saas_connectors/example_configs/adobe.md
+              - Hubspot: fidesops/saas_connectors/example_configs/hubspot.md
+              - Mailchimp: fidesops/saas_connectors/example_configs/mailchimp.md
+              - Outreach: fidesops/saas_connectors/example_configs/outreach.md
+              - Salesforce: fidesops/saas_connectors/example_configs/salesforce.md
+              - Segment: fidesops/saas_connectors/example_configs/segment.md
+              - Sendgrid: fidesops/saas_connectors/example_configs/sendgrid.md
+              - Sentry: fidesops/saas_connectors/example_configs/sentry.md
+              - Stripe: fidesops/saas_connectors/example_configs/stripe.md
+              - Zendesk: fidesops/saas_connectors/example_configs/zendesk.md
+      - Configuration Reference: fidesops/guides/configuration_reference.md
+      - Deployment Guide: fidesops/deployment.md
+      - Glossary: fidesops/glossary.md
+      - Tutorial:
+          - Zero to Privacy Request: fidesops/tutorial/index.md
+          - Install Fidesops: fidesops/tutorial/installation.md
+          - Outline a Python Script: fidesops/tutorial/outline.md
+          - Create an Oauth Client: fidesops/tutorial/oauth_client.md
+          - Connect to Postgres: fidesops/tutorial/postgres_connection.md
+          - Annotate a Database: fidesops/tutorial/annotate_datasets.md
+          - Configure a Storage Destination: fidesops/tutorial/storage_config.md
+          - Define a Policy: fidesops/tutorial/define_policy.md
+          - Execute a Privacy Request: fidesops/tutorial/execute_privacy_request.md
+  - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:
       - Overview: development/overview.md
+      - Contributing Details: development/contributing_details.md
       - Code Style: development/code_style.md
+      - Fideslog Analytics: development/fideslog.md
       - Database Migration: development/database_migration.md
       - Documentation: development/documentation.md
       - Testing: development/testing.md
@@ -71,8 +124,9 @@ nav:
       - Github, Slack & Discord: community/overview.md
       - Community Hints & Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
-  - About Ethyca: ethyca.md
-  - License: license.md
+  - About Ethyca: 
+      - About Ethyca: ethyca.md
+      - License: license.md
 
 # Theme
 theme:
@@ -96,6 +150,7 @@ theme:
   features:
     - navigation.top
     - navigation.instant
+    - navigation.tabs
   custom_dir: overrides
 
 markdown_extensions:

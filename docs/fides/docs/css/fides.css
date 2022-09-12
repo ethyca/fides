@@ -62,6 +62,10 @@ body {
     background-color: var(--md-header-bg-color);
 }
 
+.md-tabs {
+    background-color: var(--md-header-bg-color);
+}
+
 .md-header .md-logo img {
     width: 100px;
     height: auto;
