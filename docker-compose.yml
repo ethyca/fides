@@ -77,6 +77,10 @@ services:
     volumes:
       - ./docs/fides:/docs
       - ./:/fides
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
     environment:
       - FIDES__DEV_MODE=True
       - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID}
