@@ -1,7 +1,5 @@
-import { mockNextUseRouter } from "~/test-utils";
-
 import Home from "../src/pages";
-import { render, screen } from "./test-utils";
+import { mockNextUseRouter, render, screen } from "./test-utils";
 
 describe("Home", () => {
   it("renders the Subject Requests page by default when logged in", () => {
