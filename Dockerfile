@@ -54,8 +54,6 @@ RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-r
 #########################
 ## Python Dependencies ##
 #########################
-COPY mssql-requirements.txt .
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
 
 COPY optional-requirements.txt .
 RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
@@ -90,7 +88,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pip install --no-deps -e .
+RUN pip install -e .
 
 #############################
 ## Production Application ##
