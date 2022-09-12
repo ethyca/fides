@@ -15,9 +15,8 @@ import Layout from "~/features/common/Layout";
 import SystemYamlForm from "~/features/system/SystemYamlForm";
 
 const NewSystem: NextPage = () => {
-  const [generateMethod, setGenerateMethod] = useState<
-    "yaml" | "manual" | null
-  >(null);
+  const [showYamlForm, setShowYamlForm] = useState(false);
+
   return (
     <Layout title="Systems">
       <Heading mb={2} fontSize="2xl" fontWeight="semibold">
@@ -45,18 +44,22 @@ const NewSystem: NextPage = () => {
             size="sm"
             mr={2}
             variant="outline"
-            onClick={() => setGenerateMethod("yaml")}
-            isActive={generateMethod === "yaml"}
+            onClick={() => setShowYamlForm(true)}
+            isActive={showYamlForm}
             data-testid="upload-yaml-btn"
           >
             Upload a new system YAML
           </Button>
-          <Button size="sm" variant="outline">
+          <Button
+            size="sm"
+            variant="outline"
+            data-testid="manually-generate-btn"
+          >
             Manually generate a system
           </Button>
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
-          {generateMethod === "yaml" ? <SystemYamlForm /> : null}
+          {showYamlForm ? <SystemYamlForm /> : null}
         </Box>
       </Stack>
     </Layout>
