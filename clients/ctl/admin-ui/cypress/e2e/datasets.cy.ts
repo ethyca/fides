@@ -283,14 +283,14 @@ describe("Dataset", () => {
         const datasetAsString = JSON.stringify(dataset);
         // Cypress doesn't have a native "paste" command, so instead do change the value directly
         // (.type() is too slow, even with 0 delay)
-        cy.getByTestId("input-datasetYaml")
+        cy.getByTestId("input-yaml")
           .click()
           .invoke("val", datasetAsString)
           .trigger("change");
         // type just one space character to make sure the text field triggers Formik's handlers
-        cy.getByTestId("input-datasetYaml").type(" ");
+        cy.getByTestId("input-yaml").type(" ");
 
-        cy.getByTestId("create-dataset-btn").click();
+        cy.getByTestId("submit-yaml-btn").click();
         cy.wait("@postDataset").then((interception) => {
           const { body } = interception.request;
           expect(body).to.eql(dataset);
@@ -323,16 +323,16 @@ describe("Dataset", () => {
       cy.visit("/dataset/new");
       cy.getByTestId("upload-yaml-btn").click();
       // type something that isn't yaml
-      cy.getByTestId("input-datasetYaml").type("invalid: invalid: invalid");
-      cy.getByTestId("create-dataset-btn").click();
-      cy.getByTestId("error-datasetYaml").should("contain", "Could not parse");
+      cy.getByTestId("input-yaml").type("invalid: invalid: invalid");
+      cy.getByTestId("submit-yaml-btn").click();
+      cy.getByTestId("error-yaml").should("contain", "Could not parse");
 
       // type something that is valid yaml and let backend render an error
-      cy.getByTestId("input-datasetYaml")
+      cy.getByTestId("input-yaml")
         .clear()
         .type("valid yaml that is not a dataset");
-      cy.getByTestId("create-dataset-btn").click();
-      cy.getByTestId("error-datasetYaml").should("contain", "field required");
+      cy.getByTestId("submit-yaml-btn").click();
+      cy.getByTestId("error-yaml").should("contain", "field required");
     });
 
     it("Can create a dataset by connecting to a database", () => {

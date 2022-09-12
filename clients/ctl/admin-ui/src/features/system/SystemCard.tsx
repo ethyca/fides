@@ -17,6 +17,7 @@ interface SystemCardProps {
 }
 const SystemCard = ({ system }: SystemCardProps) => {
   // TODO fides#1035, fides#1036
+  const showMoreActions = false; // disable while feature is not implemented yet
   const handleEdit = () => {};
   const handleDelete = () => {};
 
@@ -30,24 +31,26 @@ const SystemCard = ({ system }: SystemCardProps) => {
           <Text>{system.description}</Text>
         </Box>
       </Box>
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          icon={<MoreIcon />}
-          aria-label="more actions"
-          variant="unstyled"
-          size="sm"
-          data-testid="more-btn"
-        />
-        <MenuList>
-          <MenuItem onClick={handleEdit} data-testid="edit-btn">
-            Edit
-          </MenuItem>
-          <MenuItem onClick={handleDelete} data-testid="delete-btn">
-            Delete
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      {showMoreActions ? (
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            icon={<MoreIcon />}
+            aria-label="more actions"
+            variant="unstyled"
+            size="sm"
+            data-testid="more-btn"
+          />
+          <MenuList>
+            <MenuItem onClick={handleEdit} data-testid="edit-btn">
+              Edit
+            </MenuItem>
+            <MenuItem onClick={handleDelete} data-testid="delete-btn">
+              Delete
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      ) : null}
     </Box>
   );
 };

@@ -27,7 +27,9 @@ export const systemApi = createApi({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
       providesTags: ["System"],
     }),
-    createSystem: build.mutation<{}, Partial<System>>({
+    // we accept 'unknown' as well since the user can paste anything in, and we rely
+    // on the backend to do the validation for us
+    createSystem: build.mutation<System, System | unknown>({
       query: (body) => ({
         url: `system/`,
         method: "POST",
