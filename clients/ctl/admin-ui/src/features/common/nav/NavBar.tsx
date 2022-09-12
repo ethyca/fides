@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
-import { ArrowDownLineIcon } from "~/features/common/Icon";
 
 // Cross-zone navigation requires building URLs from the current `window.location`
 // which is not available in Server-Side-Rendered components.
