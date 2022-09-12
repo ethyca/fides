@@ -30,12 +30,6 @@ const NavBar = () => {
         <NavLink title="Taxonomy" href="/taxonomy" />
         {/* This is a temporary link to the config wizard while it's still in progress */}
         <NavLink title="Config Wizard" href="/config-wizard" />
-        <NavLink
-          title="More"
-          href="#"
-          rightIcon={<ArrowDownLineIcon />}
-          disabled
-        />
       </nav>
     </Flex>
   );
