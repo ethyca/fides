@@ -2,9 +2,12 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
+from faker import Faker
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
@@ -16,6 +19,7 @@ from fidesops.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("shopify")
@@ -100,3 +104,150 @@ def shopify_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def shopify_erasure_data(
+    shopify_connection_config, shopify_erasure_identity_email, shopify_secrets
+) -> Generator:
+    """
+    Creates a dynamic test data record for erasure tests.
+    Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
+    """
+    base_url = f"https://{shopify_secrets['domain']}"
+    faker = Faker()
+    firstName = faker.first_name()
+    lastName = faker.last_name()
+    body = {
+        "customer": {
+            "first_name": firstName,
+            "last_name": lastName,
+            "email": shopify_erasure_identity_email,
+            "verified_email": True,
+            "addresses": [
+                {
+                    "address1": "123 Test",
+                    "city": "Toronto",
+                    "province": "ON",
+                    "zip": "66777",
+                    "last_name": lastName,
+                    "first_name": firstName,
+                    "country": "Canada",
+                }
+            ],
+        }
+    }
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+    customers_response = requests.post(
+        url=f"{base_url}/admin/api/2022-07/customers.json", json=body, headers=headers
+    )
+    customer = customers_response.json()
+    assert customers_response.ok
+    error_message = f"customer with email {shopify_erasure_identity_email} could not be added to Shopify"
+    poll_for_existence(
+        customer_exists,
+        (shopify_erasure_identity_email, shopify_secrets),
+        error_message=error_message,
+    )
+
+    # Create Order
+    body = {
+        "order": {
+            "email": shopify_erasure_identity_email,
+            "fulfillment_status": "fulfilled",
+            "send_receipt": True,
+            "financial_status": "paid",
+            "send_fulfillment_receipt": True,
+            "line_items": [
+                {
+                    "product_id": 6923717967965,
+                    "name": "Short leeve t-shirt",
+                    "title": "Short sleeve t-shirt",
+                    "price": 10,
+                    "quantity": 1,
+                }
+            ],
+        }
+    }
+    orders_response = requests.post(
+        url=f"{base_url}/admin/api/2022-07/orders.json", json=body, headers=headers
+    )
+
+    assert orders_response.ok
+    order = orders_response.json()
+    order_id = order["order"]["id"]
+
+    # Get Blog
+    blogs_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/blogs.json", headers=headers
+    )
+    assert blogs_response.ok
+    blog = blogs_response.json()["blogs"][1]
+
+    blog_id = blog["id"]
+    # Create Article
+    body = {
+        "article": {
+            "title": "Test Article",
+            "author": firstName,
+        }
+    }
+    articles_response = requests.post(
+        url=f"{base_url}/admin/api/2022-07/blogs/{blog_id}/articles.json",
+        json=body,
+        headers=headers,
+    )
+    assert articles_response.ok
+    article = articles_response.json()
+    article_id = article["article"]["id"]
+
+    # Create Comment
+    body = {
+        "comment": {
+            "body": "I like comments\nAnd I like posting them *RESTfully*.",
+            "author": firstName,
+            "email": shopify_erasure_identity_email,
+            "ip": faker.ipv4_private(),
+            "blog_id": blog_id,
+            "article_id": article_id,
+        }
+    }
+    comments_response = requests.post(
+        url=f"{base_url}/admin/api/2022-07/comments.json", json=body, headers=headers
+    )
+    assert comments_response.ok
+    comment = comments_response.json()
+
+    yield customer, order, blog, article, comment
+
+    # Deleting order and article after verifying update request
+    order_delete_response = requests.delete(
+        url=f"{base_url}/admin/api/2022-07/orders/{order_id}.json",
+        headers=headers,
+    )
+    assert order_delete_response.ok
+    article_delete_response = requests.delete(
+        url=f"{base_url}/admin/api/2022-07/articles/{article_id}.json",
+        headers=headers,
+    )
+    assert article_delete_response.ok
+
+
+def customer_exists(shopify_erasure_identity_email: str, shopify_secrets):
+    """
+    Confirm whether customer exists by calling customer search by email api and comparing resulting firstname str.
+    Returns customer ID if it exists, returns None if it does not.
+    """
+    base_url = f"https://{shopify_secrets['domain']}"
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+
+    customer_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/customers.json?email={shopify_erasure_identity_email}",
+        headers=headers,
+    )
+
+    # we expect 404 if customer doesn't exist
+    if 404 == customer_response.status_code:
+        return None
+
+    return customer_response.json()
