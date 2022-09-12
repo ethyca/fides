@@ -25,7 +25,7 @@ const SystemsManagement = ({ systems }: Props) => {
   }, [systems, searchFilter]);
 
   if (!systems || !systems.length) {
-    return <div data-testid="empty-state">Empty state</div>;
+    return <div data-testid="empty-state">No systems registered.</div>;
   }
 
   return (
