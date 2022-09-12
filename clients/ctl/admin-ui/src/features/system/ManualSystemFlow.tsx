@@ -19,7 +19,6 @@ const ConfigureSteps = ({
       return (
         <Button
           key={step}
-          size="sm"
           variant="ghost"
           colorScheme={isActive ? "complimentary" : "ghost"}
           width="fit-content"
