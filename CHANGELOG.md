@@ -17,8 +17,15 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.8.4...main)
 
-* Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
+### Added
+
+* Dataset generation enhancements using Fides Classify for Plus users:
+  * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
 * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+
+### Changed
+
+* Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
