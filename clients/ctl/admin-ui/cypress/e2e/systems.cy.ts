@@ -18,11 +18,13 @@ describe("System management page", () => {
     });
 
     it("Can render system cards", () => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
-        cy.getByTestId("edit-btn");
-        cy.getByTestId("delete-btn");
-      });
+      cy.getByTestId("system-fidesctl_system");
+      // Uncomment when we enable the more actions button
+      // cy.getByTestId("system-fidesctl_system").within(() => {
+      //   cy.getByTestId("more-btn").click();
+      //   cy.getByTestId("edit-btn");
+      //   cy.getByTestId("delete-btn");
+      // });
       cy.getByTestId("system-demo_analytics_system");
       cy.getByTestId("system-demo_marketing_system");
     });
