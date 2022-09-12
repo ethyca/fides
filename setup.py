@@ -16,14 +16,14 @@ dev_requires = open("dev-requirements.txt").read().strip().split("\n")
 
 # Human-Readable Extras
 # Add these to `optional-requirements.txt` as well for Docker caching
-aws = ["boto3==1.20.54"]
+aws = ["boto3~=1.24.46"]
 bigquery = ["sqlalchemy-bigquery==1.4.4"]
 mongo = ["pymongo==3.12.0"]
-mssql = ["pyodbc==4.0.32"]
-mysql = ["pymysql==1.0.0"]
+mssql = ["pyodbc==4.0.34"]
+mysql = ["pymysql==1.0.2"]
 okta = ["okta==2.5.0"]
 redis = ["redis==3.5.3", "fastapi-caching[redis]"]
-redshift = ["sqlalchemy-redshift==0.8.8"]
+redshift = ["sqlalchemy-redshift==0.8.11"]
 snowflake = ["snowflake-sqlalchemy==1.3.4"]
 
 extras = {
