@@ -7,11 +7,6 @@ describe("Nav Bar", () => {
     cy.getByTestId("nav-link-Taxonomy");
     cy.getByTestId("nav-link-Systems");
 
-    // Disabled links
-
-    cy.getByTestId("nav-link-Policies").should("have.attr", "disabled");
-    cy.getByTestId("nav-link-User Management").should("have.attr", "disabled");
-    cy.getByTestId("nav-link-More").should("have.attr", "disabled");
   });
 
   it("Renders the active page based on the current route", () => {
