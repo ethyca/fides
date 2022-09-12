@@ -27,9 +27,7 @@ const NavBar = () => {
         {/* Links under the datamap zone: */}
         {features.plus ? <NavLink title="Data Map" href="/datamap" /> : null}
 
-        <NavLink title="Policies" href="/policy" disabled />
         <NavLink title="Taxonomy" href="/taxonomy" />
-        <NavLink title="User Management" href="/user-management" disabled />
         {/* This is a temporary link to the config wizard while it's still in progress */}
         <NavLink title="Config Wizard" href="/config-wizard" />
         <NavLink
