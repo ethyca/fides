@@ -11,6 +11,7 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Switch,
   Textarea,
   TextareaProps,
 } from "@fidesui/react";
@@ -462,6 +463,41 @@ export const CustomRadioGroup = ({
           {meta.error}
         </FormErrorMessage>
       ) : null}
+    </FormControl>
+  );
+};
+
+interface CustomSwitchProps {
+  label: string;
+  tooltip?: string;
+}
+export const CustomSwitch = ({
+  label,
+  tooltip,
+  ...props
+}: CustomSwitchProps & FieldHookConfig<boolean>) => {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+  const isInvalid = !!(meta.touched && meta.error);
+
+  return (
+    <FormControl isInvalid={isInvalid}>
+      <Grid templateColumns="1fr 3fr" justifyContent="center">
+        <FormLabel htmlFor={props.id || props.name} my={0}>
+          {label}
+        </FormLabel>
+        <Box display="flex" alignItems="center">
+          <Switch
+            name={field.name}
+            isChecked={field.checked}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            colorScheme="secondary"
+            mr={2}
+            data-testid={`input-${field.name}`}
+          />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        </Box>
+      </Grid>
     </FormControl>
   );
 };

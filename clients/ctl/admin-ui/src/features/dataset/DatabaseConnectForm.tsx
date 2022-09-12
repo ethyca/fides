@@ -1,10 +1,12 @@
-import { Box, Button, Spinner, Text, useToast } from "@fidesui/react";
+import { Box, Button, Text, useToast, VStack } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { useFeatures } from "~/features/common/features.slice";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import {
   Dataset,
   GenerateResponse,
@@ -12,7 +14,7 @@ import {
   ValidTargets,
 } from "~/types/api";
 
-import { CustomTextInput } from "../common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "../common/form/inputs";
 import { getErrorMessage } from "../common/helpers";
 import { successToastParams } from "../common/toast";
 import {
@@ -21,7 +23,7 @@ import {
   useGenerateDatasetMutation,
 } from "./dataset.slice";
 
-const initialValues = { url: "" };
+const initialValues = { url: "", classify: false };
 
 type FormValues = typeof initialValues;
 
@@ -30,12 +32,13 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const DatabaseConnectForm = () => {
-  // TODO: where should this come from?
-  const organizationKey = "default_organization";
   const [generate, { isLoading: isGenerating }] = useGenerateDatasetMutation();
   const [createDataset, { isLoading: isCreating }] = useCreateDatasetMutation();
+  const isLoading = isGenerating || isCreating;
+
   const toast = useToast();
   const router = useRouter();
+  const features = useFeatures();
 
   const handleSubmit = async (
     values: FormValues,
@@ -65,7 +68,7 @@ const DatabaseConnectForm = () => {
     };
 
     const response = await generate({
-      organization_key: organizationKey,
+      organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       generate: {
         config: { connection_string: values.url },
         target: ValidTargets.DB,
@@ -83,7 +86,7 @@ const DatabaseConnectForm = () => {
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={{ ...initialValues, classify: features.plus }}
       validationSchema={ValidationSchema}
       onSubmit={handleSubmit}
       validateOnChange={false}
@@ -91,27 +94,37 @@ const DatabaseConnectForm = () => {
     >
       {({ isSubmitting }) => (
         <Form>
-          <Text size="sm" color="gray.700" mb={8}>
-            Connect to one of your databases using a connection URL. You may
-            have received this URL from a colleague or your Ethyca developer
-            support engineer.
-          </Text>
-          <Box mb={8}>
-            <CustomTextInput name="url" label="Database URL" />
-          </Box>
-          <Box display="flex" alignItems="center">
-            <Button
-              size="sm"
-              colorScheme="primary"
-              type="submit"
-              disabled={isSubmitting}
-              mr="2"
-              data-testid="create-dataset-btn"
-            >
-              Create dataset
-            </Button>
-            {isGenerating || isCreating ? <Spinner /> : null}
-          </Box>
+          <VStack spacing={8} align="left">
+            <Text size="sm" color="gray.700">
+              Connect to one of your databases using a connection URL. You may
+              have received this URL from a colleague or your Ethyca developer
+              support engineer.
+            </Text>
+            <Box>
+              <CustomTextInput name="url" label="Database URL" />
+            </Box>
+
+            {features.plus ? (
+              <CustomSwitch
+                name="classify"
+                label="Classify dataset"
+                tooltip="In addition to generating the Dataset, Fidescls will scan the database to determine the locations of possible PII and suggest labels based on the contents of your tables."
+              />
+            ) : null}
+
+            <Box>
+              <Button
+                size="sm"
+                colorScheme="primary"
+                type="submit"
+                isLoading={isSubmitting || isLoading}
+                isDisabled={isSubmitting || isLoading}
+                data-testid="create-dataset-btn"
+              >
+                Generate dataset
+              </Button>
+            </Box>
+          </VStack>
         </Form>
       )}
     </Formik>
