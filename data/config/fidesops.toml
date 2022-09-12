@@ -38,3 +38,6 @@ analytics_id = "internal"
 
 [admin_ui]
 enabled = true
+
+[notifications]
+send_request_completion_notification = true

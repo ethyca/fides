@@ -85,6 +85,10 @@ class StorageConfigNotFoundException(BaseException):
     """Custom Exception - StorageConfig Not Found"""
 
 
+class IdentityNotFoundException(BaseException):
+    """Identity Not Found"""
+
+
 class WebhookOrderException(BaseException):
     """Custom Exception - Issue with webhooks order"""
 

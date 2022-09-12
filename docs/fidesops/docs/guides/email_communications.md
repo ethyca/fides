@@ -5,8 +5,9 @@ Fidesops supports configuring third party email servers to handle outbound commu
 
 Supported modes of use:
 
-- Subject Identity Verification - sends a verification code to the user's email address prior to processing a subject request. for more information on identity verification, see the [Privacy Requests](privacy_requests.md#subject-identity-verification) guide.
+- Subject Identity Verification - sends a verification code to the user's email address prior to processing a subject request. For more information on identity verification, see the [Privacy Requests](privacy_requests.md#subject-identity-verification) guide.
 - Erasure Request Email Fulfillment - sends an email to configured third parties to process erasures for a given data subject.  See [creating email Connectors](#email-third-party-services) for more information.
+- Privacy Request Completion Notification - sends an email to user's email address with privacy request completion notification, including a download link to data package, for access requests. For more information on request completion notification, see the [Privacy Requests](privacy_requests.md#request-completion-notification) guide.
 
 ## Prerequisites
 

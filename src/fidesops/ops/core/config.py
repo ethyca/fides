@@ -88,6 +88,7 @@ class FidesopsSecuritySettings(SecuritySettings):
 
     log_level: str = "INFO"
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
+    subject_request_download_link_ttl_seconds: Optional[int] = 86400
 
     @validator("log_level", pre=True)
     def validate_log_level(cls, value: str) -> str:
@@ -149,6 +150,15 @@ class AdminUiSettings(FidesSettings):
         env_prefix = "FIDESOPS__ADMIN_UI__"
 
 
+class FidesopsNotificationSettings(FidesSettings):
+    """Configuration settings for data subject and/or data processor notifications"""
+
+    send_request_completion_notification: Optional[bool] = True
+
+    class Config:
+        env_prefix = "FIDESOPS__NOTIFICATIONS__"
+
+
 class FidesopsConfig(FidesSettings):
     """Configuration variables for the FastAPI project"""
 
@@ -158,6 +168,7 @@ class FidesopsConfig(FidesSettings):
     execution: ExecutionSettings
     root_user: RootUserSettings
     admin_ui: AdminUiSettings
+    notifications: FidesopsNotificationSettings
 
     port: int
     is_test_mode: bool = os.getenv("TESTING", "").lower() == "true"
@@ -214,6 +225,7 @@ CONFIG_KEY_ALLOWLIST = {
         "cors_origins",
         "encoding",
         "oauth_access_token_expire_minutes",
+        "subject_request_download_link_ttl_seconds",
     ],
     "execution": [
         "task_retry_count",
@@ -222,6 +234,7 @@ CONFIG_KEY_ALLOWLIST = {
         "require_manual_request_approval",
         "subject_identity_verification_required",
     ],
+    "notifications": ["send_request_completion_notification"],
 }
 
 

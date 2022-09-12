@@ -21,7 +21,14 @@ logger = logging.getLogger(__name__)
 def upload(
     db: Session, *, request_id: str, data: Dict, storage_key: FidesOpsKey
 ) -> str:
-    """Retrieves storage configs and calls appropriate upload method"""
+    """
+    Retrieves storage configs and calls appropriate upload method
+    :param db: SQLAlchemy Session
+    :param request_id: Request id
+    :param data: Dict of data to upload
+    :param storage_key: Key representing where to upload data
+    :return str representing location of upload (url or simply a description of where to find the data)
+    """
     config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="key", value=storage_key
     )

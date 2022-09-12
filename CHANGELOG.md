@@ -41,6 +41,8 @@ The types of changes are:
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
+* Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+
 ### Docs
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)

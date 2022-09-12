@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
@@ -20,6 +20,8 @@ class EmailActionType(Enum):
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
     EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
+    PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
+    PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
 
 
 class EmailTemplateBodyParams(Enum):
@@ -39,6 +41,12 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
         if self.verification_code_ttl_seconds < 60:
             return 0
         return self.verification_code_ttl_seconds // 60
+
+
+class AccessRequestCompleteBodyParams(BaseModel):
+    """Body params required for privacy request completion access email template"""
+
+    download_links: List[str]
 
 
 class EmailForActionType(BaseModel):

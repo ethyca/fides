@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fidesops.ops.core.config import config
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -289,6 +290,77 @@ def policy_post_execution_webhooks(
         pass
     try:
         post_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def access_and_erasure_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    access_and_erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access and erasure policy",
+            "key": "example_access_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+    access_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "storage_destination_id": storage_config.id,
+        },
+    )
+    access_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user").value,
+            "rule_id": access_rule.id,
+        },
+    )
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": access_and_erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    erasure_rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield access_and_erasure_policy
+    try:
+        access_rule_target.delete(db)
+        erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_rule.delete(db)
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_and_erasure_policy.delete(db)
     except ObjectDeletedError:
         pass
 
@@ -811,10 +883,13 @@ def _create_privacy_request_for_policy(
         db=db,
         data=data,
     )
+    email_identity = "test@example.com"
+    identity_kwargs = {"email": email_identity}
+    pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
         identity=PrivacyRequestIdentity(
-            email="test@example.com",
+            email=email_identity,
             phone_number="+1 234 567 8910",
         ),
     )

@@ -554,11 +554,11 @@ class TestPutStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_s3_session_mock.assert_called_once_with(
-            S3AuthMethod.SECRET_KEYS,
-            StorageSecretsS3(
-                aws_access_key_id=payload["aws_access_key_id"],
-                aws_secret_access_key=payload["aws_secret_access_key"],
-            ),
+            S3AuthMethod.SECRET_KEYS.value,
+            {
+                "aws_access_key_id": payload["aws_access_key_id"],
+                "aws_secret_access_key": payload["aws_secret_access_key"],
+            },
         )
 
     @mock.patch(
