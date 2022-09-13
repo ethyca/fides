@@ -39,3 +39,11 @@ def access_manual_webhook(db, integration_manual_webhook_config) -> ConnectionCo
     )
     yield manual_webhook
     manual_webhook.delete(db)
+
+
+@pytest.fixture(scope="function")
+def cached_input(privacy_request_requires_input, access_manual_webhook):
+    privacy_request_requires_input.cache_manual_webhook_input(
+        access_manual_webhook,
+        {"email": "customer-1@example.com", "last_name": "McCustomer"},
+    )

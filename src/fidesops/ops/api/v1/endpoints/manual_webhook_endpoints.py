@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
@@ -21,7 +21,11 @@ from fidesops.ops.api.v1.scope_registry import (
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fidesops.ops.api.v1.urn_registry import ACCESS_MANUAL_WEBHOOK, V1_URL_PREFIX
+from fidesops.ops.api.v1.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    V1_URL_PREFIX,
+)
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.schemas.manual_webhook_schemas import (
@@ -178,3 +182,21 @@ def delete_access_manual_webhook(
         "Deleted access manual webhook for connection config '%s'",
         connection_config.key,
     )
+
+
+@router.get(
+    ACCESS_MANUAL_WEBHOOKS,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[WEBHOOK_READ])],
+    response_model=Sequence[AccessManualWebhookResponse],
+)
+def get_access_manual_webhooks(
+    db: Session = Depends(deps.get_db),
+) -> Sequence[AccessManualWebhookResponse]:
+    """
+    Get all enabled Access Manual Webhooks
+    """
+    logger.info(
+        "Retrieving all enabled access manual webhooks",
+    )
+    return AccessManualWebhook.get_enabled(db)

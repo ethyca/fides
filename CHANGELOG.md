@@ -44,6 +44,7 @@ The types of changes are:
 * Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
+* Enable new manual webhooks in privacy request execution [#1285](https://github.com/ethyca/fidesops/pull/1285)
 
 * Added human readable label to ConnectionType endpoint [#1297](https://github.com/ethyca/fidesops/pull/1297)
 

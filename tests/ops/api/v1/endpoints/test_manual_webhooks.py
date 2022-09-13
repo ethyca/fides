@@ -8,7 +8,11 @@ from fidesops.ops.api.v1.scope_registry import (
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fidesops.ops.api.v1.urn_registry import ACCESS_MANUAL_WEBHOOK, V1_URL_PREFIX
+from fidesops.ops.api.v1.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    V1_URL_PREFIX,
+)
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 
 
@@ -191,6 +195,18 @@ class TestPostAccessManualWebhook:
             == "You can only create manual webhooks for ConnectionConfigs of type 'manual_webhook'."
         )
 
+    def test_post_webhook_no_fields(
+        self, connection_config, payload, generate_auth_header, api_client, url
+    ):
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header, json={"fields": []})
+
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "ensure this value has at least 1 items"
+        )
+
     def test_post_manual_webhook(
         self,
         db: Session,
@@ -338,3 +354,69 @@ class TestDeleteAccessManualWebhook:
         assert 204 == response.status_code
         db.refresh(integration_manual_webhook_config)
         assert integration_manual_webhook_config.access_manual_webhook is None
+
+
+class TestGetAccessManualWebhooks:
+    @pytest.fixture(scope="function")
+    def url(self, integration_manual_webhook_config) -> str:
+        return V1_URL_PREFIX + ACCESS_MANUAL_WEBHOOKS
+
+    def test_get_manual_webhook_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.get(url, headers={})
+        assert 401 == response.status_code
+
+    def test_get_manual_webhook_wrong_scopes(
+        self, api_client: TestClient, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header([STORAGE_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 403 == response.status_code
+
+    def test_disabled_webhooks(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ):
+        integration_manual_webhook_config.disabled = True
+        integration_manual_webhook_config.save(db)
+
+        auth_header = generate_auth_header([WEBHOOK_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        assert len(response.json()) == 0
+
+    def test_get_manual_webhooks(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        auth_header = generate_auth_header([WEBHOOK_READ])
+
+        response = api_client.get(url, headers=auth_header)
+        assert 200 == response.status_code
+
+        assert len(response.json()) == 1
+        resp = response.json()[0]
+
+        assert resp["fields"] == [
+            {"pii_field": "email", "dsr_package_label": "email"},
+            {"pii_field": "Last Name", "dsr_package_label": "last_name"},
+        ]
+        connection_config_details = resp["connection_config"]
+        assert connection_config_details["key"] == integration_manual_webhook_config.key
+        assert connection_config_details["connection_type"] == "manual_webhook"
+        assert connection_config_details["access"] == "read"
+        assert connection_config_details["created_at"] is not None
+        assert connection_config_details["updated_at"] is not None
+        assert "secrets" not in connection_config_details

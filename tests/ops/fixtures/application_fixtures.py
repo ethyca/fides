@@ -907,6 +907,18 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def privacy_request_requires_input(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.status = PrivacyRequestStatus.requires_input
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def audit_log(db: Session, privacy_request) -> PrivacyRequest:
     audit_log = AuditLog.create(
         db=db,

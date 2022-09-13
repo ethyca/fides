@@ -7,6 +7,7 @@ from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fideslib.schemas.base_class import BaseSchema
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
     IdentityNotFoundException,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -26,6 +28,7 @@ from fidesops.ops.graph.analytics_events import (
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -65,6 +68,42 @@ from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
 from fidesops.ops.util.wrappers import sync
 
 logger = get_task_logger(__name__)
+
+
+class ManualWebhookResults(BaseSchema):
+    """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
+
+    manual_data: Dict[str, List[Dict[str, Optional[Any]]]]
+    proceed: bool
+
+
+def get_access_manual_webhook_inputs(
+    db: Session, privacy_request: PrivacyRequest, policy: Policy
+) -> ManualWebhookResults:
+
+    """Retrieves manually uploaded data for all AccessManualWebhooks and formats in a way
+    to match automatically retrieved data (a list of rows). Also returns if execution should proceed.
+
+    This data will be uploaded to the user as-is, without filtering.
+    """
+    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+
+    if not policy.get_rules_for_action(action_type=ActionType.access):
+        # Don't fetch manual inputs if this is an erasure-only request
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+
+    try:
+        for manual_webhook in AccessManualWebhook.get_enabled(db):
+            manual_inputs[manual_webhook.connection_config.key] = [
+                privacy_request.get_manual_webhook_input(manual_webhook)
+            ]
+    except (NoCachedManualWebhookEntry, ValidationError) as exc:
+        logger.info(exc)
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(db)
+        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+
+    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
 
 def run_webhooks_and_report_status(
@@ -130,6 +169,7 @@ def upload_access_results(
     access_result: Dict[str, List[Row]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
+    manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
@@ -141,11 +181,18 @@ def upload_access_results(
                 f"No storage destination configured on rule {rule.key}"
             )
         target_categories: Set[str] = {target.data_category for target in rule.targets}
-        filtered_results = filter_data_categories(
+        filtered_results: Dict[
+            str, List[Dict[str, Optional[Any]]]
+        ] = filter_data_categories(
             access_result,
             target_categories,
             dataset_graph.data_category_field_mapping,
         )
+
+        filtered_results.update(
+            manual_data
+        )  # Add manual data directly to each upload packet
+
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
             rule.key,
@@ -234,7 +281,6 @@ async def run_privacy_request(
         logger.info("Resuming privacy request from checkpoint: '%s'", from_step)
 
     with self.session as session:
-
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logging.info(
@@ -243,6 +289,13 @@ async def run_privacy_request(
             return
         logging.info("Dispatching privacy request %s", privacy_request.id)
         privacy_request.start_processing(session)
+
+        policy = privacy_request.policy
+        manual_webhook_results: ManualWebhookResults = get_access_manual_webhook_inputs(
+            session, privacy_request, policy
+        )
+        if not manual_webhook_results.proceed:
+            return
 
         if can_run_checkpoint(
             request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
@@ -256,8 +309,6 @@ async def run_privacy_request(
             )
             if not proceed:
                 return
-
-        policy = privacy_request.policy
         try:
             policy.rules[0]
         except IndexError:
@@ -290,6 +341,7 @@ async def run_privacy_request(
                     access_result,
                     dataset_graph,
                     privacy_request,
+                    manual_webhook_results.manual_data,
                 )
 
             if policy.get_rules_for_action(
