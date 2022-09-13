@@ -26,7 +26,7 @@ def test_config_from_default() -> None:
     clear=True,
 )
 def test_config_from_path() -> None:
-    """Test reading config using the FIDESOPS__CONFIG_PATH option."""
+    """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config(FidesopsConfig)
     assert config.database.server == "testserver"
     assert config.redis.host == "testredis"
