@@ -313,7 +313,8 @@ export const CustomCreatableMultiSelect = ({
   isSearchable,
   isClearable,
   options,
-  size,
+  size = "sm",
+  tooltip,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
@@ -325,7 +326,11 @@ export const CustomCreatableMultiSelect = ({
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-        <Box data-testid={`input-${field.name}`}>
+        <Box
+          display="flex"
+          alignItems="center"
+          data-testid={`input-${field.name}`}
+        >
           <CreatableSelect
             data-testid={`input-${field.name}`}
             name={props.name}
@@ -367,6 +372,7 @@ export const CustomCreatableMultiSelect = ({
             }}
             size={size}
           />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}

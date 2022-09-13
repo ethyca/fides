@@ -1,19 +1,17 @@
-import { Box, Button, Heading, Stack, Tooltip, useToast } from "@fidesui/react";
+import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
 import React, { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { QuestionIcon } from "~/features/common/Icon";
-import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-
 import {
   CustomCreatableMultiSelect,
-  CustomCreatableSingleSelect,
   CustomTextInput,
-} from "../common/form/inputs";
+} from "~/features/common/form/inputs";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+
 import { useCreateSystemMutation } from "../system/system.slice";
 import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
 
@@ -109,14 +107,12 @@ const DescribeSystemsForm = ({
             </div>
             <Stack>
               <Stack direction="row">
-                <CustomTextInput id="name" name="name" label="System name" />
-                <Tooltip
-                  fontSize="md"
-                  label="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="System name"
+                  tooltip="Give the system a unique, and relevant name for reporting purposes. e.g. “Email Data Warehouse”"
+                />
               </Stack>
 
               <Stack direction="row" mb={5}>
@@ -124,15 +120,9 @@ const DescribeSystemsForm = ({
                   id="fides_key"
                   name="fides_key"
                   label="System key"
-                />
-                <Tooltip
-                  fontSize="md"
                   // TODO FUTURE: This tooltip text is misleading since at the moment for MVP we are manually creating a fides key for this resource
-                  label="System key’s are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
+                  tooltip="System keys are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
+                />
               </Stack>
 
               <Stack direction="row" mb={5}>
@@ -140,39 +130,17 @@ const DescribeSystemsForm = ({
                   id="description"
                   name="description"
                   label="System description"
+                  tooltip="If you wish you can provide a description which better explains the purpose of this system."
                 />
-                <Tooltip
-                  fontSize="md"
-                  label="If you wish you can provide a description which better explains the purpose of this system."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
               </Stack>
 
               <Stack direction="row" mb={5}>
-                <CustomCreatableSingleSelect
+                <CustomTextInput
                   id="system_type"
                   label="System Type"
                   name="system_type"
-                  options={
-                    initialValues.system_type
-                      ? [
-                          {
-                            label: initialValues.system_type,
-                            value: initialValues.system_type,
-                          },
-                        ]
-                      : []
-                  }
+                  tooltip="Describe the type of system being modeled, examples include: Service, Application, Third Party, etc"
                 />
-                <Tooltip
-                  fontSize="md"
-                  label="Select a system type from the pre-approved list of system types."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
               </Stack>
 
               <Stack direction="row" mb={5}>
@@ -184,14 +152,8 @@ const DescribeSystemsForm = ({
                     value: s,
                     label: s,
                   }))}
+                  tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
                 />
-                <Tooltip
-                  fontSize="md"
-                  label="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
               </Stack>
             </Stack>
             <Box>
