@@ -44,6 +44,10 @@ const ConfigWizardWalkthrough = () => {
     dispatch(changeReviewStep());
   };
 
+  const handleDeclareSuccess = () => {
+    dispatch(changeReviewStep());
+  };
+
   return (
     <>
       <Box bg="white">
@@ -90,6 +94,7 @@ const ConfigWizardWalkthrough = () => {
                   <PrivacyDeclarationForm
                     systemKey={systemKey}
                     onCancel={handleCancelSetup}
+                    onSuccess={handleDeclareSuccess}
                   />
                 )}
                 {reviewStep === 3 && (

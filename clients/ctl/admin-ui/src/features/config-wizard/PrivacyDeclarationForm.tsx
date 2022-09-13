@@ -1,8 +1,16 @@
-import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  Divider,
+  Heading,
+  Stack,
+  Text,
+  useToast,
+} from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -39,7 +47,6 @@ import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
 } from "../system/system.slice";
-import { changeReviewStep } from "./config-wizard.slice";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
 type FormValues = PrivacyDeclaration;
@@ -58,9 +65,10 @@ const ValidationSchema = Yup.object().shape({
 interface Props {
   systemKey: System["fides_key"];
   onCancel: () => void;
+  onSuccess: (system: System) => void;
 }
 
-const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
+const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemKey);
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -91,6 +99,17 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
     dispatch(setDataQualifiers(dataQualifiers ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
+  if (!existingSystem) {
+    return (
+      <Text>
+        Could not find a system with key{" "}
+        <Text as="span" fontWeight="semibold">
+          {systemKey}
+        </Text>
+      </Text>
+    );
+  }
+
   const initialValues = {
     name: "",
     data_categories: [],
@@ -103,33 +122,29 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
 
   const handleSubmit = async (values: FormValues) => {
     const handlePrivacyDeclarations = () => {
-      const filteredDeclarations =
-        existingSystem && existingSystem.privacy_declarations
-          ? existingSystem?.privacy_declarations.filter(
-              (declaration) => declaration.name !== "string"
-            )
-          : [];
       // If the declaration already exists
       if (
-        filteredDeclarations &&
-        filteredDeclarations.filter(
+        existingSystem.privacy_declarations.filter(
           (declaration) => declaration.name === values.name
         ).length > 0
       ) {
-        privacyDeclarations = [...filteredDeclarations, ...formDeclarations];
+        privacyDeclarations = [
+          ...existingSystem.privacy_declarations,
+          ...formDeclarations,
+        ];
       }
       // If the declaration does not exist
       else {
         privacyDeclarations = [
-          ...filteredDeclarations,
+          ...existingSystem.privacy_declarations,
           ...formDeclarations,
           {
             name: values.name,
             data_categories: values.data_categories,
             data_use: values.data_use,
-            data_qualifier: values.data_qualifier,
+            data_qualifier:
+              values.data_qualifier === "" ? undefined : values.data_qualifier,
             data_subjects: values.data_subjects,
-            dataset_references: ["string"],
           },
         ];
       }
@@ -138,17 +153,14 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
     handlePrivacyDeclarations();
 
     const systemBodyWithDeclaration = {
-      description: existingSystem?.description,
-      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
-      fides_key: existingSystem?.fides_key ?? "default_organization",
-      name: existingSystem?.name,
+      ...existingSystem,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
-      system_type: existingSystem?.system_type,
-      meta: existingSystem?.meta,
     };
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: System }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
@@ -162,7 +174,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
         });
       } else {
         toast.closeAll();
-        dispatch(changeReviewStep());
+        onSuccess(result.data);
       }
     };
 
@@ -178,11 +190,8 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
     if (
       values.name === "" ||
       formDeclarations.filter((d) => d.name === values.name).length > 0 ||
-      (existingSystem &&
-        existingSystem?.privacy_declarations &&
-        existingSystem?.privacy_declarations?.filter(
-          (d) => d.name === values.name
-        ).length > 0)
+      existingSystem.privacy_declarations.filter((d) => d.name === values.name)
+        .length > 0
     ) {
       toast({
         status: "error",
@@ -191,8 +200,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
       });
     } else {
       toast.closeAll();
-      const declarationToSet = { ...values, dataset_references: ["string"] };
-      setFormDeclarations([...formDeclarations, declarationToSet]);
+      setFormDeclarations([...formDeclarations, values]);
     }
   };
 
@@ -203,7 +211,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ resetForm, values, isValid, dirty }) => (
+      {({ resetForm, values, dirty }) => (
         <Form>
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -217,16 +225,12 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
               that data and finally, how identifiable is the user with this
               data.
             </div>
-            {formDeclarations.length > 0
-              ? formDeclarations.map((declaration) => (
-                  <>
-                    <PrivacyDeclarationAccordion
-                      privacyDeclaration={declaration}
-                    />
-                    <Divider m="0px !important" />
-                  </>
-                ))
-              : null}
+            {formDeclarations.map((declaration) => (
+              <Fragment key={declaration.name}>
+                <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
+                <Divider m="0px !important" />
+              </Fragment>
+            ))}
             <Stack spacing={4}>
               <CustomTextInput
                 name="name"
@@ -313,7 +317,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel }: Props) => {
                 type="submit"
                 colorScheme="primary"
                 size="sm"
-                disabled={!(isValid && dirty)}
+                disabled={!dirty}
                 isLoading={isLoading}
               >
                 Confirm and Continue

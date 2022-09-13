@@ -40,7 +40,7 @@ const ConfigureSteps = ({
 
 const ManualSystemFlow = () => {
   const router = useRouter();
-  const [currentStepIndex, setCurrentStepIndex] = useState(1);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [newSystem, setNewSystem] = useState<System | null>(null);
 
   const handleCancel = () => {
@@ -50,6 +50,10 @@ const ManualSystemFlow = () => {
   const handleDescribeSuccess = (system: System) => {
     setCurrentStepIndex(currentStepIndex + 1);
     setNewSystem(system);
+  };
+
+  const handleDeclareSuccess = () => {
+    setCurrentStepIndex(currentStepIndex + 1);
   };
 
   return (
@@ -73,7 +77,8 @@ const ManualSystemFlow = () => {
         ) : null}
         {currentStepIndex === 1 && newSystem ? (
           <PrivacyDeclarationForm
-            systemKey={newSystem?.fides_key}
+            systemKey={newSystem.fides_key}
+            onSuccess={handleDeclareSuccess}
             onCancel={handleCancel}
           />
         ) : null}
