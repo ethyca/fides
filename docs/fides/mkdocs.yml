@@ -10,18 +10,12 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
-      - Fides Control: fidesctl/index.md
-      - Fides Ops: fidesops/index.md
-      - Fides Lang: https://ethyca.github.io/fideslang/
-      - Development: development/overview.md
-      - Community: community/overview.md
-      - About Ethyca: ethyca.md
-  - Fides Control: 
-      - What is Fidesctl?: fidesctl/index.md
-      - Quick Start:
+      - Use Cases: fides/use_cases.md
+      - Getting Started: 
           - Running Fidesctl Locally (Standalone): fidesctl/quickstart/local_standalone.md
           - Running Fidesctl Locally (Full Installation): fidesctl/quickstart/local_full.md
           - Running Fidesctl in Docker: fidesctl/quickstart/docker.md
+  - Fides Control: 
       - Installation:
           - Installation Overview: fidesctl/installation/installation.md
           - Prerequisites & Dependencies: fidesctl/installation/prerequisites_dependencies.md
@@ -52,7 +46,6 @@ nav:
       - CLI: fidesctl/cli.md
   - Fides Ops:
       - What is Fidesops?: fidesops/index.md
-      - Use Cases: fidesops/use_cases.md
       - Installation and Use:
           - Getting Started: fidesops/getting_started.md
           - Authenticate with OAuth: fidesops/guides/oauth.md
@@ -108,6 +101,10 @@ nav:
           - Configure a Storage Destination: fidesops/tutorial/storage_config.md
           - Define a Policy: fidesops/tutorial/define_policy.md
           - Execute a Privacy Request: fidesops/tutorial/execute_privacy_request.md
+  - Fides UI:
+      - Overview: fidesctl/admin_ui/overview.md
+      - Configuration Wizard: fidesctl/admin_ui/wizard.md
+      - Managing Datasets: fidesctl/admin_ui/datasets.md
   - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:
