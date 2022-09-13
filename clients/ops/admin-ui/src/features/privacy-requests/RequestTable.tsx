@@ -61,6 +61,7 @@ const RequestTable: React.FC<RequestTableProps> = () => {
         <Thead>
           <Tr>
             <Th pl={0}>Status</Th>
+            <Th>Days Left</Th>
             <Th>Request Type</Th>
             <Th>Subject Identity</Th>
             <Th>Time Received</Th>

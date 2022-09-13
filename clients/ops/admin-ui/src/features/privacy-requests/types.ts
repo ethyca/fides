@@ -72,6 +72,7 @@ export interface PrivacyRequest {
   created_at: string;
   reviewed_by: string;
   id: string;
+  days_left?: number;
 }
 
 export interface PrivacyRequestResponse {

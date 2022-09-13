@@ -15,6 +15,7 @@ import {
   useClipboard,
   useToast,
 } from "@fidesui/react";
+import DaysLeftTag from "common/DaysLeftTag";
 import { formatDate } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
@@ -150,6 +151,9 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
     >
       <Td pl={0} py={1}>
         <RequestStatusBadge status={request.status} />
+      </Td>
+      <Td py={1}>
+        <DaysLeftTag daysLeft={request.days_left} includeText={false} />
       </Td>
       <Td py={1}>
         <Tag

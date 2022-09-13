@@ -38,6 +38,7 @@ The types of changes are:
 * Added `days_left` field to Privacy request response [#1281](https://github.com/ethyca/fidesops/pull/1281)
 * Mapping Vault environment variables in docker-compose.yml [#1275](https://github.com/ethyca/fidesops/pull/1275)
 * Foundations for a new "manual_webhook" connector type [#1267](https://github.com/ethyca/fidesops/pull/1267)
+* Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)

@@ -7,14 +7,15 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import DaysLeftTag from "common/DaysLeftTag";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
 import { useRetryMutation } from "privacy-requests/privacy-requests.slice";
+import { PrivacyRequest } from "privacy-requests/types";
 import { useState } from "react";
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import RequestType from "../common/RequestType";
-import { PrivacyRequest } from "../privacy-requests/types";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequest;
@@ -94,6 +95,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
               Retry
             </Button>
           )}
+
+          <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />
         </HStack>
       </Flex>
     </>
