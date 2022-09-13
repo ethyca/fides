@@ -1,47 +1,72 @@
 import logging
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
-from requests import Response
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.privacy_request import CheckpointActionRequired
 from fidesops.ops.schemas.email.email import (
+    AccessRequestCompleteBodyParams,
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
+    FidesopsEmail,
+    SubjectIdentityVerificationBodyParams,
 )
+from fidesops.ops.tasks import DatabaseTask, celery_app
 from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def dispatch_email_task(
+    self: DatabaseTask,
+    email_meta: Dict[str, Any],
+    to_email: str,
+) -> None:
+    """
+    A wrapper function to dispatch an email task into the Celery queues
+    """
+    schema = FidesopsEmail.parse_obj(email_meta)
+    with self.session as db:
+        dispatch_email(
+            db,
+            schema.action_type,
+            to_email,
+            schema.body_params,
+        )
 
 
 def dispatch_email(
     db: Session,
     action_type: EmailActionType,
     to_email: Optional[str],
-    email_body_params: Any,
+    email_body_params: Optional[
+        Union[
+            AccessRequestCompleteBodyParams,
+            SubjectIdentityVerificationBodyParams,
+            List[CheckpointActionRequired],
+        ]
+    ] = None,
 ) -> None:
+    """
+    Sends an email to `to_email` with content supplied in `email_body_params`
+    """
     if not to_email:
         raise EmailDispatchException("No email supplied.")
+
     logger.info("Retrieving email config")
-    email_config: Optional[EmailConfig] = db.query(EmailConfig).first()
-    if not email_config:
-        raise EmailDispatchException("No email config found.")
-    if not email_config.secrets:
-        logger.warning(
-            "Email secrets not found for config with key: %s", email_config.key
-        )
-        raise EmailDispatchException(
-            f"Email secrets not found for config with key: {email_config.key}"
-        )
+    email_config: EmailConfig = EmailConfig.get_configuration(db=db)
     logger.info("Building appropriate email template for action type: %s", action_type)
     email: EmailForActionType = _build_email(
-        action_type=action_type, body_params=email_body_params
+        action_type=action_type,
+        body_params=email_body_params,
     )
     email_service: EmailServiceType = email_config.service_type  # type: ignore
     logger.info(
@@ -51,7 +76,11 @@ def dispatch_email(
     logger.info(
         "Starting email dispatch for email service with action type: %s", action_type
     )
-    dispatcher(email_config=email_config, email=email, to_email=to_email)
+    dispatcher(
+        email_config=email_config,
+        email=email,
+        to_email=to_email,
+    )
 
 
 def _build_email(
@@ -121,7 +150,7 @@ def _mailgun_dispatcher(
         "html": email.body,
     }
     try:
-        response: Response = requests.post(
+        response: requests.Response = requests.post(
             f"{base_url}/{email_config.details[EmailServiceDetails.API_VERSION.value]}/{domain}/messages",
             auth=(
                 "api",

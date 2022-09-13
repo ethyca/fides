@@ -142,14 +142,14 @@ The `celery.toml` file provided contains a brief configuration reference for man
 For a full list of possible variable overrides, see the [Celery configuration](https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings) documentation.
 
 ```sh title="Example <code>celery.toml</code>"
-default_queue_name = "fidesops"
+task_default_queue = "fidesops"
 broker_url = "redis://:testpassword@redis:6379/1"
 result_backend = "redis://:testpassword@redis:6379/1"
 ```
 
  Celery Variable | Example | Description |
 |---|---|---|
-| `default_queue_name` | `fidesops` | A name to use for your Celery task queue. |
+| `task_default_queue` | `fidesops` | A name to use for your Celery task queue. |
 | `broker_url` | redis://:testpassword@redis:6379/1  | The datastore to use as a [Celery broker](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/), which maintains an ordered list of asynchronous tasks to execute. If not specified, fidesops will default to the `connection_url` or Redis config values specified in your `fidesops.toml`.
 | `result_backend` | redis://:testpassword@redis:6379/1 | The [backend datastore](https://docs.celeryq.dev/en/stable/getting-started/backends-and-brokers/) where Celery will store results from asynchronously processed tasks. If not specified, fidesops will default to the `connection_url` or Redis config values specified in your `fidesops.toml`.
 

@@ -4,16 +4,19 @@ from unittest.mock import Mock
 import pytest
 import requests.exceptions
 import requests_mock
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import EmailDispatchException
+from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.email import EmailConfig
+from fidesops.ops.models.policy import CurrentStep
+from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
     EmailServiceType,
+    FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.service.email.email_dispatch_service import dispatch_email
@@ -121,3 +124,36 @@ def test_email_dispatch_mailgun_failed_email(db: Session, email_config) -> None:
             exc.value.args[0]
             == "Email failed to send due to: Email failed to send with status code 403"
         )
+
+
+def test_fidesops_email_parse_object():
+    body = [
+        CheckpointActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "test_collection"),
+            action_needed=[
+                ManualAction(
+                    locators={"email": "test@example.com"},
+                    get=None,
+                    update={"phone": "null_rewrite"},
+                )
+            ],
+        )
+    ]
+
+    FidesopsEmail.parse_obj(
+        {
+            "action_type": EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+            "body_params": [action.dict() for action in body],
+        }
+    )
+
+    FidesopsEmail.parse_obj(
+        {
+            "action_type": EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+            "body_params": {
+                "verification_code": "123456",
+                "verification_code_ttl_seconds": 1000,
+            },
+        }
+    )

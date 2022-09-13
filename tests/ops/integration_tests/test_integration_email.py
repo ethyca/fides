@@ -109,8 +109,32 @@ async def test_email_connector_cache_and_delayed_send(
         )
     )
 
-    assert raw_email_template_values == {
-        CollectionAddress("email_dataset", "children"): CheckpointActionRequired(
+    expected = [
+        CheckpointActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "daycare_customer"),
+            action_needed=[
+                ManualAction(
+                    locators={
+                        "customer_id": [1]
+                    },  # We have some data from postgres they can use to locate the customer_id
+                    get=None,
+                    update={"scholarship": "null_rewrite"},
+                )
+            ],
+        ),
+        CheckpointActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "payment"),
+            action_needed=[
+                ManualAction(
+                    locators={"payer_email": ["customer-1@example.com"]},
+                    get=None,
+                    update=None,  # Nothing to mask on this collection
+                )
+            ],
+        ),
+        CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "children"),
             action_needed=[
@@ -131,33 +155,11 @@ async def test_email_connector_cache_and_delayed_send(
                 )
             ],
         ),
-        CollectionAddress(
-            "email_dataset", "daycare_customer"
-        ): CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "daycare_customer"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "customer_id": [1]
-                    },  # We have some data from postgres they can use to locate the customer_id
-                    get=None,
-                    update={"scholarship": "null_rewrite"},
-                )
-            ],
-        ),
-        CollectionAddress("email_dataset", "payment"): CheckpointActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "payment"),
-            action_needed=[
-                ManualAction(
-                    locators={"payer_email": ["customer-1@example.com"]},
-                    get=None,
-                    update=None,  # Nothing to mask on this collection
-                )
-            ],
-        ),
-    }, "Only two collections need masking, but all are included in case they include relevant data locators."
+    ]
+    for action in raw_email_template_values:
+        assert (
+            action in expected
+        )  # "Only two collections need masking, but all are included in case they include relevant data locators."
 
     children_logs = db.query(ExecutionLog).filter(
         ExecutionLog.privacy_request_id == privacy_request.id,

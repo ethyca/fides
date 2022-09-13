@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
+from fidesops.ops.models.privacy_request import CheckpointActionRequired
 from fidesops.ops.schemas import Msg
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -14,7 +15,7 @@ class EmailServiceType(Enum):
     MAILGUN = "mailgun"
 
 
-class EmailActionType(Enum):
+class EmailActionType(str, Enum):
     """Enum for email action type"""
 
     # verify email upon acct creation
@@ -41,6 +42,20 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
         if self.verification_code_ttl_seconds < 60:
             return 0
         return self.verification_code_ttl_seconds // 60
+
+
+class FidesopsEmail(
+    BaseModel,
+    smart_union=True,
+    arbitrary_types_allowed=True,
+):
+    """A mapping of action_type to body_params"""
+
+    action_type: EmailActionType
+    body_params: Union[
+        SubjectIdentityVerificationBodyParams,
+        List[CheckpointActionRequired],
+    ]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):

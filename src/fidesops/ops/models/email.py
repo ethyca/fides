@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fideslib.db.base import Base
 from pydantic import ValidationError
@@ -11,6 +12,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fidesops.ops.common_exceptions import EmailDispatchException
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.email.email import (
@@ -68,6 +70,25 @@ class EmailConfig(Base):
         ),
         nullable=True,
     )  # Type bytea in the db
+
+    @classmethod
+    def get_configuration(cls, db: Session) -> Base:
+        """
+        Fetches the first configured EmailConfig record. As of v1.7.3 Fidesops does not support
+        multiple configured email connectors. Once fetched this function validates that
+        the EmailConfig is configured with secrets.
+        """
+        instance: Optional[Base] = cls.query(db=db).first()
+        if not instance:
+            raise EmailDispatchException("No email config found.")
+        if not instance.secrets:
+            logger.warning(
+                "Email secrets not found for config with key: %s", instance.key
+            )
+            raise EmailDispatchException(
+                f"Email secrets not found for config with key: {instance.key}"
+            )
+        return instance
 
     def set_secrets(
         self,

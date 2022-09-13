@@ -19,7 +19,6 @@ from fidesops.ops.models.datasetconfig import DatasetConfig
 from fidesops.ops.models.policy import CurrentStep, Policy, Rule
 from fidesops.ops.models.privacy_request import (
     CheckpointActionRequired,
-    EmailRequestFulfillmentBodyParams,
     ManualAction,
     PrivacyRequest,
 )
@@ -61,10 +60,8 @@ class EmailConnector(BaseConnector[None]):
                 db=db,
                 action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
                 to_email=config.test_email,
-                email_body_params={
-                    CollectionAddress(
-                        "test_dataset", "test_collection"
-                    ): CheckpointActionRequired(
+                email_body_params=[
+                    CheckpointActionRequired(
                         step=CurrentStep.erasure,
                         collection=CollectionAddress("test_dataset", "test_collection"),
                         action_needed=[
@@ -77,7 +74,7 @@ class EmailConnector(BaseConnector[None]):
                             )
                         ],
                     )
-                },
+                ],
             )
         except EmailDispatchException as exc:
             logger.info("Email connector test failed with exception %s", Pii(exc))
@@ -171,10 +168,10 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         ConnectionConfig.connection_type == ConnectionType.email,
     )
     for ds, cc in email_dataset_configs:
-        template_values: EmailRequestFulfillmentBodyParams = (
-            privacy_request.get_email_connector_template_contents_by_dataset(
-                CurrentStep.erasure, ds.dataset.get("fides_key")
-            )
+        template_values: List[
+            CheckpointActionRequired
+        ] = privacy_request.get_email_connector_template_contents_by_dataset(
+            CurrentStep.erasure, ds.dataset.get("fides_key")
         )
 
         if not template_values:
@@ -189,7 +186,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 action_required.action_needed[0].update
                 if action_required and action_required.action_needed
                 else False
-                for action_required in template_values.values()
+                for action_required in template_values
             )
         ):
             logger.info(

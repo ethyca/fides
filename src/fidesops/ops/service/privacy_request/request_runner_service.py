@@ -1,9 +1,8 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import Any, ContextManager, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
-from celery import Task
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -56,7 +55,7 @@ from fidesops.ops.task.graph_task import (
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import celery_app
+from fidesops.ops.tasks import DatabaseTask, celery_app
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.util.cache import (
     FidesopsRedis,
@@ -242,19 +241,6 @@ def queue_privacy_request(
         )
 
     return task.task_id
-
-
-class DatabaseTask(Task):  # pylint: disable=W0223
-    _session = None
-
-    @property
-    def session(self) -> ContextManager[Session]:
-        """Creates Session once per process"""
-        if self._session is None:
-            SessionLocal = get_db_session(config)
-            self._session = SessionLocal()
-
-        return self._session
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -464,7 +450,6 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=None,
         )
 
 

@@ -420,20 +420,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> EmailRequestFulfillmentBodyParams:
+    ) -> List[CheckpointActionRequired]:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
-        return {
-            CollectionAddress(
-                k.split("__")[-2], k.split("__")[-1]
-            ): CheckpointActionRequired.parse_obj(v)
-            if v
-            else None
-            for k, v in email_contents.items()
-        }
+
+        actions: List[CheckpointActionRequired] = []
+        for email_content in email_contents.values():
+            if email_content:
+                actions.append(CheckpointActionRequired.parse_obj(email_content))
+        return actions
 
     def cache_paused_collection_details(
         self,

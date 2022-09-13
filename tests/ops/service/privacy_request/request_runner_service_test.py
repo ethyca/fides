@@ -18,7 +18,6 @@ from fidesops.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import AccessLevel
 from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
@@ -1705,11 +1704,11 @@ class TestPrivacyRequestsEmailConnector:
         cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         )
-        assert set(cached_email_contents.keys()) == {
-            CollectionAddress("email_dataset", "payment"),
-            CollectionAddress("email_dataset", "children"),
-            CollectionAddress("email_dataset", "daycare_customer"),
-        }
+        assert len(cached_email_contents) == 3
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
         pr.delete(db=db)
         assert mailgun_send.called is False
 
@@ -1757,7 +1756,7 @@ class TestPrivacyRequestsEmailConnector:
             CurrentStep.erasure, "email_dataset"
         )
         assert (
-            set(cached_email_contents.keys()) == set()
+            len(cached_email_contents) == 0
         ), "No data cached to erase, because this connector is read-only"
 
         pr.delete(db=db)
@@ -1805,30 +1804,12 @@ class TestPrivacyRequestsEmailConnector:
         cached_email_contents = pr.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
         )
-        assert set(cached_email_contents.keys()) == {
-            CollectionAddress("email_dataset", "payment"),
-            CollectionAddress("email_dataset", "children"),
-            CollectionAddress("email_dataset", "daycare_customer"),
-        }
-        assert (
-            cached_email_contents[CollectionAddress("email_dataset", "payment")]
-            .action_needed[0]
-            .update
-            is None
-        )
-        assert (
-            cached_email_contents[CollectionAddress("email_dataset", "children")]
-            .action_needed[0]
-            .update
-            is None
-        )
-        assert (
-            cached_email_contents[
-                CollectionAddress("email_dataset", "daycare_customer")
-            ]
-            .action_needed[0]
-            .update
-            is None
+        assert {
+            contents.collection.collection for contents in cached_email_contents
+        } == {"payment", "children", "daycare_customer"}
+
+        assert not any(
+            [contents.action_needed[0].update for contents in cached_email_contents]
         )
 
         pr.delete(db=db)
@@ -1972,7 +1953,6 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_email=customer_email,
-                    email_body_params=None,
                 ),
             ],
             any_order=True,

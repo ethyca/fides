@@ -534,7 +534,7 @@ class TestCacheEmailConnectorTemplateContents:
             privacy_request.get_email_connector_template_contents_by_dataset(
                 CurrentStep.erasure, "email_dataset"
             )
-            == {}
+            == []
         )
 
         privacy_request.cache_email_connector_template_contents(
@@ -551,10 +551,8 @@ class TestCacheEmailConnectorTemplateContents:
 
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
-        ) == {
-            CollectionAddress(
-                "email_dataset", "test_collection"
-            ): CheckpointActionRequired(
+        ) == [
+            CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
@@ -565,7 +563,7 @@ class TestCacheEmailConnectorTemplateContents:
                     )
                 ],
             )
-        }
+        ]
 
 
 class TestCacheManualWebhookInput:
