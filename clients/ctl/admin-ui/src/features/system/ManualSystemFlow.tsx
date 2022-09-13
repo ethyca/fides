@@ -1,5 +1,8 @@
-import { Box, Button, Grid, Stack, Text } from "@fidesui/react";
+import { Box, Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
+
+import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -33,19 +36,29 @@ const ConfigureSteps = ({
 );
 
 const ManualSystemFlow = () => {
+  const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const handleCancel = () => {
+    router.push("/system/new");
+  };
 
   return (
-    <Grid templateColumns="2fr 8fr">
-      <Stack spacing={3} fontWeight="semibold" data-testid="settings">
-        <Text>Configuration Settings</Text>
-        <ConfigureSteps
-          steps={STEPS}
-          currentStepIndex={currentStepIndex}
-          onChange={setCurrentStepIndex}
-        />
-      </Stack>
-      <Box>{STEPS[currentStepIndex]}</Box>
+    <Grid templateColumns="3fr 7fr" maxWidth="70vw">
+      <GridItem>
+        <Stack spacing={3} fontWeight="semibold" data-testid="settings">
+          <Text>Configuration Settings</Text>
+          <ConfigureSteps
+            steps={STEPS}
+            currentStepIndex={currentStepIndex}
+            onChange={setCurrentStepIndex}
+          />
+        </Stack>
+      </GridItem>
+      <GridItem w="75%">
+        {currentStepIndex === 0 ? (
+          <DescribeSystemsForm handleCancelSetup={handleCancel} />
+        ) : null}
+      </GridItem>
     </Grid>
   );
 };
