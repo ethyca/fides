@@ -34,28 +34,24 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ARG SKIP_MSSQL_INSTALLATION
-RUN echo "ENVIRONMENT VAR:  SKIP_MSSQL_INSTALLATION $SKIP_MSSQL_INSTALLATION"
-
 # SQL Server (MS SQL)
 # https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver15
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get install -y --no-install-recommends apt-transport-https && apt-get clean && rm -rf /var/lib/apt/lists/* ; fi
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - ; fi
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list ; fi
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get update ; fi
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then apt-get -y --no-install-recommends install \
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    apt-transport-https \
     unixodbc-dev \
-    msodbcsql17 \
     mssql-tools \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* ; fi
+    && rm -rf /var/lib/apt/lists/*
 
 #########################
 ## Python Dependencies ##
 #########################
-COPY mssql-requirements.txt .
-RUN if [ "$SKIP_MSSQL_INSTALLATION" != "true" ] ; then pip --no-cache-dir install -r mssql-requirements.txt ; fi
 
 COPY optional-requirements.txt .
 RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
@@ -90,7 +86,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pip install --no-deps -e .
+RUN pip install -e .
 
 #############################
 ## Production Application ##
