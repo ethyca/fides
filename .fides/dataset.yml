@@ -2,9 +2,8 @@ dataset:
 - fides_key: public
   organization_fides_key: default_organization
   tags: null
-  name: public
-  description: The dataset responsible for storing all of the data related to a fidesctl
-    instance.
+  name: Fides Application Database
+  description: The dataset for the fides application.
   meta: {}
   data_categories:
   - system.operations
