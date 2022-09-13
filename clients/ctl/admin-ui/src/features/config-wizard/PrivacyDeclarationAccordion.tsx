@@ -7,10 +7,10 @@ import {
   Box,
   HStack,
   Input,
-  Tag,
   Text,
 } from "@fidesui/react";
 
+import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { PrivacyDeclaration } from "~/types/api";
 
 interface Props {
@@ -38,14 +38,7 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
           <HStack mb="20px">
             <Text color="gray.600">Declaration categories</Text>
             {privacyDeclaration.data_categories.map((category) => (
-              <Tag
-                background="primary.400"
-                color="white"
-                key={category}
-                width="fit-content"
-              >
-                {category}
-              </Tag>
+              <TaxonomyEntityTag key={category} name={category} />
             ))}
           </HStack>
           <HStack mb="20px">
@@ -55,14 +48,7 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
           <HStack mb="20px">
             <Text color="gray.600">Data subjects</Text>
             {privacyDeclaration.data_subjects.map((subject) => (
-              <Tag
-                background="primary.400"
-                color="white"
-                key={subject}
-                width="fit-content"
-              >
-                {subject}
-              </Tag>
+              <TaxonomyEntityTag name={subject} key={subject} />
             ))}
           </HStack>
           <HStack mb="20px">

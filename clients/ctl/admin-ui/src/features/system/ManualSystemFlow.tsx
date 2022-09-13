@@ -6,6 +6,7 @@ import { System } from "~/types/api";
 
 import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
 import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
+import ReviewSystemForm from "../config-wizard/ReviewSystemForm";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -56,6 +57,10 @@ const ManualSystemFlow = () => {
     setCurrentStepIndex(currentStepIndex + 1);
   };
 
+  const handleReviewSuccess = () => {
+    router.push("/system");
+  };
+
   return (
     <Grid templateColumns="3fr 7fr" maxWidth="70vw">
       <GridItem>
@@ -80,6 +85,13 @@ const ManualSystemFlow = () => {
             systemKey={newSystem.fides_key}
             onSuccess={handleDeclareSuccess}
             onCancel={handleCancel}
+          />
+        ) : null}
+        {currentStepIndex === 2 && newSystem ? (
+          <ReviewSystemForm
+            systemKey={newSystem.fides_key}
+            onCancel={handleCancel}
+            onSuccess={handleReviewSuccess}
           />
         ) : null}
       </GridItem>

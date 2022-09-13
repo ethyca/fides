@@ -98,7 +98,11 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 3 && (
-                  <ReviewSystemForm handleCancelSetup={handleCancelSetup} />
+                  <ReviewSystemForm
+                    systemKey={systemKey}
+                    onCancel={handleCancelSetup}
+                    onSuccess={() => dispatch(changeReviewStep())}
+                  />
                 )}
                 {reviewStep === 4 && <SuccessPage />}
               </Stack>

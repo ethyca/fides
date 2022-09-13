@@ -1,8 +1,10 @@
 import {
   Box,
   Button,
+  Center,
   Divider,
   Heading,
+  Spinner,
   Stack,
   Text,
   useToast,
@@ -69,7 +71,8 @@ interface Props {
 }
 
 const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemKey);
+  const { data: existingSystem, isLoading: isLoadingSystem } =
+    useGetSystemByFidesKeyQuery(systemKey);
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
@@ -98,6 +101,14 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
     dispatch(setDataUses(dataUses ?? []));
     dispatch(setDataQualifiers(dataQualifiers ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
+
+  if (isLoadingSystem) {
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
+  }
 
   if (!existingSystem) {
     return (

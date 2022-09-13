@@ -1,43 +1,59 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Button,
+  Center,
   Divider,
   FormLabel,
   Heading,
   HStack,
+  Spinner,
   Stack,
-  Tag,
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React from "react";
+import React, { Fragment } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useGetOrganizationByFidesKeyQuery,
 } from "~/features/organization";
+import { System } from "~/types/api";
 
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
-import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
+import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
-const ReviewSystemForm = ({
-  handleCancelSetup,
-}: {
-  handleCancelSetup: () => void;
-}) => {
-  const systemFidesKey = useAppSelector(selectSystemFidesKey);
-  const dispatch = useAppDispatch();
+interface Props {
+  systemKey: System["fides_key"];
+  onCancel: () => void;
+  onSuccess: () => void;
+}
 
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
+const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
+  const { data: existingSystem, isLoading } =
+    useGetSystemByFidesKeyQuery(systemKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY
   );
+
+  if (isLoading) {
+    return (
+      <Center>
+        <Spinner />
+      </Center>
+    );
+  }
+
+  if (!existingSystem) {
+    return (
+      <Text>
+        Could not find a system with key{" "}
+        <Text as="span" fontWeight="semibold">
+          {systemKey}
+        </Text>
+      </Text>
+    );
+  }
 
   const initialValues = {
     name: existingOrg?.name ?? "",
@@ -50,7 +66,7 @@ const ReviewSystemForm = ({
   };
 
   const handleSubmit = () => {
-    dispatch(changeReviewStep());
+    onSuccess();
   };
 
   return (
@@ -68,120 +84,50 @@ const ReviewSystemForm = ({
           <Text mt="10px !important">
             Let’s quickly review our declaration before registering
           </Text>
-          <Stack>
+          <Stack spacing={4}>
             <HStack>
-              <FormLabel>System name:</FormLabel>
+              <FormLabel fontWeight="semibold" m={0}>
+                System name:
+              </FormLabel>
               <Text>{initialValues.system_name}</Text>
             </HStack>
-
             <HStack>
-              <FormLabel>System key:</FormLabel>
+              <FormLabel fontWeight="semibold" m={0}>
+                System key:
+              </FormLabel>
               <Text>{initialValues.system_key}</Text>
             </HStack>
             <HStack>
-              <FormLabel>System description:</FormLabel>
+              <FormLabel fontWeight="semibold" m={0}>
+                System description:
+              </FormLabel>
               <Text>{initialValues.system_description}</Text>
             </HStack>
             <HStack>
-              <FormLabel>System type:</FormLabel>
+              <FormLabel fontWeight="semibold" m={0}>
+                System type:
+              </FormLabel>
               <Text>{initialValues.system_type}</Text>
             </HStack>
             <HStack>
-              <FormLabel>System tags:</FormLabel>
+              <FormLabel fontWeight="semibold" m={0}>
+                System tags:
+              </FormLabel>
               {initialValues.tags.map((tag) => (
-                <Tag
-                  background="primary.400"
-                  color="white"
-                  key={tag}
-                  width="fit-content"
-                >
-                  {tag}
-                </Tag>
+                <TaxonomyEntityTag key={tag} name={tag} />
               ))}
             </HStack>
-            <FormLabel>Privacy declarations:</FormLabel>
-            {initialValues.privacy_declarations.length > 0
-              ? initialValues.privacy_declarations.map((declaration: any) => (
-                  <>
-                    <Divider />
-                    <Accordion
-                      allowToggle
-                      border="transparent"
-                      key={declaration.name}
-                      maxW="500px"
-                      minW="500px"
-                      width="500px"
-                    >
-                      <AccordionItem>
-                        <>
-                          <AccordionButton>
-                            <Box flex="1" textAlign="left">
-                              {declaration.name}
-                            </Box>
-                            <AccordionIcon />
-                          </AccordionButton>
-                          <AccordionPanel padding="0px" mt="20px">
-                            <HStack mb="20px">
-                              <Text color="gray.600">
-                                Declaration categories
-                              </Text>
-                              {declaration.data_categories.map(
-                                (category: any) => (
-                                  <Tag
-                                    background="primary.400"
-                                    color="white"
-                                    key={category}
-                                    width="fit-content"
-                                  >
-                                    {category}
-                                  </Tag>
-                                )
-                              )}
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data use</Text>
-                              <Tag
-                                background="primary.400"
-                                color="white"
-                                width="fit-content"
-                              >
-                                {declaration.data_use}
-                              </Tag>
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data subjects</Text>
-                              {declaration.data_subjects.map((subject: any) => (
-                                <Tag
-                                  background="primary.400"
-                                  color="white"
-                                  key={subject}
-                                  width="fit-content"
-                                >
-                                  {subject}
-                                </Tag>
-                              ))}
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data qualifier</Text>
-                              <Tag
-                                background="primary.400"
-                                color="white"
-                                width="fit-content"
-                              >
-                                {declaration.data_qualifier}
-                              </Tag>
-                            </HStack>
-                          </AccordionPanel>
-                        </>
-                      </AccordionItem>
-                    </Accordion>
-                  </>
-                ))
-              : null}
+            <FormLabel fontWeight="semibold">Privacy declarations:</FormLabel>
+            {initialValues.privacy_declarations.map((declaration) => (
+              <Fragment key={declaration.name}>
+                <Divider />
+                <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
+              </Fragment>
+            ))}
           </Stack>
           <Box>
             <Button
-              onClick={() => handleCancelSetup()}
+              onClick={() => onCancel()}
               mr={2}
               size="sm"
               variant="outline"
