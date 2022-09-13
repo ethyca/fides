@@ -5,24 +5,23 @@ import { Form, Formik } from "formik";
 import React, { useState } from "react";
 import * as Yup from "yup";
 
-import { useAppDispatch } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+import { useCreateSystemMutation } from "~/features/system/system.slice";
+import { System } from "~/types/api";
 
-import { useCreateSystemMutation } from "../system/system.slice";
-import { changeReviewStep, setSystemFidesKey } from "./config-wizard.slice";
-
-const initialValues = {
+const initialValues: System = {
   description: "",
   fides_key: "",
   name: "",
   organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
   tags: [],
   system_type: "",
+  privacy_declarations: [],
 };
 type FormValues = typeof initialValues;
 
@@ -31,13 +30,12 @@ const ValidationSchema = Yup.object().shape({
   system_type: Yup.string().required().label("System type"),
 });
 
-const DescribeSystemsForm = ({
-  handleCancelSetup,
-}: {
-  handleCancelSetup: () => void;
-}) => {
-  const dispatch = useAppDispatch();
+interface Props {
+  onCancel: () => void;
+  onSuccess: (system: System) => void;
+}
 
+const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -79,8 +77,7 @@ const DescribeSystemsForm = ({
         });
       } else {
         toast.closeAll();
-        dispatch(setSystemFidesKey(values.fides_key ?? ""));
-        dispatch(changeReviewStep());
+        onSuccess(values);
       }
     };
 
@@ -155,17 +152,21 @@ const DescribeSystemsForm = ({
                   id="tags"
                   name="tags"
                   label="System Tags"
-                  options={initialValues.tags.map((s) => ({
-                    value: s,
-                    label: s,
-                  }))}
+                  options={
+                    initialValues.tags
+                      ? initialValues.tags.map((s) => ({
+                          value: s,
+                          label: s,
+                        }))
+                      : []
+                  }
                   tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
                 />
               </Stack>
             </Stack>
             <Box>
               <Button
-                onClick={() => handleCancelSetup()}
+                onClick={() => onCancel()}
                 mr={2}
                 size="sm"
                 variant="outline"

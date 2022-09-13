@@ -4,15 +4,18 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
+import { System } from "~/types/api";
 
 import HorizontalStepper from "../common/HorizontalStepper";
 import Stepper from "../common/Stepper";
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {
+  changeReviewStep,
   changeStep,
   selectReviewStep,
   selectStep,
+  setSystemFidesKey,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
@@ -32,6 +35,11 @@ const ConfigWizardWalkthrough = () => {
 
   const handleCancelSetup = () => {
     router.push("/");
+  };
+
+  const handleDescribeSuccess = (values: System) => {
+    dispatch(setSystemFidesKey(values.fides_key ?? ""));
+    dispatch(changeReviewStep());
   };
 
   return (
@@ -71,12 +79,13 @@ const ConfigWizardWalkthrough = () => {
                   />
                 ) : null}
                 {reviewStep === 1 && (
-                  <DescribeSystemsForm handleCancelSetup={handleCancelSetup} />
+                  <DescribeSystemsForm
+                    onCancel={handleCancelSetup}
+                    onSuccess={handleDescribeSuccess}
+                  />
                 )}
                 {reviewStep === 2 && (
-                  <PrivacyDeclarationForm
-                    handleCancelSetup={handleCancelSetup}
-                  />
+                  <PrivacyDeclarationForm onCancel={handleCancelSetup} />
                 )}
                 {reviewStep === 3 && (
                   <ReviewSystemForm handleCancelSetup={handleCancelSetup} />
