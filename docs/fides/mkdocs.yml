@@ -10,19 +10,31 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
-      - Use Cases: fides/use_cases.md
-      - Getting Started: 
-          - Running Fidesctl Locally (Standalone): fidesctl/quickstart/local_standalone.md
-          - Running Fidesctl Locally (Full Installation): fidesctl/quickstart/local_full.md
-          - Running Fidesctl in Docker: fidesctl/quickstart/docker.md
-  - Fides Control: 
-      - Installation:
-          - Installation Overview: fidesctl/installation/installation.md
-          - Prerequisites & Dependencies: fidesctl/installation/prerequisites_dependencies.md
-          - Installation from PyPI: fidesctl/installation/pypi.md
-          - Installation from Docker: fidesctl/installation/docker.md
+      - Installation: 
+          - Overview: installation/overview.md
+          - Prerequisites: installation/prerequisites.md
+          - Installation from PyPI: installation/pypi.md
+          - Installation from Docker: installation/docker.md
+      - Setup and Use: 
           - Setting up the database: fidesctl/installation/database.md
           - Configuration: fidesctl/installation/configuration.md
+          - Getting Started: fidesops/getting_started.md
+          - Authenticate with OAuth: fidesops/guides/oauth.md
+          - Connect to Databases: fidesops/guides/database_connectors.md
+          - Define Datasets: fidesops/guides/datasets.md
+          - Configure Policies: fidesops/guides/policies.md
+          - Execute Privacy Requests: fidesops/guides/privacy_requests.md
+  - Fides UI:
+      - Overview: fidesctl/admin_ui/overview.md
+      - Configuration Wizard: fidesctl/admin_ui/wizard.md
+      - Managing Datasets: fidesctl/admin_ui/datasets.md
+      - Overview: fidesops/ui/overview.md
+      - Privacy Center: fidesops/ui/privacy_center.md
+      - Admin UI:
+          - Subject Requests: fidesops/ui/subject_requests.md
+          - Managing Datastores: fidesops/ui/datastores.md
+          - User Management: fidesops/ui/user_management.md
+  - Fides Control: 
       - Tutorial:
           - Overview: fidesctl/tutorial/index.md
           - Add Fidesctl to the App: fidesctl/tutorial/add.md
@@ -46,20 +58,6 @@ nav:
       - CLI: fidesctl/cli.md
   - Fides Ops:
       - What is Fidesops?: fidesops/index.md
-      - Installation and Use:
-          - Getting Started: fidesops/getting_started.md
-          - Authenticate with OAuth: fidesops/guides/oauth.md
-          - Connect to Databases: fidesops/guides/database_connectors.md
-          - Define Datasets: fidesops/guides/datasets.md
-          - Configure Policies: fidesops/guides/policies.md
-          - Execute Privacy Requests: fidesops/guides/privacy_requests.md
-      - Fidesops UI:
-          - Overview: fidesops/ui/overview.md
-          - Privacy Center: fidesops/ui/privacy_center.md
-          - Admin UI:
-              - Subject Requests: fidesops/ui/subject_requests.md
-              - Managing Datastores: fidesops/ui/datastores.md
-              - User Management: fidesops/ui/user_management.md
       - How-To Guides:
           - View Available Connection Types: fidesops/guides/connection_types.md
           - Configure Email Communications: fidesops/guides/email_communications.md
@@ -101,10 +99,6 @@ nav:
           - Configure a Storage Destination: fidesops/tutorial/storage_config.md
           - Define a Policy: fidesops/tutorial/define_policy.md
           - Execute a Privacy Request: fidesops/tutorial/execute_privacy_request.md
-  - Fides UI:
-      - Overview: fidesctl/admin_ui/overview.md
-      - Configuration Wizard: fidesctl/admin_ui/wizard.md
-      - Managing Datasets: fidesctl/admin_ui/datasets.md
   - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:

@@ -20,7 +20,7 @@ Fides' core services are open source and extensible. Integrate Fides into your e
 
 ### Comprehensive Privacy Standard Support
 
-Fides ships with a comprehensive taxonomy that allows you to efficiently describe the privacy behaviors of your system for major regulations, including [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/) as well as major standards like [ISO 19944](https://www.iso.org/standard/79573.html).
+The default 'efficiently describe the privacy behaviors of your system for major regulations, including [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/) as well as major standards like [ISO 19944](https://www.iso.org/standard/79573.html).
 
 ## Why is it called Fides?
 

@@ -1,16 +1,16 @@
-# Installation
+# Installation Options
 
-This page describes installation options that you might use when considering how to install fidesctl. Fidesctl consists of multiple components, possibly distributed among various physical or virtual machines. Fidesctl can be deployed flexibly, meeting the needs of various environments with different levels of complexity.
+## Installation Options
 
-You should also check-out the [prerequisites](prerequisites_dependencies.md) that must be fulfilled when installing fidesctl. Fidesctl requires additional [dependencies](prerequisites_dependencies.md) to be installed - which can be done via `extras`.
+Fides provides blah blah
 
-When you install fidesctl, you need to [setup the database](database.md) which must also be kept updated when fidesctl is upgraded.
+### PyPi
 
-## Installation Tools
+Only `pip`/`pipx` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md).
 
-Only `pip`/`pipx` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md) For environment isolation, the Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) when possible.
+!!! Tip "For environment isolation, the Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) when possible."
 
-In some cases a lightweight installation might be desired. If this is the case, our `pip` installation supports optional dependencies.
+In some cases a lightweight installation might be desired. If this is the case, the `pip` installation supports optional dependencies.
 
 While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as the supported tools - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.
 
@@ -39,7 +39,7 @@ While there are some successes with using other tools like poetry or pip-tools, 
 * For quick and general troubleshooting questions, visit the #troubleshooting channel on the fidesctl Slack. For longer discussions or to share information, visit the [GitHub discussions](https://github.com/ethyca/fides/discussions) page.
 * If you can provide description of a reproducible problem with the fidesctl software, you can open issue in [GitHub issues](https://github.com/ethyca/fides/issues).
 
-## Using Production Docker Images
+### Docker
 
 More details: [Installation from Docker](docker.md)
 

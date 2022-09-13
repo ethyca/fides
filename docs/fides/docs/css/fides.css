@@ -458,3 +458,7 @@ form.hs-form{
         margin-left: 10px;
     }
 }
+
+.admonition code, .admonition-title code {
+    font-size: .85em;
+}
