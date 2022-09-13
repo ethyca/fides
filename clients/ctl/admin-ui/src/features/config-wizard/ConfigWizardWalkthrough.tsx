@@ -15,6 +15,7 @@ import {
   changeStep,
   selectReviewStep,
   selectStep,
+  selectSystemFidesKey,
   setSystemFidesKey,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
@@ -32,6 +33,7 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
+  const systemKey = useAppSelector(selectSystemFidesKey);
 
   const handleCancelSetup = () => {
     router.push("/");
@@ -85,7 +87,10 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 2 && (
-                  <PrivacyDeclarationForm onCancel={handleCancelSetup} />
+                  <PrivacyDeclarationForm
+                    systemKey={systemKey}
+                    onCancel={handleCancelSetup}
+                  />
                 )}
                 {reviewStep === 3 && (
                   <ReviewSystemForm handleCancelSetup={handleCancelSetup} />

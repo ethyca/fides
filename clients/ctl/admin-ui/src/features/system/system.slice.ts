@@ -43,6 +43,7 @@ export const systemApi = createApi({
     >({
       query: ({ ...patch }) => ({
         url: `system/`,
+        params: { resource_type: "system" },
         method: "PUT",
         body: patch,
       }),

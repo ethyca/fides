@@ -2,7 +2,10 @@ import { Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { System } from "~/types/api";
+
 import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
+import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -37,9 +40,16 @@ const ConfigureSteps = ({
 
 const ManualSystemFlow = () => {
   const router = useRouter();
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(1);
+  const [newSystem, setNewSystem] = useState<System | null>(null);
+
   const handleCancel = () => {
     router.push("/system/new");
+  };
+
+  const handleDescribeSuccess = (system: System) => {
+    setCurrentStepIndex(currentStepIndex + 1);
+    setNewSystem(system);
   };
 
   return (
@@ -56,7 +66,16 @@ const ManualSystemFlow = () => {
       </GridItem>
       <GridItem w="75%">
         {currentStepIndex === 0 ? (
-          <DescribeSystemsForm handleCancelSetup={handleCancel} />
+          <DescribeSystemsForm
+            onSuccess={handleDescribeSuccess}
+            onCancel={handleCancel}
+          />
+        ) : null}
+        {currentStepIndex === 1 && newSystem ? (
+          <PrivacyDeclarationForm
+            systemKey={newSystem?.fides_key}
+            onCancel={handleCancel}
+          />
         ) : null}
       </GridItem>
     </Grid>
