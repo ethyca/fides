@@ -16,24 +16,20 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import {
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
+import { System } from "~/types/api";
 
-import {
-  changeReviewStep,
-  changeStep,
-  selectSystemFidesKey,
-} from "./config-wizard.slice";
-
-const SuccessPage = () => {
-  const systemFidesKey = useAppSelector(selectSystemFidesKey);
-  const dispatch = useAppDispatch();
-
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
+interface Props {
+  systemKey: System["fides_key"];
+  onContinue: () => void;
+  onAddNextSystem: () => void;
+}
+const SuccessPage = ({ systemKey, onAddNextSystem, onContinue }: Props) => {
+  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemKey);
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const filteredSystems = allRegisteredSystems?.filter(
     (system) => system.name !== existingSystem?.name
@@ -85,24 +81,10 @@ const SuccessPage = () => {
         <Text>You can continue to add more systems now or finish.</Text>
 
         <Box>
-          <Button
-            onClick={() => {
-              dispatch(changeStep(5));
-              dispatch(changeReviewStep(1));
-            }}
-            mr={2}
-            size="sm"
-            variant="outline"
-          >
+          <Button onClick={onAddNextSystem} mr={2} size="sm" variant="outline">
             Add next system
           </Button>
-          <Button
-            onClick={() => {
-              dispatch(changeStep());
-            }}
-            colorScheme="primary"
-            size="sm"
-          >
+          <Button onClick={onContinue} colorScheme="primary" size="sm">
             Continue
           </Button>
         </Box>

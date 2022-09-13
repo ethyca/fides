@@ -104,7 +104,16 @@ const ConfigWizardWalkthrough = () => {
                     onSuccess={() => dispatch(changeReviewStep())}
                   />
                 )}
-                {reviewStep === 4 && <SuccessPage />}
+                {reviewStep === 4 && (
+                  <SuccessPage
+                    systemKey={systemKey}
+                    onAddNextSystem={() => {
+                      dispatch(changeStep(5));
+                      dispatch(changeReviewStep(1));
+                    }}
+                    onContinue={() => dispatch(changeStep())}
+                  />
+                )}
               </Stack>
             ) : null}
             {step === 6 ? <ViewYourDataMapPage /> : null}

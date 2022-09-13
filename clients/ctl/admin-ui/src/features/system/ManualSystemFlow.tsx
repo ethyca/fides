@@ -7,6 +7,7 @@ import { System } from "~/types/api";
 import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
 import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
 import ReviewSystemForm from "../config-wizard/ReviewSystemForm";
+import SuccessPage from "../config-wizard/SuccessPage";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -44,7 +45,7 @@ const ManualSystemFlow = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [newSystem, setNewSystem] = useState<System | null>(null);
 
-  const handleCancel = () => {
+  const returnToNew = () => {
     router.push("/system/new");
   };
 
@@ -53,11 +54,7 @@ const ManualSystemFlow = () => {
     setNewSystem(system);
   };
 
-  const handleDeclareSuccess = () => {
-    setCurrentStepIndex(currentStepIndex + 1);
-  };
-
-  const handleReviewSuccess = () => {
+  const returnToIndex = () => {
     router.push("/system");
   };
 
@@ -77,21 +74,28 @@ const ManualSystemFlow = () => {
         {currentStepIndex === 0 ? (
           <DescribeSystemsForm
             onSuccess={handleDescribeSuccess}
-            onCancel={handleCancel}
+            onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 1 && newSystem ? (
           <PrivacyDeclarationForm
             systemKey={newSystem.fides_key}
-            onSuccess={handleDeclareSuccess}
-            onCancel={handleCancel}
+            onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
+            onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 2 && newSystem ? (
           <ReviewSystemForm
             systemKey={newSystem.fides_key}
-            onCancel={handleCancel}
-            onSuccess={handleReviewSuccess}
+            onCancel={returnToNew}
+            onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
+          />
+        ) : null}
+        {currentStepIndex === 3 && newSystem ? (
+          <SuccessPage
+            systemKey={newSystem.fides_key}
+            onAddNextSystem={returnToNew}
+            onContinue={returnToIndex}
           />
         ) : null}
       </GridItem>
