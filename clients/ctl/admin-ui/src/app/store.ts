@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
 import { createWrapper } from "next-redux-wrapper";
 
-import { plusApi } from "~/features/common/features.slice";
+import { plusApi } from "~/features/common/plus.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
