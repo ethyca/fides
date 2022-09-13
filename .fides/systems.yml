@@ -18,7 +18,7 @@ system:
     data_subjects:
     - anonymous_user
     dataset_references:
-    - public
+    - fides_db
 
 - fides_key: fidesops
   name: Fidesops
@@ -37,4 +37,4 @@ system:
     - employee
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     dataset_references:
-    - public
+    - fides_db
