@@ -132,16 +132,14 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    sleep(10)
     run_command = (
         *RUN,
         "fides",
-        *(WITH_TEST_CONFIG),
         "scan",
         "dataset",
         "db",
-        "--connection-string",
-        "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
+        "--credentials-id",
+        "app_postgres",
     )
     session.run(*run_command, external=True)
 
