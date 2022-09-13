@@ -1,4 +1,4 @@
-import { Box, Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
+import { Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 

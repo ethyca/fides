@@ -3,6 +3,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
 import React, { useState } from "react";
+import * as Yup from "yup";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
@@ -24,6 +25,11 @@ const initialValues = {
   system_type: "",
 };
 type FormValues = typeof initialValues;
+
+const ValidationSchema = Yup.object().shape({
+  fides_key: Yup.string().required().label("System key"),
+  system_type: Yup.string().required().label("System type"),
+});
 
 const DescribeSystemsForm = ({
   handleCancelSetup,
@@ -91,8 +97,9 @@ const DescribeSystemsForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
+      validationSchema={ValidationSchema}
     >
-      {({ values }) => (
+      {({ isValid, dirty }) => (
         <Form>
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -169,9 +176,7 @@ const DescribeSystemsForm = ({
                 type="submit"
                 variant="primary"
                 size="sm"
-                isDisabled={
-                  !values.name || !values.description || !values.system_type
-                }
+                disabled={!(isValid && dirty)}
                 isLoading={isLoading}
               >
                 Confirm and Continue
