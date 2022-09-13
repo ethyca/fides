@@ -5,7 +5,6 @@ import {
   Button,
   Heading,
   Stack,
-  Text,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
@@ -33,12 +32,12 @@ const NewSystem: NextPage = () => {
         </Breadcrumb>
       </Box>
       <Stack spacing={8}>
-        <Box w={{ base: "100%", lg: "50%" }}>
+        {/* <Box w={{ base: "100%", lg: "50%" }}>
           <Text>
             Choose whether to upload a new system YAML or manually generate a
             system.
           </Text>
-        </Box>
+        </Box> */}
         <Box>
           <Button
             size="sm"
@@ -50,7 +49,7 @@ const NewSystem: NextPage = () => {
           >
             Upload a new system YAML
           </Button>
-          <Button
+          {/* <Button
             size="sm"
             variant="outline"
             data-testid="manually-generate-btn"
@@ -58,7 +57,7 @@ const NewSystem: NextPage = () => {
             <NextLink href="/system/new/configure">
               Manually generate a system
             </NextLink>
-          </Button>
+          </Button> */}
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
           {showYamlForm ? <SystemYamlForm /> : null}
