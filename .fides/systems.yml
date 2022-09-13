@@ -29,11 +29,12 @@ system:
     is_required: false
   privacy_declarations:
   - name: Manage privacy request Fufillment
-    data_categories:: []
-    dataset_references:
-    - fidesops_db_dataset
+    data_categories:
+    - user
     data_use: provide.service
     data_subjects:
     - customer
     - employee
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    dataset_references:
+    - public
