@@ -3,6 +3,7 @@ import csv
 import io
 import json
 from datetime import datetime, timedelta
+from random import randint
 from typing import List
 from unittest import mock
 
@@ -49,7 +50,7 @@ from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType, CurrentStep
+from fidesops.ops.models.policy import ActionType, CurrentStep, Policy
 from fidesops.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -1368,6 +1369,60 @@ class TestGetPrivacyRequests:
         response = api_client.get(url, headers=auth_header)
         data = response.json()["items"][0]
         assert data["days_left"] == days_left
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_sort_privacy_request_by_due_date(
+        self,
+        run_access_request_mock,
+        generate_auth_header,
+        url,
+        db,
+        api_client: TestClient,
+        policy: Policy,
+    ):
+        days_left_values = []
+        data = []
+        now = datetime.utcnow()
+        for _ in range(0, 10):
+            days = randint(1, 100)
+            requested_at = now + timedelta(days=days)
+            data.append(
+                {
+                    "requested_at": str(requested_at),
+                    "policy_key": policy.key,
+                    "identity": {"email": "test@example.com"},
+                }
+            )
+            days_left_values.append(days + policy.execution_timeframe)
+
+        api_client.post(url, json=data)
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        resp = api_client.get(
+            f"{url}?sort_direction=asc&sort_field=due_date",
+            json=data,
+            headers=auth_header,
+        )
+        asc_response_data = resp.json()["items"]
+        days_left_values.sort()
+        for i, request in enumerate(asc_response_data):
+            assert request["days_left"] == days_left_values[i]
+
+        resp = api_client.get(
+            f"{url}?sort_direction=desc&sort_field=due_date",
+            json=data,
+            headers=auth_header,
+        )
+        desc_response_data = resp.json()["items"]
+        days_left_values.reverse()
+        for i, request in enumerate(desc_response_data):
+            assert request["days_left"] == days_left_values[i]
+
+        for request in desc_response_data:
+            pr = PrivacyRequest.get(db=db, object_id=request["id"])
+            pr.delete(db=db)
 
 
 class TestGetExecutionLogs:

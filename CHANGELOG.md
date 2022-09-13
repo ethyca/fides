@@ -41,6 +41,7 @@ The types of changes are:
 * Add Days left display to admin ui [#1283](https://github.com/ethyca/fidesops/pull/1283)
 * Data seeding for Datadog access tests [#1269](https://github.com/ethyca/fidesops/pull/1269)
 * Added support for one-to-many relationships for param_values in SaaS configs [#1253](https://github.com/ethyca/fidesops/pull/1253)
+* Added `due_date` sorting [#1284](https://github.com/ethyca/fidesops/pull/1284)
 * Added erasure endpoints for Shopify connector [#1289](https://github.com/ethyca/fidesops/pull/1289)
 * Adds ability to send email notification upon privacy request completion [#1282](https://github.com/ethyca/fidesops/pull/1282)
 

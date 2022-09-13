@@ -18,6 +18,7 @@ from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy import cast, column, null
 from sqlalchemy.orm import Query, Session
+from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -103,6 +104,7 @@ from fidesops.ops.task.task_resources import TaskResources
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.cache import FidesopsRedis
 from fidesops.ops.util.collection_util import Row
+from fidesops.ops.util.enums import ColumnSort
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
@@ -483,7 +485,21 @@ def _filter_privacy_request_queryset(
             PrivacyRequest.finished_processing_at > errored_gt,
         )
 
-    return query.order_by(PrivacyRequest.created_at.desc())
+    return query
+
+
+def _sort_privacy_request_queryset(
+    query: Query, sort_field: str, sort_direction: ColumnSort
+) -> Query:
+    if hasattr(PrivacyRequest, sort_field) is False:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{sort_field} is not on PrivacyRequest",
+        )
+
+    sort_object_attribute = getattr(PrivacyRequest, sort_field)
+    sort_func = getattr(sort_object_attribute, sort_direction)
+    return query.order_by(nullslast(sort_func()))
 
 
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
@@ -558,6 +574,8 @@ def get_request_status(
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     download_csv: Optional[bool] = False,
+    sort_field: str = "created_at",
+    sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """Returns PrivacyRequest information. Supports a variety of optional query params.
 
@@ -566,6 +584,7 @@ def get_request_status(
     """
 
     logger.info("Finding all request statuses with pagination params %s", params)
+
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
         db,
@@ -583,6 +602,11 @@ def get_request_status(
         errored_gt,
         external_id,
     )
+
+    logger.info(
+        "Sorting requests by field: %s and direction: %s", sort_field, sort_direction
+    )
+    query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
 
     if download_csv:
         # Returning here if download_csv param was specified
