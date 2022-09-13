@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Optional, Type
+from typing import Any, Dict, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
@@ -47,6 +47,33 @@ class ConnectionType(enum.Enum):
     manual = "manual"  # Run as part of the traversal
     email = "email"
     manual_webhook = "manual_webhook"  # Run before the traversal
+
+    @property
+    def human_readable(self) -> str:
+        """Human-readable mapping for ConnectionTypes
+        Add to this mapping if you add a new ConnectionType
+        """
+        readable_mapping: Dict[str, str] = {
+            ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.mongodb.value: "MongoDB",
+            ConnectionType.mysql.value: "MySQL",
+            ConnectionType.https.value: "Policy Webhook",
+            ConnectionType.saas.value: "SaaS",
+            ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.snowflake.value: "Snowflake",
+            ConnectionType.mssql.value: "Microsoft SQL Server",
+            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.manual.value: "Manual Connector",
+            ConnectionType.email.value: "Email Connector",
+            ConnectionType.manual_webhook.value: "Manual Webhook",
+        }
+        try:
+            return readable_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError(
+                "Add new ConnectionType to human_readable mapping"
+            )
 
 
 class AccessLevel(enum.Enum):

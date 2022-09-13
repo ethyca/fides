@@ -18,4 +18,5 @@ class TestConnectionRegistry:
             config="data/saas/config/mailchimp_config.yml",
             dataset="data/saas/dataset/mailchimp_dataset.yml",
             icon="data/saas/icon/mailchimp.svg",
+            human_readable="Mailchimp",
         )

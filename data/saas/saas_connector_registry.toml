@@ -2,62 +2,77 @@
 config = "data/saas/config/adobe_campaign_config.yml"
 dataset = "data/saas/dataset/adobe_campaign_dataset.yml"
 icon = "data/saas/icon/adobe.svg"
+human_readable = "Adobe Campaign"
 
 [auth0]
 config = "data/saas/config/auth0_config.yml"
 dataset = "data/saas/dataset/auth0_dataset.yml"
 icon = "data/saas/icon/default.svg"
+human_readable = "Auth0"
 
 [datadog]
 config = "data/saas/config/datadog_config.yml"
 dataset = "data/saas/dataset/datadog_dataset.yml"
 icon = "data/saas/icon/default.svg"
+human_readable = "Datadog"
 
 [hubspot]
 config = "data/saas/config/hubspot_config.yml"
 dataset = "data/saas/dataset/hubspot_dataset.yml"
 icon = "data/saas/icon/hubspot.svg"
+human_readable = "HubSpot"
+
+
 [mailchimp]
 config = "data/saas/config/mailchimp_config.yml"
 dataset = "data/saas/dataset/mailchimp_dataset.yml"
 icon = "data/saas/icon/mailchimp.svg"
+human_readable = "Mailchimp"
 
 [outreach]
 config = "data/saas/config/outreach_config.yml"
 dataset = "data/saas/dataset/outreach_dataset.yml"
 icon = "data/saas/icon/outreach.svg"
+human_readable = "Outreach"
 
 [salesforce]
 config = "data/saas/config/salesforce_config.yml"
 dataset = "data/saas/dataset/salesforce_dataset.yml"
 icon = "data/saas/icon/salesforce.svg"
+human_readable = "Salesforce"
 
 [segment]
 config = "data/saas/config/segment_config.yml"
 dataset = "data/saas/dataset/segment_dataset.yml"
 icon = "data/saas/icon/segment.svg"
+human_readable = "Segment"
 
 [sendgrid]
 config = "data/saas/config/sendgrid_config.yml"
 dataset = "data/saas/dataset/sendgrid_dataset.yml"
 icon = "data/saas/icon/default.svg"
+human_readable = "SendGrid"
 
 [sentry]
 config = "data/saas/config/sentry_config.yml"
 dataset = "data/saas/dataset/sentry_dataset.yml"
 icon = "data/saas/icon/sentry.svg"
+human_readable = "Sentry"
 
 [shopify]
 config = "data/saas/config/shopify_config.yml"
 dataset = "data/saas/dataset/shopify_dataset.yml"
 icon = "data/saas/icon/default.svg"
+human_readable = "Shopify"
 
 [stripe]
 config = "data/saas/config/stripe_config.yml"
 dataset = "data/saas/dataset/stripe_dataset.yml"
 icon = "data/saas/icon/stripe.svg"
+human_readable = "Stripe"
 
 [zendesk]
 config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
 icon = "data/saas/icon/zendesk.svg"
+human_readable = "Zendesk"

@@ -4,98 +4,126 @@
 ## Available Connection Types
 
 To view a list of all available connection types, visit `GET /api/v1/connection_type`.
-This endpoint can be filtered with a `search` query param and is subject to change.  We include
-database options and third party API services with which fidesops can communicate.
+This endpoint can be filtered with a `search` query param or a `system_type` query param 
+and is subject to change.  We include database options and third party API services with 
+which fidesops can communicate.
 
 ```json title="<code>GET /api/v1/connection_type</code>"
 {
     "items": [
         {
             "identifier": "bigquery",
-            "type": "database"
+            "type": "database",
+            "human_readable": "BigQuery"
         },
         {
             "identifier": "mariadb",
-            "type": "database"
+            "type": "database",
+            "human_readable": "MariaDB"
         },
         {
             "identifier": "mongodb",
-            "type": "database"
+            "type": "database",
+            "human_readable": "MongoDB"
         },
         {
             "identifier": "mssql",
-            "type": "database"
+            "type": "database",
+            "human_readable": "Microsoft SQL Server"
         },
         {
             "identifier": "mysql",
-            "type": "database"
+            "type": "database",
+            "human_readable": "MySQL"
         },
         {
             "identifier": "postgres",
-            "type": "database"
+            "type": "database",
+            "human_readable": "PostgreSQL"
         },
         {
             "identifier": "redshift",
-            "type": "database"
+            "type": "database",
+            "human_readable": "Amazon Redshift"
         },
         {
             "identifier": "snowflake",
-            "type": "database"
+            "type": "database",
+            "human_readable": "Snowflake"
         },
         {
             "identifier": "adobe_campaign",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Adobe Campaign"
         },
         {
             "identifier": "auth0",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Auth0"
         },
         {
             "identifier": "datadog",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Datadog"
         },
         {
             "identifier": "hubspot",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "HubSpot"
         },
-        {
-            
-            "type": "saas"
-        },
+        
         {
             "identifier": "mailchimp",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Mailchimp"
         },
         {
             "identifier": "outreach",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Outreach"
         },
         {
             "identifier": "salesforce",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Salesforce"
         },
         {
             "identifier": "segment",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Segment"
         },
         {
             "identifier": "sendgrid",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "SendGrid"
         },
         {
             "identifier": "sentry",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Sentry"
+        },
+        {
+            "identifier": "shopify",
+            "type": "saas",
+            "human_readable": "Shopify"
         },
         {
             "identifier": "stripe",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Stripe"
         },
         {
             "identifier": "zendesk",
-            "type": "saas"
+            "type": "saas",
+            "human_readable": "Zendesk"
+        },
+        {
+            "identifier": "manual_webhook",
+            "type": "manual",
+            "human_readable": "Manual Webhook"
         }
     ],
-    "total": 21,
+    "total": 23,
     "page": 1,
     "size": 50
 }

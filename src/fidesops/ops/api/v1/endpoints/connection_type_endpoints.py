@@ -23,6 +23,11 @@ from fidesops.ops.schemas.connection_configuration.connection_config import (
     SystemType,
 )
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig, SaaSType
+from fidesops.ops.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    load_registry,
+    registry_file,
+)
 from fidesops.ops.util.oauth_util import verify_oauth_client
 from fidesops.ops.util.saas_util import load_config
 
@@ -57,7 +62,11 @@ def get_connection_types(
         )
         connection_system_types.extend(
             [
-                ConnectionSystemTypeMap(identifier=item, type=SystemType.database)
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.database,
+                    human_readable=ConnectionType(item).human_readable,
+                )
                 for item in database_types
             ]
         )
@@ -69,12 +78,22 @@ def get_connection_types(
                 if saas_type != SaaSType.custom and is_match(saas_type.value)
             ]
         )
-        connection_system_types.extend(
-            [
-                ConnectionSystemTypeMap(identifier=item, type=SystemType.saas)
-                for item in saas_types
-            ]
-        )
+        registry: ConnectorRegistry = load_registry(registry_file)
+
+        for item in saas_types:
+            human_readable_name: str = item
+            if registry.get_connector_template(item) is not None:
+                human_readable_name = registry.get_connector_template(  # type: ignore[union-attr]
+                    item
+                ).human_readable
+
+            connection_system_types.append(
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.saas,
+                    human_readable=human_readable_name,
+                )
+            )
 
     if system_type == SystemType.manual or system_type is None:
         manual_types: List[str] = sorted(
@@ -87,7 +106,11 @@ def get_connection_types(
         )
         connection_system_types.extend(
             [
-                ConnectionSystemTypeMap(identifier=item, type=SystemType.manual)
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.manual,
+                    human_readable=ConnectionType(item).human_readable,
+                )
                 for item in manual_types
             ]
         )

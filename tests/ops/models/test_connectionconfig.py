@@ -146,3 +146,11 @@ class TestConnectionConfigModel:
         saas_example_config["type"] = "invalid"
         with pytest.raises(ValueError):
             SaaSConfig(**saas_example_config)
+
+    def test_connection_type_human_readable(self):
+        for connection in ConnectionType:
+            connection.human_readable  # Makes sure all ConnectionTypes have been added to human_readable mapping
+
+    def test_connection_type_human_readable_invalid(self):
+        with pytest.raises(ValueError):
+            ConnectionType("nonmapped_type").human_readable()

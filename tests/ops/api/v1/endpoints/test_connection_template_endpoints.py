@@ -21,10 +21,7 @@ from fidesops.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_config import (
-    ConnectionSystemTypeMap,
-    SystemType,
-)
+from fidesops.ops.schemas.connection_configuration.connection_config import SystemType
 from fidesops.ops.schemas.saas.saas_config import SaaSType
 
 
@@ -56,10 +53,12 @@ class TestGetConnections:
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
         } in data
         assert {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -77,6 +76,7 @@ class TestGetConnections:
         assert data[0] == {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         }
 
         resp = api_client.get(url + "?search=re", headers=auth_header)
@@ -87,12 +87,18 @@ class TestGetConnections:
             {
                 "identifier": ConnectionType.postgres.value,
                 "type": SystemType.database.value,
+                "human_readable": "PostgreSQL",
             },
             {
                 "identifier": ConnectionType.redshift.value,
                 "type": SystemType.database.value,
+                "human_readable": "Amazon Redshift",
             },
-            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+            {
+                "identifier": SaaSType.outreach.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Outreach",
+            },
         ]
 
     def test_search_connection_types_case_insensitive(
@@ -107,10 +113,12 @@ class TestGetConnections:
         assert data[0] == {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
         }
         assert data[1] == {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         }
 
         resp = api_client.get(url + "?search=Re", headers=auth_header)
@@ -121,12 +129,18 @@ class TestGetConnections:
             {
                 "identifier": ConnectionType.postgres.value,
                 "type": SystemType.database.value,
+                "human_readable": "PostgreSQL",
             },
             {
                 "identifier": ConnectionType.redshift.value,
                 "type": SystemType.database.value,
+                "human_readable": "Amazon Redshift",
             },
-            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+            {
+                "identifier": SaaSType.outreach.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Outreach",
+            },
         ]
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
@@ -169,7 +183,13 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         assert len(data) == 1
-        assert data == [{"identifier": "manual_webhook", "type": "manual"}]
+        assert data == [
+            {
+                "identifier": "manual_webhook",
+                "type": "manual",
+                "human_readable": "Manual Webhook",
+            }
+        ]
 
 
 class TestGetConnectionSecretSchema:

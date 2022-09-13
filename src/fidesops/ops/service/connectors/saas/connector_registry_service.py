@@ -38,6 +38,7 @@ class ConnectorTemplate(BaseModel):
     config: str
     dataset: str
     icon: str
+    human_readable: str
 
     @validator("config")
     def validate_config(cls, config: str) -> str:
