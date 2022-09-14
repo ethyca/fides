@@ -26,7 +26,7 @@ from fidesops.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
-from fidesops.ops.api.deps import get_config, get_db
+from fidesops.ops.api.deps import get_api_session, get_config, get_db
 from fidesops.ops.api.v1.api import api_router
 from fidesops.ops.api.v1.exception_handlers import ExceptionHandlers
 from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
@@ -40,6 +40,7 @@ from fidesops.ops.schemas.analytics import Event, ExtraData
 from fidesops.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
+    update_saas_configs,
 )
 from fidesops.ops.tasks.scheduled.scheduler import scheduler
 from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -237,12 +238,15 @@ def start_webserver() -> None:
         config.log_all_config_values()
 
     logger.info("Validating SaaS connector templates...")
-    load_registry(registry_file)
+    registry = load_registry(registry_file)
 
     if config.database.enabled:
         logger.info("Running any pending DB migrations...")
         try:
             init_db(config.database.sqlalchemy_database_uri)
+            db = get_api_session()
+            update_saas_configs(registry, db)
+            db.close()
         except Exception as error:  # pylint: disable=broad-except
             logger.error("Connection to database failed: %s", Pii(str(error)))
             return

@@ -54,9 +54,9 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
-    create_dataset_config_from_template,
     load_registry,
     registry_file,
+    upsert_dataset_config_from_template,
 )
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.oauth_util import verify_oauth_client
@@ -321,7 +321,7 @@ def instantiate_connection_from_template(
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
     try:
-        dataset_config: DatasetConfig = create_dataset_config_from_template(
+        dataset_config: DatasetConfig = upsert_dataset_config_from_template(
             db, connection_config, connector_template, template_values
         )
     except Exception:
