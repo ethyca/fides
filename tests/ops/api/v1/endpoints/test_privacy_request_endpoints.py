@@ -50,7 +50,6 @@ from fidesops.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fidesops.ops.core.config import config
-from fidesops.ops.email_templates import get_email_template
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.datasetconfig import DatasetConfig
@@ -790,7 +789,7 @@ class TestGetPrivacyRequests:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
 
-    def test_filter_privacy_requests_by_identity_exact(
+    def test_filter_privacy_requests_by_identity_no_request_id(
         self,
         db,
         api_client,

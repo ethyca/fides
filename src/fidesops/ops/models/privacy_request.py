@@ -16,7 +16,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -280,6 +280,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         for key, value in identity_dict.items():
             if value is not None:
                 hashed_value = ProvidedIdentity.hash_value(value)
+
                 ProvidedIdentity.create(
                     db=db,
                     data={
@@ -728,7 +729,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path),
-        nullable=False,
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -757,6 +757,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         ),
         nullable=True,
     )  # Type bytea in the db
+    consent = relationship(
+        "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
+    )
 
     @classmethod
     def hash_value(
@@ -771,6 +774,17 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             SALT.encode(encoding),
         )
         return hashed_value
+
+
+class Consent(Base):
+    """The DB ORM model for Consent."""
+
+    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id))
+    data_use = Column(String, nullable=False, unique=True)
+    data_use_description = Column(String)
+    opt_in = Column(Boolean, nullable=False)
+
+    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
