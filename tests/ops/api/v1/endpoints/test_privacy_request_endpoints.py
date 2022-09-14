@@ -64,6 +64,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.dataset import DryRunDatasetResponse
 from fidesops.ops.schemas.email.email import (
     EmailActionType,
+    RequestReceiptBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
@@ -91,8 +92,12 @@ class TestCreatePrivacyRequest:
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
     def test_create_privacy_request(
         self,
+        mock_dispatch_email,
         run_access_request_mock,
         url,
         db,
@@ -113,6 +118,7 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
+        assert not mock_dispatch_email.called
 
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -2607,6 +2613,14 @@ class TestVerifyIdentity:
             privacy_request_id=privacy_request.id
         )
 
+    @pytest.fixture(scope="function")
+    def privacy_request_receipt_email_notification_enabled(self):
+        """Enable request receipt email"""
+        original_value = config.notifications.send_request_receipt_notification
+        config.notifications.send_request_receipt_notification = True
+        yield
+        config.notifications.send_request_receipt_notification = original_value
+
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
         request_body = {"code": self.code}
         resp = api_client.post(url, headers={}, json=request_body)
@@ -2616,7 +2630,18 @@ class TestVerifyIdentity:
             == f"Invalid identity verification request. Privacy request '{privacy_request.id}' status = in_processing."
         )
 
-    def test_verification_code_expired(self, db, api_client, url, privacy_request):
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_verification_code_expired(
+        self,
+        mock_dispatch_email,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_email_notification_enabled,
+    ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
 
@@ -2627,8 +2652,20 @@ class TestVerifyIdentity:
             resp.json()["detail"]
             == f"Identification code expired for {privacy_request.id}."
         )
+        assert not mock_dispatch_email.called
 
-    def test_invalid_code(self, db, api_client, url, privacy_request):
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_invalid_code(
+        self,
+        mock_dispatch_email,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_email_notification_enabled,
+    ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
         privacy_request.cache_identity_verification_code("999999")
@@ -2640,12 +2677,23 @@ class TestVerifyIdentity:
             resp.json()["detail"]
             == f"Incorrect identification code for '{privacy_request.id}'"
         )
+        assert not mock_dispatch_email.called
 
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
     def test_verify_identity_no_admin_approval_needed(
-        self, mock_run_privacy_request, db, api_client, url, privacy_request
+        self,
+        mock_dispatch_email,
+        mock_run_privacy_request,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_email_notification_enabled,
     ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
@@ -2675,13 +2723,25 @@ class TestVerifyIdentity:
 
         assert mock_run_privacy_request.called
 
+        assert mock_dispatch_email.called
+
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        )
+
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    def test_verify_identity_admin_approval_needed(
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_verify_identity_no_admin_approval_needed_email_disabled(
         self,
+        mock_dispatch_email,
         mock_run_privacy_request,
-        require_manual_request_approval,
         db,
         api_client,
         url,
@@ -2711,8 +2771,64 @@ class TestVerifyIdentity:
             ),
         ).first()
 
+        assert approved_audit_log is not None
+
+        assert mock_run_privacy_request.called
+
+        assert not mock_dispatch_email.called
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_verify_identity_admin_approval_needed(
+        self,
+        mock_dispatch_email,
+        mock_run_privacy_request,
+        require_manual_request_approval,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_email_notification_enabled,
+    ):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp = resp.json()
+        assert resp["status"] == "pending"
+        assert resp["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.identity_verified_at is not None
+
+        approved_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
         assert approved_audit_log is None
         assert not mock_run_privacy_request.called
+
+        assert mock_dispatch_email.called
+
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        )
 
 
 class TestCreatePrivacyRequestEmailVerificationRequired:
@@ -3241,3 +3357,103 @@ class TestResumePrivacyRequestFromRequiresInput:
         assert call_kwargs["privacy_request_id"] == privacy_request_requires_input.id
         assert call_kwargs["from_webhook_id"] is None
         assert call_kwargs["from_step"] is None
+
+
+class TestCreatePrivacyRequestEmailReceiptNotification:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail, policy) -> str:
+        return V1_URL_PREFIX + PRIVACY_REQUESTS
+
+    @pytest.fixture(scope="function")
+    def privacy_request_receipt_email_notification_enabled(self):
+        """Enable request receipt email"""
+        original_value = config.notifications.send_request_receipt_notification
+        config.notifications.send_request_receipt_notification = True
+        yield
+        config.notifications.send_request_receipt_notification = original_value
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_create_privacy_request_no_email_config(
+        self,
+        mock_dispatch_email,
+        mock_execute_request,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        privacy_request_receipt_email_notification_enabled,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+
+        assert mock_execute_request.called
+        assert response_data[0]["status"] == PrivacyRequestStatus.pending
+
+        assert mock_dispatch_email.called
+
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        )
+
+        pr.delete(db=db)
+
+    @mock.patch(
+        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
+    )
+    def test_create_privacy_request_with_email_config(
+        self,
+        mock_dispatch_email,
+        mock_execute_request,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+        email_config,
+        privacy_request_receipt_email_notification_enabled,
+    ):
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+            }
+        ]
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert mock_execute_request.called
+
+        assert response_data[0]["status"] == PrivacyRequestStatus.pending
+        assert mock_dispatch_email.called
+
+        call_args = mock_dispatch_email.call_args[1]
+        assert call_args["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
+        assert call_args["to_email"] == "test@example.com"
+        assert call_args["email_body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        )
+
+        pr.delete(db=db)

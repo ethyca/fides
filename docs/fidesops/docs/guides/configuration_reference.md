@@ -64,6 +64,7 @@ The `fidesops.toml` file should specify the following variables:
 |`enabled` | `FIDESOPS__ADMIN_UI__ENABLED` | bool | False | True | Toggle whether the Admin UI is served from `/`
 | Fidesops Notification Variables|---|---|---|---|---|
 |`send_request_completion_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request completion
+|`send_request_receipt_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_RECEIPT_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request receipt
 
 
 ### An example `fidesops.toml` configuration file
@@ -118,6 +119,7 @@ enabled = true
 
 [notifications]
 send_request_completion_notification = true
+send_request_receipt_notification = true
 ```
 
 Note: The configuration is case-sensitive, so the variables must be specified in `lowercase`.

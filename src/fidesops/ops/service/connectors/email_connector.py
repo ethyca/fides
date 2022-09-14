@@ -28,7 +28,6 @@ from fidesops.ops.service.connectors.base_connector import BaseConnector
 from fidesops.ops.service.connectors.query_config import ManualQueryConfig
 from fidesops.ops.service.email.email_dispatch_service import dispatch_email
 from fidesops.ops.util.collection_util import Row, append
-from fidesops.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ class EmailConnector(BaseConnector[None]):
                 ],
             )
         except EmailDispatchException as exc:
-            logger.info("Email connector test failed with exception %s", Pii(exc))
+            logger.info("Email connector test failed with exception %s", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 

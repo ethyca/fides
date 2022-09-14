@@ -54,11 +54,23 @@ to continue privacy request execution.  Until the Privacy Request identity is ve
 ```
 
 
-## Request Completion Notification
+## Request Notifications
 
-By default, a request completion email will be sent to users, along with a link to download their data, if applicable. To change this behavior, set the `send_request_completion_notification`
-variable in your `fidesops.toml`. You must also set up an [EmailConfig](./email_communications.md) that lets fidesops send automated emails
+By default, emails will be sent to users at various points in the request lifecycle.
+
+To change this default behavior for any email type, set the variables under the `notifications` category in your `fidesops.toml`.
+
+You must also set up an [EmailConfig](./email_communications.md) that lets fidesops send automated emails
 to your users. If using a custom privacy center, ensure that you intake an email identity, which is required for email notifications throughout fidesops.
+
+### Request Receipt
+
+An email will be sent to users to notify them that their privacy request has been received. 
+
+### Request Completion
+
+Upon access request completion, an email will be sent to users to notify them of request completion, along with a link to download their data, if applicable.
+
 
 !!! Note
 For security purposes, the data package download link is a one-time link and expires in 24 hrs by default. To change TTL, update the `subject_request_download_link_ttl_seconds`
