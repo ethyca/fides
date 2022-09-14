@@ -66,6 +66,7 @@ The types of changes are:
 * Make admin ui work when volumes are mounted [#1266](https://github.com/ethyca/fidesops/pull/1266)
 * Fixed typo in enum value [#1280](https://github.com/ethyca/fidesops/pull/1280)
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
+* Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
 
 ### Security
 
