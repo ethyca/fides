@@ -22,6 +22,7 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
+  * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
 * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
 
