@@ -4,14 +4,15 @@ import {
   Center,
   Divider,
   FormLabel,
+  Grid,
+  GridItem,
   Heading,
-  HStack,
   Spinner,
   Stack,
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React, { Fragment } from "react";
+import React, { Fragment, ReactNode } from "react";
 
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -22,6 +23,23 @@ import { System } from "~/types/api";
 import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
+
+const ReviewItem = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <Grid templateColumns="1fr 2fr" data-testid={`review-${label}`}>
+    <GridItem>
+      <FormLabel fontWeight="semibold" m={0}>
+        {label}:
+      </FormLabel>
+    </GridItem>
+    <GridItem>{children}</GridItem>
+  </Grid>
+);
 
 interface Props {
   systemKey: System["fides_key"];
@@ -77,7 +95,7 @@ const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
     >
       <Form>
         <Stack spacing={10}>
-          <Heading as="h3" size="lg">
+          <Heading as="h3" size="lg" data-testid="review-heading">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
             Review {existingOrg?.name}
           </Heading>
@@ -85,38 +103,23 @@ const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
             Let’s quickly review our declaration before registering
           </Text>
           <Stack spacing={4}>
-            <HStack>
-              <FormLabel fontWeight="semibold" m={0}>
-                System name:
-              </FormLabel>
+            <ReviewItem label="System name">
               <Text>{initialValues.system_name}</Text>
-            </HStack>
-            <HStack>
-              <FormLabel fontWeight="semibold" m={0}>
-                System key:
-              </FormLabel>
+            </ReviewItem>
+            <ReviewItem label="System key">
               <Text>{initialValues.system_key}</Text>
-            </HStack>
-            <HStack>
-              <FormLabel fontWeight="semibold" m={0}>
-                System description:
-              </FormLabel>
+            </ReviewItem>
+            <ReviewItem label="System description">
               <Text>{initialValues.system_description}</Text>
-            </HStack>
-            <HStack>
-              <FormLabel fontWeight="semibold" m={0}>
-                System type:
-              </FormLabel>
+            </ReviewItem>
+            <ReviewItem label="System type">
               <Text>{initialValues.system_type}</Text>
-            </HStack>
-            <HStack>
-              <FormLabel fontWeight="semibold" m={0}>
-                System tags:
-              </FormLabel>
+            </ReviewItem>
+            <ReviewItem label="System tags">
               {initialValues.tags.map((tag) => (
                 <TaxonomyEntityTag key={tag} name={tag} />
               ))}
-            </HStack>
+            </ReviewItem>
             <FormLabel fontWeight="semibold">Privacy declarations:</FormLabel>
             {initialValues.privacy_declarations.map((declaration) => (
               <Fragment key={declaration.name}>
@@ -131,11 +134,18 @@ const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
               mr={2}
               size="sm"
               variant="outline"
+              data-testid="cancel-btn"
             >
               Cancel
             </Button>
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
-            <Button type="submit" colorScheme="primary" mr={2} size="sm">
+            <Button
+              type="submit"
+              colorScheme="primary"
+              mr={2}
+              size="sm"
+              data-testid="confirm-btn"
+            >
               Confirm and Register
             </Button>
           </Box>
