@@ -113,6 +113,21 @@ describe("System management page", () => {
     });
 
     describe("Create a system manually", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/data_category", {
+          fixture: "data_categories.json",
+        }).as("getDataCategory");
+        cy.intercept("GET", "/api/v1/data_qualifier", {
+          fixture: "data_qualifiers.json",
+        }).as("getDataQualifier");
+        cy.intercept("GET", "/api/v1/data_subject", {
+          fixture: "data_subjects.json",
+        }).as("getDataSubject");
+        cy.intercept("GET", "/api/v1/data_use", {
+          fixture: "data_uses.json",
+        }).as("getDataUse");
+      });
+
       it("Can step through the flow", () => {
         cy.fixture("system.json").then((system) => {
           // Fill in the describe form based on fixture data
@@ -141,6 +156,10 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
+          cy.wait("@getDataCategory");
+          cy.wait("@getDataQualifier");
+          cy.wait("@getDataSubject");
+          cy.wait("@getDataUse");
           cy.getByTestId("privacy-declaration-form");
           const declaration = {
             name: "my declaration",
