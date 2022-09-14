@@ -383,13 +383,13 @@ describe("Dataset", () => {
       cy.getByTestId("create-dataset-btn").click();
       cy.getByTestId("error-url").should("contain", "required");
 
-      // first try generate with error payload but POST with valid payload
-      cy.getByTestId("input-url").type("invalid url");
+      // First ensure that a Generate error shows the error toast
+      cy.getByTestId("input-url").type("mock-url");
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate");
-      cy.getByTestId("error-url").should("contain", "error");
+      cy.getByTestId("toast-error-msg");
 
-      // now switch to good generate payload but bad POST payload
+      // Then ensure a Dataset Create error shows the error toast
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
@@ -410,13 +410,11 @@ describe("Dataset", () => {
           ],
         },
       }).as("postDataset");
-      cy.getByTestId("input-url").type(
-        "valid url that will cause post to fail"
-      );
+      cy.getByTestId("input-url").type("mock-url");
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.getByTestId("error-url").should("contain", "field required");
+      cy.getByTestId("toast-error-msg");
     });
   });
 
