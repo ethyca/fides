@@ -1,15 +1,15 @@
 system:
 
 - fides_key: fidesctl
-  name: Fidesctl System
+  name: Fidesctl
   organization_fides_key: default_organization
-  description: Software that functionally applies Fides.
+  description: Privacy Annotations for software.
   system_type: Service
   data_responsibility_title: Controller
   data_protection_impact_assessment:
     is_required: false
   privacy_declarations:
-  - name: Store system data.
+  - name: Store fidesctl annotation data.
     data_categories:
     - system.operations
     - user.contact
