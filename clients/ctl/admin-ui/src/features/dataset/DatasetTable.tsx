@@ -29,9 +29,9 @@ const DatasetsTable = ({ datasets }: Props) => {
     <Table size="sm" data-testid="dataset-table">
       <Thead>
         <Tr>
-          <Th pl={0}>Name</Th>
-          <Th pl={0}>Fides Key</Th>
-          <Th pl={0}>Description</Th>
+          <Th pl={1}>Name</Th>
+          <Th pl={1}>Fides Key</Th>
+          <Th pl={1}>Description</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -54,9 +54,9 @@ const DatasetsTable = ({ datasets }: Props) => {
               cursor="pointer"
               data-testid={`dataset-row-${dataset.fides_key}`}
             >
-              <Td pl={0}>{dataset.name}</Td>
-              <Td pl={0}>{dataset.fides_key}</Td>
-              <Td pl={0}>{dataset.description}</Td>
+              <Td pl={1}>{dataset.name}</Td>
+              <Td pl={1}>{dataset.fides_key}</Td>
+              <Td pl={1}>{dataset.description}</Td>
             </Tr>
           );
         })}

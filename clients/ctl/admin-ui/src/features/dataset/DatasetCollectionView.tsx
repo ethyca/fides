@@ -1,5 +1,4 @@
-import { Box, Select, Spinner, useToast } from "@fidesui/react";
-import { useRouter } from "next/router";
+import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,7 +7,6 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-import { successToastParams } from "../common/toast";
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollectionIndex,
@@ -56,10 +54,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     dispatch(setDataCategories(dataCategories ?? []));
   }, [dispatch, dataCategories]);
 
-  const router = useRouter();
-  const toast = useToast();
-  const { fromLoad } = router.query;
-
   useEffect(() => {
     if (dataset) {
       dispatch(setActiveDataset(dataset));
@@ -70,11 +64,14 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     dispatch(setActiveCollectionIndex(0));
   }, [dispatch]);
 
-  useEffect(() => {
-    if (fromLoad) {
-      toast(successToastParams("Successfully loaded dataset"));
-    }
-  }, [fromLoad, toast]);
+  useEffect(
+    () => () => {
+      dispatch(setActiveDataset(null));
+    },
+    // This hook only runs on component un-mount to clear the active dataset.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   if (isLoading) {
     return <Spinner />;
