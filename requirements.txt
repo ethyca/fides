@@ -8,7 +8,7 @@ dask==2022.8.0
 emails
 fastapi[all]==0.82.0
 fastapi-caching[redis]
-fastapi-pagination[sqlalchemy]~= 0.9.3
+fastapi-pagination[sqlalchemy]~= 0.10.0
 fideslang==1.2.0
 fideslib==3.1.2
 fideslog==1.2.3
