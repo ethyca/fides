@@ -35,6 +35,7 @@ system:
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
           - fides_db
+          - fides_cache
 
   - fides_key: admin_ui
     name: Fides Administration UI
