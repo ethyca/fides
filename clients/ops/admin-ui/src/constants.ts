@@ -65,6 +65,14 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     privilege: "View roles",
     scope: "user-permission:read",
   },
+  {
+    privilege: "Upload privacy request data",
+    scope: "privacy-request:upload_data",
+  },
+  {
+    privilege: "View privacy request data",
+    scope: "privacy-request:view_data",
+  },
 ];
 
 // API ROUTES

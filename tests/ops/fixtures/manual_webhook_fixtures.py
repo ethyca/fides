@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
@@ -22,7 +23,10 @@ def integration_manual_webhook_config(db) -> ConnectionConfig:
         },
     )
     yield connection_config
-    connection_config.delete(db)
+    try:
+        connection_config.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")

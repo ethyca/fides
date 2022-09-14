@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
@@ -10,7 +10,7 @@ from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -19,6 +19,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops.ops.core.config import config
 from fidesops.ops.db.base_class import JSONTypeOverride
 from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+
+if TYPE_CHECKING:
+    from fidesops.ops.models.manual_webhook import AccessManualWebhook
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -117,6 +120,13 @@ class ConnectionConfig(Base):
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+
+    access_manual_webhook = relationship(
+        "AccessManualWebhook",
+        back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
     )
 
     @classmethod

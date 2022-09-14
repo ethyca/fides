@@ -6,7 +6,7 @@ from pydantic import create_model
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy.orm import Session, relationship
 
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 
@@ -20,10 +20,13 @@ class AccessManualWebhook(Base):
     """
 
     connection_config_id = Column(
-        String, ForeignKey(ConnectionConfig.id_field_path), unique=True, nullable=False
+        String,
+        ForeignKey(ConnectionConfig.id_field_path),
+        unique=True,
+        nullable=False,
     )
     connection_config = relationship(
-        ConnectionConfig, backref=backref("access_manual_webhook", uselist=False)
+        "ConnectionConfig", back_populates="access_manual_webhook", uselist=False
     )
 
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)

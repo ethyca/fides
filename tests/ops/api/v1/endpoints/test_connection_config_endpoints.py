@@ -20,6 +20,7 @@ from fidesops.ops.api.v1.scope_registry import (
 from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import EmailActionType
@@ -816,6 +817,45 @@ class TestDeleteConnection:
 
         assert (
             db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+            is None
+        )
+
+    def test_delete_manual_webhook_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ) -> None:
+        """Assert both the connection config and its webhook are deleted"""
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is not None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
+            is not None
+        )
+
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{integration_manual_webhook_config.key}"
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 204
+
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
             is None
         )
 

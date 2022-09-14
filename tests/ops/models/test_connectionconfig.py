@@ -154,3 +154,14 @@ class TestConnectionConfigModel:
     def test_connection_type_human_readable_invalid(self):
         with pytest.raises(ValueError):
             ConnectionType("nonmapped_type").human_readable()
+
+    def test_manual_webhook(
+        self, integration_manual_webhook_config, access_manual_webhook
+    ):
+        assert (
+            integration_manual_webhook_config.access_manual_webhook
+            == access_manual_webhook
+        )
+        assert (
+            access_manual_webhook.connection_config == integration_manual_webhook_config
+        )
