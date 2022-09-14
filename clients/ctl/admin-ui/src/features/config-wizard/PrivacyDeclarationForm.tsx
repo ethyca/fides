@@ -223,7 +223,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
       validationSchema={ValidationSchema}
     >
       {({ resetForm, values, dirty }) => (
-        <Form>
+        <Form data-testid="privacy-declaration-form">
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}

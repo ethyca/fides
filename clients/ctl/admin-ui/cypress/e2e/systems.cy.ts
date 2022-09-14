@@ -141,6 +141,7 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
+          cy.getByTestId("privacy-declaration-form");
           const declaration = {
             name: "my declaration",
             data_categories: ["user.biometric", "user.contact"],
