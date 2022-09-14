@@ -1,5 +1,3 @@
-import { RTKErrorResult } from "~/types/errors";
-
 import { TreeNode } from "../common/types";
 
 export interface TaxonomyEntityNode extends TreeNode {
@@ -22,10 +20,3 @@ export interface Labels {
   description: string;
   parent_key?: string;
 }
-
-export type RTKResult<T> = Promise<
-  | {
-      data: T;
-    }
-  | { error: RTKErrorResult["error"] }
->;
