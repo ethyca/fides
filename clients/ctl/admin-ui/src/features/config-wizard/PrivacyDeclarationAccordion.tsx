@@ -25,6 +25,7 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
     maxW="500px"
     minW="500px"
     width="500px"
+    data-testid={`declaration-${privacyDeclaration.name}`}
   >
     <AccordionItem>
       <>
@@ -35,23 +36,23 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
           <AccordionIcon />
         </AccordionButton>
         <AccordionPanel padding="0px" mt="20px">
-          <HStack mb="20px">
+          <HStack data-testid="declaration-categories" mb="20px">
             <Text color="gray.600">Declaration categories</Text>
             {privacyDeclaration.data_categories.map((category) => (
               <TaxonomyEntityTag key={category} name={category} />
             ))}
           </HStack>
-          <HStack mb="20px">
+          <HStack data-testid="declaration-use" mb="20px">
             <Text color="gray.600">Data use</Text>
             <Input disabled value={privacyDeclaration.data_use} />
           </HStack>
-          <HStack mb="20px">
+          <HStack data-testid="declaration-subjects" mb="20px">
             <Text color="gray.600">Data subjects</Text>
             {privacyDeclaration.data_subjects.map((subject) => (
               <TaxonomyEntityTag name={subject} key={subject} />
             ))}
           </HStack>
-          <HStack mb="20px">
+          <HStack data-testid="declaration-qualifier" mb="20px">
             <Text color="gray.600">Data qualifier</Text>
             <Input disabled value={privacyDeclaration.data_qualifier} />
           </HStack>

@@ -38,7 +38,12 @@ const SuccessPage = ({ systemKey, onAddNextSystem, onContinue }: Props) => {
   return (
     <chakra.form w="100%">
       <Stack spacing={10}>
-        <Heading as="h3" color="green.500" size="lg">
+        <Heading
+          as="h3"
+          color="green.500"
+          size="lg"
+          data-testid="success-page-heading"
+        >
           <Badge
             fontSize="16px"
             margin="10px"
@@ -81,10 +86,21 @@ const SuccessPage = ({ systemKey, onAddNextSystem, onContinue }: Props) => {
         <Text>You can continue to add more systems now or finish.</Text>
 
         <Box>
-          <Button onClick={onAddNextSystem} mr={2} size="sm" variant="outline">
+          <Button
+            onClick={onAddNextSystem}
+            mr={2}
+            size="sm"
+            variant="outline"
+            data-testid="add-next-system-btn"
+          >
             Add next system
           </Button>
-          <Button onClick={onContinue} colorScheme="primary" size="sm">
+          <Button
+            onClick={onContinue}
+            colorScheme="primary"
+            size="sm"
+            data-testid="continue-btn"
+          >
             Continue
           </Button>
         </Box>

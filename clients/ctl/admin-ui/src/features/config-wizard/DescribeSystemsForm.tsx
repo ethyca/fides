@@ -99,7 +99,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
               for everyone from engineering to legal teams. So let’s do this
               now.
             </div>
-            <Stack>
+            <Stack spacing={4}>
               <CustomTextInput
                 id="name"
                 name="name"
@@ -146,6 +146,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
                 mr={2}
                 size="sm"
                 variant="outline"
+                data-testid="cancel-btn"
               >
                 Cancel
               </Button>
@@ -155,6 +156,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
                 size="sm"
                 disabled={!dirty}
                 isLoading={isLoading}
+                data-testid="confirm-btn"
               >
                 Confirm and Continue
               </Button>

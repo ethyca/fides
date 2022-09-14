@@ -321,6 +321,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
                 mr={2}
                 size="sm"
                 variant="outline"
+                data-testid="cancel-btn"
               >
                 Cancel
               </Button>
@@ -330,6 +331,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
                 size="sm"
                 disabled={!dirty}
                 isLoading={isLoading}
+                data-testid="confirm-btn"
               >
                 Confirm and Continue
               </Button>
