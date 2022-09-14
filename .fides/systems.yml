@@ -1,8 +1,8 @@
 system:
-  - fides_key: fidesctl
-    name: Fidesctl
+  - fides_key: privacy_annotations
+    name: Fides Privacy Annotations
     organization_fides_key: default_organization
-    description: Privacy Annotations for software.
+    description: Privacy annotations as code.
     system_type: Service
     data_responsibility_title: Controller
     data_protection_impact_assessment:
@@ -19,10 +19,10 @@ system:
         dataset_references:
           - fides_db
 
-  - fides_key: fidesops
-    name: Fidesops
+  - fides_key: privacy_request_fullfillment
+    name: Fides Privacy Request Fulfillment
     organization_fides_key: default_organization
-    description: Privacy Request Fufillment
+    description: Privacy request fufillment.
     system_type: Application
     data_protection_impact_assessment:
       is_required: false
@@ -32,6 +32,22 @@ system:
         data_use: provide.service
         data_subjects:
           - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - fides_db
+
+  - fides_key: admin_ui
+    name: Fides Administration UI
+    organization_fides_key: default_organization
+    description: Fides administration UI.
+    system_type: Application
+    data_protection_impact_assessment:
+      is_required: false
+    privacy_declarations:
+      - name: Manage privacy request Fufillment
+        data_categories: [] # comprehensive list of data categories in `fides_db`
+        data_use: system.operations
+        data_subjects:
           - employee
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
