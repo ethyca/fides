@@ -181,6 +181,7 @@ describe("System management page", () => {
             data_use: "advertising",
             data_subjects: ["citizen_voter", "consultant"],
             data_qualifier: "aggregated",
+            dataset_references: [],
           };
           cy.getByTestId("input-name").type(declaration.name);
           declaration.data_categories.forEach((dc) => {
@@ -212,6 +213,9 @@ describe("System management page", () => {
           system.tags.forEach((tag) => {
             cy.getByTestId("review-System tags").contains(tag);
           });
+          system.system_dependencies.forEach((dep) => {
+            cy.getByTestId("review-System dependencies").contains(dep);
+          });
           // Open up the privacy declaration
           cy.getByTestId(
             "declaration-Analyze customer behaviour for improvements."
@@ -229,6 +233,9 @@ describe("System management page", () => {
           cy.getByTestId("declaration-Data qualifier").contains(
             reviewDeclaration.data_qualifier
           );
+          reviewDeclaration.dataset_references.forEach((dr) => {
+            cy.getByTestId("declaration-Dataset references").contains(dr);
+          });
 
           cy.getByTestId("confirm-btn").click();
 
@@ -242,7 +249,7 @@ describe("System management page", () => {
         });
       });
 
-      it.only("Can render and post extended form fields", () => {
+      it("Can render and post extended form fields", () => {
         const system = {
           fides_key: "foo",
           system_type: "cool system",
@@ -352,6 +359,29 @@ describe("System management page", () => {
           const { body } = interception.request;
           expect(body.privacy_declarations[1]).to.eql(declaration);
         });
+
+        // Now at the Review stage
+        cy.getByTestId("review-heading");
+        cy.getByTestId("review-Data responsibility title").contains(
+          "Controller"
+        );
+        cy.getByTestId("review-Administrating department").contains(
+          "Engineering"
+        );
+        cy.getByTestId("review-Geographic location").contains("USA");
+        cy.getByTestId("review-Geographic location").contains("CAN");
+        cy.getByTestId("review-Joint controller").within(() => {
+          cy.getByTestId("review-Name").contains("Sally Controller");
+        });
+        cy.getByTestId("review-Data protection impact assessment").within(
+          () => {
+            cy.getByTestId("review-Is required").contains("Yes");
+            cy.getByTestId("review-Progress").contains("Complete");
+            cy.getByTestId("review-Link").contains(
+              "https://example.org/analytics_system_data_protection_impact_assessment"
+            );
+          }
+        );
       });
     });
   });

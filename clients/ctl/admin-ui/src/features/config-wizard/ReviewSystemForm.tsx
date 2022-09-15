@@ -152,7 +152,7 @@ const ReviewSystemForm = ({
                   ))}
                 </ReviewItem>
                 {initialValues.joint_controller ? (
-                  <Box>
+                  <Box data-testid="review-Joint controller">
                     <FormLabel fontWeight="semibold">
                       Joint controller
                     </FormLabel>
@@ -175,7 +175,7 @@ const ReviewSystemForm = ({
                   <ReviewItem label="Joint controller">None</ReviewItem>
                 )}
                 {initialValues.data_protection_impact_assessment ? (
-                  <Box>
+                  <Box data-testid="review-Data protection impact assessment">
                     <FormLabel fontWeight="semibold">
                       Data protection impact assessment
                     </FormLabel>
