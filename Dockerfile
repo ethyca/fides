@@ -49,11 +49,51 @@ RUN : \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+#####################
+## Python Versions ##
+#####################
+
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    wget \
+    curl \
+    llvm \
+    libncurses5-dev \
+    xz-utils \
+    tk-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    libffi-dev \
+    liblzma-dev \
+    mecab-ipadic-utf8 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV HOME="/root"
+
+WORKDIR $HOME
+RUN apt-get install -y git
+RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
+ENV PYENV_ROOT="$HOME/.pyenv"
+ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
+
+RUN pyenv install 3.7.14
+RUN pyenv install 3.8.14
+RUN pyenv install 3.9.14
+RUN pyenv install 3.10.7
+
+RUN pyenv global 3.10.7
 #########################
 ## Python Dependencies ##
 #########################
-
-# Install multiple Python versions
 
 COPY optional-requirements.txt .
 RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
