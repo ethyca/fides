@@ -31,7 +31,6 @@ import {
 } from "~/features/data-qualifier/data-qualifier.slice";
 import {
   selectDataSubjects,
-  setDataSubjects,
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
 import {
@@ -86,7 +85,6 @@ const PrivacyDeclarationForm = ({
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
   useEffect(() => {
-    dispatch(setDataSubjects(dataSubjects ?? []));
     dispatch(setDataUses(dataUses ?? []));
     dispatch(setDataQualifiers(dataQualifiers ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
