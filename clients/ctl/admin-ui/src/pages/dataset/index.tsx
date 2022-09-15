@@ -20,17 +20,8 @@ import {
 } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
-const useDatasetsTable = () => {
-  const { data, isLoading } = useGetAllDatasetsQuery();
-
-  return {
-    isLoading,
-    datasets: data,
-  };
-};
-
 const DataSets: NextPage = () => {
-  const { isLoading, datasets } = useDatasetsTable();
+  const { isLoading } = useGetAllDatasetsQuery();
   const activeDataset = useSelector(selectActiveDataset);
   const router = useRouter();
   const toast = useToast();
@@ -57,9 +48,7 @@ const DataSets: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      <Box mb={4}>
-        {isLoading ? <Spinner /> : <DatasetsTable datasets={datasets} />}
-      </Box>
+      <Box mb={4}>{isLoading ? <Spinner /> : <DatasetsTable />}</Box>
       <Box>
         <Button
           size="sm"
