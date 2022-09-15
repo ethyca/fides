@@ -22,6 +22,8 @@ export function mapFiltersToSearchParams({
   page,
   size,
   verbose,
+  sort_direction,
+  sort_field,
 }: Partial<PrivacyRequestParams>): any {
   let fromISO;
   if (from) {
@@ -44,6 +46,8 @@ export function mapFiltersToSearchParams({
     ...(page ? { page: `${page}` } : {}),
     ...(typeof size !== "undefined" ? { size: `${size}` } : {}),
     ...(verbose ? { verbose } : {}),
+    ...(sort_direction ? { sort_direction } : {}),
+    ...(sort_field ? { sort_field } : {}),
   };
 }
 
@@ -166,6 +170,8 @@ interface SubjectRequestsState {
   page: number;
   size: number;
   verbose?: boolean;
+  sort_field?: string;
+  sort_direction?: string;
 }
 
 const initialState: SubjectRequestsState = {
@@ -225,6 +231,19 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       verbose: action.payload,
     }),
+    setSortField: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_field: action.payload,
+    }),
+    setSortDirection: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_direction: action.payload,
+    }),
+    clearSortFields: (state) => ({
+      ...state,
+      sort_direction: undefined,
+      sort_field: undefined,
+    }),
   },
 });
 
@@ -236,7 +255,10 @@ export const {
   setRequestTo,
   setPage,
   setVerbose,
+  setSortField,
+  setSortDirection,
   clearAllFilters,
+  clearSortFields,
 } = subjectRequestsSlice.actions;
 
 export const selectRevealPII = (state: RootState) =>
@@ -254,6 +276,8 @@ export const selectPrivacyRequestFilters = (
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
   verbose: state.subjectRequests.verbose,
+  sort_direction: state.subjectRequests.sort_direction,
+  sort_field: state.subjectRequests.sort_field,
 });
 
 export const { reducer } = subjectRequestsSlice;

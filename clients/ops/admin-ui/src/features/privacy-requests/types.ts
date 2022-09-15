@@ -88,4 +88,6 @@ export interface PrivacyRequestParams {
   page: number;
   size: number;
   verbose?: boolean;
+  sort_field?: string;
+  sort_direction?: string;
 }

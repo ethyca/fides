@@ -8,4 +8,5 @@ export { default as GearIcon } from "./Gear";
 export { default as GreenCheckCircleIcon } from "./GreenCheckCircle";
 export { default as MoreIcon } from "./More";
 export { default as SearchLineIcon } from "./SearchLine";
+export { default as SortArrowIcon } from "./SortArrow";
 export { default as UserIcon } from "./User";

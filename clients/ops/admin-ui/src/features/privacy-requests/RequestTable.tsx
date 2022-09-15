@@ -1,4 +1,4 @@
-import { Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
+import { Flex, Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
 import { debounce } from "common/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,7 @@ import {
   useGetAllPrivacyRequestsQuery,
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
+import SortRequestButton from "./SortRequestButton";
 import { PrivacyRequest, PrivacyRequestParams } from "./types";
 
 interface RequestTableProps {
@@ -39,11 +40,13 @@ const useRequestTable = () => {
     dispatch(setPage(filters.page + 1));
   };
 
-  const { data, isLoading } = useGetAllPrivacyRequestsQuery(cachedFilters);
+  const { data, isLoading, isFetching } =
+    useGetAllPrivacyRequestsQuery(cachedFilters);
   const { items: requests, total } = data || { items: [], total: 0 };
   return {
     ...filters,
     isLoading,
+    isFetching,
     requests,
     total,
     handleNextPage,
@@ -52,8 +55,15 @@ const useRequestTable = () => {
 };
 
 const RequestTable: React.FC<RequestTableProps> = () => {
-  const { requests, total, page, size, handleNextPage, handlePreviousPage } =
-    useRequestTable();
+  const {
+    requests,
+    total,
+    page,
+    size,
+    handleNextPage,
+    handlePreviousPage,
+    isFetching,
+  } = useRequestTable();
 
   return (
     <>
@@ -61,7 +71,15 @@ const RequestTable: React.FC<RequestTableProps> = () => {
         <Thead>
           <Tr>
             <Th pl={0}>Status</Th>
-            <Th>Days Left</Th>
+            <Th>
+              <Flex alignItems="center">
+                Days Left{" "}
+                <SortRequestButton
+                  sortField="due_date"
+                  isLoading={isFetching}
+                />
+              </Flex>
+            </Th>
             <Th>Request Type</Th>
             <Th>Subject Identity</Th>
             <Th>Time Received</Th>
