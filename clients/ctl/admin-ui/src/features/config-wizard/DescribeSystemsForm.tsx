@@ -7,12 +7,16 @@ import * as Yup from "yup";
 
 import {
   CustomCreatableMultiSelect,
+  CustomMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
-import { useCreateSystemMutation } from "~/features/system/system.slice";
+import {
+  useCreateSystemMutation,
+  useGetAllSystemsQuery,
+} from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
 const initialValues = {
@@ -64,6 +68,10 @@ interface Props {
 const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const { data: systems } = useGetAllSystemsQuery();
+  const systemOptions = systems
+    ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
+    : [];
 
   const toast = useToast();
 
@@ -160,6 +168,12 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
                     : []
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
+              />
+              <CustomMultiSelect
+                label="System dependencies"
+                name="system_dependencies"
+                tooltip="A list of fides keys to model dependencies."
+                options={systemOptions}
               />
               {!abridged ? <DescribeSystemsFormExtension /> : null}
             </Stack>
