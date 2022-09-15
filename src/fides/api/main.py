@@ -5,6 +5,7 @@ import logging
 import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
+from os import getenv
 from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
@@ -181,6 +182,16 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+    logger.warning(
+        "Startup configuration: reloading = %s, dev_mode = %s",
+        CONFIG.hot_reloading,
+        CONFIG.dev_mode,
+    )
+    logger.warning(
+        "Startup configuration: pii logging = %s",
+        getenv("FIDES__LOG_PII", "").lower() == "true",
+    )
+
     if logger.getEffectiveLevel() == logging.DEBUG:
         logger.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
