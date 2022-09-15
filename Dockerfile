@@ -18,7 +18,7 @@ RUN npm run export
 #############
 ## Backend ##
 #############
-FROM --platform=linux/amd64 python:3.9.13-slim-bullseye as backend
+FROM --platform=linux/amd64 python:3.10.7-slim-bullseye as backend
 
 # Install auxiliary software
 RUN apt-get update && \
