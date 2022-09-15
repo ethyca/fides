@@ -41,7 +41,6 @@ import {
 } from "~/features/data-use/data-use.slice";
 import {
   selectDataCategories,
-  setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 import { PrivacyDeclaration } from "~/types/api";
@@ -87,7 +86,6 @@ const PrivacyDeclarationForm = ({
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
   useEffect(() => {
-    dispatch(setDataCategories(dataCategories ?? []));
     dispatch(setDataSubjects(dataSubjects ?? []));
     dispatch(setDataUses(dataUses ?? []));
     dispatch(setDataQualifiers(dataQualifiers ?? []));
