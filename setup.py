@@ -55,7 +55,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ethyca/fides",
     entry_points={"console_scripts": ["fides=fides.cli:cli"]},
-    python_requires=">=3.9, <4",
+    python_requires=">=3.7, <4",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     include_package_data=True,
