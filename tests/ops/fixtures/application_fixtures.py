@@ -41,7 +41,7 @@ from fidesops.ops.schemas.email.email import (
     EmailServiceSecretsMailgun,
     EmailServiceType,
 )
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
@@ -888,7 +888,7 @@ def _create_privacy_request_for_policy(
     pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
-        identity=PrivacyRequestIdentity(
+        identity=Identity(
             email=email_identity,
             phone_number="+1 234 567 8910",
         ),
@@ -988,7 +988,7 @@ def succeeded_privacy_request(cache, db: Session, policy: Policy) -> PrivacyRequ
     pr.cache_identity(identity_kwargs)
     pr.persist_identity(
         db=db,
-        identity=PrivacyRequestIdentity(**identity_kwargs),
+        identity=Identity(**identity_kwargs),
     )
     yield pr
     pr.delete(db)

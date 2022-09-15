@@ -5,7 +5,7 @@ from pydantic import Extra
 from fidesops.ops.schemas.base_class import BaseSchema
 
 
-class PrivacyRequestIdentity(BaseSchema):
+class Identity(BaseSchema):
     """Some PII grouping pertaining to a human"""
 
     phone_number: Optional[str] = None

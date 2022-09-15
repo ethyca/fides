@@ -31,7 +31,7 @@ from fidesops.ops.schemas.drp_privacy_request import (
     DrpRevokeRequest,
 )
 from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
 from fidesops.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -95,7 +95,7 @@ async def create_drp_privacy_request(
             **jwt.decode(data.identity, jwt_key, algorithms=["HS256"])
         )
 
-        mapped_identity: PrivacyRequestIdentity = DrpFidesopsMapper.map_identity(
+        mapped_identity: Identity = DrpFidesopsMapper.map_identity(
             drp_identity=decrypted_identity
         )
 

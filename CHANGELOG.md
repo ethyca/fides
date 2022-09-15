@@ -53,6 +53,10 @@ The types of changes are:
 * Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
 
 
+### Changed
+
+* Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+
 ### Docs
 
 * Fix analytics opt out environment variable name [#1170](https://github.com/ethyca/fidesops/pull/1170)

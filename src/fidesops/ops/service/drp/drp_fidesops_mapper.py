@@ -7,7 +7,7 @@ from fidesops.ops.models.privacy_request import (
 )
 from fidesops.ops.schemas.drp_privacy_request import DrpIdentity
 from fidesops.ops.schemas.privacy_request import PrivacyRequestDRPStatus
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,10 @@ class DrpFidesopsMapper:
     """
 
     @staticmethod
-    def map_identity(drp_identity: DrpIdentity) -> PrivacyRequestIdentity:
+    def map_identity(drp_identity: DrpIdentity) -> Identity:
         """
         Currently, both email and phone_number identity props map 1:1 to the corresponding
-        Fidesops identity props in PrivacyRequestIdentity. This may not always be the case.
+        Fidesops identity props in Identity. This may not always be the case.
         This class also allows us to implement custom logic to handle "verified" id props.
         """
         fidesops_identity_kwargs: Dict[str, str] = {}
@@ -42,7 +42,7 @@ class DrpFidesopsMapper:
                     attr
                 ].value
                 fidesops_identity_kwargs[fidesops_prop] = val
-        return PrivacyRequestIdentity(**fidesops_identity_kwargs)
+        return Identity(**fidesops_identity_kwargs)
 
     @staticmethod
     def map_status(

@@ -7,7 +7,7 @@ from fidesops.ops.models.policy import ActionType, Policy
 from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def build_required_privacy_request_kwargs(
 def cache_data(
     privacy_request: PrivacyRequest,
     policy: Policy,
-    identity: PrivacyRequestIdentity,
+    identity: Identity,
     encryption_key: Optional[str],
     drp_request_body: Optional[DrpPrivacyRequestCreate],
 ) -> None:

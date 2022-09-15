@@ -69,7 +69,7 @@ from fidesops.ops.schemas.email.email import (
 )
 from fidesops.ops.schemas.masking.masking_secrets import SecretType
 from fidesops.ops.schemas.policy import PolicyResponse
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 from fidesops.ops.util.cache import (
     get_encryption_cache_key,
@@ -806,7 +806,7 @@ class TestGetPrivacyRequests:
         TEST_EMAIL = "test-12345678910@example.com"
         privacy_request.persist_identity(
             db=db,
-            identity=PrivacyRequestIdentity(
+            identity=Identity(
                 email=TEST_EMAIL,
             ),
         )

@@ -16,7 +16,7 @@ from fidesops.ops.models.privacy_request import (
 from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fidesops.ops.schemas.base_class import BaseSchema
 from fidesops.ops.schemas.policy import PolicyResponse as PolicySchema
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 
@@ -57,7 +57,7 @@ class PrivacyRequestCreate(BaseSchema):
     started_processing_at: Optional[datetime]
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
-    identity: PrivacyRequestIdentity
+    identity: Identity
     policy_key: FidesOpsKey
     encryption_key: Optional[str] = None
 
@@ -157,7 +157,7 @@ class PrivacyRequestResponse(BaseSchema):
     paused_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
-    # This field intentionally doesn't use the PrivacyRequestIdentity schema
+    # This field intentionally doesn't use the Identity schema
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.

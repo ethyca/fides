@@ -22,7 +22,7 @@ from fidesops.ops.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.connectors.manual_connector import ManualAction
 from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
 from fidesops.ops.util.constants import API_DATE_FORMAT
@@ -217,7 +217,7 @@ def test_delete_privacy_request_removes_cached_data(
     identity_attribute = "email"
     identity_value = "test@example.com"
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
     key = get_identity_cache_key(
         privacy_request_id=privacy_request.id,
@@ -240,7 +240,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[0]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -268,7 +268,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -294,7 +294,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -322,7 +322,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -350,7 +350,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -383,7 +383,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         # halt not included

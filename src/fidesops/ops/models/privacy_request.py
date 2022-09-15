@@ -54,7 +54,7 @@ from fidesops.ops.schemas.external_https import (
     WebhookJWE,
 )
 from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.tasks import celery_app
 from fidesops.ops.util.cache import (
     FidesopsRedis,
@@ -260,7 +260,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: PrivacyRequestIdentity) -> None:
+    def cache_identity(self, identity: Identity) -> None:
         """Sets the identity's values at their specific locations in the Fidesops app cache"""
         cache: FidesopsRedis = get_cache()
         identity_dict: Dict[str, Any] = dict(identity)
@@ -271,7 +271,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     value,
                 )
 
-    def persist_identity(self, db: Session, identity: PrivacyRequestIdentity) -> None:
+    def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
@@ -292,11 +292,11 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     },
                 )
 
-    def get_persisted_identity(self) -> PrivacyRequestIdentity:
+    def get_persisted_identity(self) -> Identity:
         """
         Retrieves persisted identity fields from the DB.
         """
-        schema = PrivacyRequestIdentity()
+        schema = Identity()
         for field in self.provided_identities:
             setattr(
                 schema,

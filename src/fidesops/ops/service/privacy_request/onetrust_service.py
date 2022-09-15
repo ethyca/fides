@@ -17,7 +17,7 @@ from fidesops.ops.core.config import config
 from fidesops.ops.models.policy import Policy
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.privacy_request import PrivacyRequestIdentity
+from fidesops.ops.schemas.privacy_request import Identity
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fidesops.ops.schemas.third_party.onetrust import (
@@ -92,7 +92,7 @@ class OneTrustService:
         )
         for request in all_requests:
             identity_kwargs = {"email": request.email}
-            identity = PrivacyRequestIdentity(**identity_kwargs)
+            identity = Identity(**identity_kwargs)
             fides_task: Optional[OneTrustSubtask] = OneTrustService._get_fides_subtask(
                 hostname, request.requestQueueRefId, access_token  # type: ignore
             )
@@ -134,7 +134,7 @@ class OneTrustService:
     def _create_privacy_request(  # pylint: disable=R0913
         subtask_id: str,
         requested_at: str,
-        identity: PrivacyRequestIdentity,
+        identity: Identity,
         onetrust_policy: Policy,
         hostname: str,
         access_token: str,
@@ -156,7 +156,7 @@ class OneTrustService:
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.persist_identity(
             db=db,
-            identity=PrivacyRequestIdentity(email=identity.email),
+            identity=Identity(email=identity.email),
         )
         privacy_request.cache_identity(identity)
         try:

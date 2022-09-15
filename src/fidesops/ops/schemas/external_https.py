@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from fidesops.ops.models.policy import WebhookDirection
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 
 
 class CallbackType(Enum):
@@ -20,7 +20,7 @@ class SecondPartyRequestFormat(BaseModel):
     privacy_request_id: str
     direction: WebhookDirection
     callback_type: CallbackType
-    identity: PrivacyRequestIdentity
+    identity: Identity
 
     class Config:
         """Using enum values"""
@@ -34,7 +34,7 @@ class SecondPartyResponseFormat(BaseModel):
     Responses are only expected (and considered) for two_way webhooks.
     """
 
-    derived_identity: Optional[PrivacyRequestIdentity] = None
+    derived_identity: Optional[Identity] = None
     halt: bool
 
     class Config:
@@ -46,7 +46,7 @@ class SecondPartyResponseFormat(BaseModel):
 class PrivacyRequestResumeFormat(BaseModel):
     """Expected request body to resume a privacy request after it was paused by a webhook"""
 
-    derived_identity: Optional[PrivacyRequestIdentity] = {}  # type: ignore
+    derived_identity: Optional[Identity] = {}  # type: ignore
 
     class Config:
         """Using enum values"""

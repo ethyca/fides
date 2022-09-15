@@ -5,7 +5,7 @@ import pytest
 
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from tests.ops.graph.graph_test_util import assert_rows_match
@@ -38,7 +38,7 @@ async def test_saas_access_request_task(
     identity_attribute = "email"
     identity_value = datadog_identity_email
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
     dataset_name = datadog_connection_config.get_saas_config().fides_key
