@@ -15,7 +15,7 @@ import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormE
 import { useCreateSystemMutation } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
-const initialValues: System = {
+const initialValues = {
   description: "",
   fides_key: "",
   name: "",
@@ -27,12 +27,32 @@ const initialValues: System = {
   administrating_department: "",
   third_country_transfers: [],
   system_dependencies: [],
+  joint_controller: {
+    name: "",
+    email: "",
+    address: "",
+    phone: "",
+  },
+  data_protection_impact_assessment: {
+    is_required: "false",
+    progress: "",
+    link: "",
+  },
 };
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
   system_type: Yup.string().required().label("System type"),
+});
+
+const transformFormValuesToSystem = (formValues: FormValues): System => ({
+  ...formValues,
+  data_protection_impact_assessment: {
+    ...formValues.data_protection_impact_assessment,
+    is_required:
+      formValues.data_protection_impact_assessment.is_required === "true",
+  },
 });
 
 interface Props {
@@ -69,7 +89,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
         });
       } else {
         toast.closeAll();
-        onSuccess(values);
+        onSuccess(transformFormValuesToSystem(values));
       }
     };
 
