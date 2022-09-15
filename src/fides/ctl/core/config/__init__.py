@@ -51,14 +51,6 @@ class FidesConfig(BaseModel):
     class Config:  # pylint: disable=C0115
         case_sensitive = True
 
-    logger.warning(
-        "Startup configuration: reloading = %s, dev_mode = %s", hot_reloading, dev_mode
-    )
-    logger.warning(
-        "Startup configuration: pii logging = %s",
-        getenv("FIDES__LOG_PII", "").lower() == "true",
-    )
-
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
         for settings in [
@@ -171,7 +163,7 @@ def censor_config(config: FidesConfig) -> Dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
-def get_config(config_path_override: str = "") -> FidesConfig:
+def get_config(config_path_override: str = "", verbose: bool = False) -> FidesConfig:
     """
     Attempt to load user-defined configuration.
 
@@ -181,9 +173,9 @@ def get_config(config_path_override: str = "") -> FidesConfig:
     """
 
     env_config_path = getenv("FIDES__CONFIG_PATH")
-    config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATHv
-    # Update this to be less noisy
-    print(f"Loading config from: {config_path}")
+    config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
+    if verbose:
+        print(f"Loading config from: {config_path}")
     try:
         settings = (
             toml.load(config_path)
