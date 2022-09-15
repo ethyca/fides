@@ -96,6 +96,7 @@ const ConfigWizardWalkthrough = () => {
                     systemKey={systemKey}
                     onCancel={handleCancelSetup}
                     onSuccess={handleDeclareSuccess}
+                    abridged
                   />
                 )}
                 {reviewStep === 3 && (
@@ -103,6 +104,7 @@ const ConfigWizardWalkthrough = () => {
                     systemKey={systemKey}
                     onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
+                    abridged
                   />
                 )}
                 {reviewStep === 4 && (

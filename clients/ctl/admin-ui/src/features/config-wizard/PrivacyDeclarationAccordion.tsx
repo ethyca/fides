@@ -73,6 +73,13 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
                 "None"
               )}
             </DeclarationItem>
+            <DeclarationItem label="Dataset references">
+              {privacyDeclaration.dataset_references ? (
+                <Text>{privacyDeclaration.dataset_references.join(", ")}</Text>
+              ) : (
+                "None"
+              )}
+            </DeclarationItem>
           </Stack>
         </AccordionPanel>
       </>

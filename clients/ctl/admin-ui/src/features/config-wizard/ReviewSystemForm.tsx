@@ -45,9 +45,15 @@ interface Props {
   systemKey: System["fides_key"];
   onCancel: () => void;
   onSuccess: () => void;
+  abridged?: boolean;
 }
 
-const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
+const ReviewSystemForm = ({
+  systemKey,
+  onCancel,
+  onSuccess,
+  abridged,
+}: Props) => {
   const { data: existingSystem, isLoading } =
     useGetSystemByFidesKeyQuery(systemKey);
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
@@ -75,12 +81,19 @@ const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
 
   const initialValues = {
     name: existingOrg?.name ?? "",
-    system_name: existingSystem?.name ?? "",
-    system_key: existingSystem?.fides_key ?? "",
-    system_description: existingSystem?.description ?? "",
-    system_type: existingSystem?.system_type ?? "",
-    tags: existingSystem?.tags ?? [],
-    privacy_declarations: existingSystem?.privacy_declarations ?? [],
+    system_name: existingSystem.name ?? "",
+    system_key: existingSystem.fides_key ?? "",
+    system_description: existingSystem.description ?? "",
+    system_type: existingSystem.system_type ?? "",
+    tags: existingSystem.tags ?? [],
+    privacy_declarations: existingSystem.privacy_declarations ?? [],
+    system_dependencies: existingSystem.system_dependencies ?? [],
+    administrating_department: existingSystem.administrating_department ?? "",
+    third_country_transfers: existingSystem.third_country_transfers ?? [],
+    joint_controller: existingSystem.joint_controller,
+    data_protection_impact_assessment:
+      existingSystem.data_protection_impact_assessment,
+    data_responsibility_title: existingSystem.data_responsibility_title ?? "",
   };
 
   const handleSubmit = () => {
@@ -117,9 +130,86 @@ const ReviewSystemForm = ({ systemKey, onCancel, onSuccess }: Props) => {
             </ReviewItem>
             <ReviewItem label="System tags">
               {initialValues.tags.map((tag) => (
-                <TaxonomyEntityTag key={tag} name={tag} />
+                <TaxonomyEntityTag key={tag} name={tag} mr={1} />
               ))}
             </ReviewItem>
+            <ReviewItem label="System dependencies">
+              {initialValues.system_dependencies.map((dep) => (
+                <TaxonomyEntityTag key={dep} name={dep} mr={1} />
+              ))}
+            </ReviewItem>
+            {!abridged ? (
+              <>
+                <ReviewItem label="Data responsibility title">
+                  <Text>{initialValues.data_responsibility_title}</Text>
+                </ReviewItem>
+                <ReviewItem label="Administrating department">
+                  <Text>{initialValues.administrating_department}</Text>
+                </ReviewItem>
+                <ReviewItem label="Geographic location">
+                  {initialValues.third_country_transfers.map((country) => (
+                    <TaxonomyEntityTag key={country} name={country} mr={1} />
+                  ))}
+                </ReviewItem>
+                {initialValues.joint_controller ? (
+                  <Box>
+                    <FormLabel fontWeight="semibold">
+                      Joint controller
+                    </FormLabel>
+                    <Box ml={8}>
+                      <ReviewItem label="Name">
+                        <Text>{initialValues.joint_controller.name}</Text>
+                      </ReviewItem>
+                      <ReviewItem label="Address">
+                        <Text>{initialValues.joint_controller.address}</Text>
+                      </ReviewItem>
+                      <ReviewItem label="Email">
+                        <Text>{initialValues.joint_controller.email}</Text>
+                      </ReviewItem>
+                      <ReviewItem label="Phone">
+                        <Text>{initialValues.joint_controller.phone}</Text>
+                      </ReviewItem>
+                    </Box>
+                  </Box>
+                ) : (
+                  <ReviewItem label="Joint controller">None</ReviewItem>
+                )}
+                {initialValues.data_protection_impact_assessment ? (
+                  <Box>
+                    <FormLabel fontWeight="semibold">
+                      Data protection impact assessment
+                    </FormLabel>
+                    <Box ml={8}>
+                      <ReviewItem label="Is required">
+                        <Text>
+                          {initialValues.data_protection_impact_assessment
+                            .is_required
+                            ? "Yes"
+                            : "No"}
+                        </Text>
+                      </ReviewItem>
+                      <ReviewItem label="Progress">
+                        <Text>
+                          {
+                            initialValues.data_protection_impact_assessment
+                              .progress
+                          }
+                        </Text>
+                      </ReviewItem>
+                      <ReviewItem label="Link">
+                        <Text>
+                          {initialValues.data_protection_impact_assessment.link}
+                        </Text>
+                      </ReviewItem>
+                    </Box>
+                  </Box>
+                ) : (
+                  <ReviewItem label="Data protection impact assessment">
+                    None
+                  </ReviewItem>
+                )}
+              </>
+            ) : null}
             <FormLabel fontWeight="semibold">Privacy declarations:</FormLabel>
             {initialValues.privacy_declarations.map((declaration) => (
               <Fragment key={declaration.name}>
