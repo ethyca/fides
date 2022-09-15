@@ -45,6 +45,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import PrivacyDeclarationFormExtension from "../system/PrivacyDeclarationFormExtension";
 import {
   useGetSystemByFidesKeyQuery,
   useUpdateSystemMutation,
@@ -68,9 +69,15 @@ interface Props {
   systemKey: System["fides_key"];
   onCancel: () => void;
   onSuccess: (system: System) => void;
+  abridged?: boolean;
 }
 
-const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
+const PrivacyDeclarationForm = ({
+  systemKey,
+  onCancel,
+  onSuccess,
+  abridged,
+}: Props) => {
   const { data: existingSystem, isLoading: isLoadingSystem } =
     useGetSystemByFidesKeyQuery(systemKey);
   const dispatch = useAppDispatch();
@@ -127,6 +134,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
     data_subjects: [],
     data_use: "",
     data_qualifier: "",
+    dataset_references: [],
   };
 
   let privacyDeclarations: PrivacyDeclaration[];
@@ -286,6 +294,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
                 }))}
                 tooltip="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
               />
+              {!abridged ? <PrivacyDeclarationFormExtension /> : null}
             </Stack>
             <Button
               colorScheme="purple"
@@ -308,6 +317,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
                     data_categories: [],
                     data_use: "",
                     data_qualifier: "",
+                    dataset_references: [],
                   },
                 });
               }}
