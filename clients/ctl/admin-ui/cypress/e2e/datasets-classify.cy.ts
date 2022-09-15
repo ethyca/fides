@@ -67,4 +67,32 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("toast-success-msg");
     });
   });
+
+  describe("List of datasets with classifications", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+        "getDatasets"
+      );
+      cy.intercept("GET", "/api/v1/plus/classification", {
+        fixture: "classification/list.json",
+      }).as("getClassificationList");
+    });
+
+    it("Shows the each dataset's classification status", () => {
+      cy.visit("/dataset");
+      cy.wait("@getDatasets");
+      cy.wait("@getClassificationList");
+      cy.getByTestId("dataset-table");
+      cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
+      cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
+        "Processing"
+      );
+      cy.getByTestId("dataset-status-demo_users_dataset_3").contains(
+        "Awaiting Review"
+      );
+      cy.getByTestId("dataset-status-demo_users_dataset_4").contains(
+        "Classified"
+      );
+    });
+  });
 });

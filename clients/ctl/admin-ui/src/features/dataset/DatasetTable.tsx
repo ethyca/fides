@@ -1,17 +1,31 @@
-import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
+import {
+  Badge,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tooltip,
+  Tr,
+} from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useClassificationsMap } from "~/features/common/plus.slice";
 import { Dataset } from "~/types/api";
 
-import { selectActiveDataset, setActiveDataset } from "./dataset.slice";
+import { STATUS_DISPLAY } from "./constants";
+import {
+  selectActiveDataset,
+  setActiveDataset,
+  useGetAllDatasetsQuery,
+} from "./dataset.slice";
 
-interface Props {
-  datasets: Dataset[] | undefined;
-}
-
-const DatasetsTable = ({ datasets }: Props) => {
+const DatasetsTable = () => {
   const dispatch = useDispatch();
   const activeDataset = useSelector(selectActiveDataset);
+
+  const { data: datasets } = useGetAllDatasetsQuery();
+  const classificationsMap = useClassificationsMap();
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
@@ -32,12 +46,17 @@ const DatasetsTable = ({ datasets }: Props) => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
+          <Th pl={1}>Status</Th>
         </Tr>
       </Thead>
       <Tbody>
         {datasets.map((dataset) => {
           const isActive =
             activeDataset && activeDataset.fides_key === dataset.fides_key;
+
+          const classification = classificationsMap.get(dataset.fides_key);
+          const statusDisplay =
+            STATUS_DISPLAY[classification?.status ?? "default"];
 
           return (
             <Tr
@@ -57,6 +76,17 @@ const DatasetsTable = ({ datasets }: Props) => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
+              <Td pl={1}>
+                <Tooltip label={statusDisplay.tooltip}>
+                  <Badge
+                    variant="solid"
+                    colorScheme={statusDisplay.color}
+                    data-testid={`dataset-status-${dataset.fides_key}`}
+                  >
+                    {statusDisplay.title}
+                  </Badge>
+                </Tooltip>
+              </Td>
             </Tr>
           );
         })}
