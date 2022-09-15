@@ -204,20 +204,18 @@ describe("System management page", () => {
           ).click();
           const reviewDeclaration = system.privacy_declarations[0];
           reviewDeclaration.data_categories.forEach((dc) => {
-            cy.getByTestId("declaration-categories").contains(dc);
+            cy.getByTestId("declaration-Data categories").contains(dc);
           });
-          cy.getByTestId("declaration-use").within(() => {
-            cy.get("input").should("have.value", reviewDeclaration.data_use);
-          });
+          cy.getByTestId("declaration-Data use").contains(
+            reviewDeclaration.data_use
+          );
           reviewDeclaration.data_subjects.forEach((ds) => {
-            cy.getByTestId("declaration-subjects").contains(ds);
+            cy.getByTestId("declaration-Data subjects").contains(ds);
           });
-          cy.getByTestId("declaration-qualifier").within(() => {
-            cy.get("input").should(
-              "have.value",
-              reviewDeclaration.data_qualifier
-            );
-          });
+          cy.getByTestId("declaration-Data qualifier").contains(
+            reviewDeclaration.data_qualifier
+          );
+
           cy.getByTestId("confirm-btn").click();
 
           // Success page

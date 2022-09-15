@@ -5,14 +5,30 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
-  HStack,
-  Input,
+  Grid,
+  GridItem,
+  Stack,
   Text,
 } from "@fidesui/react";
+import { ReactNode } from "react";
 
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { PrivacyDeclaration } from "~/types/api";
 
+const DeclarationItem = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <Grid templateColumns="1fr 2fr" data-testid={`declaration-${label}`}>
+    <GridItem>
+      <Text color="gray.600">{label}</Text>
+    </GridItem>
+    <GridItem>{children}</GridItem>
+  </Grid>
+);
 interface Props {
   privacyDeclaration: PrivacyDeclaration;
 }
@@ -35,27 +51,29 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration }: Props) => (
           </Box>
           <AccordionIcon />
         </AccordionButton>
-        <AccordionPanel padding="0px" mt="20px">
-          <HStack data-testid="declaration-categories" mb="20px">
-            <Text color="gray.600">Declaration categories</Text>
-            {privacyDeclaration.data_categories.map((category) => (
-              <TaxonomyEntityTag key={category} name={category} />
-            ))}
-          </HStack>
-          <HStack data-testid="declaration-use" mb="20px">
-            <Text color="gray.600">Data use</Text>
-            <Input disabled value={privacyDeclaration.data_use} />
-          </HStack>
-          <HStack data-testid="declaration-subjects" mb="20px">
-            <Text color="gray.600">Data subjects</Text>
-            {privacyDeclaration.data_subjects.map((subject) => (
-              <TaxonomyEntityTag name={subject} key={subject} />
-            ))}
-          </HStack>
-          <HStack data-testid="declaration-qualifier" mb="20px">
-            <Text color="gray.600">Data qualifier</Text>
-            <Input disabled value={privacyDeclaration.data_qualifier} />
-          </HStack>
+        <AccordionPanel px="0">
+          <Stack spacing={2}>
+            <DeclarationItem label="Data categories">
+              {privacyDeclaration.data_categories.map((category) => (
+                <TaxonomyEntityTag key={category} name={category} mr={1} />
+              ))}
+            </DeclarationItem>
+            <DeclarationItem label="Data use">
+              <TaxonomyEntityTag name={privacyDeclaration.data_use} />
+            </DeclarationItem>
+            <DeclarationItem label="Data subjects">
+              {privacyDeclaration.data_subjects.map((subject) => (
+                <TaxonomyEntityTag name={subject} key={subject} mr={1} />
+              ))}
+            </DeclarationItem>
+            <DeclarationItem label="Data qualifier">
+              {privacyDeclaration.data_qualifier ? (
+                <TaxonomyEntityTag name={privacyDeclaration.data_qualifier} />
+              ) : (
+                "None"
+              )}
+            </DeclarationItem>
+          </Stack>
         </AccordionPanel>
       </>
     </AccordionItem>
