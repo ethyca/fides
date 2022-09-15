@@ -19,7 +19,7 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -34,7 +34,6 @@ import {
 } from "~/features/data-subjects/data-subject.slice";
 import {
   selectDataUses,
-  setDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
@@ -73,21 +72,16 @@ const PrivacyDeclarationForm = ({
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: dataCategories } = useGetAllDataCategoriesQuery();
-  const { data: dataSubjects } = useGetAllDataSubjectsQuery();
-  const { data: dataQualifiers } = useGetAllDataQualifiersQuery();
-  const { data: dataUses } = useGetAllDataUsesQuery();
+  // Query subscriptions:
+  useGetAllDataCategoriesQuery();
+  useGetAllDataSubjectsQuery();
+  useGetAllDataQualifiersQuery();
+  useGetAllDataUsesQuery();
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
-
-  useEffect(() => {
-    dispatch(setDataUses(dataUses ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
-
-  useEffect(() => {}, [formDeclarations]);
 
   const initialValues = {
     data_categories: [],
