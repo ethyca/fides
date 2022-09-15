@@ -26,7 +26,6 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon, QuestionIcon } from "~/features/common/Icon";
 import {
   selectDataQualifiers,
-  setDataQualifiers,
   useGetAllDataQualifiersQuery,
 } from "~/features/data-qualifier/data-qualifier.slice";
 import {
@@ -86,7 +85,6 @@ const PrivacyDeclarationForm = ({
 
   useEffect(() => {
     dispatch(setDataUses(dataUses ?? []));
-    dispatch(setDataQualifiers(dataQualifiers ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
   useEffect(() => {}, [formDeclarations]);
