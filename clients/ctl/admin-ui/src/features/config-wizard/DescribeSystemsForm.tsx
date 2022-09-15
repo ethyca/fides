@@ -43,21 +43,26 @@ const initialValues = {
     link: "",
   },
 };
-type FormValues = typeof initialValues;
+export type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
   system_type: Yup.string().required().label("System type"),
 });
 
-const transformFormValuesToSystem = (formValues: FormValues): System => ({
-  ...formValues,
-  data_protection_impact_assessment: {
-    ...formValues.data_protection_impact_assessment,
-    is_required:
-      formValues.data_protection_impact_assessment.is_required === "true",
-  },
-});
+const transformFormValuesToSystem = (formValues: FormValues): System => {
+  const hasImpactAssessment =
+    formValues.data_protection_impact_assessment.is_required === "true";
+  const impactAssessment = hasImpactAssessment
+    ? { ...formValues.data_protection_impact_assessment, is_required: true }
+    : undefined;
+  return {
+    ...formValues,
+    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+    privacy_declarations: [],
+    data_protection_impact_assessment: impactAssessment,
+  };
+};
 
 interface Props {
   onCancel: () => void;
@@ -76,11 +81,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
   const toast = useToast();
 
   const handleSubmit = async (values: FormValues) => {
-    const systemBody = {
-      ...values,
-      organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-      privacy_declarations: [],
-    };
+    const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -97,7 +98,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
         });
       } else {
         toast.closeAll();
-        onSuccess(transformFormValuesToSystem(values));
+        onSuccess(systemBody);
       }
     };
 
@@ -116,7 +117,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty }) => (
+      {({ dirty, values }) => (
         <Form>
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -175,7 +176,9 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
                 tooltip="A list of fides keys to model dependencies."
                 options={systemOptions}
               />
-              {!abridged ? <DescribeSystemsFormExtension /> : null}
+              {!abridged ? (
+                <DescribeSystemsFormExtension values={values} />
+              ) : null}
             </Stack>
             <Box>
               <Button

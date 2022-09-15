@@ -10,11 +10,12 @@ import {
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import type { FormValues } from "~/features/config-wizard/DescribeSystemsForm";
 import { DataResponsibilityTitle } from "~/types/api";
 
 const dataResponsibilityOptions = enumToOptions(DataResponsibilityTitle);
 
-const DescribeSystemsFormExtension = () => (
+const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => (
   <>
     <CustomSelect
       label="Data responsibility title"
@@ -57,16 +58,20 @@ const DescribeSystemsFormExtension = () => (
           label="Is required"
           options={YesNoOptions}
         />
-        <CustomTextInput
-          label="Progress"
-          name="data_protection_impact_assessment.progress"
-          tooltip="The optional status of a Data Protection Impact Assessment. Returned on an exported data map or RoPA."
-        />
-        <CustomTextInput
-          label="Link"
-          name="data_protection_impact_assessment.link"
-          tooltip="The optional link to the Data Protection Impact Assessment. Returned on an exported data map or RoPA."
-        />
+        {values.data_protection_impact_assessment.is_required === "true" ? (
+          <>
+            <CustomTextInput
+              label="Progress"
+              name="data_protection_impact_assessment.progress"
+              tooltip="The optional status of a Data Protection Impact Assessment. Returned on an exported data map or RoPA."
+            />
+            <CustomTextInput
+              label="Link"
+              name="data_protection_impact_assessment.link"
+              tooltip="The optional link to the Data Protection Impact Assessment. Returned on an exported data map or RoPA."
+            />
+          </>
+        ) : null}
       </Stack>
     </Box>
   </>
