@@ -1,3 +1,4 @@
+import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { Dataset } from "~/types/api";
@@ -50,7 +51,43 @@ export const plusApi = createApi({
         body,
       }),
     }),
+    getAllClassifications: build.query<ClassificationResponse[], void>({
+      query: () => `classification/`,
+    }),
   }),
 });
 
-export const { useGetHealthQuery, useCreateClassificationMutation } = plusApi;
+export const {
+  useGetHealthQuery,
+  useCreateClassificationMutation,
+  useGetAllClassificationsQuery,
+} = plusApi;
+
+export const useHasPlus = () => {
+  const { isSuccess: hasPlus } = useGetHealthQuery();
+  return hasPlus;
+};
+
+const emptyClassifications: ClassificationResponse[] = [];
+const selectClassificationsMap = createSelector(
+  ({ data }: { data?: ClassificationResponse[] }) =>
+    data ?? emptyClassifications,
+  (dataCategories) => ({
+    map: new Map(dataCategories.map((c) => [c.fides_key, c])),
+  })
+);
+
+/**
+ * Convenience hook for looking up a Classification by Dataset key.
+ */
+export const useClassificationsMap = (): Map<
+  string,
+  ClassificationResponse
+> => {
+  const hasPlus = useHasPlus();
+  const { map } = useGetAllClassificationsQuery(undefined, {
+    skip: !hasPlus,
+    selectFromResult: selectClassificationsMap,
+  });
+  return map;
+};

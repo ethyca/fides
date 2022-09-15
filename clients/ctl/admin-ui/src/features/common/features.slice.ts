@@ -1,4 +1,4 @@
-import { useGetHealthQuery } from "./plus.slice";
+import { useHasPlus } from "./plus.slice";
 
 /**
  * Features are currently stateless and only use the Plus API. However, this a ".slice" file because
@@ -9,9 +9,9 @@ export interface Features {
 }
 
 export const useFeatures = (): Features => {
-  const { isSuccess } = useGetHealthQuery();
+  const hasPlus = useHasPlus();
 
   return {
-    plus: isSuccess,
+    plus: hasPlus,
   };
 };
