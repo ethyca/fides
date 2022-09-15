@@ -164,6 +164,7 @@ const PrivacyDeclarationForm = ({
             data_qualifier:
               values.data_qualifier === "" ? undefined : values.data_qualifier,
             data_subjects: values.data_subjects,
+            dataset_references: values.dataset_references,
           },
         ];
       }

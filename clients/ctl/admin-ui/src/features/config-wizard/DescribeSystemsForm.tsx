@@ -56,11 +56,21 @@ const transformFormValuesToSystem = (formValues: FormValues): System => {
   const impactAssessment = hasImpactAssessment
     ? { ...formValues.data_protection_impact_assessment, is_required: true }
     : undefined;
+  const hasJointController =
+    formValues.joint_controller !== initialValues.joint_controller;
+  const jointController = hasJointController
+    ? formValues.joint_controller
+    : undefined;
   return {
     ...formValues,
     organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
     privacy_declarations: [],
     data_protection_impact_assessment: impactAssessment,
+    joint_controller: jointController,
+    administrating_department:
+      formValues.administrating_department === ""
+        ? undefined
+        : formValues.administrating_department,
   };
 };
 
