@@ -181,7 +181,8 @@ def get_config(config_path_override: str = "") -> FidesConfig:
     """
 
     env_config_path = getenv("FIDES__CONFIG_PATH")
-    config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
+    config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATHv
+    # Update this to be less noisy
     print(f"Loading config from: {config_path}")
     try:
         settings = (
