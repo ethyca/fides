@@ -88,6 +88,7 @@ const ConfigWizardWalkthrough = () => {
                   <DescribeSystemsForm
                     onCancel={handleCancelSetup}
                     onSuccess={handleDescribeSuccess}
+                    abridged
                   />
                 )}
                 {reviewStep === 2 && (

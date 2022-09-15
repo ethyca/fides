@@ -11,6 +11,7 @@ import {
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import { useCreateSystemMutation } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
@@ -22,6 +23,10 @@ const initialValues: System = {
   tags: [],
   system_type: "",
   privacy_declarations: [],
+  data_responsibility_title: undefined,
+  administrating_department: "",
+  third_country_transfers: [],
+  system_dependencies: [],
 };
 type FormValues = typeof initialValues;
 
@@ -33,9 +38,10 @@ const ValidationSchema = Yup.object().shape({
 interface Props {
   onCancel: () => void;
   onSuccess: (system: System) => void;
+  abridged?: boolean;
 }
 
-const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
+const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,13 +49,9 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = {
-      description: values.description,
-      fides_key: values.fides_key,
-      name: values.name,
+      ...values,
       organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       privacy_declarations: [],
-      system_type: values.system_type,
-      tags: values.tags,
     };
 
     const handleResult = (
@@ -139,6 +141,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
               />
+              {!abridged ? <DescribeSystemsFormExtension /> : null}
             </Stack>
             <Box>
               <Button
