@@ -65,6 +65,7 @@ The `fidesops.toml` file should specify the following variables:
 | Fidesops Notification Variables|---|---|---|---|---|
 |`send_request_completion_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request completion
 |`send_request_receipt_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_RECEIPT_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request receipt
+|`send_request_review_notification` | `FIDESOPS__NOTIFICATIONS__SEND_REQUEST_REVIEW_NOTIFICATION` | bool | True | True | Whether a notification will be sent to data subjects upon privacy request review
 
 
 ### An example `fidesops.toml` configuration file
@@ -120,6 +121,7 @@ enabled = true
 [notifications]
 send_request_completion_notification = true
 send_request_receipt_notification = true
+send_request_review_notification = true
 ```
 
 Note: The configuration is case-sensitive, so the variables must be specified in `lowercase`.

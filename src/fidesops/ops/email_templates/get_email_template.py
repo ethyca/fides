@@ -9,6 +9,8 @@ from fidesops.ops.email_templates.template_names import (
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
     PRIVACY_REQUEST_RECEIPT_TEMPLATE,
+    PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE,
+    PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE,
     SUBJECT_IDENTITY_VERIFICATION_TEMPLATE,
 )
 from fidesops.ops.schemas.email.email import EmailActionType
@@ -23,7 +25,9 @@ template_env = Environment(
 )
 
 
-def get_email_template(action_type: EmailActionType) -> Template:
+def get_email_template(  # pylint: disable=too-many-return-statements
+    action_type: EmailActionType,
+) -> Template:
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
     if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
@@ -34,6 +38,10 @@ def get_email_template(action_type: EmailActionType) -> Template:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE)
     if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE)
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY:
+        return template_env.get_template(PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE)
+    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+        return template_env.get_template(PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE)
 
     logger.error("No corresponding template linked to the %s", action_type)
     raise EmailTemplateUnhandledActionType(

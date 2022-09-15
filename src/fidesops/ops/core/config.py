@@ -155,6 +155,7 @@ class FidesopsNotificationSettings(FidesSettings):
 
     send_request_completion_notification: Optional[bool] = True
     send_request_receipt_notification: Optional[bool] = True
+    send_request_review_notification: Optional[bool] = True
 
     class Config:
         env_prefix = "FIDESOPS__NOTIFICATIONS__"

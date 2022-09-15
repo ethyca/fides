@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Request Denied</title>
+</head>
+<body>
+<main>
+    {% if rejection_reason %}
+    <p>
+        Your privacy request has been denied for the following reason: {{rejection_reason}}
+    </p>
+    {% else %}
+    <p>
+        Your privacy request has been denied.
+    </p>
+    {% endif %}
+</main>
+</body>
+</html>

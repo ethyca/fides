@@ -81,6 +81,7 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
+    ProvidedIdentityType,
 )
 from fidesops.ops.schemas.dataset import (
     CollectionAddressResponse,
@@ -90,6 +91,7 @@ from fidesops.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
     RequestReceiptBodyParams,
+    RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
@@ -1116,6 +1118,35 @@ def review_privacy_request(
     )
 
 
+def _send_privacy_request_review_email_to_user(
+    db: Session,
+    action_type: EmailActionType,
+    email: Optional[str],
+    rejection_reason: Optional[str],
+) -> None:
+    """Helper method to send review notification email to user, shared between approve and deny"""
+    if not email:
+        logger.error(
+            IdentityNotFoundException(
+                "Identity email was not found, so request review email could not be sent."
+            )
+        )
+    try:
+        dispatch_email(
+            db=db,
+            action_type=action_type,
+            to_email=email,
+            email_body_params=RequestReviewDenyBodyParams(
+                rejection_reason=rejection_reason
+            )
+            if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+            else None,
+        )
+    except EmailDispatchException as exc:
+        # this failure isn't fatal to privacy request
+        logger.info("Email dispatch failed with exception %s", exc)
+
+
 @router.post(
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     status_code=HTTP_200_OK,
@@ -1194,7 +1225,6 @@ def approve_privacy_request(
         privacy_request.reviewed_at = datetime.utcnow()
         privacy_request.reviewed_by = user_id
         privacy_request.save(db=db)
-
         AuditLog.create(
             db=db,
             data={
@@ -1204,6 +1234,16 @@ def approve_privacy_request(
                 "message": "",
             },
         )
+        if config.notifications.send_request_review_notification:
+            _send_privacy_request_review_email_to_user(
+                db=db,
+                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+                email=privacy_request.get_cached_identity_data().get(
+                    ProvidedIdentityType.email.value
+                ),
+                rejection_reason=None,
+            )
+
         queue_privacy_request(privacy_request_id=privacy_request.id)
 
     return review_privacy_request(
@@ -1234,7 +1274,10 @@ def deny_privacy_request(
         privacy_request: PrivacyRequest,
     ) -> None:
         """Method for how to process requests - denied"""
-
+        privacy_request.status = PrivacyRequestStatus.denied
+        privacy_request.reviewed_at = datetime.utcnow()
+        privacy_request.reviewed_by = user_id
+        privacy_request.save(db=db)
         AuditLog.create(
             db=db,
             data={
@@ -1244,10 +1287,15 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        privacy_request.status = PrivacyRequestStatus.denied
-        privacy_request.reviewed_at = datetime.utcnow()
-        privacy_request.reviewed_by = user_id
-        privacy_request.save(db=db)
+        if config.notifications.send_request_review_notification:
+            _send_privacy_request_review_email_to_user(
+                db=db,
+                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
+                email=privacy_request.get_cached_identity_data().get(
+                    ProvidedIdentityType.email.value
+                ),
+                rejection_reason=privacy_requests.reason,
+            )
 
     return review_privacy_request(
         db=db,
