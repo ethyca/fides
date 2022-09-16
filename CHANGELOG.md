@@ -27,6 +27,7 @@ The types of changes are:
   * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
   * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
 
 ### Changed
 
