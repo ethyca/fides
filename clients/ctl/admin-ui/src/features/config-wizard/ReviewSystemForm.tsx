@@ -1,13 +1,11 @@
 import {
   Box,
   Button,
-  Center,
   Divider,
   FormLabel,
   Grid,
   GridItem,
   Heading,
-  Spinner,
   Stack,
   Text,
 } from "@fidesui/react";
@@ -20,7 +18,6 @@ import {
 } from "~/features/organization";
 import { System } from "~/types/api";
 
-import { useGetSystemByFidesKeyQuery } from "../system/system.slice";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
@@ -42,58 +39,31 @@ const ReviewItem = ({
 );
 
 interface Props {
-  systemKey: System["fides_key"];
+  system: System;
   onCancel: () => void;
   onSuccess: () => void;
   abridged?: boolean;
 }
 
-const ReviewSystemForm = ({
-  systemKey,
-  onCancel,
-  onSuccess,
-  abridged,
-}: Props) => {
-  const { data: existingSystem, isLoading } =
-    useGetSystemByFidesKeyQuery(systemKey);
+const ReviewSystemForm = ({ system, onCancel, onSuccess, abridged }: Props) => {
   const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY
   );
 
-  if (isLoading) {
-    return (
-      <Center>
-        <Spinner />
-      </Center>
-    );
-  }
-
-  if (!existingSystem) {
-    return (
-      <Text>
-        Could not find a system with key{" "}
-        <Text as="span" fontWeight="semibold">
-          {systemKey}
-        </Text>
-      </Text>
-    );
-  }
-
   const initialValues = {
     name: existingOrg?.name ?? "",
-    system_name: existingSystem.name ?? "",
-    system_key: existingSystem.fides_key ?? "",
-    system_description: existingSystem.description ?? "",
-    system_type: existingSystem.system_type ?? "",
-    tags: existingSystem.tags ?? [],
-    privacy_declarations: existingSystem.privacy_declarations ?? [],
-    system_dependencies: existingSystem.system_dependencies ?? [],
-    administrating_department: existingSystem.administrating_department ?? "",
-    third_country_transfers: existingSystem.third_country_transfers ?? [],
-    joint_controller: existingSystem.joint_controller,
-    data_protection_impact_assessment:
-      existingSystem.data_protection_impact_assessment,
-    data_responsibility_title: existingSystem.data_responsibility_title ?? "",
+    system_name: system.name ?? "",
+    system_key: system.fides_key ?? "",
+    system_description: system.description ?? "",
+    system_type: system.system_type ?? "",
+    tags: system.tags ?? [],
+    privacy_declarations: system.privacy_declarations ?? [],
+    system_dependencies: system.system_dependencies ?? [],
+    administrating_department: system.administrating_department ?? "",
+    third_country_transfers: system.third_country_transfers ?? [],
+    joint_controller: system.joint_controller,
+    data_protection_impact_assessment: system.data_protection_impact_assessment,
+    data_responsibility_title: system.data_responsibility_title ?? "",
   };
 
   const handleSubmit = () => {

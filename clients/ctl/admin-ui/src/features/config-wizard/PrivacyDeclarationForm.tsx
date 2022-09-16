@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Center,
-  Divider,
-  Heading,
-  Spinner,
-  Stack,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
@@ -46,10 +36,7 @@ import {
   CustomTextInput,
 } from "../common/form/inputs";
 import PrivacyDeclarationFormExtension from "../system/PrivacyDeclarationFormExtension";
-import {
-  useGetSystemByFidesKeyQuery,
-  useUpdateSystemMutation,
-} from "../system/system.slice";
+import { useUpdateSystemMutation } from "../system/system.slice";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
 type FormValues = PrivacyDeclaration;
@@ -65,30 +52,32 @@ const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
+const transformFormValuesToDeclaration = (
+  formValues: FormValues
+): PrivacyDeclaration => ({
+  ...formValues,
+  data_qualifier:
+    formValues.data_qualifier === "" ? undefined : formValues.data_qualifier,
+});
+
 interface Props {
-  systemKey: System["fides_key"];
+  system: System;
   onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
 }
 
 const PrivacyDeclarationForm = ({
-  systemKey,
+  system,
   onCancel,
   onSuccess,
   abridged,
 }: Props) => {
-  const { data: existingSystem, isLoading: isLoadingSystem } =
-    useGetSystemByFidesKeyQuery(systemKey);
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
-  >(
-    existingSystem && existingSystem?.privacy_declarations
-      ? [...existingSystem.privacy_declarations]
-      : []
-  );
+  >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -109,25 +98,6 @@ const PrivacyDeclarationForm = ({
     dispatch(setDataQualifiers(dataQualifiers ?? []));
   }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
-  if (isLoadingSystem) {
-    return (
-      <Center>
-        <Spinner />
-      </Center>
-    );
-  }
-
-  if (!existingSystem) {
-    return (
-      <Text>
-        Could not find a system with key{" "}
-        <Text as="span" fontWeight="semibold">
-          {systemKey}
-        </Text>
-      </Text>
-    );
-  }
-
   const initialValues = {
     name: "",
     data_categories: [],
@@ -137,35 +107,27 @@ const PrivacyDeclarationForm = ({
     dataset_references: [],
   };
 
-  let privacyDeclarations: PrivacyDeclaration[];
-
   const handleSubmit = async (values: FormValues) => {
+    let privacyDeclarations: PrivacyDeclaration[] = [];
+
     const handlePrivacyDeclarations = () => {
       // If the declaration already exists
       if (
-        existingSystem.privacy_declarations.filter(
+        system.privacy_declarations.filter(
           (declaration) => declaration.name === values.name
         ).length > 0
       ) {
         privacyDeclarations = [
-          ...existingSystem.privacy_declarations,
+          ...system.privacy_declarations,
           ...formDeclarations,
         ];
       }
       // If the declaration does not exist
       else {
         privacyDeclarations = [
-          ...existingSystem.privacy_declarations,
+          ...system.privacy_declarations,
           ...formDeclarations,
-          {
-            name: values.name,
-            data_categories: values.data_categories,
-            data_use: values.data_use,
-            data_qualifier:
-              values.data_qualifier === "" ? undefined : values.data_qualifier,
-            data_subjects: values.data_subjects,
-            dataset_references: values.dataset_references,
-          },
+          transformFormValuesToDeclaration(values),
         ];
       }
     };
@@ -173,7 +135,7 @@ const PrivacyDeclarationForm = ({
     handlePrivacyDeclarations();
 
     const systemBodyWithDeclaration = {
-      ...existingSystem,
+      ...system,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
     };
 
@@ -210,8 +172,8 @@ const PrivacyDeclarationForm = ({
     if (
       values.name === "" ||
       formDeclarations.filter((d) => d.name === values.name).length > 0 ||
-      existingSystem.privacy_declarations.filter((d) => d.name === values.name)
-        .length > 0
+      system.privacy_declarations.filter((d) => d.name === values.name).length >
+        0
     ) {
       toast({
         status: "error",
@@ -220,7 +182,10 @@ const PrivacyDeclarationForm = ({
       });
     } else {
       toast.closeAll();
-      setFormDeclarations([...formDeclarations, values]);
+      setFormDeclarations([
+        ...formDeclarations,
+        transformFormValuesToDeclaration(values),
+      ]);
     }
   };
 
@@ -231,12 +196,12 @@ const PrivacyDeclarationForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ resetForm, values, dirty }) => (
+      {({ resetForm, values, dirty, isValid }) => (
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
-              Privacy Declaration for {existingSystem?.name}
+              Privacy Declaration for {system.name}
             </Heading>
             <div>
               Now we’re going to declare our system’s privacy characteristics.
@@ -302,12 +267,7 @@ const PrivacyDeclarationForm = ({
               display="flex"
               justifyContent="flex-start"
               variant="link"
-              disabled={
-                !values.data_use ||
-                !values.data_qualifier ||
-                !values.data_subjects ||
-                !values.data_categories
-              }
+              disabled={!(isValid && dirty)}
               isLoading={isLoading}
               onClick={() => {
                 addAnotherDeclaration(values);
@@ -328,7 +288,7 @@ const PrivacyDeclarationForm = ({
             </Button>
             <Box>
               <Button
-                onClick={() => onCancel()}
+                onClick={onCancel}
                 mr={2}
                 size="sm"
                 variant="outline"

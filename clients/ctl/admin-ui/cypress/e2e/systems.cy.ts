@@ -175,31 +175,30 @@ describe("System management page", () => {
           cy.wait("@getDataSubject");
           cy.wait("@getDataUse");
           cy.getByTestId("privacy-declaration-form");
-          const declaration = {
-            name: "my declaration",
-            data_categories: ["user.biometric", "user.contact"],
-            data_use: "advertising",
-            data_subjects: ["citizen_voter", "consultant"],
-            data_qualifier: "aggregated",
-            dataset_references: [],
-          };
+          const declaration = system.privacy_declarations[0];
           cy.getByTestId("input-name").type(declaration.name);
           declaration.data_categories.forEach((dc) => {
             cy.getByTestId("input-data_categories").type(`${dc}{enter}`);
           });
-          cy.getByTestId("input-data_use").type(
-            `${declaration.data_use}{enter}`
-          );
+          cy.getByTestId("input-data_use").click();
+          cy.getByTestId("input-data_use").within(() => {
+            cy.contains(declaration.data_use).click();
+          });
+
           declaration.data_subjects.forEach((ds) => {
             cy.getByTestId("input-data_subjects").type(`${ds}{enter}`);
           });
-          cy.getByTestId("input-data_qualifier").type(
-            `${declaration.data_qualifier}{enter}`
-          );
+          cy.getByTestId("input-data_qualifier").click();
+          cy.getByTestId("input-data_qualifier").within(() => {
+            cy.contains(declaration.data_qualifier).click();
+          });
           cy.getByTestId("confirm-btn").click();
           cy.wait("@putSystem").then((interception) => {
             const { body } = interception.request;
-            expect(body.privacy_declarations[1]).to.eql(declaration);
+            expect(body.privacy_declarations[0]).to.eql({
+              ...declaration,
+              dataset_references: [],
+            });
           });
 
           // Now at the Review stage
@@ -357,7 +356,7 @@ describe("System management page", () => {
         cy.getByTestId("confirm-btn").click();
         cy.wait("@putSystem").then((interception) => {
           const { body } = interception.request;
-          expect(body.privacy_declarations[1]).to.eql(declaration);
+          expect(body.privacy_declarations[0]).to.eql(declaration);
         });
 
         // Now at the Review stage

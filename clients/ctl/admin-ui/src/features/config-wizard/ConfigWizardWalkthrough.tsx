@@ -15,8 +15,8 @@ import {
   changeStep,
   selectReviewStep,
   selectStep,
-  selectSystemFidesKey,
-  setSystemFidesKey,
+  selectSystemToCreate,
+  setSystemToCreate,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
@@ -24,7 +24,7 @@ import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
 import ScanResultsForm from "./ScanResultsForm";
-import SuccessPage from "./SuccessPage";
+import SystemRegisterSuccess from "./SystemRegisterSuccess";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -33,18 +33,14 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
-  const systemKey = useAppSelector(selectSystemFidesKey);
+  const system = useAppSelector(selectSystemToCreate);
 
   const handleCancelSetup = () => {
     router.push("/");
   };
 
-  const handleDescribeSuccess = (values: System) => {
-    dispatch(setSystemFidesKey(values.fides_key ?? ""));
-    dispatch(changeReviewStep());
-  };
-
-  const handleDeclareSuccess = () => {
+  const handleSuccess = (values: System) => {
+    dispatch(setSystemToCreate(values));
     dispatch(changeReviewStep());
   };
 
@@ -87,29 +83,29 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 1 && (
                   <DescribeSystemsForm
                     onCancel={handleCancelSetup}
-                    onSuccess={handleDescribeSuccess}
+                    onSuccess={handleSuccess}
                     abridged
                   />
                 )}
-                {reviewStep === 2 && (
+                {reviewStep === 2 && system && (
                   <PrivacyDeclarationForm
-                    systemKey={systemKey}
+                    system={system}
                     onCancel={handleCancelSetup}
-                    onSuccess={handleDeclareSuccess}
+                    onSuccess={handleSuccess}
                     abridged
                   />
                 )}
-                {reviewStep === 3 && (
+                {reviewStep === 3 && system && (
                   <ReviewSystemForm
-                    systemKey={systemKey}
+                    system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
                     abridged
                   />
                 )}
-                {reviewStep === 4 && (
-                  <SuccessPage
-                    systemKey={systemKey}
+                {reviewStep === 4 && system && (
+                  <SystemRegisterSuccess
+                    system={system}
                     onAddNextSystem={() => {
                       dispatch(changeStep(5));
                       dispatch(changeReviewStep(1));

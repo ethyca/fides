@@ -7,7 +7,7 @@ import { System } from "~/types/api";
 import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
 import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
 import ReviewSystemForm from "../config-wizard/ReviewSystemForm";
-import SuccessPage from "../config-wizard/SuccessPage";
+import SystemRegisterSuccess from "../config-wizard/SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -49,7 +49,7 @@ const ManualSystemFlow = () => {
     router.push("/system/new");
   };
 
-  const handleDescribeSuccess = (system: System) => {
+  const handleSuccess = (system: System) => {
     setCurrentStepIndex(currentStepIndex + 1);
     setNewSystem(system);
   };
@@ -73,27 +73,27 @@ const ManualSystemFlow = () => {
       <GridItem w="75%">
         {currentStepIndex === 0 ? (
           <DescribeSystemsForm
-            onSuccess={handleDescribeSuccess}
+            onSuccess={handleSuccess}
             onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 1 && newSystem ? (
           <PrivacyDeclarationForm
-            systemKey={newSystem.fides_key}
-            onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
+            system={newSystem}
+            onSuccess={handleSuccess}
             onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 2 && newSystem ? (
           <ReviewSystemForm
-            systemKey={newSystem.fides_key}
+            system={newSystem}
             onCancel={returnToNew}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
         {currentStepIndex === 3 && newSystem ? (
-          <SuccessPage
-            systemKey={newSystem.fides_key}
+          <SystemRegisterSuccess
+            system={newSystem}
             onAddNextSystem={returnToNew}
             onContinue={returnToIndex}
           />
