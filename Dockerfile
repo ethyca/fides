@@ -49,9 +49,9 @@ RUN : \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-#####################
-## Python Versions ##
-#####################
+#########################
+## Python Dependencies ##
+#########################
 
 RUN : \
     && apt-get update \
@@ -85,25 +85,35 @@ RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
 ENV PYENV_ROOT="$HOME/.pyenv"
 ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
 
-RUN pyenv install 3.7.14
-RUN pyenv install 3.8.14
-RUN pyenv install 3.9.14
-RUN pyenv install 3.10.7
+ARG python37="3.7.14"
+ARG python38="3.8.14"
+ARG python39="3.9.14"
+ARG python310="3.10.7"
 
-RUN pyenv global 3.10.7
-#########################
-## Python Dependencies ##
-#########################
+RUN pyenv install ${python37}
+RUN pyenv install ${python38}
+RUN pyenv install ${python39}
+RUN pyenv install ${python310}
 
 COPY optional-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
+RUN pyenv global ${python37} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
+RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
+RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
+RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pyenv global ${python37} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
 
 COPY requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r requirements.txt
+RUN pyenv global ${python37} ; pip install -U pip --no-cache-dir install -r requirements.txt
+RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r requirements.txt
+RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r requirements.txt
+RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r requirements.txt
 
+RUN pyenv global ${python310}
 ###############################
 ## General Application Setup ##
 ###############################
