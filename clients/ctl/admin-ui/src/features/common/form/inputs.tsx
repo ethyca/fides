@@ -164,6 +164,7 @@ export const CustomSelect = ({
             }}
             isSearchable={isSearchable ?? false}
             isClearable={isClearable}
+            instanceId={`select-${field.name}`}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
@@ -244,6 +245,7 @@ export const CustomMultiSelect = ({
             isSearchable={isSearchable}
             isClearable={isClearable}
             isMulti
+            instanceId={`select-${field.name}`}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>

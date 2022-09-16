@@ -17,27 +17,27 @@ import {
 import React from "react";
 
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import {
-  useGetAllSystemsQuery,
-  useGetSystemByFidesKeyQuery,
-} from "~/features/system/system.slice";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
 interface Props {
-  systemKey: System["fides_key"];
+  system: System;
   onContinue: () => void;
   onAddNextSystem: () => void;
 }
 const SystemRegisterSuccess = ({
-  systemKey,
+  system,
   onAddNextSystem,
   onContinue,
 }: Props) => {
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemKey);
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
-  const filteredSystems = allRegisteredSystems?.filter(
-    (system) => system.name !== existingSystem?.name
-  );
+  const otherSystems = allRegisteredSystems
+    ? allRegisteredSystems.filter(
+        (registeredSystem) => registeredSystem.name !== system.name
+      )
+    : [];
+
+  const systemName = system.name ?? system.fides_key;
 
   return (
     <chakra.form w="100%">
@@ -57,11 +57,9 @@ const SystemRegisterSuccess = ({
           >
             Success
           </Badge>
-          {existingSystem?.name} successfully registered!
+          {systemName} successfully registered!
         </Heading>
-        <Text>
-          {existingSystem?.name} has been successfully added to the registry!
-        </Text>
+        <Text>{systemName} has been successfully added to the registry!</Text>
         <TableContainer>
           <Table variant="simple">
             <Thead>
@@ -71,14 +69,14 @@ const SystemRegisterSuccess = ({
             </Thead>
             <Tbody>
               <Tr>
-                <Td color="green.500">{existingSystem?.name}</Td>
+                <Td color="green.500">{systemName}</Td>
                 <Td>
                   <StepperCircleCheckmarkIcon boxSize={5} />
                 </Td>
               </Tr>
-              {filteredSystems?.map((system) => (
-                <Tr key={`${system.name}-tr`}>
-                  <Td key={system.name}>{system.name}</Td>
+              {otherSystems.map((s) => (
+                <Tr key={`${s.fides_key}-tr`}>
+                  <Td>{s.name}</Td>
                   <Td>
                     <StepperCircleCheckmarkIcon boxSize={5} />
                   </Td>

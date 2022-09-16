@@ -15,8 +15,8 @@ import {
   changeStep,
   selectReviewStep,
   selectStep,
-  selectSystemFidesKey,
-  setSystemFidesKey,
+  selectSystemToCreate,
+  setSystemToCreate,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import DescribeSystemsForm from "./DescribeSystemsForm";
@@ -33,18 +33,14 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
-  const systemKey = useAppSelector(selectSystemFidesKey);
+  const system = useAppSelector(selectSystemToCreate);
 
   const handleCancelSetup = () => {
     router.push("/");
   };
 
-  const handleDescribeSuccess = (values: System) => {
-    dispatch(setSystemFidesKey(values.fides_key ?? ""));
-    dispatch(changeReviewStep());
-  };
-
-  const handleDeclareSuccess = () => {
+  const handleSuccess = (values: System) => {
+    dispatch(setSystemToCreate(values));
     dispatch(changeReviewStep());
   };
 
@@ -87,26 +83,26 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 1 && (
                   <DescribeSystemsForm
                     onCancel={handleCancelSetup}
-                    onSuccess={handleDescribeSuccess}
+                    onSuccess={handleSuccess}
                   />
                 )}
-                {reviewStep === 2 && (
+                {reviewStep === 2 && system && (
                   <PrivacyDeclarationForm
-                    systemKey={systemKey}
+                    system={system}
                     onCancel={handleCancelSetup}
-                    onSuccess={handleDeclareSuccess}
+                    onSuccess={handleSuccess}
                   />
                 )}
-                {reviewStep === 3 && (
+                {reviewStep === 3 && system && (
                   <ReviewSystemForm
-                    systemKey={systemKey}
+                    system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
                   />
                 )}
-                {reviewStep === 4 && (
+                {reviewStep === 4 && system && (
                   <SystemRegisterSuccess
-                    systemKey={systemKey}
+                    system={system}
                     onAddNextSystem={() => {
                       dispatch(changeStep(5));
                       dispatch(changeReviewStep(1));
