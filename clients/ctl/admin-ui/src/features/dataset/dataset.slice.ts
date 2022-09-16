@@ -167,9 +167,17 @@ export const selectActiveCollection = createSelector(
     index !== undefined && collections ? collections[index] : undefined
 );
 
+export const selectActiveFields = createSelector(
+  [selectActiveCollection],
+  (collection) => collection?.fields
+);
 export const selectActiveFieldIndex = createSelector(
   selectDataset,
   (state) => state.activeFieldIndex
+);
+export const selectActiveField = createSelector(
+  [selectActiveFieldIndex, selectActiveFields],
+  (index, fields) => (index !== undefined && fields ? fields[index] : undefined)
 );
 
 export const selectActiveEditor = createSelector(

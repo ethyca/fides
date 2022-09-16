@@ -1,13 +1,12 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DatasetField } from "~/types/api";
-
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import {
   selectActiveEditor,
-  selectActiveFieldIndex,
+  selectActiveField,
+  selectActiveFields,
   setActiveEditor,
   setActiveFieldIndex,
 } from "./dataset.slice";
@@ -15,13 +14,13 @@ import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata, EditableType } from "./types";
 
 interface Props {
-  fields: DatasetField[];
   columns: ColumnMetadata[];
 }
 
-const DatasetFieldsTable = ({ fields, columns }: Props) => {
+const DatasetFieldsTable = ({ columns }: Props) => {
   const dispatch = useDispatch();
-  const activeFieldIndex = useSelector(selectActiveFieldIndex);
+  const activeFields = useSelector(selectActiveFields);
+  const activeField = useSelector(selectActiveField);
   const activeEditor = useSelector(selectActiveEditor);
 
   const handleClose = () => {
@@ -33,9 +32,6 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
     dispatch(setActiveFieldIndex(index));
     dispatch(setActiveEditor(EditableType.FIELD));
   };
-
-  const activeField =
-    activeFieldIndex !== undefined ? fields[activeFieldIndex] : undefined;
 
   return (
     <Box>
@@ -50,7 +46,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
           </Tr>
         </Thead>
         <Tbody>
-          {fields.map((field, idx) => (
+          {(activeFields ?? []).map((field, idx) => (
             <Tr
               key={field.name}
               _hover={{ bg: "gray.50" }}

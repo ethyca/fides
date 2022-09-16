@@ -113,18 +113,15 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
           />
         </Box>
       </Box>
+
+      <DatasetFieldsTable columns={columns} />
+
       {activeCollection ? (
-        <>
-          <DatasetFieldsTable
-            fields={activeCollection.fields}
-            columns={columns}
-          />
-          <EditCollectionDrawer
-            collection={activeCollection}
-            isOpen={activeEditor === EditableType.COLLECTION}
-            onClose={() => dispatch(setActiveEditor(undefined))}
-          />
-        </>
+        <EditCollectionDrawer
+          collection={activeCollection}
+          isOpen={activeEditor === EditableType.COLLECTION}
+          onClose={() => dispatch(setActiveEditor(undefined))}
+        />
       ) : null}
       {dataset ? (
         <EditDatasetDrawer
