@@ -4,11 +4,15 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { AppState } from "~/app/store";
 import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
+import { EditableType } from "./types";
+
 export interface State {
   activeDatasetFidesKey?: string;
   // collections and fields don't have unique IDs, so we have to use their index
   activeCollectionIndex?: number;
   activeFieldIndex?: number;
+  // Controls whether the edit drawer is open and what is being edited.
+  activeEditor?: EditableType;
 }
 
 const initialState: State = {};
@@ -117,6 +121,12 @@ export const datasetSlice = createSlice({
     ) => {
       draftState.activeFieldIndex = action.payload;
     },
+    setActiveEditor: (
+      draftState,
+      action: PayloadAction<EditableType | undefined>
+    ) => {
+      draftState.activeEditor = action.payload;
+    },
   },
 });
 
@@ -124,7 +134,10 @@ export const {
   setActiveDatasetFidesKey,
   setActiveCollectionIndex,
   setActiveFieldIndex,
+  setActiveEditor,
 } = datasetSlice.actions;
+
+export const { reducer } = datasetSlice;
 
 const selectDataset = (state: AppState) => state.dataset;
 
@@ -149,4 +162,7 @@ export const selectActiveFieldIndex = createSelector(
   (state) => state.activeFieldIndex
 );
 
-export const { reducer } = datasetSlice;
+export const selectActiveEditor = createSelector(
+  selectDataset,
+  (state) => state.activeEditor
+);
