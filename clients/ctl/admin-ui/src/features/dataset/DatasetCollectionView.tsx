@@ -6,7 +6,8 @@ import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice
 
 import ColumnDropdown from "./ColumnDropdown";
 import {
-  selectActiveCollectionIndex,
+  selectActiveCollection,
+  selectActiveCollections,
   selectActiveEditor,
   setActiveCollectionIndex,
   setActiveDatasetFidesKey,
@@ -42,7 +43,8 @@ interface Props {
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
   const { dataset, isLoading } = useDataset(fidesKey);
-  const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
+  const activeCollections = useSelector(selectActiveCollections);
+  const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
@@ -66,6 +68,10 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     []
   );
 
+  const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {
+    dispatch(setActiveCollectionIndex(event.target.selectedIndex));
+  };
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -73,14 +79,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   if (!dataset) {
     return <div>Dataset not found</div>;
   }
-
-  const { collections } = dataset;
-  const activeCollection =
-    activeCollectionIndex != null ? collections[activeCollectionIndex] : null;
-
-  const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {
-    dispatch(setActiveCollectionIndex(event.target.selectedIndex));
-  };
 
   return (
     <Box>
@@ -91,7 +89,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
           width="auto"
           data-testid="collection-select"
         >
-          {collections.map((collection) => (
+          {(activeCollections ?? []).map((collection) => (
             <option key={collection.name} value={collection.name}>
               {collection.name}
             </option>

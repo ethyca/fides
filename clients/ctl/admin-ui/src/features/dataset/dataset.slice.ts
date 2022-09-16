@@ -148,13 +148,23 @@ export const selectActiveDatasetFidesKey = createSelector(
 export const selectActiveDataset = createSelector(
   [(appState) => appState, selectActiveDatasetFidesKey],
   (appState, fidesKey) =>
-    fidesKey &&
-    datasetApi.endpoints.getDatasetByKey.select(fidesKey)(appState)?.data
+    fidesKey !== undefined
+      ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(appState)?.data
+      : undefined
 );
 
+export const selectActiveCollections = createSelector(
+  selectActiveDataset,
+  (dataset) => dataset?.collections
+);
 export const selectActiveCollectionIndex = createSelector(
   selectDataset,
   (state) => state.activeCollectionIndex
+);
+export const selectActiveCollection = createSelector(
+  [selectActiveCollectionIndex, selectActiveCollections],
+  (index, collections) =>
+    index !== undefined && collections ? collections[index] : undefined
 );
 
 export const selectActiveFieldIndex = createSelector(
