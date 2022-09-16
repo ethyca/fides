@@ -25,6 +25,7 @@ The types of changes are:
   * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
 * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
 
 ### Changed
 
