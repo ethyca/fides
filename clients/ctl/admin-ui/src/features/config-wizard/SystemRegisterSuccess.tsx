@@ -28,7 +28,11 @@ interface Props {
   onContinue: () => void;
   onAddNextSystem: () => void;
 }
-const SuccessPage = ({ systemKey, onAddNextSystem, onContinue }: Props) => {
+const SystemRegisterSuccess = ({
+  systemKey,
+  onAddNextSystem,
+  onContinue,
+}: Props) => {
   const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemKey);
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const filteredSystems = allRegisteredSystems?.filter(
@@ -108,4 +112,4 @@ const SuccessPage = ({ systemKey, onAddNextSystem, onContinue }: Props) => {
     </chakra.form>
   );
 };
-export default SuccessPage;
+export default SystemRegisterSuccess;

@@ -7,7 +7,7 @@ import { System } from "~/types/api";
 import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
 import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
 import ReviewSystemForm from "../config-wizard/ReviewSystemForm";
-import SuccessPage from "../config-wizard/SuccessPage";
+import SystemRegisterSuccess from "../config-wizard/SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -92,7 +92,7 @@ const ManualSystemFlow = () => {
           />
         ) : null}
         {currentStepIndex === 3 && newSystem ? (
-          <SuccessPage
+          <SystemRegisterSuccess
             systemKey={newSystem.fides_key}
             onAddNextSystem={returnToNew}
             onContinue={returnToIndex}

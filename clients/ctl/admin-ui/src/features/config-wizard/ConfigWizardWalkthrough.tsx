@@ -24,7 +24,7 @@ import OrganizationInfoForm from "./OrganizationInfoForm";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import ReviewSystemForm from "./ReviewSystemForm";
 import ScanResultsForm from "./ScanResultsForm";
-import SuccessPage from "./SuccessPage";
+import SystemRegisterSuccess from "./SystemRegisterSuccess";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -105,7 +105,7 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 4 && (
-                  <SuccessPage
+                  <SystemRegisterSuccess
                     systemKey={systemKey}
                     onAddNextSystem={() => {
                       dispatch(changeStep(5));
