@@ -1,16 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import { System } from "~/types/api";
-
-export interface State {
-  systems: System[];
-}
-
-const initialState: State = {
-  systems: [],
-};
 
 export const systemApi = createApi({
   reducerPath: "systemApi",
@@ -83,22 +74,13 @@ export const {
   useUpdateSystemMutation,
 } = systemApi;
 
+export interface State {}
+const initialState: State = {};
+
 export const systemSlice = createSlice({
   name: "system",
   initialState,
-  reducers: {
-    setSystems: (state, action: PayloadAction<System[]>) => ({
-      systems: action.payload,
-    }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.datasets,
-    }),
-  },
+  reducers: {},
 });
-
-export const { setSystems } = systemSlice.actions;
 
 export const { reducer } = systemSlice;

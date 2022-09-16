@@ -1,16 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { AppState } from "~/app/store";
 import { DataUse } from "~/types/api";
-
-export interface State {
-  dataUses: DataUse[];
-}
-
-const initialState: State = {
-  dataUses: [],
-};
 
 export const dataUseApi = createApi({
   reducerPath: "dataUseApi",
@@ -63,18 +55,19 @@ export const {
   useDeleteDataUseMutation,
 } = dataUseApi;
 
+export interface State {}
+const initialState: State = {};
+
 export const dataUseSlice = createSlice({
   name: "dataUse",
   initialState,
-  reducers: {
-    setDataUses: (state, action: PayloadAction<any>) => ({
-      ...state,
-      dataUses: action.payload,
-    }),
-  },
+  reducers: {},
 });
 
-export const { setDataUses } = dataUseSlice.actions;
-export const selectDataUses = (state: AppState) => state.dataUse.dataUses;
-
 export const { reducer } = dataUseSlice;
+
+const emptyDataUses: DataUse[] = [];
+export const selectDataUses: (state: AppState) => DataUse[] = createSelector(
+  dataUseApi.endpoints.getAllDataUses.select(),
+  ({ data }) => data ?? emptyDataUses
+);

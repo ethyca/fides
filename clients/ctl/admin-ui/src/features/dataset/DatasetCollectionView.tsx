@@ -2,10 +2,7 @@ import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  setDataCategories,
-  useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/taxonomy.slice";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ColumnDropdown from "./ColumnDropdown";
 import {
@@ -48,11 +45,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const [isModifyingCollection, setIsModifyingCollection] = useState(false);
   const [isModifyingDataset, setIsModifyingDataset] = useState(false);
 
-  // load data categories into redux
-  const { data: dataCategories } = useGetAllDataCategoriesQuery();
-  useEffect(() => {
-    dispatch(setDataCategories(dataCategories ?? []));
-  }, [dispatch, dataCategories]);
+  // Query subscriptions:
+  useGetAllDataCategoriesQuery();
 
   useEffect(() => {
     if (dataset) {
