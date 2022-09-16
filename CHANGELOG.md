@@ -52,6 +52,7 @@ The types of changes are:
 * Utility to update SaaS config instances based on template updates [#1307](https://github.com/ethyca/fidesops/pull/1307)
 * Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
 * Adds ability to send email notification upon privacy request review [#1306](https://github.com/ethyca/fidesops/pull/1306)
+* Manual webhook test functionality (#1323)[https://github.com/ethyca/fidesops/pull/1323/] 
 
 
 ### Changed

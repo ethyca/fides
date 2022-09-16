@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from fideslib.db.base_class import Base
 from fideslib.schemas.base_class import BaseSchema
 from pydantic import create_model
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
@@ -63,12 +63,14 @@ class AccessManualWebhook(Base):
 
     @classmethod
     def get_enabled(cls, db: Session) -> List["AccessManualWebhook"]:
-        """Get all enabled access manual webhooks"""
+        """Get all enabled access manual webhooks with fields"""
         return (
             db.query(cls)
             .filter(
                 AccessManualWebhook.connection_config_id == ConnectionConfig.id,
                 ConnectionConfig.disabled.is_(False),
+                AccessManualWebhook.fields != text("'null'"),
+                AccessManualWebhook.fields != "[]",
             )
             .all()
         )

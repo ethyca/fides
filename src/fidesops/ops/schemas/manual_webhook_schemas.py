@@ -9,18 +9,34 @@ from fidesops.ops.schemas.connection_configuration.connection_config import (
 )
 
 
-class ManualWebhookFieldType(ConstrainedStr):
+class PIIFieldType(ConstrainedStr):
     """Using ConstrainedStr instead of constr to keep mypy happy"""
 
     min_length = 1
     max_length = 200
 
 
+class DSRLabelFieldType(ConstrainedStr):
+    """Using ConstrainedStr instead of constr to keep mypy happy"""
+
+    max_length = 200
+
+
 class ManualWebhookField(BaseSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
-    pii_field: ManualWebhookFieldType
-    dsr_package_label: Optional[ManualWebhookFieldType] = None
+    pii_field: PIIFieldType
+    dsr_package_label: Optional[DSRLabelFieldType] = None
+
+    @validator("dsr_package_label")
+    def convert_empty_string_dsr_package_label(
+        cls, value: Optional[str]
+    ) -> Optional[str]:
+        """
+        We specifically allow the dsr_package_label to be submitted as an empty string on input,
+        so converting to None here.
+        """
+        return None if value == "" else value
 
     class Config:
         orm_mode = True
