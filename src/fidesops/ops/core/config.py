@@ -5,7 +5,6 @@ import os
 from typing import Any, Dict, List, MutableMapping, Optional
 from urllib.parse import quote_plus
 
-import toml
 from fideslib.core.config import (
     DatabaseSettings,
     FidesSettings,
@@ -16,6 +15,7 @@ from fideslib.core.config import (
 )
 from fideslog.sdk.python.utils import FIDESOPS, generate_client_id
 from pydantic import validator
+from toml import dump
 
 from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
@@ -274,7 +274,7 @@ def update_config_file(updates: Dict[str, Dict[str, Any]]) -> None:
             current_config.update({key: value})
 
     with open(config_path, "w") as config_file:  # pylint: disable=W1514
-        toml.dump(current_config, config_file)
+        dump(current_config, config_file)
 
     logger.info("Updated %s:", config_path)
 
