@@ -1,21 +1,17 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { AppState } from "~/app/store";
 import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 export interface State {
-  activeDataset: Dataset | null;
+  activeDatasetFidesKey?: string;
   // collections and fields don't have unique IDs, so we have to use their index
-  activeCollectionIndex: number | null;
-  activeFieldIndex: number | null;
+  activeCollectionIndex?: number;
+  activeFieldIndex?: number;
 }
 
-const initialState: State = {
-  activeDataset: null,
-  activeCollectionIndex: null,
-  activeFieldIndex: null,
-};
+const initialState: State = {};
 
 interface DatasetDeleteResponse {
   message: string;
@@ -90,50 +86,67 @@ export const datasetSlice = createSlice({
   name: "dataset",
   initialState,
   reducers: {
-    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => {
-      if (action.payload != null) {
-        return { ...state, activeDataset: action.payload };
+    setActiveDatasetFidesKey: (
+      draftState,
+      action: PayloadAction<string | undefined>
+    ) => {
+      if (draftState.activeDatasetFidesKey === action.payload) {
+        return;
       }
-      // clear out child fields when a dataset becomes null
-      return {
-        ...state,
-        activeDataset: action.payload,
-        activeCollectionIndex: null,
-        activeFieldIndex: null,
-      };
+
+      // Clear out the related fields when the dataset is changed.
+      draftState.activeDatasetFidesKey = action.payload;
+      draftState.activeCollectionIndex = undefined;
+      draftState.activeFieldIndex = undefined;
     },
-    setActiveCollectionIndex: (state, action: PayloadAction<number | null>) => {
-      if (action.payload != null) {
-        return {
-          ...state,
-          activeCollectionIndex: action.payload,
-        };
+    setActiveCollectionIndex: (
+      draftState,
+      action: PayloadAction<number | undefined>
+    ) => {
+      if (draftState.activeCollectionIndex === action.payload) {
+        return;
       }
-      // clear our child fields when a collection becomes null
-      return {
-        ...state,
-        activeCollectionIndex: action.payload,
-        activeFieldIndex: null,
-      };
+
+      // Clear out the related fields when the collection is changed.
+      draftState.activeCollectionIndex = action.payload;
+      draftState.activeFieldIndex = undefined;
     },
-    setActiveFieldIndex: (state, action: PayloadAction<number | null>) => ({
-      ...state,
-      activeFieldIndex: action.payload,
-    }),
+    setActiveFieldIndex: (
+      draftState,
+      action: PayloadAction<number | undefined>
+    ) => {
+      draftState.activeFieldIndex = action.payload;
+    },
   },
 });
 
 export const {
-  setActiveDataset,
+  setActiveDatasetFidesKey,
   setActiveCollectionIndex,
   setActiveFieldIndex,
 } = datasetSlice.actions;
 
-export const selectActiveDataset = (state: AppState) =>
-  state.dataset.activeDataset;
-export const selectActiveCollectionIndex = (state: AppState) =>
-  state.dataset.activeCollectionIndex;
-export const selectActiveFieldIndex = (state: AppState) =>
-  state.dataset.activeFieldIndex;
+const selectDataset = (state: AppState) => state.dataset;
+
+export const selectActiveDatasetFidesKey = createSelector(
+  selectDataset,
+  (state) => state.activeDatasetFidesKey
+);
+export const selectActiveDataset = createSelector(
+  [(appState) => appState, selectActiveDatasetFidesKey],
+  (appState, fidesKey) =>
+    fidesKey &&
+    datasetApi.endpoints.getDatasetByKey.select(fidesKey)(appState)?.data
+);
+
+export const selectActiveCollectionIndex = createSelector(
+  selectDataset,
+  (state) => state.activeCollectionIndex
+);
+
+export const selectActiveFieldIndex = createSelector(
+  selectDataset,
+  (state) => state.activeFieldIndex
+);
 
 export const { reducer } = datasetSlice;

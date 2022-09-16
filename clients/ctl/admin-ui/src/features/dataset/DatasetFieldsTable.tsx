@@ -22,7 +22,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
 
   const handleClose = () => {
     setEditDrawerIsOpen(false);
-    dispatch(setActiveFieldIndex(null));
+    dispatch(setActiveFieldIndex(undefined));
   };
 
   const handleClick = (index: number) => {
@@ -31,7 +31,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
   };
 
   const activeField =
-    activeFieldIndex != null ? fields[activeFieldIndex] : null;
+    activeFieldIndex !== undefined ? fields[activeFieldIndex] : undefined;
 
   return (
     <Box>

@@ -2,13 +2,14 @@ import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useClassificationsMap } from "~/features/common/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollectionIndex,
   setActiveCollectionIndex,
-  setActiveDataset,
+  setActiveDatasetFidesKey,
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
@@ -50,17 +51,14 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
 
   useEffect(() => {
     if (dataset) {
-      dispatch(setActiveDataset(dataset));
+      dispatch(setActiveDatasetFidesKey(dataset.fides_key));
+      dispatch(setActiveCollectionIndex(0));
     }
   }, [dispatch, dataset]);
 
-  useEffect(() => {
-    dispatch(setActiveCollectionIndex(0));
-  }, [dispatch]);
-
   useEffect(
     () => () => {
-      dispatch(setActiveDataset(null));
+      dispatch(setActiveDatasetFidesKey(undefined));
     },
     // This hook only runs on component un-mount to clear the active dataset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
