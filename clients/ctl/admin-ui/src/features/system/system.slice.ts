@@ -3,6 +3,11 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { System } from "~/types/api";
 
+interface SystemDeleteResponse {
+  message: string;
+  resource: System;
+}
+
 export const systemApi = createApi({
   reducerPath: "systemApi",
   baseQuery: fetchBaseQuery({
@@ -27,6 +32,14 @@ export const systemApi = createApi({
         body,
       }),
       invalidatesTags: () => ["System"],
+    }),
+    deleteSystem: build.mutation<SystemDeleteResponse, string>({
+      query: (key) => ({
+        url: `system/${key}`,
+        params: { resource_type: "system" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["System"],
     }),
     updateSystem: build.mutation<
       System,
@@ -72,6 +85,7 @@ export const {
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
   useUpdateSystemMutation,
+  useDeleteSystemMutation,
 } = systemApi;
 
 export interface State {}
