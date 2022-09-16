@@ -1,12 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import type { AppState } from "~/app/store";
 import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
 export interface State {
-  datasets: Dataset[];
   activeDataset: Dataset | null;
   // collections and fields don't have unique IDs, so we have to use their index
   activeCollectionIndex: number | null;
@@ -14,7 +12,6 @@ export interface State {
 }
 
 const initialState: State = {
-  datasets: [],
   activeDataset: null,
   activeCollectionIndex: null,
   activeFieldIndex: null,
@@ -93,10 +90,6 @@ export const datasetSlice = createSlice({
   name: "dataset",
   initialState,
   reducers: {
-    setDatasets: (state, action: PayloadAction<Dataset[]>) => ({
-      ...state,
-      datasets: action.payload,
-    }),
     setActiveDataset: (state, action: PayloadAction<Dataset | null>) => {
       if (action.payload != null) {
         return { ...state, activeDataset: action.payload };
@@ -128,20 +121,14 @@ export const datasetSlice = createSlice({
       activeFieldIndex: action.payload,
     }),
   },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.datasets,
-    }),
-  },
 });
 
 export const {
-  setDatasets,
   setActiveDataset,
   setActiveCollectionIndex,
   setActiveFieldIndex,
 } = datasetSlice.actions;
+
 export const selectActiveDataset = (state: AppState) =>
   state.dataset.activeDataset;
 export const selectActiveCollectionIndex = (state: AppState) =>

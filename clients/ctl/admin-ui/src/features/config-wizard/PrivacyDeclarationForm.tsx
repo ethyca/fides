@@ -2,30 +2,26 @@ import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useState } from "react";
 import * as Yup from "yup";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon } from "~/features/common/Icon";
 import {
   selectDataQualifiers,
-  setDataQualifiers,
   useGetAllDataQualifiersQuery,
 } from "~/features/data-qualifier/data-qualifier.slice";
 import {
   selectDataSubjects,
-  setDataSubjects,
   useGetAllDataSubjectsQuery,
 } from "~/features/data-subjects/data-subject.slice";
 import {
   selectDataUses,
-  setDataUses,
   useGetAllDataUsesQuery,
 } from "~/features/data-use/data-use.slice";
 import {
   selectDataCategories,
-  setDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
@@ -73,7 +69,6 @@ const PrivacyDeclarationForm = ({
   onSuccess,
   abridged,
 }: Props) => {
-  const dispatch = useAppDispatch();
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
@@ -81,22 +76,16 @@ const PrivacyDeclarationForm = ({
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: dataCategories } = useGetAllDataCategoriesQuery();
-  const { data: dataSubjects } = useGetAllDataSubjectsQuery();
-  const { data: dataQualifiers } = useGetAllDataQualifiersQuery();
-  const { data: dataUses } = useGetAllDataUsesQuery();
+  // Query subscriptions:
+  useGetAllDataCategoriesQuery();
+  useGetAllDataSubjectsQuery();
+  useGetAllDataQualifiersQuery();
+  useGetAllDataUsesQuery();
 
   const allDataCategories = useAppSelector(selectDataCategories);
   const allDataSubjects = useAppSelector(selectDataSubjects);
   const allDataUses = useAppSelector(selectDataUses);
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
-
-  useEffect(() => {
-    dispatch(setDataCategories(dataCategories ?? []));
-    dispatch(setDataSubjects(dataSubjects ?? []));
-    dispatch(setDataUses(dataUses ?? []));
-    dispatch(setDataQualifiers(dataQualifiers ?? []));
-  }, [dispatch, dataCategories, dataSubjects, dataUses, dataQualifiers]);
 
   const initialValues = {
     name: "",
