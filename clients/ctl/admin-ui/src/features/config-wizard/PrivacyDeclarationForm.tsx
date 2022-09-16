@@ -222,7 +222,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ resetForm, values, dirty }) => (
+      {({ resetForm, values, dirty, isValid }) => (
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -292,12 +292,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
               display="flex"
               justifyContent="flex-start"
               variant="link"
-              disabled={
-                !values.data_use ||
-                !values.data_qualifier ||
-                !values.data_subjects ||
-                !values.data_categories
-              }
+              disabled={!(isValid && dirty)}
               isLoading={isLoading}
               onClick={() => {
                 addAnotherDeclaration(values);
@@ -317,7 +312,7 @@ const PrivacyDeclarationForm = ({ systemKey, onCancel, onSuccess }: Props) => {
             </Button>
             <Box>
               <Button
-                onClick={() => onCancel()}
+                onClick={onCancel}
                 mr={2}
                 size="sm"
                 variant="outline"
