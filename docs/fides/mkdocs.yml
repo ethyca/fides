@@ -15,7 +15,8 @@ nav:
           - Prerequisites: installation/prerequisites.md
           - Installation from PyPI: installation/pypi.md
           - Installation from Docker: installation/docker.md
-      - Setup and Use: 
+          - Configuration: installation/configuration.md
+      - Using Fides: 
           - Setting up the database: fidesctl/installation/database.md
           - Configuration: fidesctl/installation/configuration.md
           - Getting Started: fidesops/getting_started.md

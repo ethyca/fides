@@ -462,3 +462,7 @@ form.hs-form{
 .admonition code, .admonition-title code {
     font-size: .85em;
 }
+
+.md-typeset table code {
+    font-size: .60rem;
+}

@@ -1,70 +1,52 @@
-# Installation Options
+# Overview
 
-## Installation Options
+The Fides team provides up-to-date versions of both PyPI and Docker installations. For information on which method of installation might work best for your use, the requirements for each option is summarized below.
 
-Fides provides blah blah
+## Installation options
+### PyPI
 
-### PyPi
-
-Only `pip`/`pipx` installations are currently officially supported. For more details see [Installation from PyPI](pypi.md).
+Only `pip`/`pipx` installations are currently officially supported. For more information, see [Installation from PyPI](pypi.md).
 
 !!! Tip "For environment isolation, the Fides team recommends using [`pipx`](https://pypa.github.io/pipx/) when possible."
 
-In some cases a lightweight installation might be desired. If this is the case, the `pip` installation supports optional dependencies.
+#### When to use PyPI
+* If you are not familiar with Docker or containers, and want to install Fides on physical or virtual machines. 
+* If you are used to installing and running software using custom deployment mechanism.
+* If you would like to use with a lightweight installation of Fides, and manage optional dependencies on your own.
 
-While there are some successes with using other tools like poetry or pip-tools, they do not share the same workflow as the supported tools - especially when it comes to constraint vs. requirements management. Installing via Poetry or pip-tools is not currently supported. If you wish to install fidesctl using those tools you do so at your own discretion.
+#### Intended users
+* Users who are familiar with installing and configuring Python applications, managing Python environments and dependencies, and running software with their custom deployment mechanisms.
 
-**When this option works best**
+#### Requirements
+* You are expected to install Fides and any associated components on your own.
+* You will develop and handle the deployment for all components of Fides.
+* You are responsible for setting up the databases, configuring automated startup and recovery, and handling maintenance, cleanup, and upgrades.
 
-* This installation method is useful when you are not familiar with containers and Docker and want to install fidesctl on physical or virtual machines and you are used to installing and running software using custom deployment mechanism.
-* The only officially supported mechanism of installation is pip.
-
-**Intended users**
-
-* Users who are familiar with installing and configuring Python applications, managing Python environments, dependencies and running software with their custom deployment mechanisms.
-
-**What are you expected to handle**
-
-* You are expected to install fidesctl - all components of it - on your own.
-* You should develop and handle the deployment for all components of fidesctl.
-* You are responsible for setting up the database, automated startup and recovery, maintenance, cleanup and upgrades of fidesctl.
-
-**What the Fidesctl community provides for this method**
-
-* You have [Installation from PyPI](pypi.md) on how to install the software but due to various environments and tools you might want to use, you might expect that there will be problems which are specific to your deployment and environment that you will have to diagnose and solve.
-* You have the [Running fidesctl Locally](../quickstart/local_full.md) guide where you can see an example of running fidesctl with minimal dependencies and setup. You can use this guide to start fidesctl quickly for local testing and development, however this is only intended to provide inspiration, not to represent a production-grade installation.
-
-**Where to ask for help**
-
-* For quick and general troubleshooting questions, visit the #troubleshooting channel on the fidesctl Slack. For longer discussions or to share information, visit the [GitHub discussions](https://github.com/ethyca/fides/discussions) page.
-* If you can provide description of a reproducible problem with the fidesctl software, you can open issue in [GitHub issues](https://github.com/ethyca/fides/issues).
+#### Additional support 
+* The [Installation from PyPI](PyPI.md) guide provides installation details. Due to differences in environments and tools, this guide cannot comprehensively cover all deployment and usage errors and concerns.
 
 ### Docker
 
-More details: [Installation from Docker](docker.md)
+The Fides Docker images are built by the Fides CI/CD pipeline, which generates versions on each official release, as well as commits made to the main branch. For this reason, it is highly discouraged to use the `latest` tag, as any non-official release versions may contain some instability. For more information, see [Installation from Docker](docker.md).
 
-**When this option works best**
+#### When to use Docker
+* If you are looking for the quickest way to get started, with minimal additional configuration. Docker will run Fides components in isolation from other software running on the same physical or virtual machines, and provides straightforward dependency maintenance.
+* If you are familiar with the container/Docker stack. 
 
-* This installation method is useful if you are familiar with the container/Docker stack. It provides a capability of running fidesctl components in isolation from other software running on the same physical or virtual machines with easy maintenance of dependencies.
-* The images are built by fidesctl CI/CD pipelines and offer versions for official releases as well as for every commit made to the main branch. For this reason, it is highly discouraged to use the `latest` tag, as any non-official release versions may contain some instability.
+#### Intended users
 
-**Intended users**
+* Users who are familiar with containers and Docker, and understand how to build and extend their own container images.
+* Users who know how to create and maintain Docker deployments.
 
-* Users who are familiar with containers and Docker stack and understand how to build and extend their own container images.
-* Users who know how to create deployments using Docker by linking together multiple Docker containers and maintaining such deployments.
+#### Requirements
+* You may need to Customize or extend the container or Docker images to add extra dependencies. 
+* You will build deployments out of several containers (i.e., via Docker Compose).
+* You are responsible for setting up the databases, configuring automated startup and recovery, and handling maintenance, cleanup, and upgrades.
+* You should choose the right deployment mechanism (a custom process, Kubernetes, Docker Compose, Helm charts, etc.) based on your experience and expectations.
 
-**What are you expected to handle**
+#### Additional support
 
-* You are expected to be able to customize or extend container/Docker images if you want to add extra dependencies. You are expected to put together a deployment built of several containers (for example using docker-compose) and to make sure that they are linked together.
-* You are responsible for setting up the database, automated startup and recovery, maintenance, cleanup and upgrades of fidesctl.
-* You should choose the right deployment mechanism. There a number of available options of deployments of containers. You can use your own custom mechanism, custom Kubernetes deployments, custom Docker Compose, custom Helm charts etc., and you should choose it based on your experience and expectations.
+* The [Installation from Docker](../quickstart/docker.md) guide provides installation details, including an wexample of how to start Fides quickly for local testing and development.
 
-**What the Fidesctl community provides for this method**
-
-* You have [Running Fidesctl in Docker](../quickstart/docker.md) where you can see an example of how to start fidesctl quickly for local testing and development. However this is just an inspiration. Do not expect to use this docker-compose.yml file for production installation, you need to get familiar with Docker Compose and its capabilities and build your own production-ready deployment with it if you choose Docker Compose for your deployment.
-* The Docker Image is managed by the same people who build fidesctl, and they are committed to keeping it updated whenever new features and capabilities of fidesctl are released.
-
-**Where to ask for help**
-
-* For quick and general troubleshooting questions, visit the #troubleshooting channel on the fidesctl Slack. For longer discussions or to share information, visit the [GitHub discussions](https://github.com/ethyca/fides/discussions) page.
-* If you can provide description of a reproducible problem with the fidesctl software, you can open issue in [GitHub issues](https://github.com/ethyca/fides/issues).
+### Troubleshooting
+* For questions regarding either installation, visit the [Community](../community/overview.md) page.

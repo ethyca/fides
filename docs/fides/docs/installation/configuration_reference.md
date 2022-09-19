@@ -40,7 +40,7 @@ The `fidesops.toml` file should specify the following variables:
 | Security Variables |---|---|---|---|---|
 | `app_encryption_key` | `FIDESOPS__SECURITY__APP_ENCRYPTION_KEY` | string | OLMkv91j8DHiDAULnK5Lxx3kSCov30b3 | N/A | The key used to sign fidesops API access tokens |
 | `cors_origins` | `FIDESOPS__SECURITY__CORS_ORIGINS` | List[AnyHttpUrl] | ["https://a-client.com/", "https://another-client.com"/] | N/A | A list of pre-approved addresses of clients allowed to communicate with the fidesops application server |
-| `log_level` | `FIDESOPS__SECURITY__LOG_LEVEL` | string | INFO | N/A | The log level used for fidesops. Must be one of DEBUG, INFO, WARNING, ERROR, or CRITICAL |
+| `log_level` | `FIDESOPS__SECURITY__LOG_LEVEL` | string | INFO | N/`A` | The log level used for fidesops. Must be one of DEBUG, INFO, WARNING, ERROR, or CRITICAL |
 | `oauth_root_client_id` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_ID` | string | fidesopsadmin | N/A | The value used to identify the fidesops application root API client |
 | `oauth_root_client_secret` | `FIDESOPS__SECURITY__OAUTH_ROOT_CLIENT_SECRET` | string | fidesopsadminsecret | N/A | The secret value used to authenticate the fidesops application root API client |
 | `oauth_access_token_expire_minutes` | `FIDESOPS__SECURITY__OAUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | int | 1 | 11520 | The time period fidesops API tokens will be valid |
