@@ -89,10 +89,7 @@ class TestCreateDrpPrivacyRequest:
             privacy_request_id=pr.id,
             identity_attribute="identity",
         )
-        assert (
-            cache.get(identity_key)
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJwaG9uZV9udW1iZXIiOiIrMSAyMzQgNTY3IDg5MTAifQ.kHV4ru6vxQR96Meae31oKIU7mMnTJgt1cnli6GLUBFk"
-        )
+        assert cache.get(identity_key) == encoded_identity
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute="email",
@@ -156,10 +153,7 @@ class TestCreateDrpPrivacyRequest:
             privacy_request_id=pr.id,
             identity_attribute="identity",
         )
-        assert (
-            cache.get(identity_key)
-            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJhZGRyZXNzIjoic29tZXRoaW5nIn0.VhHzwTNoTjuny7lSebD6_hc0SU8kEZDr3YegONMMfmY"
-        )
+        assert cache.get(identity_key) == encoded_identity
         fidesops_identity_key = get_identity_cache_key(
             privacy_request_id=pr.id,
             identity_attribute="email",
