@@ -45,6 +45,7 @@ The types of changes are:
 * Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
 * Adds ability to send email notification upon privacy request review [#1306](https://github.com/ethyca/fidesops/pull/1306)
 * Manual webhook test functionality [#1323](https://github.com/ethyca/fidesops/pull/1323/)
+* Added change request table [#1340](https://github.com/ethyca/fidesops/pull/1340)
 
 ### Changed
 

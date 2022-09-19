@@ -760,6 +760,11 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     consent = relationship(
         "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
     )
+    consent_request = relationship(
+        "ConsentRequest",
+        back_populates="provided_identity",
+        cascade="delete, delete-orphan",
+    )
 
     @classmethod
     def hash_value(
@@ -779,12 +784,27 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
 class Consent(Base):
     """The DB ORM model for Consent."""
 
-    provided_identity_id = Column(String, ForeignKey(ProvidedIdentity.id))
+    provided_identity_id = Column(
+        String, ForeignKey(ProvidedIdentity.id), nullable=False
+    )
     data_use = Column(String, nullable=False, unique=True)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+
+
+class ConsentRequest(Base):
+    """Tracks consent requests."""
+
+    provided_identity_id = Column(
+        String, ForeignKey(ProvidedIdentity.id), nullable=False
+    )
+
+    provided_identity = relationship(
+        ProvidedIdentity,
+        back_populates="consent_request",
+    )
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
