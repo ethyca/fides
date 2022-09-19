@@ -13,7 +13,6 @@ from sqlalchemy import (
     BOOLEAN,
     JSON,
     Column,
-    Integer,
     String,
     Text,
     TypeDecorator,
@@ -92,9 +91,7 @@ class ClassificationDetail(Base):
     """
 
     __tablename__ = "cls_classification_detail"
-    instance_id = Column(
-        Integer,
-    )
+    instance_id = Column(String(255))
     status = Column(Text)
     dataset = Column(Text)
     collection = Column(Text)

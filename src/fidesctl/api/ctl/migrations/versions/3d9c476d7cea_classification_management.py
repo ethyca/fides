@@ -20,7 +20,7 @@ def upgrade():
     op.create_table(
         "cls_classification_detail",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column("instance_id", sa.Integer(), nullable=True),
+        sa.Column("instance_id", sa.String(length=255), nullable=True),
         sa.Column("status", sa.Text(), nullable=True),
         sa.Column("dataset", sa.Text(), nullable=True),
         sa.Column("collection", sa.Text(), nullable=True),
