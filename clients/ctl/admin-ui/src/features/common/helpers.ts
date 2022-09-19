@@ -6,6 +6,7 @@ import {
   isAPIError,
   isDetailStringErrorData,
   isHTTPValidationErrorData,
+  isNotFoundError,
   isParsingError,
   RTKErrorResult,
 } from "~/types/errors/api";
@@ -30,6 +31,9 @@ export const getErrorMessage = (
       return `${firstError?.msg}: ${firstError?.loc}`;
     }
     if (error.status === 409 && isAlreadyExistsErrorData(error.data)) {
+      return `${error.data.detail.error} (${error.data.detail.fides_key})`;
+    }
+    if (error.status === 404 && isNotFoundError(error.data)) {
       return `${error.data.detail.error} (${error.data.detail.fides_key})`;
     }
   }

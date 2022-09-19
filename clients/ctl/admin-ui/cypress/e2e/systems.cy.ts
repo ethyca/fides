@@ -19,12 +19,13 @@ describe("System management page", () => {
 
     it("Can render system cards", () => {
       cy.getByTestId("system-fidesctl_system");
-      // Uncomment when we enable the more actions button
-      // cy.getByTestId("system-fidesctl_system").within(() => {
-      //   cy.getByTestId("more-btn").click();
-      //   cy.getByTestId("edit-btn");
-      //   cy.getByTestId("delete-btn");
-      // });
+
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        // Uncomment when we enable the edit button
+        // cy.getByTestId("edit-btn");
+        cy.getByTestId("delete-btn");
+      });
       cy.getByTestId("system-demo_analytics_system");
       cy.getByTestId("system-demo_marketing_system");
     });
@@ -382,6 +383,56 @@ describe("System management page", () => {
           }
         );
       });
+    });
+  });
+
+  describe("Can delete a system", () => {
+    beforeEach(() => {
+      cy.fixture("system.json").then((system) => {
+        cy.intercept("DELETE", "/api/v1/system/*", {
+          body: {
+            message: "resource deleted",
+            resource: system,
+          },
+        }).as("deleteSystem");
+      });
+    });
+
+    it("Can delete a system from its card", () => {
+      cy.visit("/system");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("delete-btn").click();
+      });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteSystem").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("fidesctl_system");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it.only("Can render an error on delete", () => {
+      cy.intercept("DELETE", "/api/v1/system/*", {
+        statusCode: 404,
+        body: {
+          detail: {
+            error: "resource does not exist",
+            fides_key: "key",
+            resource_type: "System",
+          },
+        },
+      }).as("deleteSystemError");
+      cy.visit("/system");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("delete-btn").click();
+      });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteSystemError");
+      cy.getByTestId("toast-error-msg").contains("resource does not exist");
     });
   });
 });
