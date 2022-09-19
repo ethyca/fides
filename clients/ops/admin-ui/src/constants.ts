@@ -42,6 +42,18 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:delete",
   },
   {
+    privilege: "View Datasets",
+    scope: "dataset:read",
+  },
+  {
+    privilege: "Create or Update Datasets",
+    scope: "dataset:create_or_update",
+  },
+  {
+    privilege: "Delete Datasets",
+    scope: "dataset:delete",
+  },
+  {
     privilege: "View policies",
     scope: "policy:read",
   },
@@ -72,6 +84,18 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "View privacy request data",
     scope: "privacy-request:view_data",
+  },
+  {
+    privilege: "Create manual webhooks",
+    scope: "webhook:create_or_update",
+  },
+  {
+    privilege: "Read manual webhooks",
+    scope: "webhook:read",
+  },
+  {
+    privilege: "Delete manual webhooks",
+    scope: "webhook:delete",
   },
 ];
 

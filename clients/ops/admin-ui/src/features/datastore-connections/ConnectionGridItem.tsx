@@ -57,7 +57,7 @@ const useConnectionGridItem = () => {
       case ConnectionType.HTTPS:
         value = "HTTPS Connector";
         break;
-      case ConnectionType.MANUAL:
+      case ConnectionType.MANUAL_WEBHOOK:
         value = "Manual Connector";
         break;
       case ConnectionType.SAAS:

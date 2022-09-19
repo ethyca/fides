@@ -13,6 +13,7 @@
     "moduleResolution": "node",
     "noEmit": true,
     "paths": {
+      "app/*": ["src/app/*"],
       "common/*": ["src/features/common/*"],
       "connection-type/*": ["src/features/connection-type/*"],
       "datastore-connections/*": ["src/features/datastore-connections/*"],

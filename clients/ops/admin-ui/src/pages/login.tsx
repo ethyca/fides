@@ -43,8 +43,6 @@ const useLogin = () => {
       const user = await loginRequest(credentials).unwrap();
       dispatch(login(user));
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
       toast({
         status: "error",
         description:

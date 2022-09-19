@@ -12,12 +12,23 @@ import {
   TestingStatus,
 } from "./constants";
 import {
+  CreateAccessManualWebhookRequest,
+  CreateAccessManualWebhookResponse,
+  CreateSassConnectionConfigRequest,
+  CreateSassConnectionConfigResponse,
+  DatasetsReponse,
   DatastoreConnection,
   DatastoreConnectionParams,
+  DatastoreConnectionRequest,
   DatastoreConnectionResponse,
+  DatastoreConnectionSecretsRequest,
+  DatastoreConnectionSecretsResponse,
+  DatastoreConnectionsResponse,
   DatastoreConnectionStatus,
-  SassConnectionConfigRequest,
-  SassConnectionConfigResponse,
+  GetAccessManualWebhookResponse,
+  PatchAccessManualWebhookRequest,
+  PatchAccessManualWebhookResponse,
+  PatchDatasetsRequest,
 } from "./types";
 
 function mapFiltersToSearchParams({
@@ -152,9 +163,20 @@ export const datastoreConnectionApi = createApi({
   }),
   tagTypes: ["DatastoreConnection"],
   endpoints: (build) => ({
+    createAccessManualWebhook: build.mutation<
+      CreateAccessManualWebhookResponse,
+      CreateAccessManualWebhookRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/access_manual_webhook`,
+        method: "POST",
+        body: params.body,
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     createSassConnectionConfig: build.mutation<
-      SassConnectionConfigResponse,
-      SassConnectionConfigRequest
+      CreateSassConnectionConfigResponse,
+      CreateSassConnectionConfigRequest
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/instantiate/${params.saas_connector_type}`,
@@ -170,8 +192,14 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
+    getAccessManualHook: build.query<GetAccessManualWebhookResponse, string>({
+      query: (key) => ({
+        url: `${CONNECTION_ROUTE}/${key}/access_manual_webhook`,
+      }),
+      providesTags: () => ["DatastoreConnection"],
+    }),
     getAllDatastoreConnections: build.query<
-      DatastoreConnectionResponse,
+      DatastoreConnectionsResponse,
       Partial<DatastoreConnectionParams>
     >({
       query: (filters) => ({
@@ -187,6 +215,12 @@ export const datastoreConnectionApi = createApi({
         { type: "DatastoreConnection", id: result!.key },
       ],
       keepUnusedDataFor: 1,
+    }),
+    getDatasets: build.query<DatasetsReponse, string>({
+      query: (key) => ({
+        url: `${CONNECTION_ROUTE}/${key}/dataset`,
+      }),
+      providesTags: () => ["DatastoreConnection"],
     }),
     getDatastoreConnectionStatus: build.query<
       DatastoreConnectionStatus,
@@ -232,6 +266,36 @@ export const datastoreConnectionApi = createApi({
         }
       },
     }),
+    patchAccessManualWebhook: build.mutation<
+      PatchAccessManualWebhookResponse,
+      PatchAccessManualWebhookRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/access_manual_webhook`,
+        method: "PATCH",
+        body: params.body,
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
+    patchDataset: build.mutation<any, PatchDatasetsRequest>({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset`,
+        method: "PATCH",
+        body: params.datasets,
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
+    patchDatastoreConnection: build.mutation<
+      DatastoreConnectionResponse,
+      DatastoreConnectionRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}`,
+        method: "PATCH",
+        body: [params],
+      }),
+      invalidatesTags: () => ["DatastoreConnection"],
+    }),
     patchDatastoreConnections: build.mutation({
       query: ({ key, name, disabled, connection_type, access }) => ({
         url: CONNECTION_ROUTE,
@@ -240,11 +304,14 @@ export const datastoreConnectionApi = createApi({
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
-    updateDatastoreConnectionSecrets: build.mutation({
-      query: (id) => ({
-        url: `${CONNECTION_ROUTE}/${id}/secret`,
+    updateDatastoreConnectionSecrets: build.mutation<
+      DatastoreConnectionSecretsResponse,
+      DatastoreConnectionSecretsRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/secret?verify=false`,
         method: "PUT",
-        body: {},
+        body: params.secrets,
       }),
       invalidatesTags: () => ["DatastoreConnection"],
     }),
@@ -252,9 +319,17 @@ export const datastoreConnectionApi = createApi({
 });
 
 export const {
+  useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
+  useGetAccessManualHookQuery,
   useGetAllDatastoreConnectionsQuery,
-  useLazyGetDatastoreConnectionStatusQuery,
-  usePatchDatastoreConnectionsMutation,
+  useGetDatasetsQuery,
+  useGetDatastoreConnectionByKeyQuery,
   useDeleteDatastoreConnectionMutation,
+  useLazyGetDatastoreConnectionStatusQuery,
+  usePatchAccessManualWebhookMutation,
+  usePatchDatasetMutation,
+  usePatchDatastoreConnectionMutation,
+  usePatchDatastoreConnectionsMutation,
+  useUpdateDatastoreConnectionSecretsMutation,
 } = datastoreConnectionApi;

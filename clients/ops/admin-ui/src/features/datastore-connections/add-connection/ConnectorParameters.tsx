@@ -1,60 +1,107 @@
-import { Box, Center, Flex, Spinner, VStack } from "@fidesui/react";
-import { capitalize } from "common/utils";
-import { useGetConnectionTypeSecretSchemaQuery } from "connection-type/connection-type.slice";
-import { ConnectionOption } from "connection-type/types";
-import React, { useState } from "react";
+import { Box, Center, Flex, SlideFade, Spinner, VStack } from "@fidesui/react";
+import { useAppSelector } from "app/hooks";
+import {
+  selectConnectionTypeState,
+  useGetConnectionTypeSecretSchemaQuery,
+} from "connection-type/connection-type.slice";
+import { SystemType } from "datastore-connections/constants";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { STEPS } from "./constants";
-import { ConnectorParameters as SassConnectorParametersForm } from "./sass/ConnectorParameters";
+import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
+import { replaceURL } from "./helpers";
+import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";
+import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
-import { AddConnectionStep } from "./types";
 
-type ConnectorParametersProps = {
-  currentStep: AddConnectionStep;
-  connectionOption: ConnectionOption;
+type ConnectorParametersProp = {
+  onConnectionCreated: () => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
-  currentStep = STEPS.filter((s) => s.stepId === 2)[0],
-  connectionOption,
+export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+  onConnectionCreated,
 }) => {
+  const mounted = useRef(false);
+  const [skip, setSkip] = useState(true);
+  const { connection, connectionOption, step } = useAppSelector(
+    selectConnectionTypeState
+  );
+
   const { data, isFetching, isLoading, isSuccess } =
-    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
+    useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier, {
+      skip,
+    });
   const [response, setResponse] = useState<any>();
 
   const handleTestConnectionClick = (value: any) => {
     setResponse(value);
   };
 
+  // eslint-disable-next-line consistent-return
+  const getComponent = useCallback(() => {
+    // eslint-disable-next-line default-case
+    switch (connectionOption?.type) {
+      case SystemType.DATABASE:
+        if (isSuccess && data) {
+          return (
+            <DatabaseConnectorParameters
+              data={data}
+              onConnectionCreated={onConnectionCreated}
+              onTestConnectionClick={handleTestConnectionClick}
+            />
+          );
+        }
+        break;
+      case SystemType.MANUAL:
+        return (
+          <ManualConnectorParameters
+            onConnectionCreated={onConnectionCreated}
+          />
+        );
+        break;
+      case SystemType.SAAS:
+        if (isSuccess && data) {
+          return (
+            <SassConnectorParameters
+              data={data}
+              onConnectionCreated={onConnectionCreated}
+              onTestConnectionClick={handleTestConnectionClick}
+            />
+          );
+        }
+        break;
+    }
+  }, [connectionOption?.type, data, isSuccess, onConnectionCreated]);
+
+  useEffect(() => {
+    mounted.current = true;
+    if (connection?.key) {
+      replaceURL(connection.key, step.href);
+    }
+    if (connectionOption?.type !== SystemType.MANUAL) {
+      setSkip(false);
+    }
+    return () => {
+      mounted.current = false;
+    };
+  }, [connection?.key, connectionOption?.type, step.href]);
+
   return (
     <Flex gap="97px">
       <VStack w="579px" gap="24px" align="stretch">
-        <Box color="gray.700" fontSize="14px" h="80px" w="475px">
-          {currentStep.description?.replace(
-            "{identifier}",
-            capitalize(connectionOption.identifier)
-          )}
-        </Box>
         {(isFetching || isLoading) && (
           <Center>
             <Spinner />
           </Center>
         )}
-        {isSuccess && data ? (
-          <SassConnectorParametersForm
-            connectionOption={connectionOption}
-            data={data}
-            onTestConnectionClick={handleTestConnectionClick}
-          />
-        ) : null}
+        {getComponent()}
       </VStack>
       {response && (
-        <Box w="480px" mt="16px">
-          <TestConnection
-            connectionOption={connectionOption}
-            response={response}
-          />
-        </Box>
+        <SlideFade in>
+          {" "}
+          <Box mt="16px" w="fit-content">
+            <TestConnection response={response} />
+          </Box>
+        </SlideFade>
       )}
     </Flex>
   );

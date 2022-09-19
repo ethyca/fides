@@ -7,23 +7,21 @@ import {
   setConnection,
 } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import { SaasType } from "datastore-connections/constants";
+import { ConnectionType } from "datastore-connections/constants";
 import {
-  useCreateSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import {
-  CreateSassConnectionConfigRequest,
   DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
-import { formatKey, replaceURL } from "../helpers";
-import { SaasConnectorParametersFormFields } from "../types";
+import { formatKey } from "../helpers";
+import { DatabaseConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -49,14 +47,13 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     description: "",
     instance_key: "",
     name: "",
-  } as SaasConnectorParametersFormFields;
+  } as DatabaseConnectorParametersFormFields;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { connection, connectionOption, step } = useAppSelector(
+  const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
 
-  const [createSassConnectionConfig] = useCreateSassConnectionConfigMutation();
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
   const [updateDatastoreConnectionSecrets] =
     useUpdateDatastoreConnectionSecretsMutation();
@@ -65,61 +62,45 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const handleSubmit = async (values: any, _actions: any) => {
     try {
       setIsSubmitting(true);
-      if (connection) {
-        // Update existing Sass connector
-        const params1: DatastoreConnectionRequest = {
-          access: "write",
-          connection_type: connection.connection_type,
-          description: values.description,
-          disabled: false,
-          key: connection.key,
-          name: values.name,
-        };
-        const payload1 = await patchDatastoreConnection(params1).unwrap();
-        if (payload1.failed?.length > 0) {
-          errorAlert(payload1.failed[0].message);
-        } else {
-          dispatch(setConnection(payload1.succeeded[0]));
-          const params2: DatastoreConnectionSecretsRequest = {
-            connection_key: connection.key,
-            secrets: {},
-          };
-          Object.entries(data.properties).forEach((key) => {
-            params2.secrets[key[0]] = values[key[0]];
-          });
-          const payload2 = await updateDatastoreConnectionSecrets(
-            params2
-          ).unwrap();
-          if (payload2.test_status === "failed") {
-            errorAlert(
-              <>
-                <b>Message:</b> {payload2.msg}
-                <br />
-                <b>Failure Reason:</b> {payload2.failure_reason}
-              </>
-            );
-          } else {
-            successAlert(`Connector successfully updated!`);
-          }
-        }
+      const params1: DatastoreConnectionRequest = {
+        access: "write",
+        connection_type: connectionOption?.identifier as ConnectionType,
+        description: values.description,
+        disabled: false,
+        key: formatKey(values.instance_key as string),
+        name: values.name,
+      };
+      const payload = await patchDatastoreConnection(params1).unwrap();
+      if (payload.failed?.length > 0) {
+        errorAlert(payload.failed[0].message);
       } else {
-        // Create new Sass connector
-        const params: CreateSassConnectionConfigRequest = {
-          description: values.description,
-          name: values.name,
-          instance_key: formatKey(values.instance_key as string),
-          saas_connector_type: connectionOption!.identifier as SaasType,
+        dispatch(setConnection(payload.succeeded[0]));
+        const params2: DatastoreConnectionSecretsRequest = {
+          connection_key: payload.succeeded[0].key,
           secrets: {},
         };
         Object.entries(data.properties).forEach((key) => {
-          params.secrets[key[0]] = values[key[0]];
+          params2.secrets[key[0]] = values[key[0]];
         });
-        const payload = await createSassConnectionConfig(params).unwrap();
-        dispatch(setConnection(payload.connection));
-        // Update the current browser url with the new key created
-        replaceURL(payload.connection.key, step.href);
-        successAlert(`Connector successfully added!`);
-        onConnectionCreated();
+        const payload2 = await updateDatastoreConnectionSecrets(
+          params2
+        ).unwrap();
+        if (payload2.test_status === "failed") {
+          errorAlert(
+            <>
+              <b>Message:</b> {payload2.msg}
+              <br />
+              <b>Failure Reason:</b> {payload2.failure_reason}
+            </>
+          );
+        } else {
+          successAlert(
+            `Connector successfully ${connection?.key ? "updated" : "added"}!`
+          );
+          if (!connection?.key) {
+            onConnectionCreated();
+          }
+        }
       }
     } catch (error) {
       handleError(error);

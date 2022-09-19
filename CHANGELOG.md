@@ -19,6 +19,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+### Developer Experience
+
+* Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
+* Adds email scopes to postman collection [#1241](https://github.com/ethyca/fidesops/pull/1241)
+* Clean up docker build [#1252](https://github.com/ethyca/fidesops/pull/1252)
+* Add `Strategy` abstract base class for more extensible strategy development [1254](https://github.com/ethyca/fidesops/pull/1254)
+
 ### Added
 
 * Adds users and owners configuration for Hubspot connector [#1091](https://github.com/ethyca/fidesops/pull/1091)
@@ -44,6 +51,10 @@ The types of changes are:
 * Utility to update SaaS config instances based on template updates [#1307](https://github.com/ethyca/fidesops/pull/1307)
 * Added generic request sorting button [#1320](https://github.com/ethyca/fidesops/pull/1320)
 * Adds ability to send email notification upon privacy request review [#1306](https://github.com/ethyca/fidesops/pull/1306)
+* Add a Connector - upload a DB Dataset YAML [#923](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - DB connector configs [#922](https://github.com/ethyca/fidesops/pull/1247)
+* Add a Connector - SaaS Dataset Management (YAML method) [#1090](https://github.com/ethyca/fidesops/pull/1247)
+* Frontend - Configure a Manual entry connector [#1015](https://github.com/ethyca/fidesops/pull/1247)
 * Manual webhook test functionality [#1323](https://github.com/ethyca/fidesops/pull/1323/)
 * Added change request table [#1340](https://github.com/ethyca/fidesops/pull/1340)
 
