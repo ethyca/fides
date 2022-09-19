@@ -117,6 +117,7 @@ export const CustomSelect = ({
   const isInvalid = !!(meta.touched && meta.error);
 
   const selected = options.find((o) => o.value === field.value) || null;
+  const { touched, setTouched } = useFormikContext();
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -131,10 +132,9 @@ export const CustomSelect = ({
         >
           <Select
             options={options}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
+            onBlur={(e) => {
+              setTouched({ ...touched, [field.name]: true });
+              field.onBlur(e);
             }}
             onChange={(newValue) => {
               if (newValue) {
@@ -164,6 +164,7 @@ export const CustomSelect = ({
             }}
             isSearchable={isSearchable ?? false}
             isClearable={isClearable}
+            instanceId={`select-${field.name}`}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
@@ -192,7 +193,7 @@ export const CustomMultiSelect = ({
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
   // because field.onChange only accepts strings or events right now, not string[]
   // https://github.com/jaredpalmer/formik/issues/1667
-  const { setFieldValue } = useFormikContext();
+  const { setFieldValue, touched, setTouched } = useFormikContext();
 
   return (
     <FormControl isInvalid={isInvalid}>
@@ -207,10 +208,9 @@ export const CustomMultiSelect = ({
         >
           <Select
             options={options}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
+            onBlur={(e) => {
+              setTouched({ ...touched, [field.name]: true });
+              field.onBlur(e);
             }}
             onChange={(newValue) => {
               setFieldValue(
@@ -245,6 +245,7 @@ export const CustomMultiSelect = ({
             isSearchable={isSearchable}
             isClearable={isClearable}
             isMulti
+            instanceId={`select-${field.name}`}
           />
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
@@ -264,6 +265,8 @@ export const CustomCreatableSingleSelect = ({
   const isInvalid = !!(meta.touched && meta.error);
   const selected = { label: field.value, value: field.value };
 
+  const { touched, setTouched } = useFormikContext();
+
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
@@ -271,10 +274,9 @@ export const CustomCreatableSingleSelect = ({
         <Box data-testid={`input-${field.name}`}>
           <CreatableSelect
             options={options}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
+            onBlur={(e) => {
+              setTouched({ ...touched, [field.name]: true });
+              field.onBlur(e);
             }}
             onChange={(newValue) => {
               if (newValue) {
@@ -314,19 +316,24 @@ export const CustomCreatableMultiSelect = ({
   isSearchable,
   isClearable,
   options,
-  size,
+  size = "sm",
+  tooltip,
   ...props
 }: SelectProps & FieldHookConfig<string[]>) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   const selected = field.value.map((v) => ({ label: v, value: v }));
-  const { setFieldValue } = useFormikContext();
+  const { setFieldValue, touched, setTouched } = useFormikContext();
 
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
         <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-        <Box data-testid={`input-${field.name}`}>
+        <Box
+          display="flex"
+          alignItems="center"
+          data-testid={`input-${field.name}`}
+        >
           <CreatableSelect
             data-testid={`input-${field.name}`}
             name={props.name}
@@ -355,10 +362,9 @@ export const CustomCreatableMultiSelect = ({
             isMulti
             options={options}
             value={selected}
-            onBlur={(option) => {
-              if (option) {
-                field.onBlur(props.name);
-              }
+            onBlur={(e) => {
+              setTouched({ ...touched, [field.name]: true });
+              field.onBlur(e);
             }}
             onChange={(newValue) => {
               setFieldValue(
@@ -368,6 +374,7 @@ export const CustomCreatableMultiSelect = ({
             }}
             size={size}
           />
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Box>
       </Grid>
       {isInvalid ? <FormErrorMessage>{meta.error}</FormErrorMessage> : null}

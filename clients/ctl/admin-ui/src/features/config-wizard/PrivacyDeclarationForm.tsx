@@ -1,29 +1,13 @@
-import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Button,
-  Divider,
-  Heading,
-  HStack,
-  Input,
-  Stack,
-  Tag,
-  Text,
-  Tooltip,
-  useToast,
-} from "@fidesui/react";
+import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import React, { Fragment, useState } from "react";
+import * as Yup from "yup";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { AddIcon, QuestionIcon } from "~/features/common/Icon";
+import { AddIcon } from "~/features/common/Icon";
 import {
   selectDataQualifiers,
   useGetAllDataQualifiersQuery,
@@ -40,35 +24,48 @@ import {
   selectDataCategories,
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
-import { PrivacyDeclaration } from "~/types/api";
+import { PrivacyDeclaration, System } from "~/types/api";
 
 import {
   CustomMultiSelect,
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
-import {
-  useGetSystemByFidesKeyQuery,
-  useUpdateSystemMutation,
-} from "../system/system.slice";
-import { changeReviewStep, selectSystemFidesKey } from "./config-wizard.slice";
+import { useUpdateSystemMutation } from "../system/system.slice";
+import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
-type FormValues = Partial<PrivacyDeclaration>;
+type FormValues = PrivacyDeclaration;
 
-const PrivacyDeclarationForm = ({
-  handleCancelSetup,
-}: {
-  handleCancelSetup: () => void;
-}) => {
-  const systemFidesKey = useAppSelector(selectSystemFidesKey);
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
-  const dispatch = useAppDispatch();
+const ValidationSchema = Yup.object().shape({
+  name: Yup.string().required().label("Declaration name"),
+  data_categories: Yup.array(Yup.string())
+    .min(1, "Must assign at least one data category")
+    .label("Data categories"),
+  data_use: Yup.string().required().label("Data use"),
+  data_subjects: Yup.array(Yup.string())
+    .min(1, "Must assign at least one data subject")
+    .label("Data subjects"),
+});
+
+const transformFormValuesToDeclaration = (
+  formValues: FormValues
+): PrivacyDeclaration => ({
+  ...formValues,
+  data_qualifier:
+    formValues.data_qualifier === "" ? undefined : formValues.data_qualifier,
+});
+
+interface Props {
+  system: System;
+  onCancel: () => void;
+  onSuccess: (system: System) => void;
+}
+
+const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
   const toast = useToast();
-  const [formDeclarations, setFormDeclarations] = useState<any>(
-    existingSystem && existingSystem?.privacy_declarations
-      ? [...existingSystem.privacy_declarations]
-      : []
-  );
+  const [formDeclarations, setFormDeclarations] = useState<
+    PrivacyDeclaration[]
+  >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,44 +81,34 @@ const PrivacyDeclarationForm = ({
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
   const initialValues = {
+    name: "",
     data_categories: [],
     data_subjects: [],
     data_use: "",
     data_qualifier: "",
   };
 
-  let privacyDeclarations: any;
-
   const handleSubmit = async (values: FormValues) => {
+    let privacyDeclarations: PrivacyDeclaration[] = [];
+
     const handlePrivacyDeclarations = () => {
-      const filteredDeclarations =
-        existingSystem && existingSystem.privacy_declarations
-          ? existingSystem?.privacy_declarations.filter(
-              (declaration) => declaration.name !== "string"
-            )
-          : [];
       // If the declaration already exists
       if (
-        filteredDeclarations &&
-        filteredDeclarations.filter(
+        system.privacy_declarations.filter(
           (declaration) => declaration.name === values.name
         ).length > 0
       ) {
-        privacyDeclarations = [...filteredDeclarations, ...formDeclarations];
+        privacyDeclarations = [
+          ...system.privacy_declarations,
+          ...formDeclarations,
+        ];
       }
       // If the declaration does not exist
       else {
         privacyDeclarations = [
-          ...filteredDeclarations,
+          ...system.privacy_declarations,
           ...formDeclarations,
-          {
-            name: values.name,
-            data_categories: values.data_categories,
-            data_use: values.data_use,
-            data_qualifier: values.data_qualifier,
-            data_subjects: values.data_subjects,
-            dataset_references: ["string"],
-          },
+          transformFormValuesToDeclaration(values),
         ];
       }
     };
@@ -129,17 +116,14 @@ const PrivacyDeclarationForm = ({
     handlePrivacyDeclarations();
 
     const systemBodyWithDeclaration = {
-      description: existingSystem?.description,
-      // QUESTION(ssangervasi): This doesn't look like the intended default. What should it be?
-      fides_key: existingSystem?.fides_key ?? "default_organization",
-      name: existingSystem?.name,
+      ...system,
       privacy_declarations: Array.from(new Set([...privacyDeclarations])),
-      system_type: existingSystem?.system_type,
-      meta: existingSystem?.meta,
     };
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: System }
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
@@ -153,7 +137,7 @@ const PrivacyDeclarationForm = ({
         });
       } else {
         toast.closeAll();
-        dispatch(changeReviewStep());
+        onSuccess(result.data);
       }
     };
 
@@ -165,15 +149,12 @@ const PrivacyDeclarationForm = ({
     setIsLoading(false);
   };
 
-  const addAnotherDeclaration = (values: any) => {
+  const addAnotherDeclaration = (values: PrivacyDeclaration) => {
     if (
       values.name === "" ||
-      formDeclarations.filter((d: any) => d.name === values.name).length > 0 ||
-      (existingSystem &&
-        existingSystem?.privacy_declarations &&
-        existingSystem?.privacy_declarations?.filter(
-          (d) => d.name === values.name
-        ).length > 0)
+      formDeclarations.filter((d) => d.name === values.name).length > 0 ||
+      system.privacy_declarations.filter((d) => d.name === values.name).length >
+        0
     ) {
       toast({
         status: "error",
@@ -182,8 +163,10 @@ const PrivacyDeclarationForm = ({
       });
     } else {
       toast.closeAll();
-      const declarationToSet = { ...values, dataset_references: ["string"] };
-      setFormDeclarations([...formDeclarations, declarationToSet]);
+      setFormDeclarations([
+        ...formDeclarations,
+        transformFormValuesToDeclaration(values),
+      ]);
     }
   };
 
@@ -192,13 +175,14 @@ const PrivacyDeclarationForm = ({
       enableReinitialize
       initialValues={initialValues}
       onSubmit={handleSubmit}
+      validationSchema={ValidationSchema}
     >
-      {({ resetForm, values }) => (
-        <Form>
+      {({ resetForm, values, dirty, isValid }) => (
+        <Form data-testid="privacy-declaration-form">
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
               {/* TODO FUTURE: Path when describing system from infra scanning */}
-              Privacy Declaration for {existingSystem?.name}
+              Privacy Declaration for {system.name}
             </Heading>
             <div>
               Now we’re going to declare our system’s privacy characteristics.
@@ -207,177 +191,63 @@ const PrivacyDeclarationForm = ({
               that data and finally, how identifiable is the user with this
               data.
             </div>
-            {formDeclarations.length > 0
-              ? formDeclarations.map((declaration: any) => (
-                  <>
-                    <Accordion
-                      allowToggle
-                      border="transparent"
-                      key={declaration.name}
-                      m="5px !important"
-                      maxW="500px"
-                      minW="500px"
-                      width="500px"
-                    >
-                      <AccordionItem>
-                        <>
-                          <AccordionButton pr="0px" pl="0px">
-                            <Box flex="1" textAlign="left">
-                              {declaration.name}
-                            </Box>
-                            <AccordionIcon />
-                          </AccordionButton>
-                          <AccordionPanel padding="0px" mt="20px">
-                            <HStack mb="20px">
-                              <Text color="gray.600">
-                                Declaration categories
-                              </Text>
-                              {declaration.data_categories.map(
-                                (category: any) => (
-                                  <Tag
-                                    background="primary.400"
-                                    color="white"
-                                    key={category}
-                                    width="fit-content"
-                                  >
-                                    {category}
-                                  </Tag>
-                                )
-                              )}
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data use</Text>
-                              <Input disabled value={declaration.data_use} />
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data subjects</Text>
-                              {declaration.data_subjects.map((subject: any) => (
-                                <Tag
-                                  background="primary.400"
-                                  color="white"
-                                  key={subject}
-                                  width="fit-content"
-                                >
-                                  {subject}
-                                </Tag>
-                              ))}
-                            </HStack>
-                            <HStack mb="20px">
-                              <Text color="gray.600">Data qualifier</Text>
-                              <Input
-                                disabled
-                                value={declaration.data_qualifier}
-                              />
-                            </HStack>
-                          </AccordionPanel>
-                        </>
-                      </AccordionItem>
-                    </Accordion>
-                    <Divider m="0px !important" />
-                  </>
-                ))
-              : null}
-            <Stack>
-              <Stack direction="row" mb={5}>
-                <CustomTextInput name="name" label="Declaration name" />
-                <Tooltip
-                  fontSize="md"
-                  label="A system may have multiple privacy declarations, so each declaration should have a name to distinguish them clearly."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-
-              <Stack direction="row" mb={5}>
-                <CustomMultiSelect
-                  name="data_categories"
-                  label="Data categories"
-                  options={allDataCategories?.map((data) => ({
-                    value: data.fides_key,
-                    label: data.fides_key,
-                  }))}
-                  size="md"
-                />
-                <Tooltip
-                  fontSize="md"
-                  label="What type of data is your system processing? This could be various types of user or system data."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-            </Stack>
-
-            <Stack direction="row" mb={5}>
+            {formDeclarations.map((declaration) => (
+              <Fragment key={declaration.name}>
+                <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
+                <Divider m="0px !important" />
+              </Fragment>
+            ))}
+            <Stack spacing={4}>
+              <CustomTextInput
+                name="name"
+                label="Declaration name"
+                tooltip="A system may have multiple privacy declarations, so each declaration should have a name to distinguish them clearly."
+              />
+              <CustomMultiSelect
+                name="data_categories"
+                label="Data categories"
+                options={allDataCategories?.map((data) => ({
+                  value: data.fides_key,
+                  label: data.fides_key,
+                }))}
+                tooltip="What type of data is your system processing? This could be various types of user or system data."
+              />
               <CustomSelect
                 id="data_use"
                 label="Data use"
                 name="data_use"
-                size="md"
                 options={allDataUses.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
+                tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
               />
-              <Tooltip
-                fontSize="md"
-                label="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
-
-            <Stack direction="row" mb={5}>
               <CustomMultiSelect
                 name="data_subjects"
                 label="Data subjects"
-                size="md"
                 options={allDataSubjects.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
+                tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
               />
-              <Tooltip
-                fontSize="md"
-                label="Who’s data are you processing? This could be customers, employees or any other type of user in your system."
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
-
-            <Stack direction="row">
               <CustomSelect
                 id="data_qualifier"
                 label="Data qualifier"
                 name="data_qualifier"
-                size="md"
                 options={allDataQualifiers.map((data) => ({
                   value: data.fides_key,
                   label: data.fides_key,
                 }))}
+                tooltip="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
               />
-              <Tooltip
-                fontSize="md"
-                label="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
             </Stack>
             <Button
               colorScheme="purple"
               display="flex"
               justifyContent="flex-start"
               variant="link"
-              disabled={
-                !values.data_use ||
-                !values.data_qualifier ||
-                !values.data_subjects ||
-                !values.data_categories
-              }
+              disabled={!(isValid && dirty)}
               isLoading={isLoading}
               onClick={() => {
                 addAnotherDeclaration(values);
@@ -397,10 +267,11 @@ const PrivacyDeclarationForm = ({
             </Button>
             <Box>
               <Button
-                onClick={() => handleCancelSetup()}
+                onClick={onCancel}
                 mr={2}
                 size="sm"
                 variant="outline"
+                data-testid="cancel-btn"
               >
                 Cancel
               </Button>
@@ -408,14 +279,9 @@ const PrivacyDeclarationForm = ({
                 type="submit"
                 colorScheme="primary"
                 size="sm"
-                disabled={
-                  (!values.data_use ||
-                    !values.data_qualifier ||
-                    !values.data_subjects ||
-                    !values.data_categories) &&
-                  formDeclarations.length === 0
-                }
+                disabled={!dirty}
                 isLoading={isLoading}
+                data-testid="confirm-btn"
               >
                 Confirm and Continue
               </Button>
