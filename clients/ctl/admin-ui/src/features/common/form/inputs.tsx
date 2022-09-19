@@ -33,10 +33,11 @@ export const CustomTextInput = ({
   tooltip,
   disabled,
   ...props
-}: InputProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: InputProps & FieldHookConfig<string | undefined>) => {
+  const [initialField, meta] = useField(props);
   const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
+  const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
   const [type, setType] = useState<"text" | "password">(
@@ -112,8 +113,9 @@ export const CustomSelect = ({
   isClearable,
   size = "sm",
   ...props
-}: SelectProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & FieldHookConfig<string | undefined>) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
 
   const selected = options.find((o) => o.value === field.value) || null;
@@ -185,9 +187,10 @@ export const CustomMultiSelect = ({
   isClearable,
   size = "sm",
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & FieldHookConfig<string[] | undefined>) => {
+  const [initialField, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
+  const field = { ...initialField, value: initialField.value ?? [] };
   const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
 
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
@@ -260,8 +263,9 @@ export const CustomCreatableSingleSelect = ({
   isSearchable,
   options,
   ...props
-}: SelectProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & FieldHookConfig<string | undefined>) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = { label: field.value, value: field.value };
 
@@ -319,8 +323,9 @@ export const CustomCreatableMultiSelect = ({
   size = "sm",
   tooltip,
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & FieldHookConfig<string[] | undefined>) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? [] };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = field.value.map((v) => ({ label: v, value: v }));
   const { setFieldValue, touched, setTouched } = useFormikContext();
@@ -390,8 +395,9 @@ export const CustomTextArea = ({
   textAreaProps,
   label,
   ...props
-}: CustomTextAreaProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: CustomTextAreaProps & FieldHookConfig<string | undefined>) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const InnerTextArea = (
     <Textarea
@@ -431,8 +437,9 @@ export const CustomRadioGroup = ({
   label,
   options,
   ...props
-}: CustomRadioGroupProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: CustomRadioGroupProps & FieldHookConfig<string | undefined>) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = options.find((o) => o.value === field.value) ?? options[0];
 
