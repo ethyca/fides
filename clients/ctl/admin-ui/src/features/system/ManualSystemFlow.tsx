@@ -2,11 +2,13 @@ import { Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
 import DescribeSystemStep from "./DescribeSystemStep";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
+import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
@@ -42,20 +44,24 @@ const ConfigureSteps = ({
 
 const ManualSystemFlow = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [newSystem, setNewSystem] = useState<System | null>(null);
+  const activeSystem = useAppSelector(selectActiveSystem);
 
   const returnToNew = () => {
     router.push("/system/new");
+    dispatch(setActiveSystem(null));
   };
 
   const handleSuccess = (system: System) => {
     setCurrentStepIndex(currentStepIndex + 1);
-    setNewSystem(system);
+    dispatch(setActiveSystem(system));
   };
 
   const returnToIndex = () => {
     router.push("/system");
+    dispatch(setActiveSystem(null));
   };
 
   return (
@@ -77,23 +83,23 @@ const ManualSystemFlow = () => {
             onCancel={returnToNew}
           />
         ) : null}
-        {currentStepIndex === 1 && newSystem ? (
+        {currentStepIndex === 1 && activeSystem ? (
           <PrivacyDeclarationStep
-            system={newSystem}
+            system={activeSystem}
             onSuccess={handleSuccess}
             onCancel={returnToNew}
           />
         ) : null}
-        {currentStepIndex === 2 && newSystem ? (
+        {currentStepIndex === 2 && activeSystem ? (
           <ReviewSystemStep
-            system={newSystem}
+            system={activeSystem}
             onCancel={returnToNew}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
-        {currentStepIndex === 3 && newSystem ? (
+        {currentStepIndex === 3 && activeSystem ? (
           <SystemRegisterSuccess
-            system={newSystem}
+            system={activeSystem}
             onAddNextSystem={returnToNew}
             onContinue={returnToIndex}
           />
