@@ -18,7 +18,7 @@ RUN npm run export
 #############
 ## Backend ##
 #############
-FROM --platform=linux/amd64 python:3.10.7-slim-bullseye as backend
+FROM --platform=linux/amd64 python:3.9.13-slim-bullseye as backend
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -53,60 +53,14 @@ RUN : \
 ## Python Dependencies ##
 #########################
 
-RUN : \
-    && apt-get update \
-    && apt-get install \
-    -y --no-install-recommends \
-    build-essential \
-    libssl-dev \
-    zlib1g-dev \
-    libbz2-dev \
-    libreadline-dev \
-    libsqlite3-dev \
-    wget \
-    curl \
-    llvm \
-    libncurses5-dev \
-    xz-utils \
-    tk-dev \
-    libxml2-dev \
-    libxmlsec1-dev \
-    libffi-dev \
-    liblzma-dev \
-    mecab-ipadic-utf8 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV HOME="/root"
-
-WORKDIR $HOME
-RUN apt-get install -y git
-RUN git clone --depth=1 https://github.com/pyenv/pyenv.git .pyenv
-ENV PYENV_ROOT="$HOME/.pyenv"
-ENV PATH="$PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH"
-
-ARG python38="3.8.14"
-ARG python39="3.9.14"
-ARG python310="3.10.7"
-
-RUN pyenv install ${python38}
-RUN pyenv install ${python39}
-RUN pyenv install ${python310}
-
 COPY optional-requirements.txt .
-RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
-RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
-RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r optional-requirements.txt
+RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
-RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
-RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
-RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
 
 COPY requirements.txt .
-RUN pyenv global ${python38} ; pip install -U pip --no-cache-dir install -r requirements.txt
-RUN pyenv global ${python39} ; pip install -U pip --no-cache-dir install -r requirements.txt
-RUN pyenv global ${python310} ; pip install -U pip --no-cache-dir install -r requirements.txt
+RUN pip install -U pip --no-cache-dir install -r requirements.txt
 
 ###############################
 ## General Application Setup ##
@@ -132,9 +86,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pyenv global ${38} ; pip install -e .
-RUN pyenv global ${39} ; pip install -e .
-RUN pyenv global ${310} ; pip install -e .
+RUN pip install -e .
 
 #############################
 ## Production Application ##
