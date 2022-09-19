@@ -11,6 +11,9 @@ env:
 
 jobs:
   Build:
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,8 +28,9 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
+          build-args: PYTHON_VERSION=${{ matrix.python_version }}
           target: prod
-          outputs: type=docker,dest=/tmp/${{ env.CONTAINER }}.tar
+          outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
 
