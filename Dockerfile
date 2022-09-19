@@ -1,4 +1,5 @@
-ARG PYTHON_VERSION=3.10.7
+# Pin to 3.10.6 to avoid a mypy error in 3.10.7
+ARG PYTHON_VERSION=3.10.6
 
 ##############
 ## Frontend ##

@@ -7,13 +7,13 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.7"
+  DEFAULT_PYTHON_VERSION: "3.10.6"
 
 jobs:
   Build:
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -199,7 +199,7 @@ jobs:
     needs: Build
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
     steps:
       - name: Download container
@@ -222,16 +222,19 @@ jobs:
 
   Pytest-Ctl-External:
     needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          name: python-${{ matrix.python_version }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -252,16 +255,19 @@ jobs:
 
   Pytest-Unit-Ops:
     needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          name: python-${{ matrix.python_version }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -274,16 +280,19 @@ jobs:
 
   Pytest-Integration-Ops:
     needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          name: python-${{ matrix.python_version }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
         uses: actions/checkout@v3
