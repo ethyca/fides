@@ -51,10 +51,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -69,10 +69,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: set up python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -87,10 +87,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: set up python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -105,10 +105,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: set up python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -123,10 +123,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: set up python 3.10
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
       - name: Install Nox
         run: pip install nox>=2022
