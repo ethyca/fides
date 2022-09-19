@@ -23,7 +23,7 @@ export interface DetailStringError {
 /**
  * Source: https://github.com/ethyca/fides/blob/main/src/fidesctl/api/ctl/utils/errors.py#L4
  */
-export interface AlreadyExistsError {
+interface ErrorDetails {
   detail: {
     error: string;
     resource_type: string;
@@ -31,10 +31,6 @@ export interface AlreadyExistsError {
   };
 }
 
-export interface NotFoundError {
-  detail: {
-    error: string;
-    resource_type: string;
-    fides_key: string;
-  };
-}
+export type AlreadyExistsError = ErrorDetails;
+
+export type NotFoundError = ErrorDetails;
