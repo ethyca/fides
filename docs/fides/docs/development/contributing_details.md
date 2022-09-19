@@ -1,14 +1,10 @@
 # Contributing Details
 
----
-
 ## API Endpoints
 
-### Postman API Collection
+### Postman API collection
 
-Our [fidesops Postman Collection](../fidesops/postman/Fidesops.postman_collection.json) can be used to test fidesops endpoints.
-
-Follow our [Using Postman](../fidesops/postman/using_postman.md) guide to learn more about the how to use the collection.
+The [fides Postman Collection](./postman/Fidesops.postman_collection.json) can be used to test a variety of privacy request endpoints. Follow the [Using Postman](./postman/using_postman.md) guide to learn more about the how to use the collection.
 
 ### API URLs
 
@@ -46,7 +42,7 @@ When models are added to the project, we must then add them to the database in a
 
 ### Using the database via models
 
-Once you've added database tables via project models, you're ready to read, write and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
+Once you've added database tables via project models, you're ready to read, write, and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
 
 - Import our application's database session: `from fides.api.ops.db.session import get_db_session`
 - Instantiate the database interaction object:
@@ -84,7 +80,7 @@ db.refresh()
 
 ### Connecting to the database
 
-When you run `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
+When you run `nox -s dev`, the database will spin up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
 
 - Hostname: `localhost`
 - Port: `5432`

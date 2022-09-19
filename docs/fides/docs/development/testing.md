@@ -1,8 +1,6 @@
 # Testing
 
----
-
-Fidesctl loves tests! There are a few important reasons to write tests:
+Fides loves tests! There are a few important reasons to write tests:
 
 - **Make sure your code works**
 
@@ -14,7 +12,7 @@ Fidesctl loves tests! There are a few important reasons to write tests:
 
   It may seem silly, but another important reason to write tests is to ensure that your code behaves as expected _even when it's broken_.
 
-  This is especially important for a project like Fidesctl, which is focused on helping engineers when something unexpected happens to their code. For example, you could write tests about what you expect to happen if your function is called with incorrect (or no) arguments, or to ensure that any errors are properly trapped and handled.
+  This is especially important for a project like Fides, which is focused on helping engineers when something unexpected happens to their code. For example, you could write tests about what you expect to happen if your function is called with incorrect (or no) arguments, or to ensure that any errors are properly trapped and handled.
 
 - **Tests are documentation**
 
@@ -24,15 +22,13 @@ Fidesctl loves tests! There are a few important reasons to write tests:
 
 - **Help future developers**
 
-  As Fidesctl grows, your code will be reused in more and more places, by developers who may not be familiar with the details of your implementation. Therefore, your tests are an opportunity to ensure that your code is used correctly in the future.
+  As Fides grows, your code will be reused in more and more places, by developers who may not be familiar with the details of your implementation. Therefore, your tests are an opportunity to ensure that your code is used correctly in the future.
 
   For example, if your code needs to be used in a certain way, or expects a certain configuration, or is always expected to return a certain output, or has any other details that might impact its ability to be used in the framework, write a test for it! At minimum, you'll help a future developer understand that you consciously chose to design your code a certain way.
 
----
-
 ## Writing tests
 
-Fidesctl's tests are stored in the `tests` directory.
+Fides' tests are stored in the `tests` directory.
 
 Tests should have descriptive names that make it clear what you're testing. If necessary, add a docstring or comment to explain why you're testing this specific thing.
 
@@ -46,18 +42,18 @@ def test_dry_evaluate():
     ...
 ```
 
-Fidesctl has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
+Fides has a few [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) available for testing; see `conftest.py` for details.
 
-### Integration tests vs. Mocked tests
+### Integration tests vs. mocked tests
 
 Generally, tests that include mocking are discouraged. Mocking can create a false sense of security and obfuscate possible errors in the code that only present themselves when integration tested.
 
 ## Running tests
 
-Fidesctl uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/fidesctl/` directory:
+Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/fidesctl/` directory:
 
 ```bash
-cd fidesctl
+cd fides
 pytest
 ```
 

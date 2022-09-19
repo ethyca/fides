@@ -3,7 +3,7 @@
 
 ### Docstrings
 
-Docstrings are required for every function, class and method. No specific style is required or encouraged, as we expect that most of the relevant information can be gleaned from both the function signature's type-hints as well as descriptive parameter names. The docstring should serve to give additional context/flavour beyond that which can be gained from the code itself.
+Docstrings are required for every function, class, and method. No specific style is required or encouraged, as we expect that most of the relevant information can be gleaned from both the function signature's type-hints as well as descriptive parameter names. The docstring should serve to give additional context/flavour beyond that which can be gained from the code itself.
 
 ```python title="Docstring Example"
 # Bad
@@ -20,7 +20,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
     """
 ```
 
-### Variable/Parameter Naming
+### Variable and parameter naming
 
 Variable and parameter names should be as self-describing as possible. Brevity is not a concern here. Here are some common examples for writing good self-documenting code:
 
@@ -71,7 +71,7 @@ foods_list = ["apple", "banana"]
 foods_list: List[str] = ["apple", "banana"] 
 ```
 
-## Pre-Commit Hooks
+## Pre-commit hooks
 
 Fides includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `dev-requirements.txt`. Once that is installed, follow these steps to get up and running:
 
@@ -80,7 +80,7 @@ Fides includes a `.pre-commit-config.yaml` to facilitate running CI checks befor
 
 **NOTE**: A Python interpreter must be available from wherever the git commands are being run, as this is required to run the `pre-commit` package.
 
-## CI Checks
+## CI checks
 
 CI checks are stored as targets within the Noxfile, and can be run from the top-level `fides` directory with the following pattern:
 

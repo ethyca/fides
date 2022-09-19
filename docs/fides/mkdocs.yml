@@ -16,50 +16,21 @@ nav:
           - Installation from PyPI: installation/pypi.md
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
-      - Using Fides: 
-          - Setting up the database: fidesctl/installation/database.md
-          - Configuration: fidesctl/installation/configuration.md
-          - Getting Started: fidesops/getting_started.md
+      - Getting Started: 
           - Authenticate with OAuth: fidesops/guides/oauth.md
           - Connect to Databases: fidesops/guides/database_connectors.md
           - Define Datasets: fidesops/guides/datasets.md
           - Configure Policies: fidesops/guides/policies.md
           - Execute Privacy Requests: fidesops/guides/privacy_requests.md
-  - Fides UI:
-      - Overview: fidesctl/admin_ui/overview.md
-      - Configuration Wizard: fidesctl/admin_ui/wizard.md
-      - Managing Datasets: fidesctl/admin_ui/datasets.md
-      - Overview: fidesops/ui/overview.md
-      - Privacy Center: fidesops/ui/privacy_center.md
-      - Admin UI:
-          - Subject Requests: fidesops/ui/subject_requests.md
-          - Managing Datastores: fidesops/ui/datastores.md
-          - User Management: fidesops/ui/user_management.md
-  - Fides Control: 
-      - Tutorial:
-          - Overview: fidesctl/tutorial/index.md
-          - Add Fidesctl to the App: fidesctl/tutorial/add.md
-          - Annotate the Dataset: fidesctl/tutorial/dataset.md
-          - Annotate the System: fidesctl/tutorial/system.md
-          - Write a Policy: fidesctl/tutorial/policy.md
-          - Add Google Analytics: fidesctl/tutorial/google.md
-          - Manage Google Analytics with Fidesctl: fidesctl/tutorial/pass.md
+      - CI/CD Integration:
+          - Overview: fidesctl/cicd/overview.md
+          - Example Integrations: fidesctl/cicd/examples.md
+      - CLI: fidesctl/cli.md
       - How-To Guides:
           - Generating Resources: fidesctl/guides/generate_resources.md
           - Example Policies: fidesctl/guides/policies.md
           - Extending the Taxonomy: fidesctl/guides/extending_taxonomy.md
           - Generating a Data Map: fidesctl/guides/generating_datamap.md
-      - Fides UI:
-          - Overview: fidesctl/admin_ui/overview.md
-          - Configuration Wizard: fidesctl/admin_ui/wizard.md
-          - Managing Datasets: fidesctl/admin_ui/datasets.md
-      - CI/CD Integration:
-          - Overview: fidesctl/cicd/overview.md
-          - Example Integrations: fidesctl/cicd/examples.md
-      - CLI: fidesctl/cli.md
-  - Fides Ops:
-      - What is Fidesops?: fidesops/index.md
-      - How-To Guides:
           - View Available Connection Types: fidesops/guides/connection_types.md
           - Configure Email Communications: fidesops/guides/email_communications.md
           - Annotate Complex Fields: fidesops/guides/complex_fields.md
@@ -87,19 +58,17 @@ nav:
               - Sentry: fidesops/saas_connectors/example_configs/sentry.md
               - Stripe: fidesops/saas_connectors/example_configs/stripe.md
               - Zendesk: fidesops/saas_connectors/example_configs/zendesk.md
-      - Configuration Reference: fidesops/guides/configuration_reference.md
       - Deployment Guide: fidesops/deployment.md
       - Glossary: fidesops/glossary.md
-      - Tutorial:
-          - Zero to Privacy Request: fidesops/tutorial/index.md
-          - Install Fidesops: fidesops/tutorial/installation.md
-          - Outline a Python Script: fidesops/tutorial/outline.md
-          - Create an Oauth Client: fidesops/tutorial/oauth_client.md
-          - Connect to Postgres: fidesops/tutorial/postgres_connection.md
-          - Annotate a Database: fidesops/tutorial/annotate_datasets.md
-          - Configure a Storage Destination: fidesops/tutorial/storage_config.md
-          - Define a Policy: fidesops/tutorial/define_policy.md
-          - Execute a Privacy Request: fidesops/tutorial/execute_privacy_request.md
+  - Fides UI:
+      - Overview: ui/overview.md
+      - Configuration Wizard: ui/wizard.md
+      - Managing Datasets: ui/datasets.md
+      - Overview: ui/overview.md
+      - Privacy Center: ui/privacy_center.md
+      - Subject Requests: ui/subject_requests.md
+      - Managing Datastores: ui/datastores.md
+      - User Management: ui/user_management.md
   - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:
@@ -113,8 +82,8 @@ nav:
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
   - Community:
-      - Github, Slack & Discord: community/overview.md
-      - Community Hints & Tips: community/hints_tips.md
+      - Github, Slack, and Discord: community/overview.md
+      - Community Hints and Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
   - About Ethyca: 
       - About Ethyca: ethyca.md
