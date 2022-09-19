@@ -14,7 +14,7 @@ export const systemApi = createApi({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
     }),
-    getSystemByFidesKey: build.query<Partial<System>, string>({
+    getSystemByFidesKey: build.query<System, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
       providesTags: ["System"],
     }),
@@ -34,6 +34,7 @@ export const systemApi = createApi({
     >({
       query: ({ ...patch }) => ({
         url: `system/`,
+        params: { resource_type: "system" },
         method: "PUT",
         body: patch,
       }),

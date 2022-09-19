@@ -23,8 +23,10 @@ The types of changes are:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
   * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
-* New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+* System management UI:
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
 
 ### Changed
 

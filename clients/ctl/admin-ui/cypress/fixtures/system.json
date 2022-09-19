@@ -1,7 +1,7 @@
 {
   "fides_key": "demo_analytics_system",
   "organization_fides_key": "default_organization",
-  "tags": null,
+  "tags": ["demo", "analytics"],
   "name": "Demo Analytics System",
   "description": "A system used for analyzing customer behaviour.",
   "registry_id": null,

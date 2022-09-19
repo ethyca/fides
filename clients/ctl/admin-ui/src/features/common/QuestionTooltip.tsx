@@ -4,7 +4,7 @@ import { Tooltip } from "@fidesui/react";
 import { QuestionIcon } from "./Icon";
 
 const QuestionTooltip = ({ ...props }: Omit<TooltipProps, "children">) => (
-  <Tooltip {...props}>
+  <Tooltip placement="right" {...props}>
     <QuestionIcon color="gray.400" />
   </Tooltip>
 );
