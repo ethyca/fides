@@ -24,7 +24,7 @@ mysql = ["pymysql==1.0.2"]
 okta = ["okta==2.5.0"]
 redis = ["redis==3.5.3", "fastapi-caching[redis]"]
 redshift = ["sqlalchemy-redshift==0.8.11"]
-snowflake = ["snowflake-sqlalchemy==1.3.4"]
+snowflake = ["snowflake-sqlalchemy==1.4.1"]
 
 extras = {
     "aws": aws,
