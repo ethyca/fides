@@ -231,6 +231,7 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
                 variant="link"
                 disabled={!dirty}
                 isLoading={isLoading}
+                data-testid="add-btn"
               >
                 Add <AddIcon boxSize={10} />
               </Button>
@@ -250,7 +251,7 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
                 size="sm"
                 disabled={formDeclarations.length === 0}
                 isLoading={isLoading}
-                data-testid="confirm-btn"
+                data-testid="next-btn"
                 onClick={handleSubmit}
               >
                 Next
