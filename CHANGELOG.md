@@ -33,6 +33,10 @@ The types of changes are:
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 
+### Fixed
+
+* Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
 ### Added
