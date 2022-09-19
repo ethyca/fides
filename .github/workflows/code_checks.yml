@@ -7,6 +7,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
+  DEFAULT_PYTHON_VERSION: "3.10.7"
 
 jobs:
   Build:
@@ -50,10 +51,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10"
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -68,7 +69,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: set up python 3.10
+      - name: set up python
         uses: actions/setup-python@v3
         with:
           python-version: "3.10"
@@ -86,7 +87,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: set up python 3.10
+      - name: set up python
         uses: actions/setup-python@v3
         with:
           python-version: "3.10"
@@ -104,7 +105,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: set up python 3.10
+      - name: set up python
         uses: actions/setup-python@v3
         with:
           python-version: "3.10"
@@ -122,7 +123,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: set up python 3.10
+      - name: set up python
         uses: actions/setup-python@v3
         with:
           python-version: "3.10"
@@ -165,19 +166,19 @@ jobs:
       - name: Download container
         uses: actions/download-artifact@v3
         with:
-          name: ${{ env.CONTAINER }}
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
 
       - name: Load image
-        run: docker load --input /tmp/${{ env.CONTAINER }}.tar
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Install Nox
         run: pip install nox>=2022
