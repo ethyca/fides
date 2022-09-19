@@ -1,3 +1,4 @@
+ARG PYTHON_VERSION=3.10.7
 
 ##############
 ## Frontend ##
@@ -19,7 +20,6 @@ RUN npm run export
 #############
 ## Backend ##
 #############
-ARG PYTHON_VERSION=3.10.7
 FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-bullseye as backend
 
 # Install auxiliary software
