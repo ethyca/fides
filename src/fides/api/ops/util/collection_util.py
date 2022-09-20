@@ -17,7 +17,7 @@ def merge_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
     =>  {'A': 2, 'B': 2, 'C': 4}
     """
     if dicts:
-        return reduce(lambda x, y: x | y, dicts) or {}
+        return reduce(lambda x, y: {**x, **y}, dicts) or {}
     return {}
 
 

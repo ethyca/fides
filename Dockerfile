@@ -1,24 +1,25 @@
+# Pin to 3.10.6 to avoid a mypy error in 3.10.7
+# If you update this, also update `DEFAULT_PYTHON_VERSION`
+# in the GitHub workflow files
+ARG PYTHON_VERSION=3.10.6
+
 ##############
 ## Frontend ##
 ##############
 FROM node:16 as frontend
 
-# Build the Ops frontend
-WORKDIR /fidesops/clients/ops/admin-ui
-COPY clients/ops/admin-ui/ .
+# Build the admin-io frontend
+WORKDIR /fidesops/clients/admin-ui
+COPY clients/admin-ui/ .
 RUN npm install
 RUN npm run export
 
-# Build the Ctl frontend
-WORKDIR /fidesops/clients/ctl/admin-ui
-COPY clients/ctl/admin-ui/ .
-RUN npm install
-RUN npm run export
+
 
 #############
 ## Backend ##
 #############
-FROM --platform=linux/amd64 python:3.9.13-slim-bullseye as backend
+FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-bullseye as backend
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -98,5 +99,5 @@ RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fidesops/clients/ops/admin-ui/out/ /fidesops/src/fidesops/ops/build/static/
-COPY --from=frontend /fidesops/clients/ctl/admin-ui/out/ /fidesops/src/fidesops/ctl/build/static/
+COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
+
