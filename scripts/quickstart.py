@@ -14,6 +14,7 @@ import requests
 import yaml
 
 from fides.ctl.core.config import get_config
+from fides.api.ops.api.v1 import urn_registry as ops_urls
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.models.policy import ActionType
 
@@ -34,7 +35,7 @@ def get_access_token(client_id: str, client_secret: str) -> str:
         "client_id": client_id,
         "client_secret": client_secret,
     }
-    response = requests.post(f"{FIDESOPS_URL}/api/v1/oauth/token", data=data)
+    response = requests.post(f"{FIDESOPS_V1_API_URL}{ops_urls.TOKEN}", data=data)
 
     if response.ok:
         token = (response.json())["access_token"]
@@ -78,7 +79,7 @@ def create_oauth_client():
         "dataset:delete",
     ]
     response = requests.post(
-        f"{FIDESOPS_URL}/api/v1/oauth/client",
+        f"{FIDESOPS_V1_API_URL}{ops_urls.CLIENT}",
         headers=root_oauth_header,
         json=scopes_data,
     )
@@ -109,7 +110,7 @@ def create_connection(key: str, connection_type: ConnectionType):
         },
     ]
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/connection",
+        f"{FIDESOPS_V1_API_URL}{ops_urls.CONNECTIONS}",
         headers=oauth_header,
         json=connection_create_data,
     )
@@ -142,8 +143,9 @@ def configure_postgres_connection(
         "username": username,
         "password": password,
     }
+    connection_secrets_path = ops_urls.CONNECTION_SECRETS.format(connection_key=key)
     response = requests.put(
-        f"{FIDESOPS_URL}/api/v1/connection/{key}/secret",
+        f"{FIDESOPS_V1_API_URL}{connection_secrets_path}",
         headers=oauth_header,
         json=connection_secrets_data,
     )
@@ -175,8 +177,9 @@ def configure_mongo_connection(
         "username": username,
         "password": password,
     }
+    connection_secrets_path = ops_urls.CONNECTION_SECRETS.format(connection_key=key)
     response = requests.put(
-        f"{FIDESOPS_URL}/api/v1/connection/{key}/secret",
+        f"{FIDESOPS_V1_API_URL}{connection_secrets_path}",
         headers=oauth_header,
         json=connection_secrets_data,
     )
@@ -206,8 +209,9 @@ def validate_dataset(connection_key: str, yaml_path: str):
         dataset = yaml.safe_load(file).get("dataset", [])[0]
 
     validate_dataset_data = dataset
+    dataset_validate_path = ops_urls.DATASET_VALIDATE.format(connection_key=connection_key)
     response = requests.put(
-        f"{FIDESOPS_URL}/api/v1/connection/{connection_key}/validate_dataset",
+        f"{FIDESOPS_V1_API_URL}{dataset_validate_path}",
         headers=oauth_header,
         json=validate_dataset_data,
     )
@@ -242,8 +246,9 @@ def create_dataset(connection_key: str, yaml_path: str):
         dataset = yaml.safe_load(file).get("dataset", [])[0]
 
     dataset_create_data = [dataset]
+    dataset_path = ops_urls.DATASETS.format(connection_key=connection_key)
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/connection/{connection_key}/dataset",
+        f"{FIDESOPS_V1_API_URL}{dataset_path}",
         headers=oauth_header,
         json=dataset_create_data,
     )
@@ -279,7 +284,7 @@ def create_local_storage(key: str, file_format: str):
         },
     ]
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/storage/config",
+        f"{FIDESOPS_V1_API_URL}{ops_urls.STORAGE_CONFIG}",
         headers=oauth_header,
         json=storage_create_data,
     )
@@ -311,7 +316,7 @@ def create_policy(key: str):
         },
     ]
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/policy",
+        f"{FIDESOPS_V1_API_URL}{ops_urls.POLICY_LIST}",
         headers=oauth_header,
         json=policy_create_data,
     )
@@ -333,8 +338,9 @@ def delete_policy_rule(policy_key: str, key: str):
     Returns the response JSON.
     See http://localhost:8000/api#operations-Policy-delete_rule_api_v1_policy__policy_key__rule__rule_key__delete
     """
+    rule_path = ops_urls.RULE_DETAIL.format(policy_key=policy_key, rule_key=key)
     return requests.delete(
-        f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{key}", headers=oauth_header
+        f"{FIDESOPS_V1_API_URL}{rule_path}", headers=oauth_header
     )
 
 
@@ -365,8 +371,9 @@ def create_policy_rule(
             "configuration": {},
         }
 
+    rule_path = ops_urls.RULE_LIST.format(policy_key=policy_key)
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule",
+        f"{FIDESOPS_V1_API_URL}{rule_path}",
         headers=oauth_header,
         json=[rule_create_data],
     )
@@ -396,8 +403,9 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
             "data_category": data_cat,
         },
     ]
+    rule_target_path = ops_urls.RULE_TARGET_LIST.format(policy_key=policy_key, rule_key=rule_key)
     response = requests.patch(
-        f"{FIDESOPS_URL}/api/v1/policy/{policy_key}/rule/{rule_key}/target",
+        f"{FIDESOPS_V1_API_URL}{rule_target_path}",
         headers=oauth_header,
         json=target_create_data,
     )
@@ -430,7 +438,7 @@ def create_privacy_request(user_email: str, policy_key: str):
         },
     ]
     response = requests.post(
-        f"{FIDESOPS_URL}/api/v1/privacy-request",
+        f"{FIDESOPS_V1_API_URL}{ops_urls.PRIVACY_REQUESTS}",
         json=privacy_request_data,
     )
 
@@ -489,7 +497,8 @@ if __name__ == "__main__":
 
     # NOTE: In a real application, these secrets and config values would be provided
     # via ENV vars or similar, but we've inlined everything here for simplicity
-    FIDESOPS_URL = "http://webserver:8080"
+    FIDESOPS_URL = "http://fides:8080"
+    FIDESOPS_V1_API_URL = f"{FIDESOPS_URL}{ops_urls.V1_URL_PREFIX}"
     ROOT_CLIENT_ID = "fidesopsadmin"
     ROOT_CLIENT_SECRET = "fidesopsadminsecret"
 
@@ -510,6 +519,7 @@ if __name__ == "__main__":
     )
     print("Setting up the fidesops environment with the following test configuration:")
     print(f"  FIDESOPS_URL = {FIDESOPS_URL}")
+    print(f"  FIDESOPS_V1_API_URL = {FIDESOPS_V1_API_URL}")
     print(f"  ROOT_CLIENT_ID = {ROOT_CLIENT_ID}")
     print(f"  ROOT_CLIENT_SECRET = {ROOT_CLIENT_SECRET}")
     print(f"  POSTGRES_SERVER = {POSTGRES_SERVER}")
