@@ -24,7 +24,6 @@ services:
       FIDES__DATABASE__SERVER: "fides-db"
       FIDES__DEV_MODE: "True"
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-      FIDES_TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
