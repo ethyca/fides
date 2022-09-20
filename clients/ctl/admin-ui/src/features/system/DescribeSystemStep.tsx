@@ -80,7 +80,7 @@ interface Props {
   abridged?: boolean;
 }
 
-const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
+const DescribeSystemStep = ({ onCancel, onSuccess, abridged }: Props) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   const { data: systems } = useGetAllSystemsQuery();
@@ -217,4 +217,4 @@ const DescribeSystemsForm = ({ onCancel, onSuccess, abridged }: Props) => {
     </Formik>
   );
 };
-export default DescribeSystemsForm;
+export default DescribeSystemStep;

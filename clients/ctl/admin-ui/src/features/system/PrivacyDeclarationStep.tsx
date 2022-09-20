@@ -63,7 +63,7 @@ interface Props {
   abridged?: boolean;
 }
 
-const PrivacyDeclarationForm = ({
+const PrivacyDeclarationStep = ({
   system,
   onCancel,
   onSuccess,
@@ -274,4 +274,4 @@ const PrivacyDeclarationForm = ({
   );
 };
 
-export default PrivacyDeclarationForm;
+export default PrivacyDeclarationStep;

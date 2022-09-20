@@ -24,7 +24,7 @@ interface Props {
   abridged?: boolean;
 }
 
-const ReviewSystemForm = ({ system, onCancel, onSuccess, abridged }: Props) => {
+const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
   const handleSubmit = () => {
     onSuccess();
   };
@@ -99,4 +99,4 @@ const ReviewSystemForm = ({ system, onCancel, onSuccess, abridged }: Props) => {
     </Formik>
   );
 };
-export default ReviewSystemForm;
+export default ReviewSystemStep;

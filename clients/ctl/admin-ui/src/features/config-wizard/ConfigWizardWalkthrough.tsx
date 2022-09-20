@@ -4,9 +4,9 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
-import DescribeSystemsForm from "~/features/system/DescribeSystemsForm";
-import PrivacyDeclarationForm from "~/features/system/PrivacyDeclarationForm";
-import ReviewSystemForm from "~/features/system/ReviewSystemForm";
+import DescribeSystemStep from "~/features/system/DescribeSystemStep";
+import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
+import ReviewSystemStep from "~/features/system/ReviewSystemStep";
 import SystemRegisterSuccess from "~/features/system/SystemRegisterSuccess";
 import { System } from "~/types/api";
 
@@ -81,14 +81,14 @@ const ConfigWizardWalkthrough = () => {
                   />
                 ) : null}
                 {reviewStep === 1 && (
-                  <DescribeSystemsForm
+                  <DescribeSystemStep
                     onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
                 )}
                 {reviewStep === 2 && system && (
-                  <PrivacyDeclarationForm
+                  <PrivacyDeclarationStep
                     system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
@@ -96,7 +96,7 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 3 && system && (
-                  <ReviewSystemForm
+                  <ReviewSystemStep
                     system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
