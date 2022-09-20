@@ -186,23 +186,23 @@ def resources_dict() -> Generator:
             systems=[],
         ),
         "system": models.System(
-            organization_fides_key=1,
-            registryId=1,
-            fides_key="test_system",
-            system_type="SYSTEM",
-            name="Test System",
             description="Test Policy",
+            egress=[],
+            fides_key="test_system",
+            ingress=[],
+            name="Test System",
+            organization_fides_key=1,
             privacy_declarations=[
                 models.PrivacyDeclaration(
-                    name="declaration-name",
                     data_categories=[],
-                    data_use="provide",
-                    data_subjects=[],
                     data_qualifier="aggregated_data",
-                    dataset_references=[],
+                    data_subjects=[],
+                    data_use="provide",
+                    name="declaration-name",
                 )
             ],
-            system_dependencies=[],
+            registryId=1,
+            system_type="SYSTEM",
         ),
     }
     yield resources_dict
