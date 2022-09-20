@@ -1,6 +1,6 @@
 # Configuration
 
-The Fides application configuration variables are provided in a `fidesops.toml` file. Fides will use the first config file it reads from the following locations, in order:
+The Fides application configuration variables are provided in a `fides.toml` file. Fides will use the first config file it reads from the following locations, in order:
 
 1. At the path specified using the config file argument passed through the CLI
 1. At the path specified by the `FIDES__CONFIG_PATH` environment variable
@@ -14,7 +14,7 @@ Fides can also run exclusively via environment variables. These can be used in t
 
 ## Configuration file
 
-After initializing Fides, a default configuration file will be generated and placed within the `.fides` directory. The following is an example of a default Fides configuration file:
+After initializing Fides, a default configuration file will be generated and placed within the `.fides` directory:
 
 ```toml title="fides.toml"
 [database]
@@ -83,7 +83,7 @@ The `fides.toml` file should specify the following variables:
 | `server` | String | `fides-db` | The hostname of the Postgres database server. |
 | `port` | String | `5432` | The port at which the Postgres database will be accessible. |
 | `db` | String | `fides` | The name of the Postgres database. |
-| `test_db` | String | `""` | Used instead of the `db` config when the `FIDESCTL_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | 
+| `test_db` | String | `""` | Used instead of the `db` config when the `FIDES_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | 
 
 #### Redis cache
 

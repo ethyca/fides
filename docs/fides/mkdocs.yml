@@ -12,7 +12,7 @@ nav:
       - What is Fides?: index.md
       - Installation: 
           - Overview: installation/overview.md
-          - Prerequisites: installation/prerequisites.md
+          - Project Requirements: installation/requirements.md
           - Installation from PyPI: installation/pypi.md
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
@@ -23,10 +23,11 @@ nav:
           - Configure Policies: fidesops/guides/policies.md
           - Execute Privacy Requests: fidesops/guides/privacy_requests.md
       - How-To Guides:
-          - Generating Resources: fidesctl/guides/generate_resources.md
-          - Example Policies: fidesctl/guides/policies.md
-          - Extending the Taxonomy: fidesctl/guides/extending_taxonomy.md
-          - Generating a Data Map: fidesctl/guides/generating_datamap.md
+          - Generating Resources: guides/generate_resources.md
+          - Example Policies: guides/policies.md
+          - Extending the Taxonomy: guides/extending_taxonomy.md
+          - Generating a Data Map: guides/generating_datamap.md
+          - Execution Policies: guides/execution_policies.md
           - View Available Connection Types: fidesops/guides/connection_types.md
           - Configure Email Communications: fidesops/guides/email_communications.md
           - Annotate Complex Fields: fidesops/guides/complex_fields.md
@@ -55,11 +56,11 @@ nav:
               - Stripe: fidesops/saas_connectors/example_configs/stripe.md
               - Zendesk: fidesops/saas_connectors/example_configs/zendesk.md
       - CI/CD Integration:
-          - Overview: fidesctl/cicd/overview.md
-          - Example Integrations: fidesctl/cicd/examples.md
-      - CLI: fidesctl/cli.md
-      - Deployment: fidesops/deployment.md
-      - Glossary: fidesops/glossary.md
+          - Overview: cicd/overview.md
+          - Example Integrations: cicd/examples.md
+      - CLI: cli.md
+      - Deployment: deployment.md
+      - Glossary: glossary.md
   - Fides UI:
       - Overview: ui/overview.md
       - Configuration Wizard: ui/wizard.md

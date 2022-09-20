@@ -1,6 +1,6 @@
 # Installation from PyPI
 
-The `fides` Python package is [published on PyPI](https://pypi.org/project/fides/) and maintained by the Fides team. To decide if a PyPI installation is right for your use case, see the [installation overview](./overview.md).
+The Fides Python package is [published on PyPI](https://pypi.org/project/fides/) and maintained by the Fides team. To decide if a PyPI installation is right for your use case, see the [installation overview](./overview.md).
 
 ## System requirements
 
@@ -40,7 +40,6 @@ For multiple dependencies:
 ```sh
 pipx install "fides[extra_1, extra_2]"
 ```
-
 
 The optional dependencies are as follows:
 
@@ -93,37 +92,24 @@ fidesctl --local <subcommand>
 [cli]
 local_mode = true
 ```
-## Database installation
+## Set up your database
 
-Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project [Requirements](./prerequisites.md).
+Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project [requirements](./prerequisites.md). Enable a username and password, and keep track of your connection credentials.
 
-### Generate a connection string
-Use your database credentials to generate a [SQLAlchemy Connection String](https://docs.sqlalchemy.org/en/14/core/engines.html#postgresql) in the form of `dialect+driver://username:password@host:port/database`. This will be used as your `database_url` [Configuration](./configuration/configuration.md) variable, or as individual credentials (`name`, `port`, etc).
+## Set up your cache
+Configure your own Redis cache according to the configuration of your choice, ensuring it satisfies the project [requirements](./prerequisites.md). Enable a password (via Redis [`AUTH`](https://redis.io/commands/auth)) to provide additional security, and keep track of your connection credentials.
+## Configure Fides
 
-## Configuring Fides
+Fides provides a `fides.toml` file to store your configuration settings. Initializing Fides creates this file and populates it with default values, which should be replaced with the connection credentials for your Postgres and Redis instances, as well as any other information unique to your deployment. 
 
-Fides provides a `fides.toml` file to store your configuration settings. Initializing Fides creates this file and populates it with default values.
-
-See the [Configuration guide](../installation/configuration.md) for a full list of settings.
+See the [Configuration guide](../installation/configuration.md) for a full list of settings, and a sample `fides.toml`.
 
 ## Running the webserver
 
-Now that we've spun up our database and set our configuration values, it's time to start our webserver. In a shell, run the following command:
+In a shell, run the following command:
 
 ```sh
-fidesctl webserver
+fides webserver
 ```
 
-The fidesctl webserver will now be accessible at `localhost:8080`, you can test this by going to `localhost:8080/api/v1/health` and `localhost:8080/docs`.
-
-## Using the CLI
-
-Now that the database and webserver are running, it's time to verify that the whole installation is working properly. Run the command `fidesctl status` to make sure that the CLI can talk to the webserver. The output should look something like this:
-
-```txt
-root@2da501a72f8f:/fides/fidesctl# fidesctl status
-Getting server status...
-Server is reachable and the client/server application versions match.
-```
-
-That's it! Your local installation of fidesctl is completely up and running.
+With the Fides webserver running, the hosted UI is available at `http://{server_url}/` (e.g. `http://localhost:8080/`). 
