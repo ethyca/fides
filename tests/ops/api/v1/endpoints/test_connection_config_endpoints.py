@@ -24,6 +24,7 @@ from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep
 from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fidesops.ops.schemas.email.email import EmailActionType
+from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
 page_size = Params().size
 

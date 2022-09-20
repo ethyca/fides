@@ -437,6 +437,7 @@ def initiate_privacy_request_completion_email(
             "Identity email was not found, so request completion email could not be sent."
         )
     if policy.get_rules_for_action(action_type=ActionType.access):
+        # synchronous for now since failure to send complete emails is fatal to request
         dispatch_email(
             db=session,
             action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
@@ -450,6 +451,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_email=identity_data.get(ProvidedIdentityType.email.value),
+            email_body_params=None,
         )
 
 

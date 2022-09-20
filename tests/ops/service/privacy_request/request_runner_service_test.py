@@ -1953,6 +1953,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_email=customer_email,
+                    email_body_params=None,
                 ),
             ],
             any_order=True,

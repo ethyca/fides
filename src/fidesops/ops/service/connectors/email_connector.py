@@ -55,6 +55,7 @@ class EmailConnector(BaseConnector[None]):
         db = Session.object_session(self.configuration)
 
         try:
+            # synchronous for now since failure to send is considered a connection test failure
             dispatch_email(
                 db=db,
                 action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,

@@ -63,6 +63,7 @@ The types of changes are:
 ### Changed
 
 * Renamed `PrivacyRequestIdentity` to `Identity` [#1324](https://github.com/ethyca/fidesops/pull/1324)
+* Use existing Celery queue for all email dispatch calls [#1341](https://github.com/ethyca/fidesops/pull/1341)
 
 ### Developer Experience
 

@@ -243,7 +243,7 @@ async def create_privacy_request(
                 continue  # Skip further processing for this privacy request
             if config.notifications.send_request_receipt_notification:
                 _send_privacy_request_receipt_email_to_user(
-                    db, policy, privacy_request_data.identity.email
+                    policy, privacy_request_data.identity.email
                 )
             if not config.execution.require_manual_request_approval:
                 AuditLog.create(
@@ -296,23 +296,20 @@ def _send_verification_code_to_user(
     )  # Validates Fidesops is currently configured to send emails
     verification_code: str = generate_id_verification_code()
     privacy_request.cache_identity_verification_code(verification_code)
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
-        kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-                body_params=SubjectIdentityVerificationBodyParams(
-                    verification_code=verification_code,
-                    verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-                ),
-            ).dict(),
-            "to_email": email,
-        },
+    # synchronous call for now since failure to send verification code is fatal to request
+    dispatch_email(
+        db=db,
+        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        to_email=email,
+        email_body_params=SubjectIdentityVerificationBodyParams(
+            verification_code=verification_code,
+            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+        ),
     )
 
 
 def _send_privacy_request_receipt_email_to_user(
-    db: Session, policy: Optional[Policy], email: Optional[str]
+    policy: Optional[Policy], email: Optional[str]
 ) -> None:
     """Helper function to send request receipt email to the user"""
     if not email:
@@ -333,16 +330,16 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    try:
-        dispatch_email(
-            db=db,
-            action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
-            to_email=email,
-            email_body_params=RequestReceiptBodyParams(request_types=request_types),
-        )
-    except EmailDispatchException as exc:
-        # catch early since this failure isn't fatal to privacy request, unlike the subject id verification email
-        logger.info("Email dispatch failed with exception %s", exc)
+    dispatch_email_task.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "email_meta": FidesopsEmail(
+                action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+                body_params=RequestReceiptBodyParams(request_types=request_types),
+            ).dict(),
+            "to_email": email,
+        },
+    )
 
 
 def privacy_request_csv_download(
@@ -1120,7 +1117,6 @@ def review_privacy_request(
 
 
 def _send_privacy_request_review_email_to_user(
-    db: Session,
     action_type: EmailActionType,
     email: Optional[str],
     rejection_reason: Optional[str],
@@ -1132,20 +1128,20 @@ def _send_privacy_request_review_email_to_user(
                 "Identity email was not found, so request review email could not be sent."
             )
         )
-    try:
-        dispatch_email(
-            db=db,
-            action_type=action_type,
-            to_email=email,
-            email_body_params=RequestReviewDenyBodyParams(
-                rejection_reason=rejection_reason
-            )
-            if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
-            else None,
-        )
-    except EmailDispatchException as exc:
-        # this failure isn't fatal to privacy request
-        logger.info("Email dispatch failed with exception %s", exc)
+    dispatch_email_task.apply_async(
+        queue=EMAIL_QUEUE_NAME,
+        kwargs={
+            "email_meta": FidesopsEmail(
+                action_type=action_type,
+                body_params=RequestReviewDenyBodyParams(
+                    rejection_reason=rejection_reason
+                )
+                if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+                else None,
+            ).dict(),
+            "to_email": email,
+        },
+    )
 
 
 @router.post(
@@ -1175,13 +1171,10 @@ async def verify_identification_code(
         )
         if config.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_email_to_user(
-                db, policy, privacy_request.get_persisted_identity().email
+                policy, privacy_request.get_persisted_identity().email
             )
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
-    except EmailDispatchException as exc:
-        # not fatal to request lifecycle, do not raise error, continue with request
-        logger.info("Email dispatch failed with exception %s", exc)
     except PermissionError as exc:
         logger.info("Invalid verification code provided for %s.", privacy_request.id)
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
@@ -1237,7 +1230,6 @@ def approve_privacy_request(
         )
         if config.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
-                db=db,
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                 email=privacy_request.get_cached_identity_data().get(
                     ProvidedIdentityType.email.value
@@ -1290,7 +1282,6 @@ def deny_privacy_request(
         )
         if config.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
-                db=db,
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 email=privacy_request.get_cached_identity_data().get(
                     ProvidedIdentityType.email.value

@@ -63,6 +63,7 @@ def dispatch_email(
     Sends an email to `to_email` with content supplied in `email_body_params`
     """
     if not to_email:
+        logger.error("Email failed to send. No email supplied.")
         raise EmailDispatchException("No email supplied.")
 
     logger.info("Retrieving email config")
