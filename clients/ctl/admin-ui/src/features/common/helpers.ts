@@ -73,3 +73,12 @@ export const parseError = (
 
   return defaultError;
 };
+
+/**
+ * Given an enumeration, create options out of its key and values
+ */
+export const enumToOptions = (e: { [s: number]: string }) =>
+  Object.entries(e).map((entry) => ({
+    value: entry[1],
+    label: entry[1],
+  }));

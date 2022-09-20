@@ -4,10 +4,10 @@ import { useState } from "react";
 
 import { System } from "~/types/api";
 
-import DescribeSystemsForm from "../config-wizard/DescribeSystemsForm";
-import PrivacyDeclarationForm from "../config-wizard/PrivacyDeclarationForm";
-import ReviewSystemForm from "../config-wizard/ReviewSystemForm";
-import SystemRegisterSuccess from "../config-wizard/SystemRegisterSuccess";
+import DescribeSystemStep from "./DescribeSystemStep";
+import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
+import ReviewSystemStep from "./ReviewSystemStep";
+import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
 
@@ -72,20 +72,20 @@ const ManualSystemFlow = () => {
       </GridItem>
       <GridItem w="75%">
         {currentStepIndex === 0 ? (
-          <DescribeSystemsForm
+          <DescribeSystemStep
             onSuccess={handleSuccess}
             onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 1 && newSystem ? (
-          <PrivacyDeclarationForm
+          <PrivacyDeclarationStep
             system={newSystem}
             onSuccess={handleSuccess}
             onCancel={returnToNew}
           />
         ) : null}
         {currentStepIndex === 2 && newSystem ? (
-          <ReviewSystemForm
+          <ReviewSystemStep
             system={newSystem}
             onCancel={returnToNew}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
