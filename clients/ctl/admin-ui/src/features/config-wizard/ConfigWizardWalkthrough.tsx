@@ -4,6 +4,10 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
+import DescribeSystemStep from "~/features/system/DescribeSystemStep";
+import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
+import ReviewSystemStep from "~/features/system/ReviewSystemStep";
+import SystemRegisterSuccess from "~/features/system/SystemRegisterSuccess";
 import { System } from "~/types/api";
 
 import HorizontalStepper from "../common/HorizontalStepper";
@@ -19,12 +23,8 @@ import {
   setSystemToCreate,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
-import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
-import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
-import ReviewSystemForm from "./ReviewSystemForm";
 import ScanResultsForm from "./ScanResultsForm";
-import SystemRegisterSuccess from "./SystemRegisterSuccess";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -81,14 +81,14 @@ const ConfigWizardWalkthrough = () => {
                   />
                 ) : null}
                 {reviewStep === 1 && (
-                  <DescribeSystemsForm
+                  <DescribeSystemStep
                     onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
                 )}
                 {reviewStep === 2 && system && (
-                  <PrivacyDeclarationForm
+                  <PrivacyDeclarationStep
                     system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
@@ -96,7 +96,7 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 3 && system && (
-                  <ReviewSystemForm
+                  <ReviewSystemStep
                     system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}

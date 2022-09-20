@@ -6,6 +6,11 @@ import React, { Fragment, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon } from "~/features/common/Icon";
 import {
@@ -26,14 +31,9 @@ import {
 } from "~/features/taxonomy/taxonomy.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
 
-import {
-  CustomMultiSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "../common/form/inputs";
-import PrivacyDeclarationFormExtension from "../system/PrivacyDeclarationFormExtension";
-import { useUpdateSystemMutation } from "../system/system.slice";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
+import PrivacyDeclarationFormExtension from "./PrivacyDeclarationFormExtension";
+import { useUpdateSystemMutation } from "./system.slice";
 
 type FormValues = PrivacyDeclaration;
 
@@ -63,7 +63,7 @@ interface Props {
   abridged?: boolean;
 }
 
-const PrivacyDeclarationForm = ({
+const PrivacyDeclarationStep = ({
   system,
   onCancel,
   onSuccess,
@@ -274,4 +274,4 @@ const PrivacyDeclarationForm = ({
   );
 };
 
-export default PrivacyDeclarationForm;
+export default PrivacyDeclarationStep;

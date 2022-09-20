@@ -10,12 +10,11 @@ import {
 import { Form, Formik } from "formik";
 import React, { Fragment } from "react";
 
-import ReviewSystemFormExtension, {
-  ReviewItem,
-} from "~/features/system/ReviewSystemFormExtension";
+import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
 
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+import { ReviewItem } from "./form-layout";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
 interface Props {
@@ -25,7 +24,7 @@ interface Props {
   abridged?: boolean;
 }
 
-const ReviewSystemForm = ({ system, onCancel, onSuccess, abridged }: Props) => {
+const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
   const handleSubmit = () => {
     onSuccess();
   };
@@ -100,4 +99,4 @@ const ReviewSystemForm = ({ system, onCancel, onSuccess, abridged }: Props) => {
     </Formik>
   );
 };
-export default ReviewSystemForm;
+export default ReviewSystemStep;

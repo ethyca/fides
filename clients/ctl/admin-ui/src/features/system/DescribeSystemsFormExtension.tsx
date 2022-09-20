@@ -10,7 +10,7 @@ import {
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import type { FormValues } from "~/features/config-wizard/DescribeSystemsForm";
+import type { FormValues } from "~/features/system/DescribeSystemStep";
 import { DataResponsibilityTitle } from "~/types/api";
 
 const dataResponsibilityOptions = enumToOptions(DataResponsibilityTitle);
