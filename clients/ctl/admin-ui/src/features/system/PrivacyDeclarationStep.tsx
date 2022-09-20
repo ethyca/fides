@@ -1,12 +1,10 @@
 import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik, FormikHelpers } from "formik";
+import { FormikHelpers } from "formik";
 import React, { Fragment, useState } from "react";
-import * as Yup from "yup";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { AddIcon } from "~/features/common/Icon";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
@@ -14,17 +12,6 @@ import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
 type FormValues = PrivacyDeclaration;
-
-const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Declaration name"),
-  data_categories: Yup.array(Yup.string())
-    .min(1, "Must assign at least one data category")
-    .label("Data categories"),
-  data_use: Yup.string().required().label("Data use"),
-  data_subjects: Yup.array(Yup.string())
-    .min(1, "Must assign at least one data subject")
-    .label("Data subjects"),
-});
 
 const transformFormValuesToDeclaration = (
   formValues: FormValues
@@ -53,15 +40,6 @@ const PrivacyDeclarationStep = ({
   >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
-
-  const initialValues: PrivacyDeclaration = {
-    name: "",
-    data_categories: [],
-    data_subjects: [],
-    data_use: "",
-    data_qualifier: "",
-    dataset_references: [],
-  };
 
   const handleSubmit = async () => {
     const systemBodyWithDeclaration = {
@@ -98,6 +76,19 @@ const PrivacyDeclarationStep = ({
     setIsLoading(false);
   };
 
+  const handleEditDeclaration = (
+    oldDeclaration: PrivacyDeclaration,
+    newDeclaration: PrivacyDeclaration
+  ) => {
+    // Because the name can change, we also need a reference to the old declaration in order to
+    // make sure we are replacing the proper one
+    setFormDeclarations(
+      formDeclarations.map((dec) =>
+        dec.name === oldDeclaration.name ? newDeclaration : dec
+      )
+    );
+  };
+
   const addDeclaration = (
     values: PrivacyDeclaration,
     formikHelpers: FormikHelpers<PrivacyDeclaration>
@@ -129,70 +120,51 @@ const PrivacyDeclarationStep = ({
   };
 
   return (
-    <Formik
-      enableReinitialize
-      initialValues={initialValues}
-      onSubmit={addDeclaration}
-      validationSchema={ValidationSchema}
-    >
-      {({ dirty }) => (
-        <Form data-testid="privacy-declaration-form">
-          <Stack spacing={10}>
-            <Heading as="h3" size="lg">
-              {/* TODO FUTURE: Path when describing system from infra scanning */}
-              Privacy Declaration for {system.name}
-            </Heading>
-            <div>
-              Now we’re going to declare our system’s privacy characteristics.
-              Think of this as explaining who’s data the system is processing,
-              what kind of data it’s processing and for what purpose it’s using
-              that data and finally, how identifiable is the user with this
-              data.
-            </div>
-            {formDeclarations.map((declaration) => (
-              <Fragment key={declaration.name}>
-                <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
-                <Divider m="0px !important" />
-              </Fragment>
-            ))}
-            <PrivacyDeclarationForm abridged={abridged} />
-            <Box>
-              <Button
-                type="submit"
-                colorScheme="purple"
-                variant="link"
-                disabled={!dirty}
-                isLoading={isLoading}
-                data-testid="add-btn"
-              >
-                Add <AddIcon boxSize={10} />
-              </Button>
-            </Box>
-            <Box>
-              <Button
-                onClick={onCancel}
-                mr={2}
-                size="sm"
-                variant="outline"
-                data-testid="cancel-btn"
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="primary"
-                size="sm"
-                disabled={formDeclarations.length === 0}
-                isLoading={isLoading}
-                data-testid="next-btn"
-                onClick={handleSubmit}
-              >
-                Next
-              </Button>
-            </Box>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+    <Stack spacing={10}>
+      <Heading as="h3" size="lg">
+        {/* TODO FUTURE: Path when describing system from infra scanning */}
+        Privacy Declaration for {system.name}
+      </Heading>
+      <div>
+        Now we’re going to declare our system’s privacy characteristics. Think
+        of this as explaining who’s data the system is processing, what kind of
+        data it’s processing and for what purpose it’s using that data and
+        finally, how identifiable is the user with this data.
+      </div>
+      {formDeclarations.map((declaration) => (
+        <Fragment key={declaration.name}>
+          <PrivacyDeclarationAccordion
+            privacyDeclaration={declaration}
+            onEdit={(newValues) => {
+              handleEditDeclaration(declaration, newValues);
+            }}
+          />
+          <Divider m="0px !important" />
+        </Fragment>
+      ))}
+      <PrivacyDeclarationForm onSubmit={addDeclaration} abridged={abridged} />
+      <Box>
+        <Button
+          onClick={onCancel}
+          mr={2}
+          size="sm"
+          variant="outline"
+          data-testid="cancel-btn"
+        >
+          Cancel
+        </Button>
+        <Button
+          colorScheme="primary"
+          size="sm"
+          disabled={formDeclarations.length === 0}
+          isLoading={isLoading}
+          data-testid="next-btn"
+          onClick={handleSubmit}
+        >
+          Next
+        </Button>
+      </Box>
+    </Stack>
   );
 };
 
