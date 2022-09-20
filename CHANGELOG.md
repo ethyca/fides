@@ -19,6 +19,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
 
+## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
+
 ### Developer Experience
 
 * Created a docker image for the privacy center [#1165](https://github.com/ethyca/fidesops/pull/1165)
@@ -94,7 +96,7 @@ The types of changes are:
 
 * Bump python from 3.9.13 to 3.9.14 [#1287](https://github.com/ethyca/fidesops/pull/1287)
 
-## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.7.2)
+## [1.7.2](https://github.com/ethyca/fidesops/compare/1.7.1...1.8.0)
 
 ### Added
 

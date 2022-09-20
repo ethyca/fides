@@ -306,6 +306,7 @@ def create_policy(key: str):
         {
             "name": key,
             "key": key,
+            "execution_timeframe": 45,
         },
     ]
     response = requests.patch(
