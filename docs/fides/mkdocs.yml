@@ -22,10 +22,6 @@ nav:
           - Define Datasets: fidesops/guides/datasets.md
           - Configure Policies: fidesops/guides/policies.md
           - Execute Privacy Requests: fidesops/guides/privacy_requests.md
-      - CI/CD Integration:
-          - Overview: fidesctl/cicd/overview.md
-          - Example Integrations: fidesctl/cicd/examples.md
-      - CLI: fidesctl/cli.md
       - How-To Guides:
           - Generating Resources: fidesctl/guides/generate_resources.md
           - Example Policies: fidesctl/guides/policies.md
@@ -58,7 +54,11 @@ nav:
               - Sentry: fidesops/saas_connectors/example_configs/sentry.md
               - Stripe: fidesops/saas_connectors/example_configs/stripe.md
               - Zendesk: fidesops/saas_connectors/example_configs/zendesk.md
-      - Deployment Guide: fidesops/deployment.md
+      - CI/CD Integration:
+          - Overview: fidesctl/cicd/overview.md
+          - Example Integrations: fidesctl/cicd/examples.md
+      - CLI: fidesctl/cli.md
+      - Deployment: fidesops/deployment.md
       - Glossary: fidesops/glossary.md
   - Fides UI:
       - Overview: ui/overview.md

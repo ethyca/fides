@@ -1,5 +1,5 @@
 # About Ethyca
----
+
 The mission of Ethyca is to make Internet-scale technology respectful and ethical. We're a venture-backed privacy technology team headquartered in New York, but working as a distributed team across the US to solve what we believe is the most important problem in technology today: the human right to privacy in vastly complex data-driven systems.
 
 ## What is Fides?

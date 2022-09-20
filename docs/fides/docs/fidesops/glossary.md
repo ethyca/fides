@@ -1,8 +1,5 @@
 # Glossary of Key Terms
 
-
-## Fidesops terms
-
 - [`Privacy Request`](guides/privacy_requests.md): A Privacy Request is a fidesops representation of what is more widely known as a Data Subject Request, or Data Subject Access Request.
     - `access` request: The customer wants to see the data an organization has collected about them.
     - `erasure` request: The customer wants an organization to delete the data they have collected about them.
@@ -32,12 +29,7 @@
     - `Datasets` - Resources at the database level. Datasets can have many Collections.
     - `Collections` - A table, or a Collection of related data. Collections can have many Fields.
     - `Fields` - Attributes on Collections.
-
-
-## Fidesctl terms
-
-See the [fidesctl repo](https://github.com/ethyca/fides) for more information, but here's some fidesctl terms that might be helpful in fidesops.
-
+    
 - `Manifest`: YAML files that describe different types of objects within Fides, with a high-level "privacy as code" language. 
 
 - `Policy`: Different from a *fidesops* Policy, this controls what kinds of data you are permitted to commit to source code.  For example, you might create a fidesctl policy that says, I am not going to allow any System that takes in provided contact information and uses it for marketing purposes. 
