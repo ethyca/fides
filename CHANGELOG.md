@@ -37,6 +37,9 @@ The types of changes are:
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
 
+### Security
+* Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
+
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
 ### Added
