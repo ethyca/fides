@@ -52,4 +52,9 @@ system:
           - employee
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
         dataset_references:
-          - fides_db
+          - fides_db.client
+          - fides_db.connectionconfig
+          - fides_db.fidesuser
+          - fides_db.fidesuserpermissions
+          - fides_db.providedidentity
+          - fides_db.privacyrequest
