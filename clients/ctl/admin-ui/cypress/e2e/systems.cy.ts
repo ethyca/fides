@@ -179,7 +179,8 @@ describe("System management page", () => {
           cy.getByTestId("input-data_qualifier").within(() => {
             cy.contains(declaration.data_qualifier).click();
           });
-          cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("add-btn").click();
+          cy.getByTestId("next-btn").click();
           cy.wait("@putSystem").then((interception) => {
             const { body } = interception.request;
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -257,7 +258,7 @@ describe("System management page", () => {
       cy.getByTestId("toast-success-msg");
     });
 
-    it.only("Can render an error on delete", () => {
+    it("Can render an error on delete", () => {
       cy.intercept("DELETE", "/api/v1/system/*", {
         statusCode: 404,
         body: {
