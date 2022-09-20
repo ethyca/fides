@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 from sqlalchemy.orm import Session
@@ -39,9 +40,9 @@ def stripe_identity_email(saas_config):
     return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def stripe_erasure_identity_email():
-    return "ethyca+stripe+rtf@example.com"
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -103,7 +104,9 @@ def stripe_dataset_config(
 
 
 @pytest.fixture(scope="function")
-def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Generator:
+def stripe_create_erasure_data(
+    stripe_connection_config: ConnectionConfig, stripe_erasure_identity_email
+) -> Generator:
 
     stripe_secrets = stripe_connection_config.secrets
 
@@ -126,7 +129,7 @@ def stripe_create_erasure_data(stripe_connection_config: ConnectionConfig) -> Ge
         },
         "balance": 0,
         "description": "RTF Test Customer",
-        "email": "ethyca+stripe+rtf@example.com",
+        "email": stripe_erasure_identity_email,
         "name": "Ethyca RTF",
         "phone": "+19515551234",
         "preferred_locales": ["en-US"],

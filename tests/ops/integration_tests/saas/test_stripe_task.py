@@ -8,10 +8,17 @@ from fidesops.ops.core.config import config
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import Identity
+from fidesops.ops.service.connectors import get_connector
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.filter_results import filter_data_categories
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_stripe
+def test_stripe_connection_test(stripe_connection_config) -> None:
+    get_connector(stripe_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
@@ -69,7 +76,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:card"],
-        min_size=2,
+        min_size=1,
         keys=[
             "address_city",
             "address_country",
@@ -98,7 +105,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=3,
+        min_size=2,
         keys=[
             "amount",
             "amount_captured",
@@ -204,7 +211,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:customer_balance_transaction"],
-        min_size=5,
+        min_size=2,
         keys=[
             "amount",
             "created",
@@ -223,7 +230,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:dispute"],
-        min_size=2,
+        min_size=3,
         keys=[
             "amount",
             "balance_transactions",
@@ -244,7 +251,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=4,
+        min_size=2,
         keys=[
             "account_country",
             "account_name",
@@ -315,7 +322,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice_item"],
-        min_size=4,
+        min_size=1,
         keys=[
             "amount",
             "currency",
@@ -342,7 +349,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=5,
+        min_size=1,
         keys=[
             "amount",
             "amount_capturable",
