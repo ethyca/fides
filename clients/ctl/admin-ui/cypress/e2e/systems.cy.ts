@@ -1,3 +1,5 @@
+import { stubSystemCrud, stubTaxonomyEntities } from "../support/stubs";
+
 describe("System management page", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
@@ -46,15 +48,7 @@ describe("System management page", () => {
 
   describe("Can create a new system", () => {
     beforeEach(() => {
-      cy.intercept("POST", "/api/v1/system", { fixture: "system.json" }).as(
-        "postSystem"
-      );
-      cy.intercept("GET", "/api/v1/system/*", { fixture: "system.json" }).as(
-        "getSystem"
-      );
-      cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
-        "putSystem"
-      );
+      stubSystemCrud();
     });
     describe("Create a system via yaml", () => {
       it("Can insert yaml and post", () => {
@@ -115,21 +109,8 @@ describe("System management page", () => {
 
     describe("Create a system manually", () => {
       beforeEach(() => {
-        cy.intercept("GET", "/api/v1/data_category", {
-          fixture: "data_categories.json",
-        }).as("getDataCategory");
-        cy.intercept("GET", "/api/v1/data_qualifier", {
-          fixture: "data_qualifiers.json",
-        }).as("getDataQualifier");
-        cy.intercept("GET", "/api/v1/data_subject", {
-          fixture: "data_subjects.json",
-        }).as("getDataSubject");
-        cy.intercept("GET", "/api/v1/data_use", {
-          fixture: "data_uses.json",
-        }).as("getDataUse");
-        cy.intercept("GET", "/api/v1/system", {
-          fixture: "systems.json",
-        }).as("getSystems");
+        stubTaxonomyEntities();
+        stubSystemCrud();
         cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
           "getDatasets"
         );
@@ -389,14 +370,7 @@ describe("System management page", () => {
 
   describe("Can delete a system", () => {
     beforeEach(() => {
-      cy.fixture("system.json").then((system) => {
-        cy.intercept("DELETE", "/api/v1/system/*", {
-          body: {
-            message: "resource deleted",
-            resource: system,
-          },
-        }).as("deleteSystem");
-      });
+      stubSystemCrud();
     });
 
     it("Can delete a system from its card", () => {
@@ -434,6 +408,13 @@ describe("System management page", () => {
       cy.getByTestId("continue-btn").click();
       cy.wait("@deleteSystemError");
       cy.getByTestId("toast-error-msg").contains("resource does not exist");
+    });
+  });
+
+  describe("Can edit a system", () => {
+    beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
     });
   });
 });
