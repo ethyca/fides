@@ -463,6 +463,6 @@ form.hs-form{
     font-size: .85em;
 }
 
-.md-typeset table code {
+.md-typeset table:not([class]) code {
     font-size: .60rem;
 }

@@ -1,15 +1,23 @@
-# Example Integrations
+# CI/CD Overview
 
-The following code snippets are meant as simple example implementations, and illustrate how you might integrate fidesctl using various popular CI pipline tools. Always inspect, understand, and test your production CI configuration files.
+Fides provides a CLI for integrating with your existing CI pipeline configurations. These commands are designed to help evaluate code changes against defined Fides [Policies](../guides/policies.md), and flag developers in advance if any updates or merges are no longer in compliance.
+## Implementation
+To integrate Fides with your CI pipeline, you should plan to implement at least two commands in your CI actions:
 
-  - [GitHub Actions](#github-actions)
-  - [GitLab CI](#gitlab-ci)
-  - [Jenkins](#jenkins)
-  - [CircleCI](#circleci)
-  - [Azure Pipelines](#azure-pipelines)
-  
----
-## GitHub Actions
+1. `fidesctl evaluate --dry <resource_dir>`
+    - `evaluate --dry` checks if code changes will be accepted **without** pushing those changes to the Fides server.
+    - Run this against the latest commit on code changesets (pull requests, merge requests, etc).
+2. `fidesctl evaluate <resource_dir>`
+    - `evaluate` synchronizes the latest changes to the Fides server.
+    - Run this against commits representing merges into the default branch to keep your server in sync.
+
+## Example Integrations
+
+The following code snippets are meant as simple example implementations, and illustrate Fides can integrate with various popular CI pipeline tools. They are not designed for immediate production use.
+
+!!! Tip "Always inspect, understand, and test your production CI configuration files."
+
+### GitHub Actions
 
 ```yaml title="<code>.github/workflows/fidesctl_ci.yml</code>"
 name: Fidesctl CI
@@ -60,7 +68,7 @@ jobs:
           FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
 ```
 ___
-## GitLab CI
+### GitLab CI
 
 ```yaml title="<code>.gitlab-ci.yml</code>"
 stages:
@@ -91,7 +99,7 @@ fidesctl-cd:
     <<: *global-variables
 ```
 ___
-## Jenkins
+### Jenkins
 
 ```groovy title="<code>Jenkinsfile</code> (Declarative Syntax)"
 pipeline {
@@ -131,7 +139,7 @@ pipeline {
 }
 ```
 ___
-## CircleCI
+### CircleCI
 
 ```yaml title="<code>.circleci/config.yml</code>"
 version: 2.1
@@ -170,8 +178,8 @@ workflows:
             branches:
               only: main
 ```
-___
-## Azure Pipelines
+
+### Azure Pipelines
 
 ```yaml title="<code>.azure-pipelines.yml</code>"
 # Trigger a dry run of the evaluate job on pull requests that target main

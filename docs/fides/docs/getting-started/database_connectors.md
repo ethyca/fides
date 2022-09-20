@@ -1,13 +1,10 @@
 # Connect to SQL and NoSQL Databases
 
-## What is a connection?
+## What is a Fides Connection?
 
-A _connection_ links your databases to fidesops, so you can gather and update selected PII 
-categories.
+A _Connection_ links your owned databases and [third-party applications](../saas_connectors/saas_connectors.md) to Fides, allowing Fides to execute privacy requests against your collections and fields.
 
-## Supported databases
-
-Fidesops supports connections to the following databases:
+Fides currently supports connections to the following databases:
 
 * PostgreSQL
 * MongoDB
@@ -20,28 +17,30 @@ Fidesops supports connections to the following databases:
 
 Other platforms will be added in future releases.
 
-## Create a ConnectionConfig object 
+## How do Connections differ from Datasets?
 
-The connection between fidesops and your database is represented by a _ConnectionConfig_ object. To create a ConnectionConfig, you issue a request to the [Create a ConnectionConfig](/fidesops/api/#operations-Connections-put_connections_api_v1_connection_put) operation, passing a payload that contains the properties listed below. 
-
-* `name`  is a human-readable name for your database.
-
-* `key`  is a string token that uniquely identifies your ConnectionConfig object. If you don't supply a `key`, the `name` value, converted to snake-case, is used. For example, if the `name` is `Application PostgreSQL DB`, the converted key is `application_postgresql_db`.
-
-* `connection-type` specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, `snowflake`, and `bigquery`.
-
-* `access` sets the connection's permissions, one of "read" (fidesops may only read from your database) or "write" (fidesops can read from and write to your database).
-
-* `disabled` determines whether the ConnectionConfig is active.  If True, we skip running queries for any collection associated with that ConnectionConfig.
-
-* `description` is an extra field to add further details about your connection. 
-
-While the ConnectionConfig object contains meta information about the database, you'll notice that it doesn't actually identify the database itself. We'll get to that when we set the ConnectionConfig's "secrets".
+A Dataset is model of your database that describes the data contained within each field. A Connection stores the secrets to connect to the database. After Fides connects to your database, it dynamically generates queries to fulfil privacy requests by consulting the annotations in the Dataset.
 
 
-### PostgreSQL
+## Create a new Connection 
+The connection between Fides and your database is represented by a _Connection_. To create a new Connection, issue a request to the [Connection](./api/#operations-Connections-put_connections_api_v1_connection_put) endpoint, passing a payload that contains the properties listed below. 
 
-```json title="<code>PATCH api/v1/connection</code>"
+| Field | Description |
+| --- | --- |
+| `name` | A human-readable name for your database. |
+| `key` | A string token that uniquely identifies this Connection. If you don't supply a `key`, the `name` value, converted to snake-case, is used. |
+| `connection-type` | Specifies the type of database. Valid values are `postgres`, `mongodb`, `mysql`, `mariadb`, `mssql`, `redshift`, `snowflake`, and `bigquery`. |
+| `access` | The connection's permissions, either `read` (Fides may only read from your database) or `write` (Fides can read from and write to your database). |
+| `disabled` | determines whether the Connection is active.  If `True`, Fides will skip running queries for any collection associated with that Connection. |
+| `description` | _Optional._  An extra field to add further details about your Connection. |
+
+While the Connection contains meta information about the database, it does not identify the database itself.
+
+### Examples
+
+All of the following are `PATCH` requests to `api/v1/connection`.
+
+```json title="PostgreSQL"
 [
   { 
     "name": "Application PostgreSQL DB",
@@ -52,9 +51,7 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ```
 
-### MongoDB
-
-```json title="<code>PATCH api/v1/connection</code>"
+```json title="MongoDB"
 [
   { 
     "name": "My Mongo DB",
@@ -66,9 +63,7 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ``` 
 
-### MySQL 
-
-```json title="<code>PATCH api/v1/connection</code>"
+```json title="MySQL"
 [
   { 
     "name": "My MySQL DB",
@@ -80,9 +75,7 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ``` 
 
-### MariaDB
-
-```json title="<code>PATCH api/v1/connection</code>"
+```json title="MariaDB"
 [
   { 
     "name": "My Maria DB",
@@ -94,9 +87,7 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ``` 
 
-### MsSQL
-
-```json title="<code>PATCH api/v1/connection </code>"
+```json title="MsSQL""
 [
   { 
     "name": "My MsSQL DB",
@@ -108,9 +99,7 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ``` 
 
-### Manual connections
-
-```json title="<code>PATCH api/v1/connection </code>"
+```json title="Manual Connections"
 [
   {
     "name": "Manual connector",
@@ -123,15 +112,12 @@ While the ConnectionConfig object contains meta information about the database, 
 ]
 ``` 
 
-## Set ConnectionConfig secrets
+## Set the Connection secrets
+After creating a new Connection, you explain how to connect to it by setting its "secrets": the host, port, user, and password. These values are specific to each database, and should reference the user and password you would like Fides to use when accessing your database.
 
-After you create a ConnectionConfig, you explain how to connect to it by setting its "secrets": host, port, user, and password (note that the secrets used are specific to the DB connector). You do this by creating a ConnectionConfig Secrets object by calling the [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) operation. You can set the object's attributes separately, or supply a single `url` string that encodes them all.
+Call the [Connection Secrets](./api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) endpoint. You can set the Connection attributes separately, or supply a single `url` string that encodes them all.
 
-If you set the `verify` query parameter to `true`, the operation  will  test the connection by issuing a trivial request to the database. The `test_status` response property announces the success of the connection attempt as `succeeded` or `failed`. If the attempt has failed, the `failure_reason` property gives further details about the failure.
-
-To skip the connection test, set `verify` to `false`.
-
-Note: fidesops encrypts all ConnectionConfig secrets values before they're stored.
+!!! Tip "Fides encrypts all Connection secrets values before they're stored."
 
 ### Set the secrets separately
 
@@ -158,13 +144,8 @@ This example sets the database secrets as a single `url` property, and skips the
 }
 ```
 
-### Amazon Redshift
-
-This Amazon Redshift example sets the database secrets as a `url` property and a `db_schema` property.  Redshift
-databases have one or more schemas, with the default being named `public`.  If you need to set a different schema,
-specify `db_schema` for Redshift, and it will be set as the `search_path` when querying.
-
-
+### Examples
+**Amazon Redshift**
 ```json title="<code>PUT api/v1/connection/my_redshift_db/secret</code>" 
 {
     "url": "redshift+psycopg2://username@host.amazonaws.com:5439/database",
@@ -172,16 +153,12 @@ specify `db_schema` for Redshift, and it will be set as the `search_path` when q
 }
 ```
 
-### Google BigQuery
+This Amazon Redshift example sets the database secrets using a `url` property and a `db_schema` property. Redshift
+databases have one or more schemas, with the default being named `public`.  
 
-For Google BigQuery, there are 2 items needed for secrets: 
+If you need to use a different schema, specify a `db_schema` when setting your secrets, and it will be set as the `search_path` for querying.
 
-`dataset` - Name of your dataset. BigQuery datasets are top-level containers (within a project) that are used to organize and control access to your tables and views.
-
-`keyfile_creds` - Credentials from your service account JSON keyfile, accessible for download from the GCP console.  
-
-Here's an example of what this looks like:
-
+**Google BigQuery**
 ```json title="<code>PUT api/v1/connection/my_bigquery_db/secret</code>"
 {
     "dataset": "some-dataset",
@@ -200,22 +177,29 @@ Here's an example of what this looks like:
 }
 ```
 
+Google BigQuery requires two parameters: 
+
+`dataset` - The name of your dataset. BigQuery datasets are top-level containers (within a project) that are used to organize and control access to your tables and views.
+
+`keyfile_creds` - The credentials from your service account JSON keyfile, accessible for download from the GCP console.  
+
+
 ### Test your connection 
+When setting your Connection secrets, setting the `verify` query parameter to `true` allows you to test the Connection by issuing a trivial request to the database. 
 
-You can verify that a ConnectionConfig's secrets are valid at any time by calling the [Test a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) operation:
+The `test_status` response property announces the test result as `succeeded` or `failed`. If the attempt has failed, the `failure_reason` property gives further details about the failure.
+
+To skip the connection test, set `verify` to `false`.
+
+You can verify that a Connection's secrets are valid at any time by calling the [Test a Connection's Secrets](./api#operations-Connections-test_connection_config_secrets_api_v1_connection__connection_key__test_get) endpoint:
 
 
+```title="GET"
+/api/v1/connection/application-postgresql-db/test
 ```
-GET /api/v1/connection/application-postgresql-db/test
-```
+Test failures can be resolved by calling the [Set a Connection's Secrets](./api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put) endpoint, and resetting the secret values.
 
-Once again, the `test_status` and `failure_reason` properties describe the success or failure of the test. If the test failed,
-you should adjust the ConnectionConfig Secrets properties through additional calls to [Set a ConnectionConfig's Secrets](/fidesops/api#operations-Connections-put_connection_config_secrets_api_v1_connection__connection_key__secret_put)
-
-
-#### Connection succeeded
-
-```json
+```json title="Success"
 {
     "msg": "Test completed for ConnectionConfig with key: app_postgres_db.",
     "test_status": "succeeded",
@@ -223,9 +207,7 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 }
 ```
 
-### Connection failed
-
-```json
+```json title="Failure"
 {
     "msg": "Secrets updated for ConnectionConfig with key: app_mongo_db.",
     "test_status": "failed",
@@ -234,7 +216,9 @@ you should adjust the ConnectionConfig Secrets properties through additional cal
 ```
 
 ## Associate a Dataset
-Once you have a working ConnectionConfig, it can be associated to an existing [dataset](datasets.md) by calling the `/dataset` endpoint, with a JSON version of your dataset as the request body:
+Once you have a working Connection, it must be associated to an existing [dataset](datasets.md). This enables Fides to map and access the contents of your database. 
+
+Call the `/dataset` endpoint with a JSON version of your dataset as the request body:
 
 ```json title="<code>PATCH /api/v1/connection/my_connection_key/dataset</code>"
 [{
@@ -245,14 +229,13 @@ Once you have a working ConnectionConfig, it can be associated to an existing [d
 }]
 ```
 
-## Filtering ConnectionConfigs
+## Filtering your Connections
 
-Current available filters are the `connection_type` and whether the connection is `disabled`.
+Fides can filter and return matching Connections based on the `connection_type`, the `testing_status`, the `system_status`, and whether the connection is `disabled`.
 
 ### Connection type filter
 
-Including multiple `connection_type` query params and values will result in a query that looks for 
-*any* connections with that type.
+Including multiple `connection_type` query parameters and values will result in a query that looks for *any* connections with that type:
 
 ```json title="<code>GET api/v1//connection/?connection_type=mariadb&connection_type=postgres</code>"
 {
@@ -290,8 +273,7 @@ Including multiple `connection_type` query params and values will result in a qu
 ```
 
 ### Disabled filter
-
-The `disabled` filter can show which datastores are skipped as part of privacy request execution.
+The `disabled` filter will return datastores are skipped as part of privacy request execution:
 
 ```json title="<code>GET api/v1/connection/?disabled=true</code>"
 {
@@ -316,8 +298,8 @@ The `disabled` filter can show which datastores are skipped as part of privacy r
 
 ```
 
-### Testing_Status filter
-The `testing_status` filter queries on the status of the last successful test:
+### Test_Status filter
+The `test_status` filter queries on the status of the last successful test:
 
 ```json title="<code>GET api/v1/connection/?test_status=false</code>"
 {
@@ -343,7 +325,7 @@ The `testing_status` filter queries on the status of the last successful test:
 ```
 
 ### System_Status filter
-The `system_status` filter surfaces either `database` or `saas`-type connectors:
+The `system_status` filter surfaces either `database` or [`saas`-type](../saas_connectors/saas_connectors.md) connectors:
 
 ```json title="<code>GET api/v1/connection/?system_type=database</code>"
 {
@@ -365,13 +347,10 @@ The `system_status` filter surfaces either `database` or `saas`-type connectors:
     "page": 1,
     "size": 50
 }
-
 ```
 
-
-## Search a ConnectionConfig
-
-You can search the `name`, `key`, and `description` fields of your ConnectionConfigs with the `search` query parameter.
+## Search your Connections
+You can search the `name`, `key`, and `description` fields of your Connections with the `search` query parameter.
 
 ```json title="<code>GET /api/v1/connection/?search=application mysql</code>"
 {
@@ -393,36 +372,3 @@ You can search the `name`, `key`, and `description` fields of your ConnectionCon
     "size": 50
 }
 ```
-
-## How do ConnectionConfigs differ from Datasets?
-
-A Dataset is an annotation of your database schema; it describes the PII category (or Data Categories) for each field that the database contains. A ConnectionConfig holds the secrets to connect to the database. Each Dataset has a foreign key to a ConnectionConfig.
-
-After fidesops connects to your database, it generates valid queries by consulting the annotations in the Dataset.
-
-Here is an example of how a "person" table in your PostgreSQL database might map to a fidesops
-Dataset:
-
-```yaml
-Person:
-  id: str
-  name: str
-  email: str
-
-dataset:
-  - fides_key: my_app
-    name: App Dataset
-    description: ...
-    collections:
-      - name: person
-        fields:
-          - name: name
-            data_categories: [user.contact.name]
-          - name: email
-            data_categories: [user.contact.email]
-          - name: id
-            data_categories: [system.operations] 
-```
-
-
-See [Configuring Datasets](datasets.md) for more information.

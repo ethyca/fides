@@ -16,48 +16,45 @@ nav:
           - Installation from PyPI: installation/pypi.md
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
-      - Getting Started: 
-          - Authenticate with OAuth: fidesops/guides/oauth.md
-          - Connect to Databases: fidesops/guides/database_connectors.md
-          - Define Datasets: fidesops/guides/datasets.md
-          - Configure Policies: fidesops/guides/policies.md
-          - Execute Privacy Requests: fidesops/guides/privacy_requests.md
+      - Working with Fides: 
+          - Connect to Databases: getting-started/database_connectors.md
+          - Create Datasets: getting-started/datasets.md
+          - Generate Resources: getting-started/generate_resources.md
+          - Create Compliance Policies: getting-started/policies.md
+          - Create Execution Policies: getting-started/execution_policies.md
+          - Generate Data Maps: getting-started/generate_datamaps.md
+          - Execute Privacy Requests: getting-started/privacy_requests.md
       - How-To Guides:
-          - Generating Resources: guides/generate_resources.md
-          - Example Policies: guides/policies.md
-          - Extending the Taxonomy: guides/extending_taxonomy.md
-          - Generating a Data Map: guides/generating_datamap.md
-          - Execution Policies: guides/execution_policies.md
-          - View Available Connection Types: fidesops/guides/connection_types.md
-          - Configure Email Communications: fidesops/guides/email_communications.md
-          - Annotate Complex Fields: fidesops/guides/complex_fields.md
-          - Configure Data Masking: fidesops/guides/masking_strategies.md
-          - Configure Storage Destinations: fidesops/guides/storage.md
-          - Configure Policy Webhooks: fidesops/guides/policy_webhooks.md
-          - Report on Privacy Requests: fidesops/guides/reporting.md
-          - Configure OneTrust Integration: fidesops/guides/onetrust.md
-          - Preview Query Execution: fidesops/guides/query_execution.md
-          - Data Rights Protocol: fidesops/guides/data_rights_protocol.md
+          - Authenticate with OAuth: getting-started/oauth.md
+          - Extend the Taxonomy: guides/extend_taxonomy.md
+          - View Available Connection Types: guides/connection_types.md
+          - Configure Email Communications: guides/email_communications.md
+          - Annotate Complex Fields: guides/complex_fields.md
+          - Configure Data Masking: guides/masking_strategies.md
+          - Configure Storage Destinations: guides/storage.md
+          - Configure Policy Webhooks: guides/policy_webhooks.md
+          - Report on Privacy Requests: guides/reporting.md
+          - Configure OneTrust Integration: guides/onetrust.md
+          - Preview Query Execution: guides/query_execution.md
+          - Data Rights Protocol: guides/data_rights_protocol.md
       - SaaS Connectors:
-          - Connect to SaaS Applications: fidesops/saas_connectors/saas_connectors.md
-          - SaaS Configuration: fidesops/saas_connectors/saas_config.md
-          - SaaS OAuth2 Configuration: fidesops/saas_connectors/saas_oauth2.md
-          - SaaS Post-Processors: fidesops/saas_connectors/saas_postprocessors.md
-          - SaaS Pagination: fidesops/saas_connectors/saas_pagination.md
+          - Connect to SaaS Applications: saas_connectors/saas_connectors.md
+          - SaaS Configuration: saas_connectors/saas_config.md
+          - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
+          - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
+          - SaaS Pagination: saas_connectors/saas_pagination.md
           - Connection Examples:
-              - Adobe Campaign: fidesops/saas_connectors/example_configs/adobe.md
-              - Hubspot: fidesops/saas_connectors/example_configs/hubspot.md
-              - Mailchimp: fidesops/saas_connectors/example_configs/mailchimp.md
-              - Outreach: fidesops/saas_connectors/example_configs/outreach.md
-              - Salesforce: fidesops/saas_connectors/example_configs/salesforce.md
-              - Segment: fidesops/saas_connectors/example_configs/segment.md
-              - Sendgrid: fidesops/saas_connectors/example_configs/sendgrid.md
-              - Sentry: fidesops/saas_connectors/example_configs/sentry.md
-              - Stripe: fidesops/saas_connectors/example_configs/stripe.md
-              - Zendesk: fidesops/saas_connectors/example_configs/zendesk.md
-      - CI/CD Integration:
-          - Overview: cicd/overview.md
-          - Example Integrations: cicd/examples.md
+              - Adobe Campaign: saas_connectors/example_configs/adobe.md
+              - Hubspot: saas_connectors/example_configs/hubspot.md
+              - Mailchimp: saas_connectors/example_configs/mailchimp.md
+              - Outreach: saas_connectors/example_configs/outreach.md
+              - Salesforce: saas_connectors/example_configs/salesforce.md
+              - Segment: saas_connectors/example_configs/segment.md
+              - Sendgrid: saas_connectors/example_configs/sendgrid.md
+              - Sentry: saas_connectors/example_configs/sentry.md
+              - Stripe: saas_connectors/example_configs/stripe.md
+              - Zendesk: saas_connectors/example_configs/zendesk.md
+      - CI/CD Integrations: cicd.md
       - CLI: cli.md
       - Deployment: deployment.md
       - Glossary: glossary.md

@@ -1,3 +1,5 @@
+# Create Datasets
+
 ## What is a Dataset?
 
 A fidesops _Dataset_ is the configuration you provide for a database or other queryable datastore. We use the term _Dataset_ and not database to emphasize that this will ultimately be applicable to a wide variety of datastores beyond traditional databases. With Datasets, a _collection_ is the term used for a SQL table, mongo database collection, or any other single coherent set values.
