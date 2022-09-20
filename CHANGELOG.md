@@ -27,12 +27,14 @@ The types of changes are:
   * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
   * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
 
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 * Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
+* Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
 
 ### Fixed
 

@@ -6,6 +6,11 @@ import React, { Fragment, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  CustomMultiSelect,
+  CustomSelect,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { AddIcon } from "~/features/common/Icon";
 import {
@@ -26,13 +31,9 @@ import {
 } from "~/features/taxonomy/taxonomy.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
 
-import {
-  CustomMultiSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "../common/form/inputs";
-import { useUpdateSystemMutation } from "../system/system.slice";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
+import PrivacyDeclarationFormExtension from "./PrivacyDeclarationFormExtension";
+import { useUpdateSystemMutation } from "./system.slice";
 
 type FormValues = PrivacyDeclaration;
 
@@ -59,9 +60,15 @@ interface Props {
   system: System;
   onCancel: () => void;
   onSuccess: (system: System) => void;
+  abridged?: boolean;
 }
 
-const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
+const PrivacyDeclarationStep = ({
+  system,
+  onCancel,
+  onSuccess,
+  abridged,
+}: Props) => {
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
@@ -80,12 +87,13 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
   const allDataUses = useAppSelector(selectDataUses);
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
-  const initialValues = {
+  const initialValues: PrivacyDeclaration = {
     name: "",
     data_categories: [],
     data_subjects: [],
     data_use: "",
     data_qualifier: "",
+    dataset_references: [],
   };
 
   const handleSubmit = async () => {
@@ -147,6 +155,7 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
           data_categories: [],
           data_use: "",
           data_qualifier: "",
+          dataset_references: [],
         },
       });
     }
@@ -223,6 +232,7 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
                 }))}
                 tooltip="How identifiable is the user in the data in this system? For instance, is it anonymized data where the user is truly unknown/unidentifiable, or it is partially identifiable data?"
               />
+              {!abridged ? <PrivacyDeclarationFormExtension /> : null}
             </Stack>
             <Box>
               <Button
@@ -264,4 +274,4 @@ const PrivacyDeclarationForm = ({ system, onCancel, onSuccess }: Props) => {
   );
 };
 
-export default PrivacyDeclarationForm;
+export default PrivacyDeclarationStep;
