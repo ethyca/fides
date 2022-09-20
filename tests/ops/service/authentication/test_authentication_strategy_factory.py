@@ -10,9 +10,6 @@ from fidesops.ops.service.authentication.authentication_strategy_basic import (
 from fidesops.ops.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_query_param import (
-    QueryParamAuthenticationStrategy,
-)
 
 
 def test_get_strategy_basic():
@@ -32,14 +29,6 @@ def test_get_strategy_bearer():
         strategy_name="bearer", configuration=config
     )
     assert isinstance(strategy, BearerAuthenticationStrategy)
-
-
-def test_get_strategy_query_param():
-    config = {"name": "api_key", "value": "<api_key>"}
-    strategy = AuthenticationStrategy.get_strategy(
-        strategy_name="query_param", configuration=config
-    )
-    assert isinstance(strategy, QueryParamAuthenticationStrategy)
 
 
 def test_get_strategy_invalid_strategy():

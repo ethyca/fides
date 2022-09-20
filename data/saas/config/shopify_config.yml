@@ -12,13 +12,16 @@ saas_config:
   client_config:
     protocol: https
     host: <domain>
+    authentication:
+      strategy: api_key
+      configuration:
+        headers:
+        - name: X-Shopify-Access-Token
+          value: <access_token>
 
   test_request:
     method: GET
     path: /admin/api/2022-07/customers.json
-    headers:
-      - name: X-Shopify-Access-Token
-        value: <access_token>
     query_params:
       - name: email
         value: test+connector@test.com
@@ -29,17 +32,12 @@ saas_config:
         read:
           method: GET
           path: /admin/api/2022-07/customers.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           query_params:
             - name: email
               value: <email>
           param_values:
             - name: email
               identity: email
-            - name: access_token
-              connector_param: access_token
           data_path: customers
           pagination:
             strategy: link
@@ -49,9 +47,6 @@ saas_config:
         update:
           method: PUT
           path: /admin/api/2022-07/customers/<customer_id>.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           body: |
             {
               "customer": { <masked_object_fields> }
@@ -62,16 +57,11 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customers.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
     - name: customer_orders
       requests:
         read:
           method: GET
           path: /admin/api/2022-07/customers/<customer_id>/orders.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           query_params:
             - name: status
               value: any
@@ -81,8 +71,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customers.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
           pagination:
             strategy: link
             configuration:
@@ -92,9 +80,6 @@ saas_config:
         update:
           method: PUT
           path: /admin/api/2022-07/orders/<order_id>.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           body: |
             {
               "order" : { <masked_object_fields> }
@@ -105,24 +90,17 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer_orders.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
     - name: customer_addresses
       requests:
         read:
           method: GET
           path: /admin/api/2022-07/customers/<customer_id>/addresses.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customers.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
           pagination:
             strategy: link
             configuration:
@@ -132,9 +110,6 @@ saas_config:
         update:
           method: PUT
           path: /admin/api/2022-07/customers/<customer_id>/addresses/<address_id>.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           body: |
             {
               "customer_address": { <masked_object_fields> }
@@ -150,55 +125,38 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer_addresses.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
     - name: customer_order_transactions
       requests:
         read:
           method: GET
           path: /admin/api/2022-07/orders/<order_id>/transactions.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           param_values:
             - name: order_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer_orders.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
           data_path: transactions
     - name: blogs
       requests:
         read:
           method: GET
           path: /admin/api/2022-07/blogs.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           param_values:
             - name: email
               identity: email
-            - name: access_token
-              connector_param: access_token
           data_path: blogs
     - name: blog_articles
       requests:
         read:
           method: GET
           path: /admin/api/2022-07/blogs/<blog_id>/articles.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           param_values:
             - name: blog_id
               references:
                 - dataset: <instance_fides_key>
                   field: blogs.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
           data_path: articles
     - name: blog_article_comments
       requests:
@@ -206,9 +164,6 @@ saas_config:
           method: GET
           path: /admin/api/2022-07/comments.json
           grouped_inputs: [blog_id, article_id]
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           query_params:
             - name: blog_id
               value: <blog_id>
@@ -225,8 +180,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: blog_articles.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
           data_path: comments
           postprocessors:
             - strategy: filter
@@ -237,9 +190,6 @@ saas_config:
         update:
           method: PUT
           path: /admin/api/2022-07/comments/<comment_id>.json
-          headers:
-            - name: X-Shopify-Access-Token
-              value: <access_token>
           body: |
             {
               "comment": { <masked_object_fields> }
@@ -250,5 +200,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: blog_article_comments.id
                   direction: from
-            - name: access_token
-              connector_param: access_token
