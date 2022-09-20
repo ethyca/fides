@@ -1210,20 +1210,3 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-
-- fides_key: fides_cache
-  organization_fides_key: default_organization
-  name: public
-  description: Redis cache for the fides database.
-  data_categories:
-  - system.operations
-  data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  retention: 1 year post employment
-  collections:
-  - name: cache
-    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    fields:
-    - name: version_num
-      data_categories:
-      - system.operations
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
