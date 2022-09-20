@@ -25,8 +25,8 @@ import { ColumnMetadata, EditableType } from "./types";
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Field Name", attribute: "name" },
   { name: "Description", attribute: "description" },
-  { name: "Personal Data Categories", attribute: "data_categories" },
   { name: "Identifiability", attribute: "data_qualifier" },
+  { name: "Personal Data Categories", attribute: "data_categories" },
 ];
 
 /**
