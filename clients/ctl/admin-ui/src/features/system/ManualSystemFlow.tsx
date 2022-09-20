@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
 import DescribeSystemStep from "./DescribeSystemStep";
+import { transformSystemToFormValues } from "./form";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
@@ -81,6 +82,11 @@ const ManualSystemFlow = () => {
           <DescribeSystemStep
             onSuccess={handleSuccess}
             onCancel={returnToNew}
+            initialValues={
+              activeSystem
+                ? transformSystemToFormValues(activeSystem)
+                : undefined
+            }
           />
         ) : null}
         {currentStepIndex === 1 && activeSystem ? (

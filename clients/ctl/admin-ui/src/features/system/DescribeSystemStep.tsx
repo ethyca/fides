@@ -11,77 +11,40 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
+import {
+  defaultInitialValues,
+  FormValues,
+  transformFormValuesToSystem,
+} from "~/features/system/form";
 import {
   useCreateSystemMutation,
   useGetAllSystemsQuery,
+  useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
-
-const initialValues = {
-  description: "",
-  fides_key: "",
-  name: "",
-  organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-  tags: [],
-  system_type: "",
-  privacy_declarations: [],
-  data_responsibility_title: undefined,
-  administrating_department: "",
-  third_country_transfers: [],
-  system_dependencies: [],
-  joint_controller: {
-    name: "",
-    email: "",
-    address: "",
-    phone: "",
-  },
-  data_protection_impact_assessment: {
-    is_required: "false",
-    progress: "",
-    link: "",
-  },
-};
-export type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
   system_type: Yup.string().required().label("System type"),
 });
 
-const transformFormValuesToSystem = (formValues: FormValues): System => {
-  const hasImpactAssessment =
-    formValues.data_protection_impact_assessment.is_required === "true";
-  const impactAssessment = hasImpactAssessment
-    ? { ...formValues.data_protection_impact_assessment, is_required: true }
-    : undefined;
-  const hasJointController =
-    formValues.joint_controller !== initialValues.joint_controller;
-  const jointController = hasJointController
-    ? formValues.joint_controller
-    : undefined;
-  return {
-    ...formValues,
-    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-    privacy_declarations: [],
-    data_protection_impact_assessment: impactAssessment,
-    joint_controller: jointController,
-    administrating_department:
-      formValues.administrating_department === ""
-        ? undefined
-        : formValues.administrating_department,
-  };
-};
-
 interface Props {
   onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
+  initialValues?: FormValues;
 }
 
-const DescribeSystemStep = ({ onCancel, onSuccess, abridged }: Props) => {
+const DescribeSystemStep = ({
+  onCancel,
+  onSuccess,
+  abridged,
+  initialValues: passedInInitialValues,
+}: Props) => {
+  const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [createSystem] = useCreateSystemMutation();
+  const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   const { data: systems } = useGetAllSystemsQuery();
   const systemOptions = systems
@@ -114,8 +77,13 @@ const DescribeSystemStep = ({ onCancel, onSuccess, abridged }: Props) => {
 
     setIsLoading(true);
 
-    const createSystemResult = await createSystem(systemBody);
-    handleResult(createSystemResult);
+    let result;
+    if (passedInInitialValues) {
+      result = await updateSystem(systemBody);
+    } else {
+      result = await createSystem(systemBody);
+    }
+    handleResult(result);
 
     setIsLoading(false);
   };
