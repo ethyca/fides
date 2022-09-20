@@ -1,11 +1,11 @@
 # Privacy Center
 
-The fidesops [Privacy Center](privacy_center.md) is a configurable webpage where users can request to download or delete their data.
+The Privacy Center is a configurable webpage that allows users to submit data access or deletion requests. Deployment is managed by a Docker image separate to Fides.
 
 ![privacy center](../img/admin_ui/privacy_center.png)
 
 ## Configuration
-The fidesops Privacy Center's text and actions are managed by a `config.json` file in the fidesops `/privacy-center/config` directory.
+The Privacy Center's text and actions are managed by a `config.json` file. For ease of organization and deployment, place this within a `config` folder in the root directory of your project (i.e., `~/custom-privacy-center/config`). 
 
 ```json title="<code>config.json</code>"
 {
@@ -53,10 +53,21 @@ The fidesops Privacy Center's text and actions are managed by a `config.json` fi
 | `identity_inputs` | The list of personally identifiable information required by an action. |
 
 ### Actions
-Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a fidesops [policy key](../guides/policy_webhooks.md), which defines the policy executed when the DSR is approved.
+Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a Fides [execution policy key](../guides/policy_webhooks.md), which defines the policy executed when the DSR is approved.
 
 Additional actions can be added to this list, and removed at any time.
 
 ### Styling
-Any overrides for CSS styling can be included in a `config.css` file in the `/privacy-center/config` directory.
+Any overrides for CSS styling can be included in a `config.css` file in the `/config` directory. Fides will automatically load these styles when creating your Privacy Center.
+
+## Deployment
+
+From within your root Privacy Center directory (i.e., `~/custom-privacy-center/`), run the following:
+
+```sh
+docker run --rm \
+  -v $(pwd)/config:/app/config \
+  -p 3000:3000 ethyca/fidesops-privacy-center:latest
+```
+
 

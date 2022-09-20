@@ -63,12 +63,11 @@ nav:
   - Fides UI:
       - Overview: ui/overview.md
       - Configuration Wizard: ui/wizard.md
-      - Managing Datasets: ui/datasets.md
-      - Overview: ui/overview.md
-      - Privacy Center: ui/privacy_center.md
       - Subject Requests: ui/subject_requests.md
-      - Managing Datastores: ui/datastores.md
-      - User Management: ui/user_management.md
+      - Manage Datasets: ui/datasets.md
+      - Manage Datastores: ui/datastores.md
+      - Manage Users: ui/user_management.md
+      - Privacy Center:  ui/privacy_center.md
   - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
   - Development:

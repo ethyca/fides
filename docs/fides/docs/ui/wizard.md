@@ -1,6 +1,6 @@
 # Configuration Wizard
 
-The Configuration Wizard is designed to simplify Fidesctl setup. Along with building your first data map, using the Config Wizard will provide you with a step-by-step introduction to privacy engineering fundamentals and Fides terminology and resources.
+The Configuration Wizard is designed to simplify Fides setup. Along with building your first data map, using the Config Wizard will provide you with a step-by-step introduction to both privacy engineering fundamentals and Fides terminology.
 
 To get started, select **Config Wizard** from the Admin UI navigation bar.
 
@@ -21,18 +21,18 @@ Systems can be added with automated scanning tools, or manually.
 ### Automatic scans
 Scanning allows you to connect to either your AWS cloud infrastructure or your Okta instance and automatically identify systems that should be on your data map. Support for additional systems (e.g. Google, Microsoft Azure, Digital Ocean) is planned shortly.
 ### Add a system manually
-Systems can be added manually by entering information about them directly. Manual system creation allows you to include information not easily scannable by Fidesctl in your data map.
+Systems can be added manually by entering information about them directly. Manual system creation allows you to include information not easily scannable by Fides in your data map.
 ## Step 3: Scan your resources
 
 ![scan your resources](../img/admin_ui/config_wizard_step3.png)
 
-Authentication credentials must be provided for Fidesctl to connect to your cloud infrastructure or sign-on provider. These credentials will be used to create a list of all systems that may contain personal data.
+Authentication credentials must be provided for Fides to connect to your cloud infrastructure or sign-on provider. These credentials will be used to create a list of all systems that may contain personal data.
 
 ### Authenticate with AWS
-To authenticate with AWS, you must provide an Access Key ID, associated secret, and the AWS region your infrastructure is located in. Fidesctl should be granted enough permissions to scan your AWS resources via an appropriate IAM policy.
+To authenticate with AWS, you must provide an Access Key ID, associated secret, and the AWS region your infrastructure is located in. Fides should be granted enough permissions to scan your AWS resources via an appropriate IAM policy.
 
 ### Authenticate with Okta
-Fidesctl requires a token to authenticate with Okta. You can find [instructions here](https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm) on how to retrieve a suitable token from your Okta administration panel.
+Fides requires a token to authenticate with Okta. You can find [instructions here](https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm) on how to retrieve a suitable token from your Okta administration panel.
 
 ## Step 4: View your results
 
@@ -50,6 +50,6 @@ Describing your systems involves **declaring their privacy characteristics.** Th
 
 You can add multiple declarations, and will have the opportunity to review the information you've provided before registering the system with Fides. 
 ## Step 6: View your data map
-Congratulations! You have now provided everything Fidesctl needs to build a data map of your systems and resources. From here, you can extend this map by scanning and adding additional systems.
+Congratulations! You have now provided everything Fides needs to build a data map of your systems and resources. From here, you can extend this map by scanning and adding additional systems.
 
 ![view your datamap](../img/admin_ui/config_wizard_step6.png)
