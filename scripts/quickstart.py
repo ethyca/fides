@@ -35,12 +35,13 @@ def get_access_token(client_id: str, client_secret: str) -> str:
         "client_id": client_id,
         "client_secret": client_secret,
     }
-    response = requests.post(f"{FIDESOPS_V1_API_URL}{ops_urls.TOKEN}", data=data)
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.TOKEN}"
+    response = requests.post(url, data=data)
 
     if response.ok:
         token = (response.json())["access_token"]
         if token:
-            logger.info("Completed fidesops oauth login via /api/v1/oauth/token")
+            logger.info(f"Completed fidesops oauth login via {url}")
             return token
 
     raise RuntimeError(
@@ -78,8 +79,9 @@ def create_oauth_client():
         "dataset:read",
         "dataset:delete",
     ]
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.CLIENT}"
     response = requests.post(
-        f"{FIDESOPS_V1_API_URL}{ops_urls.CLIENT}",
+        url,
         headers=root_oauth_header,
         json=scopes_data,
     )
@@ -87,7 +89,7 @@ def create_oauth_client():
     if response.ok:
         created_client = response.json()
         if created_client["client_id"] and created_client["client_secret"]:
-            logger.info("Created fidesops oauth client via /api/v1/oauth/client")
+            logger.info(f"Created fidesops oauth client via {url}")
             return created_client
 
     raise RuntimeError(
@@ -109,8 +111,9 @@ def create_connection(key: str, connection_type: ConnectionType):
             "access": "write",
         },
     ]
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.CONNECTIONS}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{ops_urls.CONNECTIONS}",
+        url,
         headers=oauth_header,
         json=connection_create_data,
     )
@@ -119,7 +122,7 @@ def create_connection(key: str, connection_type: ConnectionType):
         connections = (response.json())["succeeded"]
         if len(connections) > 0:
             logger.info(
-                f"Created fidesops {connection_type.value} connection with key={key} via /api/v1/connection"
+                f"Created fidesops {connection_type.value} connection with key={key} via {url}"
             )
             return response.json()
 
@@ -144,8 +147,9 @@ def configure_postgres_connection(
         "password": password,
     }
     connection_secrets_path = ops_urls.CONNECTION_SECRETS.format(connection_key=key)
+    url = f"{FIDESOPS_V1_API_URL}{connection_secrets_path}"
     response = requests.put(
-        f"{FIDESOPS_V1_API_URL}{connection_secrets_path}",
+        url,
         headers=oauth_header,
         json=connection_secrets_data,
     )
@@ -153,7 +157,7 @@ def configure_postgres_connection(
     if response.ok:
         if (response.json())["test_status"] != "failed":
             logger.info(
-                f"Configured fidesops postgres connection secrets for via /api/v1/connection/{key}/secret"
+                f"Configured fidesops postgres connection secrets for via {url}"
             )
             return response.json()
 
@@ -178,8 +182,9 @@ def configure_mongo_connection(
         "password": password,
     }
     connection_secrets_path = ops_urls.CONNECTION_SECRETS.format(connection_key=key)
+    url = f"{FIDESOPS_V1_API_URL}{connection_secrets_path}"
     response = requests.put(
-        f"{FIDESOPS_V1_API_URL}{connection_secrets_path}",
+        url,
         headers=oauth_header,
         json=connection_secrets_data,
     )
@@ -187,7 +192,7 @@ def configure_mongo_connection(
     if response.ok:
         if (response.json())["test_status"] != "failed":
             logger.info(
-                f"Configured fidesops mongo connection secrets via /api/v1/connection/{key}/secret"
+                f"Configured fidesops mongo connection secrets via {url}"
             )
             return response.json()
 
@@ -210,8 +215,9 @@ def validate_dataset(connection_key: str, yaml_path: str):
 
     validate_dataset_data = dataset
     dataset_validate_path = ops_urls.DATASET_VALIDATE.format(connection_key=connection_key)
+    url = f"{FIDESOPS_V1_API_URL}{dataset_validate_path}"
     response = requests.put(
-        f"{FIDESOPS_V1_API_URL}{dataset_validate_path}",
+        url,
         headers=oauth_header,
         json=validate_dataset_data,
     )
@@ -220,7 +226,7 @@ def validate_dataset(connection_key: str, yaml_path: str):
         traversal_details = (response.json())["traversal_details"]
         if traversal_details["is_traversable"]:
             logger.info(
-                f"Validated fidesops dataset via /api/v1/connection/{connection_key}/dataset"
+                f"Validated fidesops dataset via {url}"
             )
             return response.json()
         else:
@@ -247,8 +253,9 @@ def create_dataset(connection_key: str, yaml_path: str):
 
     dataset_create_data = [dataset]
     dataset_path = ops_urls.DATASETS.format(connection_key=connection_key)
+    url = f"{FIDESOPS_V1_API_URL}{dataset_path}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{dataset_path}",
+        url,
         headers=oauth_header,
         json=dataset_create_data,
     )
@@ -257,7 +264,7 @@ def create_dataset(connection_key: str, yaml_path: str):
         datasets = (response.json())["succeeded"]
         if len(datasets) > 0:
             logger.info(
-                f"Created fidesops dataset via /api/v1/connection/{connection_key}/dataset"
+                f"Created fidesops dataset via {url}"
             )
             return response.json()
 
@@ -283,8 +290,9 @@ def create_local_storage(key: str, file_format: str):
             },
         },
     ]
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.STORAGE_CONFIG}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{ops_urls.STORAGE_CONFIG}",
+        url,
         headers=oauth_header,
         json=storage_create_data,
     )
@@ -293,7 +301,7 @@ def create_local_storage(key: str, file_format: str):
         storage = (response.json())["succeeded"]
         if len(storage) > 0:
             logger.info(
-                f"Created fidesops storage with key={key} via /api/v1/storage/config"
+                f"Created fidesops storage with key={key} via {url}"
             )
             return response.json()
 
@@ -315,8 +323,9 @@ def create_policy(key: str):
             "key": key,
         },
     ]
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.POLICY_LIST}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{ops_urls.POLICY_LIST}",
+        url,
         headers=oauth_header,
         json=policy_create_data,
     )
@@ -324,7 +333,7 @@ def create_policy(key: str):
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created fidesops policy with key=%s via /api/v1/policy", key)
+            logger.info("Created fidesops policy with key=%s via {url}", key)
             return response.json()
 
     raise RuntimeError(
@@ -372,8 +381,9 @@ def create_policy_rule(
         }
 
     rule_path = ops_urls.RULE_LIST.format(policy_key=policy_key)
+    url = f"{FIDESOPS_V1_API_URL}{rule_path}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{rule_path}",
+        url,
         headers=oauth_header,
         json=[rule_create_data],
     )
@@ -382,7 +392,7 @@ def create_policy_rule(
         rules = (response.json())["succeeded"]
         if len(rules) > 0:
             logger.info(
-                f"Created fidesops policy rule via /api/v1/policy/{policy_key}/rule"
+                f"Created fidesops policy rule via {url}"
             )
             return response.json()
 
@@ -404,8 +414,9 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
         },
     ]
     rule_target_path = ops_urls.RULE_TARGET_LIST.format(policy_key=policy_key, rule_key=rule_key)
+    url = f"{FIDESOPS_V1_API_URL}{rule_target_path}"
     response = requests.patch(
-        f"{FIDESOPS_V1_API_URL}{rule_target_path}",
+        url,
         headers=oauth_header,
         json=target_create_data,
     )
@@ -414,7 +425,7 @@ def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
         targets = (response.json())["succeeded"]
         if len(targets) > 0:
             logger.info(
-                f"Created fidesops policy rule target for '{data_cat}' via /api/v1/policy/{policy_key}/rule/{rule_key}/target"
+                f"Created fidesops policy rule target for '{data_cat}' via {url}"
             )
             return response.json()
 
@@ -437,8 +448,9 @@ def create_privacy_request(user_email: str, policy_key: str):
             "identity": {"email": user_email},
         },
     ]
+    url = f"{FIDESOPS_V1_API_URL}{ops_urls.PRIVACY_REQUESTS}"
     response = requests.post(
-        f"{FIDESOPS_V1_API_URL}{ops_urls.PRIVACY_REQUESTS}",
+        url,
         json=privacy_request_data,
     )
 
@@ -446,7 +458,7 @@ def create_privacy_request(user_email: str, policy_key: str):
         created_privacy_requests = (response.json())["succeeded"]
         if len(created_privacy_requests) > 0:
             logger.info(
-                f"Created fidesops privacy request for email={email} via /api/v1/privacy-request"
+                f"Created fidesops privacy request for email={email} via {url}"
             )
             return response.json()
 
