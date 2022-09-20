@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.ops.core.config import config
+from fidesops.ops.core.config import FidesopsConfig, config
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -1257,3 +1257,13 @@ def application_user(
     oauth_client.save(db=db)
     yield user
     user.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def short_redis_cache_expiration() -> FidesopsConfig:
+    original_value: int = config.redis.default_ttl_seconds
+    config.redis.default_ttl_seconds = (
+        1  # Set redis cache to expire very quickly for testing purposes
+    )
+    yield config
+    config.redis.default_ttl_seconds = original_value

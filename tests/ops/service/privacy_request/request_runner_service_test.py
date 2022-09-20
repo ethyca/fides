@@ -13,8 +13,6 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    EmailDispatchException,
-    IdentityNotFoundException,
     PrivacyRequestPaused,
 )
 from fidesops.ops.core.config import config
@@ -1472,10 +1470,8 @@ class TestRunPrivacyRequestRunsWebhooks:
         db,
         privacy_request,
         policy_pre_execution_webhooks,
+        short_redis_cache_expiration,  # Fixture forces cache to expire quickly
     ):
-        config.redis.default_ttl_seconds = (
-            1  # Set redis cache to expire very quickly for testing purposes
-        )
         mock_trigger_policy_webhook.side_effect = PrivacyRequestPaused(
             "Request received to halt"
         )
