@@ -1,25 +1,9 @@
-import { Box, FormLabel, Grid, GridItem, Text } from "@fidesui/react";
-import React, { ReactNode } from "react";
+import { Box, FormLabel, Text } from "@fidesui/react";
 
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
 import { System } from "~/types/api";
 
-export const ReviewItem = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <Grid templateColumns="1fr 2fr" data-testid={`review-${label}`}>
-    <GridItem>
-      <FormLabel fontWeight="semibold" m={0}>
-        {label}:
-      </FormLabel>
-    </GridItem>
-    <GridItem>{children}</GridItem>
-  </Grid>
-);
+import { ReviewItem } from "./form-layout";
 
 const ReviewSystemFormExtension = ({ system }: { system: System }) => (
   <>

@@ -10,12 +10,11 @@ import {
 import { Form, Formik } from "formik";
 import React, { Fragment } from "react";
 
-import ReviewSystemFormExtension, {
-  ReviewItem,
-} from "~/features/system/ReviewSystemFormExtension";
+import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
 
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+import { ReviewItem } from "./form-layout";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
 interface Props {
