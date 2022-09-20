@@ -42,7 +42,7 @@ class FidesConfig(BaseModel):
     execution: ExecutionSettings = ExecutionSettings()
     admin_ui: AdminUISettings = AdminUISettings()
 
-    test_mode: bool = getenv("FIDES_TEST_MODE", "").lower() == "true"
+    test_mode: bool = getenv("FIDES__TEST_MODE", "").lower() == "true"
     is_test_mode: bool = test_mode
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"

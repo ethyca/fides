@@ -38,7 +38,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDES_TEST_MODE") == "True"
+            if os.getenv("FIDES__TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(
@@ -61,7 +61,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDES_TEST_MODE") == "True"
+            if os.getenv("FIDES__TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(

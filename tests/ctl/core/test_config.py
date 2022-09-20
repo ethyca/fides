@@ -147,7 +147,7 @@ def test_config_from_env_vars() -> None:
 )
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
-    os.environ["FIDES_TEST_MODE"] = "False"
+    os.environ["FIDES__TEST_MODE"] = "False"
     database_settings = DatabaseSettings(
         user="postgres",
         password="fides",
