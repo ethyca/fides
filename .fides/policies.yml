@@ -1,25 +1,5 @@
 policy:
 
-- fides_key: fidesctl
-  name: Fidesctl Policy
-  organization_fides_key: default_organization
-  description: The main privacy policy for Fidesctl.
-  rules:
-  - name: reject_non_system_data
-    data_categories:
-      matches: OTHER
-      values:
-      - system.operations
-    data_uses:
-      matches: OTHER
-      values:
-      - provide
-    data_subjects:
-      matches: OTHER
-      values:
-      - anonymous_user
-    data_qualifier: aggregated
-
 - fides_key: data_sharing_policy
   name: Data Sharing
   organization_fides_key: default_organization
