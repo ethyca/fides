@@ -61,7 +61,6 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
   return {
     ...formValues,
     organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-    privacy_declarations: [],
     data_protection_impact_assessment: impactAssessment,
     joint_controller: jointController,
     administrating_department:
