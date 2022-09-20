@@ -1,0 +1,61 @@
+system:
+  - fides_key: privacy_annotations
+    name: Fides Privacy Annotations
+    organization_fides_key: default_organization
+    description: Privacy annotations as code.
+    system_type: Service
+    data_responsibility_title: Controller
+    data_protection_impact_assessment:
+      is_required: false
+    privacy_declarations:
+      - name: Store fidesctl annotation data.
+        data_categories:
+          - system.operations
+          - user.contact
+        data_use: improve.system
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        data_subjects:
+          - anonymous_user
+        dataset_references:
+          - fides_db
+
+  - fides_key: privacy_request_fullfillment
+    name: Fides Privacy Request Fulfillment
+    organization_fides_key: default_organization
+    description: Privacy request fufillment.
+    system_type: Application
+    data_protection_impact_assessment:
+      is_required: false
+    privacy_declarations:
+      - name: Manage privacy request Fufillment
+        data_categories: [] # comprehensive list of data categories in `fides_db`
+        data_use: provide.service
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - fides_db
+          - fides_cache
+
+  - fides_key: admin_ui
+    name: Fides Administration UI
+    organization_fides_key: default_organization
+    description: Fides administration UI.
+    system_type: Application
+    data_protection_impact_assessment:
+      is_required: false
+    privacy_declarations:
+      - name: Manage privacy request Fufillment
+        data_categories: [] # comprehensive list of data categories in `fides_db`
+        data_use: system.operations
+        data_subjects:
+          - employee
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - fides_db
+          # - fides_db.client
+          # - fides_db.connectionconfig
+          # - fides_db.fidesuser
+          # - fides_db.fidesuserpermissions
+          # - fides_db.providedidentity
+          # - fides_db.privacyrequest
