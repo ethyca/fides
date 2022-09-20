@@ -24,8 +24,7 @@ describe("System management page", () => {
 
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("more-btn").click();
-        // Uncomment when we enable the edit button
-        // cy.getByTestId("edit-btn");
+        cy.getByTestId("edit-btn");
         cy.getByTestId("delete-btn");
       });
       cy.getByTestId("system-demo_analytics_system");
@@ -415,6 +414,69 @@ describe("System management page", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
+      cy.visit("/system");
+    });
+
+    it("Can go through the edit flow", () => {
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.url().should("contain", "/system/new/configure");
+
+      // check that the form has the proper values filled in
+      cy.getByTestId("input-name").should("have.value", "Fidesctl System");
+      cy.getByTestId("input-fides_key").should("have.value", "fidesctl_system");
+      cy.getByTestId("input-description").should(
+        "have.value",
+        "Software that functionally applies Fides."
+      );
+      cy.getByTestId("input-system_type").should("have.value", "Service");
+      cy.getByTestId("input-data_responsibility_title").should(
+        "contain",
+        "Controller"
+      );
+      cy.getByTestId("input-administrating_department").should(
+        "have.value",
+        "Not defined"
+      );
+      // add something for joint controller
+      const controllerName = "Sally Controller";
+      cy.getByTestId("input-joint_controller.name").type(controllerName);
+      cy.getByTestId("confirm-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.joint_controller.name).to.eql(controllerName);
+      });
+
+      // add another privacy declaration
+      const secondName = "Second declaration";
+      cy.getByTestId("privacy-declaration-form");
+      cy.getByTestId("input-name").type(secondName);
+      cy.getByTestId("input-data_categories").type(`user.biometric{enter}`);
+      cy.getByTestId("input-data_use").type(`advertising{enter}`);
+      cy.getByTestId("input-data_subjects").type(`anonymous{enter}`);
+      cy.getByTestId("add-btn").click();
+
+      // edit the existing declaration
+      const newName = "Store a lot of system data";
+      cy.getByTestId("declaration-Store system data.")
+        .click()
+        .within(() => {
+          cy.getByTestId("edit-declaration-btn").click();
+          cy.getByTestId("input-name").clear().type(newName);
+          cy.getByTestId("confirm-edit-btn").click();
+        });
+      cy.getByTestId(`declaration-${newName}`);
+      cy.getByTestId(`declaration-${secondName}`);
+
+      cy.getByTestId("next-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.privacy_declarations.length).to.eql(2);
+        expect(body.privacy_declarations[0].name).to.eql(newName);
+        expect(body.privacy_declarations[1].name).to.eql(secondName);
+      });
     });
   });
 });

@@ -102,7 +102,7 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
               <Button
                 size="sm"
                 colorScheme="primary"
-                data-testid="edit-btn"
+                data-testid="edit-declaration-btn"
                 onClick={() => setIsEditing(!isEditing)}
               >
                 Edit
