@@ -2,6 +2,8 @@ import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useFeatures } from "~/features/common/features.slice";
+import { useGetAllClassificationsQuery } from "~/features/common/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ColumnDropdown from "./ColumnDropdown";
@@ -27,12 +29,24 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Identifiability", attribute: "data_qualifier" },
 ];
 
-const useDataset = (key: string) => {
-  const { data, isLoading } = useGetDatasetByKeyQuery(key);
+/**
+ * Query subscriptions shared between vies within this feature.
+ */
+const useSubscriptions = (key: string) => {
+  const { data: dataset, isLoading: isDatasetLoading } =
+    useGetDatasetByKeyQuery(key);
+  const features = useFeatures();
+  const { isLoading: isClassificationsLoading } = useGetAllClassificationsQuery(
+    undefined,
+    {
+      skip: !features.plus,
+    }
+  );
+  useGetAllDataCategoriesQuery();
 
   return {
-    isLoading,
-    dataset: data,
+    isLoading: isDatasetLoading || isClassificationsLoading,
+    dataset,
   };
 };
 
@@ -42,15 +56,12 @@ interface Props {
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
-  const { dataset, isLoading } = useDataset(fidesKey);
+  const { dataset, isLoading } = useSubscriptions(fidesKey);
   const activeCollections = useSelector(selectActiveCollections);
   const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
-
-  // Query subscriptions:
-  useGetAllDataCategoriesQuery();
 
   useEffect(() => {
     if (dataset) {
