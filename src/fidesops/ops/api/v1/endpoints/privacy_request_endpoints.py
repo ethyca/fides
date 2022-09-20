@@ -101,6 +101,7 @@ from fidesops.ops.schemas.privacy_request import (
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
+    ManualWebhookData,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
@@ -1355,14 +1356,14 @@ def upload_manual_webhook_data(
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_VIEW_DATA])],
-    response_model=None,
+    response_model=Optional[ManualWebhookData],
 )
 def view_uploaded_manual_webhook_data(
     *,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
-) -> Optional[Dict[str, Any]]:
+) -> Optional[ManualWebhookData]:
     """
     View uploaded data for this privacy request for the given access manual webhook
     """
@@ -1385,16 +1386,22 @@ def view_uploaded_manual_webhook_data(
             connection_config.key,
             privacy_request.id,
         )
-        return privacy_request.get_manual_webhook_input(access_manual_webhook)
+        data: Dict[str, Any] = privacy_request.get_manual_webhook_input(
+            access_manual_webhook
+        )
+        checked = True
     except NoCachedManualWebhookEntry as exc:
         logger.info(exc)
-        return access_manual_webhook.empty_fields_dict
+        data = access_manual_webhook.empty_fields_dict
+        checked = False
     except PydanticValidationError:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Saved fields differ from fields specified on webhook '{access_manual_webhook.connection_config.key}'. "
             f"Re-upload manual data using '{PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT.format(connection_key=connection_config.key, privacy_request_id=privacy_request.id)}'.",
         )
+
+    return ManualWebhookData(checked=checked, fields=data)
 
 
 @router.post(

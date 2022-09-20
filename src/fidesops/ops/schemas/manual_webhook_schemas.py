@@ -14,12 +14,14 @@ class PIIFieldType(ConstrainedStr):
 
     min_length = 1
     max_length = 200
+    strip_whitespace = True
 
 
 class DSRLabelFieldType(ConstrainedStr):
     """Using ConstrainedStr instead of constr to keep mypy happy"""
 
     max_length = 200
+    strip_whitespace = True
 
 
 class ManualWebhookField(BaseSchema):

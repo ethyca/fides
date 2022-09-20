@@ -90,6 +90,7 @@ The types of changes are:
 * Remove masking of redis error log [#1288](https://github.com/ethyca/fidesops/pull/1288)
 * Logout with malformed or expired token [#1305](https://github.com/ethyca/fidesops/pull/1305)
 * The `toml` package is now included in the list of direct dependencies (`requirements.txt`) [#1338](https://github.com/ethyca/fidesops/pull/1338)
+* Distinguish whether webhook has been visited and no fields were found, versus never visited [#1339](https://github.com/ethyca/fidesops/pull/1339)
 * Fix bug where erasure counts instead of access results may be retrieved for certain collections on request retry [#1349](https://github.com/ethyca/fidesops/pull/1349)
 
 ### Security

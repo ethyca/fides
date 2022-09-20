@@ -3255,7 +3255,10 @@ class TestGetManualWebhookInputs:
         auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
-        assert response.json() == {"email": None, "last_name": None}
+        assert response.json() == {
+            "checked": False,
+            "fields": {"email": None, "last_name": None},
+        }
 
     def test_cached_data_differs_from_webhook_fields(
         self,
@@ -3296,8 +3299,11 @@ class TestGetManualWebhookInputs:
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json() == {
-            "email": "customer-1@example.com",
-            "last_name": "McCustomer",
+            "checked": True,
+            "fields": {
+                "email": "customer-1@example.com",
+                "last_name": "McCustomer",
+            },
         }
 
 

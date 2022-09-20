@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
@@ -141,6 +141,11 @@ class VerificationCode(BaseSchema):
     """Request Body for the user to supply their identity verification code"""
 
     code: str
+
+
+class ManualWebhookData(BaseSchema):
+    checked: bool  # If we have record the user saved data for this webhook (even if it was empty)
+    fields: Dict[str, Any]
 
 
 class PrivacyRequestResponse(BaseSchema):

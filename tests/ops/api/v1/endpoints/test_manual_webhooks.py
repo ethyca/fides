@@ -183,6 +183,23 @@ class TestPostAccessManualWebhook:
             == "ensure this value has at least 1 characters"
         )
 
+    def test_post_access_manual_webhook_pii_label_spaces(
+        self, db, api_client, url, generate_auth_header
+    ):
+        payload = {
+            "fields": [
+                {"pii_field": "first_name", "dsr_package_label": "First Name"},
+                {"pii_field": "   ", "dsr_package_label": "label"},
+            ]
+        }
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "ensure this value has at least 1 characters"
+        )
+
     def test_post_access_manual_webhook_dsr_package_labels_empty_string(
         self, db, api_client, url, generate_auth_header
     ):
@@ -190,6 +207,23 @@ class TestPostAccessManualWebhook:
             "fields": [
                 {"pii_field": "first_name", "dsr_package_label": "First Name"},
                 {"pii_field": "last_name", "dsr_package_label": ""},
+            ]
+        }
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 201
+        assert response.json()["fields"] == [
+            {"pii_field": "first_name", "dsr_package_label": "First Name"},
+            {"pii_field": "last_name", "dsr_package_label": "last_name"},
+        ]
+
+    def test_post_access_manual_webhook_dsr_package_labels_spaces(
+        self, db, api_client, url, generate_auth_header
+    ):
+        payload = {
+            "fields": [
+                {"pii_field": "first_name", "dsr_package_label": "First Name"},
+                {"pii_field": "last_name", "dsr_package_label": "  "},
             ]
         }
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
