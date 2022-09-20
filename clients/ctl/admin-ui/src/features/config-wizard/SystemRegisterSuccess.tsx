@@ -16,33 +16,38 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import {
-  useGetAllSystemsQuery,
-  useGetSystemByFidesKeyQuery,
-} from "~/features/system/system.slice";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import { System } from "~/types/api";
 
-import {
-  changeReviewStep,
-  changeStep,
-  selectSystemFidesKey,
-} from "./config-wizard.slice";
-
-const SuccessPage = () => {
-  const systemFidesKey = useAppSelector(selectSystemFidesKey);
-  const dispatch = useAppDispatch();
-
-  const { data: existingSystem } = useGetSystemByFidesKeyQuery(systemFidesKey);
+interface Props {
+  system: System;
+  onContinue: () => void;
+  onAddNextSystem: () => void;
+}
+const SystemRegisterSuccess = ({
+  system,
+  onAddNextSystem,
+  onContinue,
+}: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
-  const filteredSystems = allRegisteredSystems?.filter(
-    (system) => system.name !== existingSystem?.name
-  );
+  const otherSystems = allRegisteredSystems
+    ? allRegisteredSystems.filter(
+        (registeredSystem) => registeredSystem.name !== system.name
+      )
+    : [];
+
+  const systemName = system.name ?? system.fides_key;
 
   return (
     <chakra.form w="100%">
       <Stack spacing={10}>
-        <Heading as="h3" color="green.500" size="lg">
+        <Heading
+          as="h3"
+          color="green.500"
+          size="lg"
+          data-testid="success-page-heading"
+        >
           <Badge
             fontSize="16px"
             margin="10px"
@@ -52,11 +57,9 @@ const SuccessPage = () => {
           >
             Success
           </Badge>
-          {existingSystem?.name} successfully registered!
+          {systemName} successfully registered!
         </Heading>
-        <Text>
-          {existingSystem?.name} has been successfully added to the registry!
-        </Text>
+        <Text>{systemName} has been successfully added to the registry!</Text>
         <TableContainer>
           <Table variant="simple">
             <Thead>
@@ -66,14 +69,14 @@ const SuccessPage = () => {
             </Thead>
             <Tbody>
               <Tr>
-                <Td color="green.500">{existingSystem?.name}</Td>
+                <Td color="green.500">{systemName}</Td>
                 <Td>
                   <StepperCircleCheckmarkIcon boxSize={5} />
                 </Td>
               </Tr>
-              {filteredSystems?.map((system) => (
-                <Tr key={`${system.name}-tr`}>
-                  <Td key={system.name}>{system.name}</Td>
+              {otherSystems.map((s) => (
+                <Tr key={`${s.fides_key}-tr`}>
+                  <Td>{s.name}</Td>
                   <Td>
                     <StepperCircleCheckmarkIcon boxSize={5} />
                   </Td>
@@ -86,22 +89,19 @@ const SuccessPage = () => {
 
         <Box>
           <Button
-            onClick={() => {
-              dispatch(changeStep(5));
-              dispatch(changeReviewStep(1));
-            }}
+            onClick={onAddNextSystem}
             mr={2}
             size="sm"
             variant="outline"
+            data-testid="add-next-system-btn"
           >
             Add next system
           </Button>
           <Button
-            onClick={() => {
-              dispatch(changeStep());
-            }}
+            onClick={onContinue}
             colorScheme="primary"
             size="sm"
+            data-testid="continue-btn"
           >
             Continue
           </Button>
@@ -110,4 +110,4 @@ const SuccessPage = () => {
     </chakra.form>
   );
 };
-export default SuccessPage;
+export default SystemRegisterSuccess;

@@ -22,12 +22,21 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
-* New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
+* System management UI:
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
 * Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
 
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
+
+### Fixed
+
+* Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
