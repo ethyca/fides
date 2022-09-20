@@ -4,6 +4,10 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
+import DescribeSystemsForm from "~/features/system/DescribeSystemsForm";
+import PrivacyDeclarationForm from "~/features/system/PrivacyDeclarationForm";
+import ReviewSystemForm from "~/features/system/ReviewSystemForm";
+import SystemRegisterSuccess from "~/features/system/SystemRegisterSuccess";
 import { System } from "~/types/api";
 
 import HorizontalStepper from "../common/HorizontalStepper";
@@ -19,12 +23,8 @@ import {
   setSystemToCreate,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
-import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
-import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
-import ReviewSystemForm from "./ReviewSystemForm";
 import ScanResultsForm from "./ScanResultsForm";
-import SystemRegisterSuccess from "./SystemRegisterSuccess";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
