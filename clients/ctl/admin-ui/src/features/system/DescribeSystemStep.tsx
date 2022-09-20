@@ -42,6 +42,7 @@ const DescribeSystemStep = ({
   abridged,
   initialValues: passedInInitialValues,
 }: Props) => {
+  const isEditing = !!passedInInitialValues;
   const initialValues = passedInInitialValues ?? defaultInitialValues;
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
@@ -78,7 +79,7 @@ const DescribeSystemStep = ({
     setIsLoading(true);
 
     let result;
-    if (passedInInitialValues) {
+    if (isEditing) {
       result = await updateSystem(systemBody);
     } else {
       result = await createSystem(systemBody);
@@ -172,7 +173,7 @@ const DescribeSystemStep = ({
                 type="submit"
                 variant="primary"
                 size="sm"
-                disabled={!dirty}
+                disabled={isEditing ? false : !dirty}
                 isLoading={isLoading}
                 data-testid="confirm-btn"
               >
