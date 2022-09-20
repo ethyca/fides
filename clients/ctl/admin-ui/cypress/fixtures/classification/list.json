@@ -41,5 +41,55 @@
         }
       ]
     }
+  },
+  {
+    "id": "classification_in_review",
+    "fides_key": "dataset_in_review",
+    "status": "review",
+    "classification": {
+      "data_categories": ["user"],
+      "collections": [
+        {
+          "name": "users",
+          "fields": [
+            {
+              "name": "email",
+              "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+              "data_categories": ["user.email"]
+            },
+            {
+              "name": "device",
+              "data_categories": ["user.device", "user.contact.phone_number"],
+              "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized"
+            },
+            {
+              "name": "state",
+              "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
+              "data_categories": ["user.contact.address"]
+            }
+          ]
+        },
+        {
+          "name": "products",
+          "fields": [
+            {
+              "name": "created_at",
+              "data_categories": ["system.operations"],
+              "data_qualifier": "aggregated"
+            },
+            {
+              "name": "name",
+              "data_categories": ["system.operations"],
+              "data_qualifier": "aggregated"
+            },
+            {
+              "name": "price",
+              "data_categories": ["system.operations"],
+              "data_qualifier": "aggregated"
+            }
+          ]
+        }
+      ]
+    }
   }
 ]
