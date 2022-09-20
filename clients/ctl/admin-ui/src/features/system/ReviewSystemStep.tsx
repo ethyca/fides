@@ -69,7 +69,10 @@ const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
             {system.privacy_declarations.map((declaration) => (
               <Fragment key={declaration.name}>
                 <Divider />
-                <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
+                <PrivacyDeclarationAccordion
+                  abridged={abridged}
+                  privacyDeclaration={declaration}
+                />
               </Fragment>
             ))}
           </Stack>

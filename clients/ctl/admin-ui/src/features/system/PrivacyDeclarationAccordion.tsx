@@ -19,8 +19,10 @@ import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 
 const DeclarationReview = ({
   declaration,
+  abridged,
 }: {
   declaration: PrivacyDeclaration;
+  abridged?: boolean;
 }) => (
   <Stack spacing={2}>
     <DeclarationItem label="Data categories">
@@ -43,21 +45,28 @@ const DeclarationReview = ({
         "None"
       )}
     </DeclarationItem>
-    <DeclarationItem label="Dataset references">
-      {declaration.dataset_references ? (
-        <Text>{declaration.dataset_references.join(", ")}</Text>
-      ) : (
-        "None"
-      )}
-    </DeclarationItem>
+    {!abridged ? (
+      <DeclarationItem label="Dataset references">
+        {declaration.dataset_references ? (
+          <Text>{declaration.dataset_references.join(", ")}</Text>
+        ) : (
+          "None"
+        )}
+      </DeclarationItem>
+    ) : null}
   </Stack>
 );
 
 interface Props {
   privacyDeclaration: PrivacyDeclaration;
   onEdit?: (declaration: PrivacyDeclaration) => void;
+  abridged?: boolean;
 }
-const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
+const PrivacyDeclarationAccordion = ({
+  privacyDeclaration,
+  onEdit,
+  abridged,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const handleEdit = (newValues: PrivacyDeclaration) => {
     if (onEdit) {
@@ -93,9 +102,13 @@ const PrivacyDeclarationAccordion = ({ privacyDeclaration, onEdit }: Props) => {
                   onSubmit={handleEdit}
                   onCancel={() => setIsEditing(false)}
                   initialValues={privacyDeclaration}
+                  abridged={abridged}
                 />
               ) : (
-                <DeclarationReview declaration={privacyDeclaration} />
+                <DeclarationReview
+                  abridged={abridged}
+                  declaration={privacyDeclaration}
+                />
               )}
             </Box>
             {showEditButton ? (
