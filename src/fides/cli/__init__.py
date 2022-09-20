@@ -40,7 +40,7 @@ API_COMMANDS = [
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
-    command.name for command in API_COMMANDS if command.name not in ["status"]
+    command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
 VERSION = fides.__version__
 APP = fides.__name__
