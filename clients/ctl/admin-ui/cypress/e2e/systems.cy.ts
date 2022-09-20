@@ -193,7 +193,8 @@ describe("System management page", () => {
           cy.getByTestId("input-data_qualifier").within(() => {
             cy.contains(declaration.data_qualifier).click();
           });
-          cy.getByTestId("confirm-btn").click();
+          cy.getByTestId("add-btn").click();
+          cy.getByTestId("next-btn").click();
           cy.wait("@putSystem").then((interception) => {
             const { body } = interception.request;
             expect(body.privacy_declarations[0]).to.eql({
@@ -353,8 +354,8 @@ describe("System management page", () => {
         cy.getByTestId("input-dataset_references").within(() => {
           cy.contains("Demo Users Dataset 2").click();
         });
-
-        cy.getByTestId("confirm-btn").click();
+        cy.getByTestId("add-btn").click();
+        cy.getByTestId("next-btn").click();
         cy.wait("@putSystem").then((interception) => {
           const { body } = interception.request;
           expect(body.privacy_declarations[0]).to.eql(declaration);
@@ -413,7 +414,7 @@ describe("System management page", () => {
       cy.getByTestId("toast-success-msg");
     });
 
-    it.only("Can render an error on delete", () => {
+    it("Can render an error on delete", () => {
       cy.intercept("DELETE", "/api/v1/system/*", {
         statusCode: 404,
         body: {

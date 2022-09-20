@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikHelpers } from "formik";
 import React, { Fragment, useState } from "react";
 import * as Yup from "yup";
 
@@ -87,7 +87,7 @@ const PrivacyDeclarationForm = ({
   const allDataUses = useAppSelector(selectDataUses);
   const allDataQualifiers = useAppSelector(selectDataQualifiers);
 
-  const initialValues = {
+  const initialValues: PrivacyDeclaration = {
     name: "",
     data_categories: [],
     data_subjects: [],
@@ -96,36 +96,10 @@ const PrivacyDeclarationForm = ({
     dataset_references: [],
   };
 
-  const handleSubmit = async (values: FormValues) => {
-    let privacyDeclarations: PrivacyDeclaration[] = [];
-
-    const handlePrivacyDeclarations = () => {
-      // If the declaration already exists
-      if (
-        system.privacy_declarations.filter(
-          (declaration) => declaration.name === values.name
-        ).length > 0
-      ) {
-        privacyDeclarations = [
-          ...system.privacy_declarations,
-          ...formDeclarations,
-        ];
-      }
-      // If the declaration does not exist
-      else {
-        privacyDeclarations = [
-          ...system.privacy_declarations,
-          ...formDeclarations,
-          transformFormValuesToDeclaration(values),
-        ];
-      }
-    };
-
-    handlePrivacyDeclarations();
-
+  const handleSubmit = async () => {
     const systemBodyWithDeclaration = {
       ...system,
-      privacy_declarations: Array.from(new Set([...privacyDeclarations])),
+      privacy_declarations: formDeclarations,
     };
 
     const handleResult = (
@@ -157,13 +131,12 @@ const PrivacyDeclarationForm = ({
     setIsLoading(false);
   };
 
-  const addAnotherDeclaration = (values: PrivacyDeclaration) => {
-    if (
-      values.name === "" ||
-      formDeclarations.filter((d) => d.name === values.name).length > 0 ||
-      system.privacy_declarations.filter((d) => d.name === values.name).length >
-        0
-    ) {
+  const addDeclaration = (
+    values: PrivacyDeclaration,
+    formikHelpers: FormikHelpers<PrivacyDeclaration>
+  ) => {
+    const { resetForm } = formikHelpers;
+    if (formDeclarations.filter((d) => d.name === values.name).length > 0) {
       toast({
         status: "error",
         description:
@@ -175,6 +148,16 @@ const PrivacyDeclarationForm = ({
         ...formDeclarations,
         transformFormValuesToDeclaration(values),
       ]);
+      resetForm({
+        values: {
+          name: "",
+          data_subjects: [],
+          data_categories: [],
+          data_use: "",
+          data_qualifier: "",
+          dataset_references: [],
+        },
+      });
     }
   };
 
@@ -182,10 +165,10 @@ const PrivacyDeclarationForm = ({
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      onSubmit={handleSubmit}
+      onSubmit={addDeclaration}
       validationSchema={ValidationSchema}
     >
-      {({ resetForm, values, dirty, isValid }) => (
+      {({ dirty }) => (
         <Form data-testid="privacy-declaration-form">
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -251,30 +234,18 @@ const PrivacyDeclarationForm = ({
               />
               {!abridged ? <PrivacyDeclarationFormExtension /> : null}
             </Stack>
-            <Button
-              colorScheme="purple"
-              display="flex"
-              justifyContent="flex-start"
-              variant="link"
-              disabled={!(isValid && dirty)}
-              isLoading={isLoading}
-              onClick={() => {
-                addAnotherDeclaration(values);
-                resetForm({
-                  values: {
-                    name: "",
-                    data_subjects: [],
-                    data_categories: [],
-                    data_use: "",
-                    data_qualifier: "",
-                    dataset_references: [],
-                  },
-                });
-              }}
-              width="40%"
-            >
-              Add another declaration <AddIcon boxSize={10} />{" "}
-            </Button>
+            <Box>
+              <Button
+                type="submit"
+                colorScheme="purple"
+                variant="link"
+                disabled={!dirty}
+                isLoading={isLoading}
+                data-testid="add-btn"
+              >
+                Add <AddIcon boxSize={10} />
+              </Button>
+            </Box>
             <Box>
               <Button
                 onClick={onCancel}
@@ -286,14 +257,14 @@ const PrivacyDeclarationForm = ({
                 Cancel
               </Button>
               <Button
-                type="submit"
                 colorScheme="primary"
                 size="sm"
-                disabled={!dirty}
+                disabled={formDeclarations.length === 0}
                 isLoading={isLoading}
-                data-testid="confirm-btn"
+                data-testid="next-btn"
+                onClick={handleSubmit}
               >
-                Confirm and Continue
+                Next
               </Button>
             </Box>
           </Stack>
