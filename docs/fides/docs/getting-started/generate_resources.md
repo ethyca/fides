@@ -1,12 +1,13 @@
 # Generate and Maintain Resources
 
-When using the CLI, the `generate` command can connect to a database and automatically generate a resource YAML file based on the database schema. The `scan` command is available to compare your resources and what is defined in your Fides server or resource files. 
+## What is a resource?
+A _resource_ is a Fides representation of a system, database, policy, or organization. Resources are maintained in YAML manifest files written in [fideslang](https://ethyca.github.io/fideslang/). Generating resources creates a template of your databases, services, or applications for further annotation and use in [privacy requests](./datasets.md) or [data maps](./generate_datamaps.md).
+
+The Fides CLI provides a `generate` command to connect to a database, and automatically generate a resource YAML file based on the database schema. The `scan` command is available to compare your existing resources against what is defined in your Fides server, or against your resource manifest files. 
 
 The `scan` and `generate` commands work best when used in tandem, as they follow an expected resource format. The Fides format must be followed in order to be able to track coverage.
 
-
 ### Providing Credentials
-
 Database credentials are provided as part of the connection string supplied. The connection string can be supplied as a command option or the fides config.
 
 #### Command Options
@@ -20,23 +21,23 @@ A connection string can be supplied using the `connection-string` option:
 The appropriate `connection-string` format for your database connector can be found in the [SQLAlchemy Documentation](https://docs.sqlalchemy.org/en/14/dialects/).
 
 #### Fides Config
-A connection string can also be defined within your fides config under the credentials section.
+A connection string can also be defined within your Fides [configuration](../installation/configuration.md) under the `credentials` section.
 
 ```sh
 [credentials]
 my_database_credentials = {connection_string="<my_connection_string>"}
 ```
 
-Your command can then reference the key defined in your config.
+Your command can then reference the key defined in your config:
 ```sh
 ...
 --credentials-id "my_database_credentials"
 ...
 ```
 
-It is possible to use an environment variable to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your connection string to a file is problematic. To set a connection string you can set the environment variable with a prefix of `FIDES__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING="<my_database_credentials>"
+export FIDES__CREDENTIALS__MY_DATABASE_CREDENTIALS__CONNECTION_STRING="<my_database_credentials>"
 ```
 
 ### Generating a Dataset
@@ -54,7 +55,7 @@ flaskr=# SELECT * FROM users;
 
 We can invoke the `generate` command by providing a connection url for this database:
 ```sh
-./venv/bin/fidesctl generate dataset db \
+./venv/bin/fides generate dataset db \
   fides_resources/flaskr_postgres_dataset.yml \
   --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
@@ -100,15 +101,17 @@ dataset:
       data_categories: []
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
 ```
-The resulting file still requires annotating the dataset with data categories to represent what is stored.
+The resulting file still requires annotating the dataset with data categories to represent what is stored. 
+
+!!! Tip "**To use this Dataset in a Privacy Request,** you must add required [meta information](./datasets.md)."
 
 <!-- TODO: Add a section for `annotate dataset` usage below -->
 
 ### Scanning the Dataset
 
-The `scan` command can then connect to your database and compare its schema to your already defined datasets:
+The `scan` command can then connect to your database and compare its schema to your defined Datasets.
 ```sh
-./venv/bin/fidesctl scan dataset db \
+./venv/bin/fides scan dataset db \
   fides_resources/flaskr_postgres_dataset.yml \
   --connection-string postgresql://postgres:postgres@localhost:5432/flaskr
 ```
@@ -124,11 +127,11 @@ Annotation coverage: 100%
 ```
 
 ## Working With an AWS Account
-
 The `generate` command can connect to an AWS account and automatically generate resource YAML file based on tracked resources.
 
-### Providing Credentials
+!!! Tip "Generated resources can be used as System declarations for [generating Data Maps](./generate_datamaps.md)."
 
+### Providing Credentials
 AWS credentials can be provided through command options, environment variables or the fides config.
 
 #### Command Options
@@ -156,7 +159,7 @@ export AWS_DEFAULT_REGION="us-east-1"
 ```
 
 #### Fides Config
-Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
+Credentials can be defined within your [Fides config](../installation/configuration.md) under the credentials section.
 
 ```sh
 [credentials]
@@ -170,10 +173,10 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDES__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
-export FIDESCTL__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
+export FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_ACCESS_KEY_ID="<my_aws_access_key_id>"
+export FIDES__CREDENTIALS__MY_AWS_CREDENTIALS__AWS_SECRET_ACCESS_KEY="<my_aws_secret_access_key>"
 ```
 ### Required Permissions
 
@@ -232,7 +235,7 @@ Any ARN field can be wildcarded by leaving it empty.
 
 Once credentials have been configured we can invoke the `generate system aws` command:
 ```sh
-./venv/bin/fidesctl generate system aws \
+./venv/bin/fides generate system aws \
   fides_resources/aws_systems.yml
 ```
 
@@ -254,7 +257,7 @@ system:
 
 The `scan` command can then connect to your AWS account and compare its resources to your already defined systems:
 ```sh
-./venv/bin/fidesctl scan system aws \
+./venv/bin/fides scan system aws \
   fides_resources/aws_systems.yml
 ```
 
@@ -266,12 +269,12 @@ Scanned 1 resource and all were found in taxonomy.
 Resource coverage: 100%
 ```
 ## Working With an Okta Account
-
 The `generate` command can connect to an Okta admin account and automatically generate resource YAML file based on applications your organization integrates with.
 
-### Providing Credentials
+!!! Tip "Generated resources can be used as System declarations for [generating Data Maps](./generate_datamaps.md)."
 
-Okta credentials can be provided through command options, environment variables or the fides config.
+### Providing Credentials
+Okta credentials can be provided through command options, environment variables or the Fides config.
 
 #### Command Options
 Credentials can be directly supplied in your command using the `org-url` and `token` options.
@@ -296,8 +299,8 @@ export OKTA_CLIENT_SCOPES="<my_scope_1,my_scope_2>"
 export OKTA_CLIENT_PRIVATEKEY="<my_private_jwk>"
 ```
 
-#### Fides Config
-Credentials can be defined within your [fides config](../installation/configuration.md) under the credentials section.
+#### Fides Configuration
+Credentials can be defined within your [Fides config](../installation/configuration.md) under the credentials section.
 
 ```sh
 [credentials]
@@ -311,16 +314,16 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your token to a file is problematic. To set a token, you can set the environment variable with a prefix of `FIDES__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
+export FIDES__CREDENTIALS__MY_OKTA_CREDENTIALS__TOKEN="<my_okta_client_token>"
 ```
 
 ### Generating Systems
 
 Once credentials have been configured we can invoke the `generate system okta` command:
 ```sh
-./venv/bin/fidesctl generate system okta
+./venv/bin/fides generate system okta
   fides_resources/okta_systems.yml
 ```
 
@@ -346,7 +349,7 @@ system:
 
 The `scan` command can then connect to your Okta account and compare its applications to your already defined systems:
 ```sh
-./venv/bin/fidesctl scan system okta \
+./venv/bin/fides scan system okta \
   fides_resources/okta_systems.yml
 ```
 
@@ -405,10 +408,10 @@ Your command can then reference the key defined in your config.
 ...
 ```
 
-It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDESCTL__CREDENTIALS__` and `__` as the nested key delimiter:
+It is possible to use an environment variable to set credentials config values if persisting your keys to a config file is problematic. To set a secret access key and id, you can set the environment variable with a prefix of `FIDES__CREDENTIALS__` and `__` as the nested key delimiter:
 ```sh
-export FIDESCTL__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY="<my_private_key>"
-export FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_ID="<my_client_id>"
+export FIDES__CREDENTIALS__BIGQUERY_1__PRIVATE_KEY="<my_private_key>"
+export FIDES__CREDENTIALS__BIGQUERY_1__CLIENT_ID="<my_client_id>"
 ```
 
 ### Generating a Dataset
@@ -416,7 +419,7 @@ export FIDESCTL__CREDENTIALS__BIGQUERY_1__CLIENT_ID="<my_client_id>"
 Once credentials have been configured, the `generate dataset gcp bigquery` command can take both a configuration option and a dataset name to create the resource file.
 
 ```sh
-./venv/bin/fidesctl generate dataset gcp bigquery \
+./venv/bin/fides generate dataset gcp bigquery \
   <dataset_name> --keyfile-path ".fides/creds/bigquery.json" \
   <output_file_name>
 ```

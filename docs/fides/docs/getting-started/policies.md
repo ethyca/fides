@@ -1,6 +1,7 @@
 # Example Policies
+The following are examples of real-world use cases for Fides Policies, representing common business requirements or legislation. For more information on reading and defining Policies, see the [compliance Policies](./compliance_policies.md) guide.
 
-This page gives a few examples of different policies one might want to use in their own organizations.
+!!! Note "Always ensure your Policies accurately represent your business needs prior to using them in production environments."
 
 ## No Third-Party Data Sharing
 

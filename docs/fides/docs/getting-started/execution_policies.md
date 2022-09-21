@@ -1,41 +1,20 @@
 # Configure Policies
+## What is an execution policy?
 
-## What is a Policy?
+An execution policy (separate from a [Policy](./compliance_policies.md), used to enforce compliance) is a set of instructions, or Rules, that are executed when a user submits a [request](./privacy_requests.md) to retrieve or delete their data. It describes how to access, mask, or erase data that matches specific data categories in submitted privacy requests.
 
-A Policy is a set of instructions (or "Rules") that are executed when a user submits a request to retrieve or delete their data (the user makes a "Privacy Request"). Each Rule contains an "execution strategy":
+Each endpoint takes an array of objects to create multiple policies, rules, or targets at one time.
 
-* `action_type`: The action this Rule performs, either `access` (retrieve data) or `erasure` (delete data).
-
-* `storage_destination`: If the `action_type` is `access`, this is the key of a `StorageConfig` object that defines where the data is uploaded.  Currently, Amazon S3 buckets and local filesystem storage are supported. See [Configuring Storage](storage.md) for more information.
-
-* `masking_strategy`: If the `action_type` is `erasure`, this is the key of a Masking object that defines how the erasure is implemented. See [Configuring Masking Strategies](masking_strategies.md) for a list of available strategies. 
-
-In addition to specifying an execution strategy, a Rule contains one or more Data Categories, or "Targets", to which the rule applies. Putting it all together, we have:
-```
-Policy
-  |-> Rules
-      |-> Targets
-```
-
-This is reflected in the API paths that create these elements:
-
-* `PATCH /policy`
-* `PATCH /policy/{policy_key}/rule`
-* `PATCH /policy/{policy_key}/rule/{rule_key}/target`
-
-Each operation takes an array of objects, so you can create more than one at a time. 
-
-!!! Note "A note about `PATCH` endpoints"
-    The PATCH requests perform the equivalent of a `create_or_update` operation. This means that any existing objects sent to this endpoint will:
+!!! Tip "Regarding `PATCH` endpoints"
+    `PATCH` requests perform the equivalent of a `create_or_update` operation. This means that any existing objects sent to this endpoint will:
 
     - be updated,
     - any non-existing objects will be created, AND
-    - any objects existing that are not specified in the request will not be deleted
-
+    - any objects existing that are not specified in the request will not be deleted.
 
 ## Create a Policy
 
-Let's say you want to make a Policy that contains rules about a user's email address. You would start by first creating a Policy object:
+To create a new execution policy, it must first be defined:
 
 ```json title="<code>PATCH /api/v1/policy</code>"
 [
@@ -46,19 +25,17 @@ Let's say you want to make a Policy that contains rules about a user's email add
   }
 ]
 ```
-This policy is subtly different from the concept of a Policy in [Fidesctl](https://github.com/ethyca/fides). A [Fidesctl policy](https://ethyca.github.io/fides/language/resources/policy/) dictates which data categories can be stored where. A fidesops policy, on the other hand, dictates how to access, mask or erase data that matches specific data categories for privacy requests.
-
 ### Policy attributes
 | Attribute | Description |
 |---|---|
-| `Policy.name` | User-friendly name for your Policy. |
-| `Policy.key` | Unique key by which to reference the Policy. |
-| `Policy.drp_action` | <b>Optional.</b> A [Data Rights Protocol](./data_rights_protocol.md) action to associate to this policy. |
-| `access` | A data subject access request. Should be used with an `access` Rule. |
-| `deletion` | A data subject erasure request. Should be used with an `erasure` Rule. |
+| `name` | User-friendly name for your Policy. |
+| `key` | Unique key by which to reference the Policy. |
+| `drp_action` | *Optional.* A [Data Rights Protocol](./data_rights_protocol.md) action to associate to this policy. Accepted values are `access` (must be used with an [access Rule](#add-a-rule)) or `deletion` (must be used with an [erasure Rule](#add-an-erasure-rule)). |
 
-## Add an Access Rule to a Policy
-The policy creation operation returns a Policy key, which we'll use to add a Rule:
+## Add a Rule
+The policy creation operation returns an execution policy key. This key can be used to add a Rule to the execution policy. Rules represent a series of information and actions to take when a privacy request of the corresponding `action_type` is submitted.
+
+The following is an example of an access Rule:
 
 ```json title="<code>PATCH /api/v1/policy/{policy_key}/rule</code>"
 [
@@ -70,10 +47,20 @@ The policy creation operation returns a Policy key, which we'll use to add a Rul
   }
 ]
 ```
+### Rule attributes
+| Attribute | Description |
+|---|---|
+| `name` | A user-friendly name for the rule.
+| `action_type` | Which action is this `Rule` handling?
+| `action_type.access` | A data subject access request. Matching data will be returned.
+| `action_type.erasure` | A data subject erasure request (or Right to be Forgotten). Matching data will be erased or [masked](../guides/masking_strategies.md).
+| `storage_destination` | Where Fides will upload the returned data for an `access` action. See [storage](./storage.md). |
+| `masking_strategy` | How to erase data that applies to this `Rule`. See [Configuring Masking Strategies](masking_strategies.md) |
 
-Note that `storage_key` must identify an existing StorageConfig object.
+!!! Note "The `storage_key` must identify an existing [Storage](../guides/storage.md) object."
 
-Finally, we use the Rule key to add a Target:
+### Add a Rule Target
+A Rule also specifies one or more [Data Categories](https://ethyca.github.io/fideslang/taxonomy/data_categories/), or "Targets", to which the rule applies. Creating a Rule will return a key, which can be used to assign it one or more targets:
 
 ```json title="<code>PATCH /api/v1/policy/{policy_key}/rule/{rule_key}/target</code>"
 [
@@ -85,15 +72,18 @@ Finally, we use the Rule key to add a Target:
 ]
 ```
 
-### Rule attributes
-- `Rule.action_type`: Which action is this `Rule` handling?
-  - `access`: A data subject access request. A user would like to access their own data from within the fidesops identity graph. Fidesops must look these fields up and return it to them. Fidesops will return these to a `storage_destination`.
-  - `erasure`: A data subject erasure request (also known in some legislation as the Right to be Forgotten). A user would like to erase their own data currently stored in the fidesops identity graph. Fidesops must look these fields up and either erase them entirely, or apply a `masking_strategy`.
-- `Rule.storage_destination`: Where fidesops will upload the returned data for an `access` action. Currently, Amazon S3 buckets and local filesystem storage are supported.
-- `Rule.masking_strategy`: How to erase data in the Identity Graph that applies to this `Rule`. See [Configuring Masking Strategies](masking_strategies.md) for a full list of supported strategies and their respective configurations.
+| Attribute | Description |
+|---|---|
+| `name` | A user-friendly name for the target.
+| `key` | A unique key to identify the target.
+| `data_category` | The data categories to which the associated rule applies. For example, email addresses under `user.contact.email`. |
 
-## Add an Erasure Rule to a Policy
-The simple access policy we've created above, will simply pull all data of category `user.contact.email`, but in the event of an erasure request, we might also want to mask this information. 
+### Add an erasure Rule
+!!! Tip "Access rules will always run before erasure rules."
+
+The access execution policy created above will pull all data of category `user.contact.email`. In the event of an erasure request, we might also want to mask this information. 
+
+A new `erasure` rule can be added to the same execution policy: 
 
 ```json title="<code>PATCH /api/v1/policy/{policy_key}/rule</code>"
 [
@@ -110,7 +100,7 @@ The simple access policy we've created above, will simply pull all data of categ
   },
 ]
 ```
-This will create a rule to hash a not-yet-specified value with a SHA-512 hash. We need to specify a target to hash, so we need to create a target for this rule:
+This will create a Rule to hash an unspecified value with a SHA-512 hash. To add a value to hash, create a new Target for this Rule:
 
 ```json title="<code>PATCH api/v1/policy/{policy_key}/rule/{rule_key}</code>"
   [
@@ -120,23 +110,19 @@ This will create a rule to hash a not-yet-specified value with a SHA-512 hash. W
   ]
 ```
 
-This policy, `user_email_address_polcy`, will now do the following:
-- Return all data inside the Identity Graph with a data category that matches (or is nested under) `user.contact`.
-- Mask all data inside the Identity Graph with a data category that matches `user.contact.email` with a the `SHA-512` hashing function.
+This execution policy, `user_email_address_policy`, will now do the following:
+- Return all data with a data category that matches (or is nested under) `user.contact`.
+- Mask all data with data category that matches `user.contact.email` with a the `SHA-512` hashing function.
 
-### Erasing data
+#### Erasing data
+When an execution policy Rule erases data, it erases the _entire_ branch given by the Target. For example, a `user.contact` Rule, will erase _all_ of the information within the `contact` node, including `user.contact.email`.
 
-When a Policy Rule erases data, it erases the _entire_ branch given by the Target. For example, if we created an `erasure` rule with a Target of `user.contact`, _all_ of the information within the `contact` node -- including `user.contact.email` -- would be erased.
+It's illegal to erase the same data twice within an execution policy. For example, erasing `user.contact` _and_ `user.contact.email` is not allowed.
 
-It's illegal to erase the same data twice within a Policy, so you should take care when you add Targets to a Rule. For example, you can't add `user.contact` _and_ `user.contact.email`
-"data_category". 
+## Default execution policies
+!!! Tip "These auto-generated execution policies are intended for use in a test environment. In production deployments, configure separate execution policies and storage destinations that target and process the appropriate fields."
 
-And lastly, access rules will always run before erasure rules. 
+Fides ships with two default execution policies: `download` (for access requests) and `delete` (for erasure requests).  
 
-## Default Policies
-
-Fidesops ships with two default Policies: `download` (for access requests) and `delete` (for erasure requests).  
-The `download` Policy is configured to retrieve `user` data and upload to a local storage location.
-The `delete` Policy is set up to mask `user` data with the string: `MASKED`.  
-
-These auto-generated Policies are intended for use in a test environment. In production deployments, you should configure separate Policies with proper storage destinations that target and process the appropriate fields.
+* The `download` execution policy is configured to retrieve `user` data and upload to a local storage location.
+* The `delete` execution policy is set up to mask `user` data with the string "`MASKED`".  

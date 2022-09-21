@@ -1,6 +1,6 @@
 # Connect to SQL and NoSQL Databases
 
-## What is a Fides Connection?
+## What is a Connection?
 
 A _Connection_ links your owned databases and [third-party applications](../saas_connectors/saas_connectors.md) to Fides, allowing Fides to execute privacy requests against your collections and fields.
 

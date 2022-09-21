@@ -18,15 +18,18 @@ nav:
           - Configuration: installation/configuration.md
       - Working with Fides: 
           - Connect to Databases: getting-started/database_connectors.md
-          - Create Datasets: getting-started/datasets.md
           - Generate Resources: getting-started/generate_resources.md
-          - Create Compliance Policies: getting-started/policies.md
+          - Create Datasets: getting-started/datasets.md
+          - Configure Storage Destinations: getting-started/storage.md
           - Create Execution Policies: getting-started/execution_policies.md
-          - Generate Data Maps: getting-started/generate_datamaps.md
           - Execute Privacy Requests: getting-started/privacy_requests.md
       - How-To Guides:
+          - Compliance Policies: 
+              - Create Policies: getting-started/compliance_policies.md
+              - Example Policies: getting-started/policies.md
           - Authenticate with OAuth: getting-started/oauth.md
           - Extend the Taxonomy: guides/extend_taxonomy.md
+          - Generate Data Maps: getting-started/generate_datamaps.md
           - View Available Connection Types: guides/connection_types.md
           - Configure Email Communications: guides/email_communications.md
           - Annotate Complex Fields: guides/complex_fields.md
