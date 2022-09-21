@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
     types: [labeled]
-
+# Merge this with the normal code checks, and move the label check to a per-job level
 env:
   CONTAINER: fides-local
   IMAGE: ethyca/fides:local
