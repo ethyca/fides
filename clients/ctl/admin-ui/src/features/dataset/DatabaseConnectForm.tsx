@@ -8,7 +8,7 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useCreateClassificationMutation } from "~/features/common/plus.slice";
+import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
@@ -43,7 +43,7 @@ const DatabaseConnectForm = () => {
   const [createMutation, { isLoading: isCreating }] =
     useCreateDatasetMutation();
   const [classifyMutation, { isLoading: isClassifying }] =
-    useCreateClassificationMutation();
+    useCreateClassifyInstanceMutation();
   const isLoading = isGenerating || isCreating || isClassifying;
 
   const toast = useToast();

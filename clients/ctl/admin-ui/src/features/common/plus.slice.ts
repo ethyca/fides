@@ -6,7 +6,7 @@ import {
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import { DatasetCollection, DatasetField, Generate } from "~/types/api";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -16,24 +16,42 @@ interface HealthResponse {
 /**
  * These interfaces will be replaced with the OpenAPI generated models when the backend is ready.
  */
-interface ClassificationRequest {
-  // Key of the dataset. Should this have "dataset_" prefix?
-  fides_key: string;
+interface ClassifyInstanceRequest {
+  organization_key: string;
+  // Array of objects because we might need to match by more DB info than just the fides_key.
+  datasets: Array<{
+    fides_key: "string";
+  }>;
+  generate: Generate;
 }
+
 // TODO(ssangervasi): Resolves the assumptions commented below when the API is done.
-// The API in its current WIP state flattens the list of fields instead of matching the dataset's
-// nested structure: https://github.com/ethyca/fidesctl-plus/pull/106#pullrequestreview-1112775197
-interface ClassificationResponse {
-  // Classifications probably have a UID not a key
-  id: string;
-  // Dataset key
+// https://github.com/ethyca/fidesctl-plus/pull/106#pullrequestreview-1112775197
+interface Classification {
+  label: string;
+  score: number;
+  aggregated_score: number;
+  classification_paradigm: string;
+}
+interface ClassifyField {
+  name: string;
+  classifications: Classification[];
+}
+interface ClassifyCollection {
+  name: string;
+  fields: ClassifyField[];
+}
+interface ClassifyDataset {
   fides_key: string;
+  collections: ClassifyCollection[];
+}
+interface ClassifyInstance {
+  // ClassifyInstances probably have a UID not a key
+  id: string;
   // Probably will become an enum.
   status: "processing" | "review" | "classified";
-  // Assuming these are blank while in the "processing" status. This extra nesting under
-  // "classification" might be wrong. Hoisting these properties would make the classification mirror
-  // the dataset structure better.
-  classification?: Pick<Dataset, "data_categories" | "collections">;
+  // Assuming these are blank while in the "processing" status.
+  datasets?: ClassifyDataset;
 }
 
 export const plusApi = createApi({
@@ -49,27 +67,26 @@ export const plusApi = createApi({
     /**
      * Fidescls endpoints:
      */
-    createClassification: build.mutation<
-      ClassificationResponse,
-      ClassificationRequest
+    createClassifyInstance: build.mutation<
+      ClassifyInstanceResponse,
+      ClassifyInstanceRequest
     >({
       query: (body) => ({
-        // Or is this "classify/"?
-        url: `classification/`,
+        url: `classify/`,
         method: "POST",
         body,
       }),
     }),
-    getAllClassifications: build.query<ClassificationResponse[], void>({
-      query: () => `classification/`,
+    getAllClassifyInstances: build.query<ClassifyInstance[], void>({
+      query: () => `classify/`,
     }),
   }),
 });
 
 export const {
   useGetHealthQuery,
-  useCreateClassificationMutation,
-  useGetAllClassificationsQuery,
+  useCreateClassifyInstanceMutation,
+  useGetAllClassifyInstancesQuery,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -77,61 +94,61 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
-const emptyClassifications: ClassificationResponse[] = [];
-const selectClassificationsMap = createSelector(
-  ({ data }: { data?: ClassificationResponse[] }) =>
-    data ?? emptyClassifications,
-  (classifications) => ({
-    map: new Map(classifications.map((c) => [c.fides_key, c])),
+const emptyClassifyInstances: ClassifyInstanceResponse[] = [];
+const selectClassifyInstancesMap = createSelector(
+  ({ data }: { data?: ClassifyInstanceResponse[] }) =>
+    data ?? emptyClassifyInstances,
+  (classifyInstances) => ({
+    map: new Map(classifyInstances.map((c) => [c.fides_key, c])),
   })
 );
 
 /**
- * Convenience hook for looking up a Classification by Dataset key.
+ * Convenience hook for looking up a ClassifyInstance by Dataset key.
  */
-export const useClassificationsMap = (): Map<
+export const useClassifyInstancesMap = (): Map<
   string,
-  ClassificationResponse
+  ClassifyInstanceResponse
 > => {
   const hasPlus = useHasPlus();
-  const { map } = useGetAllClassificationsQuery(undefined, {
+  const { map } = useGetAllClassifyInstancesQuery(undefined, {
     skip: !hasPlus,
-    selectFromResult: selectClassificationsMap,
+    selectFromResult: selectClassifyInstancesMap,
   });
   return map;
 };
 
 /**
- * Classification selectors that parallel the dataset's structure. These used the
- * cached getAllClassifications response state, as well as the "active" dataset according
+ * ClassifyInstance selectors that parallel the dataset's structure. These used the
+ * cached getAllClassifyInstances response state, as well as the "active" dataset according
  * to the dataset feature's state.
  */
-export const selectActiveClassification = createSelector(
+export const selectActiveClassifyInstance = createSelector(
   [
-    plusApi.endpoints.getAllClassifications.select(),
+    plusApi.endpoints.getAllClassifyInstances.select(),
     selectActiveDatasetFidesKey,
   ],
   ({ data: responses }, fidesKey) =>
-    responses?.find((c) => c.fides_key === fidesKey)?.classification
+    responses?.find((c) => c.fides_key === fidesKey)?.classifyInstance
 );
 
 const emptyCollectionMap: Map<string, DatasetCollection> = new Map();
-export const selectClassificationCollectionMap = createSelector(
-  selectActiveClassification,
-  (classification) =>
-    classification?.collections
-      ? new Map(classification.collections.map((c) => [c.name, c]))
+export const selectClassifyInstanceCollectionMap = createSelector(
+  selectActiveClassifyInstance,
+  (classifyInstance) =>
+    classifyInstance?.collections
+      ? new Map(classifyInstance.collections.map((c) => [c.name, c]))
       : emptyCollectionMap
 );
-export const selectClassificationCollection = createSelector(
-  [selectClassificationCollectionMap, selectActiveCollection],
+export const selectClassifyInstanceCollection = createSelector(
+  [selectClassifyInstanceCollectionMap, selectActiveCollection],
   (collectionMap, active) =>
     active ? collectionMap.get(active.name) : undefined
 );
 
 const emptyFieldMap: Map<string, DatasetField> = new Map();
-export const selectClassificationFieldMap = createSelector(
-  selectClassificationCollection,
+export const selectClassifyInstanceFieldMap = createSelector(
+  selectClassifyInstanceCollection,
   (collection) =>
     collection?.fields
       ? new Map(collection.fields.map((f) => [f.name, f]))
@@ -139,9 +156,9 @@ export const selectClassificationFieldMap = createSelector(
 );
 /**
  * Note that this selects the field that is currently active in the editor. Fields that are shown in
- * the table are looked up by their name using selectClassificationFieldMap.
+ * the table are looked up by their name using selectClassifyInstanceFieldMap.
  */
-export const selectClassificationField = createSelector(
-  [selectClassificationFieldMap, selectActiveField],
+export const selectClassifyInstanceField = createSelector(
+  [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
 );

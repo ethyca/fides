@@ -1,7 +1,7 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tooltip, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectClassificationFieldMap } from "~/features/common/plus.slice";
+import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
 import { DatasetField } from "~/types/api";
 
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
@@ -21,11 +21,11 @@ import { ColumnMetadata, EditableType } from "./types";
 const Cell = ({
   attribute,
   field,
-  classificationField,
+  classifyInstanceField,
 }: {
   attribute: keyof DatasetField;
   field: DatasetField;
-  classificationField?: DatasetField;
+  classifyInstanceField?: DatasetField;
 }): JSX.Element => {
   if (attribute === "data_qualifier") {
     const dataQualifierName = field.data_qualifier;
@@ -40,7 +40,7 @@ const Cell = ({
   }
 
   if (attribute === "data_categories") {
-    const classifiedCategories = classificationField?.data_categories ?? [];
+    const classifiedCategories = classifyInstanceField?.data_categories ?? [];
     const assignedCategories = field.data_categories ?? [];
     // Only show the classified categories if none have been directly assigned to the dataset.
     const categories =
@@ -80,7 +80,7 @@ const DatasetFieldsTable = ({ columns }: Props) => {
   const activeFields = useSelector(selectActiveFields);
   const activeField = useSelector(selectActiveField);
   const activeEditor = useSelector(selectActiveEditor);
-  const classificationFieldMap = useSelector(selectClassificationFieldMap);
+  const classifyInstanceFieldMap = useSelector(selectClassifyInstanceFieldMap);
 
   const handleClose = () => {
     dispatch(setActiveFieldIndex(undefined));
@@ -123,7 +123,9 @@ const DatasetFieldsTable = ({ columns }: Props) => {
                 <Td key={`${c.name}-${field.name}`} pl={0}>
                   <Cell
                     field={field}
-                    classificationField={classificationFieldMap.get(field.name)}
+                    classifyInstanceField={classifyInstanceFieldMap.get(
+                      field.name
+                    )}
                     attribute={c.attribute}
                   />
                 </Td>
