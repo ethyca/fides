@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonProps,
   FormLabel,
   Grid,
   Menu,
@@ -29,32 +30,45 @@ interface Props {
   tooltip?: string;
 }
 
-const DataCategoryDropdown = ({
+export interface DataCategoryDropdownProps extends Omit<Props, "tooltip"> {
+  buttonProps?: ButtonProps;
+  buttonLabel?: string;
+}
+
+export const DataCategoryDropdown = ({
   dataCategories,
   checked,
   onChecked,
-}: Omit<Props, "tooltip">) => {
+  buttonProps,
+  buttonLabel,
+}: DataCategoryDropdownProps) => {
   const dataCategoryNodes = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
     [dataCategories]
   );
 
+  const defaultButtonProps: ButtonProps = {
+    variant: "outline",
+    fontWeight: "normal",
+    size: "sm",
+    borderRadius: "sm",
+    textAlign: "left",
+    _hover: { backgroundColor: "transparent" },
+    _active: { backgroundColor: "transparent" },
+    rightIcon: <ArrowDownLineIcon />,
+    width: "100%",
+  };
+  const menuButtonProps = buttonProps ?? defaultButtonProps;
+  const label = buttonLabel ?? "Select data categories";
+
   return (
     <Menu closeOnSelect>
       <MenuButton
         as={Button}
-        variant="outline"
-        fontWeight="normal"
-        size="sm"
-        borderRadius="sm"
-        textAlign="left"
-        _hover={{ backgroundColor: "transparent" }}
-        _active={{ backgroundColor: "transparent" }}
-        rightIcon={<ArrowDownLineIcon />}
-        width="100%"
+        {...menuButtonProps}
         data-testid="data-category-dropdown"
       >
-        Select data categories
+        {label}
       </MenuButton>
       <MenuList>
         <Box maxHeight="50vh" minWidth="300px" overflowY="scroll">
