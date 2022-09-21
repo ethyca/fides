@@ -68,12 +68,12 @@ system:
       link: null
     joint_controller: null
     third_country_transfers: null
-    administrating_department: yeet
+    administrating_department: Not defined
     # Privacy Declarations
     privacy_declarations:
       - name: Manage privacy request Fufillment
         data_categories: [] # comprehensive list of data categories in `fides_db`
-        data_use: system.operations
+        data_use: provide.service
         data_subjects:
           - employee
         data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
