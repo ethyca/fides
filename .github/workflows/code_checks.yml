@@ -201,6 +201,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -223,9 +224,11 @@ jobs:
   Pytest-Ctl-External:
     needs: Build
     strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -259,6 +262,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -284,6 +288,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -312,6 +317,8 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -340,6 +347,7 @@ jobs:
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     permissions:
       contents: read
