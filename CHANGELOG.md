@@ -17,7 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.8.4...main)
 
-## Changed
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+
+### Changed
 
 * Update fideslang to v1.3.0 [#1103](https://github.com/ethyca/fides/pull/1103)
 
