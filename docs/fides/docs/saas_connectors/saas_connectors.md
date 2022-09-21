@@ -78,3 +78,28 @@ These are constraints enforced by the API validation but it is important to keep
 1. A SaaS connector dataset cannot have any `identities` or `references` in the `fidesops_meta`. These relationships must be defined in the SaaS config.
 2. SaaS config references can only have a direction of `from`.
 3. The `fides_key` between the SaaS config and the Dataset must match. This is how we associate the two pieces together.
+
+## Setting up a SaaS Connector from a Template
+
+To create all the resources necessary to set up a SaaS Connector in one request, you can create a connector from 
+a template.
+
+This creates a `saas` ConnectionConfig for you with your supplied name and description, with your supplied `secrets`.
+In the example below, we're creating a `mailchimp` saas connector, so you should supply the relevant mailchimp `secrets`.
+Your `instance_key` will become the identifier for the related `DatasetConfig` resource.  By default, the saas connection config
+is enabled, with write access.
+
+
+```json title="<code>POST /connection/instantiate/mailchimp</code>"
+{
+    "name": "My Mailchimp connector",
+    "description": "Production Mailchimp Instance",
+    "secrets": {
+        "domain": "{{mailchimp_domain}}",
+        "api_key": "{{mailchimp_api_key}}",
+        "username": "{{mailchimp_username}}"
+    },
+    "instance_key": "primary_mailchimp",
+}
+```
+

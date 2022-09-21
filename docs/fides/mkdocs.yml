@@ -24,20 +24,16 @@ nav:
           - Create Execution Policies: getting-started/execution_policies.md
           - Execute Privacy Requests: getting-started/privacy_requests.md
       - How-To Guides:
-          - Compliance Policies: 
-              - Create Policies: getting-started/compliance_policies.md
-              - Example Policies: getting-started/policies.md
-          - Authenticate with OAuth: getting-started/oauth.md
+          - Authenticate with OAuth: guides/oauth.md
+          - Create Policies: guides/policies.md
           - Extend the Taxonomy: guides/extend_taxonomy.md
-          - Generate Data Maps: getting-started/generate_datamaps.md
-          - View Available Connection Types: guides/connection_types.md
+          - Generate Data Maps: guides/generate_datamaps.md
           - Configure Email Communications: guides/email_communications.md
           - Annotate Complex Fields: guides/complex_fields.md
           - Configure Data Masking: guides/masking_strategies.md
-          - Configure Storage Destinations: guides/storage.md
-          - Configure Policy Webhooks: guides/policy_webhooks.md
+          - Execution Policy Webhooks: guides/policy_webhooks.md
           - Report on Privacy Requests: guides/reporting.md
-          - Configure OneTrust Integration: guides/onetrust.md
+          - Integrate with OneTrust: guides/onetrust.md
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
       - SaaS Connectors:

@@ -9,7 +9,7 @@ information, or get more detailed information about the status of the requests o
 
 This request displays concise, high-level information for all your privacy requests including their status and related timestamps.
 
-Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
+View he [API docs here](../api/index.md#operations-Privacy_Requests-get_request_status_api_v1_privacy_request_get).
 
 ```json title="<code>GET api/v1/privacy-request</code>"
 {
@@ -42,7 +42,7 @@ If an `external_id` was provided at request creation, we can also track the priv
 GET api/v1/privacy-request?external_id=<external_id>
 ```
 
-Please note: These parameters will return matching privacy requests based on `startswith` matches.
+!!! Note "These parameters will return matching privacy requests based on `startswith` matches."
 
 ### Filtering options
 
@@ -76,32 +76,24 @@ GET api/v1/privacy-request?status=paused&status=complete
 To view all the execution logs for a privacy request, visit `/api/v1/privacy-request/{privacy_request_id}/logs`.
 Embedded logs in the previous endpoints are truncated at 50 logs.
 
-Check out the [API docs here](/fidesops/api#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
+View the [API docs here](../api/index.md#operations-Privacy_Requests-get_request_status_logs_api_v1_privacy_request__privacy_request_id__log_get).
 
 
 ## View a request's identity data
-
-Use the optional `include_identities` query param to include all identity data that was submitted for the Privacy Request. Due to the nature of how fidesops stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable.
+Use the optional `include_identities` query param to include all identity data that was submitted for the privacy request. Due to the way Fides stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable in your Fides [config](../installation/configuration.md).
 
 If the identity data fetched by `include_identities` has expired, an empty JSON dictionary will be returned.
 
 ## View individual request log details
+The `verbose` query parameter will display more details about individual collections visited as part of the privacy request, along with individual statuses. Individual collection statuses include `in_processing`, `retrying`, `complete` or `error`. You may see multiple logs for each collection as they reach different steps in the lifecycle.  
 
-Use the `verbose` query param to see more details about individual collections visited as part of the Privacy Request along
-with individual statuses. Individual collection statuses include `in_processing`, `retrying`, `complete` or `error`.
-You may see multiple logs for each collection as they reach different steps in the lifecycle.  
+The `verbose` parameter will embed a “results” key in the response, with both audit logs containing information about the overall request, as well as execution logs grouped by dataset name.  
 
-`verbose` will embed a “results” key in the response, with both audit logs containing information about the overall request,
-as well as execution logs grouped by dataset name.  
+In the example below, there are two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for `my-mongo-db` (when the `flights` collection is starting execution, and when the `flights` collection has finished), and two execution
+logs for `my-postgres-db` (when the `order` collection is starting and finishing execution). The `fields_affected` are the fields
+that were potentially returned or masked based on the [Rules](../getting-started/execution_policies.md#add-a-rule) you've specified on the execution policy. 
 
-In the example below,
-we have two datasets: `my-mongo-db` and `my-postgres-db`. There are two execution logs for `my-mongo-db` (when the `flights` 
-collection is starting execution and when the `flights` collection has finished) and two execution
-logs for `my-postgres-db` (when the `order` collection is starting and finishing execution).  `fields_affected` are the fields
-that were potentially returned or masked based on the Rules you've specified on the Policy. The embedded execution logs 
-are automatically truncated at 50 logs, so to view the entire list of logs, visit the execution logs endpoint separately.
-
-There are also "Request approved" and "Request finished" audit logs included in the response.
+The embedded execution logs are automatically truncated at 50 logs. To view the entire list of logs, visit the execution logs endpoint separately. "Request approved" and "Request finished" audit logs are also included in the response.
 
 ```json title="<code>GET api/v1/privacy-request?request_id={privacy_request_id}&verbose=True</code>"
 {
@@ -201,8 +193,6 @@ There are also "Request approved" and "Request finished" audit logs included in 
 
 ```
 ## Download all privacy requests as a CSV 
-
-
 To get all privacy requests in CSV format, use the `download_csv` query param:
 
 
@@ -212,8 +202,7 @@ Time received,Subject identity,Policy key,Request status,Reviewer,Time approved/
 ```
 
 ## Paused or failed request details
-
-A privacy request may pause when manual input is needed from the user, or it might fail for various reason on a specific collection.  
+A privacy request may pause when manual input is needed from the user, or it might fail for various reasons on a specific collection.  
 
 To retrieve information to resume or retry a privacy request, the following endpoint is available:
  ```
@@ -221,12 +210,11 @@ To retrieve information to resume or retry a privacy request, the following endp
  ```
 
 ### Paused access request example
+The request below is in a `paused` state as it waits on manual input from the user to proceed. Looking at the `stopped_collection_details` key shows the request paused execution during the `access` step of the `manual_key:filing_cabinet` collection. 
 
-The request below is in a `paused` state because we're waiting on manual input from the user to proceed. If we look at the `stopped_collection_details` key, we can see that the request
-paused execution during the `access` step of the `manual_key:filing_cabinet` collection.  The `action_needed.locators` field shows the user they should
-fetch the record in the filing cabinet with a `customer_id` of `72909`, and pull the `authorized_user`, `customer_id`, `id`, and `payment_card_id` fields
-from that record.  These values should be manually uploaded to the `resume_endpoint`.  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-access-privacy-request) 
-guides for more information on resuming a paused access request.
+The `action_needed.locators` field shows the user they should fetch the record in the filing cabinet with a `customer_id` of `72909`, and pull the `authorized_user`, `customer_id`, `id`, and `payment_card_id` fields from that record. These values should be manually uploaded to the `resume_endpoint`. 
+
+See the [manual data guides](../getting-started/datasets.md#resume-a-paused-access-privacy-request) for more information on resuming a paused access request.
                           
 
 ```json
@@ -268,11 +256,11 @@ guides for more information on resuming a paused access request.
 
 ### Paused erasure request example
 
-The request below is in a `paused` state because we're waiting on the user to confirm they've masked the appropriate data before proceeding.  The `stopped_collection_details` shows us that the request
-paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection.  Looking at `action_needed.locators` field, we can
-see that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
-A confirmation of the masked records count should be uploaded to the `resume_endpoint`  See the [Manual Data](https://ethyca.github.io/fidesops/guides/manual_data/#resuming-a-paused-erasure-privacy-request) 
-guides for more information on resuming a paused erasure request.
+The request below is in a `paused` state for user to confirm they've masked the appropriate data before proceeding. 
+
+The `stopped_collection_details` shows that the request paused execution during the `erasure` step of the `manual_key:filing_cabinet` collection. Looking at `action_needed.locators` field shows that the user should find the record in the filing cabinet with an `id` of 2, and replace its `authorized_user` with `None`. 
+
+A confirmation of the masked records count should be uploaded to the `resume_endpoint`. See the [manual data guides](../getting-started/datasets.md#resume-a-paused-erasure-privacy-request) for more information on resuming a paused erasure request.
               
 ```json
 {
@@ -313,7 +301,8 @@ guides for more information on resuming a paused erasure request.
 ### Failed request example
 
 The below request is an `error` state because something failed in the `erasure` step of the `postgres_dataset:payment_card` collection.  
-After troubleshooting the issues with your postgres connection, you would resume the request with a POST to the `resume_endpoint`.
+
+After troubleshooting the issues with your postgres connection, resume the request with a POST to the `resume_endpoint`.
 
 ```json
 {

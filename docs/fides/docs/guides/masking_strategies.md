@@ -3,20 +3,18 @@
 ## What is data masking?
 
 Data masking is the process of obfuscating data in client systems, so it is no longer recognizable as PII (personally
-identifiable information.)
+identifiable information).
 
 For example, if a customer requests that your remove all information associated with their email,
 `test@example.com`, you might choose to "mask" that email with a random string, `xgoi4301nkyi79fjfdopvyjc5lnbr9`, and
 their associated address with another random string `2ab6jghdg37uhkaz3hpyavpss1dvg2`.
 
-It's important to remember that masking does not equal anonymization. Since records are not deleted, a masked dataset is (at best)
-pseudonymized in most cases, and (at worst) may still be identifiable if the masking is reversible or easy to predict.
+!!! Tip "Masking does not equal anonymization. Since records are not deleted, a masked dataset is pseudonymized in most cases, and may still be identifiable if the masking is reversible or easy to predict."
 
-In fidesops, your options to pseudonymize data are captured in "masking strategies". Fidesops supports a wide variety
+In Fides, your options to pseudonymize data are captured in "masking strategies". Fides supports a wide variety
 of masking strategies for different purposes when used directly as an API including HMAC, Hash, AES encryption, string rewrite, random string rewrite, and null rewrite.
 
 ### Why mask instead of delete?
-
 Deleting customer data may involve entirely deleting a whole record (all attributes of the entity) or permanent and
 irreversible anonymization of the record by updating specific fields within a record with masked values.
 
@@ -31,10 +29,8 @@ updated with the same masked values across all sources.
 
 Other reasons to mask instead of delete include legal requirements that have you retain certain data for a certain length of time.
 
-## Using fidesops as a masking service
-
-If you just want to use fidesops as a masking service, you can send a `PUT` request to the masking endpoint with the
-value(s) you'd like pseudonymized. This endpoint is also useful for getting a feel of how the different masking strategies work.
+## Using Fides as a masking service
+To use Fides as a masking service, send a `PUT` request to the masking endpoint with the value(s) you'd like pseudonymized. This endpoint is also useful for viewing how different masking strategies work.
 
 ### Masking example
 
@@ -62,10 +58,9 @@ value(s) you'd like pseudonymized. This endpoint is also useful for getting a fe
 
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
-See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use fidesops to as a masking service.
+See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use Fides to as a masking service.
 
 ## Configuration
-
 Erasure requests will mask data with the chosen masking strategy.
 
 To configure a specific masking strategy to be used for a Policy, you will create an `erasure` rule
@@ -163,15 +158,16 @@ See the [Policy guide](policies.md) for more detailed instructions on creating P
 
 ## Getting masking options
 
-Issue a GET request to [`/api/v1/masking/strategy`](/fidesops/api#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
+Issue a GET request to [`/api/v1/masking/strategy`](../api/index.md#operations-Masking-list_masking_strategies_api_v1_masking_strategy_get) to preview the different masking
 strategies available, along with their configuration options.
 
 ## Extensibility
 
-In fidesops, masking strategies are all built on top of an abstract base class - `MaskingStrategy`.
-`MaskingStrategy` has five methods - `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these
-methods, visit the class in the fidesops repository. For now, we will focus on the implementation of
-`RandomStringRewriteMaskingStrategy` below:
+Fides asking strategies are built on top of an abstract `MaskingStrategy` base class.
+
+`MaskingStrategy` has five methods: `mask`, `secrets_required`, `get_configuration_model`, `get_description`, and `data_type_supported`. For more detail on these methods, visit the class in the Fides repository. 
+
+The below example focuses on the implementation of `RandomStringRewriteMaskingStrategy`:
 
 ```python
 import string
@@ -234,7 +230,7 @@ The `mask` method will be called with the list of values to be masked and the ma
 specified length. If format preservation is specified, for example, we still want to know that an email was an email,
 we might tack on an email-like suffix.
 
-Note the arguments to the __init__ method - there is a field configuration of type `RandomStringMaskingConfiguration`.
+Note the arguments to the __init__ method. There is a field configuration of type `RandomStringMaskingConfiguration`.
 This is the configuration for the masking strategy. It is used to house the options specified by the client as well as
 any defaults that should be applied in their absence. All configuration classes extend from the
 `MaskingConfiguration` class.

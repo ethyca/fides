@@ -4,8 +4,7 @@ Fides is capable of exporting a data map of your [resources](https://ethyca.gith
 
 To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
 ## Export the Demo Resources
-
-First, ensure `fidesctl` is running with `nox -s dev`.
+First, ensure `fides` is running with `nox -s dev`.
 
 To push and export the provided `demo_resources`, run the following commands:
 
@@ -52,7 +51,6 @@ Additionally, the link to the security policy of an organization can be populate
 
 
 ### Dataset
-
 The Dataset is primarily used to provide a list of Data Categories which populate the data map. Additional properties can optionally be applied for `retention` and `third_country_transfers`.
 
 ![Demo Dataset Properties](../img/demo_dataset_properties.png)
@@ -97,7 +95,6 @@ dataset:
 Any Datasets referenced by a System will have this information included as rows of your data map.
 
 ### System
-
 The System contains the remainder of the attributes on the initial data map.
 
 Each populated property is referenced directly from an associated label in `fides_resources/demo_system.yml`:
@@ -116,16 +113,14 @@ Each populated property is referenced directly from an associated label in `fide
 
 
 ## Extend the Default Taxonomy
-
 In your initial export, several data map columns are populated with `N/A`. The default [Fides Taxonomy](https://ethyca.github.io/fideslang/taxonomy/overview) can be extended to replace these empty values with additional data required as part of a Record of Processing Activities.
 
 Example manifest updates are included in `demo_resources/demo_extended_taxonomy.yml`.
 
 ### Auditing Resources
-
 Your Organization and System datasets can also be assessed using the `--audit` flag as part of the `evaluate` command, which will identify how your resources could be extended to generate a compliant data map.
 
-1. `fidesctl evaluate demo_resources/ --audit`
+1. `fides evaluate demo_resources/ --audit`
 
 The output of this command will highlight any missing information:
 
@@ -178,7 +173,6 @@ Apply this `data_subject` by adding it to the Demo Marketing System in `demo_sys
 Replace the Demo Marketing System's Data Use of `advertising` with the above fides_key of `third_party_sharing.personalized_advertising.direct_marketing` to include its information in your data map.
 
 ### Data Subject
-
 A [Data Subject](https://ethyca.github.io/fideslang/taxonomy/data_subjects), shown below, can also be extended to populate your data map with additional information.
 
 ```yaml title="Extended Data Subject"
@@ -202,13 +196,12 @@ Apply this `data_subject` by adding it to the Demo Marketing System in `demo_sys
 Replace the Demo Marketing System's Data Subject of `customer` with the above fides_key of `potential_customer` to include its information in your data map.
 
 ### Testing Your Changes
-
 Your resulting `demo_system.yml` should look like the following:
 ```yaml title="<code>demo_system.yml</code>"
 system:
   - fides_key: demo_analytics_system
     name: Demo Analytics System
-    description: A system used for analyzing customer behaviour.
+    description: A system used for analyzing customer behavior.
     system_type: Service
     administrating_department: Engineering
     data_responsibility_title: Controller
@@ -220,7 +213,7 @@ system:
       progress: Complete
       link: https://example.org/analytics_system_data_protection_impact_assessment
     privacy_declarations:
-      - name: Analyze customer behaviour for improvements.
+      - name: Analyze customer behavior for improvements.
         data_categories:
           - user.provided.identifiable.contact
           - user.derived.identifiable.device.cookie_id
@@ -271,9 +264,9 @@ system:
         automated_decisions_or_profiling: true
 ```
 
-Running `fidesctl push demo_resources/` will push your changes.
+Running `fides push demo_resources/` will push your changes.
 
-Now, auditing this resource with `fidesctl evaluate demo_resources --audit` will show the Demo Marketing System issues are resolved:
+Now, auditing this resource with `fides evaluate demo_resources --audit` will show the Demo Marketing System issues are resolved:
 ```bash
 ...
 "Auditing Organization Resource Compliance"
@@ -332,13 +325,6 @@ Below is a mapping of the newly populated columns with their respective values:
 
 
 ### Additional Learning
-
 The provided `demo_system.yml` includes a second System, **Demo Analytics**, which can be enhanced in the same way as the Demo Marketing System.
 
-Follow the guide to [extend the taxonomy](#extending-the-taxonomy) again, this time for the Demo Analytics System, to have both systems fully compliant!
-
-## Next Steps
-
-We hope this was helpful in understanding the additional properties required for generating an Article 30 compliant RoPA!
-
-If there are any questions or issues you still have, we would love to hear more from you in our [Slack Community](https://fidescommunity.slack.com) or in [an issue/PR on GitHub](https://github.com/ethyca/fides/issues).
+Follow the guide to [extend the taxonomy](#extending-the-taxonomy) again, this time for the Demo Analytics System, to have both systems fully compliant.

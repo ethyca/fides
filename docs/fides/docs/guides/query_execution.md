@@ -2,9 +2,9 @@
 
 ## Graphs and Traversals
 
-Fidesops uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, fidesops then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request.
+Fides uses your Datasets to generate a _graph_ of the resources. Based on the identity data you provide, Fides then generates a specific _traversal_, which is the order of steps that will be taken to fulfill a specific request.
 
-The graph supports both directed and non-directed edges using the optional `direction` parameter on the relation (non-directional edges may be traversed in either direction). You can preview the queries that will be generated or manually control the order of operations by making relations explicitly directional and with the `after` Collection parameters. If you specify a Collection that can't be reached, fidesops generates an error.
+The graph supports both directed and non-directed edges using the optional `direction` parameter on the relation (non-directional edges may be traversed in either direction). You can preview the queries that will be generated or manually control the order of operations by making relations explicitly directional and with the `after` Collection parameters. If you specify a Collection that can't be reached, Fides generates an error.
 
 ## An example graph
 
@@ -99,14 +99,14 @@ dataset:
           - name: address_id
 ```
 
-We trigger a retrieval with identity data, such as an email address or user ID, that's provided by the user. What we do is...
+Fides triggers a retrieval with identity data, such as an email address or user ID, that's provided by the user, and will then:
 
-1. Identify the collections that contain the identity data that the user.
-2. Find all related records.
-3. Use the data to find all connected data.
-4. Continue until we've found all related data.
+1. Identify the collections that contain the identity data that the user
+2. Find all related records
+3. Use the initial data to find all connected data
+4. Continue until all related data is discovered
 
-For the first step, we use the concept of an `identity`. In the fidesops Dataset specification, any field may be marked with an `identity` notation:
+For the first step, Fides uses the concept of an `identity`. In the Fides [Dataset](../getting-started/datasets.md) specification, any field may be marked with an `identity` notation:
 
 ``` yaml
 collection:
@@ -117,12 +117,12 @@ collection:
            identity: email 
 ```
 
-What this means is that we will initiate the data retrieval process with provided data that looks like
-`{"email": "user@example.com", "username": "someone"}` by looking for values in the collection `users` where `email == user@example.com`.  Note that the names of the provided starter data do not need to match the field names we're going to use this data to search. Also note that in this case, since we're providing two pieces of data,  we can also choose to start a search using the username provided value. In the above diagram, this means we have enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name`.
+Fides will initiate the data retrieval process with provided data that looks like `{"email": "user@example.com", "username": "someone"}` by looking for values in the collection `users` where `email == user@example.com`.  
+
+Note that the names of the provided starter data do not need to match the field names Fides will use this data to search. In the above case, you can also choose to start a search using the **username** provided value. This would result in enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name` noted in the diagram.
 
 ## How does fidesops execute queries?
-
-The next step is to follow any links provided in field relationship information. In the abbreviated dataset declarations below, you can see that since we know that `mongo_1.accounts` data contains data related to `mongo_1.users`, we can retrieve data from `mongo_1.accounts` by generating this set of queries:
+The next step is to follow any links provided in field relationship information. In the abbreviated dataset declarations below, the `mongo_1.accounts` data contains data related to `mongo_1.users`. Data can be retrieved from `mongo_1.accounts` by generating this set of queries:
 
 ``` sql
 # mongo_1
@@ -138,7 +138,7 @@ The next step is to follow any links provided in field relationship information.
 6. select internal_id, comment from users where id in [ <id values from (3) >]
 ```
 
-Logically, we are creating a linked graph using the connections you've specified between your collections to retrieve your data.
+Behind the scenes, Fides is creating linked graph using the connections you've specified between your collections to retrieve your data.
 
 ![Example graph](../img/traversal_graph.png "Example graph")
 
@@ -148,6 +148,6 @@ Logically, we are creating a linked graph using the connections you've specified
  
 * It's an error to specify a collection in your Dataset can't be reached through the relations you've specified.
 
-* Fidesops uses your Datasets and your input data to "solve" the graph of your collections and how it is traversed. If your Dataset has multiple identity values, you can create a situation where the query behavior depends on the values you provide. In the example above, starting the graph traversal with `{"email": "value1", "username":" value2"}` is valid, but starting with  `{"email": "value1"}` fails because `mongo_1.users` is no longer reachable.
+* Fides uses your Datasets and your input data to "solve" the graph of your collections and how it is traversed. If your Dataset has multiple identity values, you can create a situation where the query behavior depends on the values you provide. In the example above, starting the graph traversal with `{"email": "value1", "username":" value2"}` is valid, but starting with  `{"email": "value1"}` fails because `mongo_1.users` is no longer reachable.
  
 * As shown in the example, you can create queries between Datasets.

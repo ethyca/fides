@@ -1,7 +1,7 @@
 # Configure Email Communications
 ## What is email used for?
 
-Fidesops supports email server configurations for sending processing notices to privacy request subjects. Future updates will support outbound email communications with data processors.
+Fides supports email server configurations for sending processing notices to privacy request subjects. Future updates will support outbound email communications with data processors.
 
 Supported modes of use:
 
@@ -10,7 +10,7 @@ Supported modes of use:
 
 ## Prerequisites
 
-Fidesops currently supports Mailgun for email integrations. Ensure you register or use an existing Mailgun account in order to get up and running with email communications.
+Fides currently supports Mailgun for email integrations. Ensure you register or use an existing Mailgun account in order to get up and running with email communications.
 
 1. Generate a Mailgun Domain Sending Key
 

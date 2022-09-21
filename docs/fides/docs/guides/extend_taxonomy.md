@@ -47,7 +47,6 @@ The above example uses the existing `demo_data_uses.yml` from the [Fides project
 
 
 ## Implementing a custom Data Subject
-
 A Data Subject is a label that describes a segment of individuals whose data you store. The following is an example of extending the [Data Subject taxonomy](https://ethyca.github.io/fideslang/taxonomy/data_subjects/):
 
 ```yaml title="data_subject.yml"
@@ -76,5 +75,4 @@ The above example uses the existing `demo_data_subjects.yml` from the [Fides pro
 | `automated_decisions_or_profiling` | If automated decision-making or profiling exists for this data subject, set as either true or false. |
 
 ## Next Steps
-
 Once created, your new Data Subject or Data Use can be referenced as part of a [privacy declaration in a system](https://ethyca.github.io/fideslang/resources/system), throughout your [policies](https://ethyca.github.io/fideslang/resources/policy), and in other Fides [resources](https://ethyca.github.io/fideslang/resources/dataset).

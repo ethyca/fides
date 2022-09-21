@@ -372,3 +372,127 @@ You can search the `name`, `key`, and `description` fields of your Connections w
     "size": 50
 }
 ```
+
+
+## View available connection types
+To view a list of all available connection types, visit `GET /api/v1/connection_type`. This endpoint can be filtered with a `search` query parameter, and is subject to change.  Both database options and third party API services are included.
+
+```json title="<code>GET /api/v1/connection_type</code>"
+{
+    "items": [
+        {
+            "identifier": "bigquery",
+            "type": "database"
+        },
+        {
+            "identifier": "mariadb",
+            "type": "database"
+        },
+        {
+            "identifier": "mongodb",
+            "type": "database"
+        },
+        {
+            "identifier": "mssql",
+            "type": "database"
+        },
+        {
+            "identifier": "mysql",
+            "type": "database"
+        },
+        {
+            "identifier": "postgres",
+            "type": "database"
+        },
+        {
+            "identifier": "redshift",
+            "type": "database"
+        },
+        {
+            "identifier": "snowflake",
+            "type": "database"
+        },
+        {
+            "identifier": "adobe_campaign",
+            "type": "saas"
+        },
+        {
+            "identifier": "auth0",
+            "type": "saas"
+        },
+        {
+            "identifier": "datadog",
+            "type": "saas"
+        },
+        {
+            "identifier": "hubspot",
+            "type": "saas"
+        },
+        {
+            "identifier": "logi_id",
+            "type": "saas"
+        },
+        {
+            "identifier": "mailchimp",
+            "type": "saas"
+        },
+        {
+            "identifier": "outreach",
+            "type": "saas"
+        },
+        {
+            "identifier": "salesforce",
+            "type": "saas"
+        },
+        {
+            "identifier": "segment",
+            "type": "saas"
+        },
+        {
+            "identifier": "sendgrid",
+            "type": "saas"
+        },
+        {
+            "identifier": "sentry",
+            "type": "saas"
+        },
+        {
+            "identifier": "stripe",
+            "type": "saas"
+        },
+        {
+            "identifier": "zendesk",
+            "type": "saas"
+        }
+    ],
+    "total": 21,
+    "page": 1,
+    "size": 50
+}
+```
+
+## View required connection secrets
+To view the secrets needed to authenticate with a given connection, visit `GET /api/v1/connection_type/<connection_type>/secret`.
+
+```json title="<code>GET /api/v1/connection_type/sentry/secret</code>"
+{
+    "title": "sentry_schema",
+    "description": "Sentry secrets schema",
+    "type": "object",
+    "properties": {
+        "access_token": {
+            "title": "Access Token",
+            "type": "string"
+        },
+        "domain": {
+            "title": "Domain",
+            "default": "sentry.io",
+            "type": "string"
+        }
+    },
+    "required": [
+        "access_token"
+    ],
+    "additionalProperties": false
+}
+```
