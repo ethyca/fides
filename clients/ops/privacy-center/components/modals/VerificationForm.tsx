@@ -18,40 +18,38 @@ import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../types/AlertState";
-import { ModalViews } from "./types";
+import { ModalViews, VerificationType } from "./types";
 import { addCommonHeaders } from "../../common/CommonHeaders";
 
-import config from "../../config/config.json";
 import { hostUrl } from "../../constants";
 
 const useVerificationForm = ({
   onClose,
-  action,
   setAlert,
-  privacyRequestId,
+  requestId,
   setCurrentView,
+  resetView,
+  verificationType,
+  successHandler,
 }: {
   onClose: () => void;
-  action: typeof config.actions[0] | null;
   setAlert: (state: AlertState) => void;
-  privacyRequestId: string;
+  requestId: string;
   setCurrentView: (view: ModalViews) => void;
+  resetView: ModalViews;
+  verificationType: VerificationType;
+  successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const resetVerificationProcess = useCallback(() => {
-    setCurrentView(ModalViews.PrivacyRequest);
-  }, [setCurrentView]);
+    setCurrentView(resetView);
+  }, [setCurrentView, resetView]);
 
   const formik = useFormik({
     initialValues: {
       code: "",
     },
     onSubmit: async (values) => {
-      if (!action) {
-        // somehow we've reached a broken state, return
-        return;
-      }
-
       setIsLoading(true);
 
       const body = {
@@ -72,7 +70,7 @@ const useVerificationForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
-          `${hostUrl}/privacy-request/${privacyRequestId}/verify`,
+          `${hostUrl}/${verificationType}/${requestId}/verify`,
           {
             method: "POST",
             headers,
@@ -86,7 +84,7 @@ const useVerificationForm = ({
           return;
         }
 
-        setCurrentView(ModalViews.RequestSubmitted);
+        successHandler();
       } catch (error) {
         handleError("");
       }
@@ -114,24 +112,24 @@ const useVerificationForm = ({
 type VerificationFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
   setAlert: (state: AlertState) => void;
-  privacyRequestId: string;
+  requestId: string;
   setCurrentView: (view: ModalViews) => void;
+  resetView: ModalViews;
+  verificationType: VerificationType;
+  successHandler: () => void;
 };
 
 const VerificationForm: React.FC<VerificationFormProps> = ({
   isOpen,
   onClose,
-  openAction,
   setAlert,
-  privacyRequestId,
+  requestId,
   setCurrentView,
+  resetView,
+  verificationType,
+  successHandler,
 }) => {
-  const action = openAction
-    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
-    : null;
-
   const {
     errors,
     handleBlur,
@@ -145,15 +143,15 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     resetVerificationProcess,
   } = useVerificationForm({
     onClose,
-    action,
     setAlert,
-    privacyRequestId,
+    requestId,
     setCurrentView,
+    resetView,
+    verificationType,
+    successHandler,
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
-
-  if (!action) return null;
 
   return (
     <>
@@ -167,25 +165,23 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
             your email, then return to this window and the code below.
           </Text>
           <Stack spacing={3}>
-            {action.identity_inputs.name ? (
-              <FormControl
+            <FormControl
+              id="code"
+              isInvalid={touched.code && Boolean(errors.code)}
+            >
+              <Input
                 id="code"
+                name="code"
+                focusBorderColor="primary.500"
+                placeholder="Verification Code"
+                isRequired
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.code}
                 isInvalid={touched.code && Boolean(errors.code)}
-              >
-                <Input
-                  id="code"
-                  name="code"
-                  focusBorderColor="primary.500"
-                  placeholder="Verification Code"
-                  isRequired
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.code}
-                  isInvalid={touched.code && Boolean(errors.code)}
-                />
-                <FormErrorMessage>{errors.code}</FormErrorMessage>
-              </FormControl>
-            ) : null}
+              />
+              <FormErrorMessage>{errors.code}</FormErrorMessage>
+            </FormControl>
           </Stack>
         </ModalBody>
 

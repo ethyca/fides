@@ -17,8 +17,9 @@
     "build-privacy-portal": "npm run build"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^1.1.7",
     "@chakra-ui/react": "^1.7.4",
-    "@chakra-ui/system": ">=1.0.0",
+    "@chakra-ui/system": "^1.12.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fidesui/react": "^0.0.9",

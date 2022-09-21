@@ -15,14 +15,14 @@ import {
 import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../types/AlertState";
-import { PrivacyRequestStatus } from "../../types";
-import { addCommonHeaders } from "../../common/CommonHeaders";
+import type { AlertState } from "../../../types/AlertState";
+import { PrivacyRequestStatus } from "../../../types";
+import { addCommonHeaders } from "../../../common/CommonHeaders";
 
-import config from "../../config/config.json";
+import config from "../../../config/config.json";
 
-import { ModalViews } from "./types";
-import { hostUrl } from "../../constants";
+import { ModalViews } from "../types";
+import { hostUrl } from "../../../constants";
 
 const usePrivacyRequestForm = ({
   onClose,

@@ -12,9 +12,9 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 
 import {
-  RequestModal,
+  PrivacyRequestModal,
   RequestModalProps,
-} from "../components/modals/RequestModal";
+} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
@@ -51,14 +51,16 @@ const defaultModalProperties: RequestModalProps = {
 
 describe("RequestModal", () => {
   it("renders a modal when isOpen is true", () => {
-    render(<RequestModal {...defaultModalProperties} />);
+    render(<PrivacyRequestModal {...defaultModalProperties} />);
 
     const modal = screen.getByRole("dialog");
     expect(modal).toBeInTheDocument();
   });
 
   it("renders the appropriate inputs", () => {
-    let { unmount } = render(<RequestModal {...defaultModalProperties} />);
+    let { unmount } = render(
+      <PrivacyRequestModal {...defaultModalProperties} />
+    );
 
     expect(screen.getByPlaceholderText("Name*")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Email*")).toBeInTheDocument();
@@ -67,7 +69,7 @@ describe("RequestModal", () => {
     unmount();
 
     ({ unmount } = render(
-      <RequestModal
+      <PrivacyRequestModal
         {...defaultModalProperties}
         openAction={mockConfig.actions[1].policy_key}
       />
@@ -80,7 +82,7 @@ describe("RequestModal", () => {
     unmount();
 
     ({ unmount } = render(
-      <RequestModal
+      <PrivacyRequestModal
         {...defaultModalProperties}
         openAction={mockConfig.actions[2].policy_key}
       />
@@ -94,13 +96,13 @@ describe("RequestModal", () => {
   });
 
   it("renders the button as disabled before inputs are filled", () => {
-    render(<RequestModal {...defaultModalProperties} />);
+    render(<PrivacyRequestModal {...defaultModalProperties} />);
     const submitButton = screen.getByText("Continue");
     expect(submitButton).toBeDisabled();
   });
 
   it("renders the button as enabled after inputs are filled correctly", async () => {
-    render(<RequestModal {...defaultModalProperties} />);
+    render(<PrivacyRequestModal {...defaultModalProperties} />);
     act(() => {
       fireEvent.change(screen.getByPlaceholderText("Name*"), {
         target: { value: "Ethyca" },

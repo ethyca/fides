@@ -14,9 +14,9 @@ import {
 } from "@fidesui/react";
 
 import {
-  useRequestModal,
-  RequestModal,
-} from "../components/modals/RequestModal";
+  usePrivactRequestModal,
+  PrivacyRequestModal,
+} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "../components/PrivacyCard";
 import type { AlertState } from "../types/AlertState";
 
@@ -36,7 +36,8 @@ const Home: NextPage = () => {
     setCurrentView,
     privacyRequestId,
     setPrivacyRequestId,
-  } = useRequestModal();
+    successHandler,
+  } = usePrivactRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -58,6 +59,21 @@ const Home: NextPage = () => {
     };
     getConfig();
   }, [setIsVerificationRequired]);
+
+  const content: any = [];
+
+  config.actions.forEach((action) => {
+    content.push(
+      <PrivacyCard
+        key={action.title}
+        title={action.title}
+        policyKey={action.policy_key}
+        iconPath={action.icon_path}
+        description={action.description}
+        onOpen={onOpen}
+      />
+    );
+  });
 
   return (
     <div>
@@ -124,19 +140,10 @@ const Home: NextPage = () => {
             </Text>
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
-            {config.actions.map((action) => (
-              <PrivacyCard
-                key={action.title}
-                title={action.title}
-                policyKey={action.policy_key}
-                iconPath={action.icon_path}
-                description={action.description}
-                onOpen={onOpen}
-              />
-            ))}
+            {content}
           </Flex>
         </Stack>
-        <RequestModal
+        <PrivacyRequestModal
           isOpen={isOpen}
           onClose={onClose}
           openAction={openAction}
@@ -146,6 +153,7 @@ const Home: NextPage = () => {
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
+          successHandler={successHandler}
         />
       </main>
     </div>

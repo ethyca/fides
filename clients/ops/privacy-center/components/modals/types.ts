@@ -5,3 +5,7 @@ export enum ModalViews {
   IdentityVerification = "identityVerification",
   RequestSubmitted = "requestSubmitted",
 }
+
+export enum VerificationType {
+  PrivacyRequest = "privacy-request",
+}
