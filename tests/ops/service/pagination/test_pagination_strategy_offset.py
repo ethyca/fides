@@ -69,6 +69,54 @@ def test_offset_with_connector_param_reference(response_with_body):
     )
 
 
+def test_offset_with_parsable_string_connector_param_reference(response_with_body):
+    config = OffsetPaginationConfiguration(
+        incremental_param="page",
+        increment_by=1,
+        limit={"connector_param": "limit"},
+    )
+    connector_params = {"limit": "10"}
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"page": 1},
+    )
+
+    paginator = OffsetPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, connector_params, response_with_body, "conversations"
+    )
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"page": 2},
+    )
+
+
+def test_offset_with_unparsable_string_connector_param_reference(response_with_body):
+    config = OffsetPaginationConfiguration(
+        incremental_param="page",
+        increment_by=1,
+        limit={"connector_param": "limit"},
+    )
+    connector_params = {"limit": "ten"}
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"page": 1},
+    )
+
+    paginator = OffsetPaginationStrategy(config)
+    with pytest.raises(FidesopsException) as exc:
+        next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+            request_params, connector_params, response_with_body, "conversations"
+        )
+    assert (
+        f"The value 'ten' of the 'limit' connector_param could not be cast to an int"
+        == str(exc.value)
+    )
+
+
 def test_offset_with_connector_param_reference_not_found(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page",

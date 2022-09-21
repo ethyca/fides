@@ -53,6 +53,12 @@ class OffsetPaginationStrategy(PaginationStrategy):
                 raise FidesopsException(
                     f"Unable to find value for 'limit' with the connector_param reference '{self.limit.connector_param}'"
                 )
+            try:
+                limit = int(limit)
+            except ValueError:
+                raise FidesopsException(
+                    f"The value '{limit}' of the '{self.limit.connector_param}' connector_param could not be cast to an int"
+                )
         param_value += self.increment_by
         if param_value > limit:
             return None
