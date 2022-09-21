@@ -192,9 +192,9 @@ jobs:
       - name: Scan fides db
         run: nox -s fidesctl_db_scan -- docker
 
-###########
-## Tests ##
-###########
+################
+## Safe Tests ##
+################
   Pytest-Ctl-Not-External:
     needs: Build
     strategy:
@@ -302,3 +302,78 @@ jobs:
 
       - name: Run integration test suite
         run: nox -s pytest_integration
+
+##################
+## Unsafe Tests ##
+##################
+  External-Datastores:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Integration Tests (External)
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
+          BIGQUERY_DATASET: fidesopstest
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: nox -s pytest_integration_external
+
+  External-SaaS-Connectors:
+    needs: Build
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Vault Token
+        uses: hashicorp/vault-action@v2.4.2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          namespace: ${{ secrets.VAULT_NAMESPACE }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          exportToken: True
+
+      - name: SaaS Connector Tests
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+        run: nox -s pytest_saas
