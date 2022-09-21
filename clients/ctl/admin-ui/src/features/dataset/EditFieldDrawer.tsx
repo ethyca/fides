@@ -35,7 +35,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
     >
   ) => {
     // merge the updated fields with the original dataset
-    if (dataset && collectionIndex != null && fieldIndex != null) {
+    if (dataset && collectionIndex !== undefined && fieldIndex !== undefined) {
       const updatedField = { ...field, ...values };
       const updatedDataset = getUpdatedDatasetFromField(
         dataset,
@@ -49,7 +49,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   };
 
   const handleDelete = () => {
-    if (dataset && collectionIndex != null && fieldIndex != null) {
+    if (dataset && collectionIndex !== undefined && fieldIndex !== undefined) {
       const updatedDataset = removeFieldFromDataset(
         dataset,
         collectionIndex,

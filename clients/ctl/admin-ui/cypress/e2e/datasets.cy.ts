@@ -424,8 +424,9 @@ describe("Dataset", () => {
         "putDataset"
       );
     });
+
     it("Can render chosen data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.get("[data-testid='checkbox-Unique ID'] > span").should(
@@ -440,7 +441,7 @@ describe("Dataset", () => {
     });
 
     it("Can deselect data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Unique ID").click();
@@ -463,7 +464,7 @@ describe("Dataset", () => {
     });
 
     it("Can select more data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Telemetry Data").click();
@@ -484,7 +485,7 @@ describe("Dataset", () => {
     });
 
     it("Can interact with the checkbox tree properly", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       // expand system data
@@ -529,7 +530,7 @@ describe("Dataset", () => {
     });
 
     it("Should be able to clear selected", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-System Data").click();
