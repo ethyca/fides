@@ -116,7 +116,7 @@ def check_install(session: nox.Session) -> None:
 
 
 @nox.session()
-def fidesctl(session: nox.Session) -> None:
+def check_fides_annotations(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
         run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
@@ -126,7 +126,7 @@ def fidesctl(session: nox.Session) -> None:
 
 
 @nox.session()
-def fidesctl_db_scan(session: nox.Session) -> None:
+def fides_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)

@@ -159,7 +159,7 @@ jobs:
       - name: Check that the docs can build
         run: nox -s docs_check
 
-  Fidesctl:
+  Fides-Checks:
     needs: Build
     runs-on: ubuntu-latest
     steps:
@@ -184,13 +184,13 @@ jobs:
         run: pip install nox>=2022
 
       - name: Check fides installation
-        run: nox -s check_install -- docker
+        run: nox -s check_install
 
       - name: Run fides evaluation
-        run: nox -s fidesctl -- docker
+        run: nox -s check_fides_annotations -- docker
 
       - name: Scan fides db
-        run: nox -s fidesctl_db_scan -- docker
+        run: nox -s fides_db_scan
 
 ################
 ## Safe Tests ##
