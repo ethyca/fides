@@ -72,7 +72,4 @@ jobs:
         with:
           working-directory: clients/ctl/admin-ui
           install: false
-          start: npm run cy:start
-          wait-on: "http://localhost:3000"
-          wait-on-timeout: 120
           component: true
