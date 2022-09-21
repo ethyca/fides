@@ -76,3 +76,9 @@ config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
 icon = "data/saas/icon/zendesk.svg"
 human_readable = "Zendesk"
+
+[rollbar]
+config = "data/saas/config/rollbar_config.yml"
+dataset = "data/saas/dataset/rollbar_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Rollbar"
