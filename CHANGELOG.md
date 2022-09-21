@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
 
 ### Added
 
@@ -39,6 +39,12 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+
+### Changed
+
+* Update fideslang to v1.3.0 [#1103](https://github.com/ethyca/fides/pull/1103)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 
