@@ -19,7 +19,6 @@ The types of changes are:
 
 ### Added
 
-* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
@@ -30,6 +29,7 @@ The types of changes are:
   * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
   * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
+* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
 
 ### Changed
 
