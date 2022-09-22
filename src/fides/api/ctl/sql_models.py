@@ -244,7 +244,5 @@ sql_model_map: Dict = {
 }
 
 models_with_default_field = [
-    sql_model_map[model_name]
-    for model_name in sql_model_map
-    if hasattr(sql_model_map[model_name], "is_default")
+    sql_model for _, sql_model in sql_model_map if hasattr(sql_model, "is_default")
 ]

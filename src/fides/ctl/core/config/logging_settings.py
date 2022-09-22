@@ -30,7 +30,7 @@ class LoggingSettings(FidesSettings):
 
     @validator("level", pre=True)
     @classmethod
-    def validate_log_level(cls: FidesSettings, value: str) -> str:
+    def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""
 
         if os.getenv("FIDES_TEST_MODE", "false").lower() == "true":

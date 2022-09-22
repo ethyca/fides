@@ -20,13 +20,6 @@ from redis.exceptions import ResponseError
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
-from fides.api.ctl.ui import (
-    get_admin_index_as_response,
-    get_local_file_map,
-    get_package_file_map,
-    get_path_to_admin_ui_file,
-    match_route,
-)
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
@@ -42,7 +35,13 @@ from fides.api.ctl.routes import (
     visualize,
 )
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
+from fides.api.ctl.ui import (
+    get_admin_index_as_response,
+    get_local_file_map,
+    get_package_file_map,
+    get_path_to_admin_ui_file,
+    match_route,
+)
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.analytics import (
     accessed_through_local_host,

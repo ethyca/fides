@@ -15,7 +15,7 @@ ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 def get_package_path() -> Optional[Path]:
     """Returns a Path to the root directory of this package's installation, if it exists."""
-    package_name = __package__.split(".")[0]
+    package_name = __package__.split(".", maxsplit=1)[0]
     spec = importlib.util.find_spec(package_name)
     if spec and spec.origin:
         return Path(spec.origin).parent
