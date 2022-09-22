@@ -30,7 +30,7 @@ describe("ClassifiedDataCategoryDropdown", () => {
     // check that the classified one is selected
     cy.getByTestId("classified-select").should(
       "contain",
-      selectedClassifiedCategory.name
+      selectedClassifiedCategory.fides_key
     );
     // check that the regular one is selected
     cy.getByTestId("data-category-dropdown").click();
@@ -54,7 +54,9 @@ describe("ClassifiedDataCategoryDropdown", () => {
         mostLikelyCategories={MOST_LIKELY_CATEGORIES}
       />
     );
-    cy.getByTestId("classified-select").click().type(`${toSelect.name}{enter}`);
+    cy.getByTestId("classified-select")
+      .click()
+      .type(`${toSelect.fides_key}{enter}`);
     cy.get("@onCheckedSpy").should("have.been.calledWith", [
       "system.authentication",
       toSelect.fides_key,

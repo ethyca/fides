@@ -32,7 +32,7 @@ const ClassifiedDataCategoryDropdown = ({
   const options = mostLikelyCategories
     .sort((a, b) => b.confidence - a.confidence)
     .map((c) => ({
-      label: `${c.name} (${c.confidence}%)`,
+      label: `${c.fides_key} (${c.confidence}%)`,
       value: c.fides_key,
     }));
 
