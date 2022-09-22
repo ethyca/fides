@@ -6,7 +6,7 @@ import {
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
-import { DatasetCollection, DatasetField, Generate } from "~/types/api";
+import { Generate } from "~/types/api";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -16,42 +16,42 @@ interface HealthResponse {
 /**
  * These interfaces will be replaced with the OpenAPI generated models when the backend is ready.
  */
-interface ClassifyInstanceRequest {
+export interface ClassifyInstanceRequest {
   organization_key: string;
   // Array of objects because we might need to match by more DB info than just the fides_key.
   datasets: Array<{
-    fides_key: "string";
+    fides_key: string;
   }>;
   generate: Generate;
 }
 
 // TODO(ssangervasi): Resolves the assumptions commented below when the API is done.
 // https://github.com/ethyca/fidesctl-plus/pull/106#pullrequestreview-1112775197
-interface Classification {
+export interface Classification {
   label: string;
   score: number;
   aggregated_score: number;
   classification_paradigm: string;
 }
-interface ClassifyField {
+export interface ClassifyField {
   name: string;
   classifications: Classification[];
 }
-interface ClassifyCollection {
+export interface ClassifyCollection {
   name: string;
   fields: ClassifyField[];
 }
-interface ClassifyDataset {
+export interface ClassifyDataset {
   fides_key: string;
+  // Assuming these are empty while the instance is in the "processing" status.
   collections: ClassifyCollection[];
 }
-interface ClassifyInstance {
+export interface ClassifyInstance {
   // ClassifyInstances probably have a UID not a key
   id: string;
   // Probably will become an enum.
   status: "processing" | "review" | "classified";
-  // Assuming these are blank while in the "processing" status.
-  datasets?: ClassifyDataset;
+  datasets: ClassifyDataset[];
 }
 
 export const plusApi = createApi({
@@ -68,7 +68,7 @@ export const plusApi = createApi({
      * Fidescls endpoints:
      */
     createClassifyInstance: build.mutation<
-      ClassifyInstanceResponse,
+      ClassifyInstance,
       ClassifyInstanceRequest
     >({
       query: (body) => ({
@@ -94,22 +94,26 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
-const emptyClassifyInstances: ClassifyInstanceResponse[] = [];
+const emptyClassifyInstances: ClassifyInstance[] = [];
 const selectClassifyInstancesMap = createSelector(
-  ({ data }: { data?: ClassifyInstanceResponse[] }) =>
-    data ?? emptyClassifyInstances,
-  (classifyInstances) => ({
-    map: new Map(classifyInstances.map((c) => [c.fides_key, c])),
-  })
+  ({ data }: { data?: ClassifyInstance[] }) => data ?? emptyClassifyInstances,
+  (classifyInstances) => {
+    const map = new Map();
+    classifyInstances.forEach((ci) => {
+      ci.datasets?.forEach((ds) => {
+        map.set(ds.fides_key, ci);
+      });
+    });
+    return {
+      map,
+    };
+  }
 );
 
 /**
  * Convenience hook for looking up a ClassifyInstance by Dataset key.
  */
-export const useClassifyInstancesMap = (): Map<
-  string,
-  ClassifyInstanceResponse
-> => {
+export const useClassifyInstancesMap = (): Map<string, ClassifyInstance> => {
   const hasPlus = useHasPlus();
   const { map } = useGetAllClassifyInstancesQuery(undefined, {
     skip: !hasPlus,
@@ -123,18 +127,29 @@ export const useClassifyInstancesMap = (): Map<
  * cached getAllClassifyInstances response state, as well as the "active" dataset according
  * to the dataset feature's state.
  */
-export const selectActiveClassifyInstance = createSelector(
+export const selectActiveClassifyDataset = createSelector(
   [
     plusApi.endpoints.getAllClassifyInstances.select(),
     selectActiveDatasetFidesKey,
   ],
-  ({ data: responses }, fidesKey) =>
-    responses?.find((c) => c.fides_key === fidesKey)?.classifyInstance
+  ({ data: instances }, fidesKey) => {
+    let classifyDataset: ClassifyDataset | undefined;
+    instances?.find((ci) =>
+      ci.datasets?.find((ds) => {
+        if (ds.fides_key === fidesKey) {
+          classifyDataset = ds;
+          return true;
+        }
+        return false;
+      })
+    );
+    return classifyDataset;
+  }
 );
 
-const emptyCollectionMap: Map<string, DatasetCollection> = new Map();
+const emptyCollectionMap: Map<string, ClassifyCollection> = new Map();
 export const selectClassifyInstanceCollectionMap = createSelector(
-  selectActiveClassifyInstance,
+  selectActiveClassifyDataset,
   (classifyInstance) =>
     classifyInstance?.collections
       ? new Map(classifyInstance.collections.map((c) => [c.name, c]))
@@ -146,7 +161,7 @@ export const selectClassifyInstanceCollection = createSelector(
     active ? collectionMap.get(active.name) : undefined
 );
 
-const emptyFieldMap: Map<string, DatasetField> = new Map();
+const emptyFieldMap: Map<string, ClassifyField> = new Map();
 export const selectClassifyInstanceFieldMap = createSelector(
   selectClassifyInstanceCollection,
   (collection) =>

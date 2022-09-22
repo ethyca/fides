@@ -132,7 +132,17 @@ const DatabaseConnectForm = () => {
         status: string;
       }
   > => {
-    const result = await classifyMutation({ fides_key: dataset.fides_key });
+    const result = await classifyMutation(
+      // { fides_key: dataset.fides_key }
+      {
+        organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+        generate: {
+          config: { connection_string: values.url },
+          target: ValidTargets.DB,
+          type: GenerateTypes.DATASETS,
+        },
+      }
+    );
 
     if ("error" in result) {
       return {
