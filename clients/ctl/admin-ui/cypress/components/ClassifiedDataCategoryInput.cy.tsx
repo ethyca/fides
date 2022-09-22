@@ -123,4 +123,20 @@ describe("ClassifiedDataCategoryInput", () => {
       selectedClassifiedCategory.fides_key,
     ]);
   });
+
+  it("playground", () => {
+    // it's useful when developing to be able to play with the component with actual react state
+    const ClassifiedDataCategoryInputWithState = () => {
+      const [checked, setChecked] = React.useState([]);
+      return (
+        <ClassifiedDataCategoryInput
+          dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
+          checked={checked}
+          onChecked={setChecked}
+          mostLikelyCategories={MOST_LIKELY_CATEGORIES}
+        />
+      );
+    };
+    cy.mount(<ClassifiedDataCategoryInputWithState />);
+  });
 });
