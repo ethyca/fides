@@ -1,5 +1,5 @@
 import { Box, ButtonProps } from "@fidesui/react";
-import { Select } from "chakra-react-select";
+import { MultiValue, Select } from "chakra-react-select";
 
 import { DataCategory } from "~/types/api";
 
@@ -8,6 +8,7 @@ import {
   DataCategoryDropdownProps,
 } from "./DataCategoryInput";
 
+// TODO: just making up a structure until we have something real from the API
 interface DataCategoryWithConfidence extends DataCategory {
   confidence: number;
 }
@@ -18,6 +19,8 @@ interface Props extends DataCategoryDropdownProps {
 
 const ClassifiedDataCategoryInput = ({
   mostLikelyCategories,
+  onChecked,
+  checked,
   ...props
 }: Props) => {
   const menuButtonProps: ButtonProps = {
@@ -33,22 +36,32 @@ const ClassifiedDataCategoryInput = ({
       value: c.fides_key,
     }));
 
+  const selectedOptions = options.filter((o) => checked.indexOf(o.value) >= 0);
+
+  const handleChange = (
+    newValues: MultiValue<{ label: string; value: string }>
+  ) => {
+    onChecked(
+      Array.from(new Set([...checked, ...newValues.map((o) => o.value)]))
+    );
+  };
+
   return (
     <Box display="flex">
       <Box>
         <DataCategoryDropdown
           {...props}
+          checked={checked}
+          onChecked={onChecked}
           buttonProps={menuButtonProps}
           buttonLabel="Search taxonomy"
         />
       </Box>
-      <Box>
+      <Box flexGrow={1} data-testid="classified-select">
         <Select
           options={options}
-          onChange={(newValue) => {
-            console.log({ newValue });
-          }}
-          value={options}
+          onChange={handleChange}
+          value={selectedOptions}
           size="sm"
           chakraStyles={{
             dropdownIndicator: (provided) => ({
