@@ -1,7 +1,7 @@
 [
   {
     "id": "2",
-    "status": "processing",
+    "status": "In Work",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_2",
@@ -11,7 +11,7 @@
   },
   {
     "id": "3",
-    "status": "review",
+    "status": "Complete",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_3",
@@ -38,7 +38,7 @@
   },
   {
     "id": "4",
-    "status": "classified",
+    "status": "Reviewed",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_4",
@@ -65,7 +65,7 @@
   },
   {
     "id": "classification_in_review",
-    "status": "review",
+    "status": "Complete",
     "datasets": [
       {
         "fides_key": "dataset_in_review",
