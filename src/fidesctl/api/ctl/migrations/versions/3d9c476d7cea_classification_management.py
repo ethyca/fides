@@ -52,6 +52,7 @@ def upgrade():
         sa.Column("status", sa.Text(), nullable=True),
         sa.Column("organization_key", sa.Text(), nullable=True),
         sa.Column("dataset_key", sa.Text(), nullable=True),
+        sa.Column("dataset_name", sa.Text(), nullable=True),
         sa.Column("target", sa.Text(), nullable=True),
         sa.Column("type", sa.Text(), nullable=True),
         sa.Column(

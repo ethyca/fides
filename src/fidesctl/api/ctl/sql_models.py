@@ -116,6 +116,7 @@ class ClassificationInstance(Base):
     status = Column(Text)
     organization_key = Column(Text)
     dataset_key = Column(Text)
+    dataset_name = Column(Text)
     target = Column(Text)
     type = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

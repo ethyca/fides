@@ -214,6 +214,16 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_key
+      description: 'Fides Generated Description for Column: dataset_key'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_name
+      description: 'Fides Generated Description for Column: dataset_name'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: status
       description: 'Fides Generated Description for Column: status'
       data_categories:
