@@ -159,7 +159,7 @@ jobs:
       - name: Check that the docs can build
         run: nox -s docs_check
 
-  Fidesctl:
+  Fides-Checks:
     needs: Build
     runs-on: ubuntu-latest
     steps:
@@ -184,23 +184,24 @@ jobs:
         run: pip install nox>=2022
 
       - name: Check fides installation
-        run: nox -s check_install -- docker
+        run: nox -s check_install
 
       - name: Run fides evaluation
-        run: nox -s fidesctl -- docker
+        run: nox -s check_fides_annotations -- docker
 
       - name: Scan fides db
-        run: nox -s fidesctl_db_scan -- docker
+        run: nox -s fides_db_scan
 
-###########
-## Tests ##
-###########
+################
+## Safe Tests ##
+################
   Pytest-Ctl-Not-External:
     needs: Build
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -220,12 +221,71 @@ jobs:
       - name: Run non-external test suite
         run: nox -s "pytest(not-external)"
 
-  Pytest-Ctl-External:
+
+  Pytest-Unit-Ops:
     needs: Build
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run unit test suite
+        run: nox -s pytest_unit
+
+  Pytest-Integration-Ops:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run integration test suite
+        run: nox -s pytest_integration
+
+##################
+## Unsafe Tests ##
+##################
+  Pytest-Ctl-External:
+    needs: Build
+    strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.6"]
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -253,12 +313,15 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
-  Pytest-Unit-Ops:
+  External-Datastores:
     needs: Build
     strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -275,15 +338,27 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run unit test suite
-        run: nox -s pytest_unit
+      - name: Integration Tests (External)
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
+          BIGQUERY_DATASET: fidesopstest
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: nox -s pytest_integration_external
 
-  Pytest-Integration-Ops:
+  External-SaaS-Connectors:
     needs: Build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    permissions:
+      contents: read
+      id-token: write
     strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
-    runs-on: ubuntu-latest
     steps:
       - name: Download container
         uses: actions/download-artifact@v3
@@ -294,11 +369,23 @@ jobs:
       - name: Load image
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run integration test suite
-        run: nox -s pytest_integration
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Vault Token
+        uses: hashicorp/vault-action@v2.4.2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          namespace: ${{ secrets.VAULT_NAMESPACE }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          exportToken: True
+
+      - name: SaaS Connector Tests
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+        run: nox -s pytest_saas
