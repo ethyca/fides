@@ -12,8 +12,6 @@ services:
     depends_on:
       fides-db:
         condition: service_healthy
-      worker:
-        condition: service_started
     expose:
       - 8080
     environment:
