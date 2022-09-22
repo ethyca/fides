@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import ClassifiedDataCategoryInput from "~/features/dataset/ClassifiedDataCategoryInput";
+import ClassifiedDataCategoryDropdown from "~/features/dataset/ClassifiedDataCategoryDropdown";
 import { MOCK_DATA_CATEGORIES } from "~/mocks/data";
 import { DataCategory } from "~/types/api";
 
@@ -10,12 +10,12 @@ const CATEGORIES_WITH_CONFIDENCE = MOCK_DATA_CATEGORIES.map((dc) => ({
 }));
 const MOST_LIKELY_CATEGORIES = CATEGORIES_WITH_CONFIDENCE.slice(0, 5);
 
-describe("ClassifiedDataCategoryInput", () => {
+describe("ClassifiedDataCategoryDropdown", () => {
   it("can render checked categories", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
     cy.mount(
-      <ClassifiedDataCategoryInput
+      <ClassifiedDataCategoryDropdown
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
         // check one "most likely" and one regular one
         checked={[
@@ -47,7 +47,7 @@ describe("ClassifiedDataCategoryInput", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const toSelect = MOST_LIKELY_CATEGORIES[0];
     cy.mount(
-      <ClassifiedDataCategoryInput
+      <ClassifiedDataCategoryDropdown
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
         checked={["system.authentication"]}
         onChecked={onCheckedSpy}
@@ -65,7 +65,7 @@ describe("ClassifiedDataCategoryInput", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
     cy.mount(
-      <ClassifiedDataCategoryInput
+      <ClassifiedDataCategoryDropdown
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
         checked={[selectedClassifiedCategory.fides_key]}
         onChecked={onCheckedSpy}
@@ -85,7 +85,7 @@ describe("ClassifiedDataCategoryInput", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
     cy.mount(
-      <ClassifiedDataCategoryInput
+      <ClassifiedDataCategoryDropdown
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
         checked={[
           selectedClassifiedCategory.fides_key,
@@ -106,7 +106,7 @@ describe("ClassifiedDataCategoryInput", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
     cy.mount(
-      <ClassifiedDataCategoryInput
+      <ClassifiedDataCategoryDropdown
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
         checked={[
           selectedClassifiedCategory.fides_key,
@@ -126,10 +126,10 @@ describe("ClassifiedDataCategoryInput", () => {
 
   it("playground", () => {
     // it's useful when developing to be able to play with the component with actual react state
-    const ClassifiedDataCategoryInputWithState = () => {
+    const ClassifiedDataCategoryDropdownWithState = () => {
       const [checked, setChecked] = React.useState([]);
       return (
-        <ClassifiedDataCategoryInput
+        <ClassifiedDataCategoryDropdown
           dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
           checked={checked}
           onChecked={setChecked}
@@ -137,6 +137,6 @@ describe("ClassifiedDataCategoryInput", () => {
         />
       );
     };
-    cy.mount(<ClassifiedDataCategoryInputWithState />);
+    cy.mount(<ClassifiedDataCategoryDropdownWithState />);
   });
 });

@@ -17,7 +17,7 @@ interface Props extends DataCategoryDropdownProps {
   mostLikelyCategories: DataCategoryWithConfidence[];
 }
 
-const ClassifiedDataCategoryInput = ({
+const ClassifiedDataCategoryDropdown = ({
   mostLikelyCategories,
   onChecked,
   checked,
@@ -106,4 +106,4 @@ const ClassifiedDataCategoryInput = ({
   );
 };
 
-export default ClassifiedDataCategoryInput;
+export default ClassifiedDataCategoryDropdown;
