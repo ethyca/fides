@@ -9,7 +9,7 @@ ARG PYTHON_VERSION=3.10.6
 FROM node:16 as frontend
 
 # Build the admin-io frontend
-WORKDIR /fidesops/clients/admin-ui
+WORKDIR /fides/clients/admin-ui
 COPY clients/admin-ui/ .
 RUN npm install
 RUN npm run export
@@ -99,5 +99,4 @@ RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fidesops/clients/admin-ui/out/ /fidesops/src/fidesops/build/static/
-
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/build/static/
