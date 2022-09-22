@@ -1,7 +1,7 @@
 """classification management
 
 Revision ID: 3d9c476d7cea
-Revises: 4fc34906c389
+Revises: 6bd93cb0603d
 Create Date: 2022-09-14 02:21:37.828382
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3d9c476d7cea"
-down_revision = "4fc34906c389"
+down_revision = "6bd93cb0603d"
 branch_labels = None
 depends_on = None
 
@@ -51,6 +51,7 @@ def upgrade():
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("status", sa.Text(), nullable=True),
         sa.Column("organization_key", sa.Text(), nullable=True),
+        sa.Column("dataset_key", sa.Text(), nullable=True),
         sa.Column("target", sa.Text(), nullable=True),
         sa.Column("type", sa.Text(), nullable=True),
         sa.Column(
