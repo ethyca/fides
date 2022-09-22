@@ -43,9 +43,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
         "postDataset"
       );
-      cy.intercept("POST", "/api/v1/plus/classifyInstance", {
-        fixture: "classifyInstance/create.json",
-      }).as("postClassifyInstance");
+      cy.intercept("POST", "/api/v1/plus/classify", {
+        fixture: "classify/create.json",
+      }).as("postClassify");
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
@@ -55,7 +55,7 @@ describe("Datasets with Fides Classify", () => {
 
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.wait("@postClassifyInstance");
+      cy.wait("@postClassify");
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
@@ -68,20 +68,20 @@ describe("Datasets with Fides Classify", () => {
     });
   });
 
-  describe("List of datasets with classifyInstances", () => {
+  describe("List of datasets with classifications", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
-      cy.intercept("GET", "/api/v1/plus/classifyInstance", {
-        fixture: "classifyInstance/list.json",
-      }).as("getClassifyInstanceList");
+      cy.intercept("GET", "/api/v1/plus/classify", {
+        fixture: "classify/list.json",
+      }).as("getClassifyList");
     });
 
-    it("Shows the each dataset's classifyInstance status", () => {
+    it("Shows the each dataset's classify status", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
-      cy.wait("@getClassifyInstanceList");
+      cy.wait("@getClassifyList");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
@@ -99,15 +99,15 @@ describe("Datasets with Fides Classify", () => {
   describe("Dataset collection view", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/dataset/*", {
-        fixture: "classifyInstance/dataset-in-review.json",
+        fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
       cy.intercept("GET", "/api/v1/data_category", {
         fixture: "data_categories.json",
       }).as("getDataCategory");
 
-      cy.intercept("GET", "/api/v1/plus/classifyInstance", {
-        fixture: "classifyInstance/list.json",
-      }).as("getClassifyInstanceList");
+      cy.intercept("GET", "/api/v1/plus/classify", {
+        fixture: "classify/list.json",
+      }).as("getClassifyList");
     });
 
     /**
@@ -136,7 +136,7 @@ describe("Datasets with Fides Classify", () => {
     it("Shows the classifiers field suggestions", () => {
       cy.visit("/dataset/dataset_in_review");
       cy.wait("@getDataset");
-      cy.wait("@getClassifyInstanceList");
+      cy.wait("@getClassifyList");
 
       cy.getByTestId("dataset-fields-table");
 
