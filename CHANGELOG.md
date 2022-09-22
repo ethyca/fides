@@ -132,7 +132,6 @@ The `oauth2` strategy has been renamed to `oauth2_authorization_code` in order t
 ### Added
 
 * Access support for Datadog Logs [#1060](https://github.com/ethyca/fidesops/pull/1060)
-""
 * Adds infra for email config and dispatch [#1059](https://github.com/ethyca/fidesops/pull/1059)
 * Add an endpoint that allows you to create a Saas connector and all supporting resources with a single request [#1076](https://github.com/ethyca/fidesops/pull/1076)
 * Add a Connection - SaaS connector's configuration parameters [#761](https://github.com/ethyca/fidesops/pull/1099)

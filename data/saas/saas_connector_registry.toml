@@ -22,7 +22,6 @@ dataset = "data/saas/dataset/hubspot_dataset.yml"
 icon = "data/saas/icon/hubspot.svg"
 human_readable = "HubSpot"
 
-
 [mailchimp]
 config = "data/saas/config/mailchimp_config.yml"
 dataset = "data/saas/dataset/mailchimp_dataset.yml"

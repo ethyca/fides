@@ -250,7 +250,6 @@ class SaaSType(Enum):
 
     adobe_campaign = "adobe_campaign"
     auth0 = "auth0"
-    
     shopify = "shopify"
     mailchimp = "mailchimp"
     hubspot = "hubspot"
