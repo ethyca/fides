@@ -61,9 +61,10 @@ const DescribeSystemStep = ({
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
       if (isErrorResult(result)) {
+        const attemptedAction = isEditing ? "editing" : "creating";
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while creating the system. Please try again."
+          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
         );
 
         toast({
@@ -173,6 +174,7 @@ const DescribeSystemStep = ({
                 type="submit"
                 variant="primary"
                 size="sm"
+                // if isEditing, always allow going to the next step
                 disabled={isEditing ? false : !dirty}
                 isLoading={isLoading}
                 data-testid="confirm-btn"
