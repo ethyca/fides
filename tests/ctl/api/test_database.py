@@ -3,13 +3,13 @@ from typing import Generator
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
 
-from fidesctl.api.ctl.database import database
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.database import database
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture(scope="function", name="data_category")
-def fixture_data_category(test_config: FidesctlConfig) -> Generator:
+def fixture_data_category(test_config: FidesConfig) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.
     """
@@ -31,7 +31,7 @@ class TestLoadDefaultTaxonomy:
     async def test_add_to_default_taxonomy(
         self,
         monkeypatch: pytest.MonkeyPatch,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
         data_category: DataCategory,
     ) -> None:
         """Should be able to add to the existing default taxonomy"""
@@ -58,7 +58,7 @@ class TestLoadDefaultTaxonomy:
         assert result.status_code == 200
 
     async def test_does_not_override_user_changes(
-        self, test_config: FidesctlConfig
+        self, test_config: FidesConfig
     ) -> None:
         """
         Loading the default taxonomy should not override user changes
@@ -85,7 +85,7 @@ class TestLoadDefaultTaxonomy:
         assert result.json()["description"] == new_description
 
     async def test_does_not_remove_user_added_taxonomies(
-        self, test_config: FidesctlConfig, data_category: DataCategory
+        self, test_config: FidesConfig, data_category: DataCategory
     ) -> None:
         """
         Loading the default taxonomy should not delete user additions

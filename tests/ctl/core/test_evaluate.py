@@ -559,7 +559,7 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
 
 @pytest.mark.unit
 def test_failed_evaluation_error_message(
-    test_config: FidesctlConfig, capsys: pytest.CaptureFixture
+    test_config: FidesConfig, capsys: pytest.CaptureFixture
 ) -> None:
     """
     Check that the returned error message matches what is expected.

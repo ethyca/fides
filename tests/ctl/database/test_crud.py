@@ -2,17 +2,17 @@ from json import dumps
 from typing import Generator, List
 
 import pytest
-from fidesctl.api.ctl.database.crud import delete_resource, list_resource
+from fides.api.ctl.database.crud import delete_resource, list_resource
 
-from fidesctl.api.ctl import sql_models
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl import sql_models
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesConfig
 from tests.ctl.types import FixtureRequest
 
 
 @pytest.fixture(name="created_resources")
 def fixture_created_resources(
-    test_config: FidesctlConfig, request: FixtureRequest
+    test_config: FidesConfig, request: FixtureRequest
 ) -> Generator:
     """
     Fixture that creates and tears down a set of resources for each test run.
