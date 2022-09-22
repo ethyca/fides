@@ -1,7 +1,7 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP_UI
+from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
@@ -17,10 +17,13 @@ def dev(session: nox.Session) -> None:
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
 
+    if "ui" in session.posargs:
+        session.run("docker", "compose", "up", "fides-ui", external=True)
+
     open_shell = "shell" in session.posargs
     if not datastores:
         if open_shell:
-            session.run(*START_APP_UI, external=True)
+            session.run(*START_APP, external=True)
             session.run(*RUN, "/bin/bash", external=True)
         else:
             session.run("docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True)

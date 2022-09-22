@@ -32,8 +32,6 @@ services:
   fides-ui:
     image: ethyca/fides:local-ui
     command: npm run dev-docker
-    depends_on:
-      - fides
     expose:
       - 3000
     ports:

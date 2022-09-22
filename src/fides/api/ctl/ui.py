@@ -9,7 +9,7 @@ from typing import Dict, Optional, Union
 from fastapi import Response
 from fastapi.responses import FileResponse
 
-FIDESCTL_DIRECTORY = "src/fidesctl"
+FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
@@ -43,7 +43,7 @@ def get_admin_index_as_response() -> Response:
 @lru_cache
 def get_local_file_map() -> Dict[re.Pattern, Path]:
     """Get the Admin UI route map for the local build."""
-    return generate_route_file_map(Path(FIDESCTL_DIRECTORY) / ADMIN_UI_DIRECTORY)
+    return generate_route_file_map(Path(FIDES_DIRECTORY) / ADMIN_UI_DIRECTORY)
 
 
 @lru_cache

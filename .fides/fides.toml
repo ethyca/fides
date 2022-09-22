@@ -27,7 +27,6 @@ port = 6379
 charset = "utf8"
 default_ttl_seconds = 604800
 db_index = 0
-enabled = true
 ssl = false
 ssl_cert_reqs = "required"
 
@@ -48,7 +47,6 @@ task_retry_backoff = 1
 subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
-worker_enabled = false
 
 [admin_ui]
 enabled = true

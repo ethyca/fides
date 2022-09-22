@@ -14,8 +14,6 @@ COPY clients/admin-ui/ .
 RUN npm install
 RUN npm run export
 
-
-
 #############
 ## Backend ##
 #############
@@ -99,4 +97,4 @@ RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/build/static/
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
