@@ -1,18 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { RootState } from "~/app/store";
+import type { AppState } from "~/app/store";
 import { DataCategory } from "~/types/api";
-
-export interface State {
-  dataCategories: DataCategory[];
-  isAddFormOpen: boolean;
-}
-
-const initialState: State = {
-  dataCategories: [],
-  isAddFormOpen: false,
-};
 
 export const taxonomyApi = createApi({
   reducerPath: "taxonomyApi",
@@ -67,25 +57,38 @@ export const {
   useCreateDataCategoryMutation,
 } = taxonomyApi;
 
+export interface State {
+  isAddFormOpen: boolean;
+}
+
+const initialState: State = {
+  isAddFormOpen: false,
+};
+
 export const taxonomySlice = createSlice({
   name: "taxonomy",
   initialState,
   reducers: {
-    setDataCategories: (state, action: PayloadAction<DataCategory[]>) => ({
-      ...state,
-      dataCategories: action.payload,
-    }),
-    setIsAddFormOpen: (state, action: PayloadAction<boolean>) => ({
-      ...state,
-      isAddFormOpen: action.payload,
-    }),
+    setIsAddFormOpen: (draftState, action: PayloadAction<boolean>) => {
+      draftState.isAddFormOpen = action.payload;
+    },
   },
 });
 
-export const { setDataCategories, setIsAddFormOpen } = taxonomySlice.actions;
-export const selectDataCategories = (state: RootState) =>
-  state.taxonomy.dataCategories;
-export const selectIsAddFormOpen = (state: RootState) =>
-  state.taxonomy.isAddFormOpen;
+export const { setIsAddFormOpen } = taxonomySlice.actions;
+
+const emptyDataCategories: DataCategory[] = [];
+export const selectDataCategories: (state: AppState) => DataCategory[] =
+  createSelector(
+    taxonomyApi.endpoints.getAllDataCategories.select(),
+    ({ data }) => data ?? emptyDataCategories
+  );
+
+const selectTaxonomy = (state: AppState) => state.taxonomy;
+
+export const selectIsAddFormOpen = createSelector(
+  selectTaxonomy,
+  (state) => state.isAddFormOpen
+);
 
 export const { reducer } = taxonomySlice;

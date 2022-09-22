@@ -223,6 +223,8 @@ class System(Base, FidesBase):
     privacy_declarations = Column(JSON)
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
+    egress = Column(JSON)
+    ingress = Column(JSON)
 
 
 sql_model_map: Dict = {
@@ -242,5 +244,7 @@ sql_model_map: Dict = {
 }
 
 models_with_default_field = [
-    model for _, model in sql_model_map.items() if hasattr(model, "is_default")
+    sql_model_map[model_name]
+    for model_name in sql_model_map
+    if hasattr(sql_model_map[model_name], "is_default")
 ]

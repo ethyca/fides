@@ -1,37 +1,75 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { DatasetField } from "~/types/api";
 
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
-import { selectActiveFieldIndex, setActiveFieldIndex } from "./dataset.slice";
+import {
+  selectActiveEditor,
+  selectActiveField,
+  selectActiveFields,
+  setActiveEditor,
+  setActiveFieldIndex,
+} from "./dataset.slice";
 import EditFieldDrawer from "./EditFieldDrawer";
-import { ColumnMetadata } from "./types";
+import { ColumnMetadata, EditableType } from "./types";
+
+// Chakra wants a JSX.Element, so all returns need to be wrapped in a fragment.
+/* eslint-disable react/jsx-no-useless-fragment */
+const Cell = ({
+  attribute,
+  field,
+}: {
+  attribute: keyof DatasetField;
+  field: DatasetField;
+}): JSX.Element => {
+  if (attribute === "data_qualifier") {
+    const dataQualifierName = field[attribute];
+    return (
+      <>
+        {dataQualifierName ? (
+          <IdentifiabilityTag dataQualifierName={dataQualifierName} />
+        ) : null}
+      </>
+    );
+  }
+
+  if (attribute === "data_categories") {
+    return (
+      <>
+        {(field[attribute] ?? []).map((dc) => (
+          <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
+            <TaxonomyEntityTag name={dc} />
+          </Box>
+        ))}
+      </>
+    );
+  }
+
+  return <>{field[attribute]}</>;
+};
+/* eslint-disable react/jsx-no-useless-fragment */
 
 interface Props {
-  fields: DatasetField[];
   columns: ColumnMetadata[];
 }
 
-const DatasetFieldsTable = ({ fields, columns }: Props) => {
+const DatasetFieldsTable = ({ columns }: Props) => {
   const dispatch = useDispatch();
-  const [editDrawerIsOpen, setEditDrawerIsOpen] = useState(false);
-  const activeFieldIndex = useSelector(selectActiveFieldIndex);
+  const activeFields = useSelector(selectActiveFields);
+  const activeField = useSelector(selectActiveField);
+  const activeEditor = useSelector(selectActiveEditor);
 
   const handleClose = () => {
-    setEditDrawerIsOpen(false);
-    dispatch(setActiveFieldIndex(null));
+    dispatch(setActiveFieldIndex(undefined));
+    dispatch(setActiveEditor(undefined));
   };
 
   const handleClick = (index: number) => {
     dispatch(setActiveFieldIndex(index));
-    setEditDrawerIsOpen(true);
+    dispatch(setActiveEditor(EditableType.FIELD));
   };
-
-  const activeField =
-    activeFieldIndex != null ? fields[activeFieldIndex] : null;
 
   return (
     <Box>
@@ -46,7 +84,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
           </Tr>
         </Thead>
         <Tbody>
-          {fields.map((field, idx) => (
+          {(activeFields ?? []).map((field, idx) => (
             <Tr
               key={field.name}
               _hover={{ bg: "gray.50" }}
@@ -62,23 +100,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>
-                  {(() => {
-                    if (c.attribute === "data_qualifier") {
-                      return (
-                        <IdentifiabilityTag
-                          dataQualifierName={field[c.attribute] ?? ""}
-                        />
-                      );
-                    }
-                    if (c.attribute === "data_categories") {
-                      return field[c.attribute]?.map((dc) => (
-                        <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
-                          <TaxonomyEntityTag name={dc} />
-                        </Box>
-                      ));
-                    }
-                    return field[c.attribute];
-                  })()}
+                  <Cell field={field} attribute={c.attribute} />
                 </Td>
               ))}
             </Tr>
@@ -87,7 +109,7 @@ const DatasetFieldsTable = ({ fields, columns }: Props) => {
       </Table>
       {activeField ? (
         <EditFieldDrawer
-          isOpen={editDrawerIsOpen}
+          isOpen={activeEditor === EditableType.FIELD}
           onClose={handleClose}
           field={activeField}
         />

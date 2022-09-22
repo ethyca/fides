@@ -654,6 +654,15 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: egress
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
     - name: fides_key
       data_categories:
       - system.operations
@@ -666,6 +675,15 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: ingress
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
     - name: joint_controller
       description: Encrypted contact information for a joint controller (name, address,
         email, phone)

@@ -1,6 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import uuid
-from typing import TYPE_CHECKING, Dict, Generator, List, Optional
+from typing import Dict, Generator, List, Optional
 
 import pytest
 from fideslang import FidesModel, model_list
@@ -8,6 +8,7 @@ from fideslang import FidesModel, model_list
 from fides.ctl.core import api as _api
 from fides.ctl.core import api_helpers as _api_helpers
 from fides.ctl.core.config import FidesConfig
+from tests.ctl.types import FixtureRequest
 
 RESOURCE_CREATION_COUNT = 5
 # These resources have tricky validation so the fides_key replacement doesn't work
@@ -16,15 +17,6 @@ PARAM_MODEL_LIST = [
     model for model in model_list if model not in EXCLUDED_RESOURCE_TYPES
 ]
 
-if TYPE_CHECKING:
-
-    class FixtureRequest:
-        param: str
-
-else:
-    from typing import Any
-
-    FixtureRequest = Any
 
 # Fixtures
 @pytest.fixture

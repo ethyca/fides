@@ -1,6 +1,7 @@
 import { YesNoOptions } from "common/constants";
 import { ReactNode } from "react";
 
+import { RTKResult } from "~/features/common/types";
 import {
   DataCategory,
   DataQualifier,
@@ -12,6 +13,7 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
+import { YesNoOptions } from "../common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
@@ -19,6 +21,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import { enumToOptions } from "../common/helpers";
 import {
   useCreateDataQualifierMutation,
   useDeleteDataQualifierMutation,
@@ -44,7 +47,7 @@ import {
   useUpdateDataCategoryMutation,
 } from "./taxonomy.slice";
 import type { FormValues } from "./TaxonomyFormBase";
-import { Labels, RTKResult, TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity } from "./types";
 
 export interface TaxonomyHookData<T extends TaxonomyEntity> {
   data?: TaxonomyEntity[];
@@ -56,12 +59,6 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
-
-const enumToOptions = (e: { [s: number]: string }) =>
-  Object.entries(e).map((entry) => ({
-    value: entry[1],
-    label: entry[1],
-  }));
 
 const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
   fides_key: t.fides_key ?? "",
@@ -226,7 +223,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         // @ts-ignore for the same reason as above
         entity.rights.length
           ? // @ts-ignore for the same reason as above
-            { values: entity.rights, strategy: entity.strategy }
+          { values: entity.rights, strategy: entity.strategy }
           : undefined,
       automatic_decisions_or_profiling: !!(
         entity.automated_decisions_or_profiling?.toString() === "true"

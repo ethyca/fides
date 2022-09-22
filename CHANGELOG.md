@@ -15,12 +15,77 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-# Mega merge
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
 
 ### Added
 
-* Added more taxonomy fields that can be edited via the UI [#1000](https://github.com/ethyca/fides/pull/1000)
+* Dataset generation enhancements using Fides Classify for Plus users:
+  * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
+  * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
+  * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
+* System management UI:
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
+  * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
+  * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
+
+### Changed
+
+* Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
+* Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
+* Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
+
+### Fixed
+
+* Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+
+### Security
+
+* Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
+
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+
+### Changed
+
+* Update fideslang to v1.3.0 [#1103](https://github.com/ethyca/fides/pull/1103)
+
+## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
+
+### Added
+
+* Initial system management page [#1054](https://github.com/ethyca/fides/pull/1054)
+
+### Changed
+
+* Deleting a taxonomy field with children will now cascade delete all of its children as well. [#1042](https://github.com/ethyca/fides/pull/1042)
+
+### Fixed
+
+* Fixed navigating directly to frontend routes loading index page instead of the correct static page for the route.
+* Fix truncated evaluation error messages [#1053](https://github.com/ethyca/fides/pull/1053)
+
+## [1.8.3](https://github.com/ethyca/fides/compare/1.8.2...1.8.3) - 2022-09-06
+
+### Added
+
+* Added more taxonomy fields that can be edited via the UI [#1000](https://github.com/ethyca/fides/pull/1000) [#1028](https://github.com/ethyca/fides/pull/1028)
+* Added the ability to add taxonomy fields via the UI [#1019](https://github.com/ethyca/fides/pull/1019)
+* Added the ability to delete taxonomy fields via the UI [#1006](https://github.com/ethyca/fides/pull/1006)
+  * Only non-default taxonomy entities can be deleted [#1023](https://github.com/ethyca/fides/pull/1023)
+* Prevent deleting taxonomy `is_default` fields and from adding `is_default=True` fields via the API [#990](https://github.com/ethyca/fides/pull/990).
+* Added a "Custom" tag to distinguish user defined taxonomy fields from default taxonomy fields in the UI [#1027](https://github.com/ethyca/fides/pull/1027)
+* Added initial support for enabling Fides Plus [#1037](https://github.com/ethyca/fides/pull/1037)
+  * The `useFeatures` hook can be used to check if `plus` is enabled.
+  * Navigating to/from the Data Map page is gated behind this feature.
+  * Plus endpoints are served from the private Plus image.
+
+### Fixed
+
+* Fixed failing mypy tests [#1030](https://github.com/ethyca/fides/pull/1030)
+* Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+* Pinned pydantic version to < 1.10.0 to fix an error in finding referenced fides keys [#1045](https://github.com/ethyca/fides/pull/1045)
 
 ### Fixed
 

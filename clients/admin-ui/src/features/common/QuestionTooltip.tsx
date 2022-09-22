@@ -3,7 +3,7 @@ import { Tooltip, TooltipProps } from "@chakra-ui/react";
 import { QuestionIcon } from "common/Icon";
 
 const QuestionTooltip = ({ ...props }: Omit<TooltipProps, "children">) => (
-  <Tooltip {...props}>
+  <Tooltip placement="right" {...props}>
     <QuestionIcon color="gray.400" />
   </Tooltip>
 );
