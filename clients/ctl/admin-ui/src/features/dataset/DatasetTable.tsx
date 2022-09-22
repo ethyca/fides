@@ -57,7 +57,7 @@ const DatasetsTable = () => {
 
           const classifyInstance = classifyInstancesMap.get(dataset.fides_key);
           const statusDisplay =
-            STATUS_DISPLAY[classifyInstance?.status ?? "default"];
+            STATUS_DISPLAY[classifyInstance?.status ?? "unknown"];
 
           return (
             <Tr

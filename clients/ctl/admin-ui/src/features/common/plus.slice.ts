@@ -46,11 +46,18 @@ export interface ClassifyDataset {
   // Assuming these are empty while the instance is in the "processing" status.
   collections: ClassifyCollection[];
 }
+export enum ClassifyStatusEnum {
+  CREATED = "Created",
+  IN_WORK = "In Work",
+  COMPLETE = "Complete",
+  FAILED = "Failed",
+  // Name TBD by the backend.
+  REVIEWED = "Reviewed",
+}
 export interface ClassifyInstance {
   // ClassifyInstances probably have a UID not a key
   id: string;
-  // Probably will become an enum.
-  status: "processing" | "review" | "classified";
+  status: ClassifyStatusEnum;
   datasets: ClassifyDataset[];
 }
 
