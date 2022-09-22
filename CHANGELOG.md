@@ -15,19 +15,41 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
 
 ### Added
 
+* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
-* New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
-* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
+  * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
+* System management UI:
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
+  * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
 
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
+* Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
+* Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
+
+### Fixed
+
+* Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+
+### Security
+
+* Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
+
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+
+### Changed
+
+* Update fideslang to v1.3.0 [#1103](https://github.com/ethyca/fides/pull/1103)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 

@@ -1,16 +1,12 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import { System } from "~/types/api";
 
-export interface State {
-  systems: System[];
+interface SystemDeleteResponse {
+  message: string;
+  resource: System;
 }
-
-const initialState: State = {
-  systems: [],
-};
 
 export const systemApi = createApi({
   reducerPath: "systemApi",
@@ -23,7 +19,7 @@ export const systemApi = createApi({
       query: () => ({ url: `system/` }),
       providesTags: () => ["System"],
     }),
-    getSystemByFidesKey: build.query<Partial<System>, string>({
+    getSystemByFidesKey: build.query<System, string>({
       query: (fides_key) => ({ url: `system/${fides_key}/` }),
       providesTags: ["System"],
     }),
@@ -37,12 +33,21 @@ export const systemApi = createApi({
       }),
       invalidatesTags: () => ["System"],
     }),
+    deleteSystem: build.mutation<SystemDeleteResponse, string>({
+      query: (key) => ({
+        url: `system/${key}`,
+        params: { resource_type: "system" },
+        method: "DELETE",
+      }),
+      invalidatesTags: ["System"],
+    }),
     updateSystem: build.mutation<
       System,
       Partial<System> & Pick<System, "fides_key">
     >({
       query: ({ ...patch }) => ({
         url: `system/`,
+        params: { resource_type: "system" },
         method: "PUT",
         body: patch,
       }),
@@ -81,24 +86,16 @@ export const {
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
   useUpdateSystemMutation,
+  useDeleteSystemMutation,
 } = systemApi;
+
+export interface State {}
+const initialState: State = {};
 
 export const systemSlice = createSlice({
   name: "system",
   initialState,
-  reducers: {
-    setSystems: (state, action: PayloadAction<System[]>) => ({
-      systems: action.payload,
-    }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.datasets,
-    }),
-  },
+  reducers: {},
 });
-
-export const { setSystems } = systemSlice.actions;
 
 export const { reducer } = systemSlice;

@@ -263,6 +263,8 @@ class System(Base, FidesBase):
     privacy_declarations = Column(JSON)
     administrating_department = Column(String)
     data_protection_impact_assessment = Column(JSON)
+    egress = Column(JSON)
+    ingress = Column(JSON)
 
 
 sql_model_map: Dict = {

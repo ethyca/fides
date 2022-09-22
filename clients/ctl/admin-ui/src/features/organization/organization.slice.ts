@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import { Organization } from "~/types/api";
 
@@ -74,12 +73,6 @@ export const organizationSlice = createSlice({
   name: "organization",
   initialState: {},
   reducers: {},
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.user,
-    }),
-  },
 });
 
 export const { reducer } = organizationSlice;

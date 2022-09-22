@@ -2,23 +2,23 @@ import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  setDataCategories,
-  useGetAllDataCategoriesQuery,
-} from "~/features/taxonomy/taxonomy.slice";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ColumnDropdown from "./ColumnDropdown";
 import {
-  selectActiveCollectionIndex,
+  selectActiveCollection,
+  selectActiveCollections,
+  selectActiveEditor,
   setActiveCollectionIndex,
-  setActiveDataset,
+  setActiveDatasetFidesKey,
+  setActiveEditor,
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
 import EditCollectionDrawer from "./EditCollectionDrawer";
 import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
-import { ColumnMetadata } from "./types";
+import { ColumnMetadata, EditableType } from "./types";
 
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Field Name", attribute: "name" },
@@ -43,35 +43,34 @@ interface Props {
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
   const { dataset, isLoading } = useDataset(fidesKey);
-  const activeCollectionIndex = useSelector(selectActiveCollectionIndex);
-  const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
-  const [isModifyingCollection, setIsModifyingCollection] = useState(false);
-  const [isModifyingDataset, setIsModifyingDataset] = useState(false);
+  const activeCollections = useSelector(selectActiveCollections);
+  const activeCollection = useSelector(selectActiveCollection);
+  const activeEditor = useSelector(selectActiveEditor);
 
-  // load data categories into redux
-  const { data: dataCategories } = useGetAllDataCategoriesQuery();
-  useEffect(() => {
-    dispatch(setDataCategories(dataCategories ?? []));
-  }, [dispatch, dataCategories]);
+  const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+
+  // Query subscriptions:
+  useGetAllDataCategoriesQuery();
 
   useEffect(() => {
     if (dataset) {
-      dispatch(setActiveDataset(dataset));
+      dispatch(setActiveDatasetFidesKey(dataset.fides_key));
+      dispatch(setActiveCollectionIndex(0));
     }
   }, [dispatch, dataset]);
 
-  useEffect(() => {
-    dispatch(setActiveCollectionIndex(0));
-  }, [dispatch]);
-
   useEffect(
     () => () => {
-      dispatch(setActiveDataset(null));
+      dispatch(setActiveDatasetFidesKey(undefined));
     },
     // This hook only runs on component un-mount to clear the active dataset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {
+    dispatch(setActiveCollectionIndex(event.target.selectedIndex));
+  };
 
   if (isLoading) {
     return <Spinner />;
@@ -80,14 +79,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   if (!dataset) {
     return <div>Dataset not found</div>;
   }
-
-  const { collections } = dataset;
-  const activeCollection =
-    activeCollectionIndex != null ? collections[activeCollectionIndex] : null;
-
-  const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {
-    dispatch(setActiveCollectionIndex(event.target.selectedIndex));
-  };
 
   return (
     <Box>
@@ -98,7 +89,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
           width="auto"
           data-testid="collection-select"
         >
-          {collections.map((collection) => (
+          {(activeCollections ?? []).map((collection) => (
             <option key={collection.name} value={collection.name}>
               {collection.name}
             </option>
@@ -113,29 +104,30 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             />
           </Box>
           <MoreActionsMenu
-            onModifyCollection={() => setIsModifyingCollection(true)}
-            onModifyDataset={() => setIsModifyingDataset(true)}
+            onModifyCollection={() =>
+              dispatch(setActiveEditor(EditableType.COLLECTION))
+            }
+            onModifyDataset={() =>
+              dispatch(setActiveEditor(EditableType.DATASET))
+            }
           />
         </Box>
       </Box>
+
+      <DatasetFieldsTable columns={columns} />
+
       {activeCollection ? (
-        <>
-          <DatasetFieldsTable
-            fields={activeCollection.fields}
-            columns={columns}
-          />
-          <EditCollectionDrawer
-            collection={activeCollection}
-            isOpen={isModifyingCollection}
-            onClose={() => setIsModifyingCollection(false)}
-          />
-        </>
+        <EditCollectionDrawer
+          collection={activeCollection}
+          isOpen={activeEditor === EditableType.COLLECTION}
+          onClose={() => dispatch(setActiveEditor(undefined))}
+        />
       ) : null}
       {dataset ? (
         <EditDatasetDrawer
           dataset={dataset}
-          isOpen={isModifyingDataset}
-          onClose={() => setIsModifyingDataset(false)}
+          isOpen={activeEditor === EditableType.DATASET}
+          onClose={() => dispatch(setActiveEditor(undefined))}
         />
       ) : null}
     </Box>

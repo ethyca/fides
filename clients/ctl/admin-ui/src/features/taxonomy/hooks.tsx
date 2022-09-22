@@ -20,6 +20,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "../common/form/inputs";
+import { enumToOptions } from "../common/helpers";
 import {
   useCreateDataQualifierMutation,
   useDeleteDataQualifierMutation,
@@ -57,12 +58,6 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
 }
-
-const enumToOptions = (e: { [s: number]: string }) =>
-  Object.entries(e).map((entry) => ({
-    value: entry[1],
-    label: entry[1],
-  }));
 
 const transformTaxonomyBaseToInitialValues = (t: TaxonomyEntity) => ({
   fides_key: t.fides_key ?? "",

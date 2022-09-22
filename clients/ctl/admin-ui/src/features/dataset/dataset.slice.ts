@@ -1,24 +1,21 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { HYDRATE } from "next-redux-wrapper";
 
 import type { AppState } from "~/app/store";
 import { Dataset, GenerateRequestPayload, GenerateResponse } from "~/types/api";
 
+import { EditableType } from "./types";
+
 export interface State {
-  datasets: Dataset[];
-  activeDataset: Dataset | null;
+  activeDatasetFidesKey?: string;
   // collections and fields don't have unique IDs, so we have to use their index
-  activeCollectionIndex: number | null;
-  activeFieldIndex: number | null;
+  activeCollectionIndex?: number;
+  activeFieldIndex?: number;
+  // Controls whether the edit drawer is open and what is being edited.
+  activeEditor?: EditableType;
 }
 
-const initialState: State = {
-  datasets: [],
-  activeDataset: null,
-  activeCollectionIndex: null,
-  activeFieldIndex: null,
-};
+const initialState: State = {};
 
 interface DatasetDeleteResponse {
   message: string;
@@ -93,60 +90,97 @@ export const datasetSlice = createSlice({
   name: "dataset",
   initialState,
   reducers: {
-    setDatasets: (state, action: PayloadAction<Dataset[]>) => ({
-      ...state,
-      datasets: action.payload,
-    }),
-    setActiveDataset: (state, action: PayloadAction<Dataset | null>) => {
-      if (action.payload != null) {
-        return { ...state, activeDataset: action.payload };
+    setActiveDatasetFidesKey: (
+      draftState,
+      action: PayloadAction<string | undefined>
+    ) => {
+      if (draftState.activeDatasetFidesKey === action.payload) {
+        return;
       }
-      // clear out child fields when a dataset becomes null
-      return {
-        ...state,
-        activeDataset: action.payload,
-        activeCollectionIndex: null,
-        activeFieldIndex: null,
-      };
+
+      // Clear out the related fields when the dataset is changed.
+      draftState.activeDatasetFidesKey = action.payload;
+      draftState.activeCollectionIndex = undefined;
+      draftState.activeFieldIndex = undefined;
     },
-    setActiveCollectionIndex: (state, action: PayloadAction<number | null>) => {
-      if (action.payload != null) {
-        return {
-          ...state,
-          activeCollectionIndex: action.payload,
-        };
+    setActiveCollectionIndex: (
+      draftState,
+      action: PayloadAction<number | undefined>
+    ) => {
+      if (draftState.activeCollectionIndex === action.payload) {
+        return;
       }
-      // clear our child fields when a collection becomes null
-      return {
-        ...state,
-        activeCollectionIndex: action.payload,
-        activeFieldIndex: null,
-      };
+
+      // Clear out the related fields when the collection is changed.
+      draftState.activeCollectionIndex = action.payload;
+      draftState.activeFieldIndex = undefined;
     },
-    setActiveFieldIndex: (state, action: PayloadAction<number | null>) => ({
-      ...state,
-      activeFieldIndex: action.payload,
-    }),
-  },
-  extraReducers: {
-    [HYDRATE]: (state, action) => ({
-      ...state,
-      ...action.payload.datasets,
-    }),
+    setActiveFieldIndex: (
+      draftState,
+      action: PayloadAction<number | undefined>
+    ) => {
+      draftState.activeFieldIndex = action.payload;
+    },
+    setActiveEditor: (
+      draftState,
+      action: PayloadAction<EditableType | undefined>
+    ) => {
+      draftState.activeEditor = action.payload;
+    },
   },
 });
 
 export const {
-  setDatasets,
-  setActiveDataset,
+  setActiveDatasetFidesKey,
   setActiveCollectionIndex,
   setActiveFieldIndex,
+  setActiveEditor,
 } = datasetSlice.actions;
-export const selectActiveDataset = (state: AppState) =>
-  state.dataset.activeDataset;
-export const selectActiveCollectionIndex = (state: AppState) =>
-  state.dataset.activeCollectionIndex;
-export const selectActiveFieldIndex = (state: AppState) =>
-  state.dataset.activeFieldIndex;
 
 export const { reducer } = datasetSlice;
+
+const selectDataset = (state: AppState) => state.dataset;
+
+export const selectActiveDatasetFidesKey = createSelector(
+  selectDataset,
+  (state) => state.activeDatasetFidesKey
+);
+export const selectActiveDataset = createSelector(
+  [(appState) => appState, selectActiveDatasetFidesKey],
+  (appState, fidesKey) =>
+    fidesKey !== undefined
+      ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(appState)?.data
+      : undefined
+);
+
+export const selectActiveCollections = createSelector(
+  selectActiveDataset,
+  (dataset) => dataset?.collections
+);
+export const selectActiveCollectionIndex = createSelector(
+  selectDataset,
+  (state) => state.activeCollectionIndex
+);
+export const selectActiveCollection = createSelector(
+  [selectActiveCollectionIndex, selectActiveCollections],
+  (index, collections) =>
+    index !== undefined && collections ? collections[index] : undefined
+);
+
+export const selectActiveFields = createSelector(
+  [selectActiveCollection],
+  (collection) => collection?.fields
+);
+export const selectActiveFieldIndex = createSelector(
+  selectDataset,
+  (state) => state.activeFieldIndex
+);
+export const selectActiveField = createSelector(
+  [selectActiveFieldIndex, selectActiveFields],
+  (index, fields) => (index !== undefined && fields ? fields[index] : undefined)
+);
+
+export const selectActiveEditor = createSelector(
+  selectDataset,
+  (state) => state.activeEditor
+);
