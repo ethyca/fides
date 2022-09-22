@@ -7,14 +7,19 @@ import * as Yup from "yup";
 
 import {
   CustomCreatableMultiSelect,
+  CustomMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import { useCreateSystemMutation } from "~/features/system/system.slice";
+import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
+import {
+  useCreateSystemMutation,
+  useGetAllSystemsQuery,
+} from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
-const initialValues: System = {
+const initialValues = {
   description: "",
   fides_key: "",
   name: "",
@@ -22,35 +27,71 @@ const initialValues: System = {
   tags: [],
   system_type: "",
   privacy_declarations: [],
+  data_responsibility_title: undefined,
+  administrating_department: "",
+  third_country_transfers: [],
+  system_dependencies: [],
+  joint_controller: {
+    name: "",
+    email: "",
+    address: "",
+    phone: "",
+  },
+  data_protection_impact_assessment: {
+    is_required: "false",
+    progress: "",
+    link: "",
+  },
 };
-type FormValues = typeof initialValues;
+export type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
   system_type: Yup.string().required().label("System type"),
 });
 
+const transformFormValuesToSystem = (formValues: FormValues): System => {
+  const hasImpactAssessment =
+    formValues.data_protection_impact_assessment.is_required === "true";
+  const impactAssessment = hasImpactAssessment
+    ? { ...formValues.data_protection_impact_assessment, is_required: true }
+    : undefined;
+  const hasJointController =
+    formValues.joint_controller !== initialValues.joint_controller;
+  const jointController = hasJointController
+    ? formValues.joint_controller
+    : undefined;
+  return {
+    ...formValues,
+    organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+    privacy_declarations: [],
+    data_protection_impact_assessment: impactAssessment,
+    joint_controller: jointController,
+    administrating_department:
+      formValues.administrating_department === ""
+        ? undefined
+        : formValues.administrating_department,
+  };
+};
+
 interface Props {
   onCancel: () => void;
   onSuccess: (system: System) => void;
+  abridged?: boolean;
 }
 
-const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
+const DescribeSystemStep = ({ onCancel, onSuccess, abridged }: Props) => {
   const [createSystem] = useCreateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const { data: systems } = useGetAllSystemsQuery();
+  const systemOptions = systems
+    ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
+    : [];
 
   const toast = useToast();
 
   const handleSubmit = async (values: FormValues) => {
-    const systemBody = {
-      description: values.description,
-      fides_key: values.fides_key,
-      name: values.name,
-      organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-      privacy_declarations: [],
-      system_type: values.system_type,
-      tags: values.tags,
-    };
+    const systemBody = transformFormValuesToSystem(values);
 
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -67,7 +108,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
         });
       } else {
         toast.closeAll();
-        onSuccess(values);
+        onSuccess(systemBody);
       }
     };
 
@@ -86,7 +127,7 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty }) => (
+      {({ dirty, values }) => (
         <Form>
           <Stack spacing={10}>
             <Heading as="h3" size="lg">
@@ -139,6 +180,15 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
                 }
                 tooltip="Provide one or more tags to group the system. Tags are important as they allow you to filter and group systems for reporting and later review. Tags provide tremendous value as you scale - imagine you have thousands of systems, you’re going to thank us later for tagging!"
               />
+              <CustomMultiSelect
+                label="System dependencies"
+                name="system_dependencies"
+                tooltip="A list of fides keys to model dependencies."
+                options={systemOptions}
+              />
+              {!abridged ? (
+                <DescribeSystemsFormExtension values={values} />
+              ) : null}
             </Stack>
             <Box>
               <Button
@@ -167,4 +217,4 @@ const DescribeSystemsForm = ({ onCancel, onSuccess }: Props) => {
     </Formik>
   );
 };
-export default DescribeSystemsForm;
+export default DescribeSystemStep;

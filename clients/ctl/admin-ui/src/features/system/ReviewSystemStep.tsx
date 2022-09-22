@@ -3,101 +3,70 @@ import {
   Button,
   Divider,
   FormLabel,
-  Grid,
-  GridItem,
   Heading,
   Stack,
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React, { Fragment, ReactNode } from "react";
+import React, { Fragment } from "react";
 
-import {
-  DEFAULT_ORGANIZATION_FIDES_KEY,
-  useGetOrganizationByFidesKeyQuery,
-} from "~/features/organization";
+import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
 
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+import { ReviewItem } from "./form-layout";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
-
-const ReviewItem = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) => (
-  <Grid templateColumns="1fr 2fr" data-testid={`review-${label}`}>
-    <GridItem>
-      <FormLabel fontWeight="semibold" m={0}>
-        {label}:
-      </FormLabel>
-    </GridItem>
-    <GridItem>{children}</GridItem>
-  </Grid>
-);
 
 interface Props {
   system: System;
   onCancel: () => void;
   onSuccess: () => void;
+  abridged?: boolean;
 }
 
-const ReviewSystemForm = ({ system, onCancel, onSuccess }: Props) => {
-  const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    DEFAULT_ORGANIZATION_FIDES_KEY
-  );
-
-  const initialValues = {
-    name: existingOrg?.name ?? "",
-    system_name: system.name ?? "",
-    system_key: system.fides_key ?? "",
-    system_description: system.description ?? "",
-    system_type: system.system_type ?? "",
-    tags: system.tags ?? [],
-    privacy_declarations: system.privacy_declarations ?? [],
-  };
-
+const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
   const handleSubmit = () => {
     onSuccess();
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-    >
+    <Formik initialValues={system} enableReinitialize onSubmit={handleSubmit}>
       <Form>
         <Stack spacing={10}>
           <Heading as="h3" size="lg" data-testid="review-heading">
             {/* TODO FUTURE: Path when describing system from infra scanning */}
-            Review {existingOrg?.name}
+            Review declaration for manual system
           </Heading>
           <Text mt="10px !important">
             Let’s quickly review our declaration before registering
           </Text>
           <Stack spacing={4}>
             <ReviewItem label="System name">
-              <Text>{initialValues.system_name}</Text>
+              <Text>{system.name}</Text>
             </ReviewItem>
             <ReviewItem label="System key">
-              <Text>{initialValues.system_key}</Text>
+              <Text>{system.fides_key}</Text>
             </ReviewItem>
             <ReviewItem label="System description">
-              <Text>{initialValues.system_description}</Text>
+              <Text>{system.description}</Text>
             </ReviewItem>
             <ReviewItem label="System type">
-              <Text>{initialValues.system_type}</Text>
+              <Text>{system.system_type}</Text>
             </ReviewItem>
             <ReviewItem label="System tags">
-              {initialValues.tags.map((tag) => (
-                <TaxonomyEntityTag key={tag} name={tag} />
+              {system.tags?.map((tag) => (
+                <TaxonomyEntityTag key={tag} name={tag} mr={1} />
               ))}
             </ReviewItem>
+            <ReviewItem label="System dependencies">
+              {system.system_dependencies?.map((dep) => (
+                <TaxonomyEntityTag key={dep} name={dep} mr={1} />
+              ))}
+            </ReviewItem>
+            {!abridged ? <ReviewSystemFormExtension system={system} /> : null}
+
             <FormLabel fontWeight="semibold">Privacy declarations:</FormLabel>
-            {initialValues.privacy_declarations.map((declaration) => (
+            {system.privacy_declarations.map((declaration) => (
               <Fragment key={declaration.name}>
                 <Divider />
                 <PrivacyDeclarationAccordion privacyDeclaration={declaration} />
@@ -130,4 +99,4 @@ const ReviewSystemForm = ({ system, onCancel, onSuccess }: Props) => {
     </Formik>
   );
 };
-export default ReviewSystemForm;
+export default ReviewSystemStep;
