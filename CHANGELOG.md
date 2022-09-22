@@ -15,6 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+# Mega merge
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.8.2...main)
 
 ### Added
