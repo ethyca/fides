@@ -1,6 +1,4 @@
 """Contains the nox sessions used during CI checks."""
-from time import sleep
-
 import nox
 
 from constants_nox import (
@@ -118,30 +116,28 @@ def check_install(session: nox.Session) -> None:
 
 
 @nox.session()
-def fidesctl(session: nox.Session) -> None:
+def check_fides_annotations(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
+        run_command = (*RUN_STATIC_ANALYSIS, "check_fides_annotations")
     else:
         run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
 @nox.session()
-def fidesctl_db_scan(session: nox.Session) -> None:
+def fides_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    sleep(10)
     run_command = (
         *RUN,
         "fides",
-        *(WITH_TEST_CONFIG),
         "scan",
         "dataset",
         "db",
-        "--connection-string",
-        "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
+        "--credentials-id",
+        "app_postgres",
     )
     session.run(*run_command, external=True)
 
