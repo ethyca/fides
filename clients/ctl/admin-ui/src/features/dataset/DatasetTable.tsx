@@ -15,24 +15,24 @@ import { Dataset } from "~/types/api";
 
 import { STATUS_DISPLAY } from "./constants";
 import {
-  selectActiveDataset,
-  setActiveDataset,
+  selectActiveDatasetFidesKey,
+  setActiveDatasetFidesKey,
   useGetAllDatasetsQuery,
 } from "./dataset.slice";
 
 const DatasetsTable = () => {
   const dispatch = useDispatch();
-  const activeDataset = useSelector(selectActiveDataset);
+  const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const classificationsMap = useClassificationsMap();
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
-    if (dataset.fides_key === activeDataset?.fides_key) {
-      dispatch(setActiveDataset(null));
+    if (dataset.fides_key === activeDatasetFidesKey) {
+      dispatch(setActiveDatasetFidesKey(undefined));
     } else {
-      dispatch(setActiveDataset(dataset));
+      dispatch(setActiveDatasetFidesKey(dataset.fides_key));
     }
   };
 
@@ -52,7 +52,8 @@ const DatasetsTable = () => {
       <Tbody>
         {datasets.map((dataset) => {
           const isActive =
-            activeDataset && activeDataset.fides_key === dataset.fides_key;
+            activeDatasetFidesKey &&
+            activeDatasetFidesKey === dataset.fides_key;
 
           const classification = classificationsMap.get(dataset.fides_key);
           const statusDisplay =

@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
 
 ### Added
 
@@ -29,8 +29,8 @@ The types of changes are:
   * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
   * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
+  * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 * Cypress component testing [#1106](https://github.com/ethyca/fides/pull/1106)
-
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
@@ -40,6 +40,16 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+
+### Security
+
+* Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
+
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+
+### Changed
+
+* Update fideslang to v1.3.0 [#1103](https://github.com/ethyca/fides/pull/1103)
 
 ## [1.8.4](https://github.com/ethyca/fides/compare/1.8.3...1.8.4) - 2022-09-09
 

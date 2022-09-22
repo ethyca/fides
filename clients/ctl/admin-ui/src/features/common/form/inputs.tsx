@@ -1,3 +1,7 @@
+/**
+ * Various common form inputs, styled specifically for Formik forms used throughout our app
+ */
+
 import {
   Box,
   FormControl,
@@ -28,15 +32,25 @@ interface InputProps {
   tooltip?: string;
 }
 
+// We allow `undefined` here and leave it up to each component that uses this field
+// to handle the undefined case. Forms throw an error when their state goes to/from
+// `undefined` (uncontrolled vs controlled). However, it is a lot more convenient if
+// we can pass in `undefined` as a value from our object as opposed to having to transform
+// it just for the form. Therefore, we have our form components do the work of transforming
+// if the value they receive is undefined.
+type StringField = FieldHookConfig<string | undefined>;
+type StringArrayField = FieldHookConfig<string[] | undefined>;
+
 export const CustomTextInput = ({
   label,
   tooltip,
   disabled,
   ...props
-}: InputProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: InputProps & StringField) => {
+  const [initialField, meta] = useField(props);
   const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
+  const field = { ...initialField, value: initialField.value ?? "" };
 
   const isPassword = initialType === "password";
   const [type, setType] = useState<"text" | "password">(
@@ -112,8 +126,9 @@ export const CustomSelect = ({
   isClearable,
   size = "sm",
   ...props
-}: SelectProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & StringField) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
 
   const selected = options.find((o) => o.value === field.value) || null;
@@ -185,9 +200,10 @@ export const CustomMultiSelect = ({
   isClearable,
   size = "sm",
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & StringArrayField) => {
+  const [initialField, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
+  const field = { ...initialField, value: initialField.value ?? [] };
   const selected = options.filter((o) => field.value.indexOf(o.value) >= 0);
 
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
@@ -260,8 +276,9 @@ export const CustomCreatableSingleSelect = ({
   isSearchable,
   options,
   ...props
-}: SelectProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & StringField) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = { label: field.value, value: field.value };
 
@@ -319,8 +336,9 @@ export const CustomCreatableMultiSelect = ({
   size = "sm",
   tooltip,
   ...props
-}: SelectProps & FieldHookConfig<string[]>) => {
-  const [field, meta] = useField(props);
+}: SelectProps & StringArrayField) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? [] };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = field.value.map((v) => ({ label: v, value: v }));
   const { setFieldValue, touched, setTouched } = useFormikContext();
@@ -390,8 +408,9 @@ export const CustomTextArea = ({
   textAreaProps,
   label,
   ...props
-}: CustomTextAreaProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: CustomTextAreaProps & StringField) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const InnerTextArea = (
     <Textarea
@@ -431,8 +450,9 @@ export const CustomRadioGroup = ({
   label,
   options,
   ...props
-}: CustomRadioGroupProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+}: CustomRadioGroupProps & StringField) => {
+  const [initialField, meta] = useField(props);
+  const field = { ...initialField, value: initialField.value ?? "" };
   const isInvalid = !!(meta.touched && meta.error);
   const selected = options.find((o) => o.value === field.value) ?? options[0];
 

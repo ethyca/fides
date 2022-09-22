@@ -6,7 +6,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Dataset } from "~/types/api";
 
 import {
-  setActiveDataset,
+  setActiveDatasetFidesKey,
   useDeleteDatasetMutation,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
@@ -50,7 +50,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     } else {
       toast(successToastParams("Successfully deleted dataset"));
     }
-    setActiveDataset(null);
+    setActiveDatasetFidesKey(undefined);
     router.push("/dataset");
     onClose();
   };

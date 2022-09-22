@@ -1,6 +1,7 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+import type { AppState } from "~/app/store";
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -89,13 +90,30 @@ export const {
   useDeleteSystemMutation,
 } = systemApi;
 
-export interface State {}
-const initialState: State = {};
+export interface State {
+  activeSystem: System | null;
+}
+const initialState: State = {
+  activeSystem: null,
+};
 
 export const systemSlice = createSlice({
   name: "system",
   initialState,
-  reducers: {},
+  reducers: {
+    setActiveSystem: (draftState, action: PayloadAction<System | null>) => {
+      draftState.activeSystem = action.payload;
+    },
+  },
 });
 
+export const { setActiveSystem } = systemSlice.actions;
+
 export const { reducer } = systemSlice;
+
+const selectSystem = (state: AppState) => state.system;
+
+export const selectActiveSystem = createSelector(
+  selectSystem,
+  (state) => state.activeSystem
+);

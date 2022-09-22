@@ -14,7 +14,7 @@ import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
 
 import {
-  setActiveDataset,
+  setActiveDatasetFidesKey,
   useCreateDatasetMutation,
   useGenerateDatasetMutation,
 } from "./dataset.slice";
@@ -175,7 +175,7 @@ const DatabaseConnectForm = () => {
     }
 
     toast(successToastParams(`Generate and classify are now in progress`));
-    dispatch(setActiveDataset(createResult.dataset));
+    dispatch(setActiveDatasetFidesKey(createResult.dataset.fides_key));
     router.push(`/dataset`);
   };
 

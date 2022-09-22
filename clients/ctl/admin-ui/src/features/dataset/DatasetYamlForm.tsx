@@ -5,7 +5,10 @@ import { Dataset } from "~/types/api";
 
 import { successToastParams } from "../common/toast";
 import YamlForm from "../YamlForm";
-import { setActiveDataset, useCreateDatasetMutation } from "./dataset.slice";
+import {
+  setActiveDatasetFidesKey,
+  useCreateDatasetMutation,
+} from "./dataset.slice";
 
 // handle the common case where everything is nested under a `dataset` key
 interface NestedDataset {
@@ -41,7 +44,7 @@ const DatasetYamlForm = () => {
 
   const handleSuccess = (newDataset: Dataset) => {
     toast(successToastParams("Successfully loaded new dataset YAML"));
-    setActiveDataset(newDataset);
+    setActiveDatasetFidesKey(newDataset.fides_key);
     router.push(`/dataset/${newDataset.fides_key}`);
   };
 
