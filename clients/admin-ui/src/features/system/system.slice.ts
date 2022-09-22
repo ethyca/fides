@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -111,7 +111,7 @@ export const { setActiveSystem } = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
-const selectSystem = (state: AppState) => state.system;
+const selectSystem = (state: RootState) => state.system;
 
 export const selectActiveSystem = createSelector(
   selectSystem,

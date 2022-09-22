@@ -58,11 +58,11 @@ const DatabaseConnectForm = () => {
     values: FormValues
   ): Promise<
     | {
-      error: string;
-    }
+        error: string;
+      }
     | {
-      dataset: Dataset;
-    }
+        dataset: Dataset;
+      }
   > => {
     const result = await generateMutation({
       organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -99,11 +99,11 @@ const DatabaseConnectForm = () => {
     datasetBody: Dataset
   ): Promise<
     | {
-      error: string;
-    }
+        error: string;
+      }
     | {
-      dataset: Dataset;
-    }
+        dataset: Dataset;
+      }
   > => {
     const result = await createMutation(datasetBody);
 
@@ -126,11 +126,11 @@ const DatabaseConnectForm = () => {
     dataset: Dataset
   ): Promise<
     | {
-      error: string;
-    }
+        error: string;
+      }
     | {
-      status: string;
-    }
+        status: string;
+      }
   > => {
     const result = await classifyMutation({ fides_key: dataset.fides_key });
 

@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import type { AppState } from "~/app/store";
+import type { RootState } from "~/app/store";
 import { DataCategory } from "~/types/api";
 
 export const taxonomyApi = createApi({
@@ -78,13 +78,13 @@ export const taxonomySlice = createSlice({
 export const { setIsAddFormOpen } = taxonomySlice.actions;
 
 const emptyDataCategories: DataCategory[] = [];
-export const selectDataCategories: (state: AppState) => DataCategory[] =
+export const selectDataCategories: (state: RootState) => DataCategory[] =
   createSelector(
     taxonomyApi.endpoints.getAllDataCategories.select(),
     ({ data }) => data ?? emptyDataCategories
   );
 
-const selectTaxonomy = (state: AppState) => state.taxonomy;
+const selectTaxonomy = (state: RootState) => state.taxonomy;
 
 export const selectIsAddFormOpen = createSelector(
   selectTaxonomy,

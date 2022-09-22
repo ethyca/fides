@@ -139,17 +139,17 @@ export const {
 
 export const { reducer } = datasetSlice;
 
-const selectDataset = (state: AppState) => state.dataset;
+const selectDataset = (state: RootState) => state.dataset;
 
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
   (state) => state.activeDatasetFidesKey
 );
 export const selectActiveDataset = createSelector(
-  [(appState) => appState, selectActiveDatasetFidesKey],
-  (appState, fidesKey) =>
+  [(RootState) => RootState, selectActiveDatasetFidesKey],
+  (RootState, fidesKey) =>
     fidesKey !== undefined
-      ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(appState)?.data
+      ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(RootState)?.data
       : undefined
 );
 

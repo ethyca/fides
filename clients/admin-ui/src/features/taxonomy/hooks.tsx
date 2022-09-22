@@ -13,7 +13,6 @@ import {
   SpecialCategoriesEnum,
 } from "~/types/api";
 
-import { YesNoOptions } from "../common/constants";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
@@ -223,7 +222,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
         // @ts-ignore for the same reason as above
         entity.rights.length
           ? // @ts-ignore for the same reason as above
-          { values: entity.rights, strategy: entity.strategy }
+            { values: entity.rights, strategy: entity.strategy }
           : undefined,
       automatic_decisions_or_profiling: !!(
         entity.automated_decisions_or_profiling?.toString() === "true"

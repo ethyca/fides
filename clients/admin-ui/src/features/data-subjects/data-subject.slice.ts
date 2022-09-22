@@ -55,7 +55,7 @@ export const {
   useDeleteDataSubjectMutation,
 } = dataSubjectsApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataSubjectsSlice = createSlice({
@@ -65,7 +65,7 @@ export const dataSubjectsSlice = createSlice({
 });
 
 const emptyDataSubjects: DataSubject[] = [];
-export const selectDataSubjects: (state: AppState) => DataSubject[] =
+export const selectDataSubjects: (state: RootState) => DataSubject[] =
   createSelector(
     dataSubjectsApi.endpoints.getAllDataSubjects.select(),
     ({ data }) => data ?? emptyDataSubjects

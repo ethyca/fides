@@ -1,4 +1,5 @@
 import { Box } from "@fidesui/react";
+import Head from "next/Head";
 import React from "react";
 
 import Header from "./Header";

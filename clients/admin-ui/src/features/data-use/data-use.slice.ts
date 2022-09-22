@@ -55,7 +55,7 @@ export const {
   useDeleteDataUseMutation,
 } = dataUseApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataUseSlice = createSlice({
@@ -67,7 +67,7 @@ export const dataUseSlice = createSlice({
 export const { reducer } = dataUseSlice;
 
 const emptyDataUses: DataUse[] = [];
-export const selectDataUses: (state: AppState) => DataUse[] = createSelector(
+export const selectDataUses: (state: RootState) => DataUse[] = createSelector(
   dataUseApi.endpoints.getAllDataUses.select(),
   ({ data }) => data ?? emptyDataUses
 );

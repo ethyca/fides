@@ -56,7 +56,7 @@ export const {
   useDeleteDataQualifierMutation,
 } = dataQualifierApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataQualifierSlice = createSlice({
@@ -68,7 +68,7 @@ export const dataQualifierSlice = createSlice({
 export const { reducer } = dataQualifierSlice;
 
 const emptyDataQualifiers: DataQualifier[] = [];
-export const selectDataQualifiers: (state: AppState) => DataQualifier[] =
+export const selectDataQualifiers: (state: RootState) => DataQualifier[] =
   createSelector(
     dataQualifierApi.endpoints.getAllDataQualifiers.select(),
     ({ data }) => data ?? emptyDataQualifiers
