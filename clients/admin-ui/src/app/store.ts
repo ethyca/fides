@@ -17,6 +17,7 @@ import {
   userApi,
 } from "user-management/index";
 
+import { plusApi } from "~/features/common/plus.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -36,7 +37,7 @@ import {
   organizationApi,
   reducer as organizationReducer,
 } from "~/features/organization";
-import { systemApi } from "~/features/system";
+import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
@@ -68,6 +69,7 @@ const reducer = {
   dataSubjects: dataSubjectsReducer,
   dataUse: dataUseReducer,
   organization: organizationReducer,
+  system: systemReducer,
   [datasetApi.reducerPath]: datasetApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [scannerApi.reducerPath]: scannerApi.reducer,
@@ -76,6 +78,7 @@ const reducer = {
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
+  [plusApi.reducerPath]: plusApi.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -98,7 +101,8 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
         taxonomyApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
-        dataUseApi.middleware
+        dataUseApi.middleware,
+        plusApi.middleware
       ),
     devTools: true,
     preloadedState,
