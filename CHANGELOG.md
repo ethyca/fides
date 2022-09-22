@@ -29,6 +29,7 @@ The types of changes are:
   * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
   * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
+  * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 
 ### Changed
 

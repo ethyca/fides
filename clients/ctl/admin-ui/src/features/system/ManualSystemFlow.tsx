@@ -2,11 +2,14 @@ import { Button, Grid, GridItem, Stack, Text } from "@fidesui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
 import DescribeSystemStep from "./DescribeSystemStep";
+import { transformSystemToFormValues } from "./form";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
+import { selectActiveSystem, setActiveSystem } from "./system.slice";
 import SystemRegisterSuccess from "./SystemRegisterSuccess";
 
 const STEPS = ["Describe", "Declare", "Review"];
@@ -42,20 +45,24 @@ const ConfigureSteps = ({
 
 const ManualSystemFlow = () => {
   const router = useRouter();
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [newSystem, setNewSystem] = useState<System | null>(null);
+  const dispatch = useAppDispatch();
 
-  const returnToNew = () => {
-    router.push("/system/new");
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const activeSystem = useAppSelector(selectActiveSystem);
+
+  const goBack = () => {
+    router.back();
+    dispatch(setActiveSystem(null));
   };
 
   const handleSuccess = (system: System) => {
     setCurrentStepIndex(currentStepIndex + 1);
-    setNewSystem(system);
+    dispatch(setActiveSystem(system));
   };
 
-  const returnToIndex = () => {
+  const goToIndex = () => {
     router.push("/system");
+    dispatch(setActiveSystem(null));
   };
 
   return (
@@ -74,28 +81,33 @@ const ManualSystemFlow = () => {
         {currentStepIndex === 0 ? (
           <DescribeSystemStep
             onSuccess={handleSuccess}
-            onCancel={returnToNew}
+            onCancel={goBack}
+            initialValues={
+              activeSystem
+                ? transformSystemToFormValues(activeSystem)
+                : undefined
+            }
           />
         ) : null}
-        {currentStepIndex === 1 && newSystem ? (
+        {currentStepIndex === 1 && activeSystem ? (
           <PrivacyDeclarationStep
-            system={newSystem}
+            system={activeSystem}
             onSuccess={handleSuccess}
-            onCancel={returnToNew}
+            onCancel={goBack}
           />
         ) : null}
-        {currentStepIndex === 2 && newSystem ? (
+        {currentStepIndex === 2 && activeSystem ? (
           <ReviewSystemStep
-            system={newSystem}
-            onCancel={returnToNew}
+            system={activeSystem}
+            onCancel={goBack}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
-        {currentStepIndex === 3 && newSystem ? (
+        {currentStepIndex === 3 && activeSystem ? (
           <SystemRegisterSuccess
-            system={newSystem}
-            onAddNextSystem={returnToNew}
-            onContinue={returnToIndex}
+            system={activeSystem}
+            onAddNextSystem={goBack}
+            onContinue={goToIndex}
           />
         ) : null}
       </GridItem>

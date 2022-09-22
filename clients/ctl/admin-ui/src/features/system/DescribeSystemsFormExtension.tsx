@@ -10,8 +10,9 @@ import {
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import type { FormValues } from "~/features/system/DescribeSystemStep";
 import { DataResponsibilityTitle } from "~/types/api";
+
+import type { FormValues } from "./form";
 
 const dataResponsibilityOptions = enumToOptions(DataResponsibilityTitle);
 
@@ -58,7 +59,7 @@ const DescribeSystemsFormExtension = ({ values }: { values: FormValues }) => (
           label="Is required"
           options={YesNoOptions}
         />
-        {values.data_protection_impact_assessment.is_required === "true" ? (
+        {values.data_protection_impact_assessment?.is_required === "true" ? (
           <>
             <CustomTextInput
               label="Progress"
