@@ -50,8 +50,8 @@ const ManualSystemFlow = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const activeSystem = useAppSelector(selectActiveSystem);
 
-  const returnToNew = () => {
-    router.push("/system/new");
+  const goBack = () => {
+    router.back();
     dispatch(setActiveSystem(null));
   };
 
@@ -60,7 +60,7 @@ const ManualSystemFlow = () => {
     dispatch(setActiveSystem(system));
   };
 
-  const returnToIndex = () => {
+  const goToIndex = () => {
     router.push("/system");
     dispatch(setActiveSystem(null));
   };
@@ -81,7 +81,7 @@ const ManualSystemFlow = () => {
         {currentStepIndex === 0 ? (
           <DescribeSystemStep
             onSuccess={handleSuccess}
-            onCancel={returnToNew}
+            onCancel={goBack}
             initialValues={
               activeSystem
                 ? transformSystemToFormValues(activeSystem)
@@ -93,21 +93,21 @@ const ManualSystemFlow = () => {
           <PrivacyDeclarationStep
             system={activeSystem}
             onSuccess={handleSuccess}
-            onCancel={returnToNew}
+            onCancel={goBack}
           />
         ) : null}
         {currentStepIndex === 2 && activeSystem ? (
           <ReviewSystemStep
             system={activeSystem}
-            onCancel={returnToNew}
+            onCancel={goBack}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
         {currentStepIndex === 3 && activeSystem ? (
           <SystemRegisterSuccess
             system={activeSystem}
-            onAddNextSystem={returnToNew}
-            onContinue={returnToIndex}
+            onAddNextSystem={goBack}
+            onContinue={goToIndex}
           />
         ) : null}
       </GridItem>
