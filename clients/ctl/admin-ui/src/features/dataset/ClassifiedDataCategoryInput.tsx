@@ -5,7 +5,7 @@ import { DataCategory } from "~/types/api";
 
 import {
   DataCategoryDropdown,
-  DataCategoryDropdownProps,
+  Props as DataCategoryDropdownProps,
 } from "./DataCategoryInput";
 
 // TODO: just making up a structure until we have something real from the API
@@ -41,9 +41,22 @@ const ClassifiedDataCategoryInput = ({
   const handleChange = (
     newValues: MultiValue<{ label: string; value: string }>
   ) => {
-    onChecked(
-      Array.from(new Set([...checked, ...newValues.map((o) => o.value)]))
-    );
+    const oldKeys = selectedOptions.map((o) => o.value);
+    const newKeys = newValues.map((o) => o.value);
+    let newChecked;
+
+    if (newKeys.length > oldKeys.length) {
+      const addedKey = newKeys.filter(
+        (newKey) => oldKeys.indexOf(newKey) === -1
+      )[0];
+      newChecked = [...checked, addedKey];
+    } else {
+      const removedKey = oldKeys.filter(
+        (oldKey) => newKeys.indexOf(oldKey) === -1
+      )[0];
+      newChecked = checked.filter((c) => c !== removedKey);
+    }
+    onChecked(newChecked);
   };
 
   return (

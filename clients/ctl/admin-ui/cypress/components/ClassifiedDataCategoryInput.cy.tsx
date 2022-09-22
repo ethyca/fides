@@ -80,4 +80,47 @@ describe("ClassifiedDataCategoryInput", () => {
       "system.authentication",
     ]);
   });
+
+  it("can remove items from classified select", () => {
+    const onCheckedSpy = cy.spy().as("onCheckedSpy");
+    const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
+    cy.mount(
+      <ClassifiedDataCategoryInput
+        dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
+        checked={[
+          selectedClassifiedCategory.fides_key,
+          "system.authentication",
+        ]}
+        onChecked={onCheckedSpy}
+        mostLikelyCategories={MOST_LIKELY_CATEGORIES}
+      />
+    );
+    // delete the selected category
+    cy.getByTestId("classified-select").click().type("{backspace}");
+    cy.get("@onCheckedSpy").should("have.been.calledWith", [
+      "system.authentication",
+    ]);
+  });
+
+  it("can remove items from taxonomy select", () => {
+    const onCheckedSpy = cy.spy().as("onCheckedSpy");
+    const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
+    cy.mount(
+      <ClassifiedDataCategoryInput
+        dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
+        checked={[
+          selectedClassifiedCategory.fides_key,
+          "system.authentication",
+        ]}
+        onChecked={onCheckedSpy}
+        mostLikelyCategories={MOST_LIKELY_CATEGORIES}
+      />
+    );
+    // uncheck system authentication
+    cy.getByTestId("data-category-dropdown").click();
+    cy.getByTestId("checkbox-Authentication Data").click();
+    cy.get("@onCheckedSpy").should("have.been.calledWith", [
+      selectedClassifiedCategory.fides_key,
+    ]);
+  });
 });

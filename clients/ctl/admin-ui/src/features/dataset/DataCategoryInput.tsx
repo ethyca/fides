@@ -23,14 +23,14 @@ import QuestionTooltip from "../common/QuestionTooltip";
 import { transformTaxonomyEntityToNodes } from "../taxonomy/helpers";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 
-interface Props {
+export interface Props {
   dataCategories: DataCategory[];
   checked: string[];
   onChecked: (newChecked: string[]) => void;
   tooltip?: string;
 }
 
-export interface DataCategoryDropdownProps extends Omit<Props, "tooltip"> {
+interface DataCategoryDropdownProps extends Omit<Props, "tooltip"> {
   buttonProps?: ButtonProps;
   buttonLabel?: string;
 }
