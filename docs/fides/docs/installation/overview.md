@@ -23,7 +23,7 @@ Only `pip`/`pipx` installations are currently officially supported. For more inf
 * You are responsible for setting up the databases, configuring automated startup and recovery, and handling maintenance, cleanup, and upgrades.
 
 #### Additional support 
-* The [Installation from PyPI](PyPI.md) guide provides installation details. Due to differences in environments and tools, this guide cannot comprehensively cover all deployment and usage errors and concerns.
+* The [Installation from PyPI](pypi.md) guide provides installation details. Due to differences in environments and tools, this guide cannot comprehensively cover all deployment and usage errors and concerns.
 
 ### Docker
 
@@ -43,10 +43,6 @@ The Fides Docker images are built by the Fides CI/CD pipeline, which generates v
 * You will build deployments out of several containers (i.e., via Docker Compose).
 * You are responsible for setting up the databases, configuring automated startup and recovery, and handling maintenance, cleanup, and upgrades.
 * You should choose the right deployment mechanism (a custom process, Kubernetes, Docker Compose, Helm charts, etc.) based on your experience and expectations.
-
-#### Additional support
-
-* The [Installation from Docker](../quickstart/docker.md) guide provides installation details, including an wexample of how to start Fides quickly for local testing and development.
 
 ### Troubleshooting
 * For questions regarding either installation, visit the [Community](../community/overview.md) page.

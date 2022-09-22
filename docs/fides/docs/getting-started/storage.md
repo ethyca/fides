@@ -15,7 +15,7 @@ To configure a Storage destination, first choose a method to store your results.
 
 - **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of your project. This destination type should only be used for testing purposes, and not to process real-world access requests.
 - **S3** - Files are uploaded to an S3 bucket of your choosing upon completion of an access request. Use S3 if you need a place to store those files.
-- **OneTrust** - A OneTrust storage destination should be configured for Fides to process requests from an existing OneTrust integration. Read more about how the OneTrust integration [here](./onetrust.md).
+- **OneTrust** - A OneTrust storage destination should be configured for Fides to process requests from an existing OneTrust integration. Read more about how the OneTrust integration [here](../guides/onetrust.md).
 
 
 ### Create your storage destination
@@ -26,7 +26,7 @@ Storage destinations are created and managed via the API. To create a new Storag
     "destinations": [
       {
         "name": str,
-        "key": FidesOpsKey (optional),
+        "key": FidesKey (optional),
         "type": str,
         "format": str
         "details": {

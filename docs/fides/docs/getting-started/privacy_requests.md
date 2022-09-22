@@ -89,7 +89,7 @@ GET api/v1/privacy-request?request_id=<privacy_request_id>
 GET api/v1/privacy-request?external_id=<external_id>
 ```
 
-For more detailed examples and further privacy pequest filtering, see [Reporting on Privacy Requests](reporting.md).
+For more detailed examples and further privacy request filtering, see [Reporting on Privacy Requests](../guides/reporting.md).
 
 ### Restart failed requests
 To restart a failed privacy request, call the following endpoint with an empty request body:
@@ -158,6 +158,6 @@ a similar process for each CSV file.
 
 ## Privacy request integrations
 
-* **Generic API interoperability**: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [authenticating with OAuth](oauth.md) for more information.
+* **Generic API interoperability**: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [authenticating with OAuth](../guides/oauth.md) for more information.
 
-* **OneTrust**: Fides can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. See the [OneTrust integration guide](onetrust.md) for more information.
+* **OneTrust**: Fides can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. See the [OneTrust integration guide](../guides/onetrust.md) for more information.

@@ -1,6 +1,6 @@
 # Admin UI
 
-Admin UI for managing FidesOps privacy requests. A web application built in Next.js with the FidesUI component library.
+Admin UI for managing Fides privacy requests. A web application built in Next.js with the FidesUI component library.
 
 ## Running Locally
 
@@ -10,8 +10,8 @@ Admin UI for managing FidesOps privacy requests. A web application built in Next
 
 ## Testing Entire Request Flow
 
-1. Run the `fidesops` server with `nox -s dev`.
-2. Create a policy key through the API (using the fidesops Postman collection).
+1. Run the fides server with `nox -s dev`.
+2. Create a policy key through the API (using the Postman collection).
 3. Configure the `clients/privacy-center` application to use that policy by adding it to the appropriate request config in `config/config.json`.
 4. Run the Privacy Request center using `npm run dev`.
 5. Submit a privacy request through the Privacy Request center.

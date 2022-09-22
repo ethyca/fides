@@ -3,7 +3,7 @@
 ## What is a Policy?
 Fides resources provide metadata about systems and services, the data categories they process, and the uses of that data. *Policies* allow you to enforce constraints on these declarations, decide what combinations to allow or reject, and begin to control data privacy at its source.
 
-The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In Fides, a Policy is made up of rules against which the system's [resources](./generate_resources.md) are evaluated. Policies evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
+The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In Fides, a Policy is made up of rules against which the system's [resources](../getting-started/generate_resources.md) are evaluated. Policies evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.
 
 ### Policy attributes
 Policies use the following attributes:
@@ -91,7 +91,7 @@ As global privacy laws change and businesses scale, a company's policies will ev
 
 
 ## Example Policies
-The following are examples of real-world use cases for Fides Policies, representing common business requirements or legislation. For more information on reading and defining Policies, see the [compliance Policies](./compliance_policies.md) guide.
+The following are examples of real-world use cases for Fides Policies, representing common business requirements or legislation.
 
 !!! Note "Always ensure your Policies accurately represent your business needs prior to using them in production environments."
 

@@ -4,7 +4,7 @@ The Fides Python package is [published on PyPI](https://pypi.org/project/fides/)
 
 ## System requirements
 
-See the the [Prerequisites and Dependencies](../installation/prerequisites.md) page for more information.
+See the the [Prerequisites and Dependencies](../installation/requirements.md) page for more information.
 
 ## Basic installation
 
@@ -85,7 +85,7 @@ Once Fides is installed and initialized, it is possible to run the project in "s
 Use one of the following methods to enable standalone mode:
 
 ```sh title="CLI flag"
-fidesctl --local <subcommand>
+fides --local <subcommand>
 ```
 
 ```toml title="fides.toml"
@@ -94,10 +94,10 @@ local_mode = true
 ```
 ## Set up your database
 
-Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project [requirements](./prerequisites.md). Enable a username and password, and keep track of your connection credentials.
+Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project [requirements](./requirements.md). Enable a username and password, and keep track of your connection credentials.
 
 ## Set up your cache
-Configure your own Redis cache according to the configuration of your choice, ensuring it satisfies the project [requirements](./prerequisites.md). Enable a password (via Redis [`AUTH`](https://redis.io/commands/auth)) to provide additional security, and keep track of your connection credentials.
+Configure your own Redis cache according to the configuration of your choice, ensuring it satisfies the project [requirements](./requirements.md). Enable a password (via Redis [`AUTH`](https://redis.io/commands/auth)) to provide additional security, and keep track of your connection credentials.
 ## Configure Fides
 
 Fides provides a `fides.toml` file to store your configuration settings. Initializing Fides creates this file and populates it with default values, which should be replaced with the connection credentials for your Postgres and Redis instances, as well as any other information unique to your deployment. 

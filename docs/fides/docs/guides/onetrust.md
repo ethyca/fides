@@ -24,7 +24,7 @@ The Fides integration with OneTrust looks like the follow:
 
 ## Configuration
 
-### Fidesops
+### Fides
   
 OneTrust request intake is configured as part of the possible Fides [storage locations](../getting-started/storage.md). To configure Fides to connect to OneTrust:
 

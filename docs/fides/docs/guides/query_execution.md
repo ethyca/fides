@@ -121,7 +121,7 @@ Fides will initiate the data retrieval process with provided data that looks lik
 
 Note that the names of the provided starter data do not need to match the field names Fides will use this data to search. In the above case, you can also choose to start a search using the **username** provided value. This would result in enough data to search in both `postgres_1.users.email` and `mongo_1.users.user_name` noted in the diagram.
 
-## How does fidesops execute queries?
+## How does Fides execute queries?
 The next step is to follow any links provided in field relationship information. In the abbreviated dataset declarations below, the `mongo_1.accounts` data contains data related to `mongo_1.users`. Data can be retrieved from `mongo_1.accounts` by generating this set of queries:
 
 ``` sql

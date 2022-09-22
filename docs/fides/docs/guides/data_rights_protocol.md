@@ -2,10 +2,10 @@
 
 The [Data Rights Protocol](https://github.com/consumer-reports-digital-lab/data-rights-protocol) (DRP) is a technical standard for exchanging data rights requests under regulations like the California Consumer Privacy Act (CCPA). 
 
-As a Privacy Infrastructure Provider (PIP), fidesops conforms to the DRP standards to receive and process Data Rights Requests. The following endpoints and actions are available in fidesops for working within the DRP specifications.
+As a Privacy Infrastructure Provider (PIP), Fides conforms to the DRP standards to receive and process Data Rights Requests. The following endpoints and actions are available in Fides for working within the DRP specifications.
 
 ## DRP Actions
-A [DRP action](https://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions) may be defined when creating or editing a [policy](policies.md#create-a-policy). These actions associate a fidesops policy with a DRP-standardized protocol for receiving and processing Data Rights Requests. 
+A [DRP action](https://github.com/consumer-reports-digital-lab/data-rights-protocol#301-supported-rights-actions) may be defined when creating or editing a [policy](policies.md#create-a-policy). These actions associate a Fides execution policy with a DRP-standardized protocol for receiving and processing Data Rights Requests. 
 
 A given action may only be associated to a single policy:
 
@@ -36,7 +36,7 @@ The following actions may be associated to a policy via the `drp_action` attribu
 Once a policy is associated with an action, the following DRP-standardized endpoints are available.
 
 ### Exercise
-The `/exercise` endpoint creates a new DRP privacy request. Fidesops will execute this request based on the policy associated to the DRP action specified in `exercise`.
+The `/exercise` endpoint creates a new DRP privacy request. Fides will execute this request based on the policy associated to the DRP action specified in `exercise`.
 
 All identity information should be encapsulated in the provided `identity` field using RFC7515-encoded [JSON Web Tokens](https://datatracker.ietf.org/doc/html/rfc7515). More about identity ecapsulation can be found in the [DRP standard](https://github.com/consumer-reports-digital-lab/data-rights-protocol#304-schema-identity-encapsulation).
 
@@ -74,7 +74,7 @@ The current status of an existing privacy request may be returned via the `/stat
 
 ### Data Rights
 
-All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to fidesops version.
+All data rights associated with existing policies may be returned via the `/data-rights` endpoint. Note that the `v1` in the below URL does not correspond to DRP version, but instead corresponds to Fides version.
 
 ```json title="<code>GET /api/v1/drp/data-rights</code>"
 {

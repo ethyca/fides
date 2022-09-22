@@ -1,6 +1,6 @@
-# FidesOps Privacy Center
+# Fides Privacy Center
 
-Privacy center for FidesOps. A web application built in Next.js with the FidesUI component library.
+Privacy center for Fides. A web application built in Next.js with the FidesUI component library.
 
 ## Configuration
 

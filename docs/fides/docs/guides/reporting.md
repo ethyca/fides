@@ -80,7 +80,7 @@ View the [API docs here](../api/index.md#operations-Privacy_Requests-get_request
 
 
 ## View a request's identity data
-Use the optional `include_identities` query param to include all identity data that was submitted for the privacy request. Due to the way Fides stores identity data, this data will expire automatically according to the `FIDESOPS__REDIS__DEFAULT_TTL_SECONDS` variable in your Fides [config](../installation/configuration.md).
+Use the optional `include_identities` query param to include all identity data that was submitted for the privacy request. Due to the way Fides stores identity data, this data will expire automatically according to the `FIDES__REDIS__DEFAULT_TTL_SECONDS` variable in your Fides [config](../installation/configuration.md).
 
 If the identity data fetched by `include_identities` has expired, an empty JSON dictionary will be returned.
 

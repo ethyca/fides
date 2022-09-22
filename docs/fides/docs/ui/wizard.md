@@ -8,7 +8,7 @@ To get started, select **Config Wizard** from the Admin UI navigation bar.
 
 ![add an organization](../img/admin_ui/config_wizard_step1.png)
 
-Organization or business information is used to build your [data map](../guides/generating_datamap.md) for reporting purposes. Your organization name must be provided, along with a description of the company.
+Organization or business information is used to build your [data map](../guides/generate_datamaps.md) for reporting purposes. Your organization name must be provided, along with a description of the company.
 
 ## Step 2: Add a system
 

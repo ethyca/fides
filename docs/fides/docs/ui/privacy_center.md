@@ -47,7 +47,7 @@ The Privacy Center's text and actions are managed by a `config.json` file. For e
 | `fidesops_host_development` | The URL to use for development deployments. |
 | `fidesops_host_production` | The URL to use for production deployments. |
 | `logo_path` | The relative path to a brand or site logo to replace the default. |
-| `actions` | A list of [action objects](#actions), each of which represent a new tile available in the portal, and are associated to a single fidesops policy. |
+| `actions` | A list of [action objects](#actions), each of which represent a new tile available in the portal, and are associated to a single Fides execution policy. |
 | `policy_key` | The key of the [policy](../guides/policies.md) to use for this action. |
 | `icon_path` | The relative path of an icon to replace the defaults. |
 | `identity_inputs` | The list of personally identifiable information required by an action. |

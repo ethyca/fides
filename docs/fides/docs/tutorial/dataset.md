@@ -69,7 +69,7 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 ```
 
-As an alternative to manually authoring the resource file, you can also use the [generate](../guides/generate_resources.md) CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
+As an alternative to manually authoring the resource file, you can also use the [generate](../getting-started/generate_resources.md) CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
 
 ```sh
 ./venv/bin/fidesctl generate dataset db \

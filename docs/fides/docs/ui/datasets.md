@@ -18,7 +18,7 @@ You will then be given a list of options for creating your new dataset:
 Fides provides two options for creating new datasets: [uploading a YAML file](#upload-a-dataset-yaml), or [connecting to a database](#connect-to-your-database), each of which are outlined below.
 
 ### Upload a dataset YAML
-Preexisting dataset configurations can be easily uploaded using the built-in uploader. These YAML configuration files might have come from a previous [fides installation](../guides/generate_resources.md), or a support engineer.
+Preexisting dataset configurations can be easily uploaded using the built-in uploader. These YAML configuration files might have come from a previous [Fides installation](../getting-started/generate_resources.md), or a support engineer.
 
 To upload a new dataset, select the **Upload a new dataset YAML** option.
 

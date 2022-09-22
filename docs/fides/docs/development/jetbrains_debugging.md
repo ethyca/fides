@@ -19,7 +19,7 @@ Go to: **Settings/Preferences** -> **Docker** -> **+**
 
 See the screenshot below:
 
-![Screenshot of IDE Docker setup](./img/ide/docker.png)
+![Screenshot of IDE Docker setup](../img/ide/docker.png)
 
 ### Configure Python Remote Interpreter
 
@@ -35,9 +35,9 @@ After clicking **OK** the Remote Python Docker Compose should be listed as an SD
 
 See screenshots below:
 
-![Screenshot of Add Python Interpreter](../fides/img/ide/add_python_interpreter.png)
+![Screenshot of Add Python Interpreter](../img/ide/add_python_interpreter.png)
 
-![Screenshot of Project Structure SDKs](../fides/img/ide/SDKs.png)
+![Screenshot of Project Structure SDKs](../img/ide/SDKs.png)
 
 ### Run/Debug Configuration
 
@@ -47,11 +47,11 @@ Go to: **Run/Debug Configurations** -> **+** -> **Python**
 
 - To debug Fides, debug the `<path on your machine>/src/fides/main.py` script
 - Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
-- Add `FIDESOPS__CONFIG_PATH=/fides` to **Environment variables**
+- Add `FIDES__CONFIG_PATH=/fides` to **Environment variables**
 
 See screenshot below:
 
-![Screenshot of Run/Debug Configuration for main.py](../fides/img/ide/debug_config.png)
+![Screenshot of Run/Debug Configuration for main.py](../img/ide/debug_config.png)
 
 ## Hit a Breakpoint
 
@@ -63,7 +63,7 @@ There is a postman collection in this repo: `docs/fides/docs/development/postman
 
 Screenshot of hit breakpoint below:
 
-![Screenshot of Debugging from IntelliJ](./img/ide/debugging.png)
+![Screenshot of Debugging from IntelliJ](../img/ide/debugging.png)
 
 ## Links
 

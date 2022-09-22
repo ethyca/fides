@@ -75,7 +75,7 @@ Content-Type: application/json
 }
 ```
 ## Create an access token
-You then create a new access token by calling [`POST /api/v1/oauth/token`](/fidesops/api#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
+You then create a new access token by calling [`POST /api/v1/oauth/token`](../api/index.md#operations-OAuth-acquire_access_token_api_v1_oauth_token_post) with the new credentials. 
 
 In the above example, the new access token only lets the client read policies and rules. The client cannot create other clients, write policies, or perform other operations using Fides APIs.
 
@@ -87,4 +87,4 @@ If you call the Fides API with an expired token, the call returns `401`.
 
 ### Other OAuth Calls
 
-Fidesops defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/api/index.md#operations-tag-OAuth) for details. 
+Fides defines OAuth operations that let you delete a client, and read and write a client's scopes. See the [**OAuth** section of the **API** documentation](/api/index.md#operations-tag-OAuth) for details. 

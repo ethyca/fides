@@ -5,7 +5,7 @@ Fides supports email server configurations for sending processing notices to pri
 
 Supported modes of use:
 
-- Subject Identity Verification - for more information on identity verification in subject requests, see the [Privacy Requests](privacy_requests.md#subject-identity-verification) guide.
+- Subject Identity Verification - for more information on identity verification in subject requests, see the [Privacy Requests](../getting-started/privacy_requests.md#subject-identity-verification) guide.
 
 
 ## Prerequisites
@@ -14,7 +14,7 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 
 1. Generate a Mailgun Domain Sending Key
 
-    Follow the [Mailgun documentation](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1) to create a new Domain Sending Key for fidesops. 
+    Follow the [Mailgun documentation](https://documentation.mailgun.com/en/latest/api-intro.html#authentication-1) to create a new Domain Sending Key for Fides. 
 
     !!! Note 
         Mailgun automatically generates a **primary account API key** when you sign up for an account. This key allows you to perform all CRUD operations via Mailgun's API endpoints, and for any of your sending domains. For security purposes, using a new **domain sending key** is recommended over your primary API key.
@@ -38,7 +38,7 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 |----|----|
 | `key` | *Optional.* A unique key used to manage your email config. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`. |
 | `name` | A unique user-friendly name for your email config. |
-| `service_type` | The email service to configure. Currently, fidesops supports `mailgun`. |
+| `service_type` | The email service to configure. Currently, Fides supports `mailgun`. |
 | `details` | A dict of key/val config vars specific to Mailgun. |
 | `domain` | Your unique Mailgun domain. |
 | `is_eu_domain` | *Optional.* A boolean that denotes whether your Mailgun domain was created in the EU region. Defaults to `False`. |

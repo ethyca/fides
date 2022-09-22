@@ -58,7 +58,7 @@ To use Fides as a masking service, send a `PUT` request to the masking endpoint 
 
 The email has been replaced with a random string of 20 characters, while still preserving that the value is an email.
 
-See the [masking values](/fidesops/api#operations-tag-Masking) API on how to use Fides to as a masking service.
+See the [masking values](../api/index.md#operations-tag-Masking) API on how to use Fides to as a masking service.
 
 ## Configuration
 Erasure requests will mask data with the chosen masking strategy.
@@ -239,4 +239,4 @@ any defaults that should be applied in their absence. All configuration classes 
 
 In order to leverage an implemented masking strategy, the `MaskingStrategy` subclass must be registered with the `MaskingStrategyFactory`. To register a new `MaskingStrategy`, use the `register` decorator on the `MaskingStrategy` subclass definition, as shown in the above example.
 
-The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the same value defined by [callers](#using-fidesops-as-a-masking-service) in the `"masking_strategy"."strategy"` field.
+The value passed as the argument to the decorator must be the registered name of the `MaskingStrategy` subclass. This is the same value defined by [callers](#using-fides-as-a-masking-service) in the `"masking_strategy"."strategy"` field.

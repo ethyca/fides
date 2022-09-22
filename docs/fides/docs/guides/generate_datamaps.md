@@ -2,15 +2,15 @@
 
 Fides is capable of exporting a data map of your [resources](https://ethyca.github.io/fideslang/resources/system) to generate an Article 30-compliant Record of Processing Activities (RoPA). This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
 
-To follow along, ensure you have the Fides repository cloned and fidesctl installed. Additional support for running fidesctl locally can be found in the first step of the [Quick Start guide](https://github.com/ethyca/fides/#rocket-quick-start).
+To follow along, ensure you have the Fides repository cloned and Fides installed.
 ## Export the Demo Resources
 First, ensure `fides` is running with `nox -s dev`.
 
 To push and export the provided `demo_resources`, run the following commands:
 
 ```sh title="Push and Export Defaults"
-fidesctl push demo_resources/
-fidesctl export datamap --output-dir demo_resources/
+fides push demo_resources/
+fides export datamap --output-dir demo_resources/
 ```
 
 This will export a data map to the `demo_resources/` directory.
@@ -124,7 +124,7 @@ Your Organization and System datasets can also be assessed using the `--audit` f
 
 The output of this command will highlight any missing information:
 
-```bash title="Example Output: <code>fidesctl audit</code>"
+```bash title="Example Output: <code>fides audit</code>"
 ...
 "Auditing Organization Resource Compliance"
 Found 1 Organization resource(s) to audit...
@@ -301,8 +301,8 @@ automated_decisions_or_profiling for potential_customer in Demo Marketing System
 Now that you have added the additional information around privacy notices and data subject rights, you can export a fresh copy of your data map:
 
 ```sh title="Push and Export Defaults"
-$ fidesctl push demo_resources/
-$ fidesctl export datamap --output_dir demo_resources/
+$ fides push demo_resources/
+$ fides export datamap --output_dir demo_resources/
 ```
 
 ### Populated Fields

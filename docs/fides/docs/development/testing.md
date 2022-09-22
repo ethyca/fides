@@ -50,10 +50,10 @@ Generally, tests that include mocking are discouraged. Mocking can create a fals
 
 ## Running tests
 
-Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/fidesctl/` directory:
+Fides uses `pytest` for unit testing. To run tests, invoke `pytest` from the `/fides/ctl/` directory:
 
 ```bash
-cd fides
+cd ctl
 pytest
 ```
 

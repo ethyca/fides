@@ -1,6 +1,6 @@
 # SaaS Pagination
 
-These pagination strategies allow fidesops to incrementally retrieve content from SaaS APIs. APIs can vary in the way subsequent pages are accessed so these configurable options aim to cover a majority of common use cases.
+These pagination strategies allow Fides to incrementally retrieve content from SaaS APIs. APIs can vary in the way subsequent pages are accessed so these configurable options aim to cover a majority of common use cases.
 
 ## Supported strategies
 - `offset`: Iterates through the available pages by incrementing the value of a query param.

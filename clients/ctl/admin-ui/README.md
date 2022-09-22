@@ -1,6 +1,6 @@
 # Admin UI
 
-Admin UI for managing Fidesctl.
+Admin UI for managing Fides.
 
 ## Running Locally
 

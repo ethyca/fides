@@ -13,7 +13,7 @@ Fides' extensible [description language](https://ethyca.github.io/fideslang/) al
 Export a [data map](./guides/generate_datamaps/) of your connected databases and services, or run an [audit](./guides/generate_datamaps.md#auditing-resources/) of your resources to generate an Article 30-compliant Record of Processing Activities (RoPA). 
 
 ### Programmable Data Privacy
-When your organization receives a privacy request, Fides will automatically fulfill it according to the [execution policies](./getting-started/execution_policies.md) your legal and business owners have created. Fides orchestrates connections to both your owned [databases](./guides/database_connectors.md) and [third-party systems](./saas_connectors/saas_config.md) to access, update, and delete sensitive data.
+When your organization receives a privacy request, Fides will automatically fulfill it according to the [execution policies](./getting-started/execution_policies.md) your legal and business owners have created. Fides orchestrates connections to both your owned [databases](./getting-started/database_connectors.md) and [third-party systems](./saas_connectors/saas_config.md) to access, update, and delete sensitive data.
 
 ### Third-Party Integrations
 Fides' core services are open source and extensible. Integrate Fides into your existing privacy compliance management tools like [OneTrust](./guides/onetrust.md) to fulfill data subject requests and return results, automatically.

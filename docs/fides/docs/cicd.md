@@ -1,13 +1,13 @@
 # CI/CD Overview
 
-Fides provides a CLI for integrating with your existing CI pipeline configurations. These commands are designed to help evaluate code changes against defined Fides [Policies](../guides/policies.md), and flag developers in advance if any updates or merges are no longer in compliance.
+Fides provides a CLI for integrating with your existing CI pipeline configurations. These commands are designed to help evaluate code changes against defined Fides [Policies](./guides/policies.md), and flag developers in advance if any updates or merges are no longer in compliance.
 ## Implementation
 To integrate Fides with your CI pipeline, you should plan to implement at least two commands in your CI actions:
 
-1. `fidesctl evaluate --dry <resource_dir>`
+1. `fides evaluate --dry <resource_dir>`
     - `evaluate --dry` checks if code changes will be accepted **without** pushing those changes to the Fides server.
     - Run this against the latest commit on code changesets (pull requests, merge requests, etc).
-2. `fidesctl evaluate <resource_dir>`
+2. `fides evaluate <resource_dir>`
     - `evaluate` synchronizes the latest changes to the Fides server.
     - Run this against commits representing merges into the default branch to keep your server in sync.
 
@@ -19,8 +19,8 @@ The following code snippets are meant as simple example implementations, and ill
 
 ### GitHub Actions
 
-```yaml title="<code>.github/workflows/fidesctl_ci.yml</code>"
-name: Fidesctl CI
+```yaml title="<code>.github/workflows/fides_ci.yml</code>"
+name: Fides CI
 
 # Only check on Pull Requests that target main
 on:
@@ -29,23 +29,23 @@ on:
       - main
     paths: # Only run checks when the resource files change or the workflow file changes
       - .fides/**
-      - .github/workflows/fidesctl_ci.yml
+      - .github/workflows/fides_ci.yml
 
 jobs:
-  fidesctl_ci:
+  fides_ci:
     runs-on: ubuntu-latest
     container:
-      image: ethyca/fidesctl:latest
+      image: ethyca/fides:latest
     steps:
       - name: Dry Evaluation
         uses: actions/checkout@v2
-        run: fidesctl evaluate --dry .fides/
+        run: fides evaluate --dry .fides/
         env:
-          FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
+          FIDES__CLI__SERVER_HOST: "fides.privacyco.com"
 ```
 
-```yaml title="<code>.github/workflows/fidesctl_cd.yml</code>"
-name: Fidesctl CD
+```yaml title="<code>.github/workflows/fides_cd.yml</code>"
+name: Fides CD
 
 # Run the check every time a new commit hits the default branch
 on:
@@ -56,16 +56,16 @@ on:
       - "*"
 
 jobs:
-  fidesctl_cd:
+  fides_cd:
     runs-on: ubuntu-latest
     container:
-      image: ethyca/fidesctl:latest
+      image: ethyca/fides:latest
     steps:
       - name: Evaluation
         uses: actions/checkout@v2
-        run: fidesctl evaluate .fides/
+        run: fides evaluate .fides/
         env:
-          FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
+          FIDES__CLI__SERVER_HOST: "fides.privacyco.com"
 ```
 ___
 ### GitLab CI
@@ -76,12 +76,12 @@ stages:
   - deploy
 
 variables: &global-variables
-  FIDESCTL__CLI__SERVER_HOST: "fidesctl.privacyco.com"
+  FIDES__CLI__SERVER_HOST: "fides.privacyco.com"
 
-fidesctl-ci:
+fides-ci:
   stage: test
-  image: ethyca/fidesctl
-  script: fidesctl evaluate --dry .fides/
+  image: ethyca/fides
+  script: fides evaluate --dry .fides/
   only:
     if: '$CI_PIPELINE_SOURCE = merge_request_event'
     changes:
@@ -90,10 +90,10 @@ fidesctl-ci:
   variables:
     <<: *global-variables
 
-fidesctl-cd:
+fides-cd:
   stage: deploy
-  image: ethyca/fidesctl
-  script: fidesctl evaluate .fides/
+  image: ethyca/fides
+  script: fides evaluate .fides/
   if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   variables:
     <<: *global-variables
@@ -105,16 +105,16 @@ ___
 pipeline {
   agent {
     docker {
-      image 'ethyca/fidesctl:latest'
+      image 'ethyca/fides:latest'
     }
   }
   stages {
     stage('test'){
       environment {
-          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
+          FIDES__CLI__SERVER_HOST: 'fides.privacyco.com'
       }
       steps {
-        sh 'fidesctl evaluate --dry .fides/'
+        sh 'fides evaluate --dry .fides/'
       }
       when {
         anyOf {
@@ -126,10 +126,10 @@ pipeline {
     }
     stage('deploy') {
       environment {
-          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
+          FIDES__CLI__SERVER_HOST: 'fides.privacyco.com'
       }
       steps {
-        sh 'fidesctl evaluate .fides/'
+        sh 'fides evaluate .fides/'
       }
       when {
         branch 'main'
@@ -145,35 +145,35 @@ ___
 version: 2.1
 
 executors:
-  fidesctl:
+  fides:
     docker:
-      - image: ethyca/fidesctl:latest
+      - image: ethyca/fides:latest
         environment:
-          FIDESCTL__CLI__SERVER_HOST: 'fidesctl.privacyco.com'
+          FIDES__CLI__SERVER_HOST: 'fides.privacyco.com'
 
 jobs:
-  fidesctl-evaluate-dry:
-    executor: fidesctl
+  fides-evaluate-dry:
+    executor: fides
     steps:
-      - run: fidesctl evaluate --dry .fides/
+      - run: fides evaluate --dry .fides/
 
-  fidesctl-evaluate:
-    executor: fidesctl
+  fides-evaluate:
+    executor: fides
     steps:
-      - run: fidesctl evaluate .fides/
+      - run: fides evaluate .fides/
 
 workflows:
   version: 2
   test:
     jobs:
-      - fidesctl-evaluate-dry:
+      - fides-evaluate-dry:
           filters:
             branches:
               ignore: main
 
   deploy:
     jobs:
-      - fidesctl-evaluate:
+      - fides-evaluate:
           filters:
             branches:
               only: main
@@ -187,15 +187,15 @@ pr:
   - main
 
 jobs:
-  - job: "fidesctl_evaluate_dry"
+  - job: "fides_evaluate_dry"
     pool:
       vmImage: ubuntu-latest
     container:
-      image: ethyca/fidesctl:latest
+      image: ethyca/fides:latest
     steps:
       - checkout: self
-      - script: fidesctl evaluate --dry .fides/
-        displayName: "Fidesctl Dry Evaluation"
+      - script: fides evaluate --dry .fides/
+        displayName: "Fides Dry Evaluation"
 
 
 # Trigger the evaluate job on commits to the default branch
@@ -203,13 +203,13 @@ trigger:
   - main
 
 jobs:
-  - job: "fidesctl_evaluate"
+  - job: "fides_evaluate"
     pool:
       vmImage: ubuntu-latest
     container:
-      image: ethyca/fidesctl:latest
+      image: ethyca/fides:latest
     steps:
       - checkout: self
-      - script: fidesctl evaluate .fides/
-        displayName: "Fidesctl Evaluation"
+      - script: fides evaluate .fides/
+        displayName: "Fides Evaluation"
 ```
