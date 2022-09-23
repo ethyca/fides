@@ -283,14 +283,14 @@ describe("Dataset", () => {
         const datasetAsString = JSON.stringify(dataset);
         // Cypress doesn't have a native "paste" command, so instead do change the value directly
         // (.type() is too slow, even with 0 delay)
-        cy.getByTestId("input-datasetYaml")
+        cy.getByTestId("input-yaml")
           .click()
           .invoke("val", datasetAsString)
           .trigger("change");
         // type just one space character to make sure the text field triggers Formik's handlers
-        cy.getByTestId("input-datasetYaml").type(" ");
+        cy.getByTestId("input-yaml").type(" ");
 
-        cy.getByTestId("create-dataset-btn").click();
+        cy.getByTestId("submit-yaml-btn").click();
         cy.wait("@postDataset").then((interception) => {
           const { body } = interception.request;
           expect(body).to.eql(dataset);
@@ -323,16 +323,16 @@ describe("Dataset", () => {
       cy.visit("/dataset/new");
       cy.getByTestId("upload-yaml-btn").click();
       // type something that isn't yaml
-      cy.getByTestId("input-datasetYaml").type("invalid: invalid: invalid");
-      cy.getByTestId("create-dataset-btn").click();
-      cy.getByTestId("error-datasetYaml").should("contain", "Could not parse");
+      cy.getByTestId("input-yaml").type("invalid: invalid: invalid");
+      cy.getByTestId("submit-yaml-btn").click();
+      cy.getByTestId("error-yaml").should("contain", "Could not parse");
 
       // type something that is valid yaml and let backend render an error
-      cy.getByTestId("input-datasetYaml")
+      cy.getByTestId("input-yaml")
         .clear()
         .type("valid yaml that is not a dataset");
-      cy.getByTestId("create-dataset-btn").click();
-      cy.getByTestId("error-datasetYaml").should("contain", "field required");
+      cy.getByTestId("submit-yaml-btn").click();
+      cy.getByTestId("error-yaml").should("contain", "field required");
     });
 
     it("Can create a dataset by connecting to a database", () => {
@@ -383,13 +383,13 @@ describe("Dataset", () => {
       cy.getByTestId("create-dataset-btn").click();
       cy.getByTestId("error-url").should("contain", "required");
 
-      // first try generate with error payload but POST with valid payload
-      cy.getByTestId("input-url").type("invalid url");
+      // First ensure that a Generate error shows the error toast
+      cy.getByTestId("input-url").type("mock-url");
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate");
-      cy.getByTestId("error-url").should("contain", "error");
+      cy.getByTestId("toast-error-msg");
 
-      // now switch to good generate payload but bad POST payload
+      // Then ensure a Dataset Create error shows the error toast
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
@@ -410,13 +410,11 @@ describe("Dataset", () => {
           ],
         },
       }).as("postDataset");
-      cy.getByTestId("input-url").type(
-        "valid url that will cause post to fail"
-      );
+      cy.getByTestId("input-url").type("mock-url");
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.getByTestId("error-url").should("contain", "field required");
+      cy.getByTestId("toast-error-msg");
     });
   });
 
@@ -426,8 +424,9 @@ describe("Dataset", () => {
         "putDataset"
       );
     });
+
     it("Can render chosen data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.get("[data-testid='checkbox-Unique ID'] > span").should(
@@ -442,7 +441,7 @@ describe("Dataset", () => {
     });
 
     it("Can deselect data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Unique ID").click();
@@ -465,7 +464,7 @@ describe("Dataset", () => {
     });
 
     it("Can select more data categories", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-Telemetry Data").click();
@@ -486,7 +485,7 @@ describe("Dataset", () => {
     });
 
     it("Can interact with the checkbox tree properly", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       // expand system data
@@ -531,7 +530,7 @@ describe("Dataset", () => {
     });
 
     it("Should be able to clear selected", () => {
-      cy.visit("/dataset/demo_users");
+      cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
       cy.getByTestId("data-category-dropdown").click();
       cy.getByTestId("checkbox-System Data").click();

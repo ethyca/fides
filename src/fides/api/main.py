@@ -35,7 +35,13 @@ from fides.api.ctl.routes import (
     visualize,
 )
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.ui import get_admin_index_as_response, get_path_to_admin_ui_file
+from fides.api.ctl.ui import (
+    get_admin_index_as_response,
+    get_local_file_map,
+    get_package_file_map,
+    get_path_to_admin_ui_file,
+    match_route,
+)
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.analytics import (
     accessed_through_local_host,
@@ -273,6 +279,19 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
+
+    # First search in the local (dev) build for for a matching route.
+    ui_file = match_route(get_local_file_map(), path)
+
+    # Next, search for a matching route in the packaged files.
+    if not ui_file:
+        ui_file = match_route(get_package_file_map(), path)
+
+    # Finally, try to find the exact path as a packaged file.
+    if not ui_file:
+        ui_file = get_path_to_admin_ui_file(path)
+
+    # If any of those worked, serve the file.
     ui_file = get_path_to_admin_ui_file(path)
     if ui_file and ui_file.is_file():
         return FileResponse(ui_file)

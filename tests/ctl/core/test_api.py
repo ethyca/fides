@@ -16,6 +16,8 @@ from fides.ctl.core.config import FidesConfig
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 
+TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
+
 
 # Helper Functions
 def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:

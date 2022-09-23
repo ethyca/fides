@@ -5,50 +5,31 @@ import {
   Button,
   Heading,
   Spinner,
+  useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import Layout from "~/features/common/Layout";
+import { successToastParams } from "~/features/common/toast";
 import {
-  selectActiveDataset,
-  setActiveDataset,
+  selectActiveDatasetFidesKey,
   useGetAllDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
 import DatasetsTable from "~/features/dataset/DatasetTable";
 
-const useDatasetsTable = () => {
-  const { data, isLoading } = useGetAllDatasetsQuery();
-
-  return {
-    isLoading,
-    datasets: data,
-  };
-};
-
 const DataSets: NextPage = () => {
-  const { isLoading, datasets } = useDatasetsTable();
-  const activeDataset = useSelector(selectActiveDataset);
+  const { isLoading } = useGetAllDatasetsQuery();
+  const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
   const router = useRouter();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(setActiveDataset(null));
-  }, [dispatch]);
+  const toast = useToast();
 
   const handleLoadDataset = () => {
-    // use the router to let the page know we loaded the dataset from this view
-    // this allows us to display a Success toast message, which we would not want to display
-    // if just navigating directly to the page via URL
-    // the second URL to `push` allows us to hide the query parameter from the URL the user sees
-    if (activeDataset) {
-      router.push(
-        `/dataset/${activeDataset.fides_key}/?fromLoad=1`,
-        `/dataset/${activeDataset.fides_key}`
-      );
+    if (activeDatasetFidesKey) {
+      router.push(`/dataset/${activeDatasetFidesKey}`);
+      toast(successToastParams("Successfully loaded dataset"));
     }
   };
 
@@ -67,9 +48,7 @@ const DataSets: NextPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
       </Box>
-      <Box mb={4}>
-        {isLoading ? <Spinner /> : <DatasetsTable datasets={datasets} />}
-      </Box>
+      <Box mb={4}>{isLoading ? <Spinner /> : <DatasetsTable />}</Box>
       <Box>
         <Button
           size="sm"
@@ -82,7 +61,7 @@ const DataSets: NextPage = () => {
         <Button
           size="sm"
           colorScheme="primary"
-          disabled={!activeDataset}
+          disabled={!activeDatasetFidesKey}
           onClick={handleLoadDataset}
           data-testid="load-dataset-btn"
         >

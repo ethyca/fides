@@ -6,21 +6,25 @@ import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
+import DescribeSystemStep from "~/features/system/DescribeSystemStep";
+import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
+import ReviewSystemStep from "~/features/system/ReviewSystemStep";
+import SystemRegisterSuccess from "~/features/system/SystemRegisterSuccess";
+import { System } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
 import {
+  changeReviewStep,
   changeStep,
   selectReviewStep,
   selectStep,
+  selectSystemToCreate,
+  setSystemToCreate,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
-import DescribeSystemsForm from "./DescribeSystemsForm";
 import OrganizationInfoForm from "./OrganizationInfoForm";
-import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
-import ReviewSystemForm from "./ReviewSystemForm";
 import ScanResultsForm from "./ScanResultsForm";
-import SuccessPage from "./SuccessPage";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -29,9 +33,15 @@ const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
+  const system = useAppSelector(selectSystemToCreate);
 
   const handleCancelSetup = () => {
     router.push("/");
+  };
+
+  const handleSuccess = (values: System) => {
+    dispatch(setSystemToCreate(values));
+    dispatch(changeReviewStep());
   };
 
   return (
@@ -71,17 +81,38 @@ const ConfigWizardWalkthrough = () => {
                   />
                 ) : null}
                 {reviewStep === 1 && (
-                  <DescribeSystemsForm handleCancelSetup={handleCancelSetup} />
-                )}
-                {reviewStep === 2 && (
-                  <PrivacyDeclarationForm
-                    handleCancelSetup={handleCancelSetup}
+                  <DescribeSystemStep
+                    onCancel={handleCancelSetup}
+                    onSuccess={handleSuccess}
+                    abridged
                   />
                 )}
-                {reviewStep === 3 && (
-                  <ReviewSystemForm handleCancelSetup={handleCancelSetup} />
+                {reviewStep === 2 && system && (
+                  <PrivacyDeclarationStep
+                    system={system}
+                    onCancel={handleCancelSetup}
+                    onSuccess={handleSuccess}
+                    abridged
+                  />
                 )}
-                {reviewStep === 4 && <SuccessPage />}
+                {reviewStep === 3 && system && (
+                  <ReviewSystemStep
+                    system={system}
+                    onCancel={handleCancelSetup}
+                    onSuccess={() => dispatch(changeReviewStep())}
+                    abridged
+                  />
+                )}
+                {reviewStep === 4 && system && (
+                  <SystemRegisterSuccess
+                    system={system}
+                    onAddNextSystem={() => {
+                      dispatch(changeStep(5));
+                      dispatch(changeReviewStep(1));
+                    }}
+                    onContinue={() => dispatch(changeStep())}
+                  />
+                )}
               </Stack>
             ) : null}
             {step === 6 ? <ViewYourDataMapPage /> : null}

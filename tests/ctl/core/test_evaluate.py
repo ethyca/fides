@@ -558,6 +558,50 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
 
 
 @pytest.mark.unit
+def test_failed_evaluation_error_message(
+    test_config: FidesConfig, capsys: pytest.CaptureFixture
+) -> None:
+    """
+    Check that the returned error message matches what is expected.
+
+    Due to fides_keys being randomized here, we want to check that
+    the violations specifically are in the output.
+    """
+    string_cleaner = lambda x: x.replace("\n", "").replace("\t", "").replace(" ", "")
+    expected_error_message = string_cleaner(
+        """
+  'message': '',
+  'status': <StatusEnum.FAIL: 'FAIL'>,
+  'violations': [ { 'detail': 'Declaration (Share Political Opinions) of '
+                              'system (customer_data_sharing_system) failed '
+                              'rule (reject_targeted_marketing) from policy '
+                              '(primary_privacy_policy). Violated usage of '
+                              'data categories (user.political_opinion) with '
+                              'qualifier '
+                              '(aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified) '
+                              'for data uses '
+                              '(third_party_sharing.payment_processing) and '
+                              'subjects (customer)',
+                    'violating_attributes': { 'data_categories': [ 'user.political_opinion'],
+                                              'data_qualifier': 'aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified',
+                                              'data_subjects': ['customer'],
+                                              'data_uses': [ 'third_party_sharing.payment_processing']}}]}
+                                              """
+    )
+    with pytest.raises(SystemExit):
+        evaluate.evaluate(
+            url=test_config.cli.server_url,
+            manifests_dir="tests/ctl/data/failing_declaration_taxonomy.yml",
+            headers=test_config.user.request_headers,
+            local=True,
+        )
+    captured_out = string_cleaner(capsys.readouterr().out)
+    print(f"Expected output:\n{expected_error_message}")
+    print(f"Captured output:\n{captured_out}")
+    assert expected_error_message in captured_out
+
+
+@pytest.mark.unit
 class TestMergeTaxonomies:
     def test_no_key_conflicts(self) -> None:
         taxonomy_1 = Taxonomy(data_subject=[DataSubject(fides_key="foo", name="bar")])

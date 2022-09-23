@@ -30,7 +30,7 @@ from fides.ctl.core.utils import echo_green, echo_red, get_all_level_fields
 
 def get_evaluation_policies(
     local_policies: List[Policy],
-    evaluate_fides_key: str,
+    evaluate_fides_key: Optional[str],
     url: AnyHttpUrl,
     headers: Dict[str, str],
 ) -> List[Policy]:
@@ -519,11 +519,11 @@ def merge_taxonomies(
 def evaluate(
     url: AnyHttpUrl,
     manifests_dir: str,
-    policy_fides_key: str,
     headers: Dict[str, str],
-    message: str,
-    local: bool,
-    dry: bool,
+    policy_fides_key: str = "",
+    message: str = "",
+    local: bool = False,
+    dry: bool = False,
 ) -> Evaluation:
     """
     Perform evaluation for a given Policy. If a policy key is not

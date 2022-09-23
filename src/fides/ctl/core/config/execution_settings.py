@@ -15,7 +15,7 @@ class ExecutionSettings(FidesSettings):
     subject_identity_verification_required: bool = False
     require_manual_request_approval: bool = False
     masking_strict: bool = True
-    worker_enabled: bool = True
+    worker_enabled: bool = False
     celery_config_path: Optional[str] = "celery.toml"
 
     class Config:

@@ -17,11 +17,12 @@ import * as Yup from "yup";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult, parseError } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
+import { RTKResult } from "~/features/common/types";
 import { RTKErrorResult } from "~/types/errors";
 
 import { parentKeyFromFidesKey } from "./helpers";
 import TaxonomyEntityTag from "./TaxonomyEntityTag";
-import { Labels, RTKResult, TaxonomyEntity } from "./types";
+import { Labels, TaxonomyEntity } from "./types";
 
 export type FormValues = Partial<TaxonomyEntity> &
   Pick<TaxonomyEntity, "fides_key">;

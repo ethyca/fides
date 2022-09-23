@@ -20,7 +20,7 @@ class RedisSettings(FidesSettings):
     default_ttl_seconds: int = 604800
     identity_verification_code_ttl_seconds: int = 600
     db_index: Optional[int]
-    enabled: bool = True
+    enabled: bool = False
     ssl: bool = False
     ssl_cert_reqs: Optional[str] = "required"
     connection_url: Optional[str] = None
