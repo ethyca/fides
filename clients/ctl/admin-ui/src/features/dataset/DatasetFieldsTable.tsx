@@ -1,7 +1,10 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tooltip, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
+import {
+  ClassifyField,
+  selectClassifyInstanceFieldMap,
+} from "~/features/common/plus.slice";
 import { DatasetField } from "~/types/api";
 
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
@@ -21,11 +24,11 @@ import { ColumnMetadata, EditableType } from "./types";
 const Cell = ({
   attribute,
   field,
-  classifyInstanceField,
+  classifyField,
 }: {
   attribute: keyof DatasetField;
   field: DatasetField;
-  classifyInstanceField?: DatasetField;
+  classifyField?: ClassifyField;
 }): JSX.Element => {
   if (attribute === "data_qualifier") {
     const dataQualifierName = field.data_qualifier;
@@ -40,7 +43,9 @@ const Cell = ({
   }
 
   if (attribute === "data_categories") {
-    const classifiedCategories = classifyInstanceField?.data_categories ?? [];
+    const classifiedCategories = (classifyField?.classifications ?? []).map(
+      ({ label }) => label
+    );
     const assignedCategories = field.data_categories ?? [];
     // Only show the classified categories if none have been directly assigned to the dataset.
     const categories =
@@ -123,9 +128,7 @@ const DatasetFieldsTable = ({ columns }: Props) => {
                 <Td key={`${c.name}-${field.name}`} pl={0}>
                   <Cell
                     field={field}
-                    classifyInstanceField={classifyInstanceFieldMap.get(
-                      field.name
-                    )}
+                    classifyField={classifyInstanceFieldMap.get(field.name)}
                     attribute={c.attribute}
                   />
                 </Td>
