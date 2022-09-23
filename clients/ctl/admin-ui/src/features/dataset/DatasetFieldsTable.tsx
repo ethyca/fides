@@ -1,11 +1,8 @@
-import { Box, Table, Tbody, Td, Th, Thead, Tooltip, Tr } from "@fidesui/react";
+import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectClassificationFieldMap } from "~/features/common/plus.slice";
-import { DatasetField } from "~/types/api";
+import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
 
-import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
-import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import {
   selectActiveEditor,
   selectActiveField,
@@ -13,63 +10,9 @@ import {
   setActiveEditor,
   setActiveFieldIndex,
 } from "./dataset.slice";
+import DatasetFieldCell from "./DatasetFieldCell";
 import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata, EditableType } from "./types";
-
-// Chakra wants a JSX.Element, so all returns need to be wrapped in a fragment.
-/* eslint-disable react/jsx-no-useless-fragment */
-const Cell = ({
-  attribute,
-  field,
-  classificationField,
-}: {
-  attribute: keyof DatasetField;
-  field: DatasetField;
-  classificationField?: DatasetField;
-}): JSX.Element => {
-  if (attribute === "data_qualifier") {
-    const dataQualifierName = field.data_qualifier;
-
-    return (
-      <>
-        {dataQualifierName ? (
-          <IdentifiabilityTag dataQualifierName={dataQualifierName} />
-        ) : null}
-      </>
-    );
-  }
-
-  if (attribute === "data_categories") {
-    const classifiedCategories = classificationField?.data_categories ?? [];
-    const assignedCategories = field.data_categories ?? [];
-    // Only show the classified categories if none have been directly assigned to the dataset.
-    const categories =
-      assignedCategories.length > 0 ? assignedCategories : classifiedCategories;
-
-    return (
-      <Tooltip
-        placement="right"
-        label={
-          // TODO: Related to #724, the design wants this to be clickable but our tooltip doesn't support that.
-          categories === classifiedCategories
-            ? "Fides has generated these data categories for you. You can override them by modifying the field."
-            : ""
-        }
-      >
-        <Box display="inline-block">
-          {categories.map((dc) => (
-            <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
-              <TaxonomyEntityTag name={dc} />
-            </Box>
-          ))}
-        </Box>
-      </Tooltip>
-    );
-  }
-
-  return <>{field[attribute]}</>;
-};
-/* eslint-disable react/jsx-no-useless-fragment */
 
 interface Props {
   columns: ColumnMetadata[];
@@ -80,7 +23,7 @@ const DatasetFieldsTable = ({ columns }: Props) => {
   const activeFields = useSelector(selectActiveFields);
   const activeField = useSelector(selectActiveField);
   const activeEditor = useSelector(selectActiveEditor);
-  const classificationFieldMap = useSelector(selectClassificationFieldMap);
+  const classifyInstanceFieldMap = useSelector(selectClassifyInstanceFieldMap);
 
   const handleClose = () => {
     dispatch(setActiveFieldIndex(undefined));
@@ -121,9 +64,9 @@ const DatasetFieldsTable = ({ columns }: Props) => {
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>
-                  <Cell
+                  <DatasetFieldCell
                     field={field}
-                    classificationField={classificationFieldMap.get(field.name)}
+                    classifyField={classifyInstanceFieldMap.get(field.name)}
                     attribute={c.attribute}
                   />
                 </Td>
