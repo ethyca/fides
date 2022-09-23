@@ -458,3 +458,11 @@ form.hs-form{
         margin-left: 10px;
     }
 }
+
+.admonition code, .admonition-title code {
+    font-size: .85em;
+}
+
+.md-typeset table:not([class]) code {
+    font-size: .60rem;
+}

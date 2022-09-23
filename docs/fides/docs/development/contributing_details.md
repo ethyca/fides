@@ -1,14 +1,10 @@
 # Contributing Details
 
----
-
 ## API Endpoints
 
-### Postman API Collection
+### Postman API collection
 
-Our [fidesops Postman Collection](../fidesops/postman/Fidesops.postman_collection.json) can be used to test fidesops endpoints.
-
-Follow our [Using Postman](../fidesops/postman/using_postman.md) guide to learn more about the how to use the collection.
+The [fides Postman Collection](./postman/Fides.postman_collection.json)) can be used to test a variety of privacy request endpoints. Follow the [Using Postman](./postman/using_postman.md) guide to learn more about the how to use the collection.
 
 ### API URLs
 
@@ -30,7 +26,7 @@ SQLAlchemy is an Object Relational Mapper, allowing us to avoid writing direct d
 ### Adding models
 
 Database tables are defined with model classes. Model files should live in `src/app/models/`. Individual model classes must inherit from our custom base class at `app.db.base_class.Base` to ensure uniformity within the database. Multiple models per file are encouraged so long as they fit the same logical delineation within the project. An example model declaration is added below. For a comprehensive guide see: <https://docs.sqlalchemy.org/en/14/orm/mapping_styles.html#declarative-mapping>
-You should also import your model in src/fidesops/db/base.py so it is visible for alembic.
+You should also import your model in src/fides/api/ops/db/base.py so it is visible for alembic.
 
 ```
 class Book(Base):
@@ -46,7 +42,7 @@ When models are added to the project, we must then add them to the database in a
 
 ### Using the database via models
 
-Once you've added database tables via project models, you're ready to read, write and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
+Once you've added database tables via project models, you're ready to read, write, and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
 
 - Import our application's database session: `from fides.api.ops.db.session import get_db_session`
 - Instantiate the database interaction object:
@@ -60,8 +56,8 @@ db = SessionLocal()
 
 ```
 db_obj = User(
-    email="admin@fidesops.app",
-    full_name="Fidesops Admin",
+    email="admin@fides.app",
+    full_name="Fides Admin",
     is_superuser=True,
     is_active=True,
 )
@@ -72,11 +68,11 @@ db.refresh(db_obj)
 
 - Fetch all objects in a table: `users = db.query(User).all()`
 - Fetch all objects in a table that meet some criteria: `active_users = db.query(User).filter(User.is_active == True)`
-- Get a specific row in a table: `user = db.query(User).get(User.email == "admin@fidesops.app")`
+- Get a specific row in a table: `user = db.query(User).get(User.email == "admin@fides.app")`
 - Update a specific row in a table:
 
 ```
-user.email = "updated@fidesops.app"
+user.email = "updated@fides.app"
 db.add(user)
 db.commit()
 db.refresh()
@@ -84,12 +80,12 @@ db.refresh()
 
 ### Connecting to the database
 
-When you run `nox -s dev`, the database will be spun up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fidesops.toml`, e.g.
+When you run `nox -s dev`, the database will spin up in a Docker container with port `5432` exposed on localhost. You can connect to it using the credentials found in `.fides.toml`, e.g.
 
 - Hostname: `localhost`
 - Port: `5432`
-- Username: see `database.user` in `.fidesops.toml`
-- Password: see `database.password` in `.fidesops.toml`
+- Username: see `database.user` in `.fides.toml`
+- Password: see `database.password` in `.fides.toml`
 
 ### Alembic migrations
 
@@ -97,7 +93,7 @@ Some common Alembic commands are listed below. For a comprehensive guide see: <h
 
 The commands will need to be run inside a shell on your Docker containers, which can be opened with `nox -s dev -- shell`.
 
-In the `/src/fidesops` directory:
+In the `/src/fides` directory:
 
 - Migrate your database to the latest state: `alembic upgrade head`
 - Get revision id of previous migration: `alembic current`
