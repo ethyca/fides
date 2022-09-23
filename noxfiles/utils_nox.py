@@ -41,7 +41,7 @@ def clean(session: nox.Session) -> None:
     """
     clean_command = (*COMPOSE_DOWN, "--volumes", "--rmi", "all")
     session.run(*clean_command, external=True)
-    session.run("docker", "system", "prune", "--force", external=True)
+    session.run("docker", "system", "prune", "--force", "--all", external=True)
     print("Clean Complete!")
 
 

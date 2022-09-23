@@ -1,7 +1,9 @@
 import { Box } from "@fidesui/react";
-import NavBar from "common/NavBar";
 import Head from "next/head";
 import React from "react";
+
+import Header from "./Header";
+import NavBar from "./nav/NavBar";
 
 const Layout = ({
   title,
@@ -16,6 +18,7 @@ const Layout = ({
       <meta name="description" content="Generated from FidesUI template" />
       <link rel="icon" href="/favicon.ico" />
     </Head>
+    <Header />
     <NavBar />
     <main>
       <Box px={9} py={10}>

@@ -79,7 +79,7 @@ const Header: React.FC = () => {
             <>
               <QuestionIcon boxSize={5} />
               <Link
-                href="https://ethyca.github.io/fides/1.6.0/"
+                href="https://ethyca.github.io/fides/"
                 isExternal
                 color="gray.700"
                 fontWeight="400"

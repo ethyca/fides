@@ -36,7 +36,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
       "description" | "data_qualifier" | "data_categories"
     >
   ) => {
-    if (dataset && collectionIndex != null) {
+    if (dataset && collectionIndex !== undefined) {
       const updatedCollection = { ...collection, ...values };
       const updatedDataset = getUpdatedDatasetFromCollection(
         dataset,
@@ -54,7 +54,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   };
 
   const handleDelete = async () => {
-    if (dataset && collectionIndex != null) {
+    if (dataset && collectionIndex !== undefined) {
       const updatedDataset = removeCollectionFromDataset(
         dataset,
         collectionIndex
@@ -63,7 +63,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         await updateDataset(updatedDataset);
         toast(successToastParams("Successfully deleted collection"));
         const newActiveCollectionIndex =
-          dataset.collections.length > 0 ? 0 : null;
+          dataset.collections.length > 0 ? 0 : undefined;
         setActiveCollectionIndex(newActiveCollectionIndex);
       } catch (error) {
         toast(errorToastParams(error as string));

@@ -11,9 +11,9 @@ export interface State {
   reviewStep: number;
   organization?: Organization;
   /**
-   * The key of the system that the user is currently reviewing.
+   * The system that the user is currently manually creating.
    */
-  systemFidesKey: string;
+  systemToCreate: System | null;
   /**
    * The systems that were returned by a system scan, some of which the user will select for review.
    * These are persisted to the backend after the "Describe" step.
@@ -24,7 +24,7 @@ export interface State {
 const initialState: State = {
   step: 1,
   reviewStep: 1,
-  systemFidesKey: "",
+  systemToCreate: null,
 };
 
 export const slice = createSlice({
@@ -77,8 +77,8 @@ export const slice = createSlice({
     setOrganization: (draftState, action: PayloadAction<Organization>) => {
       draftState.organization = action.payload;
     },
-    setSystemFidesKey: (draftState, action: PayloadAction<string>) => {
-      draftState.systemFidesKey = action.payload;
+    setSystemToCreate: (draftState, action: PayloadAction<System>) => {
+      draftState.systemToCreate = action.payload;
     },
     setSystemsForReview: (draftState, action: PayloadAction<System[]>) => {
       draftState.systemsForReview = action.payload;
@@ -95,7 +95,7 @@ export const slice = createSlice({
 export const {
   changeStep,
   changeReviewStep,
-  setSystemFidesKey,
+  setSystemToCreate,
   setOrganization,
   setSystemsForReview,
   chooseSystemsForReview,
@@ -120,18 +120,12 @@ export const selectOrganizationFidesKey = createSelector(
   (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY
 );
 
-export const selectSystemFidesKey = createSelector(
+export const selectSystemToCreate = createSelector(
   selectConfigWizard,
-  (state) => state.systemFidesKey
+  (state) => state.systemToCreate
 );
 
 export const selectSystemsForReview = createSelector(
   selectConfigWizard,
   (state) => state.systemsForReview ?? []
-);
-
-export const selectSystemToReview = createSelector(
-  selectSystemsForReview,
-  selectSystemFidesKey,
-  (systems, fidesKey) => systems.find((system) => system.fides_key === fidesKey)
 );

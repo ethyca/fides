@@ -5,6 +5,11 @@ src/fides.egg-info/
 src/fides/ui-build/
 src/ui-build/
 
+# Frontend
+**/node_modules
+**/.next
+
+
 # Ignore Python-Specific Files
 .mypy_cache/
 .nox/
@@ -34,12 +39,8 @@ docs/
 # Ignore dev files
 .github/
 .devcontainer/
-**/node_modules/
 
 # Ignore cypress artifacts
 **/videos/
 **/screenshots/
-clients/ops/admin-ui/node_modules
-clients/ops/admin-ui/.next
-clients/privacy-center/.next
 .DS_Store

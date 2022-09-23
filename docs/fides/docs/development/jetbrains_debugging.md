@@ -1,5 +1,5 @@
-# Debugging fidesops in IntelliJ IDEA Ultimate
-This guide will show how to use the IntelliJ debugger with fidesops running in Docker. 
+# Debugging Fides in IntelliJ IDEA Ultimate
+This guide will show how to use the IntelliJ debugger with Fides running in Docker. 
 The setup for PyCharm Professional should be very similar.
 
 ## Prerequisites
@@ -7,7 +7,6 @@ The setup for PyCharm Professional should be very similar.
 - [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker)
 - [Python plugin](https://plugins.jetbrains.com/plugin/631-python) *(this is needed for Intellij)*
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Fidesops](https://ethyca.github.io/fidesops/tutorial/installation/)
 
 ## Setup
 ### Connect to Docker daemon
@@ -20,7 +19,7 @@ Go to: **Settings/Preferences** -> **Docker** -> **+**
 
 See the screenshot below:
 
-![Screenshot of IDE Docker setup](../fidesops/img/ide/docker.png)
+![Screenshot of IDE Docker setup](../img/ide/docker.png)
 
 ### Configure Python Remote Interpreter
 
@@ -36,9 +35,9 @@ After clicking **OK** the Remote Python Docker Compose should be listed as an SD
 
 See screenshots below:
 
-![Screenshot of Add Python Interpreter](../fidesops/img/ide/add_python_interpreter.png)
+![Screenshot of Add Python Interpreter](../img/ide/add_python_interpreter.png)
 
-![Screenshot of Project Structure SDKs](../fidesops/img/ide/SDKs.png)
+![Screenshot of Project Structure SDKs](../img/ide/SDKs.png)
 
 ### Run/Debug Configuration
 
@@ -46,25 +45,25 @@ Set up a Run/Debug Configuration so that breakpoints can be hit in the f sourcec
 
 Go to: **Run/Debug Configurations** -> **+** -> **Python**
 
-- To debug fidesops, debug the `<path on your machine>/src/fidesops/main.py` script
+- To debug Fides, debug the `<path on your machine>/src/fides/main.py` script
 - Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
-- Add `FIDESOPS__CONFIG_PATH=/fidesops` to **Environment variables**
+- Add `FIDES__CONFIG_PATH=/fides` to **Environment variables**
 
 See screenshot below:
 
-![Screenshot of Run/Debug Configuration for main.py](../fidesops/img/ide/debug_config.png)
+![Screenshot of Run/Debug Configuration for main.py](../img/ide/debug_config.png)
 
 ## Hit a Breakpoint
 
 Now the IDE is ready to debug the source code. Click the debug button for **main** *(setup in the previous section)*.
 
-Try firing a http request to fidesops from Postman or Curl and hit a break point. 
+Try firing a http request to Fides from Postman or Curl and hit a break point. 
 
-There is a postman collection in this repo: `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
+There is a postman collection in this repo: `docs/fides/docs/development/postman/Fides.postman_collection.json`
 
 Screenshot of hit breakpoint below:
 
-![Screenshot of Debugging from IntelliJ](../fidesops/img/ide/debugging.png)
+![Screenshot of Debugging from IntelliJ](../img/ide/debugging.png)
 
 ## Links
 

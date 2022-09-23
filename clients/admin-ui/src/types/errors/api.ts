@@ -7,6 +7,7 @@ import {
   DetailStringError,
   HTTPException,
   HTTPValidationError,
+  NotFoundError,
 } from "./models";
 
 /**
@@ -79,6 +80,18 @@ export const isDetailStringErrorData = (
 export const isAlreadyExistsErrorData = (
   data: unknown
 ): data is AlreadyExistsError =>
+  narrow(
+    {
+      detail: {
+        error: "string",
+        resource_type: "string",
+        fides_key: "string",
+      },
+    },
+    data
+  );
+
+export const isNotFoundError = (data: unknown): data is NotFoundError =>
   narrow(
     {
       detail: {

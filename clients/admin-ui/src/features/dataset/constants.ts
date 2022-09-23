@@ -77,3 +77,32 @@ export const FIELD = {
       "Arrays of Data Category resources, identified by fides_key, that apply to this field.",
   },
 };
+
+/**
+ * Details to display about datasets based on status. Status is currently only determined by the
+ * classification feature.
+ */
+export const STATUS_DISPLAY = {
+  processing: {
+    title: "Processing",
+    tooltip:
+      "This dataset is currently being generated and classified. You will be notified when this process is complete",
+    color: "orange",
+  },
+  review: {
+    title: "Awaiting Review",
+    tooltip:
+      "This dataset has been automatically classified. Review the results and update the dataset.",
+    color: "orange",
+  },
+  classified: {
+    title: "Classified",
+    tooltip: "This dataset has been classified.",
+    color: "green",
+  },
+  default: {
+    title: "Unknown",
+    tooltip: "This dataset must be manually updated.",
+    color: "gray",
+  },
+};

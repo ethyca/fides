@@ -20,7 +20,7 @@ from fides.api.ctl.utils.errors import (
 )
 from fides.ctl.core.utils import get_db_engine
 
-from .crud import create_resource, upsert_resources
+from .crud import create_resource, list_resource
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -87,18 +87,29 @@ async def load_default_taxonomy() -> None:
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
     upsert_resource_types.remove("organization")
 
-    log.info("UPSERTING the remaining default fideslang taxonomy resources")
+    log.info("INSERTING new default fideslang taxonomy resources")
     for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
-        resources = list(map(dict, DEFAULT_TAXONOMY.dict()[resource_type]))
+        default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
+        existing_resources = await list_resource(sql_model_map[resource_type])
+        existing_keys = [item.fides_key for item in existing_resources]
+        resources = [
+            resource
+            for resource in default_resources
+            if resource["fides_key"] not in existing_keys
+        ]
+
+        if len(resources) == 0:
+            log.info(f"No new {resource_type} resources to add from default taxonomy.")
+            continue
 
         try:
-            result = await upsert_resources(sql_model_map[resource_type], resources)
+            for resource in resources:
+                await create_resource(sql_model_map[resource_type], resource)
         except QueryError:
-            pass  # The upsert_resources function will log the error
+            pass  # The create_resource function will log the error
         else:
-            log.info(f"INSERTED {result[0]} {resource_type} resource(s)")
-            log.info(f"UPDATED {result[1]} {resource_type} resource(s)")
+            log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")
 
 
 def reset_db(database_url: str) -> None:

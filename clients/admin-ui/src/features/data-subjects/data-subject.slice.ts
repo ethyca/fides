@@ -1,16 +1,8 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { RootState } from "~/app/store";
 import { DataSubject } from "~/types/api";
-
-export interface State {
-  dataSubjects: DataSubject[];
-}
-
-const initialState: State = {
-  dataSubjects: [],
-};
 
 export const dataSubjectsApi = createApi({
   reducerPath: "dataSubjectsApi",
@@ -63,19 +55,20 @@ export const {
   useDeleteDataSubjectMutation,
 } = dataSubjectsApi;
 
+export interface State {}
+const initialState: State = {};
+
 export const dataSubjectsSlice = createSlice({
   name: "dataSubjects",
   initialState,
-  reducers: {
-    setDataSubjects: (state, action: PayloadAction<DataSubject[]>) => ({
-      ...state,
-      dataSubjects: action.payload,
-    }),
-  },
+  reducers: {},
 });
 
-export const { setDataSubjects } = dataSubjectsSlice.actions;
-export const selectDataSubjects = (state: RootState) =>
-  state.dataSubjects.dataSubjects;
+const emptyDataSubjects: DataSubject[] = [];
+export const selectDataSubjects: (state: RootState) => DataSubject[] =
+  createSelector(
+    dataSubjectsApi.endpoints.getAllDataSubjects.select(),
+    ({ data }) => data ?? emptyDataSubjects
+  );
 
 export const { reducer } = dataSubjectsSlice;

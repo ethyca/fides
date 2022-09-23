@@ -116,17 +116,17 @@ def check_install(session: nox.Session) -> None:
 
 
 @nox.session()
-def fidesctl(session: nox.Session) -> None:
+def check_fides_annotations(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
+        run_command = (*RUN_STATIC_ANALYSIS, "check_fides_annotations")
     else:
         run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
 @nox.session()
-def fidesctl_db_scan(session: nox.Session) -> None:
+def fides_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
@@ -291,3 +291,22 @@ def pytest_saas(session: nox.Session) -> None:
         "integration_saas",
     )
     session.run(*run_command, external=True)
+
+
+@nox.session()
+@nox.parametrize(
+    "dist",
+    [
+        nox.param("sdist", id="source"),
+        nox.param("bdist_wheel", id="wheel"),
+    ],
+)
+def python_build(session: nox.Session, dist: str) -> None:
+    "Build the Python distribution."
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "setup.py",
+        dist,
+        external=True,
+    )

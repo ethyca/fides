@@ -25,6 +25,7 @@ services:
       FIDES__DEV_MODE: "True"
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       FIDES__TEST_MODE: "True"
+      FIDES__REDIS__ENABLED: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
@@ -35,8 +36,6 @@ services:
   fides-ui:
     image: ethyca/fides:local-ui
     command: npm run dev-docker
-    depends_on:
-      - fides
     expose:
       - 3000
     ports:
@@ -84,7 +83,6 @@ services:
     environment:
       - FIDES__DEV_MODE=True
       - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID}
-      - FIDES__EXECUTION__WORKER_ENABLED=True
 
   redis:
     image: "redis:6.2.5-alpine"
