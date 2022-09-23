@@ -189,6 +189,32 @@ def read_connection_config(
 
 
 @pytest.fixture(scope="function")
+def postgres_connection_config_with_schema(
+    db: Session,
+) -> Generator:
+    """Create a connection config with a db_schema set which allows the PostgresConnector to connect
+    to a non-default schema"""
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_postgres_db_backup_schema",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["postgres_example"],
+            "disabled": False,
+            "description": "Backup postgres data",
+        },
+    )
+    connection_config.secrets[
+        "db_schema"
+    ] = "backup_schema"  # Matches the second schema created in postgres_example.schema
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def postgres_integration_session_cls(connection_config):
     example_postgres_uri = PostgreSQLConnector(connection_config).build_uri()
     engine = get_db_engine(database_uri=example_postgres_uri)

@@ -175,3 +175,25 @@ INSERT INTO public.report VALUES
 INSERT INTO public.type_link_test VALUES
 ('1', 'name1'),
 ('2', 'name2');
+
+
+CREATE SCHEMA backup_schema;
+CREATE TABLE  backup_schema.product (LIKE public.product INCLUDING ALL);
+CREATE TABLE  backup_schema.address (LIKE public.address INCLUDING ALL);
+CREATE TABLE  backup_schema.customer (LIKE public.customer INCLUDING ALL);
+CREATE TABLE  backup_schema.employee (LIKE public.employee INCLUDING ALL);
+CREATE TABLE  backup_schema.payment_card (LIKE public.payment_card INCLUDING ALL);
+CREATE TABLE  backup_schema.orders (LIKE public.orders INCLUDING ALL);
+CREATE TABLE  backup_schema.order_item (LIKE public.order_item INCLUDING ALL);
+CREATE TABLE  backup_schema.visit (LIKE public.visit INCLUDING ALL);
+CREATE TABLE  backup_schema.login (LIKE public.login INCLUDING ALL);
+CREATE TABLE  backup_schema.service_request (LIKE public.service_request INCLUDING ALL);
+CREATE TABLE  backup_schema.report (LIKE public.report INCLUDING ALL);
+CREATE TABLE  backup_schema.composite_pk_test (LIKE public.composite_pk_test INCLUDING ALL);
+CREATE TABLE  backup_schema.type_link_test (LIKE public.type_link_test INCLUDING ALL);
+
+INSERT INTO backup_schema.customer VALUES
+(1, 'customer-500@example.com', 'Johanna Customer', '2022-05-01 12:22:11', 7);
+
+INSERT INTO backup_schema.address VALUES
+(7, '311', 'Test Street', 'Test Town', 'TX', '79843');

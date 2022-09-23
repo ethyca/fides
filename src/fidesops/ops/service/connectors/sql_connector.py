@@ -1,6 +1,6 @@
 import logging
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Type
 
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -18,10 +18,11 @@ from sqlalchemy.sql.elements import TextClause
 
 from fidesops.ops.common_exceptions import ConnectionException
 from fidesops.ops.graph.traversal import Row, TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
+from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fidesops.ops.models.policy import Policy
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.connection_configuration import (
+    ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
     PostgreSQLSchema,
     RedshiftSchema,
@@ -51,6 +52,16 @@ logger = logging.getLogger(__name__)
 class SQLConnector(BaseConnector[Engine]):
     """A SQL connector represents an abstract connector to any datastore that can be
     interacted with via standard SQL via SQLAlchemy"""
+
+    secrets_schema: Type[ConnectionConfigSecretsSchema]
+
+    def __init__(self, configuration: ConnectionConfig):
+        """Instantiate a SQL-based connector"""
+        super().__init__(configuration)
+        if not self.secrets_schema:
+            raise NotImplementedError(
+                "SQL Connectors must define their secrets schema class"
+            )
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -119,6 +130,7 @@ class SQLConnector(BaseConnector[Engine]):
             return []
         logger.info("Starting data retrieval for %s", node.address)
         with client.connect() as connection:
+            self.set_schema(connection)
             results = connection.execute(stmt)
             return self.cursor_result_to_rows(results)
 
@@ -140,6 +152,7 @@ class SQLConnector(BaseConnector[Engine]):
             )
             if update_stmt is not None:
                 with client.connect() as connection:
+                    self.set_schema(connection)
                     results: LegacyCursorResult = connection.execute(update_stmt)
                     update_ct = update_ct + results.rowcount
         return update_ct
@@ -150,13 +163,29 @@ class SQLConnector(BaseConnector[Engine]):
             logger.debug(" disposing of %s", self.__class__)
             self.db_client.dispose()
 
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        uri = config.url or self.build_uri()
+        return create_engine(
+            uri,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
+        )
+
+    def set_schema(self, connection: Connection) -> None:
+        """Optionally override to set the schema for a given database that
+        persists through the entire session"""
+
 
 class PostgreSQLConnector(SQLConnector):
     """Connector specific to postgresql"""
 
+    secrets_schema = PostgreSQLSchema
+
     def build_uri(self) -> str:
         """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
-        config = PostgreSQLSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
         if config.username:
@@ -169,23 +198,24 @@ class PostgreSQLConnector(SQLConnector):
         dbname = f"/{config.dbname}" if config.dbname else ""
         return f"postgresql://{user_password}{netloc}{port}{dbname}"
 
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with a PostgreSQL database"""
-        config = PostgreSQLSchema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
+    def set_schema(self, connection: Connection) -> None:
+        """Sets the schema for a postgres database if applicable"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.db_schema:
+            logger.info("Setting PostgreSQL search_path before retrieving data")
+            stmt = text("SET search_path to :search_path")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
 
 
 class MySQLConnector(SQLConnector):
     """Connector specific to MySQL"""
 
+    secrets_schema = MySQLSchema
+
     def build_uri(self) -> str:
         """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname]"""
-        config = MySQLSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
         if config.username:
@@ -199,16 +229,6 @@ class MySQLConnector(SQLConnector):
         url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with a MySQL database"""
-        config = MySQLSchema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
-
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
@@ -220,9 +240,11 @@ class MySQLConnector(SQLConnector):
 class MariaDBConnector(SQLConnector):
     """Connector specific to MariaDB"""
 
+    secrets_schema = MariaDBSchema
+
     def build_uri(self) -> str:
         """Build URI of format mariadb+pymysql://[user[:password]@][netloc][:port][/dbname]"""
-        config = MariaDBSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
         if config.username:
@@ -236,16 +258,6 @@ class MariaDBConnector(SQLConnector):
         url = f"mariadb+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with a MariaDB database"""
-        config = MariaDBSchema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
-
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
@@ -257,88 +269,26 @@ class MariaDBConnector(SQLConnector):
 class RedshiftConnector(SQLConnector):
     """Connector specific to Amazon Redshift"""
 
+    secrets_schema = RedshiftSchema
+
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
-        config = RedshiftSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         port = f":{config.port}" if config.port else ""
         database = f"/{config.database}" if config.database else ""
         url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
         return url
 
-    # Overrides SQLConnector.create_client
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with an Amazon Redshift cluster"""
-        config = RedshiftSchema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
-
     def set_schema(self, connection: Connection) -> None:
         """Sets the search_path for the duration of the session"""
-        config = RedshiftSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting Redshift search_path before retrieving data")
             stmt = text("SET search_path to :search_path")
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
-
-    # Overrides SQLConnector.retrieve_data
-    def retrieve_data(
-        self,
-        node: TraversalNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
-        """Retrieve data from Amazon Redshift
-
-        For redshift, we also set the search_path to be the schema defined on the ConnectionConfig if
-        applicable - persists for the current session.
-        """
-        query_config = self.query_config(node)
-        client = self.client()
-        stmt = query_config.generate_query(input_data, policy)
-        if stmt is None:
-            return []
-
-        logger.info("Starting data retrieval for %s", node.address)
-        with client.connect() as connection:
-            self.set_schema(connection)
-            results = connection.execute(stmt)
-            return SQLConnector.cursor_result_to_rows(results)
-
-    # Overrides SQLConnector.mask_data
-    def mask_data(
-        self,
-        node: TraversalNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        rows: List[Row],
-        input_data: Dict[str, List[Any]],
-    ) -> int:
-        """Execute a masking request. Returns the number of records masked
-
-        For redshift, we also set the search_path to be the schema defined on the ConnectionConfig if
-        applicable - persists for the current session.
-        """
-        query_config = self.query_config(node)
-        update_ct = 0
-        client = self.client()
-        for row in rows:
-            update_stmt = query_config.generate_update_stmt(
-                row, policy, privacy_request
-            )
-            if update_stmt is not None:
-                with client.connect() as connection:
-                    self.set_schema(connection)
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
-        return update_ct
 
     # Overrides SQLConnector.query_config
     def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
@@ -349,19 +299,23 @@ class RedshiftConnector(SQLConnector):
 class BigQueryConnector(SQLConnector):
     """Connector specific to Google BigQuery"""
 
+    secrets_schema = BigQuerySchema
+
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format"""
-        config = BigQuerySchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
         dataset = f"/{config.dataset}" if config.dataset else ""
         return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """
-        Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery
+        Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery.
+
+        Overrides to pass in credentials_info
         """
-        config = BigQuerySchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
         uri = config.url or self.build_uri()
 
         return create_engine(
@@ -402,11 +356,13 @@ class BigQueryConnector(SQLConnector):
 class SnowflakeConnector(SQLConnector):
     """Connector specific to Snowflake"""
 
+    secrets_schema = SnowflakeSchema
+
     def build_uri(self) -> str:
         """Build URI of format 'snowflake://<user_login_name>:<password>@<account_identifier>/<database_name>/
         <schema_name>?warehouse=<warehouse_name>&role=<role_name>'
         """
-        config = SnowflakeSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         kwargs = {}
 
@@ -428,16 +384,6 @@ class SnowflakeConnector(SQLConnector):
         url: str = Snowflake_URL(**kwargs)
         return url
 
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with Snowflake"""
-        config = SnowflakeSchema(**self.configuration.secrets or {})
-        uri: str = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
-
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""
         return SnowflakeQueryConfig(node)
@@ -448,6 +394,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
     Connector specific to Microsoft SQL Server
     """
 
+    secrets_schema = MicrosoftSQLServerSchema
+
     def build_uri(self) -> URL:
         """
         Build URI of format
@@ -455,7 +403,7 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Returns URL obj, since SQLAlchemy's create_engine method accepts either a URL obj or a string
         """
 
-        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
+        config = self.secrets_schema(**self.configuration.secrets or {})
 
         url = URL.create(
             "mssql+pyodbc",
@@ -468,16 +416,6 @@ class MicrosoftSQLServerConnector(SQLConnector):
         )
 
         return url
-
-    def create_client(self) -> Engine:
-        """Returns a SQLAlchemy Engine that can be used to interact with a MicrosoftSQLServer database"""
-        config = MicrosoftSQLServerSchema(**self.configuration.secrets or {})
-        uri = config.url or self.build_uri()
-        return create_engine(
-            uri,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
-        )
 
     def query_config(self, node: TraversalNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input traversal_node."""

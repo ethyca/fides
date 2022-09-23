@@ -12,6 +12,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
     username: Optional[str] = None
     password: Optional[str] = None
     dbname: Optional[str] = None
+    db_schema: Optional[str] = None
     host: Optional[
         str
     ] = None  # Either the entire "url" *OR* the "host" should be supplied.

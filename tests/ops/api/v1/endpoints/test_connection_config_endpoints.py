@@ -958,6 +958,7 @@ class TestPutConnectionConfigSecrets:
             "username": None,
             "password": None,
             "url": None,
+            "db_schema": None,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -979,6 +980,7 @@ class TestPutConnectionConfigSecrets:
             "username": None,
             "password": None,
             "url": payload["url"],
+            "db_schema": None,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
