@@ -26,6 +26,7 @@ from fidesops.ops.service.connectors import (
     RedshiftConnector,
     SaaSConnector,
     SnowflakeConnector,
+    TimescaleConnector,
 )
 from fidesops.ops.util.cache import get_cache
 from fidesops.ops.util.collection_util import Row
@@ -75,6 +76,8 @@ class Connections:
             return ManualConnector(connection_config)
         if connection_config.connection_type == ConnectionType.email:
             return EmailConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.timescale:
+            return TimescaleConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

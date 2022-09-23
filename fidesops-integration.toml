@@ -44,3 +44,10 @@ user="mariadb_user"
 password="mariadb_pw"
 db="mariadb_example"
 port=3306
+
+[timescale_example]
+server="timescale_example"
+user="postgres"
+password="postgres"
+db="timescale_example"
+port=5432

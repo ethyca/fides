@@ -14,6 +14,8 @@ COMPOSE_DOWN = (
     "-f",
     "docker/docker-compose.integration-mysql.yml",
     "-f",
+    "docker/docker-compose.integration-timescale.yml",
+    "-f",
     "docker/docker-compose.integration-postgres.yml",
     "-f",
     "docker/docker-compose.integration-mssql.yml",

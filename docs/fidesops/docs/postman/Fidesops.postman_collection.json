@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "8ba07963-3895-4ace-a8f7-645554cd9fd3",
+		"_postman_id": "296aa41f-49f7-4988-bbfb-b57c480a695f",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13396647"
+		"_exporter_id": "1984786"
 	},
 	"item": [
 		{
@@ -2290,6 +2290,124 @@
 							"path": [
 								"connection",
 								"{{mariadb_key}}",
+								"dataset"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TimescaleDB",
+			"item": [
+				{
+					"name": "Create/Update Connection Configs: Timescale DB",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\"name\": \"TimescaleDB Connection\",\n    \"key\": \"{{timescale_key}}\",\n    \"connection_type\": \"timescale\",\n    \"access\": \"write\"\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Connection Secrets: Timescale",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"host.docker.internal\",\n    \"port\": 7432,\n    \"dbname\": \"timescale_example\",\n    \"username\": \"postgres\",\n    \"password\": \"postgres\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{timescale_key}}/secret",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{timescale_key}}",
+								"secret"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Timescale Dataset",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[{\n  \"fides_key\": \"timescale_example\",\n  \"name\": \"Timescale Example Test Dataset\",\n  \"description\": \"Example of a Timescale dataset containing a variety of related tables like customers, products, addresses, etc.\",\n  \"collections\": [\n    {\n      \"name\": \"address\",\n      \"fields\": [\n        {\n          \"name\": \"city\",\n          \"data_categories\": [\n            \"user.contact.address.city\"\n          ]\n        },\n        {\n          \"name\": \"house\",\n          \"data_categories\": [\n            \"user.contact.address.street\"\n          ]\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"state\",\n          \"data_categories\": [\n            \"user.contact.address.state\"\n          ]\n        },\n        {\n          \"name\": \"street\",\n          \"data_categories\": [\n            \"user.contact.address.street\"\n          ]\n        },\n        {\n          \"name\": \"zip\",\n          \"data_categories\": [\n            \"user.contact.address.postal_code\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"customer\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"created\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"employee\",\n      \"fields\": [\n        {\n          \"name\": \"address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.name\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"login\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"time\",\n          \"data_categories\": [\n            \"user.sensor\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"orders\",\n      \"fields\": [\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"shipping_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        }\n      ]\n    },\n    {\n      \"name\": \"order_item\",\n      \"fields\": [\n        {\n          \"name\": \"order_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"orders.id\",\n                \"direction\": \"from\"\n              }\n            ],\n            \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"product_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"product.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"quantity\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"payment_card\",\n      \"fields\": [\n        {\n          \"name\": \"billing_address_id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"address.id\",\n                \"direction\": \"to\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"ccn\",\n          \"data_categories\": [\n            \"user.financial.account_number\"\n          ]\n        },\n        {\n          \"name\": \"code\",\n          \"data_categories\": [\n            \"user.financial\"\n          ]\n        },\n        {\n          \"name\": \"customer_id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"customer.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n              \"primary_key\": true\n\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"user.financial\"\n          ]\n        },\n        {\n          \"name\": \"preferred\",\n          \"data_categories\": [\n            \"user\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"product\",\n      \"fields\": [\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"price\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"report\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"month\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"name\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"total_visits\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"year\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"service_request\",\n      \"fields\": [\n        {\n          \"name\": \"alt_email\",\n          \"data_categories\": [\n            \"user.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"closed\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        },\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\"\n          }\n        },\n        {\n          \"name\": \"employee_id\",\n          \"data_categories\": [\n            \"user.unique_id\"\n          ],\n          \"fidesops_meta\": {\n            \"references\": [\n              {\n                \"dataset\": \"timescale_example\",\n                \"field\": \"employee.id\",\n                \"direction\": \"from\"\n              }\n            ]\n          }\n        },\n        {\n          \"name\": \"id\",\n          \"data_categories\": [\n            \"system.operations\"\n          ],\n           \"fidesops_meta\": {\n              \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"opened\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"visit\",\n      \"fields\": [\n        {\n          \"name\": \"email\",\n          \"data_categories\": [\n            \"user.contact.email\"\n          ],\n          \"fidesops_meta\": {\n            \"identity\": \"email\",\n            \"primary_key\": true\n          }\n        },\n        {\n          \"name\": \"last_visit\",\n          \"data_categories\": [\n            \"system.operations\"\n          ]\n        }\n      ]\n    }\n  ]\n}]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/connection/{{timescale_key}}/dataset",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"connection",
+								"{{timescale_key}}",
 								"dataset"
 							]
 						}
@@ -4900,6 +5018,11 @@
 		{
 			"key": "manual_webhook_key",
 			"value": "manual_webhook_key",
+			"type": "string"
+		},
+		{
+			"key": "timescale_key",
+			"value": "",
 			"type": "string"
 		}
 	]

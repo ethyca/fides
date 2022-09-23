@@ -48,6 +48,10 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets_snowflake 
     SnowflakeDocsSchema,
     SnowflakeSchema,
 )
+from fidesops.ops.schemas.connection_configuration.connection_secrets_timescale import (
+    TimescaleDocsSchema,
+    TimescaleSchema,
+)
 from fidesops.ops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
@@ -66,6 +70,7 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.saas.value: SaaSSchema,
     ConnectionType.email.value: EmailSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
+    ConnectionType.timescale.value: TimescaleSchema,
 }
 
 
@@ -107,4 +112,5 @@ connection_secrets_schemas = Union[
     SaaSSchema,
     EmailDocsSchema,
     ManualWebhookSchemaforDocs,
+    TimescaleDocsSchema,
 ]

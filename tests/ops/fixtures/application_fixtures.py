@@ -38,7 +38,6 @@ from fidesops.ops.models.storage import ResponseFormat, StorageConfig
 from fidesops.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
-    EmailServiceSecretsMailgun,
     EmailServiceType,
 )
 from fidesops.ops.schemas.redis_cache import Identity
@@ -104,6 +103,13 @@ integration_secrets = {
         "dbname": pydash.get(integration_config, "mariadb_example.db"),
         "username": pydash.get(integration_config, "mariadb_example.user"),
         "password": pydash.get(integration_config, "mariadb_example.password"),
+    },
+    "timescale_example": {
+        "host": pydash.get(integration_config, "timescale_example.server"),
+        "port": pydash.get(integration_config, "timescale_example.port"),
+        "dbname": pydash.get(integration_config, "timescale_example.db"),
+        "username": pydash.get(integration_config, "timescale_example.user"),
+        "password": pydash.get(integration_config, "timescale_example.password"),
     },
 }
 

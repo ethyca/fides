@@ -19,6 +19,7 @@ from fidesops.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
+from fidesops.ops.service.connectors.timescale_connector import TimescaleConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLConnector,
@@ -34,6 +35,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.manual.value: ManualConnector,
     ConnectionType.email.value: EmailConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
+    ConnectionType.timescale.value: TimescaleConnector,
 }
 
 

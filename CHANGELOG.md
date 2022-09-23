@@ -31,6 +31,7 @@ The types of changes are:
 
 * `api_key` auth strategy for SaaS connectors [#1331](https://github.com/ethyca/fidesops/pull/1331)
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
+* Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 
 ### Removed
 

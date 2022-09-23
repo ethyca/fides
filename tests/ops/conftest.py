@@ -58,6 +58,7 @@ from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
+from .fixtures.timescale_fixtures import *
 
 logger = logging.getLogger(__name__)
 

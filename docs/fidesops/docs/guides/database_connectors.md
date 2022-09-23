@@ -17,6 +17,7 @@ Fidesops supports connections to the following databases:
 * Amazon Redshift
 * Snowflake
 * Google BigQuery
+* Timescale DB
 
 Other platforms will be added in future releases.
 
@@ -119,6 +120,20 @@ While the ConnectionConfig object contains meta information about the database, 
     "access": "read",
     "disabled": false,
     "description": "Connector describing manual actions"
+  }
+]
+``` 
+
+### TimescaleDB
+
+```json title="<code>PATCH api/v1/connection</code>"
+[
+  { 
+    "name": "My Timescale DB",
+    "key": "my_timescaledb",
+    "connection_type": "timescale",
+    "access": "write",
+    "disabled": false
   }
 ]
 ``` 
