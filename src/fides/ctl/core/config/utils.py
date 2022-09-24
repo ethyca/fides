@@ -5,7 +5,7 @@ from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
 
-from fides.ctl.core.config import DEFAULT_CONFIG_PATH
+DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
 
 def get_test_mode() -> bool:
