@@ -92,6 +92,8 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, config.cli.server_url, quiet=True)
 
+    ctx.obj["CONFIG"] = config
+
     # init also handles this workflow
     if ctx.invoked_subcommand != "init":
         check_and_update_analytics_config(ctx, config_path)
@@ -105,8 +107,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
                 product_name=APP + "-cli",
                 production_version=version(PACKAGE),
             )
-
-    ctx.obj["CONFIG"] = config
 
 
 # Add all commands here before dynamically checking them in the CLI
