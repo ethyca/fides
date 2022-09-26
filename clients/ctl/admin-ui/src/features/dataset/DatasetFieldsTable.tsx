@@ -1,10 +1,8 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DatasetField } from "~/types/api";
+import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
 
-import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
-import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import {
   selectActiveEditor,
   selectActiveField,
@@ -12,44 +10,9 @@ import {
   setActiveEditor,
   setActiveFieldIndex,
 } from "./dataset.slice";
+import DatasetFieldCell from "./DatasetFieldCell";
 import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata, EditableType } from "./types";
-
-// Chakra wants a JSX.Element, so all returns need to be wrapped in a fragment.
-/* eslint-disable react/jsx-no-useless-fragment */
-const Cell = ({
-  attribute,
-  field,
-}: {
-  attribute: keyof DatasetField;
-  field: DatasetField;
-}): JSX.Element => {
-  if (attribute === "data_qualifier") {
-    const dataQualifierName = field[attribute];
-    return (
-      <>
-        {dataQualifierName ? (
-          <IdentifiabilityTag dataQualifierName={dataQualifierName} />
-        ) : null}
-      </>
-    );
-  }
-
-  if (attribute === "data_categories") {
-    return (
-      <>
-        {(field[attribute] ?? []).map((dc) => (
-          <Box key={`${field.name}-${dc}`} mr={2} mb={2}>
-            <TaxonomyEntityTag name={dc} />
-          </Box>
-        ))}
-      </>
-    );
-  }
-
-  return <>{field[attribute]}</>;
-};
-/* eslint-disable react/jsx-no-useless-fragment */
 
 interface Props {
   columns: ColumnMetadata[];
@@ -60,6 +23,7 @@ const DatasetFieldsTable = ({ columns }: Props) => {
   const activeFields = useSelector(selectActiveFields);
   const activeField = useSelector(selectActiveField);
   const activeEditor = useSelector(selectActiveEditor);
+  const classifyInstanceFieldMap = useSelector(selectClassifyInstanceFieldMap);
 
   const handleClose = () => {
     dispatch(setActiveFieldIndex(undefined));
@@ -100,7 +64,11 @@ const DatasetFieldsTable = ({ columns }: Props) => {
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>
-                  <Cell field={field} attribute={c.attribute} />
+                  <DatasetFieldCell
+                    field={field}
+                    classifyField={classifyInstanceFieldMap.get(field.name)}
+                    attribute={c.attribute}
+                  />
                 </Td>
               ))}
             </Tr>

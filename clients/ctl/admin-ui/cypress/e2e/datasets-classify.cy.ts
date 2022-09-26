@@ -43,9 +43,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
         "postDataset"
       );
-      cy.intercept("POST", "/api/v1/plus/classification", {
-        fixture: "classification/create.json",
-      }).as("postClassification");
+      cy.intercept("POST", "/api/v1/plus/classify", {
+        fixture: "classify/create.json",
+      }).as("postClassify");
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
@@ -55,7 +55,7 @@ describe("Datasets with Fides Classify", () => {
 
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.wait("@postClassification");
+      cy.wait("@postClassify");
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
@@ -73,15 +73,15 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
-      cy.intercept("GET", "/api/v1/plus/classification", {
-        fixture: "classification/list.json",
-      }).as("getClassificationList");
+      cy.intercept("GET", "/api/v1/plus/classify", {
+        fixture: "classify/list.json",
+      }).as("getClassifyList");
     });
 
-    it("Shows the each dataset's classification status", () => {
+    it("Shows the each dataset's classify status", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
-      cy.wait("@getClassificationList");
+      cy.wait("@getClassifyList");
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
@@ -93,6 +93,70 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("dataset-status-demo_users_dataset_4").contains(
         "Classified"
       );
+    });
+  });
+
+  describe("Dataset collection view", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("getDataset");
+      cy.intercept("GET", "/api/v1/data_category", {
+        fixture: "data_categories.json",
+      }).as("getDataCategory");
+
+      cy.intercept("GET", "/api/v1/plus/classify", {
+        fixture: "classify/list.json",
+      }).as("getClassifyList");
+    });
+
+    /**
+     * This helper checks that a row displays the relevant values. It finds appropriate elements by
+     * testid, but tests by matching the displayed text - e.g. "Identified" instead of the whole
+     * data_qualifier.
+     */
+    const rowContains = ({
+      name,
+      identifiability,
+      taxonomyEntities,
+    }: {
+      name: string;
+      identifiability: string;
+      taxonomyEntities: string[];
+    }) => {
+      cy.getByTestId(`field-row-${name}`).within(() => {
+        cy.get(`[data-testid^=identifiability-tag-]`).contains(identifiability);
+        taxonomyEntities.forEach((te) => {
+          // Right now this displays the whole taxonomy path, but this might be abbreviated later.
+          cy.get(`[data-testid^=taxonomy-entity-]`).contains(te);
+        });
+      });
+    };
+
+    it("Shows the classifiers field suggestions", () => {
+      cy.visit("/dataset/dataset_in_review");
+      cy.wait("@getDataset");
+      cy.wait("@getClassifyList");
+
+      cy.getByTestId("dataset-fields-table");
+
+      rowContains({
+        name: "email",
+        identifiability: "Identified",
+        taxonomyEntities: ["user.email"],
+      });
+      // A row with multiple classifier suggestions.
+      rowContains({
+        name: "device",
+        identifiability: "Pseudonymized",
+        taxonomyEntities: ["user.device", "user.contact.phone_number"],
+      });
+      // The classifier thinks this is an address, but it's been overwritten.
+      rowContains({
+        name: "state",
+        identifiability: "Unlinked Pseudonymized",
+        taxonomyEntities: ["system.operations"],
+      });
     });
   });
 });
