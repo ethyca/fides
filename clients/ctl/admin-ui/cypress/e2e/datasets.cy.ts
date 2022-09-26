@@ -9,6 +9,12 @@ describe("Dataset", () => {
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_categories.json",
     }).as("getDataCategory");
+
+    // Ensure these tests all run with Plus features disabled.
+    cy.intercept("GET", "/api/v1/plus/health", {
+      statusCode: 400,
+      body: {},
+    }).as("getPlusHealth");
   });
 
   describe("List of datasets view", () => {
@@ -19,6 +25,9 @@ describe("Dataset", () => {
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
       cy.url().should("contain", "/dataset");
+
+      // The classifier toggle should not be available.
+      cy.get("input-classify").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
