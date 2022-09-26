@@ -4,9 +4,9 @@ from os import getenv
 from platform import system
 
 import click
+import fidesctl
 from fideslog.sdk.python.client import AnalyticsClient
 
-import fidesctl
 from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
 

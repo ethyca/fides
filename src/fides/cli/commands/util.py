@@ -3,10 +3,10 @@ import os
 from datetime import datetime, timezone
 
 import click
+import fidesctl
 import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
-import fidesctl
 from fides.cli.utils import (
     FIDESCTL_ASCII_ART,
     check_server,

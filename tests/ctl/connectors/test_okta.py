@@ -2,12 +2,12 @@
 import os
 from typing import Generator
 
+import fidesctl.ctl.connectors.okta as okta_connector
 import pytest
 from fideslang.models import System, SystemMetadata
 from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
-import fidesctl.ctl.connectors.okta as okta_connector
 from fides.ctl.connectors.models import OktaConfig
 from fides.ctl.core.config import FidesctlConfig
 

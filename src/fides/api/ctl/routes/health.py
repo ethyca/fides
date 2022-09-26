@@ -1,8 +1,8 @@
 from typing import Dict
 
+import fidesctl
 from fastapi import HTTPException, status
 
-import fidesctl
 from fides.api.ctl.database.database import get_db_health
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter

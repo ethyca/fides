@@ -2,11 +2,11 @@
 import os
 from typing import Generator
 
+import fidesctl.ctl.connectors.aws as aws_connector
 import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
-import fidesctl.ctl.connectors.aws as aws_connector
 from fides.ctl.connectors.models import AWSConfig
 from fides.ctl.core.config import FidesctlConfig
 

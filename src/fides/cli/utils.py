@@ -11,6 +11,7 @@ from platform import system
 from typing import Any, Callable, Dict, Optional, Union
 
 import click
+import fidesctl
 import requests
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
@@ -22,7 +23,6 @@ from fideslog.sdk.python.utils import (
     generate_client_id,
 )
 
-import fidesctl
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fides.ctl.core import api as _api
