@@ -365,8 +365,8 @@ def docker_compose_version_is_valid() -> bool:
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_compose_version = parsed.split("v")[-1]
     click.echo(parsed)
-    version_is_valid = docker_compose_version < required_docker_compose_version
-    if version_is_valid:
+    version_is_valid = docker_compose_version > required_docker_compose_version
+    if not version_is_valid:
         echo_red(
             f"Docker Compose version is not compatible, please update to at least version {required_docker_compose_version}!"
         )
@@ -380,8 +380,8 @@ def docker_version_is_valid() -> bool:
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("v")[-1]
     click.echo(parsed)
-    version_is_valid = docker_version < required_docker_version
-    if version_is_valid:
+    version_is_valid = docker_version > required_docker_version
+    if not version_is_valid:
         echo_red(
             f"Docker version is not compatible, please update to at least version {required_docker_version}!"
         )

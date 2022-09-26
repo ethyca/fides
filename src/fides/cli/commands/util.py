@@ -149,9 +149,11 @@ def deploy(ctx: click.Context) -> None:
     """
 
     click.echo("-" * 10)
-    docker_compose_version_is_valid()
-    docker_version_is_valid()
+    if not docker_compose_version_is_valid():
+        raise SystemExit(1)
+    if not docker_version_is_valid():
+        raise SystemExit(1)
     click.echo("-" * 10)
 
     click.echo("Starting application...")
-    run("docker compose up fides", shell=True)
+    run("docker compose -f docker-compose.deploy.yml up fides", shell=True)
