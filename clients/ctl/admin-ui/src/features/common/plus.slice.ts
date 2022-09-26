@@ -104,7 +104,6 @@ export const useHasPlus = () => {
 const emptyClassifyDatasetMap: Map<string, ClassifyDataset> = new Map();
 export const selectClassifyDatasetMap = createSelector(
   plusApi.endpoints.getAllClassifyInstances.select(),
-
   ({ data: instances }) => {
     if (!instances) {
       return emptyClassifyDatasetMap;
@@ -126,29 +125,17 @@ export const selectClassifyDatasetMap = createSelector(
  * cached getAllClassifyInstances response state, as well as the "active" dataset according
  * to the dataset feature's state.
  */
-export const selectActiveClassifyDataset = createSelector(
-  [
-    plusApi.endpoints.getAllClassifyInstances.select(),
-    selectActiveDatasetFidesKey,
-  ],
-  ({ data: instances }, fidesKey) => {
-    let classifyDataset: ClassifyDataset | undefined;
-    instances?.find((ci) =>
-      ci.datasets?.find((ds) => {
-        if (ds.fides_key === fidesKey) {
-          classifyDataset = ds;
-          return true;
-        }
-        return false;
-      })
-    );
-    return classifyDataset;
-  }
+export const selectClassifyInstanceDataset = createSelector(
+  [selectClassifyDatasetMap, selectActiveDatasetFidesKey],
+  (classifyDatasetMap, fidesKey) =>
+    classifyDatasetMap && fidesKey
+      ? classifyDatasetMap.get(fidesKey)
+      : undefined
 );
 
 const emptyCollectionMap: Map<string, ClassifyCollection> = new Map();
 export const selectClassifyInstanceCollectionMap = createSelector(
-  selectActiveClassifyDataset,
+  selectClassifyInstanceDataset,
   (classifyInstance) =>
     classifyInstance?.collections
       ? new Map(classifyInstance.collections.map((c) => [c.name, c]))

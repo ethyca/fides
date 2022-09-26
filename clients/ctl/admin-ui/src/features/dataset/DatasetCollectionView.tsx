@@ -1,4 +1,4 @@
-import { Box, Heading, Select, Spinner } from "@fidesui/react";
+import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -17,6 +17,7 @@ import {
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
+import DatasetHeading from "./DatasetHeading";
 import EditCollectionDrawer from "./EditCollectionDrawer";
 import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
@@ -91,9 +92,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
 
   return (
     <Box>
-      <Heading mb={6} fontSize="2xl" fontWeight="semibold">
-        Dataset
-      </Heading>
+      <DatasetHeading />
 
       <Box mb={4} display="flex" justifyContent="space-between">
         <Select
