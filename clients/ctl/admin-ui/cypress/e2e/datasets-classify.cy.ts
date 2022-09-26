@@ -1,3 +1,5 @@
+import { stubPlusHealth } from "../support/stubs";
+
 /**
  * This test suite is a parallel of datasets.cy.ts for testing Dataset features when the user has
  * access to the  Fidescls API. This suite should cover the behavior that is different when a
@@ -5,13 +7,7 @@
  */
 describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/plus/health", {
-      statusCode: 200,
-      body: {
-        status: "healthy",
-        core_fidesctl_version: "1.8",
-      },
-    }).as("getPlusHealth");
+    stubPlusHealth();
   });
 
   describe("Creating datasets", () => {

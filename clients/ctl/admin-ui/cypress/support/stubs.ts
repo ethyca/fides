@@ -32,3 +32,13 @@ export const stubSystemCrud = () => {
     }).as("deleteSystem");
   });
 };
+
+export const stubPlusHealth = () => {
+  cy.intercept("GET", "/api/v1/plus/health", {
+    statusCode: 200,
+    body: {
+      status: "healthy",
+      core_fidesctl_version: "1.8",
+    },
+  }).as("getPlusHealth");
+};
