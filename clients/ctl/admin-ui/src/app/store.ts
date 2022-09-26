@@ -26,7 +26,7 @@ import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
-const makeStore = () => {
+export const makeStore = () => {
   const store = configureStore({
     reducer: {
       configWizard: configWizardReducer,
