@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
-from fidesops.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 
 
 class AccessManualWebhook(Base):

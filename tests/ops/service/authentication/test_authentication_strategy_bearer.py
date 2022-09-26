@@ -1,9 +1,9 @@
 import pytest
 from requests import PreparedRequest, Request
 
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 

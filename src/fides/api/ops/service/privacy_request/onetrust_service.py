@@ -9,33 +9,33 @@ from fideslib.exceptions import AuthenticationError
 from requests import Response
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.privacy_request import Identity
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
-from fidesops.ops.schemas.third_party.onetrust import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.privacy_request import Identity
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fides.api.ops.schemas.third_party.onetrust import (
     OneTrustGetRequestsResponse,
     OneTrustGetSubtasksResponse,
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.ops.service.outbound_urn_registry import (
+from fides.api.ops.service.outbound_urn_registry import (
     ONETRUST_GET_ALL_REQUESTS,
     ONETRUST_GET_SUBTASKS_BY_REF_ID,
     ONETRUST_PUT_SUBTASK_STATUS,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.ops.util.storage_authenticator import get_onetrust_access_token
+from fides.api.ops.util.storage_authenticator import get_onetrust_access_token
 
 logger = logging.getLogger(__name__)
 

@@ -7,18 +7,18 @@ from typing import Any, Dict, List, Optional, TypeVar
 
 import pydash
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import ScalarField
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.service.connectors.query_config import QueryConfig
-from fidesops.ops.util import saas_util
-from fidesops.ops.util.collection_util import Row, merge_dicts
-from fidesops.ops.util.saas_util import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import ScalarField
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.service.connectors.query_config import QueryConfig
+from fides.api.ops.util import saas_util
+from fides.api.ops.util.collection_util import Row, merge_dicts
+from fides.api.ops.util.saas_util import (
     ALL_OBJECT_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
     MASKED_OBJECT_FIELDS,

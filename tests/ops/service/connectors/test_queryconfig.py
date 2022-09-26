@@ -2,28 +2,28 @@ from typing import Any, Dict, Set
 
 import pytest
 
-from fidesops.ops.graph.config import (
+from fides.api.ops.graph.config import (
     CollectionAddress,
     FieldAddress,
     FieldPath,
     ObjectField,
     ScalarField,
 )
-from fidesops.ops.graph.graph import DatasetGraph, Edge
-from fidesops.ops.graph.traversal import Traversal, TraversalNode
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.dataset import FidesopsDataset
-from fidesops.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.ops.service.connectors.query_config import (
+from fides.api.ops.graph.graph import DatasetGraph, Edge
+from fides.api.ops.graph.traversal import Traversal, TraversalNode
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.ops.service.connectors.query_config import (
     MongoQueryConfig,
     SQLQueryConfig,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets

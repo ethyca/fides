@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from pydantic import validator
 
-from fidesops.ops.models.policy import DrpAction
-from fidesops.ops.schemas.base_class import BaseSchema
+from fides.api.ops.models.policy import DrpAction
+from fides.api.ops.schemas.base_class import BaseSchema
 
 DRP_VERSION = "0.5"
 

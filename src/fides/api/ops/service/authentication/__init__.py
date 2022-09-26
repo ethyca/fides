@@ -1,4 +1,4 @@
-from fidesops.ops.service.authentication import (
+from fides.api.ops.service.authentication import (
     authentication_strategy_api_key,
     authentication_strategy_basic,
     authentication_strategy_bearer,

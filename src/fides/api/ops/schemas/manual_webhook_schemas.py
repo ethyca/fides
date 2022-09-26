@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, List, Optional, Set
 from fideslib.utils.text import to_snake_case
 from pydantic import ConstrainedStr, conlist, validator
 
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
 

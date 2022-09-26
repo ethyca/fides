@@ -3,13 +3,13 @@ from typing import Any, Dict, Optional, Union
 import pydash
 from requests import Response
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 
 class OffsetPaginationStrategy(PaginationStrategy):

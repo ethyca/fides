@@ -9,14 +9,14 @@ Usage:
 import json
 import sys
 
-from fidesops.main import app
+from fides.api.main import app
 
 if __name__ == "__main__":
     outfile_path = "openapi.json"
 
     if len(sys.argv) > 1:
         outfile_path = sys.argv[1]
-    print(f"Generating OpenAPI JSON from fidesops and writing to '{outfile_path}'...")
+    print(f"Generating OpenAPI JSON from fides.api and writing to '{outfile_path}'...")
     with open(outfile_path, "w") as outfile:
         json.dump(app.openapi(), outfile, indent=2)
-        print(f"Exported OpenAPI JSON from fidesops to '{outfile_path}'")
+        print(f"Exported OpenAPI JSON from fides.api to '{outfile_path}'")

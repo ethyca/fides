@@ -1,6 +1,6 @@
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
 
 
 class CustomTestException(BaseException):

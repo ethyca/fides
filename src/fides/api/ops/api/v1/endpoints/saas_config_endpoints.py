@@ -14,16 +14,16 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
+from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     AUTHORIZE,
     CONNECTION_TYPES,
     SAAS_CONFIG,
@@ -31,26 +31,26 @@ from fidesops.ops.api.v1.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateResponse,
     SaasConnectionTemplateValues,
 )
-from fidesops.ops.schemas.saas.saas_config import (
+from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfig,
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fidesops.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
@@ -58,8 +58,8 @@ from fidesops.ops.service.connectors.saas.connector_registry_service import (
     registry_file,
     upsert_dataset_config_from_template,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

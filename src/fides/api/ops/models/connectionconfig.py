@@ -16,12 +16,12 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 if TYPE_CHECKING:
-    from fidesops.ops.models.manual_webhook import AccessManualWebhook
+    from fides.api.ops.models.manual_webhook import AccessManualWebhook
 
 
 class ConnectionTestStatus(enum.Enum):

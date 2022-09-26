@@ -6,9 +6,9 @@ import requests
 from boto3 import Session
 from requests import Response
 
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
-from fidesops.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
+from fides.api.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 
 logger = logging.getLogger(__name__)
 

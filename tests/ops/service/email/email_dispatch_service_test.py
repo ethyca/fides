@@ -6,12 +6,12 @@ import requests.exceptions
 import requests_mock
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import EmailDispatchException
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     EmailForActionType,
     EmailServiceDetails,
@@ -19,7 +19,7 @@ from fidesops.ops.schemas.email.email import (
     FidesopsEmail,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.service.email.email_dispatch_service import dispatch_email
 
 
 @mock.patch("fidesops.ops.service.email.email_dispatch_service._mailgun_dispatcher")

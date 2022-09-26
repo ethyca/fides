@@ -3,19 +3,19 @@ from uuid import uuid4
 
 import pytest
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.service.saas_request.saas_request_override_factory import (
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
     register,
 )
-from fidesops.ops.util.collection_util import Row
+from fides.api.ops.util.collection_util import Row
 
 
 def uuid():

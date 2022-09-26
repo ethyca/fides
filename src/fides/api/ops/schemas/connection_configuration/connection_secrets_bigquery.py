@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from pydantic.main import BaseModel
 
-from fidesops.ops.schemas.base_class import NoValidationSchema
-from fidesops.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 

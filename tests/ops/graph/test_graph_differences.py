@@ -2,25 +2,25 @@ from typing import Any, Dict
 
 import pytest
 
-from fidesops.ops.graph.analytics_events import prepare_rerun_graph_analytics_event
-from fidesops.ops.graph.config import (
+from fides.api.ops.graph.analytics_events import prepare_rerun_graph_analytics_event
+from fides.api.ops.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     FieldAddress,
 )
-from fidesops.ops.graph.graph import Edge
-from fidesops.ops.graph.graph_differences import (
+from fides.api.ops.graph.graph import Edge
+from fides.api.ops.graph.graph_differences import (
     GraphDiff,
     GraphDiffSummary,
     _find_graph_differences,
     find_graph_differences_summary,
     format_graph_for_caching,
 )
-from fidesops.ops.graph.traversal import TraversalNode, artificial_traversal_node
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.policy import ActionType, Policy
-from fidesops.ops.task.graph_task import EMPTY_REQUEST, GraphTask
-from fidesops.ops.task.task_resources import TaskResources
+from fides.api.ops.graph.traversal import TraversalNode, artificial_traversal_node
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.policy import ActionType, Policy
+from fides.api.ops.task.graph_task import EMPTY_REQUEST, GraphTask
+from fides.api.ops.task.task_resources import TaskResources
 
 from ..graph.graph_test_util import generate_node
 

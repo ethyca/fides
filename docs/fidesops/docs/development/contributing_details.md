@@ -48,7 +48,7 @@ When models are added to the project, we must then add them to the database in a
 
 Once you've added database tables via project models, you're ready to read, write and update them via Python code. Some examples of common use cases here are listed below. Official documentation is here: <https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query>.
 
-- Import our application's database session: `from fidesops.ops.db.session import get_db_session`
+- Import our application's database session: `from fides.api.ops.db.session import get_db_session`
 - Instantiate the database interaction object:
 
 ```

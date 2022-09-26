@@ -3,22 +3,22 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 from fideslog.sdk.python.event import AnalyticsEvent
 
-from fidesops.ops.analytics import in_docker_container, send_analytics_event
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph_differences import (
+from fides.api.ops.analytics import in_docker_container, send_analytics_event
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph_differences import (
     GraphDiffSummary,
     GraphRepr,
     find_graph_differences_summary,
     format_graph_for_caching,
 )
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.task.task_resources import TaskResources
-from fidesops.ops.util.collection_util import Row
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.task.task_resources import TaskResources
+from fides.api.ops.util.collection_util import Row
 
 if TYPE_CHECKING:
-    from fidesops.ops.task.graph_task import GraphTask
+    from fides.api.ops.task.graph_task import GraphTask
 
 
 async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:

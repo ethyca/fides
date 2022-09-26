@@ -1,5 +1,5 @@
-from fidesops.ops.schemas.base_class import NoValidationSchema
-from fidesops.ops.schemas.connection_configuration.connection_secrets_postgres import (
+from fides.api.ops.schemas.base_class import NoValidationSchema
+from fides.api.ops.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema,
 )
 

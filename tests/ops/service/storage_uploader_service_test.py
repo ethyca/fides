@@ -11,11 +11,11 @@ import pandas as pd
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.core.config import config
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.core.config import config
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,
@@ -23,13 +23,13 @@ from fidesops.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fidesops.ops.service.storage.storage_uploader_service import get_extension, upload
-from fidesops.ops.tasks.storage import (
+from fides.api.ops.service.storage.storage_uploader_service import get_extension, upload
+from fides.api.ops.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
     write_to_in_memory_buffer,
 )
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )

@@ -24,13 +24,13 @@ from sqlalchemy.sql.elements import TextClause
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
-from fidesops.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.models.policy import ActionType, DrpAction
-from fidesops.ops.schemas.storage.storage import StorageType
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.models.policy import ActionType, DrpAction
+from fides.api.ops.schemas.storage.storage import StorageType
+from fides.api.ops.util.data_category import DataCategory
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

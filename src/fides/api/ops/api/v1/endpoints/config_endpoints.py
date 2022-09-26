@@ -3,11 +3,11 @@ from typing import Any, Dict
 
 from fastapi.params import Security
 
-from fidesops.ops.api.v1 import scope_registry as scopes
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.core.config import censored_config
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.api.v1 import scope_registry as scopes
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.core.config import censored_config
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 

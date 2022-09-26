@@ -1,9 +1,9 @@
-from fidesops.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
 

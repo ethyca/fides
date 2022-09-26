@@ -7,13 +7,13 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.service.connectors import TimescaleConnector
+from fides.api.ops.service.connectors import TimescaleConnector
 
 from .application_fixtures import integration_secrets
 

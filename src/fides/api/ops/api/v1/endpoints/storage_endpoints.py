@@ -19,43 +19,45 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import StorageUploadError
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig, get_schema_for_secrets
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.connection_configuration.connection_secrets import (
+from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig, get_schema_for_secrets
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.schemas.storage.data_upload_location_response import DataUpload
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
+from fides.api.ops.schemas.storage.storage import (
     BulkPutStorageConfigResponse,
     StorageDestination,
     StorageDestinationResponse,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fidesops.ops.service.storage.storage_authenticator_service import secrets_are_valid
-from fidesops.ops.service.storage.storage_uploader_service import upload
-from fidesops.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.service.storage.storage_authenticator_service import (
+    secrets_are_valid,
+)
+from fides.api.ops.service.storage.storage_uploader_service import upload
+from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

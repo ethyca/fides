@@ -1,4 +1,4 @@
-from fidesops.ops.schemas.base_class import FidesopsSchema
+from fides.api.ops.schemas.base_class import FidesopsSchema
 
 
 class ClientCreatedResponse(FidesopsSchema):

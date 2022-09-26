@@ -1,6 +1,6 @@
 import pytest
 
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
 
 
 class TestManualWebhook:

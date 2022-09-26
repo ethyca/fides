@@ -3,11 +3,11 @@ from typing import Any, Dict, Optional
 import pydash
 from requests import Response
 
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.schemas.saas.strategy_configuration import (
     CursorPaginationConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 
 
 class CursorPaginationStrategy(PaginationStrategy):

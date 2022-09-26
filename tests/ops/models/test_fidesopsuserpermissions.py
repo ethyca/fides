@@ -3,7 +3,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 
-from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
+from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ
 
 
 class TestFidesUserPermissions:

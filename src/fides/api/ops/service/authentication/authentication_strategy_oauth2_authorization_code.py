@@ -6,17 +6,17 @@ from uuid import uuid4
 from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.core.config import config
-from fidesops.ops.models.authentication_request import AuthenticationRequest
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.core.config import config
+from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_base import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_base import (
     OAuth2AuthenticationStrategyBase,
 )
-from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

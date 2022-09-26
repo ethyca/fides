@@ -3,12 +3,12 @@ import logging
 from fideslang.validation import FidesKey
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     EmailConfigAlreadyExistsException,
     EmailConfigNotFoundException,
 )
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.schemas.email.email import EmailConfigRequest, EmailConfigResponse
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.schemas.email.email import EmailConfigRequest, EmailConfigResponse
 
 logger = logging.getLogger(__name__)
 

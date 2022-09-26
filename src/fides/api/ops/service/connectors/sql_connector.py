@@ -16,29 +16,29 @@ from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
-from fidesops.ops.common_exceptions import ConnectionException
-from fidesops.ops.graph.traversal import Row, TraversalNode
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fidesops.ops.models.policy import Policy
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.connection_configuration import (
+from fides.api.ops.common_exceptions import ConnectionException
+from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
     PostgreSQLSchema,
     RedshiftSchema,
     SnowflakeSchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_bigquery import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_mariadb import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
-from fidesops.ops.schemas.connection_configuration.connection_secrets_mysql import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.query_config import (
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.query_config import (
     BigQueryQueryConfig,
     MicrosoftSQLServerQueryConfig,
     RedshiftQueryConfig,

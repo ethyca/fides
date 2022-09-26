@@ -4,11 +4,11 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import EmailDispatchException
-from fidesops.ops.email_templates import get_email_template
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import CheckpointActionRequired
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.email_templates import get_email_template
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.privacy_request import CheckpointActionRequired
+from fides.api.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
     EmailForActionType,
@@ -20,8 +20,8 @@ from fidesops.ops.schemas.email.email import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.tasks import DatabaseTask, celery_app
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
-from fidesops.ops.common_exceptions import FunctionalityNotConfigured
+from fides.api.ops.common_exceptions import FunctionalityNotConfigured
 
 
 class ExceptionHandlers:

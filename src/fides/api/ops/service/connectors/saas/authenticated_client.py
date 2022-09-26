@@ -5,16 +5,16 @@ from typing import TYPE_CHECKING, Optional
 
 from requests import PreparedRequest, Request, Response, Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.ops.core.config import config
+from fides.api.ops.core.config import config
 
 if TYPE_CHECKING:
-    from fidesops.ops.models.connectionconfig import ConnectionConfig
-    from fidesops.ops.schemas.saas.saas_config import ClientConfig
-    from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+    from fides.api.ops.models.connectionconfig import ConnectionConfig
+    from fides.api.ops.schemas.saas.saas_config import ClientConfig
+    from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fidesops.ops.service.authentication.authentication_strategy import (  # pylint: disable=R0401
+        from fides.api.ops.service.authentication.authentication_strategy import (  # pylint: disable=R0401
             AuthenticationStrategy,
         )
 

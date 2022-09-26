@@ -4,30 +4,30 @@ from typing import Any, Dict, List, Optional
 from fideslib.models.audit_log import AuditLog, AuditLogAction
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     EmailDispatchException,
     PrivacyRequestErasureEmailSendRequired,
 )
-from fidesops.ops.graph.config import CollectionAddress, FieldPath
-from fidesops.ops.graph.traversal import TraversalNode
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.graph.config import CollectionAddress, FieldPath
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import CurrentStep, Policy, Rule
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import CurrentStep, Policy, Rule
+from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ManualAction,
     PrivacyRequest,
 )
-from fidesops.ops.schemas.connection_configuration import EmailSchema
-from fidesops.ops.schemas.email.email import EmailActionType
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.query_config import ManualQueryConfig
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
-from fidesops.ops.util.collection_util import Row, append
+from fides.api.ops.schemas.connection_configuration import EmailSchema
+from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.query_config import ManualQueryConfig
+from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.util.collection_util import Row, append
 
 logger = logging.getLogger(__name__)
 

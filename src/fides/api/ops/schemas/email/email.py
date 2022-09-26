@@ -3,9 +3,9 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
-from fidesops.ops.models.privacy_request import CheckpointActionRequired
-from fidesops.ops.schemas import Msg
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.models.privacy_request import CheckpointActionRequired
+from fides.api.ops.schemas import Msg
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class EmailServiceType(Enum):

@@ -12,16 +12,16 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.ops.common_exceptions import EmailDispatchException
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.schemas.email.email import (
     SUPPORTED_EMAIL_SERVICE_SECRETS,
     EmailServiceSecretsMailgun,
     EmailServiceType,
 )
-from fidesops.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

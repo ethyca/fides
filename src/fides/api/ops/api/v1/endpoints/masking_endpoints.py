@@ -4,17 +4,17 @@ from typing import List
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fidesops.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
-from fidesops.ops.common_exceptions import NoSuchStrategyException, ValidationError
-from fidesops.ops.schemas.masking.masking_api import (
+from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.api.ops.common_exceptions import NoSuchStrategyException, ValidationError
+from fides.api.ops.schemas.masking.masking_api import (
     MaskingAPIRequest,
     MaskingAPIResponse,
 )
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.util.api_router import APIRouter
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.util.api_router import APIRouter
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 

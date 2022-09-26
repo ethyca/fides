@@ -3,14 +3,14 @@ import json
 import pytest
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.scope_registry import CLIENT_CREATE
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.scope_registry import CLIENT_CREATE
+from fides.api.ops.api.v1.urn_registry import (
     CLIENT,
     HEALTH,
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core import config
+from fides.api.ops.core import config
 
 
 @pytest.fixture

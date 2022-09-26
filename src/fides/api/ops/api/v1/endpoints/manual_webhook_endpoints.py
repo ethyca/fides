@@ -14,27 +14,27 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
+from fides.api.ops.api.v1.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     ACCESS_MANUAL_WEBHOOK,
     ACCESS_MANUAL_WEBHOOKS,
     V1_URL_PREFIX,
 )
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.schemas.manual_webhook_schemas import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.schemas.manual_webhook_schemas import (
     AccessManualWebhookResponse,
     AccessManualWebhooks,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)

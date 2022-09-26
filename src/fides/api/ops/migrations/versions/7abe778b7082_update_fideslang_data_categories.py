@@ -12,8 +12,8 @@ import logging
 from fideslib.db.session import get_db_session
 from sqlalchemy.exc import ProgrammingError
 
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base import DatasetConfig
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base import DatasetConfig
 
 logger = logging.getLogger(__name__)
 

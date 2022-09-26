@@ -4,14 +4,14 @@ from typing import Any
 from botocore.exceptions import ClientError
 from requests import RequestException
 
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     S3AuthMethod,
     StorageSecretsOnetrust,
     StorageSecretsS3,
     StorageType,
 )
-from fidesops.ops.util.storage_authenticator import (
+from fides.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )

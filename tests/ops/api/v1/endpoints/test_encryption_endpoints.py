@@ -6,15 +6,18 @@ import pytest
 from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.scope_registry import (
+    ENCRYPTION_EXEC,
+    STORAGE_CREATE_OR_UPDATE,
+)
+from fides.api.ops.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.ops.core.config import config
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )

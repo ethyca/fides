@@ -1,4 +1,4 @@
-from fidesops.ops.schemas.base_class import BaseSchema, NoValidationSchema
+from fides.api.ops.schemas.base_class import BaseSchema, NoValidationSchema
 
 
 class ManualWebhookSchema(BaseSchema):

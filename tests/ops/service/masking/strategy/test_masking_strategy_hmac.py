@@ -1,6 +1,6 @@
-from fidesops.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
 

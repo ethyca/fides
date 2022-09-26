@@ -4,11 +4,11 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any, List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.strategy import Strategy
+from fides.api.ops.service.strategy import Strategy
 
 
 class MaskingStrategy(Strategy):

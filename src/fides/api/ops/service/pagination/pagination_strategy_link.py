@@ -6,13 +6,13 @@ from urllib.parse import urlsplit
 import pydash
 from requests import Response
 
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.schemas.saas.strategy_configuration import (
     LinkPaginationConfiguration,
     LinkSource,
 )
-from fidesops.ops.service.pagination.pagination_strategy import PaginationStrategy
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

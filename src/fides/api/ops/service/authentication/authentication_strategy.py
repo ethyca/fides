@@ -2,8 +2,8 @@ from abc import abstractmethod
 
 from requests import PreparedRequest
 
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.service.strategy import Strategy
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.service.strategy import Strategy
 
 
 class AuthenticationStrategy(Strategy):

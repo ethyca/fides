@@ -3,16 +3,16 @@ from typing import Any, Dict, List, Optional
 from fideslang.models import Dataset, DatasetCollection, DatasetFieldBase
 from pydantic import BaseModel, ConstrainedStr, Field, validator
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     InvalidDataLengthValidationError,
     InvalidDataTypeValidationError,
 )
-from fidesops.ops.graph.config import EdgeDirection
-from fidesops.ops.graph.data_type import is_valid_data_type, parse_data_type_string
-from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.data_category import _validate_data_category
+from fides.api.ops.graph.config import EdgeDirection
+from fides.api.ops.graph.data_type import is_valid_data_type, parse_data_type_string
+from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.data_category import _validate_data_category
 
 
 def _valid_data_categories(

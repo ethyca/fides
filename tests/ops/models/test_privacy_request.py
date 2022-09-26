@@ -7,14 +7,14 @@ import requests_mock
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.policy import CurrentStep, Policy
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.policy import CurrentStep, Policy
+from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     Consent,
     ConsentRequest,
@@ -23,10 +23,10 @@ from fidesops.ops.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service.connectors.manual_connector import ManualAction
-from fidesops.ops.util.cache import FidesopsRedis, get_identity_cache_key
-from fidesops.ops.util.constants import API_DATE_FORMAT
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors.manual_connector import ManualAction
+from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.ops.util.constants import API_DATE_FORMAT
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 

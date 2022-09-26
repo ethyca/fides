@@ -11,15 +11,15 @@ from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import AccessLevel
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.policy import CurrentStep, PolicyPostWebhook
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import AccessLevel
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.ops.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
     ExecutionLog,
@@ -27,32 +27,32 @@ from fidesops.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
     EmailForActionType,
 )
-from fidesops.ops.schemas.external_https import SecondPartyResponseFormat
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.external_https import SecondPartyResponseFormat
+from fides.api.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.policy import Rule
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.service.connectors.saas_connector import SaaSConnector
-from fidesops.ops.service.connectors.sql_connector import (
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.ops.schemas.policy import Rule
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

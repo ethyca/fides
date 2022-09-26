@@ -3,8 +3,8 @@ import logging
 
 import click
 
-from fidesops.main import start_webserver
-from fidesops.ops.tasks import start_worker
+from fides.api.main import start_webserver
+from fides.api.ops.tasks import start_worker
 
 logger = logging.getLogger(__name__)
 

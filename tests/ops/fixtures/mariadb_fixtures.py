@@ -7,14 +7,14 @@ import sqlalchemy
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.service.connectors import MariaDBConnector
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.service.connectors import MariaDBConnector
 
 from .application_fixtures import integration_secrets
 

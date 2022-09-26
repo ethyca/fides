@@ -3,17 +3,17 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import ConnectorNotFoundException
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.policy import ActionType, Policy
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.common_exceptions import ConnectorNotFoundException
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.policy import ActionType, Policy
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.connectors import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     EmailConnector,
@@ -28,8 +28,8 @@ from fidesops.ops.service.connectors import (
     SnowflakeConnector,
     TimescaleConnector,
 )
-from fidesops.ops.util.cache import get_cache
-from fidesops.ops.util.collection_util import Row
+from fides.api.ops.util.cache import get_cache
+from fides.api.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 

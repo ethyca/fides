@@ -1,10 +1,10 @@
 from typing import List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import NullMaskingConfiguration
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_configuration import NullMaskingConfiguration
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 class NullMaskingStrategy(MaskingStrategy):

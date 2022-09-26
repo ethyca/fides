@@ -2,12 +2,12 @@ import dask
 import pytest
 from bson import ObjectId
 
-from fidesops.ops.graph.config import CollectionAddress, FieldPath
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.graph.traversal import Traversal
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.task.graph_task import (
+from fides.api.ops.graph.config import CollectionAddress, FieldPath
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.task.graph_task import (
     EMPTY_REQUEST,
     TaskResources,
     build_affected_field_logs,

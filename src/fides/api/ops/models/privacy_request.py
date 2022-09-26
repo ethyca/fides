@@ -27,18 +27,18 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
+from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph_differences import GraphRepr
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.policy import (
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
     Policy,
@@ -46,17 +46,17 @@ from fidesops.ops.models.policy import (
     WebhookDirection,
     WebhookTypes,
 )
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fidesops.ops.schemas.external_https import (
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
+from fides.api.ops.schemas.external_https import (
     SecondPartyRequestFormat,
     SecondPartyResponseFormat,
     WebhookJWE,
 )
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.tasks import celery_app
-from fidesops.ops.util.cache import (
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.tasks import celery_app
+from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
@@ -66,8 +66,8 @@ from fidesops.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
-from fidesops.ops.util.collection_util import Row
-from fidesops.ops.util.constants import API_DATE_FORMAT
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.constants import API_DATE_FORMAT
 
 logger = logging.getLogger(__name__)
 
@@ -617,7 +617,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
         # temp fix for circular dependency
-        from fidesops.ops.service.connectors import HTTPSConnector, get_connector
+        from fides.api.ops.service.connectors import HTTPSConnector, get_connector
 
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(

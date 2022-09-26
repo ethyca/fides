@@ -4,13 +4,13 @@ from typing import Optional
 import pytest
 from requests import Response
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.schemas.saas.saas_config import SaaSRequest
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.schemas.saas.strategy_configuration import (
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.schemas.saas.strategy_configuration import (
     OffsetPaginationConfiguration,
 )
-from fidesops.ops.service.pagination.pagination_strategy_offset import (
+from fides.api.ops.service.pagination.pagination_strategy_offset import (
     OffsetPaginationStrategy,
 )
 

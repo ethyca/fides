@@ -4,13 +4,13 @@ from typing import Optional
 
 import pytest
 
-from fidesops.ops.api.v1.endpoints.connection_endpoints import validate_secrets
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_config import (
+from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fidesops.ops.service.connectors.saas.connector_registry_service import (
+from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,

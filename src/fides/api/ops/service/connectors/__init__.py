@@ -1,16 +1,16 @@
 from typing import Any, Dict
 
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.service.connectors.base_connector import BaseConnector
-from fidesops.ops.service.connectors.email_connector import EmailConnector
-from fidesops.ops.service.connectors.http_connector import HTTPSConnector
-from fidesops.ops.service.connectors.manual_connector import ManualConnector
-from fidesops.ops.service.connectors.manual_webhook_connector import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.service.connectors.base_connector import BaseConnector
+from fides.api.ops.service.connectors.email_connector import EmailConnector
+from fides.api.ops.service.connectors.http_connector import HTTPSConnector
+from fides.api.ops.service.connectors.manual_connector import ManualConnector
+from fides.api.ops.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector,
 )
-from fidesops.ops.service.connectors.mongodb_connector import MongoDBConnector
-from fidesops.ops.service.connectors.saas_connector import SaaSConnector
-from fidesops.ops.service.connectors.sql_connector import (
+from fides.api.ops.service.connectors.mongodb_connector import MongoDBConnector
+from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.service.connectors.sql_connector import (
     BigQueryConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -19,7 +19,7 @@ from fidesops.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
-from fidesops.ops.service.connectors.timescale_connector import TimescaleConnector
+from fides.api.ops.service.connectors.timescale_connector import TimescaleConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLConnector,

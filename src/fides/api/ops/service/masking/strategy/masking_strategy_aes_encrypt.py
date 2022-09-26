@@ -2,26 +2,28 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
     HmacMaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_secrets import (
+from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import encrypt
-from fidesops.ops.util.encryption.hmac_encryption_scheme import (
+from fides.api.ops.service.masking.strategy.format_preservation import (
+    FormatPreservation,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import encrypt
+from fides.api.ops.util.encryption.hmac_encryption_scheme import (
     hmac_encrypt_return_bytes,
 )
-from fidesops.ops.util.encryption.secrets_util import SecretsUtil
+from fides.api.ops.util.encryption.secrets_util import SecretsUtil
 
 
 class AesEncryptionMaskingStrategy(MaskingStrategy):

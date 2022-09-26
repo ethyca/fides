@@ -30,22 +30,22 @@ from starlette.status import (
     HTTP_424_FAILED_DEPENDENCY,
 )
 
-from fidesops.ops import common_exceptions
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry as scopes
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
-from fidesops.ops.api.v1.endpoints.manual_webhook_endpoints import (
+from fides.api.ops import common_exceptions
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import scope_registry as scopes
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
+from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_DENY,
@@ -57,7 +57,7 @@ from fidesops.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     REQUEST_PREVIEW,
 )
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityNotFoundException,
@@ -67,35 +67,40 @@ from fidesops.ops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph, Node
-from fidesops.ops.graph.traversal import Traversal
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPreWebhook
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph, Node
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import (
+    ActionType,
+    CurrentStep,
+    Policy,
+    PolicyPreWebhook,
+)
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
-from fidesops.ops.schemas.dataset import (
+from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     FidesopsEmail,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
-from fidesops.ops.schemas.privacy_request import (
+from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
@@ -109,27 +114,27 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import (
+from fides.api.ops.service.email.email_dispatch_service import (
     dispatch_email,
     dispatch_email_task,
 )
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
     queue_privacy_request,
 )
-from fidesops.ops.service.privacy_request.request_service import (
+from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fidesops.ops.task.graph_task import EMPTY_REQUEST, collect_queries
-from fidesops.ops.task.task_resources import TaskResources
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.cache import FidesopsRedis
-from fidesops.ops.util.collection_util import Row
-from fidesops.ops.util.enums import ColumnSort
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
+from fides.api.ops.task.task_resources import TaskResources
+from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.cache import FidesopsRedis
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.enums import ColumnSort
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)

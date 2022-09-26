@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any, Dict, List, Union
 
-from fidesops.ops.service.strategy import Strategy
+from fides.api.ops.service.strategy import Strategy
 
 
 class PostProcessorStrategy(Strategy):

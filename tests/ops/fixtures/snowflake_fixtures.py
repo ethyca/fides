@@ -5,13 +5,13 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.schemas.connection_configuration.connection_secrets_snowflake import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeSchema,
 )
 

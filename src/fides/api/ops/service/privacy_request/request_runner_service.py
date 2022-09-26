@@ -11,24 +11,24 @@ from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
-from fidesops.ops import common_exceptions
-from fidesops.ops.common_exceptions import (
+from fides.api.ops import common_exceptions
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     EmailDispatchException,
     IdentityNotFoundException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.analytics_events import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.policy import (
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
     Policy,
@@ -36,35 +36,37 @@ from fidesops.ops.models.policy import (
     PolicyPreWebhook,
     WebhookTypes,
 )
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.schemas.email.email import (
     AccessRequestCompleteBodyParams,
     EmailActionType,
 )
-from fidesops.ops.service.connectors.email_connector import email_connector_erasure_send
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
-from fidesops.ops.service.storage.storage_uploader_service import upload
-from fidesops.ops.task.filter_results import filter_data_categories
-from fidesops.ops.task.graph_task import (
+from fides.api.ops.service.connectors.email_connector import (
+    email_connector_erasure_send,
+)
+from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.service.storage.storage_uploader_service import upload
+from fides.api.ops.task.filter_results import filter_data_categories
+from fides.api.ops.task.graph_task import (
     get_cached_data_for_erasures,
     run_access_request,
     run_erasure,
 )
-from fidesops.ops.tasks import DatabaseTask, celery_app
-from fidesops.ops.tasks.scheduled.scheduler import scheduler
-from fidesops.ops.util.cache import (
+from fides.api.ops.tasks import DatabaseTask, celery_app
+from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
 )
-from fidesops.ops.util.collection_util import Row
-from fidesops.ops.util.logger import Pii, _log_exception, _log_warning
-from fidesops.ops.util.wrappers import sync
+from fides.api.ops.util.collection_util import Row
+from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
+from fides.api.ops.util.wrappers import sync
 
 logger = get_task_logger(__name__)
 

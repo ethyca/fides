@@ -13,24 +13,24 @@ from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
-from fidesops.ops.api import deps
-from fidesops.ops.api.v1 import scope_registry
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.v1 import scope_registry
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
     PolicyValidationError,
     RuleTargetValidationError,
     RuleValidationError,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas import policy as schemas
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas import policy as schemas
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Policy"], prefix=urls.V1_URL_PREFIX)
 

@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, root_validator
 
-from fidesops.ops.models.connectionconfig import ConnectionTestStatus
-from fidesops.ops.schemas import Msg
+from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.schemas import Msg
 
 
 class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):

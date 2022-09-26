@@ -1,11 +1,11 @@
 from unittest import mock
 from unittest.mock import Mock
 
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
 

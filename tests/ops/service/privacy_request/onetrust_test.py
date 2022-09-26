@@ -6,25 +6,25 @@ from fideslib.exceptions import AuthenticationError
 from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import StorageDetails, StorageSecrets
-from fidesops.ops.schemas.third_party.onetrust import (
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
+from fides.api.ops.schemas.third_party.onetrust import (
     OneTrustRequest,
     OneTrustSubtask,
     OneTrustSubtaskStatus,
 )
-from fidesops.ops.service.privacy_request.onetrust_service import (
+from fides.api.ops.service.privacy_request.onetrust_service import (
     FIDES_TASK,
     ONETRUST_POLICY_KEY,
     OneTrustService,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 
 @mock.patch(

@@ -11,10 +11,10 @@ import yaml
 from fideslib.core.config import load_file
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
-from fidesops.ops.common_exceptions import FidesopsException
-from fidesops.ops.graph.config import Collection, CollectionAddress, Dataset, Field
-from fidesops.ops.schemas.saas.saas_config import SaaSRequest
-from fidesops.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
 

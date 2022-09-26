@@ -21,11 +21,11 @@ from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.endpoints.privacy_request_endpoints import (
+from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ,
@@ -34,7 +34,7 @@ from fidesops.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
@@ -49,30 +49,30 @@ from fidesops.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType, CurrentStep, Policy
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     ManualAction,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.dataset import DryRunDatasetResponse
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.schemas.dataset import DryRunDatasetResponse
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.schemas.masking.masking_secrets import SecretType
-from fidesops.ops.schemas.policy import PolicyResponse
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
-from fidesops.ops.util.cache import (
+from fides.api.ops.schemas.masking.masking_secrets import SecretType
+from fides.api.ops.schemas.policy import PolicyResponse
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
     get_masking_secret_cache_key,

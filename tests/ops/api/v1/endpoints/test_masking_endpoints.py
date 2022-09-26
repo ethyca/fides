@@ -2,28 +2,28 @@ import json
 
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
-from fidesops.ops.schemas.masking.masking_api import MaskingAPIResponse
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.api.ops.schemas.masking.masking_api import MaskingAPIResponse
+from fides.api.ops.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hash import (
+from fides.api.ops.service.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
+from fides.api.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
     RandomStringRewriteMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 

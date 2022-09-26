@@ -1,14 +1,16 @@
 from typing import List, Optional, Type
 
-from fidesops.ops.schemas.masking.masking_configuration import (
+from fides.api.ops.schemas.masking.masking_configuration import (
     StringRewriteMaskingConfiguration,
 )
-from fidesops.ops.schemas.masking.masking_strategy_description import (
+from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyConfigurationDescription,
     MaskingStrategyDescription,
 )
-from fidesops.ops.service.masking.strategy.format_preservation import FormatPreservation
-from fidesops.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.ops.service.masking.strategy.format_preservation import (
+    FormatPreservation,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 class StringRewriteMaskingStrategy(MaskingStrategy):

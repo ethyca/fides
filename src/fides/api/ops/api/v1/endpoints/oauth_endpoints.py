@@ -12,11 +12,11 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fidesops.ops.api.deps import get_db
-from fidesops.ops.api.v1.endpoints.saas_config_endpoints import (
+from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -24,7 +24,7 @@ from fidesops.ops.api.v1.scope_registry import (
     SCOPE_READ,
     SCOPE_REGISTRY,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
@@ -33,23 +33,23 @@ from fidesops.ops.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     AuthenticationFailure,
     FidesopsException,
     OAuth2TokenException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.authentication_request import AuthenticationRequest
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.client import ClientCreatedResponse
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.schemas.client import ClientCreatedResponse
+from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
+from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

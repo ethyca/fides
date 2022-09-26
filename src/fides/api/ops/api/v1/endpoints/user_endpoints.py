@@ -19,18 +19,18 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fidesops.ops.api import deps
-from fidesops.ops.api.deps import get_db
-from fidesops.ops.api.v1 import urn_registry as urls
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api import deps
+from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.scope_registry import (
     SCOPE_REGISTRY,
     USER_PASSWORD_RESET,
     USER_UPDATE,
 )
-from fidesops.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fidesops.ops.core.config import config
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.oauth_util import (
+from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.core.config import config
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.oauth_util import (
     get_current_user,
     oauth2_scheme,
     verify_oauth_client,

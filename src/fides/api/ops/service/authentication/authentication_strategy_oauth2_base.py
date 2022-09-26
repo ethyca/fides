@@ -4,18 +4,18 @@ from typing import Any, Dict, List, Literal, Optional
 
 from sqlalchemy.orm import Session
 
-from fidesops.ops.common_exceptions import FidesopsException, OAuth2TokenException
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
-from fidesops.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
-from fidesops.ops.service.authentication.authentication_strategy import (
+from fides.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fides.api.ops.schemas.saas.strategy_configuration import OAuth2BaseConfiguration
+from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fidesops.ops.service.connectors.saas.authenticated_client import (
+from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
 )
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
 

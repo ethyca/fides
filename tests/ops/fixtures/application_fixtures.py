@@ -16,16 +16,16 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fidesops.ops.core.config import FidesopsConfig, config
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
+from fides.api.ops.core.config import FidesopsConfig, config
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.policy import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.policy import (
     ActionType,
     Policy,
     PolicyPostWebhook,
@@ -33,31 +33,31 @@ from fidesops.ops.models.policy import (
     Rule,
     RuleTarget,
 )
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.ops.models.storage import ResponseFormat, StorageConfig
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.schemas.email.email import (
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
 )
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_hmac import (
+from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_nullify import (
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fidesops.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.util.data_category import DataCategory
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -67,7 +67,7 @@ integration_config = load_toml(["fidesops-integration.toml"])
 logger = logging.getLogger(__name__)
 
 
-# Unified list of connections to integration dbs specified from fidesops-integration.toml
+# Unified list of connections to integration dbs specified from fides.api-integration.toml
 
 integration_secrets = {
     "postgres_example": {

@@ -9,21 +9,21 @@ from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
     STORAGE_SECRETS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.data_upload_location_response import DataUpload
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.data_upload_location_response import DataUpload
+from fides.api.ops.schemas.storage.storage import (
     FileNaming,
     ResponseFormat,
     S3AuthMethod,

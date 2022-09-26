@@ -27,7 +27,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fidesops.ops.api.v1.scope_registry import (
+from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
@@ -37,14 +37,14 @@ from fidesops.ops.api.v1.scope_registry import (
     USER_READ,
     USER_UPDATE,
 )
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_DETAIL,
     USERS,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
+from fides.api.ops.core.config import config
 from tests.ops.conftest import generate_auth_header_for_user
 
 page_size = Params().size

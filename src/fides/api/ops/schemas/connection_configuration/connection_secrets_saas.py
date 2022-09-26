@@ -3,7 +3,7 @@ from typing import Any, Dict, Type
 
 from pydantic import BaseModel, Extra, PrivateAttr, create_model, root_validator
 
-from fidesops.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
 class SaaSSchema(BaseModel, abc.ABC):

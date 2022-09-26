@@ -3,11 +3,11 @@ from typing import Any, Dict
 import pytest
 from pydantic import ValidationError
 
-from fidesops.ops.schemas.connection_configuration.connection_secrets_saas import (
+from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema,
     SaaSSchemaFactory,
 )
-from fidesops.ops.schemas.saas.saas_config import ConnectorParam, SaaSConfig
+from fides.api.ops.schemas.saas.saas_config import ConnectorParam, SaaSConfig
 
 
 @pytest.mark.unit_saas

@@ -6,13 +6,13 @@ from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.service.connectors import TimescaleConnector
+from fides.api.ops.service.connectors import TimescaleConnector
 
 integration_config = load_toml(["fidesops-integration.toml"])
 

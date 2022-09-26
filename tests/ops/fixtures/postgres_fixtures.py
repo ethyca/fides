@@ -8,20 +8,20 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.connectionconfig import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
 )
-from fidesops.ops.service.connectors import PostgreSQLConnector
+from fides.api.ops.service.connectors import PostgreSQLConnector
 
 from .application_fixtures import integration_secrets
 

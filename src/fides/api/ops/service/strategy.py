@@ -6,9 +6,9 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from pydantic import ValidationError
 
-from fidesops.ops.common_exceptions import NoSuchStrategyException
-from fidesops.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fidesops.ops.schemas.saas.strategy_configuration import StrategyConfiguration
+from fides.api.ops.common_exceptions import NoSuchStrategyException
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
+from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T", bound="Strategy")

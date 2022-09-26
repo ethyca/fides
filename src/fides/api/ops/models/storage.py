@@ -11,19 +11,19 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fidesops.ops.core.config import config
-from fidesops.ops.db.base_class import JSONTypeOverride
-from fidesops.ops.schemas.storage.storage import (
+from fides.api.ops.core.config import config
+from fides.api.ops.db.base_class import JSONTypeOverride
+from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,
     StorageSecretsOnetrust,
     StorageSecretsS3,
     StorageType,
 )
-from fidesops.ops.schemas.storage.storage_secrets_docs_only import (
+from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
-from fidesops.ops.util.logger import Pii
+from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 

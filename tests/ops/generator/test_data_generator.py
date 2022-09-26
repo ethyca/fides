@@ -1,13 +1,13 @@
 import yaml
 
-from fidesops.ops.graph.graph import *
+from fides.api.ops.graph.graph import *
 
 #  -------------------------------------------
 #   graph object tests
 #  -------------------------------------------
-from fidesops.ops.graph.traversal import Traversal
-from fidesops.ops.models.datasetconfig import convert_dataset_to_graph
-from fidesops.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
+from fides.api.ops.schemas.dataset import FidesopsDataset
 
 from . import sql_data_generator
 

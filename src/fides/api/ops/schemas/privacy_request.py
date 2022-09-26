@@ -6,19 +6,21 @@ from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.policy import ActionType
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.models.policy import ActionType
+from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.api import BulkResponse, BulkUpdateFailed
-from fidesops.ops.schemas.base_class import BaseSchema
-from fidesops.ops.schemas.policy import PolicyResponse as PolicySchema
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.ops.schemas.base_class import BaseSchema
+from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
+    verify_encryption_key,
+)
 
 
 class PrivacyRequestDRPStatus(EnumType):

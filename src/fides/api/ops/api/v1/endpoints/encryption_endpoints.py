@@ -5,28 +5,28 @@ from fastapi import Security
 from fideslib.cryptography import cryptographic_util
 from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
-from fidesops.ops.api.v1.scope_registry import ENCRYPTION_EXEC
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.scope_registry import ENCRYPTION_EXEC
+from fides.api.ops.api.v1.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.schemas.encryption_request import (
+from fides.api.ops.core.config import config
+from fides.api.ops.schemas.encryption_request import (
     AesDecryptionRequest,
     AesDecryptionResponse,
     AesEncryptionRequest,
     AesEncryptionResponse,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt as aes_gcm_decrypt,
 )
-from fidesops.ops.util.encryption.aes_gcm_encryption_scheme import (
+from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length as aes_gcm_encrypt,
 )
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
 

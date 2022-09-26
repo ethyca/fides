@@ -8,8 +8,8 @@ from fideslib.db.base_class import get_key_from_data
 from fideslib.exceptions import KeyValidationError
 from sqlalchemy.orm import Session
 
-from fidesops.ops.models.storage import StorageConfig
-from fidesops.ops.schemas.storage.storage import StorageType
+from fides.api.ops.models.storage import StorageConfig
+from fides.api.ops.schemas.storage.storage import StorageType
 
 
 def test_get_key_from_data_method_invalid_key() -> None:
