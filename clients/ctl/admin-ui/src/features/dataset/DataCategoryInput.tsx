@@ -2,8 +2,10 @@ import { Box, FormLabel, Grid, Stack } from "@fidesui/react";
 
 import { DataCategory } from "~/types/api";
 
+import { useFeatures } from "../common/features.slice";
 import QuestionTooltip from "../common/QuestionTooltip";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+import ClassifiedDataCategoryDropdown from "./ClassifiedDataCategoryDropdown";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 
 export interface Props {
@@ -19,6 +21,7 @@ const DataCategoryInput = ({
   onChecked,
   tooltip,
 }: Props) => {
+  const features = useFeatures();
   const handleRemoveDataCategory = (dataCategoryName: string) => {
     onChecked(checked.filter((dc) => dc !== dataCategoryName));
   };
@@ -33,11 +36,23 @@ const DataCategoryInput = ({
       <Stack>
         <Box display="flex" alignItems="center">
           <Box mr="2" width="100%">
-            <DataCategoryDropdown
-              dataCategories={dataCategories}
-              checked={checked}
-              onChecked={onChecked}
-            />
+            {features.plus ? (
+              <ClassifiedDataCategoryDropdown
+                dataCategories={dataCategories}
+                // TODO: make this real
+                mostLikelyCategories={dataCategories
+                  .slice(0, 5)
+                  .map((d) => ({ ...d, confidence: 97 }))}
+                checked={checked}
+                onChecked={onChecked}
+              />
+            ) : (
+              <DataCategoryDropdown
+                dataCategories={dataCategories}
+                checked={checked}
+                onChecked={onChecked}
+              />
+            )}
           </Box>
           <QuestionTooltip label={tooltip} />
         </Box>
