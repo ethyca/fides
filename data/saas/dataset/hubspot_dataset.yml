@@ -1,0 +1,172 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Hubspot Dataset
+    description: A sample dataset representing the Hubspot connector for Fidesops
+    collections:
+      - name: contacts
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: properties
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: company
+                data_categories: [user]
+                fidesops_meta:
+                  data_type: string
+              - name: createdate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: firstname
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: lastmodifieddate
+                data_categories: [user.sensor]
+                fidesops_meta:
+                  data_type: string
+              - name: lastname
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: website
+                data_categories: [user]
+                fidesops_meta:
+                  data_type: string
+          - name: createdAt
+            data_categories: [user.sensor]
+            fidesops_meta:
+              data_type: string
+          - name: updatedAt
+            data_categories: [user.sensor]
+            fidesops_meta:
+              data_type: string
+          - name: archived
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+      - name: owners
+        fields:
+          - name: firstName
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: lastName
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: createdAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: archived
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: teams
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [user]
+                fidesops_meta:
+                  data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: userId
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: integer
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: updatedAt
+            data_categories: [user.sensor]
+            fidesops_meta:
+              data_type: string
+      - name: subscription_preferences
+        fields:
+          - name: recipient
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: subscriptionStatuses
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  primary_key: True
+                  data_type: string
+              - name: name
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: description
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: status
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: sourceOfStatus
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: preferenceGroupName
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: legalBasis
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: legalBasisExplanation
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+      - name: users
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
+              data_type: string
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: roleId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: primaryTeamId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: secondaryTeamIds
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]

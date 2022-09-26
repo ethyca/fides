@@ -32,6 +32,7 @@ The types of changes are:
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
   * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 * Cypress component testing [#1106](https://github.com/ethyca/fides/pull/1106)
+
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)

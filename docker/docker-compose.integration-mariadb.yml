@@ -1,0 +1,20 @@
+services:
+  mariadb_example:
+    image: mariadb
+    platform: linux/amd64
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MARIADB_HOST=mariadb_example
+      - MARIADB_DATABASE=mariadb_example
+      - MARIADB_ROOT_PASSWORD=example
+      - MARIADB_USER=mariadb_user
+      - MARIADB_PASSWORD=mariadb_pw
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    # Because we're using the "-f" flag from a parent directory, this relative path needs
+    # to be from the parent directory as well
+    volumes:
+      - ./docker/sample_data/mariadb_example_schema.sql:/docker-entrypoint-initdb.d/mariadb_example_schema.sql

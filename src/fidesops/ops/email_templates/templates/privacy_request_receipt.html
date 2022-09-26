@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Request Received</title>
+</head>
+<body>
+<main>
+    {% if request_types|length > 1 %}
+    <p>
+        The following requests have been received:
+    </p>
+    <ul>
+        {% for type in request_types %}
+        <li> {{type}} </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>
+        Your {{request_types[0]}} request has been received
+    </p>
+    {% endif %}
+</main>
+</body>
+</html>

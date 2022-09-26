@@ -1,0 +1,2 @@
+event_queue_prefix = "fidesops_worker"
+task_default_queue = "fidesops"

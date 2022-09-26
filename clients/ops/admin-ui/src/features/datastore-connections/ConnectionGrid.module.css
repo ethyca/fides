@@ -1,0 +1,15 @@
+.grid-row {
+  border-top-width: 0.5px;
+  border-color: var(--chakra-colors-blackAlpha-300);
+  box-sizing: border-box;
+}
+
+.grid-item {
+  border-right-width: 0.5px;
+  border-color: var(--chakra-colors-blackAlpha-300);
+  box-sizing: border-box;
+}
+
+.grid-item:nth-child(3n) {
+  border-right-width: 0px;
+}
