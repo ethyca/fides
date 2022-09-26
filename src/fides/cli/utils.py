@@ -1,11 +1,13 @@
 """Contains reusable utils for the CLI commands."""
 
+from ensurepip import version
 import json
 import pprint
 import sys
 from datetime import datetime, timezone
 from functools import update_wrapper
 from importlib.metadata import version
+from subprocess import run, PIPE
 from os import getenv
 from platform import system
 from typing import Any, Callable, Dict, Optional, Union
@@ -354,3 +356,33 @@ def _validate_credentials_id_exists(
         raise click.UsageError(
             f"credentials-id {credentials_id} does not exist in fides config"
         )
+
+
+def docker_compose_version_is_valid() -> bool:
+    """Verify the Docker Compose version."""
+    required_docker_compose_version = "1.29.10"
+    raw = run("docker-compose --version", stdout=PIPE)
+    parsed = raw.stdout.decode("utf-8").rstrip("\n")
+    docker_compose_version = parsed.split("v")[-1]
+    click.echo(parsed)
+    version_is_valid = docker_compose_version < required_docker_compose_version
+    if version_is_valid:
+        echo_red(
+            f"Docker Compose version is not compatible, please update to at least version {required_docker_compose_version}!"
+        )
+    return version_is_valid
+
+
+def docker_version_is_valid() -> bool:
+    """Verify the Docker version."""
+    required_docker_version = "20.10.8"
+    raw = run("docker --version", stdout=PIPE)
+    parsed = raw.stdout.decode("utf-8").rstrip("\n")
+    docker_version = parsed.split("v")[-1]
+    click.echo(parsed)
+    version_is_valid = docker_version < required_docker_version
+    if version_is_valid:
+        echo_red(
+            f"Docker version is not compatible, please update to at least version {required_docker_version}!"
+        )
+    return version_is_valid
