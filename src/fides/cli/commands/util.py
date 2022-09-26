@@ -1,5 +1,6 @@
 """Contains all of the Utility-type CLI commands for fides."""
 import os
+from subprocess import run
 from datetime import datetime, timezone
 
 import click
@@ -12,6 +13,8 @@ from fides.cli.utils import (
     check_server,
     send_init_analytics,
     with_analytics,
+    docker_compose_version_is_valid,
+    docker_version_is_valid,
 )
 from fides.ctl.core.utils import echo_green
 
@@ -135,4 +138,20 @@ def worker(ctx: click.Context) -> None:
     from fides.api.ops.tasks import start_worker
 
     start_worker()
-# Add a deploy
+
+
+@click.command()
+@click.pass_context
+@with_analytics
+def deploy(ctx: click.Context) -> None:
+    """
+    Deploys fides via docker compose.
+    """
+
+    click.echo("-" * 10)
+    docker_compose_version_is_valid()
+    docker_version_is_valid()
+    click.echo("-" * 10)
+
+    click.echo("Starting application...")
+    run("docker compose up fides", shell=True)
