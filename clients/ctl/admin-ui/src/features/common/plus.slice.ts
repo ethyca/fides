@@ -45,6 +45,7 @@ export interface ClassifyDataset {
   fides_key: string;
   // Assuming these are empty while the instance is in the "processing" status.
   collections: ClassifyCollection[];
+  status: ClassifyStatusEnum;
 }
 export enum ClassifyStatusEnum {
   CREATED = "Created",
@@ -57,7 +58,6 @@ export enum ClassifyStatusEnum {
 export interface ClassifyInstance {
   // ClassifyInstances probably have a UID not a key
   id: string;
-  status: ClassifyStatusEnum;
   datasets: ClassifyDataset[];
 }
 
@@ -101,33 +101,25 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
-const emptyClassifyInstances: ClassifyInstance[] = [];
-const selectClassifyInstancesMap = createSelector(
-  ({ data }: { data?: ClassifyInstance[] }) => data ?? emptyClassifyInstances,
-  (classifyInstances) => {
-    const map = new Map();
-    classifyInstances.forEach((ci) => {
+const emptyClassifyDatasetMap: Map<string, ClassifyDataset> = new Map();
+export const selectClassifyDatasetMap = createSelector(
+  plusApi.endpoints.getAllClassifyInstances.select(),
+
+  ({ data: instances }) => {
+    if (!instances) {
+      return emptyClassifyDatasetMap;
+    }
+
+    const map = new Map<string, ClassifyDataset>();
+    instances.forEach((ci) => {
       ci.datasets?.forEach((ds) => {
-        map.set(ds.fides_key, ci);
+        map.set(ds.fides_key, ds);
       });
     });
-    return {
-      map,
-    };
+
+    return map;
   }
 );
-
-/**
- * Convenience hook for looking up a ClassifyInstance by Dataset key.
- */
-export const useClassifyInstancesMap = (): Map<string, ClassifyInstance> => {
-  const hasPlus = useHasPlus();
-  const { map } = useGetAllClassifyInstancesQuery(undefined, {
-    skip: !hasPlus,
-    selectFromResult: selectClassifyInstancesMap,
-  });
-  return map;
-};
 
 /**
  * ClassifyInstance selectors that parallel the dataset's structure. These used the
