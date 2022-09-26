@@ -9,4 +9,6 @@
 - [ ] New/updated API endpoints included in the Postman collections
 - [ ] New tables/columns added to database diagram
 
+## Functionality
 
+- [ ] Evaluations run as expected
