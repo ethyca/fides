@@ -1,4 +1,4 @@
-import { Box, Select, Spinner } from "@fidesui/react";
+import { Box, Heading, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -91,6 +91,10 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
 
   return (
     <Box>
+      <Heading mb={6} fontSize="2xl" fontWeight="semibold">
+        Dataset
+      </Heading>
+
       <Box mb={4} display="flex" justifyContent="space-between">
         <Select
           onChange={handleChangeCollection}
