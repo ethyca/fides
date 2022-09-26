@@ -1,15 +1,15 @@
 """Contains the export group of CLI commands for Fidesctl."""
 import click
 
-from fidesctl.cli.options import (
+from fides.cli.options import (
     dry_flag,
     manifests_dir_argument,
     organization_fides_key_option,
     output_directory_option,
 )
-from fidesctl.cli.utils import with_analytics
-from fidesctl.ctl.core import export as _export
-from fidesctl.ctl.core import parse as _parse
+from fides.cli.utils import with_analytics
+from fides.ctl.core import export as _export
+from fides.ctl.core import parse as _parse
 
 
 @click.group(name="export")

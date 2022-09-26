@@ -5,9 +5,9 @@ from typing import Dict, Generator, List, Optional
 import pytest
 from fideslang import FidesModel, model_list
 
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core import api_helpers as _api_helpers
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import api as _api
+from fides.ctl.core import api_helpers as _api_helpers
+from fides.ctl.core.config import FidesctlConfig
 from tests.ctl.types import FixtureRequest
 
 RESOURCE_CREATION_COUNT = 5

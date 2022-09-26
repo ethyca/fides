@@ -3,10 +3,10 @@ from typing import Generator, List
 
 import pytest
 
-from fidesctl.api.ctl import sql_models
-from fidesctl.api.ctl.database.crud import delete_resource, list_resource
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl import sql_models
+from fides.api.ctl.database.crud import delete_resource, list_resource
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesctlConfig
 from tests.ctl.types import FixtureRequest
 
 

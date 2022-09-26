@@ -9,7 +9,7 @@ from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
 from requests import Response
 
-from fidesctl.ctl.core import api
+from fides.ctl.core import api
 
 
 def get_server_resources(

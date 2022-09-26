@@ -3,9 +3,9 @@ from typing import Generator
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
 
-from fidesctl.api.ctl.database import database
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.database import database
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesctlConfig
 
 
 @pytest.fixture(scope="function", name="data_category")

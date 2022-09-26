@@ -6,7 +6,7 @@ from typing import Dict, Optional
 
 from pydantic import validator
 
-from fidesctl.ctl.core.utils import generate_request_headers
+from fides.ctl.core.utils import generate_request_headers
 
 from .fides_settings import FidesSettings
 

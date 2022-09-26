@@ -2,7 +2,7 @@
 
 import click
 
-from fidesctl.cli.options import (
+from fides.cli.options import (
     aws_access_key_id_option,
     aws_region_option,
     aws_secret_access_key_option,
@@ -14,14 +14,14 @@ from fidesctl.cli.options import (
     okta_token_option,
     organization_fides_key_option,
 )
-from fidesctl.cli.utils import (
+from fides.cli.utils import (
     handle_aws_credentials_options,
     handle_database_credentials_options,
     handle_okta_credentials_options,
     with_analytics,
 )
-from fidesctl.ctl.core import dataset as _dataset
-from fidesctl.ctl.core import system as _system
+from fides.ctl.core import dataset as _dataset
+from fides.ctl.core import system as _system
 
 
 @click.group(name="scan")

@@ -5,10 +5,10 @@ from fastapi import HTTPException, status
 from fideslang import FidesModelType
 from fideslib.db.base import Base
 
-from fidesctl.api.ctl.database.crud import get_resource, list_resource
-from fidesctl.api.ctl.sql_models import models_with_default_field
-from fidesctl.api.ctl.utils import errors
-from fidesctl.api.ctl.utils.api_router import APIRouter
+from fides.api.ctl.database.crud import get_resource, list_resource
+from fides.api.ctl.sql_models import models_with_default_field
+from fides.api.ctl.utils import errors
+from fides.api.ctl.utils.api_router import APIRouter
 
 API_PREFIX = "/api/v1"
 

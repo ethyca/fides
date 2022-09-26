@@ -7,13 +7,13 @@ import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fidesctl
-from fidesctl.cli.utils import (
+from fides.cli.utils import (
     FIDESCTL_ASCII_ART,
     check_server,
     send_init_analytics,
     with_analytics,
 )
-from fidesctl.ctl.core.utils import echo_green
+from fides.ctl.core.utils import echo_green
 
 
 @click.command()
@@ -119,6 +119,6 @@ def webserver(ctx: click.Context) -> None:
     Starts the fidesctl API server using Uvicorn on port 8080.
     """
     # This has to be here to avoid a circular dependency
-    from fidesctl.api.main import start_webserver
+    from fides.api.main import start_webserver
 
     start_webserver()

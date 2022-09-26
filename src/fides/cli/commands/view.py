@@ -2,7 +2,7 @@
 
 import click
 
-from fidesctl.cli.utils import pretty_echo, with_analytics
+from fides.cli.utils import pretty_echo, with_analytics
 
 
 @click.group(name="view")

@@ -3,7 +3,7 @@ from json import loads
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.engine import Engine
 
-from fidesctl.ctl.connectors.models import BigQueryConfig, ConnectorFailureException
+from fides.ctl.connectors.models import BigQueryConfig, ConnectorFailureException
 
 
 def get_bigquery_engine(bigquery_config: BigQueryConfig) -> Engine:

@@ -7,14 +7,14 @@ from typing import Callable, Dict, Union
 from fastapi import Response, status
 from pydantic import BaseModel
 
-from fidesctl.api.ctl.routes.util import (
+from fides.api.ctl.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_bigquery_connector,
     route_requires_okta_connector,
 )
-from fidesctl.api.ctl.utils.api_router import APIRouter
-from fidesctl.ctl.connectors.models import (
+from fides.api.ctl.utils.api_router import APIRouter
+from fides.ctl.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,

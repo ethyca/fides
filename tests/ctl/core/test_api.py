@@ -9,10 +9,10 @@ from fideslang import DEFAULT_TAXONOMY, model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
-from fidesctl.api.ctl.routes import health
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.routes import health
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesctlConfig
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 

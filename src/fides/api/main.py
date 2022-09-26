@@ -14,10 +14,10 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from loguru import logger as log
 from uvicorn import Config, Server
 
-from fidesctl.api.ctl import view
-from fidesctl.api.ctl.database.database import configure_db
-from fidesctl.api.ctl.deps import get_db, verify_oauth_client
-from fidesctl.api.ctl.routes import (
+from fides.api.ctl import view
+from fides.api.ctl.database.database import configure_db
+from fides.api.ctl.deps import get_db, verify_oauth_client
+from fides.api.ctl.routes import (
     admin,
     crud,
     datamap,
@@ -27,16 +27,16 @@ from fidesctl.api.ctl.routes import (
     validate,
     visualize,
 )
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.api.ctl.ui import (
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.ui import (
     get_admin_index_as_response,
     get_local_file_map,
     get_package_file_map,
     get_path_to_admin_ui_file,
     match_route,
 )
-from fidesctl.api.ctl.utils.logger import setup as setup_logging
-from fidesctl.ctl.core.config import FidesctlConfig, get_config
+from fides.api.ctl.utils.logger import setup as setup_logging
+from fides.ctl.core.config import FidesctlConfig, get_config
 
 app = FastAPI(title="fidesctl")
 CONFIG: FidesctlConfig = get_config()

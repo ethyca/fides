@@ -11,7 +11,7 @@ import toml
 from fideslib.core.config import load_toml
 from pydantic import BaseModel
 
-from fidesctl.ctl.core.utils import echo_red
+from fides.ctl.core.utils import echo_red
 
 from .cli_settings import FidesctlCLISettings
 from .credentials_settings import merge_credentials_environment

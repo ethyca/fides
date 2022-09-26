@@ -3,8 +3,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from fidesctl.api.ctl.utils.logger import setup as setup_fidesapi_logger
-from fidesctl.ctl.core.config import get_config
+from fides.api.ctl.utils.logger import setup as setup_fidesapi_logger
+from fides.ctl.core.config import get_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,7 +24,7 @@ setup_fidesapi_logger(
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from fidesctl.api.ctl.sql_models import Base
+from fides.api.ctl.sql_models import Base
 
 target_metadata = Base.metadata
 
