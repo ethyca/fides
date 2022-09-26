@@ -3,10 +3,8 @@ import { MultiValue, Select } from "chakra-react-select";
 
 import { DataCategory } from "~/types/api";
 
-import {
-  DataCategoryDropdown,
-  Props as DataCategoryDropdownProps,
-} from "./DataCategoryInput";
+import DataCategoryDropdown from "./DataCategoryDropdown";
+import type { Props as DataCategoryDropdownProps } from "./DataCategoryInput";
 
 // TODO: just making up a structure until we have something real from the API
 interface DataCategoryWithConfidence extends DataCategory {
@@ -76,6 +74,7 @@ const ClassifiedDataCategoryDropdown = ({
           onChange={handleChange}
           value={selectedOptions}
           size="sm"
+          placeholder="Select from recommendations..."
           chakraStyles={{
             dropdownIndicator: (provided) => ({
               ...provided,
