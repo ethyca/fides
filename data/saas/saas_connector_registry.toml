@@ -2,78 +2,121 @@
 config = "data/saas/config/adobe_campaign_config.yml"
 dataset = "data/saas/dataset/adobe_campaign_dataset.yml"
 icon = "data/saas/icon/adobe.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Adobe Campaign"
+>>>>>>> unified-fides-2
 
 [auth0]
 config = "data/saas/config/auth0_config.yml"
 dataset = "data/saas/dataset/auth0_dataset.yml"
 icon = "data/saas/icon/default.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Auth0"
+>>>>>>> unified-fides-2
 
 [datadog]
 config = "data/saas/config/datadog_config.yml"
 dataset = "data/saas/dataset/datadog_dataset.yml"
 icon = "data/saas/icon/default.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Datadog"
+>>>>>>> unified-fides-2
 
 [hubspot]
 config = "data/saas/config/hubspot_config.yml"
 dataset = "data/saas/dataset/hubspot_dataset.yml"
 icon = "data/saas/icon/hubspot.svg"
+<<<<<<< HEAD
+
+[logi_id]
+config = "data/saas/config/logi_id_config.yml"
+dataset = "data/saas/dataset/logi_id_dataset.yml"
+icon = "data/saas/icon/default.svg"
+=======
 human_readable = "HubSpot"
+>>>>>>> unified-fides-2
 
 [mailchimp]
 config = "data/saas/config/mailchimp_config.yml"
 dataset = "data/saas/dataset/mailchimp_dataset.yml"
 icon = "data/saas/icon/mailchimp.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Mailchimp"
+>>>>>>> unified-fides-2
 
 [outreach]
 config = "data/saas/config/outreach_config.yml"
 dataset = "data/saas/dataset/outreach_dataset.yml"
 icon = "data/saas/icon/outreach.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Outreach"
+>>>>>>> unified-fides-2
 
 [salesforce]
 config = "data/saas/config/salesforce_config.yml"
 dataset = "data/saas/dataset/salesforce_dataset.yml"
 icon = "data/saas/icon/salesforce.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Salesforce"
+>>>>>>> unified-fides-2
 
 [segment]
 config = "data/saas/config/segment_config.yml"
 dataset = "data/saas/dataset/segment_dataset.yml"
 icon = "data/saas/icon/segment.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Segment"
+>>>>>>> unified-fides-2
 
 [sendgrid]
 config = "data/saas/config/sendgrid_config.yml"
 dataset = "data/saas/dataset/sendgrid_dataset.yml"
 icon = "data/saas/icon/default.svg"
+<<<<<<< HEAD
+=======
 human_readable = "SendGrid"
+>>>>>>> unified-fides-2
 
 [sentry]
 config = "data/saas/config/sentry_config.yml"
 dataset = "data/saas/dataset/sentry_dataset.yml"
 icon = "data/saas/icon/sentry.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Sentry"
+>>>>>>> unified-fides-2
 
 [shopify]
 config = "data/saas/config/shopify_config.yml"
 dataset = "data/saas/dataset/shopify_dataset.yml"
 icon = "data/saas/icon/default.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Shopify"
+>>>>>>> unified-fides-2
 
 [stripe]
 config = "data/saas/config/stripe_config.yml"
 dataset = "data/saas/dataset/stripe_dataset.yml"
 icon = "data/saas/icon/stripe.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Stripe"
+>>>>>>> unified-fides-2
 
 [zendesk]
 config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
 icon = "data/saas/icon/zendesk.svg"
+<<<<<<< HEAD
+=======
 human_readable = "Zendesk"
 
 [rollbar]
@@ -81,3 +124,4 @@ config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Rollbar"
+>>>>>>> unified-fides-2

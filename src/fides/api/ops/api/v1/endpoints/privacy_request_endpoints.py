@@ -67,7 +67,6 @@ from fides.api.ops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph, Node
 from fides.api.ops.graph.traversal import Traversal
@@ -174,7 +173,7 @@ async def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
-    if not config.redis.enabled:
+    if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
@@ -240,7 +239,7 @@ async def create_privacy_request(
                 None,
             )
 
-            if config.execution.subject_identity_verification_required:
+            if CONFIG.execution.subject_identity_verification_required:
                 _send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity.email
                 )
@@ -308,7 +307,7 @@ def _send_verification_code_to_user(
         to_email=email,
         email_body_params=SubjectIdentityVerificationBodyParams(
             verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         ),
     )
 

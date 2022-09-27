@@ -23,7 +23,6 @@ The types of changes are:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
   * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
-  * The dataset fields table shows data categories from the classifier (if available). [#1088](https://github.com/ethyca/fides/pull/1088)
 * System management UI:
   * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
@@ -31,14 +30,12 @@ The types of changes are:
   * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
   * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
-* Cypress component testing [#1106](https://github.com/ethyca/fides/pull/1106)
 
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 * Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
 * Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
-* Dataset fields table shows categories in the last column. [#1088](https://github.com/ethyca/fides/pull/1088)
 
 ### Fixed
 
@@ -90,12 +87,30 @@ The types of changes are:
 * Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
 * Pinned pydantic version to < 1.10.0 to fix an error in finding referenced fides keys [#1045](https://github.com/ethyca/fides/pull/1045)
 
+### Fixed
+
+* Fixed failing mypy tests [#1030](https://github.com/ethyca/fides/pull/1030)
+* Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+
+### Docs
+
+* Minor formatting updates to [Policy Webhooks](https://ethyca.github.io/fidesops/guides/policy_webhooks/) documentation [#1114](https://github.com/ethyca/fidesops/pull/1114)
+
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
+
 ## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
 ### Added
 
-* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977)
+* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977) [#1028](https://github.com/ethyca/fides/pull/1028)
 * New column `is_default` added to DataCategory, DataUse, DataSubject, and DataQualifier tables [#976](https://github.com/ethyca/fides/pull/976)
+* Added the ability to add taxonomy fields via the UI [#1019](https://github.com/ethyca/fides/pull/1019)
+* Added the ability to delete taxonomy fields via the UI [#1006](https://github.com/ethyca/fides/pull/1006)
+  * Only non-default taxonomy entities can be deleted [#1023](https://github.com/ethyca/fides/pull/1023)
+* Prevent deleting taxonomy `is_default` fields and from adding `is_default=True` fields via the API [#990](https://github.com/ethyca/fides/pull/990).
+* Added a "Custom" tag to distinguish user defined taxonomy fields from default taxonomy fields in the UI [#1027](https://github.com/ethyca/fides/pull/1027)
 
 ### Changed
 

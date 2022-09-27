@@ -16,7 +16,7 @@ from starlette.status import (
 from fides.api.ctl.deps import get_current_user, get_db, verify_oauth_client
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=f"{API_PREFIX}")
 
@@ -73,7 +73,7 @@ def update_user_password(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserPasswordReset,
-    config: FidesctlConfig = Depends(get_config),
+    config: FidesConfig = Depends(get_config),
 ) -> FidesUser:
     """
     Update a user's password given a `user_id`. By default this is limited to users

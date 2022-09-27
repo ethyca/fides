@@ -36,20 +36,20 @@ from fides.ctl.core.config.credentials_settings import (
 from fides.ctl.core.config.utils import get_config_from_file, update_config_file
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
-FIDESCTL_ASCII_ART = """
-███████╗██╗██████╗ ███████╗███████╗ ██████╗████████╗██╗     
-██╔════╝██║██╔══██╗██╔════╝██╔════╝██╔════╝╚══██╔══╝██║     
-█████╗  ██║██║  ██║█████╗  ███████╗██║        ██║   ██║     
-██╔══╝  ██║██║  ██║██╔══╝  ╚════██║██║        ██║   ██║     
-██║     ██║██████╔╝███████╗███████║╚██████╗   ██║   ███████╗
-╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚══════╝                                                      
+FIDES_ASCII_ART = """
+███████╗██╗██████╗ ███████╗███████╗
+██╔════╝██║██╔══██╗██╔════╝██╔════╝
+█████╗  ██║██║  ██║█████╗  ███████╗
+██╔══╝  ██║██║  ██║██╔══╝  ╚════██║
+██║     ██║██████╔╝███████╗███████║
+╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝
 """
 
 
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    healthcheck_url = server_url + API_PREFIX + "/health"
+    healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
@@ -119,7 +119,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         "cli",
         "analytics_id",
     ) in ("", None)
-    is_analytics_opt_out_env_var_set = getenv("FIDESCTL__CLI__ANALYTICS_ID")
+    is_analytics_opt_out_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
         not is_analytics_opt_out
         and is_analytics_opt_out_config_empty
@@ -132,25 +132,25 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
             update_config_file(config_updates, config_path)
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
-            click.echo("Run 'fidesctl init' to create a configuration file.")
+            click.echo("Run 'fides init' to create a configuration file.")
 
 
 def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) -> None:
     """
     Create a new `AnalyticsClient` and send an `AnalyticsEvent` representing
-    the execution of `fidesctl init` by a user.
+    the execution of `fides init` by a user.
     """
 
     if opt_out is not False:
         return
 
     analytics_id = get_config_from_file(config_path, "cli", "analytics_id")
-    app_name = fidesctl.__name__
+    app_name = fides.__name__
 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
+            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
             os=system(),
             product_name=app_name + "-cli",
             production_version=version(app_name),
@@ -159,7 +159,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
         event = AnalyticsEvent(
             "cli_command_executed",
             executed_at,
-            command="fidesctl init",
+            command="fides init",
             docker=bool(getenv("RUNNING_IN_DOCKER") == "TRUE"),
             resource_counts=None,  # TODO: Figure out if it's possible to capture this
         )
@@ -215,7 +215,7 @@ def with_analytics(func: Callable) -> Callable:
 
 def print_divider(character: str = "-", character_length: int = 10) -> None:
     """
-    Returns a consistent divider to print to the console for use within fidesctl
+    Returns a consistent divider to print to the console for use within fides
 
     Defaults to using a hyphen of length 10, however this can optionally be
     overridden as required.
@@ -224,7 +224,7 @@ def print_divider(character: str = "-", character_length: int = 10) -> None:
 
 
 def handle_database_credentials_options(
-    fides_config: FidesctlConfig, connection_string: str, credentials_id: str
+    fides_config: FidesConfig, connection_string: str, credentials_id: str
 ) -> str:
     """
     Handles the mutually exclusive database connections options connetion-string and credentials-id.
@@ -250,13 +250,13 @@ def handle_database_credentials_options(
 
 
 def handle_okta_credentials_options(
-    fides_config: FidesctlConfig, token: str, org_url: str, credentials_id: str
+    fides_config: FidesConfig, token: str, org_url: str, credentials_id: str
 ) -> Optional[OktaConfig]:
     """
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
-    okta_config = dict()
+    okta_config = {}
     if token or org_url:
         if not token or not org_url:
             raise click.UsageError(
@@ -277,7 +277,7 @@ def handle_okta_credentials_options(
 
 
 def handle_aws_credentials_options(
-    fides_config: FidesctlConfig,
+    fides_config: FidesConfig,
     access_key_id: str,
     secret_access_key: str,
     region: str,
@@ -313,7 +313,7 @@ def handle_aws_credentials_options(
 
 
 def handle_bigquery_config_options(
-    fides_config: FidesctlConfig,
+    fides_config: FidesConfig,
     dataset: str,
     keyfile_path: str,
     credentials_id: str,

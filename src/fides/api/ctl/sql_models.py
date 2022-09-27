@@ -23,9 +23,9 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG: FidesctlConfig = get_config()
+CONFIG: FidesConfig = get_config()
 
 
 class FidesBase(FideslibBase):
@@ -185,7 +185,7 @@ class Organization(Base, FidesBase):
 
 
 # Policy
-class Policy(Base, FidesBase):
+class PolicyCtl(Base, FidesBase):
     """
     The SQL model for the Policy resource.
     """
@@ -237,14 +237,14 @@ sql_model_map: Dict = {
     "fides_user": FidesUser,
     "fides_user_permissions": FidesUserPermissions,
     "organization": Organization,
-    "policy": Policy,
+    "policy": PolicyCtl,
     "registry": Registry,
     "system": System,
     "evaluation": Evaluation,
 }
 
 models_with_default_field = [
-    sql_model_map[model_name]
-    for model_name in sql_model_map
-    if hasattr(sql_model_map[model_name], "is_default")
+    sql_model
+    for _, sql_model in sql_model_map.items()
+    if hasattr(sql_model, "is_default")
 ]

@@ -2,22 +2,27 @@
 
 # pylint: disable=C0115,C0116, E0213
 
+import logging
 import os
 from typing import Dict, Optional
 
-from fideslib.core.config import DatabaseSettings
+from fideslib.core.config import DatabaseSettings as FideslibDatabaseSettings
 from pydantic import PostgresDsn, validator
 
+logger = logging.getLogger(__name__)
 
-class FidesctlDatabaseSettings(DatabaseSettings):
+ENV_PREFIX = "FIDES__DATABASE__"
+
+
+class DatabaseSettings(FideslibDatabaseSettings):
     """Configuration settings for Postgres."""
 
-    user: str = "postgres"
-    password: str = "fidesctl"
-    server: str = "fidesctl-db"
+    user: str = "defaultuser"
+    password: str = "defaultpassword"
+    server: str = "default-db"
     port: str = "5432"
-    db: str = "fidesctl"
-    test_db: str = "fidesctl_test"
+    db: str = "default_db"
+    test_db: str = "default_test_db"
 
     async_database_uri: Optional[PostgresDsn]
     sync_database_uri: Optional[PostgresDsn]
@@ -33,7 +38,7 @@ class FidesctlDatabaseSettings(DatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDESCTL_TEST_MODE") == "True"
+            if os.getenv("FIDES_TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(
@@ -56,7 +61,7 @@ class FidesctlDatabaseSettings(DatabaseSettings):
 
         db_name = (
             values["test_db"]
-            if os.getenv("FIDESCTL_TEST_MODE") == "True"
+            if os.getenv("FIDES_TEST_MODE") == "True"
             else values["db"]
         )
         return PostgresDsn.build(
@@ -69,4 +74,4 @@ class FidesctlDatabaseSettings(DatabaseSettings):
         )
 
     class Config:
-        env_prefix = "FIDESCTL__DATABASE__"
+        env_prefix = ENV_PREFIX

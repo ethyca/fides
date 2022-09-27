@@ -4,20 +4,20 @@ from os import getenv
 from platform import system
 
 import click
-import fidesctl
 from fideslog.sdk.python.client import AnalyticsClient
 
+import fides
 from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
 
 from .commands.annotate import annotate
-from .commands.core import apply, evaluate, parse, pull, push
+from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get, ls
 from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
-from .commands.util import init, status, webserver
+from .commands.util import init, status, webserver, worker
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -25,20 +25,32 @@ LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
-API_COMMANDS = [annotate, apply, database, delete, export, get, ls, status, pull, push]
+API_COMMANDS = [
+    annotate,
+    database,
+    delete,
+    export,
+    get,
+    ls,
+    status,
+    pull,
+    push,
+    worker,
+]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status"]
 ]
-VERSION = fidesctl.__version__
-APP = fidesctl.__name__
+VERSION = fides.__version__
+APP = fides.__name__
+PACKAGE = "ethyca-fides"
 
 
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
-    name="fidesctl",
+    name="fides",
 )
 @click.version_option(version=VERSION)
 @click.option(
@@ -46,7 +58,7 @@ APP = fidesctl.__name__
     "-f",
     "config_path",
     default="",
-    help="Path to a configuration file. Use 'fidesctl view-config' to print the config. Not compatible with the 'fidesctl webserver' subcommand.",
+    help="Path to a configuration file. Use 'fides view-config' to print the config. Not compatible with the 'fides webserver' subcommand.",
 )
 @click.option(
     "--local",
@@ -56,11 +68,11 @@ APP = fidesctl.__name__
 @click.pass_context
 def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     """
-    The parent group for the Fidesctl CLI.
+    The parent group for the Fides CLI.
     """
 
     ctx.ensure_object(dict)
-    config = get_config(config_path)
+    config = get_config(config_path, verbose=True)
 
     # Dyanmically add commands to the CLI
     cli.commands = LOCAL_COMMAND_DICT
@@ -90,10 +102,10 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         if ctx.obj["CONFIG"].user.analytics_opt_out is False:
             ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
                 client_id=ctx.obj["CONFIG"].cli.analytics_id,
-                developer_mode=bool(getenv("FIDESCTL_TEST_MODE") == "True"),
+                developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
                 os=system(),
                 product_name=APP + "-cli",
-                production_version=version(APP),
+                production_version=version(PACKAGE),
             )
 
 

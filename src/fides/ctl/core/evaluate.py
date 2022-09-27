@@ -453,7 +453,8 @@ def hydrate_missing_resources(
             headers=headers,
             existing_keys=missing_resource_keys,
         )
-        dehydrated_taxonomy.__setattr__(
+        setattr(
+            dehydrated_taxonomy,
             resource_name,
             getattr(dehydrated_taxonomy, resource_name) + server_resources,
         )

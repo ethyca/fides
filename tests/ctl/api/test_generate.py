@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 
 from fides.api.ctl.routes.generate import GenerateResponse
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
@@ -58,7 +58,7 @@ EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "The security token included in the request is invalid.",
     "okta": "Invalid token provided",
-    "db": '(psycopg2.OperationalError) FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
+    "db": 'FATAL:  database "INVALID_DB" does not exist\n\n(Background on this error at: https://sqlalche.me/e/14/e3q8)',
     "bigquery": "Invalid project ID 'INVALID_PROJECT_ID'. Project IDs must contain 6-63 lowercase letters, digits, or dashes. Some project IDs also include domain name separated by a colon. IDs must start with a letter and may not end with a dash.",
 }
 
@@ -74,7 +74,7 @@ EXPECTED_FAILURE_MESSAGES = {
     ],
 )
 def test_generate(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     generate_type: str,
     generate_target: str,
     test_client: TestClient,
@@ -110,7 +110,7 @@ def test_generate(
     ],
 )
 def test_generate_failure(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     generate_type: str,
     generate_target: str,
     test_client: TestClient,
@@ -131,4 +131,6 @@ def test_generate_failure(
         data=dumps(data),
     )
 
-    assert loads(response.text)["detail"] == EXPECTED_FAILURE_MESSAGES[generate_target]
+    actual_failure_message = loads(response.text)["detail"]
+    print(actual_failure_message)
+    assert EXPECTED_FAILURE_MESSAGES[generate_target] in actual_failure_message

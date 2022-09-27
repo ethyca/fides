@@ -1,30 +1,34 @@
 # Releases
 
----
-
 ## Versioning
 
-Fidesctl uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. Best practice is always pinning versions and carefully testing before bumping to a new version. Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.
+Fides uses semantic versioning. Due to the rapid development of the project, some minor versions may also contain minor breaking changes. The best practice is to always pin versions, and carefully test before bumping to a new version. 
 
-## Release Schedule
+Patch versions will never cause breaking changes, and are only used to hotfix critical bugs.
 
-Fidesctl does not follow a set release schedule, but instead ships versions based on the addition of features/functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.
+## Release schedule
+
+Fides does not follow a set release schedule, and instead ships versions based on the addition of features and functionality. Each release, with the exception of hotfixes, will contain at least one substantial new feature.
 
 ## Planning
 
-For each release a corresponding GitHub Project is created. These projects can be found [here](https://github.com/ethyca/fides/projects). Issues are then added to release projects as a way to organize what will be included in each release.
+For each release, a corresponding [GitHub Project](https://github.com/ethyca/fides/projects) is created. Issues are added to projects as a way to organize what will be included in each release.
 
-Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all fidesctl releases [here](https://github.com/ethyca/fides/releases). Each new release triggers a GitHub Action that pushes the new version to PyPI as well as pushes a clean version to DockerHub. The release project is then marked as `closed`.
+Once a release project is complete and the core team signs off on the readiness of the release, a new version is cut using GitHub releases. You can see all Fides releases [here](https://github.com/ethyca/fides/releases). Each new release triggers a GitHub Action that pushes the new version to PyPI, and a clean version to DockerHub. The release project is then marked as `closed`.
 
-Hotfixes are an exception to this and can be added and pushed as patch versions when needed.
+Hotfixes are an exception to this, and can be added and pushed as patch versions when needed.
 
 ## Branching
 
-Fidesctl uses continuous delivery with a single `main` branch. All code changes get merged into this branch. For releases, a new tag is created and the release process kicks off automatically. In the case of patches, a branch is created from the relevant tag and commits are then cherry-picked into it and a new patch version tag is created.
+Fides uses continuous delivery with a single `main` branch. All code changes are merged into this branch. 
+
+When releasing, a new tag is created, and the release process proceeds automatically. 
+
+In the case of patches, a branch is created from the relevant tag. Commits are then cherry-picked into this branch, and a new patch version tag is created.
 
 ## Release Steps
 
-We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub & PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
+We use GitHub’s `release` feature to tag releases that then get automatically deployed to DockerHub and PyPi via GitHub Actions pipelines. We also use a `CHANGELOG.md` to make sure that our users are never surprised about an upcoming change and can plan upgrades accordingly. The release steps are as follows:
 
 ### Major and Minor
 
@@ -41,7 +45,7 @@ We use GitHub’s `release` feature to tag releases that then get automatically 
 
 ### Patch
 
-It may be desired for a patch release to contain only select commits to the `main` branch since the last major or minor release. To create a release with only the desired changes, follow the steps below:
+It may be necessary for a patch release to contain only select commits to the `main` branch since the last major or minor release. To create a release with only the desired changes, follow the steps below:
 
 1. Checkout the most recent release's tag
     1. To fetch the most recent tag's name, run:

@@ -16,11 +16,13 @@ from fides.api.ops.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 class TestGetEncryptionKey:
@@ -42,7 +44,7 @@ class TestGetEncryptionKey:
         assert response.status_code == 403
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
+        "fides.api.ops.api.v1.endpoints.encryption_endpoints.cryptographic_util.generate_secure_random_string"
     )
     def test_get_encryption_key(
         self,
@@ -116,7 +118,7 @@ class TestAESEncrypt:
         assert response.status_code == 200
         decrypted = decrypt(
             encrypted_value,
-            key.encode(config.security.encoding),
+            key.encode(CONFIG.security.encoding),
             nonce,
         )
         assert decrypted == plain_val
@@ -157,7 +159,7 @@ class TestAESDecrypt:
         nonce = b'\x18\xf5"+\xdbj\xe6O\xc7|\x19\xd2'
         orig_data = "test_data"
         encrypted_data = encrypt_verify_secret_length(
-            orig_data, key.encode(config.security.encoding), nonce
+            orig_data, key.encode(CONFIG.security.encoding), nonce
         )
 
         request = {

@@ -14,9 +14,15 @@ import {
 } from "@fidesui/react";
 
 import {
+<<<<<<< HEAD
+  useRequestModal,
+  RequestModal,
+} from "../components/modals/RequestModal";
+=======
   usePrivactRequestModal,
   PrivacyRequestModal,
 } from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+>>>>>>> unified-fides-2
 import PrivacyCard from "../components/PrivacyCard";
 import type { AlertState } from "../types/AlertState";
 
@@ -36,8 +42,12 @@ const Home: NextPage = () => {
     setCurrentView,
     privacyRequestId,
     setPrivacyRequestId,
+<<<<<<< HEAD
+  } = useRequestModal();
+=======
     successHandler,
   } = usePrivactRequestModal();
+>>>>>>> unified-fides-2
 
   useEffect(() => {
     if (alert?.status) {
@@ -60,6 +70,8 @@ const Home: NextPage = () => {
     getConfig();
   }, [setIsVerificationRequired]);
 
+<<<<<<< HEAD
+=======
   const content: any = [];
 
   config.actions.forEach((action) => {
@@ -75,6 +87,7 @@ const Home: NextPage = () => {
     );
   });
 
+>>>>>>> unified-fides-2
   return (
     <div>
       <Head>
@@ -140,10 +153,26 @@ const Home: NextPage = () => {
             </Text>
           </Stack>
           <Flex m={-2} flexDirection={["column", "column", "row"]}>
+<<<<<<< HEAD
+            {config.actions.map((action) => (
+              <PrivacyCard
+                key={action.title}
+                title={action.title}
+                policyKey={action.policy_key}
+                iconPath={action.icon_path}
+                description={action.description}
+                onOpen={onOpen}
+              />
+            ))}
+          </Flex>
+        </Stack>
+        <RequestModal
+=======
             {content}
           </Flex>
         </Stack>
         <PrivacyRequestModal
+>>>>>>> unified-fides-2
           isOpen={isOpen}
           onClose={onClose}
           openAction={openAction}
@@ -153,7 +182,10 @@ const Home: NextPage = () => {
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
+<<<<<<< HEAD
+=======
           successHandler={successHandler}
+>>>>>>> unified-fides-2
         />
       </main>
     </div>

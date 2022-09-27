@@ -7,8 +7,10 @@ from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
 
-from fides.api import __version__ as fidesops_version
-from fides.api.ops.core.config import config
+from fides import __version__ as fides_version
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +28,17 @@ def accessed_through_local_host(hostname: Optional[str]) -> bool:
 
 
 analytics_client = AnalyticsClient(
-    client_id=config.root_user.analytics_id,
-    developer_mode=config.dev_mode,
+    client_id=CONFIG.cli.analytics_id,
+    developer_mode=CONFIG.dev_mode,
     extra_data=None,
     os=system(),
     product_name="fidesops",
-    production_version=fidesops_version,
+    production_version=fides_version,
 )
 
 
 async def send_analytics_event(event: AnalyticsEvent) -> None:
-    if config.root_user.analytics_opt_out:
+    if CONFIG.user.analytics_opt_out:
         return
     try:
         await analytics_client._AnalyticsClient__send(  # pylint: disable=protected-access

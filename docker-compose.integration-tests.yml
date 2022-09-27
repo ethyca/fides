@@ -1,5 +1,5 @@
 services:
-  fidesctl:
+  fides:
     depends_on:
       - postgres-test
       - mysql-test

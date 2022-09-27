@@ -12,9 +12,12 @@ saas_config:
     - name: api_key
     - name: api_version
     - name: page_size
+<<<<<<< HEAD
+=======
     - name: account_types
       options: [checking, savings, investment]
       multiselect: True
+>>>>>>> unified-fides-2
 
   client_config:
     protocol: https
@@ -41,8 +44,15 @@ saas_config:
                 - dataset: saas_connector_example
                   field: conversations.id
                   direction: from
+<<<<<<< HEAD
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: conversation_messages
+=======
           data_path: conversation_messages
           postprocessors:
+>>>>>>> unified-fides-2
             - strategy: filter
               configuration:
                 field: from_email
@@ -62,7 +72,14 @@ saas_config:
           param_values:
             - name: placeholder
               identity: email
+<<<<<<< HEAD
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: conversations
+=======
           data_path: conversations
+>>>>>>> unified-fides-2
     - name: member
       requests:
         read:
@@ -74,7 +91,14 @@ saas_config:
           param_values:
             - name: email
               identity: email
+<<<<<<< HEAD
+          postprocessors:
+            - strategy: unwrap
+              configuration:
+                data_path: exact_matches.members
+=======
           data_path: exact_matches.members
+>>>>>>> unified-fides-2
         update:
           method: PUT
           path: /3.0/lists/<list_id>/members/<subscriber_hash>
@@ -196,6 +220,8 @@ saas_config:
             {
               "unique_id": "<privacy_request_id>"
             }
+<<<<<<< HEAD
+=======
     - name: accounts
       requests:
         read:
@@ -232,3 +258,4 @@ saas_config:
                   field: users.list_ids
                   direction: from
               unpack: True
+>>>>>>> unified-fides-2

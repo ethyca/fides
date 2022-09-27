@@ -13,10 +13,10 @@ class TestMergeCredentialsEnvironment:
     @patch.dict(
         os.environ,
         {
-            "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__REGION": "us-east-1",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_1",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_1",
+            "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__REGION": "us-east-1",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_1",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_1",
         },
         clear=True,
     )
@@ -27,7 +27,7 @@ class TestMergeCredentialsEnvironment:
 
         assert credentials_dict == {
             "postgres_1": {
-                "connection_string": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test"
+                "connection_string": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test"
             },
             "aws_account_1": {
                 "region": "us-east-1",
@@ -39,9 +39,9 @@ class TestMergeCredentialsEnvironment:
     @patch.dict(
         os.environ,
         {
-            "FIDESCTL__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_1",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_1",
+            "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_1",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_1",
         },
         clear=True,
     )
@@ -52,7 +52,7 @@ class TestMergeCredentialsEnvironment:
 
         assert credentials_dict == {
             "postgres_1": {
-                "connection_string": "postgresql+psycopg2://fidesctl:env_variable.com:5439/fidesctl_test"
+                "connection_string": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test"
             },
             "aws_account_1": {
                 "region": "us-east-1",
@@ -64,8 +64,8 @@ class TestMergeCredentialsEnvironment:
     @patch.dict(
         os.environ,
         {
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_OVERRIDE",
-            "FIDESCTL__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_OVERRIDE",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY_ID": "ACCESS_KEY_ID_OVERRIDE",
+            "FIDES__CREDENTIALS__AWS_ACCOUNT_1__ACCESS_KEY": "ACCESS_KEY_OVERRIDE",
         },
         clear=True,
     )

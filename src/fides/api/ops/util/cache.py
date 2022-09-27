@@ -12,6 +12,7 @@ from fides.api.ops.schemas.masking.masking_secrets import SecretType
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed

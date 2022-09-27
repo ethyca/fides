@@ -1,4 +1,4 @@
-"""Contains all of the core CLI commands for Fidesctl."""
+"""Contains all of the core CLI commands for fides."""
 from typing import Optional
 
 import click
@@ -16,35 +16,6 @@ from fides.ctl.core import parse as _parse
 from fides.ctl.core import pull as _pull
 from fides.ctl.core import push as _push
 from fides.ctl.core.utils import git_is_dirty
-
-
-@click.command(deprecated=True)
-@click.pass_context
-@dry_flag
-@click.option(
-    "--diff",
-    is_flag=True,
-    help="Include any changes between server and local resources in the command output",
-)
-@manifests_dir_argument
-@with_analytics
-def apply(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
-    """
-    Validate local manifest files and persist any changes via the API server.
-    Deprecated in favor of `fidesctl push` command.
-    """
-
-    echo_red("Use the 'push' command instead.")
-    config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    _push.push(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-        dry=dry,
-        diff=diff,
-    )
-
 
 @click.command()
 @click.pass_context

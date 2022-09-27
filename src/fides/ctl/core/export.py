@@ -230,7 +230,7 @@ def export_system(
     """
     resource_type = "system"
 
-    server_resources = dict()
+    server_resources = {}
     existing_keys = [resource.fides_key for resource in system_list]
     server_resources[resource_type] = get_server_resources(
         url, resource_type, existing_keys, headers

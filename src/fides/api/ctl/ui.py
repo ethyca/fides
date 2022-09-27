@@ -9,13 +9,13 @@ from typing import Dict, Optional, Union
 from fastapi import Response
 from fastapi.responses import FileResponse
 
-FIDESCTL_DIRECTORY = "src/fidesctl"
+FIDES_DIRECTORY = "src/fides"
 ADMIN_UI_DIRECTORY = "ui-build/static/admin/"
 
 
 def get_package_path() -> Optional[Path]:
     """Returns a Path to the root directory of this package's installation, if it exists."""
-    package_name = __package__.split(".")[0]
+    package_name = __package__.split(".", maxsplit=1)[0]
     spec = importlib.util.find_spec(package_name)
     if spec and spec.origin:
         return Path(spec.origin).parent
@@ -43,7 +43,7 @@ def get_admin_index_as_response() -> Response:
 @lru_cache
 def get_local_file_map() -> Dict[re.Pattern, Path]:
     """Get the Admin UI route map for the local build."""
-    return generate_route_file_map(Path(FIDESCTL_DIRECTORY) / ADMIN_UI_DIRECTORY)
+    return generate_route_file_map(Path(FIDES_DIRECTORY) / ADMIN_UI_DIRECTORY)
 
 
 @lru_cache

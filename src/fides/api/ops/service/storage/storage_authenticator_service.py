@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from botocore.exceptions import ClientError
 from requests import RequestException
@@ -28,7 +28,7 @@ def secrets_are_valid(
     return uploader(secrets)
 
 
-def _s3_authenticator(secrets: StorageSecretsS3) -> bool:
+def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
         get_s3_session(S3AuthMethod.SECRET_KEYS.value, secrets.dict())  # type: ignore

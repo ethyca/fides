@@ -1,4 +1,4 @@
-"""A wrapper to make calling the API consistent across Fidesctl."""
+"""A wrapper to make calling the API consistent across fides."""
 from typing import Dict, List
 
 import requests

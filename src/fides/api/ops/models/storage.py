@@ -27,6 +27,8 @@ from fides.api.ops.util.logger import Pii
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
+
 
 def get_schema_for_secrets(
     storage_type: StorageType,

@@ -82,7 +82,7 @@ def generate_request_headers(user_id: str, api_key: str) -> Dict[str, str]:
     return {
         "Content-Type": "application/json",
         "user-id": str(user_id),
-        "Authorization": "Bearer {}".format(jwt_encode(1, api_key)),
+        "Authorization": f"Bearer {jwt_encode(1, api_key)}",
     }
 
 

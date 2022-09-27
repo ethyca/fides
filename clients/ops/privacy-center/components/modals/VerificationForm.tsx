@@ -18,13 +18,37 @@ import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../types/AlertState";
+<<<<<<< HEAD
+import { ModalViews } from "./types";
+import { addCommonHeaders } from "../../common/CommonHeaders";
+
+import config from "../../config/config.json";
+=======
 import { ModalViews, VerificationType } from "./types";
 import { addCommonHeaders } from "../../common/CommonHeaders";
 
+>>>>>>> unified-fides-2
 import { hostUrl } from "../../constants";
 
 const useVerificationForm = ({
   onClose,
+<<<<<<< HEAD
+  action,
+  setAlert,
+  privacyRequestId,
+  setCurrentView,
+}: {
+  onClose: () => void;
+  action: typeof config.actions[0] | null;
+  setAlert: (state: AlertState) => void;
+  privacyRequestId: string;
+  setCurrentView: (view: ModalViews) => void;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const resetVerificationProcess = useCallback(() => {
+    setCurrentView(ModalViews.PrivacyRequest);
+  }, [setCurrentView]);
+=======
   setAlert,
   requestId,
   setCurrentView,
@@ -44,12 +68,21 @@ const useVerificationForm = ({
   const resetVerificationProcess = useCallback(() => {
     setCurrentView(resetView);
   }, [setCurrentView, resetView]);
+>>>>>>> unified-fides-2
 
   const formik = useFormik({
     initialValues: {
       code: "",
     },
     onSubmit: async (values) => {
+<<<<<<< HEAD
+      if (!action) {
+        // somehow we've reached a broken state, return
+        return;
+      }
+
+=======
+>>>>>>> unified-fides-2
       setIsLoading(true);
 
       const body = {
@@ -70,7 +103,11 @@ const useVerificationForm = ({
         addCommonHeaders(headers, null);
 
         const response = await fetch(
+<<<<<<< HEAD
+          `${hostUrl}/privacy-request/${privacyRequestId}/verify`,
+=======
           `${hostUrl}/${verificationType}/${requestId}/verify`,
+>>>>>>> unified-fides-2
           {
             method: "POST",
             headers,
@@ -84,7 +121,11 @@ const useVerificationForm = ({
           return;
         }
 
+<<<<<<< HEAD
+        setCurrentView(ModalViews.RequestSubmitted);
+=======
         successHandler();
+>>>>>>> unified-fides-2
       } catch (error) {
         handleError("");
       }
@@ -112,17 +153,35 @@ const useVerificationForm = ({
 type VerificationFormProps = {
   isOpen: boolean;
   onClose: () => void;
+<<<<<<< HEAD
+  openAction: string | null;
+  setAlert: (state: AlertState) => void;
+  privacyRequestId: string;
+  setCurrentView: (view: ModalViews) => void;
+=======
   setAlert: (state: AlertState) => void;
   requestId: string;
   setCurrentView: (view: ModalViews) => void;
   resetView: ModalViews;
   verificationType: VerificationType;
   successHandler: () => void;
+>>>>>>> unified-fides-2
 };
 
 const VerificationForm: React.FC<VerificationFormProps> = ({
   isOpen,
   onClose,
+<<<<<<< HEAD
+  openAction,
+  setAlert,
+  privacyRequestId,
+  setCurrentView,
+}) => {
+  const action = openAction
+    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
+    : null;
+
+=======
   setAlert,
   requestId,
   setCurrentView,
@@ -130,6 +189,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   verificationType,
   successHandler,
 }) => {
+>>>>>>> unified-fides-2
   const {
     errors,
     handleBlur,
@@ -143,16 +203,28 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     resetVerificationProcess,
   } = useVerificationForm({
     onClose,
+<<<<<<< HEAD
+    action,
+    setAlert,
+    privacyRequestId,
+    setCurrentView,
+=======
     setAlert,
     requestId,
     setCurrentView,
     resetView,
     verificationType,
     successHandler,
+>>>>>>> unified-fides-2
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
+<<<<<<< HEAD
+  if (!action) return null;
+
+=======
+>>>>>>> unified-fides-2
   return (
     <>
       <ModalHeader pt={6} pb={0}>
@@ -165,6 +237,27 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
             your email, then return to this window and the code below.
           </Text>
           <Stack spacing={3}>
+<<<<<<< HEAD
+            {action.identity_inputs.name ? (
+              <FormControl
+                id="code"
+                isInvalid={touched.code && Boolean(errors.code)}
+              >
+                <Input
+                  id="code"
+                  name="code"
+                  focusBorderColor="primary.500"
+                  placeholder="Verification Code"
+                  isRequired
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.code}
+                  isInvalid={touched.code && Boolean(errors.code)}
+                />
+                <FormErrorMessage>{errors.code}</FormErrorMessage>
+              </FormControl>
+            ) : null}
+=======
             <FormControl
               id="code"
               isInvalid={touched.code && Boolean(errors.code)}
@@ -182,6 +275,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
               />
               <FormErrorMessage>{errors.code}</FormErrorMessage>
             </FormControl>
+>>>>>>> unified-fides-2
           </Stack>
         </ModalBody>
 

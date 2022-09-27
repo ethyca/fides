@@ -148,7 +148,7 @@ def get_db_health(database_url: str) -> str:
 
 
 async def configure_db(database_url: str) -> None:
-    "Set up the db to be used by the app."
+    """Set up the db to be used by the app."""
     try:
         create_db_if_not_exists(database_url)
         await init_db(database_url)

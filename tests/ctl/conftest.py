@@ -30,7 +30,7 @@ from fides.api import main
 from fides.api.ctl.database.session import engine, sync_session
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fides.ctl.core import api
-from fides.ctl.core.config import FidesctlConfig, get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
@@ -71,7 +71,7 @@ def test_client() -> Generator:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesctlConfig) -> Generator:
+def setup_db(test_config: FidesConfig) -> Generator:
     "Sets up the database for testing."
     yield api.db_action(test_config.cli.server_url, "reset")
 
@@ -307,7 +307,7 @@ def oauth_client(db: Session) -> Generator:
 
 @pytest.fixture
 def auth_header(  # type: ignore
-    request: Any, oauth_client: ClientDetail, test_config: FidesctlConfig
+    request: Any, oauth_client: ClientDetail, test_config: FidesConfig
 ) -> Dict[str, str]:
     client_id = oauth_client.id
 
@@ -322,7 +322,7 @@ def auth_header(  # type: ignore
 
 
 def generate_auth_header_for_user(
-    user: FidesUser, scopes: list[str], test_config: FidesctlConfig
+    user: FidesUser, scopes: list[str], test_config: FidesConfig
 ) -> Dict[str, str]:
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,

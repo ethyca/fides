@@ -2,13 +2,13 @@
 import os
 from typing import Generator
 
-import fidesctl.ctl.connectors.aws as aws_connector
 import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
+import fides.ctl.connectors.aws as aws_connector
 from fides.ctl.connectors.models import AWSConfig
-from fides.ctl.core.config import FidesctlConfig
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture()
@@ -171,7 +171,7 @@ def test_transform_rds_systems(
 # Integration
 @pytest.mark.external
 def test_describe_redshift_clusters(
-    tmpdir: LocalPath, test_config: FidesctlConfig
+    tmpdir: LocalPath, test_config: FidesConfig
 ) -> None:
     client = aws_connector.get_aws_client(
         service="redshift",
@@ -182,7 +182,7 @@ def test_describe_redshift_clusters(
 
 
 @pytest.mark.external
-def test_describe_rds_instances(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_describe_rds_instances(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     client = aws_connector.get_aws_client(
         service="rds",
         aws_config=get_test_aws_config(),
@@ -192,7 +192,7 @@ def test_describe_rds_instances(tmpdir: LocalPath, test_config: FidesctlConfig) 
 
 
 @pytest.mark.external
-def test_describe_rds_clusters(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_describe_rds_clusters(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     client = aws_connector.get_aws_client(
         service="rds",
         aws_config=get_test_aws_config(),

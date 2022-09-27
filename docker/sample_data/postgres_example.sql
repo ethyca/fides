@@ -1,7 +1,16 @@
+<<<<<<< HEAD
+<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
+=======
+>>>>>>> unified-fides-2
 -- Example Postgres schema matching the dataset in public/data/dataset/postgres_example_dataset.yml
 -- Database creation is done separately to loading these statements in to appease Postgres' transactional
 -- requirements in the context of DROP DATABASE statements
 
+<<<<<<< HEAD
+========
+>>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
+=======
+>>>>>>> unified-fides-2
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
     name CHARACTER VARYING(100),
@@ -100,6 +109,30 @@ CREATE TABLE public.type_link_test (
     name CHARACTER VARYING(100)
 );
 
+<<<<<<< HEAD
+<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
+========
+CREATE TABLE public.onsite_personnel (
+    responsible CHARACTER VARYING(100),
+    time TIMESTAMP PRIMARY KEY
+);
+
+
+INSERT INTO public.onsite_personnel VALUES
+('employee-1@example.com', '2022-01-01 09:00:00'),
+('employee-1@example.com', '2022-01-02 09:00:00'),
+('employee-1@example.com', '2022-01-03 09:00:00'),
+('employee-2@example.com', '2022-01-04 09:00:00'),
+('employee-1@example.com', '2022-01-05 09:00:00'),
+('employee-2@example.com', '2022-01-06 09:00:00'),
+('employee-2@example.com', '2022-01-07 09:00:00'),
+('employee-2@example.com', '2022-01-08 09:00:00');
+
+SELECT create_hypertable('onsite_personnel', 'time', migrate_data => true);
+
+>>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
+=======
+>>>>>>> unified-fides-2
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),
@@ -174,6 +207,9 @@ INSERT INTO public.report VALUES
 
 INSERT INTO public.type_link_test VALUES
 ('1', 'name1'),
+<<<<<<< HEAD
+('2', 'name2');
+=======
 ('2', 'name2');
 
 
@@ -197,3 +233,4 @@ INSERT INTO backup_schema.customer VALUES
 
 INSERT INTO backup_schema.address VALUES
 (7, '311', 'Test Street', 'Test Town', 'TX', '79843');
+>>>>>>> unified-fides-2

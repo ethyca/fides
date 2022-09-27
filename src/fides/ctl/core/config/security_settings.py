@@ -1,14 +1,18 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict
+from typing import Dict, List, Optional
 
-from fideslib.core.config import SecuritySettings
+from fideslib.core.config import SecuritySettings as FideslibSecuritySettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from pydantic import root_validator
 
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
-class FidesctlSecuritySettings(SecuritySettings):
+ENV_PREFIX = "FIDES__SECURITY__"
+
+
+class SecuritySettings(FideslibSecuritySettings):
     """Configuration settings for Security variables."""
 
     oauth_root_client_secret: str = "testrootclientsecret"
@@ -16,6 +20,7 @@ class FidesctlSecuritySettings(SecuritySettings):
     drp_jwt_secret: str = "testdrpsecret"
     oauth_root_client_id: str = "testrootclientid"
     encoding: str = "UTF-8"
+    root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
 
     @root_validator(pre=True)
     @classmethod
@@ -23,7 +28,7 @@ class FidesctlSecuritySettings(SecuritySettings):
         """
         Override SecuritySettings root validator to set secret hash.
         SecuritySettings expects oauth_root_client_secret to be set while
-        fidesctl config is expected to work with class defaults.
+        fides config is expected to work with class defaults.
         """
         value = values.get("oauth_root_client_secret") or "testrootclientsecret"
         encoding = values.get("encoding", "UTF-8")
@@ -34,4 +39,4 @@ class FidesctlSecuritySettings(SecuritySettings):
         return values
 
     class Config:
-        env_prefix = "FIDESCTL__SECURITY__"
+        env_prefix = ENV_PREFIX

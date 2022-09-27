@@ -10,7 +10,7 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.db.database import init_db
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -268,7 +268,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    init_db(config.database.sqlalchemy_database_uri)
-    session_local = get_db_session(config)
+    init_db(CONFIG.database.sqlalchemy_database_uri)
+    session_local = get_db_session(CONFIG)
     with session_local() as session:
         create_test_data(session)

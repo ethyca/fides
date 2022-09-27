@@ -10,13 +10,15 @@ from fides.ctl.core.utils import generate_request_headers
 
 from .fides_settings import FidesSettings
 
+ENV_PREFIX = "FIDES__USER__"
 
-class FidesctlUserSettings(FidesSettings):
+
+class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
     user_id: str = "1"
     api_key: str = "test_api_key"
-    request_headers: Dict[str, str] = dict()
+    request_headers: Dict[str, str] = {}
     encryption_key: str = "test_encryption_key"
     analytics_opt_out: Optional[bool]
 
@@ -27,4 +29,4 @@ class FidesctlUserSettings(FidesSettings):
         return generate_request_headers(values["user_id"], values["api_key"])
 
     class Config:
-        env_prefix = "FIDESCTL__USER__"
+        env_prefix = ENV_PREFIX

@@ -14,16 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [ 16.x ]
     defaults:
       run:
-        working-directory: clients/ctl/admin-ui
+        working-directory: clients/admin-ui
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -33,11 +33,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Format
+        run: npm run format:ci
+
       - name: Jest test
         run: npm run test:ci
 
       - name: Build
-        run: npm run export
+        run: npm run build
 
   Admin-UI-Cypress:
     runs-on: ubuntu-latest
@@ -55,21 +58,46 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd clients/ctl/admin-ui
+          cd clients/admin-ui
           npm install
 
       - name: Cypress E2E tests
         uses: cypress-io/github-action@v4
         with:
-          working-directory: clients/ctl/admin-ui
+          working-directory: clients/admin-ui
           install: false
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
 
-      - name: Cypress component tests
-        uses: cypress-io/github-action@v4
+  Privacy-Center-Unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    defaults:
+      run:
+        working-directory: clients/ops/privacy-center
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
-          working-directory: clients/ctl/admin-ui
-          install: false
-          component: true
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:ci
+
+      - name: Jest test
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build

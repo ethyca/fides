@@ -1,10 +1,10 @@
 """Contains the nox sessions used during CI checks."""
-from time import sleep
-
 import nox
+
 from constants_nox import (
     CI_ARGS,
     COMPOSE_FILE,
+    COMPOSE_SERVICE_NAME,
     IMAGE_NAME,
     INTEGRATION_COMPOSE_FILE,
     RUN,
@@ -12,98 +12,98 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from docker_nox import build
-from utils_nox import teardown
+from run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from utils_nox import install_requirements
 
 RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 
 @nox.session()
-def ci_checks(session: nox.Session) -> None:
+def ci_suite(session: nox.Session) -> None:
     """
-    Runs all of the CI checks, except for 'pytest_external'.
+    Runs the CI check suite.
 
-    Excludes 'pytest_external' so that no additional secrets/tooling are required.
+    Excludes external tests so that no additional secrets/tooling are required.
     """
-    teardown(session)
-    build(session, "test")
-    black(session)
-    isort(session)
-    xenon(session)
-    mypy(session)
-    pylint(session)
-    check_install(session)
-    fidesctl(session)
-    fidesctl_db_scan(session)
-    pytest(session, "unit")
-    pytest(session, "integration")
+    # Use "notify" instead of direct calls here to provide better user feedback
+    session.notify("teardown")
+    session.notify("build", ["test"])
+    session.notify("black")
+    session.notify("isort")
+    session.notify("xenon")
+    session.notify("mypy")
+    session.notify("pylint")
+    session.notify("check_install")
+    session.notify("pytest_unit")
+    session.notify("pytest_integration")
+    session.notify("teardown")
 
 
 # Static Checks
 @nox.session()
+def static_checks(session: nox.Session) -> None:
+    """Run the static checks only."""
+    session.notify("black")
+    session.notify("isort")
+    session.notify("xenon")
+    session.notify("mypy")
+    session.notify("pylint")
+
+
+@nox.session()
 def black(session: nox.Session) -> None:
     """Run the 'black' style linter."""
-    black_command = ("black", "src", "tests", "noxfiles")
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "black")
-    elif session.posargs == ["fix"]:
-        run_command = black_command
-    else:
-        run_command = (*black_command, "--check")
-    session.run(*run_command, external=True)
+    install_requirements(session)
+    command = (
+        "black",
+        "--check",
+        "src",
+        "tests",
+        "noxfiles",
+    )
+    session.run(*command)
 
 
 @nox.session()
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
-    isort_command = ("isort", "src", "tests", "noxfiles")
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "isort")
-    elif session.posargs == ["fix"]:
-        run_command = isort_command
-    else:
-        run_command = (*isort_command, "--check-only")
-    session.run(*run_command, external=True)
+    install_requirements(session)
+    command = ("isort", "src", "tests", "noxfiles", "--check")
+    session.run(*command)
 
 
 @nox.session()
 def mypy(session: nox.Session) -> None:
     """Run the 'mypy' static type checker."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "mypy")
-    else:
-        run_command = ("mypy",)
-    session.run(*run_command, external=True)
+    install_requirements(session)
+    command = "mypy"
+    session.run(command)
 
 
 @nox.session()
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "pylint")
-    else:
-        run_command = ("pylint", "src", "noxfiles", "tests")
-    session.run(*run_command, external=True)
+    install_requirements(session)
+    command = ("pylint", "src", "noxfiles")
+    session.run(*command)
 
 
 @nox.session()
 def xenon(session: nox.Session) -> None:
     """Run 'xenon' code complexity monitoring."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "xenon")
-    else:
-        run_command = (
-            "xenon",
-            "noxfiles",
-            "src",
-            "tests",
-            "--max-absolute B",
-            "--max-modules B",
-            "--max-average A",
-            "--ignore 'data, docs'",
-            "--exclude src/fidesctl/_version.py",
-        )
-    session.run(*run_command, external=True)
+    install_requirements(session)
+    command = (
+        "xenon",
+        "noxfiles",
+        "src",
+        "tests",
+        "--max-absolute B",
+        "--max-modules B",
+        "--max-average A",
+        "--ignore 'data, docs'",
+        "--exclude src/fides/_version.py",
+    )
+    session.run(*command)
 
 
 # Fidesctl Checks
@@ -111,35 +111,33 @@ def xenon(session: nox.Session) -> None:
 def check_install(session: nox.Session) -> None:
     """Check that fidesctl is installed."""
     session.install(".")
-    run_command = ("fidesctl", *(WITH_TEST_CONFIG), "--version")
+    run_command = ("fides", *(WITH_TEST_CONFIG), "--version")
     session.run(*run_command)
 
 
 @nox.session()
-def fidesctl(session: nox.Session) -> None:
+def check_fides_annotations(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
     if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "fidesctl")
+        run_command = (*RUN_STATIC_ANALYSIS, "check_fides_annotations")
     else:
-        run_command = ("fidesctl", "--local", *(WITH_TEST_CONFIG), "evaluate")
+        run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
 @nox.session()
-def fidesctl_db_scan(session: nox.Session) -> None:
+def fides_db_scan(session: nox.Session) -> None:
     """Scan the fidesctl application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
-    sleep(10)
     run_command = (
         *RUN,
-        "fidesctl",
-        *(WITH_TEST_CONFIG),
+        "fides",
         "scan",
         "dataset",
         "db",
-        "--connection-string",
-        "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test",
+        "--credentials-id",
+        "app_postgres",
     )
     session.run(*run_command, external=True)
 
@@ -155,12 +153,13 @@ def fidesctl_db_scan(session: nox.Session) -> None:
     ],
 )
 def pytest(session: nox.Session, mark: str) -> None:
-    """Runs tests."""
+    """Runs fidesctl tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
         *RUN_NO_DEPS,
         "pytest",
+        "tests/ctl/",
         "-m",
         mark,
     )
@@ -168,9 +167,23 @@ def pytest(session: nox.Session, mark: str) -> None:
 
 
 @nox.session()
-def pytest_external(session: nox.Session) -> None:
-    """Run all tests that rely on the third-party databases and services."""
+def pytest_unit(session: nox.Session) -> None:
+    """Runs fidesops unit tests."""
     session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        OPS_TEST_DIR,
+        "-m",
+        "not integration and not integration_external and not integration_saas",
+    )
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def pytest_external(session: nox.Session) -> None:
+    """Run all fidesctl tests that rely on the third-party databases and services."""
     start_command = (
         "docker-compose",
         "-f",
@@ -205,6 +218,77 @@ def pytest_external(session: nox.Session) -> None:
         "pytest",
         "-m",
         "external",
+        "tests/ctl",
+    )
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def pytest_integration(session: nox.Session) -> None:
+    """Runs fidesops integration tests."""
+    session.notify("teardown")
+    run_infrastructure(
+        run_tests=True,
+        analytics_opt_out=True,
+        datastores=[],
+        pytest_path=OPS_TEST_DIR,
+    )
+
+
+@nox.session()
+def pytest_integration_external(session: nox.Session) -> None:
+    """Run all tests that rely on the third-party databases and services."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        "docker",
+        "compose",
+        "run",
+        "-e",
+        "ANALYTICS_OPT_OUT",
+        "-e",
+        "REDSHIFT_TEST_URI",
+        "-e",
+        "SNOWFLAKE_TEST_URI",
+        "-e",
+        "REDSHIFT_TEST_DB_SCHEMA",
+        "-e",
+        "BIGQUERY_KEYFILE_CREDS",
+        "-e",
+        "BIGQUERY_DATASET",
+        "--rm",
+        CI_ARGS,
+        COMPOSE_SERVICE_NAME,
+        "pytest",
+        OPS_TEST_DIR,
+        "-m",
+        "integration_external",
+    )
+    session.run(*run_command, external=True)
+
+
+@nox.session()
+def pytest_saas(session: nox.Session) -> None:
+    """Run all saas tests that rely on the third-party databases and services."""
+    session.notify("teardown")
+    run_command = (
+        "docker-compose",
+        "run",
+        "-e",
+        "ANALYTICS_OPT_OUT",
+        "-e",
+        "VAULT_ADDR",
+        "-e",
+        "VAULT_NAMESPACE",
+        "-e",
+        "VAULT_TOKEN",
+        "--rm",
+        CI_ARGS,
+        COMPOSE_SERVICE_NAME,
+        "pytest",
+        OPS_TEST_DIR,
+        "-m",
+        "integration_saas",
     )
     session.run(*run_command, external=True)
 

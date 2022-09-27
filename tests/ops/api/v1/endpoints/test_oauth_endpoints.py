@@ -33,8 +33,11 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import OAuth2TokenException
-from fides.api.ops.core.config import config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
+from fides.ctl.core.api import get
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 class TestCreateClient:
@@ -60,7 +63,7 @@ class TestCreateClient:
         # Build auth header without client
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         response = api_client.post(url, headers=auth_header)
@@ -76,7 +79,7 @@ class TestCreateClient:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
@@ -97,7 +100,7 @@ class TestCreateClient:
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
         new_client = ClientDetail.get(
-            db, object_id=response_body["client_id"], config=config
+            db, object_id=response_body["client_id"], config=CONFIG
         )
         assert new_client.hashed_secret != response_body["client_secret"]
 
@@ -127,7 +130,7 @@ class TestCreateClient:
         assert list(response_body.keys()) == ["client_id", "client_secret"]
 
         new_client = ClientDetail.get(
-            db, object_id=response_body["client_id"], config=config
+            db, object_id=response_body["client_id"], config=CONFIG
         )
         assert new_client.scopes == scopes
 
@@ -358,7 +361,7 @@ class TestDeleteClient:
         assert response_body is None
 
         db.expunge_all()
-        client = ClientDetail.get(db, object_id=oauth_client.id, config=config)
+        client = ClientDetail.get(db, object_id=oauth_client.id, config=CONFIG)
         assert client is None
 
 
@@ -380,8 +383,8 @@ class TestAcquireAccessToken:
     def test_invalid_client_secret(self, db, url, api_client):
         new_client, _ = ClientDetail.create_client_and_secret(
             db,
-            config.security.oauth_client_id_length_bytes,
-            config.security.oauth_client_secret_length_bytes,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
         )
         response = api_client.post(
             url, data={"client_id": new_client.id, "secret": "badsecret"}
@@ -392,8 +395,8 @@ class TestAcquireAccessToken:
 
     def test_get_access_token_root_client(self, url, api_client):
         data = {
-            "client_id": config.security.oauth_root_client_id,
-            "client_secret": config.security.oauth_root_client_secret,
+            "client_id": CONFIG.security.oauth_root_client_id,
+            "client_secret": CONFIG.security.oauth_root_client_secret,
         }
 
         response = api_client.post(url, data=data)
@@ -401,12 +404,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            == json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == SCOPE_REGISTRY
@@ -415,8 +418,8 @@ class TestAcquireAccessToken:
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
-            config.security.oauth_client_id_length_bytes,
-            config.security.oauth_client_secret_length_bytes,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
         )
 
         data = {
@@ -429,12 +432,12 @@ class TestAcquireAccessToken:
         assert 200 == response.status_code
         assert (
             data["client_id"]
-            == json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            == json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_CLIENT_ID
             ]
         )
         assert (
-            json.loads(extract_payload(jwt, config.security.app_encryption_key))[
+            json.loads(extract_payload(jwt, CONFIG.security.app_encryption_key))[
                 JWE_PAYLOAD_SCOPES
             ]
             == []
@@ -458,7 +461,7 @@ class TestCallback:
         }
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state(
         self,
@@ -485,7 +488,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state_with_token_error(
         self,

@@ -13,6 +13,7 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
 ONETRUST_INTAKE_TASK = "onetrust_intake"
 
 

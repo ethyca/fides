@@ -6,34 +6,34 @@ repos:
       - id: docker
         name: docker
         entry: make build-local
-        files: "^fidesctl/"
+        files: "^fides/"
         types_or: [file, python]
         language: system
 
       - id: black
         name: black
         entry: make black
-        files: "^fidesctl/"
+        files: "^fides/"
         types_or: [file, python]
         language: system
 
       - id: mypy
         name: mypy
         entry: make mypy
-        files: "^fidesctl/"
+        files: "^fides/"
         types_or: [file, python]
         language: system
 
       - id: xenon
         name: xenon
         entry: make xenon
-        files: "^fidesctl/"
+        files: "^fides/"
         types_or: [file, python]
         language: system
 
       - id: pylint
         name: pylint
         entry: make pylint
-        files: "^fidesctl/"
+        files: "^fides/"
         types_or: [file, python]
         language: system

@@ -280,7 +280,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         for key, value in identity_dict.items():
             if value is not None:
                 hashed_value = ProvidedIdentity.hash_value(value)
-
                 ProvidedIdentity.create(
                     db=db,
                     data={

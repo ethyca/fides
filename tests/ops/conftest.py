@@ -62,13 +62,14 @@ from .fixtures.timescale_fixtures import *
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
+
 
 def migrate_test_db() -> None:
     """Apply migrations at beginning and end of testing session"""
-    logger.debug("Applying migrations...")
-    assert config.is_test_mode
-    if config.database.enabled:
-        init_db(config.database.sqlalchemy_test_database_uri)
+    logger.debug("Setting up the database...")
+    assert CONFIG.test_mode
+    yield db_action(CONFIG.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
 
@@ -76,22 +77,15 @@ def migrate_test_db() -> None:
 def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
-    assert config.is_test_mode
+    assert CONFIG.test_mode
     engine = get_db_engine(
-        database_uri=config.database.sqlalchemy_test_database_uri,
+        database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
-    logger.debug("Configuring database at: %s", engine.url)
-    if not database_exists(engine.url):
-        logger.debug("Creating database at: %s", engine.url)
-        create_database(engine.url)
-        logger.debug("Database at: %s successfully created", engine.url)
-    else:
-        logger.debug("Database at: %s already exists", engine.url)
-
     migrate_test_db()
-    scheduler.start()
-    SessionLocal = get_db_session(config, engine=engine)
+    if not scheduler.running:
+        scheduler.start()
+    SessionLocal = get_db_session(CONFIG, engine=engine)
     the_session = SessionLocal()
     # Setup above...
     yield the_session
@@ -165,16 +159,23 @@ def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
         JWE_ISSUED_AT: datetime.now().isoformat(),
     }
-    jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
 
 
 @pytest.fixture(scope="function")
 def generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
-    return _generate_auth_header(oauth_client)
+    return _generate_auth_header(oauth_client, CONFIG.security.app_encryption_key)
 
 
-def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
+@pytest.fixture
+def generate_auth_header_ctl_config(oauth_client) -> Callable[[Any], Dict[str, str]]:
+    return _generate_auth_header(oauth_client, CONFIG.security.app_encryption_key)
+
+
+def _generate_auth_header(
+    oauth_client, app_encryption_key
+) -> Callable[[Any], Dict[str, str]]:
     client_id = oauth_client.id
 
     def _build_jwt(scopes: List[str]) -> Dict[str, str]:
@@ -183,7 +184,7 @@ def _generate_auth_header(oauth_client) -> Callable[[Any], Dict[str, str]]:
             JWE_PAYLOAD_CLIENT_ID: client_id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), app_encryption_key)
         return {"Authorization": "Bearer " + jwe}
 
     return _build_jwt
@@ -200,7 +201,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config():
-    yield load_toml(["fidesops-integration.toml"])
+    yield load_toml(["tests/ops/integration_test_config.toml"])
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -226,69 +227,32 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request"
     ]
 
 
 @pytest.fixture(autouse=True, scope="session")
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
-    original_value = config.root_user.analytics_opt_out
-    config.root_user.analytics_opt_out = True
+    original_value = CONFIG.user.analytics_opt_out
+    CONFIG.user.analytics_opt_out = True
     yield
-    config.root_user.analytics_opt_out = original_value
+    CONFIG.user.analytics_opt_out = original_value
 
 
 @pytest.fixture(scope="function")
 def require_manual_request_approval():
     """Require manual request approval"""
-    original_value = config.execution.require_manual_request_approval
-    config.execution.require_manual_request_approval = True
+    original_value = CONFIG.execution.require_manual_request_approval
+    CONFIG.execution.require_manual_request_approval = True
     yield
-    config.execution.require_manual_request_approval = original_value
+    CONFIG.execution.require_manual_request_approval = original_value
 
 
-@pytest.fixture(autouse=True, scope="function")
-def subject_identity_verification_not_required():
+@pytest.fixture(autouse=True, scope="session")
+def disable_subject_identity_verification():
     """Disable identity verification for most tests unless overridden"""
-    original_value = config.execution.subject_identity_verification_required
-    config.execution.subject_identity_verification_required = False
+    original_value = CONFIG.execution.subject_identity_verification_required
+    CONFIG.execution.subject_identity_verification_required = False
     yield
-    config.execution.subject_identity_verification_required = original_value
-
-
-@pytest.fixture(autouse=True, scope="function")
-def privacy_request_complete_email_notification_disabled():
-    """Disable request completion email for most tests unless overridden"""
-    original_value = config.notifications.send_request_completion_notification
-    config.notifications.send_request_completion_notification = False
-    yield
-    config.notifications.send_request_completion_notification = original_value
-
-
-@pytest.fixture(autouse=True, scope="function")
-def privacy_request_receipt_email_notification_disabled():
-    """Disable request receipt email for most tests unless overridden"""
-    original_value = config.notifications.send_request_receipt_notification
-    config.notifications.send_request_receipt_notification = False
-    yield
-    config.notifications.send_request_receipt_notification = original_value
-
-
-@pytest.fixture(autouse=True, scope="function")
-def privacy_request_review_email_notification_disabled():
-    """Disable request review email for most tests unless overridden"""
-    original_value = config.notifications.send_request_review_notification
-    config.notifications.send_request_review_notification = False
-    yield
-    config.notifications.send_request_review_notification = original_value
-
-
-@pytest.fixture(scope="session", autouse=True)
-def event_loop():
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+    CONFIG.execution.subject_identity_verification_required = original_value

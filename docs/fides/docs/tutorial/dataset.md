@@ -69,7 +69,7 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized
 ```
 
-As an alternative to manually authoring the resource file, you can also use the [generate](../guides/generate_resources.md) CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
+As an alternative to manually authoring the resource file, you can also use the [generate](../getting-started/generate_resources.md) CLI command. The CLI will connect to the database and automatically generate a non-annotated resource YAML file in the specified location, based on the database schema. For this project, the command is:
 
 ```sh
 ./venv/bin/fidesctl generate dataset db \
@@ -102,7 +102,7 @@ Additionally, `fideslang` has attributes that describe what kind of data is cont
 | data_categories | List[FidesKey] | The types of sensitive data, as defined by the taxonomy, that can be found in this field |
 | data_qualifier | FidesKey | The level of deidentification for the dataset |
 
-> For more detail on Dataset resources, see the full [Dataset resource documentation](../language/resources/dataset.md).
+> For more detail on Dataset resources, see the full [Dataset resource documentation](https://ethyca.github.io/fideslang/resources/dataset).
 
 ---
 
