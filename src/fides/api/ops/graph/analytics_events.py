@@ -20,6 +20,8 @@ from fides.api.ops.util.collection_util import Row
 if TYPE_CHECKING:
     from fides.api.ops.task.graph_task import GraphTask
 
+CONFIG = get_config()
+
 
 async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
     """Send an Analytics Event if privacy request execution has failed"""

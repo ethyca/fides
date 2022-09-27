@@ -6,6 +6,8 @@ from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
+
 
 def encrypt_to_bytes_verify_secrets_length(
     plain_value: Optional[str], key: bytes, nonce: bytes

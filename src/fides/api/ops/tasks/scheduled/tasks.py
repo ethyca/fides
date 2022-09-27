@@ -19,7 +19,7 @@ ONETRUST_INTAKE_TASK = "onetrust_intake"
 
 def initiate_scheduled_request_intake() -> None:
     """Initiates scheduler to add request intake tasks"""
-    SessionLocal = get_db_session(config)
+    SessionLocal = get_db_session(CONFIG)
     db = SessionLocal()
     onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(
         db=db, field="type", value=StorageType.onetrust

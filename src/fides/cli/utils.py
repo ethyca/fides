@@ -22,6 +22,7 @@ from fideslog.sdk.python.utils import (
     generate_client_id,
 )
 
+import fides
 from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig

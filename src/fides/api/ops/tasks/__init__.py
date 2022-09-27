@@ -10,6 +10,7 @@ from fides.ctl.core.config import get_config
 
 logger = get_task_logger(__name__)
 
+CONFIG = get_config()
 EMAIL_QUEUE_NAME = "fidesops.email"
 
 
@@ -26,7 +27,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         return self._session
 
 
-def _create_celery(config_path: str = config.execution.celery_config_path) -> Celery:
+def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Celery:
     """
     Returns a configured version of the Celery application
     """

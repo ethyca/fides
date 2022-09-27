@@ -38,7 +38,6 @@ from fides.api.ops.common_exceptions import (
     FidesopsException,
     OAuth2TokenException,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.client import ClientCreatedResponse

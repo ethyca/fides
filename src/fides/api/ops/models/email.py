@@ -23,6 +23,7 @@ from fides.api.ops.schemas.email.email import (
 from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
 from fides.api.ops.util.logger import Pii
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 

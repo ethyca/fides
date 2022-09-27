@@ -27,6 +27,7 @@ from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
 
+CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
@@ -60,7 +61,7 @@ def is_callback_token_expired(issued_at: datetime | None) -> bool:
 
     return (
         datetime.now() - issued_at
-    ).total_seconds() / 60.0 > config.execution.privacy_request_delay_timeout
+    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
 
 
 def verify_callback_oauth(
@@ -141,7 +142,7 @@ async def verify_oauth_client(
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
     client = ClientDetail.get(
-        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
 
     if not client:

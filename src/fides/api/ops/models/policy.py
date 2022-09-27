@@ -25,6 +25,8 @@ from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
 
+CONFIG = get_config()
+
 
 class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"

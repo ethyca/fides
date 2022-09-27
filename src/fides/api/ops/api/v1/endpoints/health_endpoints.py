@@ -30,15 +30,13 @@ def health_check(
 ) -> Dict[str, Union[bool, str]]:
     return {
         "webserver": "healthy",
-        "database": get_db_health(config.database.sqlalchemy_database_uri, db),
+        "database": get_db_health(CONFIG.database.sqlalchemy_database_uri, db),
         "cache": get_cache_health(),
     }
 
 
 def get_db_health(database_url: Optional[str], db: Session) -> str:
     """Checks if the db is reachable and up to date in alembic migrations"""
-    if not database_url or not config.database.enabled:
-        return "no db configured"
     try:
         alembic_config = get_alembic_config(database_url)
         alembic_script_directory = script.ScriptDirectory.from_config(alembic_config)

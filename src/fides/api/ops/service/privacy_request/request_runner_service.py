@@ -68,6 +68,7 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 
+CONFIG = get_config()
 logger = get_task_logger(__name__)
 
 
@@ -394,7 +395,7 @@ async def run_privacy_request(
         )
         if not proceed:
             return
-        if config.notifications.send_request_completion_notification:
+        if CONFIG.notifications.send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
@@ -471,7 +472,7 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
 
 def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
-    SessionLocal = get_db_session(config)
+    SessionLocal = get_db_session(CONFIG)
     db = SessionLocal()
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:

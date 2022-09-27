@@ -36,6 +36,7 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
@@ -138,7 +139,7 @@ def logout_oauth_client(
         return None
 
     client = ClientDetail.get(
-        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
 
     return client

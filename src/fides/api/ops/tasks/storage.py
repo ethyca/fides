@@ -29,6 +29,7 @@ from fides.api.ops.util.storage_authenticator import (
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 

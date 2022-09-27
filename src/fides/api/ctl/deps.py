@@ -20,6 +20,7 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import ClientDetail, FidesUser
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(f"{API_PREFIX}/oauth/token"),
 )
@@ -74,7 +75,7 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
-    client = ClientDetail.get(db, object_id=client_id, config=config, scopes=SCOPES)
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG, scopes=SCOPES)
 
     if not client:
         raise AuthorizationError(detail="Not Authorized for this action")
