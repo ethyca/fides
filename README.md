@@ -47,7 +47,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
     ```
-    fidesctl init
+    fides init
     ```
 
     This builds the required images, spins up the database, and runs the initialization scripts.
@@ -55,8 +55,8 @@ This guide will walk through generating a mock RoPA using predefined resources i
 3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
 
     ```sh
-    fidesctl push demo_resources/
-    fidesctl export datamap --output-dir demo_resources/
+    fides push demo_resources/
+    fides export datamap --output-dir demo_resources/
     ```
 
     This will `push` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
