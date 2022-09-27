@@ -28,6 +28,11 @@ const MOCK_NODES = [
         value: "grandparent.aunt",
         children: [],
       },
+      {
+        label: "aunt_second",
+        value: "grandparent.aunt_second",
+        children: [],
+      },
     ],
   },
   {
@@ -236,6 +241,7 @@ describe("Checkbox tree", () => {
           "grandparent.parent.child",
           "grandparent.parent.sibling",
           "grandparent.aunt",
+          "grandparent.aunt_second",
         ].sort()
       );
       expect(
@@ -254,6 +260,13 @@ describe("Checkbox tree", () => {
           (d) => d.value
         )
       ).toEqual(["grandparent.parent.child"]);
+
+      // make sure aunt_second does not sneak in
+      expect(
+        getDescendantsAndCurrent(MOCK_NODES, "grandparent.aunt").map(
+          (d) => d.value
+        )
+      ).toEqual(["grandparent.aunt"]);
     });
 
     it("can determine if an ancestor is selected", () => {

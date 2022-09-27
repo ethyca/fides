@@ -36,6 +36,16 @@ export const ancestorIsSelected = (selected: string[], nodeName: string) => {
   return intersection.length > 0;
 };
 
+const matchNodeOrDescendant = (value: string, match: string) => {
+  if (value === match) {
+    return true;
+  }
+  if (value.startsWith(`${match}.`)) {
+    return true;
+  }
+  return false;
+};
+
 export const getDescendantsAndCurrent = (
   nodes: TreeNode[],
   nodeName: string,
@@ -46,7 +56,7 @@ export const getDescendantsAndCurrent = (
     if (node.children) {
       getDescendantsAndCurrent(node.children, nodeName, descendants);
     }
-    if (node.value.startsWith(nodeName)) {
+    if (matchNodeOrDescendant(node.value, nodeName)) {
       descendants.push(node);
     }
   });
@@ -151,8 +161,10 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
     let newSelected: string[] = [];
     if (checked.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unchecking children
-      newChecked = checked.filter((s) => !s.startsWith(node.value));
-      newSelected = selected.filter((s) => !s.startsWith(node.value));
+      newChecked = checked.filter((s) => !matchNodeOrDescendant(s, node.value));
+      newSelected = selected.filter(
+        (s) => !matchNodeOrDescendant(s, node.value)
+      );
     } else {
       // we need to mark all descendants as checked, though these are not
       // technically 'selected'
@@ -169,7 +181,9 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
   const handleExpanded = (node: TreeNode) => {
     if (expanded.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unexpanding children
-      setExpanded(expanded.filter((c) => !c.startsWith(node.value)));
+      setExpanded(
+        expanded.filter((c) => !matchNodeOrDescendant(c, node.value))
+      );
     } else {
       setExpanded([...expanded, node.value]);
     }
@@ -186,7 +200,7 @@ const CheckboxTree = ({ nodes, selected, onSelected }: CheckboxTreeProps) => {
       const isIndeterminate =
         isChecked &&
         node.children.length > 0 &&
-        checked.filter((s) => s.startsWith(node.value)).length !==
+        checked.filter((s) => s.startsWith(`${node.value}.`)).length + 1 !==
           thisDescendants.length;
       const isDisabled = ancestorIsSelected(selected, node.value);
 
