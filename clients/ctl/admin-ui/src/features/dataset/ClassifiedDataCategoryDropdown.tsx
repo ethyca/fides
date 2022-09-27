@@ -1,5 +1,6 @@
 import { Box, ButtonProps } from "@fidesui/react";
 import { MultiValue, Select } from "chakra-react-select";
+import { useMemo } from "react";
 
 import { DataCategory } from "~/types/api";
 
@@ -11,7 +12,7 @@ interface DataCategoryWithConfidence extends DataCategory {
   confidence: number;
 }
 
-interface Props extends DataCategoryDropdownProps {
+interface Props extends Omit<DataCategoryDropdownProps, "tooltip"> {
   mostLikelyCategories: DataCategoryWithConfidence[];
 }
 
@@ -19,7 +20,7 @@ const ClassifiedDataCategoryDropdown = ({
   mostLikelyCategories,
   onChecked,
   checked,
-  ...props
+  dataCategories,
 }: Props) => {
   const menuButtonProps: ButtonProps = {
     size: "sm",
@@ -27,12 +28,41 @@ const ClassifiedDataCategoryDropdown = ({
     borderRadius: "6px 0px 0px 6px",
   };
 
-  const options = mostLikelyCategories
-    .sort((a, b) => b.confidence - a.confidence)
-    .map((c) => ({
-      label: `${c.fides_key} (${c.confidence}%)`,
-      value: c.fides_key,
-    }));
+  const allCategoriesWithConfidence = useMemo(
+    () =>
+      dataCategories.map((dc) => {
+        const categoryWithConfidence = mostLikelyCategories.find(
+          (mlc) => mlc.fides_key === dc.fides_key
+        );
+        if (categoryWithConfidence) {
+          return categoryWithConfidence;
+        }
+        return { ...dc, confidence: undefined };
+      }),
+    [mostLikelyCategories, dataCategories]
+  );
+
+  const options = allCategoriesWithConfidence
+    .sort((a, b) => {
+      if (a.confidence !== undefined && b.confidence !== undefined) {
+        return b.confidence - a.confidence;
+      }
+      if (a.confidence === undefined) {
+        return 1;
+      }
+      if (b.confidence === undefined) {
+        return -1;
+      }
+      return a.fides_key.localeCompare(b.fides_key);
+    })
+    .map((c) => {
+      const confidence =
+        c.confidence === undefined ? "N/A" : `${c.confidence}%`;
+      return {
+        label: `${c.fides_key} (${confidence})`,
+        value: c.fides_key,
+      };
+    });
 
   const selectedOptions = options.filter((o) => checked.indexOf(o.value) >= 0);
 
@@ -61,7 +91,7 @@ const ClassifiedDataCategoryDropdown = ({
     <Box display="flex">
       <Box>
         <DataCategoryDropdown
-          {...props}
+          dataCategories={dataCategories}
           checked={checked}
           onChecked={onChecked}
           buttonProps={menuButtonProps}

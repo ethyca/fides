@@ -43,6 +43,30 @@ describe("ClassifiedDataCategoryDropdown", () => {
     ).should("have.attr", "data-checked");
   });
 
+  it("can render all categories even if not recommended", () => {
+    const onCheckedSpy = cy.spy().as("onCheckedSpy");
+    const selectedClassifiedCategory = MOST_LIKELY_CATEGORIES[0];
+    const otherCategory = MOCK_DATA_CATEGORIES[6];
+    cy.mount(
+      <ClassifiedDataCategoryDropdown
+        dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
+        // check one "most likely" and one regular one
+        checked={[
+          selectedClassifiedCategory.fides_key,
+          "system.authentication",
+        ]}
+        onChecked={onCheckedSpy}
+        mostLikelyCategories={MOST_LIKELY_CATEGORIES}
+      />
+    );
+    cy.getByTestId("classified-select").contains("system.authentication (N/A)");
+    cy.getByTestId("classified-select")
+      .click()
+      .within(() => {
+        cy.contains(`${otherCategory.fides_key} (N/A)`);
+      });
+  });
+
   it("can select from classified select without overriding taxonomy dropdown", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     const toSelect = MOST_LIKELY_CATEGORIES[0];
@@ -100,7 +124,7 @@ describe("ClassifiedDataCategoryDropdown", () => {
     // delete the selected category
     cy.getByTestId("classified-select").click().type("{backspace}");
     cy.get("@onCheckedSpy").should("have.been.calledWith", [
-      "system.authentication",
+      selectedClassifiedCategory.fides_key,
     ]);
   });
 

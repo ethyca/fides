@@ -33,41 +33,46 @@ const DataCategoryInput = ({
   return (
     <Grid templateColumns="1fr 3fr">
       <FormLabel>Data Categories</FormLabel>
-      <Stack>
+      {features.plus ? (
         <Box display="flex" alignItems="center">
           <Box mr="2" width="100%">
-            {features.plus ? (
-              <ClassifiedDataCategoryDropdown
-                dataCategories={dataCategories}
-                // TODO: make this real
-                mostLikelyCategories={dataCategories
-                  .slice(0, 5)
-                  .map((d) => ({ ...d, confidence: 97 }))}
-                checked={checked}
-                onChecked={onChecked}
-              />
-            ) : (
+            <ClassifiedDataCategoryDropdown
+              dataCategories={dataCategories}
+              // TODO: make this real
+              mostLikelyCategories={dataCategories
+                .slice(0, 5)
+                .map((d) => ({ ...d, confidence: 97 }))}
+              checked={checked}
+              onChecked={onChecked}
+            />
+          </Box>
+          <QuestionTooltip label={tooltip} />
+        </Box>
+      ) : (
+        <Stack>
+          <Box display="flex" alignItems="center">
+            <Box mr="2" width="100%">
               <DataCategoryDropdown
                 dataCategories={dataCategories}
                 checked={checked}
                 onChecked={onChecked}
               />
-            )}
+            </Box>
+            <QuestionTooltip label={tooltip} />
           </Box>
-          <QuestionTooltip label={tooltip} />
-        </Box>
-        <Stack data-testid="selected-categories">
-          {sortedCheckedDataCategories.map((dc) => (
-            <TaxonomyEntityTag
-              key={dc}
-              name={dc}
-              onClose={() => {
-                handleRemoveDataCategory(dc);
-              }}
-            />
-          ))}
+          <Stack data-testid="selected-categories">
+            {sortedCheckedDataCategories.map((dc) => (
+              <TaxonomyEntityTag
+                key={dc}
+                name={dc}
+                onClose={() => {
+                  handleRemoveDataCategory(dc);
+                }}
+              />
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
+      )}
     </Grid>
   );
 };
