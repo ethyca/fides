@@ -438,6 +438,7 @@ def export_datamap(
             get_server_resource(url, "organization", organization_fides_key, headers)
         ]
     }
+    # Verify this isn't dropping records on the joins
     for resource_type in ["system", "dataset", "data_subject", "data_use"]:
         server_resources = list_server_resources(
             url,
