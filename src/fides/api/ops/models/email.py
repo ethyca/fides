@@ -13,7 +13,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.ops.common_exceptions import EmailDispatchException
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.email.email import (
     SUPPORTED_EMAIL_SERVICE_SECRETS,

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, validator
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )

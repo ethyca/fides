@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import text
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,

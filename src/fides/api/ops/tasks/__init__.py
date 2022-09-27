@@ -6,7 +6,7 @@ from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_session
 from sqlalchemy.orm import Session
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 
 logger = get_task_logger(__name__)
 

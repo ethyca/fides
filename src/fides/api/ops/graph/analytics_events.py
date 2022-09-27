@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from fideslog.sdk.python.event import AnalyticsEvent
 
 from fides.api.ops.analytics import in_docker_container, send_analytics_event
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import (
     GraphDiffSummary,

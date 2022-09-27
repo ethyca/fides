@@ -21,7 +21,7 @@ from sqlalchemy_utils.functions import create_database, database_exists, drop_da
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.db.base import Base
 from fides.api.ops.db.database import init_db
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe

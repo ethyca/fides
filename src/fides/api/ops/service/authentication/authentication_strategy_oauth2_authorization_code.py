@@ -7,7 +7,7 @@ from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.saas.strategy_configuration import (

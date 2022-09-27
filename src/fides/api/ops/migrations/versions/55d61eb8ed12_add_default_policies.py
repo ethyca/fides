@@ -25,7 +25,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.policy import ActionType, DrpAction

@@ -1,6 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import click
-import fidesctl.cli.utils as utils
+import fides.cli.utils as utils
 import pytest
 from requests_mock import Mocker
 

@@ -18,7 +18,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import WebhookOrderException
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.storage import StorageConfig

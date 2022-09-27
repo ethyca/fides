@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from typing import Dict, List, Optional, Type
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,

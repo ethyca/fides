@@ -28,7 +28,7 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import (
     get_current_user,

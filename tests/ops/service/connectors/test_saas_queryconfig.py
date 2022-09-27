@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import pytest
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal

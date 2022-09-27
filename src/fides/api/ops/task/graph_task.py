@@ -15,7 +15,7 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,

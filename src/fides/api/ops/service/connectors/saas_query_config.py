@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, TypeVar
 import pydash
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy

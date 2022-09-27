@@ -44,7 +44,7 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from tests.ops.conftest import generate_auth_header_for_user
 
 page_size = Params().size

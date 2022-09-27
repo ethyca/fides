@@ -7,7 +7,7 @@ from redis import Redis
 from redis.client import Script  # type: ignore
 
 from fides.api.ops import common_exceptions
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
 
 logger = logging.getLogger(__name__)
