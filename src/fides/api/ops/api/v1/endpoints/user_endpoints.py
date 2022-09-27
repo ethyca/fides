@@ -101,7 +101,7 @@ def update_user_password(
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), config.security.encoding
+        b64_str_to_str(data.old_password), CONFIG.security.encoding
     ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
@@ -126,14 +126,14 @@ def logout_oauth_client(
 
     try:
         token_data = json.loads(
-            extract_payload(authorization, config.security.app_encryption_key)
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
     except jose.exceptions.JWEParseError:
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if (
-        not client_id or client_id == config.security.oauth_root_client_id
+        not client_id or client_id == CONFIG.security.oauth_root_client_id
     ):  # The root client is not a persisted object
         return None
 

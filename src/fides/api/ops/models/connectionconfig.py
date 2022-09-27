@@ -22,6 +22,7 @@ from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 if TYPE_CHECKING:
     from fides.api.ops.models.manual_webhook import AccessManualWebhook
+CONFIG = get_config()
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -107,7 +108,7 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

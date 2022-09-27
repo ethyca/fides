@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 ONETRUST_POLICY_KEY = "onetrust"
 FIDES_TASK = "fides task"
+CONFIG = get_config()
 
 
 class OneTrustService:
@@ -49,7 +50,7 @@ class OneTrustService:
     @staticmethod
     def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
-        SessionLocal = get_db_session(config)
+        SessionLocal = get_db_session(CONFIG)
         db = SessionLocal()
 
         onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(

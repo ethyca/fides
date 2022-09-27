@@ -23,7 +23,7 @@ def _encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> b
     if plain_value is None:
         raise ValueError("plain_value cannot be null")
     gcm = AESGCM(key)
-    value_bytes = plain_value.encode(config.security.encoding)
+    value_bytes = plain_value.encode(CONFIG.security.encoding)
     encrypted_bytes = gcm.encrypt(nonce, value_bytes, nonce)
     return encrypted_bytes
 
@@ -51,13 +51,13 @@ def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:
 
     encrypted_combined: bytes = base64.b64decode(encrypted_value)
     # Separate the nonce out as the first 12 characters of the combined message
-    nonce: bytes = encrypted_combined[0 : config.security.aes_gcm_nonce_length]
+    nonce: bytes = encrypted_combined[0 : CONFIG.security.aes_gcm_nonce_length]
     encrypted_message: bytes = encrypted_combined[
-        config.security.aes_gcm_nonce_length :
+        CONFIG.security.aes_gcm_nonce_length :
     ]
 
     decrypted_bytes: bytes = gcm.decrypt(nonce, encrypted_message, nonce)
-    decrypted_str = decrypted_bytes.decode(config.security.encoding)
+    decrypted_str = decrypted_bytes.decode(CONFIG.security.encoding)
     return decrypted_str
 
 
@@ -69,19 +69,19 @@ def decrypt(encrypted_value: str, key: bytes, nonce: bytes) -> str:
     gcm = AESGCM(key)
     encrypted_bytes = base64.b64decode(encrypted_value)
     decrypted_bytes = gcm.decrypt(nonce, encrypted_bytes, nonce)
-    decrypted_str = decrypted_bytes.decode(config.security.encoding)
+    decrypted_str = decrypted_bytes.decode(CONFIG.security.encoding)
     return decrypted_str
 
 
 def verify_nonce(nonce: bytes) -> None:
-    if len(nonce) != config.security.aes_gcm_nonce_length:
+    if len(nonce) != CONFIG.security.aes_gcm_nonce_length:
         raise ValueError(
-            f"Nonce must be {config.security.aes_gcm_nonce_length} bytes long"
+            f"Nonce must be {CONFIG.security.aes_gcm_nonce_length} bytes long"
         )
 
 
 def verify_encryption_key(key: bytes) -> None:
-    if len(key) != config.security.aes_encryption_key_length:
+    if len(key) != CONFIG.security.aes_encryption_key_length:
         raise ValueError(
-            f"Encryption key must be {config.security.aes_encryption_key_length} bytes long"
+            f"Encryption key must be {CONFIG.security.aes_encryption_key_length} bytes long"
         )

@@ -19,6 +19,7 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_base im
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
+CONFIG = get_config()
 
 
 class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
@@ -123,6 +124,6 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         """
 
         state = str(uuid4())
-        if config.oauth_instance:
-            state = f"{config.oauth_instance}-{state}"
+        if CONFIG.oauth_instance:
+            state = f"{CONFIG.oauth_instance}-{state}"
         return state

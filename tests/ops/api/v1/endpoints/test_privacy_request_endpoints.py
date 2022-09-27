@@ -3001,7 +3001,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert kwargs["to_email"] == "test@example.com"
         assert kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
         pr.delete(db=db)

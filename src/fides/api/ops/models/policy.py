@@ -230,7 +230,7 @@ class Rule(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

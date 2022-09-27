@@ -1267,9 +1267,9 @@ def application_user(
 
 @pytest.fixture(scope="function")
 def short_redis_cache_expiration() -> FidesopsConfig:
-    original_value: int = config.redis.default_ttl_seconds
-    config.redis.default_ttl_seconds = (
+    original_value: int = CONFIG.redis.default_ttl_seconds
+    CONFIG.redis.default_ttl_seconds = (
         1  # Set redis cache to expire very quickly for testing purposes
     )
     yield config
-    config.redis.default_ttl_seconds = original_value
+    CONFIG.redis.default_ttl_seconds = original_value

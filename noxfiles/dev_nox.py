@@ -10,7 +10,6 @@ from run_infrastructure import ALL_DATASTORES, run_infrastructure
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
     build(session, "dev")
-    build(session, "ui")
     session.notify("teardown")
 
     datastores = [
@@ -18,6 +17,7 @@ def dev(session: nox.Session) -> None:
     ] or None
 
     if "ui" in session.posargs:
+        build(session, "ui")
         session.run("docker", "compose", "up", "fides-ui", external=True)
 
     open_shell = "shell" in session.posargs

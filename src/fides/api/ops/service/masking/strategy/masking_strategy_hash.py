@@ -103,13 +103,13 @@ class HashMaskingStrategy(MaskingStrategy):
     @staticmethod
     def _hash_sha256(value: str, salt: str) -> str:
         return hashlib.sha256(
-            (value + salt).encode(config.security.encoding)
+            (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()
 
     @staticmethod
     def _hash_sha512(value: str, salt: str) -> str:
         return hashlib.sha512(
-            (value + salt).encode(config.security.encoding)
+            (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()
 
     @classmethod

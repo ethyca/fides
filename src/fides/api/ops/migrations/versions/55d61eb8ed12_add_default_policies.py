@@ -301,7 +301,7 @@ def autogenerate_erasure_policy(connection: Connection, client_id: str) -> None:
 
     rule_id: str = generate_uuid(Rule)
     encryption: StringEncryptedType = StringEncryptedType(
-        JSONTypeOverride, config.security.app_encryption_key, AesGcmEngine, "pkcs5"
+        JSONTypeOverride, CONFIG.security.app_encryption_key, AesGcmEngine, "pkcs5"
     )
     connection.execute(
         rule_insert_query,
@@ -363,10 +363,10 @@ def autogenerate_client(connection: Connection) -> str:
     )
 
     client_id: str = generate_secure_random_string(
-        config.security.oauth_client_id_length_bytes
+        CONFIG.security.oauth_client_id_length_bytes
     )
     secret: str = generate_secure_random_string(
-        config.security.oauth_client_secret_length_bytes
+        CONFIG.security.oauth_client_secret_length_bytes
     )
     salt: str = generate_salt()
     connection.execute(
@@ -374,8 +374,8 @@ def autogenerate_client(connection: Connection) -> str:
         {
             "client_id": client_id,
             "hashed_secret": hash_with_salt(
-                secret.encode(config.security.encoding),
-                salt.encode(config.security.encoding),
+                secret.encode(CONFIG.security.encoding),
+                salt.encode(CONFIG.security.encoding),
             ),
             "salt": salt,
             "scopes": SCOPE_REGISTRY,

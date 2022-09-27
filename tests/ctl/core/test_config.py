@@ -188,7 +188,7 @@ def test_config_from_path() -> None:
     config = get_config()
     print(os.environ)
     assert config.database.server == "testserver"
-    assert config.redis.host == "testredis"
+    assert CONFIG.redis.host == "testredis"
     assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
     assert config.admin_ui.enabled == True
 
@@ -205,7 +205,7 @@ def test_config_from_env_vars() -> None:
     """Test overriding config using ENV vars."""
     config = get_config()
     assert config.database.server == "envserver"
-    assert config.redis.host == "envhost"
+    assert CONFIG.redis.host == "envhost"
     assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 
 

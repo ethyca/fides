@@ -80,7 +80,7 @@ def verify_callback_oauth(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, config.security.app_encryption_key)
+        extract_payload(authorization, CONFIG.security.app_encryption_key)
     )
     try:
         token = WebhookJWE(**token_data)
@@ -118,7 +118,7 @@ async def verify_oauth_client(
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, config.security.app_encryption_key)
+        extract_payload(authorization, CONFIG.security.app_encryption_key)
     )
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
@@ -127,7 +127,7 @@ async def verify_oauth_client(
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        config.security.oauth_access_token_expire_minutes,
+        CONFIG.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 

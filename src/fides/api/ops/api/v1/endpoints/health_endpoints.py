@@ -16,6 +16,7 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
 
 router = APIRouter(tags=["Public"])
+CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
 # stops polluting logs with sqlalchemy / alembic info-level logs
@@ -55,7 +56,7 @@ def get_db_health(database_url: Optional[str], db: Session) -> str:
 
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
-    if not config.redis.enabled:
+    if not CONFIG.redis.enabled:
         return "no cache configured"
     try:
         get_cache()

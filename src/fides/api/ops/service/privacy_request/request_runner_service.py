@@ -352,7 +352,7 @@ async def run_privacy_request(
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
-            _log_warning(exc, config.dev_mode)
+            _log_warning(exc, CONFIG.dev_mode)
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
@@ -362,7 +362,7 @@ async def run_privacy_request(
                 failed_graph_analytics_event(privacy_request, exc)
             )
             # If dev mode, log traceback
-            _log_exception(exc, config.dev_mode)
+            _log_exception(exc, CONFIG.dev_mode)
             return
 
         # Send erasure requests via email to third parties where applicable
@@ -383,7 +383,7 @@ async def run_privacy_request(
                     failed_graph_analytics_event(privacy_request, exc)
                 )
                 # If dev mode, log traceback
-                _log_exception(exc, config.dev_mode)
+                _log_exception(exc, CONFIG.dev_mode)
                 return
 
         # Run post-execution webhooks
@@ -405,7 +405,7 @@ async def run_privacy_request(
                 await fideslog_graph_failure(
                     failed_graph_analytics_event(privacy_request, e)
                 )
-                _log_exception(e, config.dev_mode)
+                _log_exception(e, CONFIG.dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
         AuditLog.create(
@@ -465,7 +465,7 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
         id=privacy_request.id,
         replace_existing=True,
         trigger="date",
-        run_date=(datetime.now() + timedelta(seconds=config.redis.default_ttl_seconds)),
+        run_date=(datetime.now() + timedelta(seconds=CONFIG.redis.default_ttl_seconds)),
     )
 
 

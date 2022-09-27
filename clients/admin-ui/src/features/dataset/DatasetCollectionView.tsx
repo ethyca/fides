@@ -2,11 +2,8 @@ import { Box, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetCollectionView.tsx
-=======
 import { useFeatures } from "~/features/common/features.slice";
 import { useGetAllClassifyInstancesQuery } from "~/features/common/plus.slice";
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetCollectionView.tsx
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ColumnDropdown from "./ColumnDropdown";
@@ -57,22 +54,15 @@ interface Props {
 
 const DatasetCollectionView = ({ fidesKey }: Props) => {
   const dispatch = useDispatch();
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetCollectionView.tsx
-  const { dataset, isLoading } = useDataset(fidesKey);
-=======
   const { dataset, isLoading } = useSubscriptions(fidesKey);
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetCollectionView.tsx
   const activeCollections = useSelector(selectActiveCollections);
   const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
   const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetCollectionView.tsx
 
   // Query subscriptions:
   useGetAllDataCategoriesQuery();
-=======
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetCollectionView.tsx
 
   useEffect(() => {
     if (dataset) {
