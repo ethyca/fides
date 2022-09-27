@@ -1,0 +1,159 @@
+[
+  {
+    "id": "2",
+    "status": "In Work",
+    "datasets": [
+      {
+        "fides_key": "demo_users_dataset_2",
+        "collections": []
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "status": "Complete",
+    "datasets": [
+      {
+        "fides_key": "demo_users_dataset_3",
+        "collections": [
+          {
+            "name": "users",
+            "fields": [
+              {
+                "name": "device",
+                "classifications": [
+                  {
+                    "label": "user.device",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "status": "Reviewed",
+    "datasets": [
+      {
+        "fides_key": "demo_users_dataset_4",
+        "collections": [
+          {
+            "name": "users",
+            "fields": [
+              {
+                "name": "device",
+                "classifications": [
+                  {
+                    "label": "user.device",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "classification_in_review",
+    "status": "Complete",
+    "datasets": [
+      {
+        "fides_key": "dataset_in_review",
+        "collections": [
+          {
+            "name": "users",
+            "fields": [
+              {
+                "name": "email",
+                "classifications": [
+                  {
+                    "label": "user.email",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              },
+              {
+                "name": "device",
+                "classifications": [
+                  {
+                    "label": "user.device",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  },
+                  {
+                    "label": "user.contact.phone_number",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              },
+              {
+                "name": "state",
+                "classifications": [
+                  {
+                    "label": "user.contact.address",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "products",
+            "fields": [
+              {
+                "name": "created_at",
+                "classifications": [
+                  {
+                    "label": "system.operations",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              },
+              {
+                "name": "name",
+                "classifications": [
+                  {
+                    "label": "system.operations",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              },
+              {
+                "name": "price",
+                "classifications": [
+                  {
+                    "label": "system.operations",
+                    "score": 1,
+                    "aggregated_score": 1,
+                    "classification_paradigm": ""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

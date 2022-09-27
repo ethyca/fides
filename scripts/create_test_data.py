@@ -17,17 +17,21 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.policy import ActionType, Policy, Rule, RuleTarget
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fidesops.ops.models.storage import ResponseFormat, StorageConfig
-from fidesops.ops.schemas.redis_cache import PrivacyRequestIdentity
-from fidesops.ops.schemas.storage.storage import FileNaming, StorageDetails, StorageType
-from fidesops.ops.util.data_category import DataCategory
+from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.storage.storage import (
+    FileNaming,
+    StorageDetails,
+    StorageType,
+)
+from fides.api.ops.util.data_category import DataCategory
 
 
 def _create_policy(
@@ -195,7 +199,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
             )
             pr.persist_identity(
                 db=db,
-                identity=PrivacyRequestIdentity(
+                identity=Identity(
                     email="test@example.com",
                     phone_number="+1 234 567 8910",
                 ),

@@ -1,4 +1,5 @@
 .grid-row {
+<<<<<<< HEAD:clients/admin-ui/src/features/common/BorderGrid.module.css
   border-top-width: 0.5px;
   border-color: var(--chakra-colors-blackAlpha-300);
   box-sizing: border-box;
@@ -13,3 +14,19 @@
 .grid-item:nth-child(3n) {
   border-right-width: 0px;
 }
+=======
+    border-top-width: 0.5px;
+    border-color: var(--chakra-colors-blackAlpha-300);
+    box-sizing: border-box;
+}
+
+.grid-item {
+    border-right-width: 0.5px;
+    border-color: var(--chakra-colors-blackAlpha-300);
+    box-sizing: border-box;
+}
+
+.grid-item:nth-child(3n) {
+    border-right-width: 0px;
+}
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/common/BorderGrid.module.css

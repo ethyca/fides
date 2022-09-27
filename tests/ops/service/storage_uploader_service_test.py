@@ -12,6 +12,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
+from fides.api.ops.core.config import config
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
@@ -32,12 +33,9 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     decrypt_combined_nonce_and_message,
 )
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_secrets_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -86,7 +84,7 @@ def test_uploader_s3_success_secrets_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_automatic_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -131,7 +129,7 @@ def test_uploader_s3_success_automatic_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
 
@@ -166,7 +164,7 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
     sc.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
     storage_key = "s3_key"
@@ -179,8 +177,8 @@ def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     mock_upload_to_s3.assert_not_called()
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_onetrust")
-@mock.patch("fides.api.ops.models.privacy_request.PrivacyRequest.get")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
+@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.get")
 def test_uploader_onetrust_success(
     mock_get_request_details: Mock,
     mock_upload_to_onetrust: Mock,
@@ -239,7 +237,7 @@ def test_uploader_onetrust_success(
     config.delete(db)
 
 
-@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_onetrust")
+@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
 def test_uploader_onetrust_request_details_not_found(
     mock_upload_to_onetrust: Mock,
     db: Session,
@@ -436,9 +434,9 @@ class TestWriteToInMemoryBuffer:
         )
         assert isinstance(buff, BytesIO)
         encrypted = buff.read()
-        data = encrypted.decode(CONFIG.security.encoding)
+        data = encrypted.decode(config.security.encoding)
         decrypted = decrypt_combined_nonce_and_message(
-            data, self.key.encode(CONFIG.security.encoding)
+            data, self.key.encode(config.security.encoding)
         )
         assert json.loads(decrypted) == original_data
 
@@ -451,14 +449,14 @@ class TestWriteToInMemoryBuffer:
         zipfile = ZipFile(buff)
 
         with zipfile.open("mongo:address.csv", "r") as address_csv:
-            data = address_csv.read().decode(CONFIG.security.encoding)
+            data = address_csv.read().decode(config.security.encoding)
 
             decrypted = decrypt_combined_nonce_and_message(
-                data, self.key.encode(CONFIG.security.encoding)
+                data, self.key.encode(config.security.encoding)
             )
 
-            binary_stream = BytesIO(decrypted.encode(CONFIG.security.encoding))
-            df = pd.read_csv(binary_stream, encoding=CONFIG.security.encoding)
+            binary_stream = BytesIO(decrypted.encode(config.security.encoding))
+            df = pd.read_csv(binary_stream, encoding=config.security.encoding)
             assert list(df.columns) == [
                 "id",
                 "zip",
@@ -490,7 +488,7 @@ class TestEncryptResultsPackage:
         data = "test data"
         ret = encrypt_access_request_results(data, request_id=privacy_request.id)
         decrypted = decrypt_combined_nonce_and_message(
-            ret, key.encode(CONFIG.security.encoding)
+            ret, key.encode(config.security.encoding)
         )
         assert data == decrypted
 

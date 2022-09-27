@@ -9,18 +9,24 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.policy import CurrentStep, Policy
 from fides.api.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
+    Consent,
+    ConsentRequest,
     PrivacyRequest,
     PrivacyRequestStatus,
+    ProvidedIdentity,
+    can_run_checkpoint,
 )
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.manual_connector import ManualAction
 from fides.api.ops.util.cache import FidesopsRedis, get_identity_cache_key
+from fides.api.ops.util.constants import API_DATE_FORMAT
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -70,6 +76,50 @@ def test_create_privacy_request_sets_requested_at(
         },
     )
     assert pr.requested_at == requested_at
+    pr.delete(db)
+
+
+def test_create_privacy_request_sets_due_date(
+    db: Session,
+    policy: Policy,
+) -> None:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date is not None
+    pr.delete(db)
+
+    requested_at = datetime.now(timezone.utc)
+    due_date = timedelta(days=policy.execution_timeframe) + requested_at
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": requested_at,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date == due_date
+    pr.delete(db)
+
+    requested_at_str = "2021-08-30T16:09:37.359Z"
+    requested_at = datetime.strptime(requested_at_str, API_DATE_FORMAT).replace(
+        tzinfo=timezone.utc
+    )
+    due_date = timedelta(days=policy.execution_timeframe) + requested_at
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": requested_at_str,
+            "policy_id": policy.id,
+            "status": "pending",
+        },
+    )
+    assert pr.due_date == due_date
     pr.delete(db)
 
 
@@ -168,7 +218,7 @@ def test_delete_privacy_request_removes_cached_data(
     identity_attribute = "email"
     identity_value = "test@example.com"
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
     key = get_identity_cache_key(
         privacy_request_id=privacy_request.id,
@@ -191,7 +241,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[0]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -219,7 +269,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -245,7 +295,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -273,7 +323,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -301,7 +351,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         with requests_mock.Mocker() as mock_response:
@@ -334,7 +384,7 @@ class TestPrivacyRequestTriggerWebhooks:
         policy_pre_execution_webhooks,
     ):
         webhook = policy_pre_execution_webhooks[1]
-        identity = PrivacyRequestIdentity(email="customer-1@example.com")
+        identity = Identity(email="customer-1@example.com")
         privacy_request.cache_identity(identity)
 
         # halt not included
@@ -456,19 +506,19 @@ class TestCacheManualErasureCount:
 class TestPrivacyRequestCacheFailedStep:
     def test_cache_failed_step_and_collection(self, privacy_request):
 
-        privacy_request.cache_failed_collection_details(
+        privacy_request.cache_failed_checkpoint_details(
             step=CurrentStep.erasure, collection=paused_location
         )
 
-        cached_data = privacy_request.get_failed_collection_details()
+        cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data.step == CurrentStep.erasure
         assert cached_data.collection == paused_location
         assert cached_data.action_needed is None
 
     def test_cache_null_step_and_location(self, privacy_request):
-        privacy_request.cache_failed_collection_details()
+        privacy_request.cache_failed_checkpoint_details()
 
-        cached_data = privacy_request.get_failed_collection_details()
+        cached_data = privacy_request.get_failed_checkpoint_details()
         assert cached_data is None
 
 
@@ -487,7 +537,7 @@ class TestCacheEmailConnectorTemplateContents:
             privacy_request.get_email_connector_template_contents_by_dataset(
                 CurrentStep.erasure, "email_dataset"
             )
-            == {}
+            == []
         )
 
         privacy_request.cache_email_connector_template_contents(
@@ -504,8 +554,8 @@ class TestCacheEmailConnectorTemplateContents:
 
         assert privacy_request.get_email_connector_template_contents_by_dataset(
             CurrentStep.erasure, "email_dataset"
-        ) == {
-            "test_collection": CollectionActionRequired(
+        ) == [
+            CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("email_dataset", "test_collection"),
                 action_needed=[
@@ -516,4 +566,166 @@ class TestCacheEmailConnectorTemplateContents:
                     )
                 ],
             )
+        ]
+
+
+class TestCacheManualWebhookInput:
+    def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
+        with pytest.raises(NoCachedManualWebhookEntry):
+            privacy_request.get_manual_webhook_input(access_manual_webhook)
+
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+            "last_name": "Customer",
         }
+
+    def test_cache_no_fields(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={},
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": None,
+            "last_name": None,
+        }
+
+    def test_cache_field_missing(self, privacy_request, access_manual_webhook):
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={
+                "email": "customer-1@example.com",
+            },
+        )
+
+        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+            "email": "customer-1@example.com",
+            "last_name": None,
+        }
+
+    def test_cache_extra_fields_not_in_webhook_specs(
+        self, privacy_request, access_manual_webhook
+    ):
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={
+                    "email": "customer-1@example.com",
+                    "bad_field": "not_specified",
+                },
+            )
+
+    def test_cache_manual_webhook_no_fields_defined(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        access_manual_webhook.fields = (
+            None  # Specifically testing the None case to cover our bases
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.cache_manual_webhook_input(
+                manual_webhook=access_manual_webhook,
+                input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+            )
+
+
+class TestCanRunFromCheckpoint:
+    def test_can_run_from_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure_email_post_send,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
+        )
+
+    def test_can_run_from_equivalent_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.erasure,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is True
+        )
+
+    def test_cannot_run_from_completed_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+                from_checkpoint=CurrentStep.erasure,
+            )
+            is False
+        )
+
+    def test_can_run_if_no_saved_checkpoint(self):
+        assert (
+            can_run_checkpoint(
+                request_checkpoint=CurrentStep.access,
+            )
+            is True
+        )
+
+
+def test_consent(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "encrypted_value": {"value": "test@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    consent_data_1 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.biometric_health",
+        "opt_in": True,
+    }
+    consent_1 = Consent.create(db, data=consent_data_1)
+
+    consent_data_2 = {
+        "provided_identity_id": provided_identity.id,
+        "data_use": "user.browsing_history",
+        "opt_in": False,
+    }
+    consent_2 = Consent.create(db, data=consent_data_2)
+    data_uses = [x.data_use for x in provided_identity.consent]
+
+    assert consent_data_1["data_use"] in data_uses
+    assert consent_data_2["data_use"] in data_uses
+
+    provided_identity.delete(db)
+
+    assert Consent.get(db, object_id=consent_1.id) is None
+    assert Consent.get(db, object_id=consent_2.id) is None
+
+
+def test_consent_request(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "email",
+        "encrypted_value": {"value": "test@email.com"},
+    }
+    provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+    consent_request_1 = {
+        "provided_identity_id": provided_identity.id,
+    }
+    consent_1 = ConsentRequest.create(db, data=consent_request_1)
+
+    consent_request_2 = {
+        "provided_identity_id": provided_identity.id,
+    }
+    consent_2 = ConsentRequest.create(db, data=consent_request_2)
+
+    assert consent_1.provided_identity_id in provided_identity.id
+    assert consent_2.provided_identity_id in provided_identity.id
+
+    provided_identity.delete(db)
+
+    assert Consent.get(db, object_id=consent_1.id) is None
+    assert Consent.get(db, object_id=consent_2.id) is None

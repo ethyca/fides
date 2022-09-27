@@ -1,10 +1,19 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "es5",
     "lib": ["es5", "dom"],
-    "types": ["cypress", "node"]
+    "types": ["cypress", "node"],
+    "baseUrl": "..",
+    "paths": {
+      "~/*": ["src/*"]
+    }
   },
+<<<<<<< HEAD:clients/admin-ui/cypress/tsconfig.json
   "include": ["**/*.ts",
     "../cypress.config.ts"
   ]
+=======
+  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"]
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/tsconfig.json
 }

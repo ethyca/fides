@@ -21,10 +21,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.connection_configuration.connection_config import (
-    ConnectionSystemTypeMap,
-    SystemType,
-)
+from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
 from fides.api.ops.schemas.saas.saas_config import SaaSType
 
 
@@ -51,15 +48,17 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 22
+        assert len(data) == 24
 
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
         } in data
         assert {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -77,6 +76,7 @@ class TestGetConnections:
         assert data[0] == {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         }
 
         resp = api_client.get(url + "?search=re", headers=auth_header)
@@ -87,12 +87,18 @@ class TestGetConnections:
             {
                 "identifier": ConnectionType.postgres.value,
                 "type": SystemType.database.value,
+                "human_readable": "PostgreSQL",
             },
             {
                 "identifier": ConnectionType.redshift.value,
                 "type": SystemType.database.value,
+                "human_readable": "Amazon Redshift",
             },
-            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+            {
+                "identifier": SaaSType.outreach.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Outreach",
+            },
         ]
 
     def test_search_connection_types_case_insensitive(
@@ -107,10 +113,12 @@ class TestGetConnections:
         assert data[0] == {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
         }
         assert data[1] == {
             "identifier": SaaSType.stripe.value,
             "type": SystemType.saas.value,
+            "human_readable": "Stripe",
         }
 
         resp = api_client.get(url + "?search=Re", headers=auth_header)
@@ -121,12 +129,18 @@ class TestGetConnections:
             {
                 "identifier": ConnectionType.postgres.value,
                 "type": SystemType.database.value,
+                "human_readable": "PostgreSQL",
             },
             {
                 "identifier": ConnectionType.redshift.value,
                 "type": SystemType.database.value,
+                "human_readable": "Amazon Redshift",
             },
-            {"identifier": SaaSType.outreach.value, "type": SystemType.saas.value},
+            {
+                "identifier": SaaSType.outreach.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Outreach",
+            },
         ]
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
@@ -143,7 +157,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 8
+        assert len(data) == 9
 
     def test_search_system_type_and_connection_type(
         self, api_client, generate_auth_header, url
@@ -161,6 +175,21 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         assert len(data) == 2
+
+    def test_search_manual_system_type(self, api_client, generate_auth_header, url):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        resp = api_client.get(url + "?system_type=manual", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 1
+        assert data == [
+            {
+                "identifier": "manual_webhook",
+                "type": "manual",
+                "human_readable": "Manual Webhook",
+            }
+        ]
 
 
 class TestGetConnectionSecretSchema:
@@ -239,6 +268,21 @@ class TestGetConnectionSecretSchema:
             },
             "required": ["private_app_token"],
             "additionalProperties": False,
+        }
+
+    def test_get_connection_secrets_manual_webhook(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="manual_webhook"), headers=auth_header
+        )
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "title": "ManualWebhookSchema",
+            "description": "Secrets for manual webhooks. No secrets needed at this time.",
+            "type": "object",
+            "properties": {},
         }
 
 
@@ -462,7 +506,7 @@ class TestInstantiateConnectionFromTemplate:
         }
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.saas_config_endpoints.create_dataset_config_from_template"
+        "fidesops.ops.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
     )
     def test_dataset_config_saving_fails(
         self, mock_create_dataset, db, generate_auth_header, api_client, base_url

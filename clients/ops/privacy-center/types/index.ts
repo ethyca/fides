@@ -10,4 +10,8 @@ export enum PrivacyRequestStatus {
   CANCELED = "canceled",
   PENDING = "pending",
   IDENTITY_UNVERIFIED = "identity_unverified",
+<<<<<<< HEAD
+=======
+  REQUIRES_INPUT = "requires_input",
+>>>>>>> unified-fides-2
 }

@@ -1,26 +1,45 @@
+from unittest import mock
+
 import pytest as pytest
+from fideslib.models.audit_log import AuditLog, AuditLogAction
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.policy import CurrentStep
-from fides.api.ops.models.privacy_request import CollectionActionRequired, ManualAction
+from fides.api.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    ExecutionLog,
+    ExecutionLogStatus,
+    ManualAction,
+)
 from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.service.connectors.email_connector import (
+    email_connector_erasure_send,
+)
 from fides.api.ops.task import graph_task
 
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-async def test_collections_with_manual_erasure_confirmation(
+@mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
+@pytest.mark.asyncio
+async def test_email_connector_cache_and_delayed_send(
+    mock_email_dispatch,
     db,
     erasure_policy,
     integration_postgres_config,
     email_connection_config,
     privacy_request,
     example_datasets,
+    email_dataset_config,
+    email_config,
 ) -> None:
     """Run an erasure privacy request with a postgres dataset and an email dataset.
     The email dataset has three separate collections.
+
+    Call the email send and verify what would have been emailed
     """
     privacy_request.policy = erasure_policy
     rule = erasure_policy.rules[0]
@@ -92,8 +111,32 @@ async def test_collections_with_manual_erasure_confirmation(
         )
     )
 
-    assert raw_email_template_values == {
-        "children": CollectionActionRequired(
+    expected = [
+        CheckpointActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "daycare_customer"),
+            action_needed=[
+                ManualAction(
+                    locators={
+                        "customer_id": [1]
+                    },  # We have some data from postgres they can use to locate the customer_id
+                    get=None,
+                    update={"scholarship": "null_rewrite"},
+                )
+            ],
+        ),
+        CheckpointActionRequired(
+            step=CurrentStep.erasure,
+            collection=CollectionAddress("email_dataset", "payment"),
+            action_needed=[
+                ManualAction(
+                    locators={"payer_email": ["customer-1@example.com"]},
+                    get=None,
+                    update=None,  # Nothing to mask on this collection
+                )
+            ],
+        ),
+        CheckpointActionRequired(
             step=CurrentStep.erasure,
             collection=CollectionAddress("email_dataset", "children"),
             action_needed=[
@@ -114,28 +157,39 @@ async def test_collections_with_manual_erasure_confirmation(
                 )
             ],
         ),
-        "daycare_customer": CollectionActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "daycare_customer"),
-            action_needed=[
-                ManualAction(
-                    locators={
-                        "customer_id": [1]
-                    },  # We have some data from postgres they can use to locate the customer_id
-                    get=None,
-                    update={"scholarship": "null_rewrite"},
-                )
-            ],
-        ),
-        "payment": CollectionActionRequired(
-            step=CurrentStep.erasure,
-            collection=CollectionAddress("email_dataset", "payment"),
-            action_needed=[
-                ManualAction(
-                    locators={"payer_email": ["customer-1@example.com"]},
-                    get=None,
-                    update=None,  # Nothing to mask on this collection
-                )
-            ],
-        ),
-    }, "Only two collections need masking, but all are included in case they include relevant data locators."
+    ]
+    for action in raw_email_template_values:
+        assert (
+            action in expected
+        )  # "Only two collections need masking, but all are included in case they include relevant data locators."
+
+    children_logs = db.query(ExecutionLog).filter(
+        ExecutionLog.privacy_request_id == privacy_request.id,
+        ExecutionLog.dataset_name == email_dataset_config.fides_key,
+        ExecutionLog.collection_name == "children",
+    )
+    assert {"starting", "email prepared"} == {
+        log.message for log in children_logs
+    }, "Execution Log given unique message"
+    assert {ExecutionLogStatus.in_processing, ExecutionLogStatus.complete} == {
+        log.status for log in children_logs
+    }
+
+    email_connector_erasure_send(db, privacy_request)
+    assert mock_email_dispatch.called
+    call_args = mock_email_dispatch.call_args[1]
+    assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+    assert call_args["to_email"] == "test@example.com"
+    assert call_args["email_body_params"] == raw_email_template_values
+
+    created_email_audit_log = (
+        db.query(AuditLog)
+        .filter(AuditLog.privacy_request_id == privacy_request.id)
+        .all()[0]
+    )
+    assert (
+        created_email_audit_log.message
+        == "Erasure email instructions dispatched for 'email_dataset'"
+    )
+    assert created_email_audit_log.user_id == "system"
+    assert created_email_audit_log.action == AuditLogAction.email_sent

@@ -9,7 +9,6 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.graph.graph import Edge, Node
 from fides.api.ops.graph.traversal import TraversalNode, artificial_traversal_node
-from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_request import ManualAction
 from fides.api.ops.service.connectors import EmailConnector
 

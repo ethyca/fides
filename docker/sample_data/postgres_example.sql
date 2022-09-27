@@ -1,7 +1,16 @@
+<<<<<<< HEAD
+<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
+=======
+>>>>>>> unified-fides-2
 -- Example Postgres schema matching the dataset in public/data/dataset/postgres_example_dataset.yml
 -- Database creation is done separately to loading these statements in to appease Postgres' transactional
 -- requirements in the context of DROP DATABASE statements
 
+<<<<<<< HEAD
+========
+>>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
+=======
+>>>>>>> unified-fides-2
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
     name CHARACTER VARYING(100),
@@ -100,6 +109,30 @@ CREATE TABLE public.type_link_test (
     name CHARACTER VARYING(100)
 );
 
+<<<<<<< HEAD
+<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
+========
+CREATE TABLE public.onsite_personnel (
+    responsible CHARACTER VARYING(100),
+    time TIMESTAMP PRIMARY KEY
+);
+
+
+INSERT INTO public.onsite_personnel VALUES
+('employee-1@example.com', '2022-01-01 09:00:00'),
+('employee-1@example.com', '2022-01-02 09:00:00'),
+('employee-1@example.com', '2022-01-03 09:00:00'),
+('employee-2@example.com', '2022-01-04 09:00:00'),
+('employee-1@example.com', '2022-01-05 09:00:00'),
+('employee-2@example.com', '2022-01-06 09:00:00'),
+('employee-2@example.com', '2022-01-07 09:00:00'),
+('employee-2@example.com', '2022-01-08 09:00:00');
+
+SELECT create_hypertable('onsite_personnel', 'time', migrate_data => true);
+
+>>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
+=======
+>>>>>>> unified-fides-2
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),
@@ -174,4 +207,30 @@ INSERT INTO public.report VALUES
 
 INSERT INTO public.type_link_test VALUES
 ('1', 'name1'),
+<<<<<<< HEAD
 ('2', 'name2');
+=======
+('2', 'name2');
+
+
+CREATE SCHEMA backup_schema;
+CREATE TABLE  backup_schema.product (LIKE public.product INCLUDING ALL);
+CREATE TABLE  backup_schema.address (LIKE public.address INCLUDING ALL);
+CREATE TABLE  backup_schema.customer (LIKE public.customer INCLUDING ALL);
+CREATE TABLE  backup_schema.employee (LIKE public.employee INCLUDING ALL);
+CREATE TABLE  backup_schema.payment_card (LIKE public.payment_card INCLUDING ALL);
+CREATE TABLE  backup_schema.orders (LIKE public.orders INCLUDING ALL);
+CREATE TABLE  backup_schema.order_item (LIKE public.order_item INCLUDING ALL);
+CREATE TABLE  backup_schema.visit (LIKE public.visit INCLUDING ALL);
+CREATE TABLE  backup_schema.login (LIKE public.login INCLUDING ALL);
+CREATE TABLE  backup_schema.service_request (LIKE public.service_request INCLUDING ALL);
+CREATE TABLE  backup_schema.report (LIKE public.report INCLUDING ALL);
+CREATE TABLE  backup_schema.composite_pk_test (LIKE public.composite_pk_test INCLUDING ALL);
+CREATE TABLE  backup_schema.type_link_test (LIKE public.type_link_test INCLUDING ALL);
+
+INSERT INTO backup_schema.customer VALUES
+(1, 'customer-500@example.com', 'Johanna Customer', '2022-05-01 12:22:11', 7);
+
+INSERT INTO backup_schema.address VALUES
+(7, '311', 'Test Street', 'Test Town', 'TX', '79843');
+>>>>>>> unified-fides-2

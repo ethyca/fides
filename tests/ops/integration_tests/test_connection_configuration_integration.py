@@ -70,6 +70,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "username": None,
             "password": None,
             "url": None,
+            "db_schema": None,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
@@ -88,6 +89,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "dbname": "postgres_example",
             "username": "postgres",
             "password": "postgres",
+            "db_schema": None,
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -113,6 +115,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "username": "postgres",
             "password": "postgres",
             "url": None,
+            "db_schema": None,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
@@ -153,6 +156,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "username": None,
             "password": None,
             "url": payload["url"],
+            "db_schema": None,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True

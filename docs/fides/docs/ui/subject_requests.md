@@ -1,8 +1,14 @@
 # Subject Requests
 
+<<<<<<< HEAD:docs/fides/docs/ui/subject_requests.md
 The Fides Admin UI is designed to provide at-a-glance access to submitted subject requests. The Subject Request panel provides search and sort capabilities, quick approve and deny functions, and in-depth details on individual request histories and statuses.
 
 ![subject requests](../img/admin_ui/sr_overview.png)
+=======
+The FidesOps Admin UI is designed to provide easy, at-a-glance access to submitted Subject Requests. The Subject Request panel provides search and sort capabilities, quick approve and deny functions, and in-depth details on a request's history and status.
+
+![subject requests](../img/admin_ui/admin_ui.png)
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/subject_requests.md
 
 ### Panel options
 | Option | Description |
@@ -32,6 +38,10 @@ Double-clicking a request row will display the request detail page, which allows
 
 Requests with a status of **Error** can also be retried from this panel by selecting the **Retry** button.
 
+<<<<<<< HEAD:docs/fides/docs/ui/subject_requests.md
 The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event. **View Log** displays a detailed event log, which includes Fides' traversal through third-party connections and collections.
+=======
+The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event. **View Log** displays a detailed event log, which includes fidesops' traversal through third-party connections and collections.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/subject_requests.md
 
 ![subject request log](../img/admin_ui/subject_request_log.png)

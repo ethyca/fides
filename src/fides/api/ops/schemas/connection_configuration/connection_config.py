@@ -62,6 +62,7 @@ class ConnectionSystemTypeMap(BaseModel):
 
     identifier: Union[ConnectionType, SaaSType]
     type: SystemType
+    human_readable: str
 
     class Config:
         """Use enum values and set orm mode"""

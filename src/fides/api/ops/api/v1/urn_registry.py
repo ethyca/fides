@@ -48,6 +48,13 @@ PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_inp
 PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
 REQUEST_PREVIEW = "/privacy-request/preview"
+PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
+    "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
+)
+PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
+    "/privacy-request/{privacy_request_id}/resume_from_requires_input"
+)
+
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"
@@ -80,6 +87,10 @@ CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_TEST = "/connection/{connection_key}/test"
 AUTHORIZE = "/connection/{connection_key}/authorize"
+
+# Manual Webhooks
+ACCESS_MANUAL_WEBHOOKS = "/access_manual_webhook"
+ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 
 # Collection URLs
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"

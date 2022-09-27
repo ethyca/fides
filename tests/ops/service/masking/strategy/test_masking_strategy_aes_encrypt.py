@@ -6,7 +6,6 @@ from fides.api.ops.schemas.masking.masking_configuration import (
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AES_ENCRYPT_STRATEGY_NAME,
     AesEncryptionMaskingStrategy,
 )
 
@@ -20,7 +19,7 @@ AES_STRATEGY = AesEncryptionMaskingStrategy(configuration=GCM_CONFIGURATION)
 
 
 @mock.patch(
-    "fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
+    "fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
 )
 def test_mask_gcm_happypath(mock_encrypt: Mock):
     mock_encrypt.return_value = "encrypted"
@@ -37,7 +36,7 @@ def test_mask_gcm_happypath(mock_encrypt: Mock):
 
 
 @mock.patch(
-    "fides.api.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
+    "fidesops.ops.service.masking.strategy.masking_strategy_aes_encrypt.encrypt"
 )
 def test_mask_all_aes_modes(mock_encrypt: Mock):
     cache_secrets()
@@ -51,19 +50,19 @@ def test_mask_all_aes_modes(mock_encrypt: Mock):
 def cache_secrets() -> None:
     secret_key = MaskingSecretCache[bytes](
         secret=b"\x94Y\xa8Z",
-        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        masking_strategy=AesEncryptionMaskingStrategy.name,
         secret_type=SecretType.key,
     )
     cache_secret(secret_key, request_id)
     secret_hmac_key = MaskingSecretCache[str](
         secret="other_key",
-        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        masking_strategy=AesEncryptionMaskingStrategy.name,
         secret_type=SecretType.key_hmac,
     )
     cache_secret(secret_hmac_key, request_id)
     secret_hmac_salt = MaskingSecretCache[str](
         secret="some_salt",
-        masking_strategy=AES_ENCRYPT_STRATEGY_NAME,
+        masking_strategy=AesEncryptionMaskingStrategy.name,
         secret_type=SecretType.salt_hmac,
     )
     cache_secret(secret_hmac_salt, request_id)

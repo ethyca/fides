@@ -21,9 +21,7 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_PERMISSION_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
+from fides.api.ops.core.config import config
 
 
 class TestCreateUserPermissions:
@@ -165,8 +163,8 @@ class TestEditUserPermissions:
 
         ClientDetail.create_client_and_secret(
             db,
-            CONFIG.security.oauth_client_id_length_bytes,
-            CONFIG.security.oauth_client_secret_length_bytes,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[PRIVACY_REQUEST_READ],
             user_id=user.id,
         )

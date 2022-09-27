@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
@@ -10,17 +10,18 @@ from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
 )
 
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
-from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
+if TYPE_CHECKING:
+    from fides.api.ops.models.manual_webhook import AccessManualWebhook
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -33,7 +34,7 @@ class ConnectionTestStatus(enum.Enum):
 
 class ConnectionType(enum.Enum):
     """
-    Supported types to which we can connect fides.api.
+    Supported types to which we can connect fidesops.
     """
 
     postgres = "postgres"
@@ -46,8 +47,38 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
-    manual = "manual"
+    manual = "manual"  # Run as part of the traversal
     email = "email"
+    manual_webhook = "manual_webhook"  # Run before the traversal
+    timescale = "timescale"
+
+    @property
+    def human_readable(self) -> str:
+        """Human-readable mapping for ConnectionTypes
+        Add to this mapping if you add a new ConnectionType
+        """
+        readable_mapping: Dict[str, str] = {
+            ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.mongodb.value: "MongoDB",
+            ConnectionType.mysql.value: "MySQL",
+            ConnectionType.https.value: "Policy Webhook",
+            ConnectionType.saas.value: "SaaS",
+            ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.snowflake.value: "Snowflake",
+            ConnectionType.mssql.value: "Microsoft SQL Server",
+            ConnectionType.mariadb.value: "MariaDB",
+            ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.manual.value: "Manual Connector",
+            ConnectionType.email.value: "Email Connector",
+            ConnectionType.manual_webhook.value: "Manual Webhook",
+            ConnectionType.timescale.value: "TimescaleDB",
+        }
+        try:
+            return readable_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError(
+                "Add new ConnectionType to human_readable mapping"
+            )
 
 
 class AccessLevel(enum.Enum):
@@ -76,7 +107,7 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
@@ -91,6 +122,13 @@ class ConnectionConfig(Base):
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
+    )
+
+    access_manual_webhook = relationship(
+        "AccessManualWebhook",
+        back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
     )
 
     @classmethod

@@ -68,7 +68,11 @@ export const dataQualifierSlice = createSlice({
 export const { reducer } = dataQualifierSlice;
 
 const emptyDataQualifiers: DataQualifier[] = [];
+<<<<<<< HEAD:clients/admin-ui/src/features/data-qualifier/data-qualifier.slice.ts
 export const selectDataQualifiers: (state: RootState) => DataQualifier[] =
+=======
+export const selectDataQualifiers: (state: AppState) => DataQualifier[] =
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/data-qualifier/data-qualifier.slice.ts
   createSelector(
     dataQualifierApi.endpoints.getAllDataQualifiers.select(),
     ({ data }) => data ?? emptyDataQualifiers

@@ -9,7 +9,7 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.ctl.core.config import get_config
+from fides.api.ops.core.config import config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -17,8 +17,6 @@ if TYPE_CHECKING:
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
-
-CONFIG = get_config()
 
 
 class AuthenticatedClient:
@@ -54,8 +52,8 @@ class AuthenticatedClient:
         incoming path, headers, query, and body params.
         """
 
-        from fides.api.ops.service.authentication.authentication_strategy_factory import (  # pylint: disable=R0401
-            get_strategy,
+        from fides.api.ops.service.authentication.authentication_strategy import (  # pylint: disable=R0401
+            AuthenticationStrategy,
         )
 
         req: PreparedRequest = Request(
@@ -68,7 +66,7 @@ class AuthenticatedClient:
 
         # add authentication if provided
         if self.client_config.authentication:
-            auth_strategy = get_strategy(
+            auth_strategy = AuthenticationStrategy.get_strategy(
                 self.client_config.authentication.strategy,
                 self.client_config.authentication.configuration,
             )
@@ -90,7 +88,7 @@ class AuthenticatedClient:
             )
             response = self.session.send(prepared_request)
         except Exception as exc:  # pylint: disable=W0703
-            if CONFIG.dev_mode:  # pylint: disable=R1720
+            if config.dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to '{self.key}' with error: {exc}"
                 )
@@ -120,7 +118,7 @@ def log_request_and_response_for_debugging(
     prepared_request: PreparedRequest, response: Response
 ) -> None:
     """Log SaaS request and response in dev mode only"""
-    if CONFIG.dev_mode:
+    if config.dev_mode:
         logger.info(
             "\n\n-----------SAAS REQUEST-----------"
             "\n%s %s"

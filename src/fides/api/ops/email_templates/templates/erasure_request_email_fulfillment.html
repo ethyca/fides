@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>Erasure request</title>
+   </head>
+   <body>
+      <main>
+         <p>
+            This is an automated email sent using Fides. A customer would like to exercise their data privacy right to be deleted.
+            Please locate and erase personally identifiable information for the data subject and records listed below:
+         </p>
+         {% for action_required in dataset_collection_action_required -%}
+         <p><b>{{ action_required.collection.collection }}</b></p>
+         {% for action in action_required.action_needed -%}
+         <p>Locate the relevant records with:</p>
+         <ul>
+            {% for field, values in action.locators.items() -%}
+            <li> Field: <i>{{ field }}</i>, Values: {{ values|join(', ') }} </li>
+            {%- endfor %}
+         </ul>
+         <p>Erase the following fields:</p>
+            {% if action.update -%}
+            <ul>
+               {% for field_name, masking_strategy in action.update.items() -%}
+               <li><i>{{field_name}}</i></li>
+               {%- endfor %}
+            </ul>
+            {% else %}
+            <p>
+            <ul>
+               <li><i>No erasures needed on this collection.</i></li>
+            </ul>
+            </p>
+            {%- endif %}
+         {%- endfor %} {%- endfor %}
+      </main>
+   </body>
+</html>

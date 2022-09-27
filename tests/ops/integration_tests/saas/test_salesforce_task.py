@@ -3,16 +3,14 @@ import random
 import pytest
 import requests
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -25,6 +23,7 @@ def test_salesforce_connection_test(salesforce_connection_config) -> None:
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
+@pytest.mark.asyncio
 async def test_salesforce_access_request_task(
     policy,
     salesforce_identity_email,
@@ -37,7 +36,7 @@ async def test_salesforce_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_salesforce_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": salesforce_identity_email})
+    identity = Identity(**{"email": salesforce_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = salesforce_connection_config.get_saas_config().fides_key
@@ -373,6 +372,7 @@ async def test_salesforce_access_request_task(
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_salesforce
+@pytest.mark.asyncio
 async def test_salesforce_erasure_request_task(
     db,
     policy,
@@ -395,7 +395,7 @@ async def test_salesforce_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_salesforce_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": salesforce_erasure_identity_email})
+    identity = Identity(**{"email": salesforce_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = salesforce_connection_config.get_saas_config().fides_key
@@ -712,8 +712,8 @@ async def test_salesforce_erasure_request_task(
         ],
     )
 
-    masking_strict = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = True
+    masking_strict = config.execution.masking_strict
+    config.execution.masking_strict = True
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -783,4 +783,4 @@ async def test_salesforce_erasure_request_task(
     assert lead["LastName"] == "MASKED"
 
     # reset
-    CONFIG.execution.masking_strict = masking_strict
+    config.execution.masking_strict = masking_strict

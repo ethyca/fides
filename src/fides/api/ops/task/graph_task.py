@@ -10,7 +10,12 @@ import dask
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
-from fides.api.ops.common_exceptions import CollectionDisabled, PrivacyRequestPaused
+from fides.api.ops.common_exceptions import (
+    CollectionDisabled,
+    PrivacyRequestErasureEmailSendRequired,
+    PrivacyRequestPaused,
+)
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
@@ -38,13 +43,11 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
 dask.config.set(scheduler="threads")
 
-CONFIG = get_config()
 EMPTY_REQUEST = PrivacyRequest()
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 
@@ -64,13 +67,13 @@ def retry(
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def result(*args: Any, **kwargs: Any) -> List[Optional[Row]]:
-            func_delay = CONFIG.execution.task_retry_delay
+        def result(*args: Any, **kwargs: Any) -> Any:
+            func_delay = config.execution.task_retry_delay
             method_name = func.__name__
             self = args[0]
 
             raised_ex: Optional[Union[BaseException, Exception]] = None
-            for attempt in range(CONFIG.execution.task_retry_count + 1):
+            for attempt in range(config.execution.task_retry_count + 1):
                 try:
                     self.skip_if_disabled()
                     # Create ExecutionLog with status in_processing or retrying
@@ -89,6 +92,12 @@ def retry(
                     self.log_paused(action_type, ex)
                     # Re-raise to stop privacy request execution on pause.
                     raise
+                except PrivacyRequestErasureEmailSendRequired as exc:
+                    self.log_end(action_type, ex=None, success_override_msg=exc)
+                    self.resources.cache_erasure(
+                        f"{self.traversal_node.address.value}", 0
+                    )  # Cache that the erasure was performed in case we need to restart
+                    return 0
                 except CollectionDisabled as exc:
                     logger.warning(
                         "Skipping disabled collection %s for privacy_request: %s",
@@ -98,7 +107,7 @@ def retry(
                     self.log_skipped(action_type, exc)
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
-                    func_delay *= CONFIG.execution.task_retry_backoff
+                    func_delay *= config.execution.task_retry_backoff
                     logger.warning(
                         "Retrying %s %s in %s seconds...",
                         method_name,
@@ -109,7 +118,7 @@ def retry(
                     raised_ex = ex
 
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_collection_details(
+            self.resources.request.cache_failed_checkpoint_details(
                 step=action_type, collection=self.traversal_node.address
             )
             # Re-raise to stop privacy request execution on failure.
@@ -364,7 +373,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
     def log_end(
-        self, action_type: ActionType, ex: Optional[BaseException] = None
+        self,
+        action_type: ActionType,
+        ex: Optional[BaseException] = None,
+        success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -379,7 +391,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         else:
             logger.info("Ending %s, %s", self.resources.request.id, self.key)
             self.update_status(
-                "success",
+                str(success_override_msg) if success_override_msg else "success",
                 build_affected_field_logs(
                     self.traversal_node.node, self.resources.policy, action_type
                 ),
@@ -637,7 +649,7 @@ async def run_access_request(
         )
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))  # type: ignore
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
 
@@ -733,7 +745,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
         )
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))  # type: ignore
+        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide

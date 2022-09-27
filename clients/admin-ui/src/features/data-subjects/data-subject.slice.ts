@@ -65,7 +65,11 @@ export const dataSubjectsSlice = createSlice({
 });
 
 const emptyDataSubjects: DataSubject[] = [];
+<<<<<<< HEAD:clients/admin-ui/src/features/data-subjects/data-subject.slice.ts
 export const selectDataSubjects: (state: RootState) => DataSubject[] =
+=======
+export const selectDataSubjects: (state: AppState) => DataSubject[] =
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/data-subjects/data-subject.slice.ts
   createSelector(
     dataSubjectsApi.endpoints.getAllDataSubjects.select(),
     ({ data }) => data ?? emptyDataSubjects

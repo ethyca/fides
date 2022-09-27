@@ -3,15 +3,13 @@ import random
 import pytest
 import requests
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
@@ -29,7 +27,7 @@ async def test_auth0_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_auth0_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": auth0_identity_email})
+    identity = Identity(**{"email": auth0_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = auth0_connection_config.get_saas_config().fides_key
@@ -103,15 +101,15 @@ async def test_auth0_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_auth0_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": auth0_erasure_identity_email})
+    identity = Identity(**{"email": auth0_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = auth0_connection_config.get_saas_config().fides_key
     merged_graph = auth0_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = True
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = True
     v = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -166,4 +164,4 @@ async def test_auth0_erasure_request_task(
     user = user_response.json()
     assert user[0]["name"] == "MASKED"
 
-    CONFIG.execution.masking_strict = temp_masking
+    config.execution.masking_strict = temp_masking

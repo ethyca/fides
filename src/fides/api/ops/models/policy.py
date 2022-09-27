@@ -18,19 +18,20 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import WebhookOrderException
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
 
 
 class CurrentStep(EnumType):
+    pre_webhooks = "pre_webhooks"
     access = "access"
     erasure = "erasure"
+    erasure_email_post_send = "erasure_email_post_send"
+    post_webhooks = "post_webhooks"
 
 
 class ActionType(str, EnumType):
@@ -106,6 +107,7 @@ class Policy(Base):
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     drp_action = Column(EnumColumn(DrpAction), index=True, unique=True, nullable=True)
+    execution_timeframe = Column(Integer, nullable=True)
     client_id = Column(
         String,
         ForeignKey(ClientDetail.id_field_path),
@@ -228,7 +230,7 @@ class Rule(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

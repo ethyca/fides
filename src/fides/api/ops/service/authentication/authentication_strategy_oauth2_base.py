@@ -16,11 +16,8 @@ from fides.api.ops.service.connectors.saas.authenticated_client import (
 )
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-
-CONFIG = get_config()
 
 
 class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):

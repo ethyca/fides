@@ -44,8 +44,8 @@ from fides.api.ops.schemas.saas.saas_config import (
     ValidateSaaSConfigResponse,
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-from fides.api.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fides.api.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 from fides.api.ops.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
@@ -54,9 +54,9 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
     create_connection_config_from_template_no_save,
-    create_dataset_config_from_template,
     load_registry,
     registry_file,
+    upsert_dataset_config_from_template,
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -113,10 +113,7 @@ def verify_oauth_connection_config(
             detail="The connection config does not contain an authentication configuration.",
         )
 
-    if (
-        authentication.strategy
-        != OAuth2AuthorizationCodeAuthenticationStrategy.strategy_name
-    ):
+    if authentication.strategy != OAuth2AuthorizationCodeAuthenticationStrategy.name:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail="The connection config does not use OAuth2 Authorization Code authentication.",
@@ -262,7 +259,7 @@ def authorize_connection(
     authentication = connection_config.get_saas_config().client_config.authentication  # type: ignore
 
     try:
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = get_strategy(
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(
             authentication.strategy, authentication.configuration  # type: ignore
         )
         return auth_strategy.get_authorization_url(db, connection_config)
@@ -324,7 +321,7 @@ def instantiate_connection_from_template(
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
     try:
-        dataset_config: DatasetConfig = create_dataset_config_from_template(
+        dataset_config: DatasetConfig = upsert_dataset_config_from_template(
             db, connection_config, connector_template, template_values
         )
     except Exception:

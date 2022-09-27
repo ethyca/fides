@@ -7,8 +7,8 @@ from requests import RequestException
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     S3AuthMethod,
-    StorageSecrets,
     StorageSecretsOnetrust,
+    StorageSecretsS3,
     StorageType,
 )
 from fides.api.ops.util.storage_authenticator import (
@@ -31,7 +31,7 @@ def secrets_are_valid(
 def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
-        get_s3_session(S3AuthMethod.SECRET_KEYS, secrets)
+        get_s3_session(S3AuthMethod.SECRET_KEYS.value, secrets.dict())  # type: ignore
         return True
     except ClientError:
         return False

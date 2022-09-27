@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from fides.api.ops.schemas.masking.masking_configuration import (
-    MaskingConfiguration,
     StringRewriteMaskingConfiguration,
 )
 from fides.api.ops.schemas.masking.masking_strategy_description import (
@@ -12,16 +11,13 @@ from fides.api.ops.service.masking.strategy.format_preservation import (
     FormatPreservation,
 )
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
-
-STRING_REWRITE_STRATEGY_NAME = "string_rewrite"
 
 
-@MaskingStrategyFactory.register(STRING_REWRITE_STRATEGY_NAME)
 class StringRewriteMaskingStrategy(MaskingStrategy):
     """Masks the values with a pre-determined value"""
+
+    name = "string_rewrite"
+    configuration_model = StringRewriteMaskingConfiguration
 
     def __init__(
         self,
@@ -49,16 +45,12 @@ class StringRewriteMaskingStrategy(MaskingStrategy):
     def secrets_required(self) -> bool:
         return False
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return StringRewriteMaskingConfiguration  # type: ignore
-
     # MR Note - We will need a way to ensure that this does not fall out of date. Given that it
     # includes subjective instructions, this is not straightforward to automate
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=STRING_REWRITE_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value with a default string value",
             configurations=[
                 MaskingStrategyConfigurationDescription(

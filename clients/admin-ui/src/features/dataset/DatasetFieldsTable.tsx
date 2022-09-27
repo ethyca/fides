@@ -1,10 +1,13 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { DatasetField } from "~/types/api";
+import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
 
+<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
 import IdentifiabilityTag from "../taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
+=======
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
 import {
   selectActiveEditor,
   selectActiveField,
@@ -12,6 +15,7 @@ import {
   setActiveEditor,
   setActiveFieldIndex,
 } from "./dataset.slice";
+<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
 import EditFieldDrawer from "./EditFieldDrawer";
 import { ColumnMetadata, EditableType } from "./types";
 
@@ -50,6 +54,11 @@ const Cell = ({
   return <>{field[attribute]}</>;
 };
 /* eslint-disable react/jsx-no-useless-fragment */
+=======
+import DatasetFieldCell from "./DatasetFieldCell";
+import EditFieldDrawer from "./EditFieldDrawer";
+import { ColumnMetadata, EditableType } from "./types";
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
 
 interface Props {
   columns: ColumnMetadata[];
@@ -60,6 +69,10 @@ const DatasetFieldsTable = ({ columns }: Props) => {
   const activeFields = useSelector(selectActiveFields);
   const activeField = useSelector(selectActiveField);
   const activeEditor = useSelector(selectActiveEditor);
+<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
+=======
+  const classifyInstanceFieldMap = useSelector(selectClassifyInstanceFieldMap);
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
 
   const handleClose = () => {
     dispatch(setActiveFieldIndex(undefined));
@@ -100,7 +113,15 @@ const DatasetFieldsTable = ({ columns }: Props) => {
             >
               {columns.map((c) => (
                 <Td key={`${c.name}-${field.name}`} pl={0}>
+<<<<<<< HEAD:clients/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
                   <Cell field={field} attribute={c.attribute} />
+=======
+                  <DatasetFieldCell
+                    field={field}
+                    classifyField={classifyInstanceFieldMap.get(field.name)}
+                    attribute={c.attribute}
+                  />
+>>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/DatasetFieldsTable.tsx
                 </Td>
               ))}
             </Tr>

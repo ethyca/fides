@@ -7,19 +7,17 @@ from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FidesopsException
+from fides.api.ops.core.config import config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
-    StrategyConfiguration,
 )
 from fides.api.ops.service.authentication.authentication_strategy_oauth2_base import (
     OAuth2AuthenticationStrategyBase,
 )
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
-from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +27,8 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
     it if needed using the configured token refresh request.
     """
 
-    strategy_name = "oauth2_authorization_code"
+    name = "oauth2_authorization_code"
+    configuration_model = OAuth2AuthorizationCodeConfiguration
 
     def __init__(self, configuration: OAuth2AuthorizationCodeConfiguration):
         super().__init__(configuration)
@@ -124,10 +123,6 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         """
 
         state = str(uuid4())
-        if CONFIG.oauth_instance:
-            state = f"{CONFIG.oauth_instance}-{state}"
+        if config.oauth_instance:
+            state = f"{config.oauth_instance}-{state}"
         return state
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OAuth2AuthorizationCodeConfiguration  # type: ignore

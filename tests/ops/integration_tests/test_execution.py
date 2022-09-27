@@ -6,6 +6,7 @@ from fideslib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import (
@@ -16,21 +17,18 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
 )
 from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import integration_secrets
 from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
-
-CONFIG = get_config()
 
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
@@ -98,7 +96,8 @@ class TestDeleteCollection:
         )
         assert pr.get_results() == {}
 
-    @mock.patch("fides.api.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
         self,
         mocked_log_start,
@@ -135,7 +134,7 @@ class TestDeleteCollection:
             Delete the mongo connection in a separate session, for testing purposes, while the privacy request
             is in progress. Arbitrarily hooks into the log_start method to do this.
             """
-            SessionLocal = get_db_session(CONFIG)
+            SessionLocal = get_db_session(config)
             new_session = SessionLocal()
             try:
                 reloaded_config = new_session.query(ConnectionConfig).get(
@@ -185,6 +184,7 @@ class TestDeleteCollection:
 
         db.delete(mongo_connection_config)
 
+    @pytest.mark.asyncio
     async def test_collection_omitted_on_restart_from_failure(
         self,
         db,
@@ -316,6 +316,7 @@ class TestDeleteCollection:
 
 @pytest.mark.integration
 class TestSkipDisabledCollection:
+    @pytest.mark.asyncio
     async def test_skip_collection_new_request(
         self,
         db,
@@ -360,7 +361,8 @@ class TestSkipDisabledCollection:
         assert mongo_logs.count() == 9
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
-    @mock.patch("fides.api.ops.task.graph_task.GraphTask.log_start")
+    @mock.patch("fidesops.ops.task.graph_task.GraphTask.log_start")
+    @pytest.mark.asyncio
     async def test_run_disabled_collections_in_progress(
         self,
         mocked_log_start,
@@ -403,7 +405,7 @@ class TestSkipDisabledCollection:
             in a new session, to mimic the ConnectionConfig being disabled by a separate request while request
             is in progress.
             """
-            SessionLocal = get_db_session(CONFIG)
+            SessionLocal = get_db_session(config)
             new_session = SessionLocal()
             reloaded_config = new_session.query(ConnectionConfig).get(
                 mongo_connection_config.id
@@ -451,6 +453,7 @@ class TestSkipDisabledCollection:
 
         db.delete(mongo_connection_config)
 
+    @pytest.mark.asyncio
     async def test_skip_collection_on_restart(
         self,
         db,
@@ -583,6 +586,7 @@ class TestSkipDisabledCollection:
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_restart_graph_from_failure(
     db,
     policy,
@@ -634,7 +638,7 @@ async def test_restart_graph_from_failure(
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
     ]
-    assert privacy_request.get_failed_collection_details() == CollectionActionRequired(
+    assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
         step=CurrentStep.access,
         collection=CollectionAddress("mongo_test", "customer_details"),
     )
@@ -645,7 +649,7 @@ async def test_restart_graph_from_failure(
 
     # Rerun access request using cached results
     with mock.patch(
-        "fides.api.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
         await graph_task.run_access_request(
             privacy_request,
@@ -719,6 +723,7 @@ async def test_restart_graph_from_failure(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_restart_graph_from_failure_during_erasure(
     db,
     policy,
@@ -775,7 +780,7 @@ async def test_restart_graph_from_failure_during_erasure(
 
     # Rerun erasure portion of request using cached results
     with mock.patch(
-        "fides.api.ops.task.graph_task.fideslog_graph_rerun"
+        "fidesops.ops.task.graph_task.fideslog_graph_rerun"
     ) as mock_log_event:
         await graph_task.run_erasure(
             privacy_request,

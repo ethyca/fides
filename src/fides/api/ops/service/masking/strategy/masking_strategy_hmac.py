@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
-from fides.api.ops.schemas.masking.masking_configuration import (
-    HmacMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
@@ -19,20 +16,17 @@ from fides.api.ops.service.masking.strategy.format_preservation import (
     FormatPreservation,
 )
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fides.api.ops.util.encryption.hmac_encryption_scheme import hmac_encrypt_return_str
 from fides.api.ops.util.encryption.secrets_util import SecretsUtil
 
-HMAC_STRATEGY_NAME = "hmac"
 
-
-@MaskingStrategyFactory.register(HMAC_STRATEGY_NAME)
 class HmacMaskingStrategy(MaskingStrategy):
     """
     Masks a value by generating a hash using a hash algorithm and a required secret key.  One of the differences
     between this and the HashMaskingStrategy is the required secret key."""
+
+    name = "hmac"
+    configuration_model = HmacMaskingConfiguration
 
     def __init__(
         self,
@@ -78,14 +72,10 @@ class HmacMaskingStrategy(MaskingStrategy):
         ] = self._build_masking_secret_meta()
         return SecretsUtil.build_masking_secrets_for_cache(masking_meta)
 
-    @staticmethod
-    def get_configuration_model() -> MaskingConfiguration:
-        return HmacMaskingConfiguration  # type: ignore
-
-    @staticmethod
-    def get_description() -> MaskingStrategyDescription:
+    @classmethod
+    def get_description(cls: Type[MaskingStrategy]) -> MaskingStrategyDescription:
         return MaskingStrategyDescription(
-            name=HMAC_STRATEGY_NAME,
+            name=cls.name,
             description="Masks the input value by using the HMAC algorithm along with a hashed version of the data "
             "and a secret key.",
             configurations=[
@@ -107,15 +97,17 @@ class HmacMaskingStrategy(MaskingStrategy):
         supported_data_types = {"string"}
         return data_type in supported_data_types
 
-    @staticmethod
-    def _build_masking_secret_meta() -> Dict[SecretType, MaskingSecretMeta]:
+    @classmethod
+    def _build_masking_secret_meta(
+        cls: Type[MaskingStrategy],
+    ) -> Dict[SecretType, MaskingSecretMeta]:
         return {
             SecretType.key: MaskingSecretMeta[str](
-                masking_strategy=HMAC_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
             SecretType.salt: MaskingSecretMeta[str](
-                masking_strategy=HMAC_STRATEGY_NAME,
+                masking_strategy=cls.name,
                 generate_secret_func=SecretsUtil.generate_secret_string,
             ),
         }

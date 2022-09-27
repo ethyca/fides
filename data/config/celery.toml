@@ -1,2 +1,6 @@
 event_queue_prefix = "overridden_fidesops_worker"
+<<<<<<< HEAD
 default_queue_name = "overridden_fidesops"
+=======
+task_default_queue = "overridden_fidesops"
+>>>>>>> unified-fides-2

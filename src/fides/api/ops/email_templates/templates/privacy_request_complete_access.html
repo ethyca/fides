@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Privacy Request Complete</title>
+    </head>
+    <body>
+        <main>
+            {% if download_links|length > 1 %}
+            <p>
+                Your data access has been completed and can be downloaded at the below links. For security purposes, these secret links will expire in 24 hours.
+            </p>
+            <ul>
+                {% for link in download_links %}
+                    <li> {{link}} </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>
+                Your data access has been completed and can be downloaded at {{download_links[0]}}. For security purposes, this secret link will expire in 24 hours.
+            </p>
+
+            {% endif %}
+        </main>
+    </body>
+</html>

@@ -18,7 +18,13 @@ from fides.api.ops.api.v1.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
+from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.tasks import EMAIL_QUEUE_NAME
 
 page_size = Params().size
 
@@ -247,6 +253,12 @@ class TestPatchConnections:
                 "connection_type": "email",
                 "access": "write",
             },
+            {
+                "key": "manual_webhook_type",
+                "name": "Third Party Manual Webhook",
+                "connection_type": "manual_webhook",
+                "access": "read",
+            },
         ]
 
         response = api_client.patch(
@@ -256,7 +268,7 @@ class TestPatchConnections:
         assert 200 == response.status_code
         response_body = json.loads(response.text)
         assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 9
+        assert len(response_body["succeeded"]) == 10
         assert len(response_body["failed"]) == 0
 
         postgres_connection = response_body["succeeded"][0]
@@ -340,6 +352,16 @@ class TestPatchConnections:
         assert email_resource.access.value == "write"
         assert "secrets" not in email_connection
 
+        manual_webhook_connection = response_body["succeeded"][9]
+        assert manual_webhook_connection["access"] == "read"
+        assert manual_webhook_connection["updated_at"] is not None
+        manual_webhook_resource = (
+            db.query(ConnectionConfig).filter_by(key="manual_webhook_type").first()
+        )
+        assert manual_webhook_resource.access.value == "read"
+        assert manual_webhook_resource.connection_type == ConnectionType.manual_webhook
+        assert "secrets" not in manual_webhook_connection
+
         postgres_resource.delete(db)
         mongo_resource.delete(db)
         redshift_resource.delete(db)
@@ -349,6 +371,7 @@ class TestPatchConnections:
         mssql_resource.delete(db)
         bigquery_resource.delete(db)
         email_resource.delete(db)
+        manual_webhook_resource.delete(db)
 
     @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
@@ -396,7 +419,7 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @mock.patch("fidesops.main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -418,7 +441,7 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @mock.patch("fidesops.main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -798,6 +821,45 @@ class TestDeleteConnection:
             is None
         )
 
+    def test_delete_manual_webhook_connection_config(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ) -> None:
+        """Assert both the connection config and its webhook are deleted"""
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is not None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
+            is not None
+        )
+
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{integration_manual_webhook_config.key}"
+        auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 204
+
+        assert (
+            db.query(AccessManualWebhook).filter_by(id=access_manual_webhook.id).first()
+            is None
+        )
+
+        assert (
+            db.query(ConnectionConfig)
+            .filter_by(key=integration_manual_webhook_config.key)
+            .first()
+            is None
+        )
+
 
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
@@ -896,6 +958,7 @@ class TestPutConnectionConfigSecrets:
             "username": None,
             "password": None,
             "url": None,
+            "db_schema": None,
         }
 
         payload = {"url": "postgresql://test_user:test_pass@localhost:1234/my_test_db"}
@@ -917,6 +980,7 @@ class TestPutConnectionConfigSecrets:
             "username": None,
             "password": None,
             "url": payload["url"],
+            "db_schema": None,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -1148,8 +1212,10 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
+    @mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
     def test_put_email_connection_config_secrets(
         self,
+        mock_dispatch_email,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
@@ -1157,7 +1223,11 @@ class TestPutConnectionConfigSecrets:
         url,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"url": None, "to_email": "test@example.com"}
+        payload = {
+            "url": None,
+            "to_email": "test1@example.com",
+            "test_email": "test@example.com",
+        }
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{email_connection_config.key}/secret"
 
         resp = api_client.put(
@@ -1172,12 +1242,32 @@ class TestPutConnectionConfigSecrets:
             body["msg"]
             == f"Secrets updated for ConnectionConfig with key: {email_connection_config.key}."
         )
-        assert body["test_status"] == "skipped" ""
+        assert body["test_status"] == "succeeded"
         db.refresh(email_connection_config)
         assert email_connection_config.secrets == {
-            "to_email": "test@example.com",
+            "to_email": "test1@example.com",
             "url": None,
-            "test_email": None,
+            "test_email": "test@example.com",
         }
-        assert email_connection_config.last_test_timestamp is None
-        assert email_connection_config.last_test_succeeded is None
+        assert email_connection_config.last_test_timestamp is not None
+        assert email_connection_config.last_test_succeeded is not None
+
+        assert mock_dispatch_email.called
+        kwargs = mock_dispatch_email.call_args.kwargs
+        assert (
+            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+        )
+        assert kwargs["to_email"] == "test@example.com"
+        assert kwargs["email_body_params"] == [
+            CheckpointActionRequired(
+                step=CurrentStep.erasure,
+                collection=CollectionAddress("test_dataset", "test_collection"),
+                action_needed=[
+                    ManualAction(
+                        locators={"id": ["example_id"]},
+                        get=None,
+                        update={"test_field": "null_rewrite"},
+                    )
+                ],
+            )
+        ]

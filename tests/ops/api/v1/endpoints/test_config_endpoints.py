@@ -35,6 +35,7 @@ class TestGetConnections:
                             "cors_origins",
                             "encoding",
                             "oauth_access_token_expire_minutes",
+                            "subject_request_download_link_ttl_seconds",
                         ]
                     )
                 )

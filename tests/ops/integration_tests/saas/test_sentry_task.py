@@ -7,7 +7,7 @@ import requests
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
@@ -18,6 +18,7 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
+@pytest.mark.asyncio
 async def test_sentry_access_request_task(
     db,
     policy,
@@ -30,7 +31,7 @@ async def test_sentry_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": sentry_identity_email})
+    identity = Identity(**{"email": sentry_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = sentry_connection_config.get_saas_config().fides_key
@@ -265,6 +266,7 @@ def sentry_erasure_test_prep(sentry_connection_config, db):
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_sentry
+@pytest.mark.asyncio
 async def test_sentry_erasure_request_task(
     db, policy, sentry_connection_config, sentry_dataset_config
 ) -> None:
@@ -276,7 +278,7 @@ async def test_sentry_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": erasure_email})
+    identity = Identity(**{"email": erasure_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = sentry_connection_config.get_saas_config().fides_key

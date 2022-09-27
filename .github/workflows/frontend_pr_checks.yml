@@ -61,7 +61,7 @@ jobs:
           cd clients/admin-ui
           npm install
 
-      - name: Cypress run
+      - name: Cypress E2E tests
         uses: cypress-io/github-action@v4
         with:
           working-directory: clients/admin-ui

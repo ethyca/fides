@@ -41,8 +41,8 @@ def get_s3_session(
         logger.info("Successfully created automatic session")
         return session
 
-    logger.error("No S3 session created. Auth method used: %s", auth_method)
-    raise ValueError(f"No S3 session created. Auth method used: {auth_method}")
+    logger.error("Auth method not supported for S3: %s", auth_method)
+    raise ValueError(f"Auth method not supported for S3: {auth_method}")
 
 
 def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:

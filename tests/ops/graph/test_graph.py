@@ -10,6 +10,8 @@ from tests.ops.task.traversal_data import integration_db_graph
 
 CONFIG = get_config()
 
+from tests.ops.task.traversal_data import integration_db_graph
+
 t1 = Collection(
     name="t1",
     fields=[

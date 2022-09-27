@@ -4,7 +4,7 @@ import pytest
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from tests.ops.graph.graph_test_util import assert_rows_match, records_matching_fields
@@ -29,6 +29,7 @@ as the standard Mailchimp config.
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
+@pytest.mark.asyncio
 async def test_mailchimp_override_access_request_task(
     db,
     policy,
@@ -41,7 +42,7 @@ async def test_mailchimp_override_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": mailchimp_identity_email})
+    identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = mailchimp_override_connection_config.get_saas_config().fides_key
@@ -140,6 +141,7 @@ async def test_mailchimp_override_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
+@pytest.mark.asyncio
 async def test_mailchimp_erasure_request_task(
     db,
     policy,
@@ -154,7 +156,7 @@ async def test_mailchimp_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": mailchimp_identity_email})
+    identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = mailchimp_override_connection_config.get_saas_config().fides_key

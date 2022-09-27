@@ -1,11 +1,19 @@
 # Privacy Center
 
+<<<<<<< HEAD:docs/fides/docs/ui/privacy_center.md
 The Privacy Center is a configurable webpage that allows users to submit data access or deletion requests. Deployment is managed by a Docker image separate to Fides.
+=======
+The fidesops [Privacy Center](privacy_center.md) is a configurable webpage where users can request to download or delete their data.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/privacy_center.md
 
 ![privacy center](../img/admin_ui/privacy_center.png)
 
 ## Configuration
+<<<<<<< HEAD:docs/fides/docs/ui/privacy_center.md
 The Privacy Center's text and actions are managed by a `config.json` file. For ease of organization and deployment, place this within a `config` folder in the root directory of your project (i.e., `~/custom-privacy-center/config`). 
+=======
+The fidesops Privacy Center's text and actions are managed by a `config.json` file in the fidesops `/privacy-center/config` directory.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/privacy_center.md
 
 ```json title="<code>config.json</code>"
 {
@@ -47,17 +55,26 @@ The Privacy Center's text and actions are managed by a `config.json` file. For e
 | `fidesops_host_development` | The URL to use for development deployments. |
 | `fidesops_host_production` | The URL to use for production deployments. |
 | `logo_path` | The relative path to a brand or site logo to replace the default. |
+<<<<<<< HEAD:docs/fides/docs/ui/privacy_center.md
 | `actions` | A list of [action objects](#actions), each of which represent a new tile available in the portal, and are associated to a single Fides execution policy. |
+=======
+| `actions` | A list of [action objects](#actions), each of which represent a new tile available in the portal, and are associated to a single fidesops policy. |
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/privacy_center.md
 | `policy_key` | The key of the [policy](../guides/policies.md) to use for this action. |
 | `icon_path` | The relative path of an icon to replace the defaults. |
 | `identity_inputs` | The list of personally identifiable information required by an action. |
 
 ### Actions
+<<<<<<< HEAD:docs/fides/docs/ui/privacy_center.md
 Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a Fides [execution policy key](../guides/policy_webhooks.md), which defines the policy executed when the DSR is approved.
+=======
+Actions represent available privacy rights executable from the Privacy Center. The provided `config.json` includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a fidesops [policy key](../guides/policy_webhooks.md), which defines the policy executed when the DSR is approved.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/privacy_center.md
 
 Additional actions can be added to this list, and removed at any time.
 
 ### Styling
+<<<<<<< HEAD:docs/fides/docs/ui/privacy_center.md
 Any overrides for CSS styling can be included in a `config.css` file in the `/config` directory. Fides will automatically load these styles when creating your Privacy Center.
 
 ## Deployment
@@ -70,4 +87,7 @@ docker run --rm \
   -p 3000:3000 ethyca/fidesops-privacy-center:latest
 ```
 
+=======
+Any overrides for CSS styling can be included in a `config.css` file in the `/privacy-center/config` directory.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/privacy_center.md
 

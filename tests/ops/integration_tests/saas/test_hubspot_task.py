@@ -2,19 +2,17 @@ import random
 
 import pytest
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 from tests.ops.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -25,6 +23,7 @@ def test_hubspot_connection_test(connection_config_hubspot) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
+@pytest.mark.asyncio
 async def test_saas_access_request_task(
     db,
     policy,
@@ -40,7 +39,7 @@ async def test_saas_access_request_task(
     identity_attribute = "email"
     identity_value = hubspot_identity_email
     identity_kwargs = {identity_attribute: identity_value}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
@@ -130,6 +129,7 @@ async def test_saas_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
+@pytest.mark.asyncio
 async def test_saas_erasure_request_task(
     db,
     policy,
@@ -147,7 +147,7 @@ async def test_saas_erasure_request_task(
     )
     identity_attribute = "email"
     identity_kwargs = {identity_attribute: (hubspot_erasure_identity_email)}
-    identity = PrivacyRequestIdentity(**identity_kwargs)
+    identity = Identity(**identity_kwargs)
     privacy_request.cache_identity(identity)
 
     dataset_name = connection_config_hubspot.get_saas_config().fides_key
@@ -169,8 +169,8 @@ async def test_saas_erasure_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
-    temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False  # Allow delete
+    temp_masking = config.execution.masking_strict
+    config.execution.masking_strict = False  # Allow delete
     erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -180,7 +180,7 @@ async def test_saas_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    CONFIG.execution.masking_strict = temp_masking
+    config.execution.masking_strict = temp_masking
 
     # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
     assert erasure == {

@@ -20,11 +20,8 @@ from fides.api.ops.graph.traversal import Row, TraversalNode
 from fides.api.ops.models.policy import ActionType, Policy, Rule
 from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.ops.service.masking.strategy.masking_strategy_factory import (
-    MaskingStrategyFactory,
-)
 from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fides.api.ops.task.refine_target_path import (
     build_refined_target_paths,
@@ -59,7 +56,7 @@ class QueryConfig(Generic[T], ABC):
         """
         Return dictionary of rules mapped to update-able field paths on a given collection
         Example:
-        {<fides.api.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
+        {<fidesops.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
         rule_updates: Dict[Rule, List[FieldPath]] = {}
         for rule in policy.rules:
@@ -147,7 +144,7 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = MaskingStrategyFactory.get_strategy(
+            strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                 strategy_config["strategy"], strategy_config["configuration"]
             )
             for rule_field_path in field_paths:
@@ -157,7 +154,7 @@ class QueryConfig(Generic[T], ABC):
                     if field_path == rule_field_path
                 ][0]
                 null_masking: bool = (
-                    strategy_config.get("strategy") == NULL_REWRITE_STRATEGY_NAME
+                    strategy_config.get("strategy") == NullMaskingStrategy.name
                 )
                 if not self._supported_data_type(
                     masking_override, null_masking, strategy

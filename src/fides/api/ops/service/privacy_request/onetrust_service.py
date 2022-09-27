@@ -13,10 +13,11 @@ from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
+from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.privacy_request import PrivacyRequestIdentity
+from fides.api.ops.schemas.privacy_request import Identity
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fides.api.ops.schemas.third_party.onetrust import (
@@ -35,11 +36,9 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.util.storage_authenticator import get_onetrust_access_token
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
 ONETRUST_POLICY_KEY = "onetrust"
 FIDES_TASK = "fides task"
 
@@ -50,7 +49,7 @@ class OneTrustService:
     @staticmethod
     def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
-        SessionLocal = get_db_session(CONFIG)
+        SessionLocal = get_db_session(config)
         db = SessionLocal()
 
         onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(
@@ -93,7 +92,7 @@ class OneTrustService:
         )
         for request in all_requests:
             identity_kwargs = {"email": request.email}
-            identity = PrivacyRequestIdentity(**identity_kwargs)
+            identity = Identity(**identity_kwargs)
             fides_task: Optional[OneTrustSubtask] = OneTrustService._get_fides_subtask(
                 hostname, request.requestQueueRefId, access_token  # type: ignore
             )
@@ -135,7 +134,7 @@ class OneTrustService:
     def _create_privacy_request(  # pylint: disable=R0913
         subtask_id: str,
         requested_at: str,
-        identity: PrivacyRequestIdentity,
+        identity: Identity,
         onetrust_policy: Policy,
         hostname: str,
         access_token: str,
@@ -157,7 +156,7 @@ class OneTrustService:
         privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
         privacy_request.persist_identity(
             db=db,
-            identity=PrivacyRequestIdentity(email=identity.email),
+            identity=Identity(email=identity.email),
         )
         privacy_request.cache_identity(identity)
         try:

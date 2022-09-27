@@ -1,6 +1,10 @@
 # Updating database diagram
 
+<<<<<<< HEAD:docs/fides/docs/development/update_erd_diagram.md
 If you make updates to the Fides application database, you should update the DB Architecture diagram in the 
+=======
+If you make updates to the fidesops application database, you should update our DB Architecture diagram in the 
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/update_erd_diagram.md
 documentation.
 
 1. Connect [DBeaver](https://dbeaver.io/) to our `app` DB container

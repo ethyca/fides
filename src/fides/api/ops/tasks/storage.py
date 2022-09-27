@@ -11,9 +11,11 @@ from typing import Any, Dict, Union
 
 import pandas as pd
 import requests
+from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
+from fides.api.ops.core.config import config
 from fides.api.ops.models.storage import ResponseFormat
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
 from fides.api.ops.util.cache import get_cache, get_encryption_cache_key
@@ -24,11 +26,9 @@ from fides.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
@@ -40,16 +40,16 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         encryption_attr="key",
     )
     if isinstance(data, bytes):
-        data = data.decode(CONFIG.security.encoding)
+        data = data.decode(config.security.encoding)
 
     encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
     bytes_encryption_key: bytes = encryption_key.encode(
-        encoding=CONFIG.security.encoding
+        encoding=config.security.encoding
     )
-    nonce: bytes = secrets.token_bytes(CONFIG.security.aes_gcm_nonce_length)
+    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
     return bytes_to_b64_str(
         nonce
@@ -73,7 +73,7 @@ def write_to_in_memory_buffer(
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
-                CONFIG.security.encoding
+                config.security.encoding
             )
         )
 
@@ -83,7 +83,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+                df.to_csv(buffer, index=False, encoding=config.security.encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
@@ -94,6 +94,27 @@ def write_to_in_memory_buffer(
         return zipped_csvs
 
     raise NotImplementedError(f"No handling for response format {resp_format}.")
+
+
+def create_presigned_url_for_s3(
+    s3_client: Session, bucket_name: str, object_name: str
+) -> str:
+    """ "Generate a presigned URL to share an S3 object
+
+    :param s3_client: s3 base client
+    :param bucket_name: string
+    :param object_name: string
+    :return: Presigned URL as string.
+    """
+
+    response = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket_name, "Key": object_name},
+        ExpiresIn=config.security.subject_request_download_link_ttl_seconds,
+    )
+
+    # The response contains the presigned URL
+    return response
 
 
 def upload_to_s3(  # pylint: disable=R0913
@@ -109,18 +130,28 @@ def upload_to_s3(  # pylint: disable=R0913
     logger.info("Starting S3 Upload of %s", file_key)
     try:
         my_session = get_s3_session(auth_method, storage_secrets)
-
-        s3 = my_session.client("s3")
+        s3_client = my_session.client("s3")
 
         # handles file chunking
-        s3.upload_fileobj(
-            Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
-            Bucket=bucket_name,
-            Key=file_key,
+        try:
+            s3_client.upload_fileobj(
+                Fileobj=write_to_in_memory_buffer(resp_format, data, request_id),
+                Bucket=bucket_name,
+                Key=file_key,
+            )
+        except Exception as e:
+            logger.error("Encountered error while uploading s3 object: %s", e)
+            raise e
+
+        presigned_url: str = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key
         )
-        # todo- move to outbound_urn_registry
-        return f"https://{bucket_name}.s3.amazonaws.com/{file_key}"
+
+        return presigned_url
     except ClientError as e:
+        logger.error(
+            "Encountered error while uploading and generating link for s3 object: %s", e
+        )
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
@@ -147,7 +178,7 @@ def upload_to_onetrust(
         data=payload,
         headers=headers,
     )
-    return "success"
+    return "onetrust"
 
 
 def _handle_json_encoding(field: Any) -> str:
@@ -169,4 +200,4 @@ def upload_to_local(payload: Dict, file_key: str, request_id: str) -> str:
     with open(filename, "w") as file:  # pylint: disable=W1514
         file.write(data_str)
 
-    return "success"
+    return "your local fides_uploads folder"

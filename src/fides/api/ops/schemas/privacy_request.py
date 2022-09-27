@@ -1,28 +1,26 @@
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
+from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
-    CollectionActionRequired,
+    CheckpointActionRequired,
     ExecutionLogStatus,
     PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.policy import PolicyResponse as PolicySchema
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -61,7 +59,7 @@ class PrivacyRequestCreate(BaseSchema):
     started_processing_at: Optional[datetime]
     finished_processing_at: Optional[datetime]
     requested_at: Optional[datetime]
-    identity: PrivacyRequestIdentity
+    identity: Identity
     policy_key: FidesOpsKey
     encryption_key: Optional[str] = None
 
@@ -71,7 +69,7 @@ class PrivacyRequestCreate(BaseSchema):
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:
-            verify_encryption_key(value.encode(CONFIG.security.encoding))
+            verify_encryption_key(value.encode(config.security.encoding))
         return value
 
 
@@ -137,8 +135,7 @@ class RowCountRequest(BaseSchema):
     row_count: int
 
 
-class CollectionActionRequiredDetails(CollectionActionRequired):
-
+class CheckpointActionRequiredDetails(CheckpointActionRequired):
     collection: Optional[str] = None  # type: ignore
 
 
@@ -146,6 +143,11 @@ class VerificationCode(BaseSchema):
     """Request Body for the user to supply their identity verification code"""
 
     code: str
+
+
+class ManualWebhookData(BaseSchema):
+    checked: bool  # If we have record the user saved data for this webhook (even if it was empty)
+    fields: Dict[str, Any]
 
 
 class PrivacyRequestResponse(BaseSchema):
@@ -162,14 +164,15 @@ class PrivacyRequestResponse(BaseSchema):
     paused_at: Optional[datetime]
     status: PrivacyRequestStatus
     external_id: Optional[str]
-    # This field intentionally doesn't use the PrivacyRequestIdentity schema
+    # This field intentionally doesn't use the Identity schema
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
     identity: Optional[Dict[str, Optional[str]]]
     policy: PolicySchema
-    stopped_collection_details: Optional[CollectionActionRequiredDetails] = None
+    action_required_details: Optional[CheckpointActionRequiredDetails] = None
     resume_endpoint: Optional[str]
+    days_left: Optional[int]
 
     class Config:
         """Set orm_mode and use_enum_values"""

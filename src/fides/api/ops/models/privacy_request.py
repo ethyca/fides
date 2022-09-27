@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
 from fideslib.cryptography.cryptographic_util import hash_with_salt
@@ -16,7 +16,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -30,11 +30,14 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
+    NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -51,7 +54,7 @@ from fides.api.ops.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import celery_app
 from fides.api.ops.util.cache import (
     FidesopsRedis,
@@ -64,11 +67,18 @@ from fides.api.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fides.api.ops.util.collection_util import Row
-from fides.ctl.core.config import get_config
+from fides.api.ops.util.constants import API_DATE_FORMAT
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
+# Locations from which privacy request execution can be resumed, in order.
+EXECUTION_CHECKPOINTS = [
+    CurrentStep.pre_webhooks,
+    CurrentStep.access,
+    CurrentStep.erasure,
+    CurrentStep.erasure_email_post_send,
+    CurrentStep.post_webhooks,
+]
 
 
 class ManualAction(BaseSchema):
@@ -84,8 +94,8 @@ class ManualAction(BaseSchema):
     update: Optional[Dict[str, Any]]
 
 
-class CollectionActionRequired(BaseSchema):
-    """Describes actions needed on a given collection.
+class CheckpointActionRequired(BaseSchema):
+    """Describes actions needed on a particular checkpoint.
 
     Examples are a paused collection that needs manual input, a failed collection that
     needs to be restarted, or a collection where instructions need to be emailed to a third
@@ -93,17 +103,23 @@ class CollectionActionRequired(BaseSchema):
     """
 
     step: CurrentStep
-    collection: CollectionAddress
+    collection: Optional[CollectionAddress]
     action_needed: Optional[List[ManualAction]] = None
 
     class Config:
         arbitrary_types_allowed = True
 
 
+EmailRequestFulfillmentBodyParams = Dict[
+    CollectionAddress, Optional[CheckpointActionRequired]
+]
+
+
 class PrivacyRequestStatus(str, EnumType):
     """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
 
     identity_unverified = "identity_unverified"
+    requires_input = "requires_input"
     pending = "pending"
     approved = "approved"
     denied = "denied"
@@ -121,7 +137,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
+    return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -197,6 +213,15 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     )
     paused_at = Column(DateTime(timezone=True), nullable=True)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+
+    @property
+    def days_left(self: PrivacyRequest) -> Union[int, None]:
+        if self.due_date is None:
+            return None
+
+        delta = self.due_date.date() - datetime.utcnow().date()
+        return delta.days
 
     @classmethod
     def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
@@ -206,6 +231,19 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         if data.get("requested_at", None) is None:
             data["requested_at"] = datetime.utcnow()
+
+        policy: Policy = Policy.get_by(
+            db=db,
+            field="id",
+            value=data["policy_id"],
+        )
+
+        if policy.execution_timeframe:
+            requested_at = data["requested_at"]
+            if isinstance(requested_at, str):
+                requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
+            data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
+
         return super().create(db=db, data=data)
 
     def delete(self, db: Session) -> None:
@@ -222,7 +260,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: PrivacyRequestIdentity) -> None:
+    def cache_identity(self, identity: Identity) -> None:
         """Sets the identity's values at their specific locations in the Fidesops app cache"""
         cache: FidesopsRedis = get_cache()
         identity_dict: Dict[str, Any] = dict(identity)
@@ -233,7 +271,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     value,
                 )
 
-    def persist_identity(self, db: Session, identity: PrivacyRequestIdentity) -> None:
+    def persist_identity(self, db: Session, identity: Identity) -> None:
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
@@ -253,11 +291,11 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     },
                 )
 
-    def get_persisted_identity(self) -> PrivacyRequestIdentity:
+    def get_persisted_identity(self) -> Identity:
         """
         Retrieves persisted identity fields from the DB.
         """
-        schema = PrivacyRequestIdentity()
+        schema = Identity()
         for field in self.provided_identities:
             setattr(
                 schema,
@@ -382,16 +420,18 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_email_connector_template_contents_by_dataset(
         self, step: CurrentStep, dataset: str
-    ) -> Dict[str, Optional[CollectionActionRequired]]:
+    ) -> List[CheckpointActionRequired]:
         """Retrieve the raw details to populate an email template for collections on a given dataset."""
         cache: FidesopsRedis = get_cache()
         email_contents: Dict[str, Optional[Any]] = cache.get_encoded_objects_by_prefix(
             f"EMAIL_INFORMATION__{self.id}__{step.value}__{dataset}"
         )
-        return {
-            k.split("__")[-1]: CollectionActionRequired.parse_obj(v) if v else None
-            for k, v in email_contents.items()
-        }
+
+        actions: List[CheckpointActionRequired] = []
+        for email_content in email_contents.values():
+            if email_content:
+                actions.append(CheckpointActionRequired.parse_obj(email_content))
+        return actions
 
     def cache_paused_collection_details(
         self,
@@ -411,7 +451,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_paused_collection_details(
         self,
-    ) -> Optional[CollectionActionRequired]:
+    ) -> Optional[CheckpointActionRequired]:
         """Return details about the paused step, paused collection, and any action needed to resume the paused privacy request.
 
         The paused step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -420,14 +460,16 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         return get_action_required_details(cached_key=f"EN_PAUSED_LOCATION__{self.id}")
 
-    def cache_failed_collection_details(
+    def cache_failed_checkpoint_details(
         self,
         step: Optional[CurrentStep] = None,
         collection: Optional[CollectionAddress] = None,
     ) -> None:
         """
-        Cache details about the failed step and failed collection details. No specific input data is required to resume
-        a failed request, so action_needed is None.
+        Cache a checkpoint where the privacy request failed so we can later resume from this failure point.
+
+        Cache details about the failed step and failed collection details (where applicable).
+        No specific input data is required to resume a failed request, so action_needed is None.
         """
         cache_action_required(
             cache_key=f"FAILED_LOCATION__{self.id}",
@@ -436,9 +478,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             action_needed=None,
         )
 
-    def get_failed_collection_details(
+    def get_failed_checkpoint_details(
         self,
-    ) -> Optional[CollectionActionRequired]:
+    ) -> Optional[CheckpointActionRequired]:
         """Get details about the failed step (access or erasure) and collection that triggered failure.
 
         The failed step lets us know if we should resume privacy request execution from the "access" or the "erasure"
@@ -446,10 +488,47 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         return get_action_required_details(cached_key=f"EN_FAILED_LOCATION__{self.id}")
 
+    def cache_manual_webhook_input(
+        self, manual_webhook: AccessManualWebhook, input_data: Optional[Dict[str, Any]]
+    ) -> None:
+        """Cache manually added data for the given manual webhook.  This is for use by the *manual_webhook* connector,
+        which is *NOT* integrated with the graph.
+
+        Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
+        """
+        cache: FidesopsRedis = get_cache()
+        parsed_data: BaseSchema = manual_webhook.fields_schema.parse_obj(input_data)
+
+        cache.set_encoded_object(
+            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
+            parsed_data.dict(),
+        )
+
+    def get_manual_webhook_input(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieve manually added data that matches fields supplied in the specified manual webhook.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the garph.
+        """
+        cache: FidesopsRedis = get_cache()
+        cached_results: Optional[
+            Optional[Dict[str, Any]]
+        ] = cache.get_encoded_objects_by_prefix(
+            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}"
+        )
+        if cached_results:
+            return manual_webhook.fields_schema.parse_obj(
+                list(cached_results.values())[0]
+            ).dict()
+        raise NoCachedManualWebhookEntry(
+            f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+        )
+
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
     ) -> None:
-        """Cache manually added rows for the given CollectionAddress"""
+        """Cache manually added rows for the given CollectionAddress. This is for use by the *manual* connector which is integrated with the graph."""
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_INPUT__{self.id}__{collection.value}",
@@ -458,7 +537,9 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
 
     def get_manual_input(self, collection: CollectionAddress) -> Optional[List[Row]]:
         """Retrieve manually added rows from the cache for the given CollectionAddress.
-        Returns the manual data if it exists, otherwise None
+        Returns the manual data if it exists, otherwise None.
+
+        This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
         cached_results: Optional[
@@ -471,7 +552,10 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
     def cache_manual_erasure_count(
         self, collection: CollectionAddress, count: int
     ) -> None:
-        """Cache the number of rows manually masked for a given collection."""
+        """Cache the number of rows manually masked for a given collection.
+
+        This is for use by the *manual* connector which is integrated with the graph.
+        """
         cache: FidesopsRedis = get_cache()
         cache.set_encoded_object(
             f"MANUAL_MASK__{self.id}__{collection.value}",
@@ -482,6 +566,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """Retrieve number of rows manually masked for this collection from the cache.
 
         Cached as an integer to mimic what we return from erasures in an automated way.
+        This is for use by the *manual* connector which is integrated with the graph.
         """
         cache: FidesopsRedis = get_cache()
         prefix = f"MANUAL_MASK__{self.id}__{collection.value}"
@@ -509,7 +594,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         cache.set_with_autoexpire(
             f"IDENTITY_VERIFICATION_CODE__{self.id}",
             value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
+            config.redis.identity_verification_code_ttl_seconds,
         )
 
     def get_cached_verification_code(self) -> Optional[str]:
@@ -643,7 +728,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     privacy_request_id = Column(
         String,
         ForeignKey(PrivacyRequest.id_field_path),
-        nullable=False,
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -665,13 +749,21 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
         ),
         nullable=True,
     )  # Type bytea in the db
+    consent = relationship(
+        "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
+    )
+    consent_request = relationship(
+        "ConsentRequest",
+        back_populates="provided_identity",
+        cascade="delete, delete-orphan",
+    )
 
     @classmethod
     def hash_value(
@@ -686,6 +778,32 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
             SALT.encode(encoding),
         )
         return hashed_value
+
+
+class Consent(Base):
+    """The DB ORM model for Consent."""
+
+    provided_identity_id = Column(
+        String, ForeignKey(ProvidedIdentity.id), nullable=False
+    )
+    data_use = Column(String, nullable=False, unique=True)
+    data_use_description = Column(String)
+    opt_in = Column(Boolean, nullable=False)
+
+    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+
+
+class ConsentRequest(Base):
+    """Tracks consent requests."""
+
+    provided_identity_id = Column(
+        String, ForeignKey(ProvidedIdentity.id), nullable=False
+    )
+
+    provided_identity = relationship(
+        ProvidedIdentity,
+        back_populates="consent_request",
+    )
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
@@ -706,21 +824,21 @@ def cache_action_required(
     The "step" describes whether action is needed in the access or the erasure portion of the request.
     """
     cache: FidesopsRedis = get_cache()
-    current_collection: Optional[CollectionActionRequired] = None
-    if collection and step:
-        current_collection = CollectionActionRequired(
+    action_required: Optional[CheckpointActionRequired] = None
+    if step:
+        action_required = CheckpointActionRequired(
             step=step, collection=collection, action_needed=action_needed
         )
 
     cache.set_encoded_object(
         cache_key,
-        current_collection.dict() if current_collection else None,
+        action_required.dict() if action_required else None,
     )
 
 
 def get_action_required_details(
     cached_key: str,
-) -> Optional[CollectionActionRequired]:
+) -> Optional[CheckpointActionRequired]:
     """Get details about the action required for a given collection.
 
     The "step" lets us know if action is needed in the "access" or the "erasure" portion of the privacy request flow.
@@ -728,11 +846,11 @@ def get_action_required_details(
     performed to complete the request.
     """
     cache: FidesopsRedis = get_cache()
-    cached_stopped: Optional[CollectionActionRequired] = cache.get_encoded_by_key(
+    cached_stopped: Optional[CheckpointActionRequired] = cache.get_encoded_by_key(
         cached_key
     )
     return (
-        CollectionActionRequired.parse_obj(cached_stopped) if cached_stopped else None
+        CheckpointActionRequired.parse_obj(cached_stopped) if cached_stopped else None
     )
 
 
@@ -780,3 +898,17 @@ class ExecutionLog(Base):
         nullable=False,
         index=True,
     )
+
+
+def can_run_checkpoint(
+    request_checkpoint: CurrentStep, from_checkpoint: Optional[CurrentStep] = None
+) -> bool:
+    """Determine whether we should run a specific checkpoint in privacy request execution
+
+    If there's no from_checkpoint specified we should always run the current checkpoint.
+    """
+    if not from_checkpoint:
+        return True
+    return EXECUTION_CHECKPOINTS.index(
+        request_checkpoint
+    ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)

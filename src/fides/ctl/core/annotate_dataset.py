@@ -11,7 +11,7 @@ from fideslang.validation import FidesValidationError
 
 from fides.ctl.core import api_helpers
 from fides.ctl.core import parse as core_parse
-from fides.ctl.core.config import FidesConfig
+from fides.ctl.core.config import FidesctlConfig
 from fides.ctl.core.utils import echo_green, get_all_level_fields
 
 

@@ -11,6 +11,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
@@ -23,7 +24,6 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
     possible_storage_secrets,
 )
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class StorageConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

@@ -1,8 +1,9 @@
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Extra
 
+from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -14,11 +15,17 @@ class EmailServiceType(Enum):
     MAILGUN = "mailgun"
 
 
-class EmailActionType(Enum):
+class EmailActionType(str, Enum):
     """Enum for email action type"""
 
     # verify email upon acct creation
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
+    EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
+    PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
+    PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
+    PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
+    PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
+    PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
 
 
 class EmailTemplateBodyParams(Enum):
@@ -38,6 +45,43 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
         if self.verification_code_ttl_seconds < 60:
             return 0
         return self.verification_code_ttl_seconds // 60
+
+
+class RequestReceiptBodyParams(BaseModel):
+    """Body params required for privacy request receipt email template"""
+
+    request_types: List[str]
+
+
+class AccessRequestCompleteBodyParams(BaseModel):
+    """Body params required for privacy request completion access email template"""
+
+    download_links: List[str]
+
+
+class RequestReviewDenyBodyParams(BaseModel):
+    """Body params required for privacy request review deny email template"""
+
+    rejection_reason: Optional[str]
+
+
+class FidesopsEmail(
+    BaseModel,
+    smart_union=True,
+    arbitrary_types_allowed=True,
+):
+    """A mapping of action_type to body_params"""
+
+    action_type: EmailActionType
+    body_params: Optional[
+        Union[
+            SubjectIdentityVerificationBodyParams,
+            RequestReceiptBodyParams,
+            RequestReviewDenyBodyParams,
+            AccessRequestCompleteBodyParams,
+            List[CheckpointActionRequired],
+        ]
+    ]
 
 
 class EmailForActionType(BaseModel):

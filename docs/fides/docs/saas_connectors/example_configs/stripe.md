@@ -2,7 +2,11 @@
 # Stripe
 
 ## Implementation Summary
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/example_configs/stripe.md
 Fides uses the following Stripe endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below. 
+=======
+Fidesops uses the following Stripe endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below. 
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/example_configs/stripe.md
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
@@ -21,16 +25,26 @@ Fides uses the following Stripe endpoints to retrieve and delete Personally Iden
 |[Subscriptions](https://stripe.com/docs/api/subscriptions/list) | Yes | Yes |
 
 ## Connection Settings
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/example_configs/stripe.md
 Fides provides a [Postman collection](../../development/postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
 
 **Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give Fides permission](../../installation/configuration.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `masking_strict` variable in your `fides.toml` file is set to `false`. 
+=======
+Fidesops provides a [Postman collection](../../postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
+
+**Deletion requests** are fulfilled by masking PII via `UPDATE` endpoints. To [give fidesops permission](../../guides/configuration_reference.md#configuration-variable-reference) to remove PII using `DELETE` endpoints, ensure the `masking_strict` variable in your `fidesops.toml` file is set to `false`. 
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/example_configs/stripe.md
 
 ## Example Stripe Configuration
 ```yaml
 saas_config:
   fides_key: stripe_connector_example
   name: Stripe SaaS Config
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/example_configs/stripe.md
   description: A sample schema representing the Stripe connector for Fides
+=======
+  description: A sample schema representing the Stripe connector for fidesops
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/example_configs/stripe.md
   version: 0.0.1
 
   connector_params:

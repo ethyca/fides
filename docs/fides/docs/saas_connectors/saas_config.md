@@ -1,5 +1,6 @@
 ## What is a SaaS configuration schema?
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 A [SaaS connector](saas_connectors.md) is defined in two parts: the [Dataset](../getting-started/datasets.md), and the SaaS configuration. The Dataset describes the data that is available from the connector, and the SaaS config describes how to connect to, and retrieve or update the data in the connector. 
 
 When accessing data from APIs, each application (and different endpoints within the same application) can follow different patterns, making their requirements different from [Database connectors](../getting-started/database_connectors.md). Fides provides a flexible configuration to define different access/update patterns. 
@@ -9,6 +10,16 @@ When accessing data from APIs, each application (and different endpoints within 
 This guide will use a SaaS configuration to connect to [Mailchimp](./example_configs/mailchimp.md). The configuration schema defines:
 
 - The domain and authentication requirements for an HTTP client to access Mailchimp
+=======
+A SaaS connector is defined in two parts, the [Dataset](../guides/datasets.md) and the SaaS config. The Dataset describes the data that is available from the connector and the SaaS config describes how to connect and retrieve/update the data in the connector. If you contrast this to a [database connector](../guides/database_connectors.md), the ways to retrieve/update data conform to a specification (such as SQL) and are consistent. When accessing data from APIs, each application or even different endpoints within the same application can follow different patterns. It was necessary to have a flexible configuration to be able to define the different access/update patterns. Keep in mind that SaaS configs are only applicable to SaaS connectors, not database connectors.
+
+In short, you can think of the Dataset as the "what" (what data is available from this API) and the SaaS config as the "how" (how to access and update the data).
+#### An example SaaS config
+
+For this guide, we will use the SaaS config to connect to Mailchimp, this config defines:
+
+- The domain and authentication requirements for an HTTP client to Mailchimp
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 - A test request for verifying the connection was set up correctly
 - Endpoints to the following resources within the Mailchimp API:
     - `GET` and `PUT` for the [members](https://mailchimp.com/developer/marketing/api/list-members/) resource
@@ -22,7 +33,11 @@ saas_config:
   fides_key: mailchimp_connector_example
   name: Mailchimp SaaS Config
   type: mailchimp
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
   description: A sample schema representing the Mailchimp connector for fides
+=======
+  description: A sample schema representing the Mailchimp connector for fidesops
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
   version: 0.0.1
 
   connector_params:
@@ -110,6 +125,7 @@ saas_config:
                 direction: from
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 #### SaaS config metadata fields 
 
 | Attribute | Description |
@@ -121,6 +137,18 @@ saas_config:
 | `version` | Used to track different versions of the SaaS config.
 
 The above configuration also contains the following complex fields:
+=======
+
+A SaaS config schema contains the following metadata fields:
+
+- `fides_key` Used to uniquely identify the connector, this field is used to link a SaaS config to a dataset.
+- `name` A human-readable name for the connector.
+- `type` Type of SaaS connector. Choose from `hubspot`, `mailchimp`, `outreach`, `segment`, `sentry`, `stripe`, `zendesk` or use `custom` for other types.
+- `description` Used to add a useful description.
+- `version` Used to track different versions of the SaaS config.
+
+And the following complex fields which we will cover in detail below:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 - `connector_params`
 - `client_config`
@@ -129,7 +157,11 @@ The above configuration also contains the following complex fields:
 - `data_protection_request`
 
 #### Connector params
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. A `default_value` can also be used to include values such as a standard base domain for an API or a recommended page size for pagination. Make sure to not include confidential values such as passwords or API keys, these values are added as part of the Connection [secrets](../getting-started/database_connectors.md#set-the-connection-secrets). When configuring a connector's secrets for the first time, the default values will be used if a value is not provided.
+=======
+The `connector_params` field is used to describe a list of settings which a user must configure as part of the setup. A `default_value` can also be used to include values such as a standard base domain for an API or a recommended page size for pagination. Make sure to not include confidential values such as passwords or API keys, these values are added as part of the ConnectionConfig [secrets](/docs/fidesops/docs/guides/database_connectors.md#set-the-connectionconfigs-secrets). When configuring a connector's secrets for the first time, the default values will be used if a value is not provided.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 connector_params:
@@ -142,7 +174,11 @@ connector_params:
 ```
 
 #### Client config
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 The `client_config` describes the necessary information to be able to create a base HTTP client. The values for host, username, and password are not defined here, only referenced in the form of a `connector_param` which Fides uses to insert the actual value from the stored secrets.
+=======
+The `client_config` describes the necessary information to be able to create a base HTTP client. Notice that the values for host, username, and password are not defined here, only references in the form of a `connector_param` which fidesops uses to insert the actual value from the stored secrets.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 client_config:
@@ -155,29 +191,45 @@ client_config:
       password: <password>
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 The authentication strategies are swappable. This example uses the `basic` authentication strategy, which takes a `username` and `password` in the configuration. An alternative to this is to use `bearer` authentication which looks like this:
 
+=======
+The authentication strategies are swappable. In this example we used the `basic` authentication strategy which uses a `username` and `password` in the configuration. An alternative to this is to use `bearer` authentication which looks like this:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```yaml
 authentication:
   strategy: bearer
   configuration:
     token: <api_key>
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 
 Fides also supports [OAuth2 authentication](saas_oauth2.md).
 
 #### Test request
 Once the base client is defined, use a `test_request` to verify the hostname and credentials. This is in the form of an idempotent request (usually a `read` request). The testing approach is the same for any [Connection](../getting-started/database_connectors.md#test-your-connection).
+=======
+Fidesops also supports OAuth2 authentication, additional details can be found [here](saas_oauth2.md).
+
+#### Test request
+Once the base client is defined we can use a `test_request` to verify our hostname and credentials. This is in the form of an idempotent request (usually a read). The testing approach is the same for any [ConnectionConfig test](../guides/database_connectors.md#testing-your-connection).
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 test_request:
   method: GET
   path: /3.0/lists
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 
 #### Data protection request
 If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to endpoint requests, but is generally one endpoint that removes all user information in one call.
 
+=======
+#### Data protection request
+If your third party integration supports something like a GDPR delete endpoint, that can be configured as a `data_protection_request`.  It has similar attributes to the test request or endpoint requests, but it is generally one endpoint that removes all user PII in one go. 
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```yaml
 data_protection_request:
   method: POST
@@ -197,6 +249,7 @@ data_protection_request:
         username: <access_token>
 ```
 #### Endpoints
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 The endpoints configuration defines how collections are accessed and updated. The endpoint section contains the following members:
 
 | Attribute | Description |
@@ -230,6 +283,33 @@ The `requests` configuration further contains the following fields:
 The `param_values` list is what provides the values to the various placeholders in the path, headers, query params and body. Values can be `identities`, such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. 
 
 Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and the corresponding value is used instead. Here is an example of placeholders being used in various locations:
+=======
+This is where we define how we are going to access and update each collection in the corresponding Dataset. The endpoint section contains the following members:
+
+- `name` This name corresponds to a Collection in the corresponding Dataset.
+- `after` To configure if this endpoint should run after other endpoints or collections. This should be a list of collection addresses, for example: `after: [ mailchimp_connector_example.member ]` would cause the current endpoint to run after the member endpoint.
+- `requests` A map of `read`, `update`, and `delete` requests for this collection. Each collection can define a way to read and a way to update the data. Each request is made up of:
+    - `method` The HTTP method used for the endpoint.
+    - `path` A static or dynamic resource path. The dynamic portions of the path are enclosed within angle brackets `<dynamic_value>` and are replaced with values from `param_values`.
+    - `headers` and `query_params` The HTTP headers and query parameters to include in the request.
+        - `name` the value to use for the header or query param name.
+        - `value` can be a static value, one or more of `<dynamic_value>`, or a mix of static and dynamic values (prefix `<value>`) which will be replaced with the value sourced from the `param_value` with a matching name.
+    - `body` (optional) static or dynamic request body, with dynamic portions enclosed in brackets, just like `path`. These dynamic values will be replaced with values from `param_values`.
+    - `param_values`
+        - `name` Used as the key to reference this value from dynamic values in the path, headers, query, or body params.
+        - `references` These are the same as `references` in the Dataset schema. It is used to define the source of the value for the given param_value.
+        - `identity` Used to access the identity values passed into the privacy request such as email or phone number.
+        - `connector_param` Used to access the user-configured secrets for the connection.
+    - `ignore_errors` A boolean. If true, we will ignore non-200 status codes.
+    - `data_path`: The expression used to access the collection information from the raw JSON response.
+    - `postprocessors` An optional list of response post-processing strategies. We will ignore this for the example scenarios below but an in depth-explanation can be found under [SaaS Post-Processors](saas_postprocessors.md)
+    - `pagination` An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
+    - `grouped_inputs` An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as ["organization_id", "project_id"].
+    - `client_config` Specify optional embedded Client Configs if an individual request needs a different protocol, host, or authentication strategy from the base Client Config
+
+## Param values in more detail
+The `param_values` list is what provides the values to our various placeholders in the path, headers, query params and body. Values can be `identities` such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector. Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and corresponding value is used instead. Here is an example of placeholders being used in various locations:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 messages:
@@ -261,7 +341,11 @@ messages:
         - name: version
           connector_param: version
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 ## Generating requests
+=======
+## How are requests generated?
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 The following HTTP request properties are generated for each request based on the endpoint configuration:
 
 - method
@@ -270,11 +354,22 @@ The following HTTP request properties are generated for each request based on th
 - query params
 - body
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 **Method:** This is a required field since a read, update, or delete endpoint might use any of the HTTP methods to perform the given action.
 
 **Path:** This can be a static value or use placeholders. If the placeholders to build the path are not found at request-time, the request will fail.
 
 **Headers and query params:** These can also be static or use placeholders. If a placeholder is missing, the request will continue and omit the given header or query param in the request.
+=======
+#### Method
+This is a required field since a read, update, or delete endpoint might use any of the HTTP methods to perform the given action.
+
+#### Path
+This can be a static value or use placeholders. If the placeholders to build the path are not found at request-time, the request will fail.
+
+#### Headers and query params
+These can also be static or use placeholders. If a placeholder is missing, the request will continue and omit the given header or query param in the request.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 If reference values are used for the placeholders, each value will be processed independently unless the `grouped_inputs` field is set. The following examples use query params but this applies to headers as well.
 
@@ -338,16 +433,31 @@ GET /v1/disputes?charge=2&line_item=b
 GET /v1/disputes?charge=3&line_item=c
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 **Body:** The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
+=======
+#### Body
+The body can be static or use placeholders. If the placeholders to build the body are not found at request-time, the request will fail.
+
+**Placeholder options for updates**
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 The following placeholders can be included in the body of an update:
 
 - `<masked_object_fields>` - any masked fields, along with their masked value
 - `<all_object_fields>` - all object fields, including the masked fields and values
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 Fides will automatically fill in the value of these placeholders with the appropriate contents.
 
 For example, an access request returned the following row: 
+=======
+Fidesops will automatically fill in the value of these placeholders with the appropriate contents.
+
+**Example**
+
+An access request returned the following row: 
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```json
 {
   "id": 123,
@@ -365,7 +475,13 @@ With the `name` field masked, the value of each placeholder would be:
 
 !!! Tip "`all_object_fields` should be used if non-masked fields are required as part of the update payload."
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 **Read-Only fields:** A field can be flagged as `read-only` in the dataset to exclude it from the value of `<all_object_fields>` (for example, if including the `id` would cause an error).
+=======
+**Read-Only fields** 
+
+A field can be flagged as `read-only` in the dataset to exclude it from the value of `<all_object_fields>` (for example, if including the `id` would cause an error).
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 - name: id
@@ -396,7 +512,11 @@ endpoints:
                 field: conversations.id
                 direction: from
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 In this example, `/3.0/conversations/<conversation_id>/messages` is defined as the resource path for messages, and the path param of `conversation_id` is defined as coming from the `id` field of the `conversations` collection. A separate GET HTTP request will be issued for each `conversations.id` value.
+=======
+In this example, we define `/3.0/conversations/<conversation_id>/messages` as the resource path for messages and define the path param of `conversation_id` as coming from the `id` field of the `conversations` collection. A separate GET HTTP request will be issued for each `conversations.id` value.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 # For three conversations with IDs of 1,2,3
@@ -405,7 +525,10 @@ GET /3.0/conversations/2/messages
 GET /3.0/conversations/2/messages
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 
+=======
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 #### Identity as a query param
 ```yaml
 endpoints:
@@ -421,13 +544,20 @@ endpoints:
           - name: email
             identity: email
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 In this example, the placeholder in the `query` query param will be replaced with the value of the `param_value` with a name of `email`, which is the `email` identity. The result would look like this:
 
+=======
+In this example, the placeholder in the `query` query param would be replaced with the value of the `param_value` with a name of `email`, which is the `email` identity. The result would look like this:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```
 GET /3.0/search-members?query=name@email.com
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 
+=======
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 #### Data update with a dynamic path
 ```yaml
 endpoints:
@@ -448,7 +578,11 @@ endpoints:
                 field: member.id
                 direction: from
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 This example uses two dynamic path variables, one from `member.id` and one from `member.list_id`. Since both of these are references to the `member` collection, first issue a data retrieval (which will happen automatically if the `read` request is defined). If a call to `GET /3.0/search-members` returned the following `member` object:
+=======
+This example uses two dynamic path variables, one from `member.id` and one from `member.list_id`. Since both of these are references to the `member` collection, we must first issue a data retrieval (which will happen automatically if the `read` request is defined). If a call to `GET /3.0/search-members` returned the following `member` object:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```yaml
 {
     "list_id": "123",
@@ -472,12 +606,20 @@ PUT /3.0/lists/123/members/456
     }
 }
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 and the contents of the body would be masked according to the configured [policy](../getting-started/execution_policies.md).
+=======
+and the contents of the body would be masked according to the configured [policy](../guides/policies.md).
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 
 #### Data update with a dynamic HTTP body
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 Sometimes, the update request needs a different body structure than what is obtained from the read request. In this example, use a custom HTTP body that contains the masked object fields.
+=======
+Sometimes, the update request needs a different body structure than what we obtain from the read request. In this example, we use a custom HTTP body that contains our masked object fields.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```yaml
 update:
   method: PUT
@@ -496,7 +638,11 @@ update:
           direction: from
 ```
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 Fides will replace the `<masked_object_fields>` placeholder with the result of the policy-driven masking service (e.g. `'company': None, 'email': None`). Note that neither enclosing curly brackets (`{` `}`) nor a trailing comma (`,`) are included as part of the replacement string.
+=======
+Fidesops will replace the `<masked_object_fields>` placeholder with the result of the policy-driven masking service, for example `'company': None, 'email': None`. Note that neither enclosing curly brackets (`{` `}`) nor a trailing comma (`,`) are included as part of the replacement string generated by fidesops.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 This results in the following update request:
 ```yaml
@@ -514,7 +660,11 @@ PUT /crm/v3/objects/contacts
 
 ## How does this relate to graph traversal?
 
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 Fides uses the available Datasets to [generate a graph](../guides/query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `param_values`, and must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example, the Dataset collection and SaaS config endpoints for `messages` looks like this:
+=======
+Fidesops uses the available Datasets to [generate a graph](../guides/query_execution.md) of all reachable data and the dependencies between Datasets. For SaaS connectors, all the references and identities are stored in the `param_values`, therefore we must merge both the SaaS config and Dataset to provide a complete picture for the graph traversal. Using Mailchimp as an example the Dataset collection and SaaS config endpoints for `messages` looks like this:
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 
 ```yaml
 collections:
@@ -589,10 +739,17 @@ collections:
       - name: timestamp
         data_categories: [system.operations]
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 The `conversation_id` field is updated with a reference from `mailchimp_connector_example.conversations.id`. This means that the `conversations` collection must be retrieved first, then forward the conversation IDs to the messages collection for further processing.
 
 ## What if a collection has no dependencies?
 In the Mailchimp example, there is a `placeholder` request param.
+=======
+Notice how the `conversation_id` field is updated with a reference from `mailchimp_connector_example.conversations.id`. This means that the `conversations` collection must be retrieved first to forward the conversation IDs to the messages collection for further processing.
+
+## What if a collection has no dependencies?
+In the Mailchimp example, you might have noticed the `placeholder` request param.
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md
 ```yaml
 endpoints:
   - name: conversations
@@ -609,6 +766,10 @@ endpoints:
           - name: placeholder
             identity: email
 ```
+<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_config.md
 Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the Fides [graph traversal](../guides/query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `param_value` with an identity or a reference. 
 
 In the future, collections like these will still be considered reachable even without this placeholder.
+=======
+Some endpoints might not have any external dependencies on `identity` or Dataset `reference` values. The way the fidesops [graph traversal](../guides/query_execution.md) interprets this is as an unreachable collection. At this time, the way to mark this as reachable is to include a `param_value` with an identity or a reference. In the future we plan on having collections like these still be considered reachable even without this placeholder (the param_value name is not relevant, we just chose placeholder for this example).
+>>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_config.md

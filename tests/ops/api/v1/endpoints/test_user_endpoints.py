@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import pytest
@@ -29,6 +29,7 @@ from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
+    SCOPE_REGISTRY,
     STORAGE_READ,
     USER_CREATE,
     USER_DELETE,
@@ -43,10 +44,8 @@ from fides.api.ops.api.v1.urn_registry import (
     USERS,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
+from fides.api.ops.core.config import config
 from tests.ops.conftest import generate_auth_header_for_user
-
-CONFIG = get_config()
 
 page_size = Params().size
 
@@ -62,7 +61,6 @@ class TestCreateUser:
 
     def test_create_user_wrong_scope(self, url, api_client, generate_auth_header):
         auth_header = generate_auth_header([STORAGE_READ])
-        print(auth_header)
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_403_FORBIDDEN == response.status_code
 
@@ -232,8 +230,8 @@ class TestDeleteUser:
 
         client, _ = ClientDetail.create_client_and_secret(
             db,
-            CONFIG.security.oauth_client_id_length_bytes,
-            CONFIG.security.oauth_client_secret_length_bytes,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=user.id,
         )
@@ -245,7 +243,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -281,8 +279,8 @@ class TestDeleteUser:
 
         user_client, _ = ClientDetail.create_client_and_secret(
             db,
-            CONFIG.security.oauth_client_id_length_bytes,
-            CONFIG.security.oauth_client_secret_length_bytes,
+            config.security.oauth_client_id_length_bytes,
+            config.security.oauth_client_secret_length_bytes,
             scopes=[USER_DELETE],
             user_id=other_user.id,
         )
@@ -300,7 +298,7 @@ class TestDeleteUser:
             JWE_PAYLOAD_CLIENT_ID: user.client.id,
             JWE_ISSUED_AT: datetime.now().isoformat(),
         }
-        jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        jwe = generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         auth_header = {"Authorization": "Bearer " + jwe}
 
         response = api_client.delete(
@@ -695,7 +693,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, CONFIG.security.app_encryption_key)
+            extract_payload(token, config.security.app_encryption_key)
         )
         assert token_data["client-id"] == user.client.id
         assert token_data["scopes"] == [
@@ -736,7 +734,7 @@ class TestUserLogin:
         assert "token_data" in list(response.json().keys())
         token = response.json()["token_data"]["access_token"]
         token_data = json.loads(
-            extract_payload(token, CONFIG.security.app_encryption_key)
+            extract_payload(token, config.security.app_encryption_key)
         )
         assert token_data["client-id"] == existing_client_id
         assert token_data["scopes"] == [
@@ -752,6 +750,45 @@ class TestUserLogout:
     def url(self, oauth_client: ClientDetail) -> str:
         return V1_URL_PREFIX + LOGOUT
 
+    def test_malformed_token_ignored(self, db, url, api_client, user):
+        auth_header = {"Authorization": "Bearer invalid"}
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == HTTP_204_NO_CONTENT
+
+    def test_user_can_logout_with_expired_token(self, db, url, api_client, user):
+        client_id = user.client.id
+        scopes = user.client.scopes
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: client_id,
+            JWE_ISSUED_AT: (datetime.now() - timedelta(days=360)).isoformat(),
+        }
+
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == HTTP_204_NO_CONTENT
+
+        # Verify client was deleted
+        client_search = ClientDetail.get_by(db, field="id", value=client_id)
+        assert client_search is None
+
+    def test_root_user_logout(self, db, url, api_client):
+        payload = {
+            JWE_PAYLOAD_SCOPES: SCOPE_REGISTRY,
+            JWE_PAYLOAD_CLIENT_ID: config.security.oauth_root_client_id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+        }
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == HTTP_204_NO_CONTENT
+
     def test_user_not_deleted_on_logout(self, db, url, api_client, user):
         user_id = user.id
         client_id = user.client.id
@@ -764,7 +801,7 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
         assert response.status_code == HTTP_204_NO_CONTENT
@@ -787,8 +824,7 @@ class TestUserLogout:
         # Assert user does not still have client reference
         assert user_search.client is None
 
-        # Ensure that the client token is invalidated after logout
-        # Assert a request with the outdated client token gives a 401
+        # Outdated client token logout gives a 204
         payload = {
             JWE_PAYLOAD_SCOPES: scopes,
             JWE_PAYLOAD_CLIENT_ID: client_id,
@@ -796,16 +832,14 @@ class TestUserLogout:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
         }
         response = api_client.post(url, headers=auth_header, json={})
-        assert HTTP_403_FORBIDDEN == response.status_code
+        assert HTTP_204_NO_CONTENT == response.status_code
 
-    def test_logout(
-        self, db, url, api_client, generate_auth_header_ctl_config, oauth_client
-    ):
+    def test_logout(self, db, url, api_client, generate_auth_header, oauth_client):
         oauth_client_id = oauth_client.id
-        auth_header = generate_auth_header_ctl_config([STORAGE_READ])
+        auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.post(url, headers=auth_header, json={})
         assert HTTP_204_NO_CONTENT == response.status_code
 
@@ -813,6 +847,6 @@ class TestUserLogout:
         client_search = ClientDetail.get_by(db, field="id", value=oauth_client_id)
         assert client_search is None
 
-        # Gets AuthorizationError - client does not exist, this token can't be used anymore
+        # Even though client doesn't exist, we still return a 204
         response = api_client.post(url, headers=auth_header, json={})
-        assert response.status_code == HTTP_403_FORBIDDEN
+        assert response.status_code == HTTP_204_NO_CONTENT

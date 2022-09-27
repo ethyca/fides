@@ -12,6 +12,10 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
     EmailDocsSchema,
     EmailSchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_manual_webhook import (
+    ManualWebhookSchema,
+    ManualWebhookSchemaforDocs,
+)
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema,
     MariaDBSchema,
@@ -44,6 +48,10 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake
     SnowflakeDocsSchema,
     SnowflakeSchema,
 )
+from fides.api.ops.schemas.connection_configuration.connection_secrets_timescale import (
+    TimescaleDocsSchema,
+    TimescaleSchema,
+)
 from fides.api.ops.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema,
 )
@@ -61,6 +69,8 @@ secrets_validators: Dict[str, Any] = {
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.saas.value: SaaSSchema,
     ConnectionType.email.value: EmailSchema,
+    ConnectionType.manual_webhook.value: ManualWebhookSchema,
+    ConnectionType.timescale.value: TimescaleSchema,
 }
 
 
@@ -101,4 +111,6 @@ connection_secrets_schemas = Union[
     BigQueryDocsSchema,
     SaaSSchema,
     EmailDocsSchema,
+    ManualWebhookSchemaforDocs,
+    TimescaleDocsSchema,
 ]

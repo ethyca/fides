@@ -8,21 +8,19 @@ from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.schemas.saas.strategy_configuration import (
     ConnectorParamRef,
     OffsetPaginationConfiguration,
-    StrategyConfiguration,
 )
 from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 
-STRATEGY_NAME = "offset"
-
 
 class OffsetPaginationStrategy(PaginationStrategy):
+
+    name = "offset"
+    configuration_model = OffsetPaginationConfiguration
+
     def __init__(self, configuration: OffsetPaginationConfiguration):
         self.incremental_param = configuration.incremental_param
         self.increment_by = configuration.increment_by
         self.limit = configuration.limit
-
-    def get_strategy_name(self) -> str:
-        return STRATEGY_NAME
 
     def get_next_request(
         self,
@@ -55,6 +53,12 @@ class OffsetPaginationStrategy(PaginationStrategy):
                 raise FidesopsException(
                     f"Unable to find value for 'limit' with the connector_param reference '{self.limit.connector_param}'"
                 )
+            try:
+                limit = int(limit)
+            except ValueError:
+                raise FidesopsException(
+                    f"The value '{limit}' of the '{self.limit.connector_param}' connector_param could not be cast to an int"
+                )
         param_value += self.increment_by
         if param_value > limit:
             return None
@@ -68,10 +72,6 @@ class OffsetPaginationStrategy(PaginationStrategy):
             query_params=request_params.query_params,
             body=request_params.body,
         )
-
-    @staticmethod
-    def get_configuration_model() -> StrategyConfiguration:
-        return OffsetPaginationConfiguration  # type: ignore
 
     def validate_request(self, request: Dict[str, Any]) -> None:
         """Ensures that the query param specified by 'incremental_param' exists in the request"""

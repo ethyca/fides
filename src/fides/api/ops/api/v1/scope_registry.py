@@ -20,9 +20,11 @@ SAAS_CONNECTION_INSTANTIATE = "connection:instantiate"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
-    "privacy-request:resume"  # User has permission to restart a paused privacy request
+    "privacy-request:resume"  # User has permission to resume a privacy request
 )
 PRIVACY_REQUEST_REVIEW = "privacy-request:review"
+PRIVACY_REQUEST_UPLOAD_DATA = "privacy-request:upload_data"
+PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data"
 
 WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update"
 WEBHOOK_READ = "webhook:read"
@@ -85,6 +87,8 @@ SCOPE_REGISTRY = [
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
     RULE_CREATE_OR_UPDATE,
     RULE_READ,
     RULE_DELETE,

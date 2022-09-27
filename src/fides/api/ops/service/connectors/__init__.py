@@ -5,6 +5,9 @@ from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.email_connector import EmailConnector
 from fides.api.ops.service.connectors.http_connector import HTTPSConnector
 from fides.api.ops.service.connectors.manual_connector import ManualConnector
+from fides.api.ops.service.connectors.manual_webhook_connector import (
+    ManualWebhookConnector,
+)
 from fides.api.ops.service.connectors.mongodb_connector import MongoDBConnector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.service.connectors.sql_connector import (
@@ -16,6 +19,7 @@ from fides.api.ops.service.connectors.sql_connector import (
     RedshiftConnector,
     SnowflakeConnector,
 )
+from fides.api.ops.service.connectors.timescale_connector import TimescaleConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLConnector,
@@ -30,6 +34,8 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.manual.value: ManualConnector,
     ConnectionType.email.value: EmailConnector,
+    ConnectionType.manual_webhook.value: ManualWebhookConnector,
+    ConnectionType.timescale.value: TimescaleConnector,
 }
 
 

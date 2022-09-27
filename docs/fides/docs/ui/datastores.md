@@ -22,12 +22,18 @@ All currently configured datastores will appear in the paginated Datastore Conne
 | Testing Status | Filter stores by the result of their last test: Passed, Failed, or Untested. |
 | Status | Filter datastores by status: Active or Disabled. |
 
+<<<<<<< HEAD:docs/fides/docs/ui/datastores.md
 ## Create a new datastore
 
 
 ## Testing datastores
 
 Each configured datastore includes an option to `Test` its connection. Fides will record the last tested time to the datastore's card, and update the current connection status.
+=======
+## Testing datastores
+
+Each configured datastore includes an option to `Test` its connection. Fidesops will record the last tested time to the datastore's card, and update the current connection status.
+>>>>>>> unified-fides-2:docs/fidesops/docs/ui/datastores.md
 
 `Green` connections have passed their most recent test.
 

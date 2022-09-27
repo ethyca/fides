@@ -13,8 +13,8 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.ops.service.authentication.authentication_strategy_factory import (
-    get_strategy,
+from fides.api.ops.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
 from fides.api.ops.service.authentication.authentication_strategy_oauth2_client_credentials import (
     OAuth2ClientCredentialsAuthenticationStrategy,
@@ -118,7 +118,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -130,7 +130,7 @@ class TestAddAuthentication:
         )
 
     @mock.patch(
-        "fides.api.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
+        "fidesops.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
     )
     def test_oauth2_authentication_missing_access_token(
         self,
@@ -146,8 +146,10 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         authenticated_request = auth_strategy.add_authentication(
             req, oauth2_client_credentials_connection_config
@@ -157,7 +159,7 @@ class TestAddAuthentication:
         )
 
     @mock.patch(
-        "fides.api.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
+        "fidesops.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
     )
     def test_oauth2_authentication_empty_access_token(
         self,
@@ -173,7 +175,7 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -195,8 +197,10 @@ class TestAddAuthentication:
 
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             auth_strategy.add_authentication(
@@ -208,9 +212,9 @@ class TestAddAuthentication:
         )
 
     # access token expired, call refresh request
-    @mock.patch("fides.api.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_oauth2_authentication_successful_refresh(
         self,
@@ -228,7 +232,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -262,7 +266,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         authenticated_request = auth_strategy.add_authentication(
@@ -275,7 +279,7 @@ class TestAddAuthentication:
 
     # access token expired, unable to refresh
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_oauth2_authentication_failed_refresh(
         self,
@@ -292,7 +296,7 @@ class TestAddAuthentication:
         # the request we want to authenticate
         req: PreparedRequest = Request(method="POST", url="https://localhost").prepare()
 
-        auth_strategy = get_strategy(
+        auth_strategy = AuthenticationStrategy.get_strategy(
             "oauth2_client_credentials", oauth2_client_credentials_configuration
         )
         with pytest.raises(OAuth2TokenException) as exc:
@@ -307,9 +311,9 @@ class TestAddAuthentication:
 
 class TestAccessTokenRequest:
     @mock.patch("datetime.datetime")
-    @mock.patch("fides.api.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_get_access_token(
         self,
@@ -331,8 +335,10 @@ class TestAccessTokenRequest:
             "expires_in": expires_in,
         }
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
@@ -352,9 +358,9 @@ class TestAccessTokenRequest:
         )
 
     @mock.patch("datetime.datetime")
-    @mock.patch("fides.api.ops.models.connectionconfig.ConnectionConfig.update")
+    @mock.patch("fidesops.ops.models.connectionconfig.ConnectionConfig.update")
     @mock.patch(
-        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+        "fidesops.ops.service.connectors.saas_connector.AuthenticatedClient.send"
     )
     def test_get_access_token_no_expires_in(
         self,
@@ -380,8 +386,10 @@ class TestAccessTokenRequest:
         }
 
         oauth2_client_credentials_configuration["expires_in"] = 3600
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
@@ -411,8 +419,10 @@ class TestAccessTokenRequest:
         oauth2_client_credentials_connection_config.secrets["client_id"] = None
         oauth2_client_credentials_connection_config.secrets["client_secret"] = ""
 
-        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = get_strategy(
-            "oauth2_client_credentials", oauth2_client_credentials_configuration
+        auth_strategy: OAuth2ClientCredentialsAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(
+                "oauth2_client_credentials", oauth2_client_credentials_configuration
+            )
         )
         with pytest.raises(FidesopsException) as exc:
             auth_strategy.get_access_token(

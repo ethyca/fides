@@ -20,6 +20,7 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
+from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import DrpAction, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import (
@@ -30,7 +31,7 @@ from fides.api.ops.schemas.drp_privacy_request import (
     DrpRevokeRequest,
 )
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -96,7 +97,7 @@ async def create_drp_privacy_request(
             **jwt.decode(data.identity, jwt_key, algorithms=["HS256"])
         )
 
-        mapped_identity: PrivacyRequestIdentity = DrpFidesopsMapper.map_identity(
+        mapped_identity: Identity = DrpFidesopsMapper.map_identity(
             drp_identity=decrypted_identity
         )
 

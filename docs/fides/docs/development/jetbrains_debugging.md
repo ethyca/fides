@@ -1,5 +1,10 @@
+<<<<<<< HEAD:docs/fides/docs/development/jetbrains_debugging.md
 # Debugging Fides in IntelliJ IDEA Ultimate
 This guide will show how to use the IntelliJ debugger with Fides running in Docker. 
+=======
+# Debugging fidesops in IntelliJ IDEA Ultimate
+This guide will show how to use the IntelliJ debugger with fidesops running in Docker. 
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/jetbrains_debugging.md
 The setup for PyCharm Professional should be very similar.
 
 ## Prerequisites
@@ -7,6 +12,10 @@ The setup for PyCharm Professional should be very similar.
 - [Docker plugin](https://plugins.jetbrains.com/plugin/7724-docker)
 - [Python plugin](https://plugins.jetbrains.com/plugin/631-python) *(this is needed for Intellij)*
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
+<<<<<<< HEAD:docs/fides/docs/development/jetbrains_debugging.md
+=======
+- [Fidesops](https://ethyca.github.io/fidesops/tutorial/installation/)
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/jetbrains_debugging.md
 
 ## Setup
 ### Connect to Docker daemon
@@ -45,9 +54,15 @@ Set up a Run/Debug Configuration so that breakpoints can be hit in the f sourcec
 
 Go to: **Run/Debug Configurations** -> **+** -> **Python**
 
+<<<<<<< HEAD:docs/fides/docs/development/jetbrains_debugging.md
 - To debug Fides, debug the `<path on your machine>/src/fides/main.py` script
 - Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
 - Add `FIDES__CONFIG_PATH=/fides` to **Environment variables**
+=======
+- To debug fidesops, debug the `<path on your machine>/src/fidesops/main.py` script
+- Make sure to select **Use specified interpreter** set the Remote Python Docker Compose *(created in the previous section)*
+- Add `FIDES__CONFIG_PATH=/fidesops` to **Environment variables**
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/jetbrains_debugging.md
 
 See screenshot below:
 
@@ -57,9 +72,15 @@ See screenshot below:
 
 Now the IDE is ready to debug the source code. Click the debug button for **main** *(setup in the previous section)*.
 
+<<<<<<< HEAD:docs/fides/docs/development/jetbrains_debugging.md
 Try firing a http request to Fides from Postman or Curl and hit a break point. 
 
 There is a postman collection in this repo: `docs/fides/docs/development/postman/Fides.postman_collection.json`
+=======
+Try firing a http request to fidesops from Postman or Curl and hit a break point. 
+
+There is a postman collection in this repo: `docs/fidesops/docs/postman/Fidesops.postman_collection.json`
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/jetbrains_debugging.md
 
 Screenshot of hit breakpoint below:
 
@@ -70,4 +91,8 @@ Screenshot of hit breakpoint below:
 The information is this guide is largely based on these docs
 
 - https://www.jetbrains.com/help/pycharm/using-docker-as-a-remote-interpreter.html
+<<<<<<< HEAD:docs/fides/docs/development/jetbrains_debugging.md
 - https://www.jetbrains.com/help/idea/configuring-local-python-interpreters.html
+=======
+- https://www.jetbrains.com/help/idea/configuring-local-python-interpreters.html
+>>>>>>> unified-fides-2:docs/fidesops/docs/development/jetbrains_debugging.md

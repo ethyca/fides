@@ -36,6 +36,7 @@ empty_policy = Policy()
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_combined_erasure_task(
     db,
     mongo_inserts,
@@ -251,6 +252,7 @@ async def test_combined_erasure_task(
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config):
     policy = erasure_policy("A", "B")
     seed_email = mongo_inserts["customer"][0]["email"]
@@ -293,6 +295,7 @@ async def test_mongo_erasure_task(db, mongo_inserts, integration_mongodb_config)
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_dask_mongo_task(
     db, integration_mongodb_config: ConnectionConfig
 ) -> None:
@@ -329,6 +332,7 @@ async def test_dask_mongo_task(
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_composite_key_erasure(
     db,
     integration_mongodb_config: ConnectionConfig,
@@ -425,6 +429,7 @@ async def test_composite_key_erasure(
 
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_access_erasure_type_conversion(
     db,
     integration_mongodb_config: ConnectionConfig,
@@ -504,6 +509,7 @@ async def test_access_erasure_type_conversion(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_object_querying_mongo(
     db,
     privacy_request,
@@ -600,6 +606,7 @@ async def test_object_querying_mongo(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_get_cached_data_for_erasures(
     integration_postgres_config, integration_mongodb_config, policy, db
 ) -> None:
@@ -643,6 +650,7 @@ async def test_get_cached_data_for_erasures(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_return_all_elements_config_access_request(
     db,
     privacy_request,
@@ -695,6 +703,7 @@ async def test_return_all_elements_config_access_request(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_return_all_elements_config_erasure(
     db,
     mongo_inserts,
@@ -773,6 +782,7 @@ async def test_return_all_elements_config_erasure(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_array_querying_mongo(
     db,
     privacy_request,
@@ -1089,7 +1099,7 @@ class TestRetrievingDataMongo:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -1111,7 +1121,7 @@ class TestRetrievingDataMongo:
 
         assert results[0]["customer_id"] == 1
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1149,7 +1159,7 @@ class TestRetrievingDataMongo:
         )
         assert results == []
 
-    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,

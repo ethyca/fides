@@ -2,16 +2,15 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-CONFIG = get_config()
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
 
 
@@ -37,7 +36,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         # parameters inside queries for debugging purposes. By
         # default we assume that Fidesops is not running in test
         # mode.
-        self.hide_parameters = not CONFIG.test_mode
+        self.hide_parameters = not config.is_test_mode
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod

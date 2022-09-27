@@ -4,19 +4,18 @@ import time
 import pytest
 import requests
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
+@pytest.mark.asyncio
 async def test_zendesk_access_request_task(
     db,
     policy,
@@ -29,7 +28,7 @@ async def test_zendesk_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_zendesk_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": zendesk_identity_email})
+    identity = Identity(**{"email": zendesk_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = zendesk_connection_config.get_saas_config().fides_key
@@ -138,7 +137,6 @@ async def test_zendesk_access_request_task(
             "custom_fields",
             "satisfaction_rating",
             "sharing_agreement_ids",
-            "fields",
             "followup_ids",
             "brand_id",
             "allow_channelback",
@@ -180,6 +178,7 @@ async def test_zendesk_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
+@pytest.mark.asyncio
 async def test_zendesk_erasure_request_task(
     db,
     policy,
@@ -190,12 +189,12 @@ async def test_zendesk_erasure_request_task(
     zendesk_create_erasure_data,
 ) -> None:
     """Full erasure request based on the zendesk SaaS config"""
-    CONFIG.execution.masking_strict = False  # Allow Delete
+    config.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_zendesk_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": zendesk_erasure_identity_email})
+    identity = Identity(**{"email": zendesk_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = zendesk_connection_config.get_saas_config().fides_key
@@ -290,7 +289,6 @@ async def test_zendesk_erasure_request_task(
             "custom_fields",
             "satisfaction_rating",
             "sharing_agreement_ids",
-            "fields",
             "followup_ids",
             "brand_id",
             "allow_channelback",
@@ -337,4 +335,4 @@ async def test_zendesk_erasure_request_task(
         # Since ticket is deleted, it won't be available so response is 404
         assert response.status_code == 404
 
-    CONFIG.execution.masking_strict = True
+    config.execution.masking_strict = True

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from fideslib.db.base import Base
 from pydantic import ValidationError
@@ -11,6 +12,8 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
+from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.email.email import (
     SUPPORTED_EMAIL_SERVICE_SECRETS,
@@ -19,9 +22,7 @@ from fides.api.ops.schemas.email.email import (
 )
 from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
 from fides.api.ops.util.logger import Pii
-from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -62,13 +63,32 @@ class EmailConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                config.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
         ),
         nullable=True,
     )  # Type bytea in the db
+
+    @classmethod
+    def get_configuration(cls, db: Session) -> Base:
+        """
+        Fetches the first configured EmailConfig record. As of v1.7.3 Fidesops does not support
+        multiple configured email connectors. Once fetched this function validates that
+        the EmailConfig is configured with secrets.
+        """
+        instance: Optional[Base] = cls.query(db=db).first()
+        if not instance:
+            raise EmailDispatchException("No email config found.")
+        if not instance.secrets:
+            logger.warning(
+                "Email secrets not found for config with key: %s", instance.key
+            )
+            raise EmailDispatchException(
+                f"Email secrets not found for config with key: {instance.key}"
+            )
+        return instance
 
     def set_secrets(
         self,

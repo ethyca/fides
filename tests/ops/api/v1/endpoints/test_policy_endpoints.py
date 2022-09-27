@@ -17,7 +17,7 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
-    NULL_REWRITE_STRATEGY_NAME,
+    NullMaskingStrategy,
 )
 from fides.api.ops.util.data_category import (
     DataCategory,
@@ -234,6 +234,7 @@ class TestCreatePolicies:
                 "name": "policy 2",
                 "action_type": "access",
                 "data_category": DataCategory("user").value,
+                "execution_timeframe": 5,
                 "storage_destination_key": storage_config.key,
             },
         ]
@@ -288,6 +289,9 @@ class TestCreatePolicies:
 
         data = resp.json()
         assert len(data["succeeded"]) == 2
+
+        assert data["succeeded"][0]["execution_timeframe"] is None
+        assert data["succeeded"][1]["execution_timeframe"] == 5
 
         elements = data["succeeded"]
         for el in elements:
@@ -710,7 +714,7 @@ class TestCreateRules:
                 "name": "test erasure rule",
                 "action_type": ActionType.erasure.value,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE_STRATEGY_NAME,
+                    "strategy": NullMaskingStrategy.name,
                     "configuration": {},
                 },
             }
@@ -728,7 +732,7 @@ class TestCreateRules:
         rule_data = response_data[0]
         assert "masking_strategy" in rule_data
         masking_strategy_data = rule_data["masking_strategy"]
-        assert masking_strategy_data["strategy"] == NULL_REWRITE_STRATEGY_NAME
+        assert masking_strategy_data["strategy"] == NullMaskingStrategy.name
         assert "configuration" not in masking_strategy_data
 
     def test_update_rule_policy_id_fails(
@@ -1069,7 +1073,7 @@ class TestRuleTargets:
                 "name": "Erasure Rule",
                 "policy_id": policy.id,
                 "masking_strategy": {
-                    "strategy": NULL_REWRITE_STRATEGY_NAME,
+                    "strategy": NullMaskingStrategy.name,
                     "configuration": {},
                 },
             },

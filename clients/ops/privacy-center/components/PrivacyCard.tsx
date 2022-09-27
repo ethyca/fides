@@ -1,5 +1,9 @@
 import React from "react";
+<<<<<<< HEAD
 import { Heading, Text, Stack, Box, Image, HStack } from "@fidesui/react";
+=======
+import Card from "./Card";
+>>>>>>> unified-fides-2
 
 type PrivacyCardProps = {
   title: string;
@@ -16,6 +20,7 @@ const PrivacyCard: React.FC<PrivacyCardProps> = ({
   description,
   onOpen,
 }) => (
+<<<<<<< HEAD
   <Box
     as="button"
     key={title}
@@ -58,6 +63,16 @@ const PrivacyCard: React.FC<PrivacyCardProps> = ({
       </Stack>
     </Stack>
   </Box>
+=======
+  <Card
+    title={title}
+    iconPath={iconPath}
+    description={description}
+    onClick={() => {
+      onOpen(policyKey);
+    }}
+  />
+>>>>>>> unified-fides-2
 );
 
 export default PrivacyCard;

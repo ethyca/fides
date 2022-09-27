@@ -663,6 +663,13 @@ dataset:
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
       retention: null
       fields: null
+    - name: egress
+      description: null
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
     - name: fides_key
       data_categories:
       - system.operations
@@ -672,6 +679,13 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: id
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+      retention: null
+      fields: null
+    - name: ingress
+      description: null
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

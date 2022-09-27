@@ -19,7 +19,7 @@ from fides.api.ops.service.connectors import (
 
 logger = logging.getLogger(__name__)
 
-integration_config = load_toml(["tests/ops/integration_test_config.toml"])
+integration_config = load_toml(["fidesops-integration.toml"])
 
 
 @pytest.fixture(scope="session")

@@ -17,21 +17,23 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
+from fides.api.ops.db.database import init_db
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.api import db_action
-from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
 from .fixtures.email_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
+from .fixtures.manual_webhook_fixtures import *
 from .fixtures.mariadb_fixtures import *
 from .fixtures.mongodb_fixtures import *
 from .fixtures.mssql_fixtures import *
@@ -40,12 +42,13 @@ from .fixtures.postgres_fixtures import *
 from .fixtures.redshift_fixtures import *
 from .fixtures.saas.adobe_campaign_fixtures import *
 from .fixtures.saas.auth0_fixtures import *
+from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
-from .fixtures.saas.logi_id_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
 from .fixtures.saas.request_override.mailchimp_override_fixtures import *
+from .fixtures.saas.rollbar_fixtures import *
 from .fixtures.saas.salesforce_fixtures import *
 from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *
@@ -55,6 +58,7 @@ from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
+from .fixtures.timescale_fixtures import *
 
 logger = logging.getLogger(__name__)
 

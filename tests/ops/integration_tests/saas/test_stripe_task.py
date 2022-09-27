@@ -4,20 +4,26 @@ from typing import List
 import pytest
 import requests
 
+from fides.api.ops.core.config import config
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.redis_cache import PrivacyRequestIdentity
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
-from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
+def test_stripe_connection_test(stripe_connection_config) -> None:
+    get_connector(stripe_connection_config).test_connection()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_stripe
+@pytest.mark.asyncio
 async def test_stripe_access_request_task(
     db,
     policy,
@@ -30,7 +36,7 @@ async def test_stripe_access_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_stripe_access_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": stripe_identity_email})
+    identity = Identity(**{"email": stripe_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
@@ -70,7 +76,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:card"],
-        min_size=2,
+        min_size=1,
         keys=[
             "address_city",
             "address_country",
@@ -99,7 +105,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:charge"],
-        min_size=3,
+        min_size=2,
         keys=[
             "amount",
             "amount_captured",
@@ -205,7 +211,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:customer_balance_transaction"],
-        min_size=5,
+        min_size=2,
         keys=[
             "amount",
             "created",
@@ -224,7 +230,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:dispute"],
-        min_size=2,
+        min_size=3,
         keys=[
             "amount",
             "balance_transactions",
@@ -245,7 +251,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice"],
-        min_size=4,
+        min_size=2,
         keys=[
             "account_country",
             "account_name",
@@ -316,7 +322,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:invoice_item"],
-        min_size=4,
+        min_size=1,
         keys=[
             "amount",
             "currency",
@@ -343,7 +349,7 @@ async def test_stripe_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:payment_intent"],
-        min_size=5,
+        min_size=1,
         keys=[
             "amount",
             "amount_capturable",
@@ -636,6 +642,7 @@ async def test_stripe_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_stripe
+@pytest.mark.asyncio
 async def test_stripe_erasure_request_task(
     db,
     policy,
@@ -650,7 +657,7 @@ async def test_stripe_erasure_request_task(
     privacy_request = PrivacyRequest(
         id=f"test_stripe_erasure_request_task_{random.randint(0, 1000)}"
     )
-    identity = PrivacyRequestIdentity(**{"email": stripe_erasure_identity_email})
+    identity = Identity(**{"email": stripe_erasure_identity_email})
     privacy_request.cache_identity(identity)
 
     dataset_name = stripe_connection_config.get_saas_config().fides_key
@@ -1076,7 +1083,7 @@ async def test_stripe_erasure_request_task(
     )
 
     # Run erasure with masking_strict = False so both update and delete actions can be used
-    CONFIG.execution.masking_strict = False
+    config.execution.masking_strict = False
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -1175,4 +1182,4 @@ async def test_stripe_erasure_request_task(
     assert subscriptions == []
 
     # reset
-    CONFIG.execution.masking_strict = True
+    config.execution.masking_strict = True

@@ -26,6 +26,7 @@ from fides.api.ops.service.connectors import (
     RedshiftConnector,
     SaaSConnector,
     SnowflakeConnector,
+    TimescaleConnector,
 )
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import Row
@@ -75,6 +76,8 @@ class Connections:
             return ManualConnector(connection_config)
         if connection_config.connection_type == ConnectionType.email:
             return EmailConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.timescale:
+            return TimescaleConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -131,8 +134,10 @@ class TaskResources:
         self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
 
     def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
-        """Retrieve the results of all steps (cache_object)"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(self.request.id)
+        """Retrieve the access results of all steps (cache_object)"""
+        value_dict = self.cache.get_encoded_objects_by_prefix(
+            f"{self.request.id}__access_request"
+        )
         # extract request id to return a map of address:value
         return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
