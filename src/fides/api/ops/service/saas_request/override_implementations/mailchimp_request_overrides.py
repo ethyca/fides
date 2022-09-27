@@ -8,7 +8,6 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -17,6 +16,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.collection_util import Row
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 

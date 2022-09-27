@@ -9,11 +9,11 @@ from sqlalchemy.orm import Session
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.urn_registry import HEALTH
 from fides.api.ops.common_exceptions import RedisConnectionError
-from fides.ctl.core.config import get_config
 from fides.api.ops.db.database import get_alembic_config
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
+from fides.ctl.core.config import get_config
 
 router = APIRouter(tags=["Public"])
 CONFIG = get_config()

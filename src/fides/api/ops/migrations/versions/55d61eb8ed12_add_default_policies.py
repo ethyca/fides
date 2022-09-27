@@ -25,12 +25,12 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.ctl.core.config import get_config
 from fides.api.ops.db.base import Policy, Rule, RuleTarget, StorageConfig
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.storage.storage import StorageType
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

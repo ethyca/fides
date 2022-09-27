@@ -15,7 +15,6 @@ from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.storage import ResponseFormat
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
 from fides.api.ops.util.cache import get_cache, get_encryption_cache_key
@@ -26,6 +25,7 @@ from fides.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 

@@ -15,7 +15,6 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestErasureEmailSendRequired,
     PrivacyRequestPaused,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.analytics_events import (
     fideslog_graph_rerun,
     prepare_rerun_graph_analytics_event,
@@ -43,6 +42,7 @@ from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 

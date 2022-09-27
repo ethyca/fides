@@ -20,7 +20,6 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import ClientDetail, FidesUser
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(f"{API_PREFIX}/oauth/token"),
 )
@@ -53,7 +52,7 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
         raise AuthenticationError(detail="Authentication Failure")
 
     token_data = json.loads(
-        extract_payload(authorization, CONFIG.security.app_encryption_key)
+        extract_payload(authorization, config.security.app_encryption_key)
     )
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
@@ -62,7 +61,7 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        CONFIG.security.oauth_access_token_expire_minutes,
+        config.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 
@@ -75,7 +74,7 @@ async def verify_oauth_client(  # pylint: disable=invalid-name
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG, scopes=SCOPES)
+    client = ClientDetail.get(db, object_id=client_id, config=config, scopes=SCOPES)
 
     if not client:
         raise AuthorizationError(detail="Not Authorized for this action")

@@ -2,8 +2,8 @@ import hashlib
 import hmac
 from typing import Callable
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 

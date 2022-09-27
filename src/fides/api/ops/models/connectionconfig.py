@@ -16,9 +16,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.manual_webhook import AccessManualWebhook

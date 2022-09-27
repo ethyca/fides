@@ -21,7 +21,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     def session(self) -> ContextManager[Session]:
         """Creates Session once per process"""
         if self._session is None:
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             self._session = SessionLocal()
 
         return self._session

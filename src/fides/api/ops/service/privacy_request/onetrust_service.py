@@ -13,7 +13,6 @@ from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
@@ -36,6 +35,7 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.util.storage_authenticator import get_onetrust_access_token
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 

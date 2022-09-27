@@ -20,7 +20,6 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.policy import DrpAction, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import (
@@ -44,6 +43,7 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)

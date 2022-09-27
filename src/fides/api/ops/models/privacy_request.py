@@ -33,7 +33,6 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
@@ -68,6 +67,7 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 CONFIG = get_config()

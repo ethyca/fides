@@ -39,7 +39,7 @@ def annotate_dataset(
     """
     config = ctx.obj["CONFIG"]
     _annotate_dataset.annotate_dataset(
-        config=CONFIG,
+        config=config,
         dataset_file=input_filename,
         annotate_all=all_members,
         validate=validate,

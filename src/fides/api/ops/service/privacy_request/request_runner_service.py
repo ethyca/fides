@@ -19,7 +19,6 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
@@ -67,6 +66,7 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 logger = get_task_logger(__name__)

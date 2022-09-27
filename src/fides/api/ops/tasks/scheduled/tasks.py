@@ -4,12 +4,12 @@ from typing import Optional
 from apscheduler.jobstores.base import JobLookupError
 from fideslib.db.session import get_db_session
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.ops.service.privacy_request.onetrust_service import OneTrustService
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
