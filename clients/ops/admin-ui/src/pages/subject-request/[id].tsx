@@ -10,14 +10,13 @@ import {
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React from "react";
+import SubjectRequest from "subject-request/SubjectRequest";
 
 import { INDEX_ROUTE } from "../../constants";
 import ProtectedRoute from "../../features/auth/ProtectedRoute";
 import Head from "../../features/common/Head";
 import NavBar from "../../features/common/NavBar";
 import { useGetAllPrivacyRequestsQuery } from "../../features/privacy-requests";
-import SubjectRequest from "../../features/subject-request/SubjectRequest";
 
 const useSubjectRequestDetails = () => {
   const router = useRouter();

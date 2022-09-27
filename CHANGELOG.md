@@ -33,6 +33,7 @@ The types of changes are:
 * Access support for Rollbar [#1361](https://github.com/ethyca/fidesops/pull/1361)
 * Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 * Allow querying the non-default schema with the Postgres Connector [#1375](https://github.com/ethyca/fidesops/pull/1375)
+* Frontend - ability for users to manually enter PII to an IN PROGRESS subject request [#1016](https://github.com/ethyca/fidesops/pull/1377)
 
 ### Removed
 

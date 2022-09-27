@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
+import { replaceURL } from "../helpers";
 import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
@@ -26,7 +27,7 @@ const DSRCustomization: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fields, setFields] = useState([] as Field[]);
 
-  const { connection } = useAppSelector(selectConnectionTypeState);
+  const { connection, step } = useAppSelector(selectConnectionTypeState);
 
   const { data, isFetching, isLoading, isSuccess } =
     useGetAccessManualHookQuery(connection!.key);
@@ -65,10 +66,13 @@ const DSRCustomization: React.FC = () => {
     if (isSuccess && data) {
       setFields(data.fields);
     }
+    if (connection?.key) {
+      replaceURL(connection.key, step.href);
+    }
     return () => {
       mounted.current = false;
     };
-  }, [data, isSuccess]);
+  }, [connection?.key, data, isSuccess, step.href]);
 
   return (
     <VStack align="stretch" gap="24px">

@@ -57,10 +57,16 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
       validationSchema={Yup.object({
         fields: Yup.array().of(
           Yup.object().shape({
-            pii_field: Yup.string().required("PII Field is required"),
-            dsr_package_label: Yup.string().required(
-              "DSR Package Label is required"
-            ),
+            pii_field: Yup.string()
+              .required("PII Field is required")
+              .min(1, "PII Field must have at least one character")
+              .max(200, "PII Field has a maximum of 200 characters")
+              .label("PII Field"),
+            dsr_package_label: Yup.string()
+              .required("DSR Package Label is required")
+              .min(1, "DSR Package Label must have at least one character")
+              .max(200, "DSR Package Label has a maximum of 200 characters")
+              .label("DSR Package Label"),
           })
         ),
       })}

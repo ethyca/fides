@@ -48,6 +48,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException
   );
+  const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
 
   const validate = (value: string) => {
@@ -57,6 +58,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
 
   const handleChange = (value: string | undefined) => {
     try {
+      setIsTouched(true);
       validate(value as string);
       setIsEmptyState(!!(!value || value.trim() === ""));
     } catch (error) {
@@ -131,7 +133,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           </Button>
         </ButtonGroup>
       </VStack>
-      {(isEmptyState || yamlError) && (
+      {isTouched && (isEmptyState || yamlError) && (
         <SlideFade in>
           <Box w="fit-content">
             <Divider color="gray.100" />

@@ -26,6 +26,7 @@ import {
   DatastoreConnectionsResponse,
   DatastoreConnectionStatus,
   GetAccessManualWebhookResponse,
+  GetAllEnabledAccessManualWebhooksResponse,
   PatchAccessManualWebhookRequest,
   PatchAccessManualWebhookResponse,
   PatchDatasetsRequest,
@@ -207,6 +208,15 @@ export const datastoreConnectionApi = createApi({
       }),
       providesTags: () => ["DatastoreConnection"],
     }),
+    getAllEnabledAccessManualHooks: build.query<
+      GetAllEnabledAccessManualWebhooksResponse,
+      void
+    >({
+      query: () => ({
+        url: `access_manual_webhook`,
+      }),
+      providesTags: () => ["DatastoreConnection"],
+    }),
     getDatastoreConnectionByKey: build.query<DatastoreConnection, string>({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}`,
@@ -322,6 +332,7 @@ export const {
   useCreateAccessManualWebhookMutation,
   useCreateSassConnectionConfigMutation,
   useGetAccessManualHookQuery,
+  useGetAllEnabledAccessManualHooksQuery,
   useGetAllDatastoreConnectionsQuery,
   useGetDatasetsQuery,
   useGetDatastoreConnectionByKeyQuery,

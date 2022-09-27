@@ -26,7 +26,7 @@ const ConfigureConnector: React.FC = () => {
   const [steps, setSteps] = useState([STEPS[0], STEPS[1], STEPS[2]]);
   const [canRedirect, setCanRedirect] = useState(false);
 
-  const { connection, connectionOption } = useAppSelector(
+  const { connection, connectionOption, step } = useAppSelector(
     selectConnectionTypeState
   );
 
@@ -43,10 +43,9 @@ const ConfigureConnector: React.FC = () => {
     (value: string) => {
       switch (value) {
         case ConfigurationSettings.DATASET_CONFIGURATION:
+        case ConfigurationSettings.DSR_CUSTOMIZATION:
           dispatch(setStep(STEPS[3]));
           setSteps([STEPS[0], STEPS[1], STEPS[3]]);
-          break;
-        case ConfigurationSettings.DSR_CUSTOMIZATION:
           break;
         case ConfigurationSettings.CONNECTOR_PARAMETERS:
         default:
@@ -68,6 +67,12 @@ const ConfigureConnector: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    if (step) {
+      setSelectedItem(
+        connector?.options[Number(step.stepId) - connector.options.length]
+      );
+    }
+
     // If a connection has been initially created, then auto redirect the user accordingly.
     if (connection?.key && canRedirect) {
       handleNavChange(
@@ -77,7 +82,14 @@ const ConfigureConnector: React.FC = () => {
       );
       setCanRedirect(false);
     }
-  }, [canRedirect, connection, connectionOption?.type, handleNavChange]);
+  }, [
+    canRedirect,
+    connection?.key,
+    connectionOption?.type,
+    connector?.options,
+    handleNavChange,
+    step,
+  ]);
 
   return (
     <>
