@@ -398,11 +398,7 @@ def build_joined_dataframe(
 
     delete_df["dataset.name"] = "N/A"
 
-    joined_df = (
-        pd.merge(joined_df, delete_df, indicator=True, how="outer")
-        .query('_merge=="left_only"')
-        .drop("_merge", axis=1)
-    )
+    joined_df = pd.merge(joined_df, delete_df, indicator=True, how="right")
 
     # model empty columns until implemented as part of appending to template
     joined_df["system.joint_controller"] = ""
