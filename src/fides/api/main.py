@@ -207,16 +207,16 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    logger.info("Validating SaaS connector templates...")
-    load_registry(registry_file)
+    # TODO: This is hanging and blocking webserver startup
+    # logger.info("Validating SaaS connector templates...")
+    # load_registry(registry_file)
 
-    if CONFIG.redis.enabled:
-        logger.info("Running Redis connection test...")
-        try:
-            get_cache()
-        except (RedisConnectionError, ResponseError) as e:
-            logger.error("Connection to cache failed: %s", Pii(str(e)))
-            return
+    logger.info("Running Redis connection test...")
+    try:
+        get_cache()
+    except (RedisConnectionError, ResponseError) as e:
+        logger.error("Connection to cache failed: %s", Pii(str(e)))
+        return
 
     if not scheduler.running:
         scheduler.start()
