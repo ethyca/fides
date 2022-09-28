@@ -391,12 +391,14 @@ describe("Dataset", () => {
         ).to.eql(connectionString);
       });
 
-      // Two requests should be intercepted. (Cypress waits in LIFO order.)
+      // Two requests should be intercepted.
       cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-2");
-      });
-      cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-1");
+        const generatedKeys = [];
+        generatedKeys.push(interception.request.body.fides_key);
+        cy.wait("@postDataset").then((interception2) => {
+          generatedKeys.push(interception2.request.body.fides_key);
+          expect(generatedKeys.sort()).to.eql(["generated-1", "generated-2"]);
+        });
       });
 
       // Should navigate to the first created dataset.
