@@ -946,7 +946,7 @@ class TestRetrievingData:
         traversal_node = TraversalNode(node)
         return traversal_node
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data(
         self,
         mock_incoming_edges: Mock,
@@ -980,7 +980,7 @@ class TestRetrievingData:
             }
         ]
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_no_input(
         self,
         mock_incoming_edges: Mock,
@@ -1016,7 +1016,7 @@ class TestRetrievingData:
             traversal_node, Policy(), privacy_request, {"email": None}
         )
 
-    @mock.patch("fidesops.ops.graph.traversal.TraversalNode.incoming_edges")
+    @mock.patch("fides.api.ops.graph.traversal.TraversalNode.incoming_edges")
     def test_retrieving_data_input_not_in_table(
         self,
         mock_incoming_edges: Mock,
@@ -1047,7 +1047,7 @@ class TestRetrievingData:
 @pytest.mark.integration
 class TestRetryIntegration:
     @mock.patch(
-        "fidesops.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
+        "fides.api.ops.service.connectors.sql_connector.SQLConnector.retrieve_data"
     )
     @pytest.mark.asyncio
     async def test_retry_access_request(
@@ -1101,7 +1101,7 @@ class TestRetryIntegration:
             ("postgres_example_test_dataset:employee", "error"),
         ]
 
-    @mock.patch("fidesops.ops.service.connectors.sql_connector.SQLConnector.mask_data")
+    @mock.patch("fides.api.ops.service.connectors.sql_connector.SQLConnector.mask_data")
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,

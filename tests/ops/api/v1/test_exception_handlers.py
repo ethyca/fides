@@ -5,7 +5,6 @@ from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import CLIENT_CREATE
 from fides.api.ops.api.v1.urn_registry import (
-    CLIENT,
     HEALTH,
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
