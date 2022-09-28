@@ -1,4 +1,8 @@
 describe("Taxonomy management page", () => {
+  before(() => {
+    cy.login();
+  });
+
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_categories.json",
@@ -14,7 +18,7 @@ describe("Taxonomy management page", () => {
     }).as("getDataQualifiers");
   });
 
-  it.skip("Can navigate to the taxonomy page", () => {
+  it("Can navigate to the taxonomy page", () => {
     cy.visit("/");
     cy.getByTestId("nav-link-Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
