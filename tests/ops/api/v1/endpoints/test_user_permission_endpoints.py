@@ -23,6 +23,8 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
+
 
 class TestCreateUserPermissions:
     @pytest.fixture(scope="function")
@@ -163,8 +165,8 @@ class TestEditUserPermissions:
 
         ClientDetail.create_client_and_secret(
             db,
-            config.security.oauth_client_id_length_bytes,
-            config.security.oauth_client_secret_length_bytes,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
             scopes=[PRIVACY_REQUEST_READ],
             user_id=user.id,
         )

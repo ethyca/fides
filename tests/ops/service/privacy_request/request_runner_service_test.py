@@ -54,6 +54,7 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
@@ -62,10 +63,10 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
 @pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_enabled():
     """Enable request completion email"""
-    original_value = config.notifications.send_request_completion_notification
-    config.notifications.send_request_completion_notification = True
+    original_value = CONFIG.notifications.send_request_completion_notification
+    CONFIG.notifications.send_request_completion_notification = True
     yield
-    config.notifications.send_request_completion_notification = original_value
+    CONFIG.notifications.send_request_completion_notification = original_value
 
 
 @mock.patch(

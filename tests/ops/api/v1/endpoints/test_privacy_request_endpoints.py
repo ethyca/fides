@@ -78,6 +78,7 @@ from fides.api.ops.util.cache import (
 )
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 page_size = Params().size
 
 
@@ -1693,10 +1694,10 @@ class TestApprovePrivacyRequest:
     @pytest.fixture(scope="function")
     def privacy_request_review_email_notification_enabled(self):
         """Enable request review email"""
-        original_value = config.notifications.send_request_review_notification
-        config.notifications.send_request_review_notification = True
+        original_value = CONFIG.notifications.send_request_review_notification
+        CONFIG.notifications.send_request_review_notification = True
         yield
-        config.notifications.send_request_review_notification = original_value
+        CONFIG.notifications.send_request_review_notification = original_value
 
     def test_approve_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -1822,7 +1823,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -1868,7 +1869,7 @@ class TestApprovePrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request_status_pending.id]}
@@ -1908,10 +1909,10 @@ class TestDenyPrivacyRequest:
     @pytest.fixture(autouse=True, scope="function")
     def privacy_request_review_email_notification_enabled(self):
         """Enable request review email"""
-        original_value = config.notifications.send_request_review_notification
-        config.notifications.send_request_review_notification = True
+        original_value = CONFIG.notifications.send_request_review_notification
+        CONFIG.notifications.send_request_review_notification = True
         yield
-        config.notifications.send_request_review_notification = original_value
+        CONFIG.notifications.send_request_review_notification = original_value
 
     def test_deny_privacy_request_not_authenticated(self, url, api_client):
         response = api_client.patch(url)
@@ -1993,7 +1994,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
 
         body = {"request_ids": [privacy_request.id]}
@@ -2060,7 +2061,7 @@ class TestDenyPrivacyRequest:
         }
         auth_header = {
             "Authorization": "Bearer "
-            + generate_jwe(json.dumps(payload), config.security.app_encryption_key)
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
         denial_reason = "Your request was denied because reasons"
         body = {"request_ids": [privacy_request.id], "reason": denial_reason}
@@ -2128,7 +2129,7 @@ class TestResumePrivacyRequest:
         auth_header = {
             "Authorization": "Bearer "
             + generate_jwe(
-                json.dumps({"unexpected": "format"}), config.security.app_encryption_key
+                json.dumps({"unexpected": "format"}), CONFIG.security.app_encryption_key
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -2156,7 +2157,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -2180,7 +2181,7 @@ class TestResumePrivacyRequest:
                         "iat": datetime.now().isoformat(),
                     }
                 ),
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
             )
         }
         response = api_client.post(url, headers=auth_header, json={})
@@ -2687,10 +2688,10 @@ class TestVerifyIdentity:
     @pytest.fixture(scope="function")
     def privacy_request_receipt_email_notification_enabled(self):
         """Enable request receipt email"""
-        original_value = config.notifications.send_request_receipt_notification
-        config.notifications.send_request_receipt_notification = True
+        original_value = CONFIG.notifications.send_request_receipt_notification
+        CONFIG.notifications.send_request_receipt_notification = True
         yield
-        config.notifications.send_request_receipt_notification = original_value
+        CONFIG.notifications.send_request_receipt_notification = original_value
 
     def test_incorrect_privacy_request_status(self, api_client, url, privacy_request):
         request_body = {"code": self.code}
@@ -2920,10 +2921,10 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")
     def subject_identity_verification_required(self):
         """Override autouse fixture to enable identity verification for tests"""
-        original_value = config.execution.subject_identity_verification_required
-        config.execution.subject_identity_verification_required = True
+        original_value = CONFIG.execution.subject_identity_verification_required
+        CONFIG.execution.subject_identity_verification_required = True
         yield
-        config.execution.subject_identity_verification_required = original_value
+        CONFIG.execution.subject_identity_verification_required = original_value
 
     def test_create_privacy_request_no_email_config(
         self,
@@ -3444,10 +3445,10 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
     @pytest.fixture(scope="function")
     def privacy_request_receipt_email_notification_enabled(self):
         """Enable request receipt email"""
-        original_value = config.notifications.send_request_receipt_notification
-        config.notifications.send_request_receipt_notification = True
+        original_value = CONFIG.notifications.send_request_receipt_notification
+        CONFIG.notifications.send_request_receipt_notification = True
         yield
-        config.notifications.send_request_receipt_notification = original_value
+        CONFIG.notifications.send_request_receipt_notification = original_value
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"

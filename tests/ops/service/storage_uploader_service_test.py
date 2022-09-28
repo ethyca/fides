@@ -34,6 +34,8 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
+
 
 @mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_secrets_auth(
@@ -434,9 +436,9 @@ class TestWriteToInMemoryBuffer:
         )
         assert isinstance(buff, BytesIO)
         encrypted = buff.read()
-        data = encrypted.decode(config.security.encoding)
+        data = encrypted.decode(CONFIG.security.encoding)
         decrypted = decrypt_combined_nonce_and_message(
-            data, self.key.encode(config.security.encoding)
+            data, self.key.encode(CONFIG.security.encoding)
         )
         assert json.loads(decrypted) == original_data
 
@@ -449,14 +451,14 @@ class TestWriteToInMemoryBuffer:
         zipfile = ZipFile(buff)
 
         with zipfile.open("mongo:address.csv", "r") as address_csv:
-            data = address_csv.read().decode(config.security.encoding)
+            data = address_csv.read().decode(CONFIG.security.encoding)
 
             decrypted = decrypt_combined_nonce_and_message(
-                data, self.key.encode(config.security.encoding)
+                data, self.key.encode(CONFIG.security.encoding)
             )
 
-            binary_stream = BytesIO(decrypted.encode(config.security.encoding))
-            df = pd.read_csv(binary_stream, encoding=config.security.encoding)
+            binary_stream = BytesIO(decrypted.encode(CONFIG.security.encoding))
+            df = pd.read_csv(binary_stream, encoding=CONFIG.security.encoding)
             assert list(df.columns) == [
                 "id",
                 "zip",
@@ -488,7 +490,7 @@ class TestEncryptResultsPackage:
         data = "test data"
         ret = encrypt_access_request_results(data, request_id=privacy_request.id)
         decrypted = decrypt_combined_nonce_and_message(
-            ret, key.encode(config.security.encoding)
+            ret, key.encode(CONFIG.security.encoding)
         )
         assert data == decrypted
 

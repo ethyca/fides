@@ -6,6 +6,8 @@ from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import faker
 
+CONFIG = get_config()
+
 
 def test_get_cache(cache: FidesopsRedis) -> None:
     assert cache is not None

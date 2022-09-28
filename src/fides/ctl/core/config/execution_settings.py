@@ -16,7 +16,7 @@ class ExecutionSettings(FidesSettings):
     require_manual_request_approval: bool = False
     masking_strict: bool = True
     worker_enabled: bool = False
-    celery_config_path: Optional[str] = "celery.toml"
+    celery_config_path: Optional[str] = ".fides/celery.toml"
 
     class Config:
         env_prefix = ENV_PREFIX
