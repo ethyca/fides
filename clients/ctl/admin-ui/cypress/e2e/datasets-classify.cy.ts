@@ -1,3 +1,8 @@
+import {
+  ClassifyInstance,
+  ClassifyStatusEnum,
+} from "~/features/common/plus.slice";
+
 /**
  * This test suite is a parallel of datasets.cy.ts for testing Dataset features when the user has
  * access to the  Fidescls API. This suite should cover the behavior that is different when a
@@ -12,6 +17,9 @@ describe("Datasets with Fides Classify", () => {
         core_fidesctl_version: "1.8",
       },
     }).as("getPlusHealth");
+    cy.intercept("GET", "/api/v1/plus/classify", {
+      fixture: "classify/list.json",
+    }).as("getClassifyList");
   });
 
   describe("Creating datasets", () => {
@@ -73,9 +81,6 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
-      cy.intercept("GET", "/api/v1/plus/classify", {
-        fixture: "classify/list.json",
-      }).as("getClassifyList");
     });
 
     it("Shows the each dataset's classify status", () => {
@@ -104,10 +109,6 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/data_category", {
         fixture: "data_categories.json",
       }).as("getDataCategory");
-
-      cy.intercept("GET", "/api/v1/plus/classify", {
-        fixture: "classify/list.json",
-      }).as("getClassifyList");
     });
 
     /**
@@ -157,6 +158,60 @@ describe("Datasets with Fides Classify", () => {
         identifiability: "Unlinked Pseudonymized",
         taxonomyEntities: ["system.operations"],
       });
+    });
+  });
+
+  describe("Approve classification button", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("getDataset");
+      cy.intercept("GET", "/api/v1/data_category", {
+        fixture: "data_categories.json",
+      }).as("getDataCategory");
+
+      cy.intercept("PUT", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("putDataset");
+      cy.intercept("PUT", "/api/v1/plus/classify", {
+        fixture: "classify/update.json",
+      }).as("putClassify");
+    });
+
+    it("Updates blank fields with top classifications", () => {
+      cy.visit("/dataset/dataset_in_review");
+      cy.wait("@getDataset");
+      cy.wait("@getClassifyList");
+
+      // The button triggers a chain of requests that will modify the classify list response.
+      // TODO(#1120): When the APIs are locked in, the list request will be replaced with a
+      // get-by-fides-key request, and the PUT requests can have assertions about their content.
+      cy.fixture("classify/list.json").then((instances) => {
+        const instance: ClassifyInstance = instances.find(
+          (ci: ClassifyInstance) => ci.id === "classification_in_review"
+        );
+        instance.datasets[0].status = ClassifyStatusEnum.REVIEWED;
+
+        cy.intercept("GET", "/api/v1/plus/classify", {
+          body: instances,
+        }).as("getClassifyList");
+      });
+
+      cy.getByTestId("approve-classification-btn")
+        .should("be.enabled")
+        .click()
+        .should("be.disabled");
+
+      // The mutations should run.
+      cy.wait("@putDataset");
+      cy.wait("@putClassify");
+
+      // The instances should be re-fetched.
+      cy.wait("@getClassifyList");
+
+      // The updated status should make the button disappear.
+      cy.getByTestId("approve-classification-btn").should("not.exist");
+      cy.getByTestId("toast-success-msg");
     });
   });
 });

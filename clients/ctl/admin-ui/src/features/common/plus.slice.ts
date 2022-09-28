@@ -61,12 +61,20 @@ export interface ClassifyInstance {
   datasets: ClassifyDataset[];
 }
 
+export interface ClassifyInstanceUpdateRequest {
+  id: string;
+  datasets: Array<{
+    fides_key: string;
+    status: ClassifyStatusEnum;
+  }>;
+}
+
 export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
   }),
-  tagTypes: ["Plus"],
+  tagTypes: ["Plus", "ClassifyInstances"],
   endpoints: (build) => ({
     getHealth: build.query<HealthResponse, void>({
       query: () => "health",
@@ -83,9 +91,22 @@ export const plusApi = createApi({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["ClassifyInstances"],
+    }),
+    updateClassifyInstance: build.mutation<
+      ClassifyInstance,
+      ClassifyInstanceUpdateRequest
+    >({
+      query: (body) => ({
+        url: `classify/`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["ClassifyInstances"],
     }),
     getAllClassifyInstances: build.query<ClassifyInstance[], void>({
       query: () => `classify/`,
+      providesTags: ["ClassifyInstances"],
     }),
   }),
 });
@@ -94,6 +115,7 @@ export const {
   useGetHealthQuery,
   useCreateClassifyInstanceMutation,
   useGetAllClassifyInstancesQuery,
+  useUpdateClassifyInstanceMutation,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -101,20 +123,36 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
+const emptyClassifyInstances: ClassifyInstance[] = [];
+export const selectClassifyInstances = createSelector(
+  plusApi.endpoints.getAllClassifyInstances.select(),
+  ({ data: instances }) => instances ?? emptyClassifyInstances
+);
+
+export const selectActiveClassifyInstance = createSelector(
+  [selectClassifyInstances, selectActiveDatasetFidesKey],
+  (instances, fidesKey) =>
+    instances && fidesKey
+      ? instances.find((ci) =>
+          ci.datasets.find((ds) => ds.fides_key === fidesKey)
+        )
+      : undefined
+);
+
 const emptyClassifyDatasetMap: Map<string, ClassifyDataset> = new Map();
 export const selectClassifyDatasetMap = createSelector(
-  plusApi.endpoints.getAllClassifyInstances.select(),
-  ({ data: instances }) => {
-    if (!instances) {
-      return emptyClassifyDatasetMap;
-    }
-
+  selectClassifyInstances,
+  (instances) => {
     const map = new Map<string, ClassifyDataset>();
     instances.forEach((ci) => {
       ci.datasets?.forEach((ds) => {
         map.set(ds.fides_key, ds);
       });
     });
+
+    if (map.size === 0) {
+      return emptyClassifyDatasetMap;
+    }
 
     return map;
   }

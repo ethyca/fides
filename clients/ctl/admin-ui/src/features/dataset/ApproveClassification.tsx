@@ -1,16 +1,33 @@
-import { Button, chakra, HStack } from "@fidesui/react";
+import { Button, chakra, HStack, useToast } from "@fidesui/react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   ClassifyStatusEnum,
-  selectActiveClassifyDataset,
+  selectActiveClassifyInstance,
   selectClassifyInstanceCollection,
+  selectClassifyInstanceDataset,
+  useUpdateClassifyInstanceMutation,
 } from "~/features/common/plus.slice";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+
+import { selectActiveDataset, useUpdateDatasetMutation } from "./dataset.slice";
+import { getUpdatedDatasetFromClassifyDataset } from "./helpers";
 
 const ApproveClassification = () => {
-  const classifyDataset = useSelector(selectActiveClassifyDataset);
+  const dataset = useSelector(selectActiveDataset);
+  const classifyInstance = useSelector(selectActiveClassifyInstance);
+  const classifyDataset = useSelector(selectClassifyInstanceDataset);
   const classifyCollection = useSelector(selectClassifyInstanceCollection);
+
+  const [updateDataset, { isLoading: datasetIsLoading }] =
+    useUpdateDatasetMutation();
+  const [updateClassifyInstance, { isLoading: instanceIsLoading }] =
+    useUpdateClassifyInstanceMutation();
+  const isLoading = datasetIsLoading || instanceIsLoading;
+
+  const toast = useToast();
 
   const fieldCount = useMemo(
     () =>
@@ -21,7 +38,41 @@ const ApproveClassification = () => {
     [classifyCollection]
   );
 
-  const handleApprove = () => {};
+  const handleApprove = async () => {
+    if (isLoading || !(dataset && classifyInstance && classifyDataset)) {
+      return;
+    }
+
+    const updatedDataset = getUpdatedDatasetFromClassifyDataset(
+      dataset,
+      classifyDataset
+    );
+    try {
+      const updateResult = await updateDataset(updatedDataset);
+      if (isErrorResult(updateResult)) {
+        toast(errorToastParams(getErrorMessage(updateResult.error)));
+        return;
+      }
+
+      const statusResult = await updateClassifyInstance({
+        id: classifyInstance?.id,
+        datasets: [
+          {
+            fides_key: dataset.fides_key,
+            status: ClassifyStatusEnum.REVIEWED,
+          },
+        ],
+      });
+      if (isErrorResult(statusResult)) {
+        toast(errorToastParams(getErrorMessage(statusResult.error)));
+        return;
+      }
+
+      toast(successToastParams("Dataset classified and approved"));
+    } catch (error) {
+      toast(errorToastParams(`${error}`));
+    }
+  };
 
   // This component is only visible if the classifier has run on this dataset and has not been reviewed yet.
   if (
@@ -48,6 +99,9 @@ const ApproveClassification = () => {
         variant="primary"
         flexShrink={0}
         onClick={handleApprove}
+        isLoading={isLoading}
+        isDisabled={isLoading}
+        data-testid="approve-classification-btn"
       >
         Approve dataset classification
       </Button>
