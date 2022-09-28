@@ -10,7 +10,7 @@ describe("System management page", () => {
     );
   });
 
-  it.only("Can navigate to the system management page", () => {
+  it("Can navigate to the system management page", () => {
     cy.visit("/");
     cy.getByTestId("nav-link-Systems").click();
     cy.wait("@getSystems");

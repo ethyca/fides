@@ -1,12 +1,17 @@
 describe("Nav Bar", () => {
+  before(() => {
+    cy.login();
+  });
+
   it("Renders all page links", () => {
     cy.visit("/");
 
-    // Enabled links
+    cy.getByTestId("nav-link-Subject Requests");
+    cy.getByTestId("nav-link-Datastore Connections");
+    cy.getByTestId("nav-link-User Management");
     cy.getByTestId("nav-link-Datasets");
     cy.getByTestId("nav-link-Taxonomy");
     cy.getByTestId("nav-link-Systems");
-
   });
 
   it("Renders the active page based on the current route", () => {
