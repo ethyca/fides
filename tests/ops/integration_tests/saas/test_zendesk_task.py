@@ -201,8 +201,6 @@ async def test_zendesk_erasure_request_task(
     merged_graph = zendesk_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    # Since we sometimes get response: b'Number of allowed API requests per minute exceeded' so adding this line to avoid it
-    time.sleep(60)
     v = await graph_task.run_access_request(
         privacy_request,
         policy,

@@ -34,6 +34,7 @@ The types of changes are:
 * Adds a new Timescale connector [#1327](https://github.com/ethyca/fidesops/pull/1327)
 * Allow querying the non-default schema with the Postgres Connector [#1375](https://github.com/ethyca/fidesops/pull/1375)
 * Frontend - ability for users to manually enter PII to an IN PROGRESS subject request [#1016](https://github.com/ethyca/fidesops/pull/1377)
+* Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
 
 ### Removed
 
