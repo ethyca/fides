@@ -49,7 +49,6 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -77,6 +76,7 @@ from fides.api.ops.util.cache import (
     get_identity_cache_key,
     get_masking_secret_cache_key,
 )
+from fides.ctl.core.config import get_config
 
 page_size = Params().size
 

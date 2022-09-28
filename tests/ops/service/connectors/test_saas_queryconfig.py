@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import pytest
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal
@@ -11,6 +10,7 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.ctl.core.config import get_config
 
 privacy_request = PrivacyRequest(id="234544")
 

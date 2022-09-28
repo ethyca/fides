@@ -8,7 +8,6 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import text
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -28,6 +27,7 @@ from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 
 from ..graph.graph_test_util import (
     assert_rows_match,
