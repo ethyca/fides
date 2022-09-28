@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from fidesops.ops.common_exceptions import (
     ClientUnsuccessfulException,
+    ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -572,30 +573,34 @@ class TestCacheEmailConnectorTemplateContents:
 class TestCacheManualWebhookInput:
     def test_cache_manual_webhook_input(self, privacy_request, access_manual_webhook):
         with pytest.raises(NoCachedManualWebhookEntry):
-            privacy_request.get_manual_webhook_input(access_manual_webhook)
+            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
 
         privacy_request.cache_manual_webhook_input(
             manual_webhook=access_manual_webhook,
             input_data={"email": "customer-1@example.com", "last_name": "Customer"},
         )
 
-        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+        assert privacy_request.get_manual_webhook_input_strict(
+            access_manual_webhook
+        ) == {
             "email": "customer-1@example.com",
             "last_name": "Customer",
         }
 
-    def test_cache_no_fields(self, privacy_request, access_manual_webhook):
+    def test_cache_no_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_input(
             manual_webhook=access_manual_webhook,
             input_data={},
         )
 
-        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+        assert privacy_request.get_manual_webhook_input_strict(
+            access_manual_webhook
+        ) == {
             "email": None,
             "last_name": None,
-        }
+        }, "Missing fields persisted as None"
 
-    def test_cache_field_missing(self, privacy_request, access_manual_webhook):
+    def test_cache_some_fields_supplied(self, privacy_request, access_manual_webhook):
         privacy_request.cache_manual_webhook_input(
             manual_webhook=access_manual_webhook,
             input_data={
@@ -603,10 +608,12 @@ class TestCacheManualWebhookInput:
             },
         )
 
-        assert privacy_request.get_manual_webhook_input(access_manual_webhook) == {
+        assert privacy_request.get_manual_webhook_input_strict(
+            access_manual_webhook
+        ) == {
             "email": "customer-1@example.com",
             "last_name": None,
-        }
+        }, "Missing fields saved as None"
 
     def test_cache_extra_fields_not_in_webhook_specs(
         self, privacy_request, access_manual_webhook
@@ -633,6 +640,70 @@ class TestCacheManualWebhookInput:
                 manual_webhook=access_manual_webhook,
                 input_data={"email": "customer-1@example.com", "last_name": "Customer"},
             )
+
+    def test_fields_added_to_webhook_definition(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test the use case where new fields have been added to the webhook definition
+        since the webhook data was saved to the privacy request"""
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"last_name": "Customer", "email": "jane@example.com"},
+        )
+
+        access_manual_webhook.fields.append(
+            {"pii_field": "Phone", "dsr_package_label": "phone"}
+        )
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ManualWebhookFieldsUnset):
+            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
+
+    def test_fields_removed_from_webhook_definition(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test the use case where fields have been removed from the webhook definition
+        since the webhook data was saved to the privacy request"""
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"last_name": "Customer", "email": "jane@example.com"},
+        )
+
+        access_manual_webhook.fields = [
+            {"pii_field": "last_name", "dsr_package_label": "last_name"}
+        ]
+        access_manual_webhook.save(db)
+
+        with pytest.raises(ValidationError):
+            privacy_request.get_manual_webhook_input_strict(access_manual_webhook)
+
+    def test_non_strict_retrieval_from_cache(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test non-strict retrieval, we ignore extra fields saved and serialize missing fields as None"""
+        privacy_request.cache_manual_webhook_input(
+            manual_webhook=access_manual_webhook,
+            input_data={"email": "customer-1@example.com", "last_name": "Customer"},
+        )
+
+        access_manual_webhook.fields = [  # email field deleted
+            {"pii_field": "First Name", "dsr_package_label": "first_name"},  # New Field
+            {
+                "pii_field": "Last Name",
+                "dsr_package_label": "last_name",
+            },  # Existing Field
+            {"pii_field": "Phone", "dsr_package_label": "phone"},  # New Field
+        ]
+        access_manual_webhook.save(db)
+
+        overlap_input = privacy_request.get_manual_webhook_input_non_strict(
+            access_manual_webhook
+        )
+        assert overlap_input == {
+            "first_name": None,
+            "last_name": "Customer",
+            "phone": None,
+        }, "Ignores 'email' field saved to privacy request"
 
 
 class TestCanRunFromCheckpoint:

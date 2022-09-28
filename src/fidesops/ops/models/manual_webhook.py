@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from fideslib.db.base_class import Base
 from fideslib.schemas.base_class import BaseSchema
-from pydantic import create_model
+from pydantic import BaseConfig, create_model
 from sqlalchemy import Column, ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
@@ -49,6 +49,14 @@ class AccessManualWebhook(Base):
             **field_definitions,
         )
         return ManualWebhookValidationModel
+
+    @property
+    def fields_non_strict_schema(self) -> BaseSchema:
+        """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
+        fields that are saved and fields that are defined here."""
+        schema: BaseSchema = self.fields_schema
+        schema.__config__ = BaseConfig  # Extra is "ignore" on BaseConfig
+        return schema
 
     @property
     def empty_fields_dict(self) -> Dict[str, None]:

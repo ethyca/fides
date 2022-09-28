@@ -39,6 +39,8 @@ from fidesops.ops.common_exceptions import (
     ConnectionException,
 )
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fidesops.ops.models.manual_webhook import AccessManualWebhook
+from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fidesops.ops.schemas.api import BulkUpdateFailed
 from fidesops.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -58,6 +60,9 @@ from fidesops.ops.schemas.connection_configuration.connection_secrets import (
 )
 from fidesops.ops.schemas.shared_schemas import FidesOpsKey
 from fidesops.ops.service.connectors import get_connector
+from fidesops.ops.service.privacy_request.request_runner_service import (
+    queue_privacy_request,
+)
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.logger import Pii
 from fidesops.ops.util.oauth_util import verify_oauth_client
@@ -222,6 +227,9 @@ def patch_connections(
                 )
             )
 
+    # Check if possibly disabling a manual webhook here causes us to need to queue affected privacy requests
+    requeue_requires_input_requests(db)
+
     return BulkPutConnectionConfiguration(
         succeeded=created_or_updated,
         failed=failed,
@@ -238,8 +246,14 @@ def delete_connection(
 ) -> None:
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
+    connection_type = connection_config.connection_type
     logger.info("Deleting connection config with key '%s'.", connection_key)
     connection_config.delete(db)
+
+    # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
+    # so we queue any privacy requests that are no longer blocked by webhooks
+    if connection_type == ConnectionType.manual_webhook:
+        requeue_requires_input_requests(db)
 
 
 def validate_secrets(
@@ -356,3 +370,28 @@ async def test_connection_config_secrets(
     connection_config = get_connection_config_or_error(db, connection_key)
     msg = f"Test completed for ConnectionConfig with key: {connection_key}."
     return connection_status(connection_config, msg, db)
+
+
+def requeue_requires_input_requests(db: Session) -> None:
+    """
+    Queue privacy requests with request status "requires_input" if they are no longer blocked by
+    access manual webhooks.
+
+    For use when all access manual webhooks have been either disabled or deleted, leaving privacy requests
+    lingering in a "requires_input" state.
+    """
+    if not AccessManualWebhook.get_enabled(db):
+        for pr in PrivacyRequest.filter(
+            db=db,
+            conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
+        ):
+            logger.info(
+                "Queuing privacy request '%s with '%s' status now that manual inputs are no longer required.",
+                pr.id,
+                pr.status.value,
+            )
+            pr.status = PrivacyRequestStatus.in_processing
+            pr.save(db=db)
+            queue_privacy_request(
+                privacy_request_id=pr.id,
+            )

@@ -22,7 +22,11 @@ from fidesops.ops.graph.config import CollectionAddress
 from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import CheckpointActionRequired, ManualAction
+from fidesops.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    ManualAction,
+    PrivacyRequestStatus,
+)
 from fidesops.ops.schemas.email.email import EmailActionType
 from fidesops.ops.tasks import EMAIL_QUEUE_NAME
 
@@ -186,6 +190,51 @@ class TestPatchConnections:
         assert (
             json.loads(response.text)["detail"][0]["msg"]
             == "ensure this value has at most 50 items"
+        )
+
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+    )
+    def test_disable_manual_webhook(
+        self,
+        mock_queue,
+        db,
+        url,
+        generate_auth_header,
+        api_client,
+        privacy_request_requires_input,
+        integration_manual_webhook_config,
+        access_manual_webhook,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+
+        # Update resources
+        payload = [
+            {
+                "name": integration_manual_webhook_config.name,
+                "key": integration_manual_webhook_config.key,
+                "connection_type": ConnectionType.manual_webhook.value,
+                "access": "write",
+                "disabled": True,
+            }
+        ]
+
+        response = api_client.patch(
+            V1_URL_PREFIX + CONNECTIONS, headers=auth_header, json=payload
+        )
+
+        assert 200 == response.status_code
+
+        assert (
+            mock_queue.called
+        ), "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        assert (
+            mock_queue.call_args.kwargs["privacy_request_id"]
+            == privacy_request_requires_input.id
+        )
+        db.refresh(privacy_request_requires_input)
+        assert (
+            privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
     def test_patch_connections_bulk_update(
@@ -821,14 +870,19 @@ class TestDeleteConnection:
             is None
         )
 
+    @mock.patch(
+        "fidesops.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+    )
     def test_delete_manual_webhook_connection_config(
         self,
+        mock_queue,
         url,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
         integration_manual_webhook_config,
         access_manual_webhook,
+        privacy_request_requires_input,
     ) -> None:
         """Assert both the connection config and its webhook are deleted"""
         assert (
@@ -858,6 +912,17 @@ class TestDeleteConnection:
             .filter_by(key=integration_manual_webhook_config.key)
             .first()
             is None
+        )
+        assert (
+            mock_queue.called
+        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert (
+            mock_queue.call_args.kwargs["privacy_request_id"]
+            == privacy_request_requires_input.id
+        )
+        db.refresh(privacy_request_requires_input)
+        assert (
+            privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
 

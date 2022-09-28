@@ -30,6 +30,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fidesops.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fidesops.ops.common_exceptions import (
     IdentityVerificationException,
+    ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -505,26 +506,49 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             parsed_data.dict(),
         )
 
-    def get_manual_webhook_input(
+    def get_manual_webhook_input_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
-        """Retrieve manually added data that matches fields supplied in the specified manual webhook.
-
-        This is for use by the *manual_webhook* connector which is *NOT* integrated with the garph.
         """
-        cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Optional[Dict[str, Any]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}"
+        Retrieves manual webhook fields saved to the privacy request in strict mode.
+        Fails either if extra saved fields are detected (webhook definition had fields removed) or fields were not
+        explicitly set (webhook definition had fields added). This mode lets us know if webhooks data needs to be re-uploaded.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
         )
+
         if cached_results:
-            return manual_webhook.fields_schema.parse_obj(
-                list(cached_results.values())[0]
-            ).dict()
+            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+                cached_results
+            ).dict(exclude_unset=True)
+            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+                raise ManualWebhookFieldsUnset(
+                    f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+                )
+            return data
         raise NoCachedManualWebhookEntry(
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
+
+    def get_manual_webhook_input_non_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
+        Returns None for any fields not explicitly set and ignores extra fields.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+        if cached_results:
+            return manual_webhook.fields_non_strict_schema.parse_obj(
+                cached_results
+            ).dict()
+        return manual_webhook.empty_fields_dict
 
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
@@ -711,6 +735,22 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 "finished_processing_at": datetime.utcnow(),
             },
         )
+
+
+def _get_manual_input_from_cache(
+    privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
+) -> Optional[Dict[str, Any]]:
+    """Get raw manual input uploaded to the privacy request for the given webhook
+    from the cache without attempting to coerce into a Pydantic schema"""
+    cache: FidesopsRedis = get_cache()
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    )
+    if cached_results:
+        return list(cached_results.values())[0]
+    return None
 
 
 class ProvidedIdentityType(EnumType):

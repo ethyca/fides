@@ -3148,7 +3148,7 @@ class TestUploadManualWebhookInputs:
         assert response.json() is None
 
         assert (
-            privacy_request_requires_input.get_manual_webhook_input(
+            privacy_request_requires_input.get_manual_webhook_input_strict(
                 access_manual_webhook
             )
             == payload
@@ -3275,7 +3275,7 @@ class TestGetManualWebhookInputs:
             "fields": {"email": None, "last_name": None},
         }
 
-    def test_cached_data_differs_from_webhook_fields(
+    def test_cached_data_extra_saved_webhook_field(
         self,
         api_client: TestClient,
         db,
@@ -3293,11 +3293,40 @@ class TestGetManualWebhookInputs:
         ]
         access_manual_webhook.save(db)
         response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 422
-        assert (
-            f"Saved fields differ from fields specified on webhook '{integration_manual_webhook_config.key}'."
-            in response.json()["detail"]
+        assert response.status_code == 200
+        assert response.json() == {
+            "checked": False,
+            "fields": {"id_number": None},
+        }, "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+
+    def test_cached_data_missing_saved_webhook_field(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+        privacy_request_requires_input,
+        cached_input,
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_VIEW_DATA])
+
+        access_manual_webhook.fields.append(
+            {"pii_field": "id_no", "dsr_package_label": "id_number"}
         )
+        access_manual_webhook.save(db)
+        response = api_client.get(url, headers=auth_header)
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "checked": False,
+            "fields": {
+                "id_number": None,
+                "email": "customer-1@example.com",
+                "last_name": "McCustomer",
+            },
+        }, "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
 
     def test_get_inputs_for_manual_webhook(
         self,
