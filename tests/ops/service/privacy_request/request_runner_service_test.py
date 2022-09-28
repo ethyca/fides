@@ -1843,10 +1843,10 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.fixture(scope="function")
     def privacy_request_complete_email_notification_enabled(self):
         """Enable request completion email"""
-        original_value = config.notifications.send_request_completion_notification
-        config.notifications.send_request_completion_notification = True
+        original_value = CONFIG.notifications.send_request_completion_notification
+        CONFIG.notifications.send_request_completion_notification = True
         yield
-        config.notifications.send_request_completion_notification = original_value
+        CONFIG.notifications.send_request_completion_notification = original_value
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration

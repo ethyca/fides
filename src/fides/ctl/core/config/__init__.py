@@ -20,6 +20,7 @@ from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings
 from .logging_settings import LoggingSettings
+from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
@@ -32,15 +33,16 @@ DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
+    admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
-    user: UserSettings = UserSettings()
     credentials: Dict[str, Dict] = {}
     database: DatabaseSettings = DatabaseSettings()
-    security: SecuritySettings = SecuritySettings()
-    logging: LoggingSettings = LoggingSettings()
-    redis: RedisSettings = RedisSettings()
     execution: ExecutionSettings = ExecutionSettings()
-    admin_ui: AdminUISettings = AdminUISettings()
+    logging: LoggingSettings = LoggingSettings()
+    notifications: NotificationSettings = NotificationSettings()
+    redis: RedisSettings = RedisSettings()
+    security: SecuritySettings = SecuritySettings()
+    user: UserSettings = UserSettings()
 
     test_mode: bool = getenv("FIDES_TEST_MODE", "").lower() == "true"
     is_test_mode: bool = test_mode
