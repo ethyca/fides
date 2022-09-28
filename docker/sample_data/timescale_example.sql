@@ -1,10 +1,3 @@
-<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
--- Example Postgres schema matching the dataset in public/data/dataset/postgres_example_dataset.yml
--- Database creation is done separately to loading these statements in to appease Postgres' transactional
--- requirements in the context of DROP DATABASE statements
-
-========
->>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
 CREATE TABLE public.product (
     id INT PRIMARY KEY,
     name CHARACTER VARYING(100),
@@ -103,8 +96,6 @@ CREATE TABLE public.type_link_test (
     name CHARACTER VARYING(100)
 );
 
-<<<<<<<< HEAD:docker/sample_data/postgres_example.sql
-========
 CREATE TABLE public.onsite_personnel (
     responsible CHARACTER VARYING(100),
     time TIMESTAMP PRIMARY KEY
@@ -123,7 +114,6 @@ INSERT INTO public.onsite_personnel VALUES
 
 SELECT create_hypertable('onsite_personnel', 'time', migrate_data => true);
 
->>>>>>>> unified-fides-2:docker/sample_data/timescale_example.sql
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),

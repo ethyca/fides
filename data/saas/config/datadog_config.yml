@@ -14,8 +14,6 @@ saas_config:
   client_config:
     protocol: https
     host: <domain>
-<<<<<<< HEAD
-=======
     authentication:
       strategy: api_key
       configuration:
@@ -24,20 +22,10 @@ saas_config:
           value: <app_key>
         - name: DD-API-KEY
           value: <api_key>
->>>>>>> unified-fides-2
 
   test_request:
     method: GET
     path: /api/v2/logs/events
-<<<<<<< HEAD
-    headers:
-      - name: DD-APPLICATION-KEY
-        value: <app_key>
-      - name: DD-API-KEY
-        value: <api_key>
-=======
-
->>>>>>> unified-fides-2
 
   endpoints:
     - name: events
@@ -45,15 +33,6 @@ saas_config:
         read:
           method: GET
           path: /api/v2/logs/events
-<<<<<<< HEAD
-          headers:
-            - name: DD-APPLICATION-KEY
-              value: <app_key>
-            - name: DD-API-KEY
-              value: <api_key>
-=======
-
->>>>>>> unified-fides-2
           query_params:
             - name: filter[query]
               value: <email>
@@ -64,13 +43,6 @@ saas_config:
             - name: page[limit]
               value: <page_size>
           param_values:
-<<<<<<< HEAD
-            - name: app_key
-              connector_param: app_key
-            - name: api_key
-              connector_param: api_key
-=======
->>>>>>> unified-fides-2
             - name: email
               identity: email
           data_path: data

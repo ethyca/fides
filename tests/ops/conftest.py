@@ -65,7 +65,8 @@ logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
-def migrate_test_db() -> None:
+@pytest.fixture(scope="session", autouse=True)
+def setup_db():
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
     assert CONFIG.test_mode
@@ -82,7 +83,6 @@ def db() -> Generator:
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
-    migrate_test_db()
     if not scheduler.running:
         scheduler.start()
     SessionLocal = get_db_session(CONFIG, engine=engine)
@@ -92,10 +92,6 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug("Dropping database at: %s", engine.url)
-    # We don't need to perform any extra checks before dropping the DB
-    # here since we know the engine will always be connected to the test DB
-    drop_database(engine.url)
     logger.debug("Database at: %s successfully dropped", engine.url)
 
 

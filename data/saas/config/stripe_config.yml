@@ -85,11 +85,6 @@ saas_config:
           query_params:
             - name: charge
               value: <charge_id>
-<<<<<<< HEAD
-            - name: payment_intent
-              value: <payment_intent_id>
-=======
->>>>>>> unified-fides-2
             - name: limit
               value: <limit>
           param_values:
@@ -98,14 +93,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: charge.id
                   direction: from
-<<<<<<< HEAD
-            - name: payment_intent_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: payment_intent.id
-                  direction: from
-=======
->>>>>>> unified-fides-2
             - name: limit
               connector_param: page_size
           data_path: data
