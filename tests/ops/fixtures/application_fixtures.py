@@ -118,7 +118,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fidesops.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 
@@ -1267,7 +1267,7 @@ def application_user(
 
 
 @pytest.fixture(scope="function")
-def short_redis_cache_expiration() -> FidesopsConfig:
+def short_redis_cache_expiration():
     original_value: int = CONFIG.redis.default_ttl_seconds
     CONFIG.redis.default_ttl_seconds = (
         1  # Set redis cache to expire very quickly for testing purposes

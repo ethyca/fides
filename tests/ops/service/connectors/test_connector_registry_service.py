@@ -54,13 +54,13 @@ class TestConnectionRegistry:
         )
 
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
     )
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
     )
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_config"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config"
     )
     def test_update_config_additions(
         self,
@@ -87,13 +87,13 @@ class TestConnectionRegistry:
         )
 
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_dataset_with_replacement"
     )
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config_with_replacement"
     )
     @mock.patch(
-        "fidesops.ops.service.connectors.saas.connector_registry_service.load_config"
+        "fides.api.ops.service.connectors.saas.connector_registry_service.load_config"
     )
     def test_update_config_removals(
         self,

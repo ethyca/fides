@@ -35,7 +35,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 from fides.ctl.core.config import get_config
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_secrets_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -84,7 +84,7 @@ def test_uploader_s3_success_secrets_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_success_automatic_auth(
     mock_upload_to_s3: Mock, db: Session, privacy_request
 ) -> None:
@@ -129,7 +129,7 @@ def test_uploader_s3_success_automatic_auth(
     storage_config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
 
@@ -164,7 +164,7 @@ def test_uploader_s3_invalid_file_naming(mock_upload_to_s3: Mock, db: Session) -
     sc.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_s3")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_s3")
 def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     request_id = "214513r"
     storage_key = "s3_key"
@@ -177,8 +177,8 @@ def test_uploader_no_config(mock_upload_to_s3: Mock, db: Session) -> None:
     mock_upload_to_s3.assert_not_called()
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
-@mock.patch("fidesops.ops.models.privacy_request.PrivacyRequest.get")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_onetrust")
+@mock.patch("fides.api.ops.models.privacy_request.PrivacyRequest.get")
 def test_uploader_onetrust_success(
     mock_get_request_details: Mock,
     mock_upload_to_onetrust: Mock,
@@ -237,7 +237,7 @@ def test_uploader_onetrust_success(
     config.delete(db)
 
 
-@mock.patch("fidesops.ops.service.storage.storage_uploader_service.upload_to_onetrust")
+@mock.patch("fides.api.ops.service.storage.storage_uploader_service.upload_to_onetrust")
 def test_uploader_onetrust_request_details_not_found(
     mock_upload_to_onetrust: Mock,
     db: Session,

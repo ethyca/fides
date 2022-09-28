@@ -130,7 +130,7 @@ class TestAddAuthentication:
         )
 
     @mock.patch(
-        "fidesops.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
+        "fides.api.ops.service.authentication.authentication_strategy_oauth2_base.OAuth2AuthenticationStrategyBase.get_access_token"
     )
     def test_oauth2_authentication_missing_access_token(
         self,
