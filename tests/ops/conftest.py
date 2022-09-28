@@ -17,12 +17,11 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from sqlalchemy_utils.functions import drop_database
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.db.base import Base
-from fides.api.ops.db.database import init_db
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
@@ -59,6 +58,7 @@ from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *
+from fides.ctl.core.api import db_action
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,7 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 
 @pytest.fixture(scope="session")
 def integration_config():
-    yield load_toml(["tests/ops/integration_test_config.toml"])
+    yield load_toml(["tests/ops/tests/ops/integration_test_config.toml"])
 
 
 @pytest.fixture(autouse=True, scope="session")
