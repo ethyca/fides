@@ -24,9 +24,14 @@ def send_verification_code_to_user(
     )  # Validates Fidesops is currently configured to send emails
     verification_code = generate_id_verification_code()
     request.cache_identity_verification_code(verification_code)
+    email_action_type = (
+        EmailActionType.CONSENT_REQUEST
+        if isinstance(request, ConsentRequest)
+        else EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+    )
     dispatch_email(
         db,
-        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
+        action_type=email_action_type,
         to_email=email,
         email_body_params=SubjectIdentityVerificationBodyParams(
             verification_code=verification_code,

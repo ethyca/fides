@@ -5,6 +5,7 @@ from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 from fidesops.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fidesops.ops.email_templates.template_names import (
+    CONSENT_REQUEST_VERIFICATION_TEMPLATE,
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
@@ -28,6 +29,8 @@ template_env = Environment(
 def get_email_template(  # pylint: disable=too-many-return-statements
     action_type: EmailActionType,
 ) -> Template:
+    if action_type == EmailActionType.CONSENT_REQUEST:
+        return template_env.get_template(CONSENT_REQUEST_VERIFICATION_TEMPLATE)
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         return template_env.get_template(SUBJECT_IDENTITY_VERIFICATION_TEMPLATE)
     if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
