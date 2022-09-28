@@ -8,7 +8,7 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useCreateClassificationMutation } from "~/features/common/plus.slice";
+import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
@@ -43,7 +43,7 @@ const DatabaseConnectForm = () => {
   const [createMutation, { isLoading: isCreating }] =
     useCreateDatasetMutation();
   const [classifyMutation, { isLoading: isClassifying }] =
-    useCreateClassificationMutation();
+    useCreateClassifyInstanceMutation();
   const isLoading = isGenerating || isCreating || isClassifying;
 
   const toast = useToast();
@@ -61,7 +61,7 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        dataset: Dataset;
+        datasets: Dataset[];
       }
   > => {
     const result = await generateMutation({
@@ -79,15 +79,15 @@ const DatabaseConnectForm = () => {
       };
     }
 
-    const dataset = result.data.generate_results?.[0];
-    if (!(dataset && isDataset(dataset))) {
+    const datasets = (result.data.generate_results ?? []).filter(isDataset);
+    if (!(datasets && datasets.length > 0)) {
       return {
         error: "Unable to generate a dataset with this connection.",
       };
     }
 
     return {
-      dataset,
+      datasets,
     };
   };
 
@@ -122,9 +122,13 @@ const DatabaseConnectForm = () => {
    * Trigger the classify mutation and pick out the result or error. The Dataset should be already
    * have been created.
    */
-  const classify = async (
-    dataset: Dataset
-  ): Promise<
+  const classify = async ({
+    values,
+    datasets,
+  }: {
+    values: FormValues;
+    datasets: Dataset[];
+  }): Promise<
     | {
         error: string;
       }
@@ -132,7 +136,15 @@ const DatabaseConnectForm = () => {
         status: string;
       }
   > => {
-    const result = await classifyMutation({ fides_key: dataset.fides_key });
+    const result = await classifyMutation({
+      organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+      datasets: datasets.map(({ fides_key }) => ({ fides_key })),
+      generate: {
+        config: { connection_string: values.url },
+        target: ValidTargets.DB,
+        type: GenerateTypes.DATASETS,
+      },
+    });
 
     if ("error" in result) {
       return {
@@ -152,7 +164,12 @@ const DatabaseConnectForm = () => {
       return;
     }
 
-    const createResult = await create(generateResult.dataset);
+    // Usually only one dataset needs to be created, but create them all just in case.
+    const createResults = await Promise.all(
+      generateResult.datasets.map((dataset) => create(dataset))
+    );
+    const createResult =
+      createResults.find((result) => "error" in result) ?? createResults[0];
     if ("error" in createResult) {
       toast(errorToastParams(createResult.error));
       return;
@@ -168,7 +185,10 @@ const DatabaseConnectForm = () => {
     }
 
     // Additional steps when using classify:
-    const classifyResult = await classify(createResult.dataset);
+    const classifyResult = await classify({
+      values,
+      datasets: generateResult.datasets,
+    });
     if ("error" in classifyResult) {
       toast(errorToastParams(classifyResult.error));
       return;

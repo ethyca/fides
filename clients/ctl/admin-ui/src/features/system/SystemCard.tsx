@@ -10,14 +10,16 @@ import {
   useDisclosure,
   useToast,
 } from "@fidesui/react";
+import { useRouter } from "next/router";
 
+import { useAppDispatch } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { MoreIcon } from "~/features/common/Icon";
 import { System } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
-import { useDeleteSystemMutation } from "./system.slice";
+import { setActiveSystem, useDeleteSystemMutation } from "./system.slice";
 
 interface SystemCardProps {
   system: System;
@@ -29,12 +31,16 @@ const SystemCard = ({ system }: SystemCardProps) => {
     onClose: onDeleteClose,
   } = useDisclosure();
   const toast = useToast();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const [deleteSystem] = useDeleteSystemMutation();
 
-  // TODO fides#1035
-  const showEditButton = false; // disable while feature is not implemented yet
-  const handleEdit = () => {};
+  const handleEdit = () => {
+    dispatch(setActiveSystem(system));
+    router.push("/system/new/configure");
+  };
+
   const handleDelete = async () => {
     const result = await deleteSystem(system.fides_key);
     if (isErrorResult(result)) {
@@ -69,11 +75,9 @@ const SystemCard = ({ system }: SystemCardProps) => {
           m={1}
         />
         <MenuList>
-          {showEditButton && (
-            <MenuItem onClick={handleEdit} data-testid="edit-btn">
-              Edit
-            </MenuItem>
-          )}
+          <MenuItem onClick={handleEdit} data-testid="edit-btn">
+            Edit
+          </MenuItem>
           <MenuItem onClick={onDeleteOpen} data-testid="delete-btn">
             Delete
           </MenuItem>
