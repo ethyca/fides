@@ -392,16 +392,16 @@ def build_joined_dataframe(
     delete_df = joined_df[
         [
             "system.name",
-            # "system.privacy_declaration.data_use.name",
-            # "system.privacy_declaration.data_subjects.name",
+            "system.privacy_declaration.data_use.name",
+            "system.privacy_declaration.data_subjects.name",
             "unioned_data_categories",
         ]
     ][
         joined_df.groupby(
             [
                 "system.name",
-                # "system.privacy_declaration.data_use.name",
-                # "system.privacy_declaration.data_subjects.name",
+                "system.privacy_declaration.data_use.name",
+                "system.privacy_declaration.data_subjects.name",
                 "unioned_data_categories",
             ]
         )["dataset.name"].transform("count")
