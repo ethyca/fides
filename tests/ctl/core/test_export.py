@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from typing import Generator
+from typing import Dict, Generator
 
 import pytest
 from fideslang.models import (
@@ -18,7 +18,7 @@ from fidesctl.ctl.core.config import FidesctlConfig
 
 
 @pytest.fixture()
-def test_sample_system_taxonomy() -> Generator:
+def test_sample_system_taxonomy() -> Generator[Dict, None, None]:
     yield {
         "system": [
             System(
@@ -135,39 +135,43 @@ def test_organization_records_to_export() -> None:
 
 @pytest.mark.unit
 def test_joined_datamap_export_system_only(
-    test_sample_system_taxonomy: Generator, test_config: FidesctlConfig
+    test_sample_system_taxonomy: Dict,
+    test_config: FidesctlConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a basic system
     """
-    test_sample_system_taxonomy["dataset"] = []
+    sample_taxonomy: Dict = test_sample_system_taxonomy
+    sample_taxonomy["dataset"] = []
     output_list = export.build_joined_dataframe(test_sample_system_taxonomy)
     assert len(output_list) == 2
 
 
 @pytest.mark.unit
 def test_joined_datamap_export_system_dataset_overlap(
-    test_sample_system_taxonomy: Generator,
+    test_sample_system_taxonomy: Dict,
     test_sample_dataset_taxonomy: Generator,
     test_config: FidesctlConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a system with a dataset
     """
-    test_sample_system_taxonomy["dataset"] = test_sample_dataset_taxonomy
-    output_list = export.build_joined_dataframe(test_sample_system_taxonomy)
+    sample_taxonomy: Dict = test_sample_system_taxonomy
+    sample_taxonomy["dataset"] = test_sample_dataset_taxonomy
+    output_list = export.build_joined_dataframe(sample_taxonomy)
     assert len(output_list) == 5
 
 
 @pytest.mark.unit
 def test_joined_datamap_export_system_dataset_common(
-    test_sample_system_taxonomy: Generator,
+    test_sample_system_taxonomy: Dict,
     test_config: FidesctlConfig,
 ) -> None:
     """
     Asserts the duplicate rows are removed from an export
     """
-    test_sample_system_taxonomy["dataset"] = [
+    sample_taxonomy: Dict = test_sample_system_taxonomy
+    sample_taxonomy["dataset"] = [
         Dataset(
             fides_key="test_dataset",
             name="test dataset",
@@ -194,18 +198,19 @@ def test_joined_datamap_export_system_dataset_common(
             ],
         )
     ]
-    output_list = export.build_joined_dataframe(test_sample_system_taxonomy)
+    output_list = export.build_joined_dataframe(sample_taxonomy)
     assert len(output_list) == 2
 
 
 @pytest.mark.unit
 def test_joined_datamap_export_system_multiple_declarations_overlap(
-    test_sample_system_taxonomy: Generator,
+    test_sample_system_taxonomy: Dict,
     test_config: FidesctlConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a complex system
     """
+    sample_taxonomy: Dict = test_sample_system_taxonomy
     new_data_subject = DataSubject(fides_key="prospect", name="prospect")
     new_declaration = PrivacyDeclaration(
         name="privacy_declaration_2",
@@ -217,10 +222,8 @@ def test_joined_datamap_export_system_multiple_declarations_overlap(
         data_qualifier="aggregated.anonymized",
         data_subjects=["prospect"],
     )
-    test_sample_system_taxonomy["data_subject"].append(new_data_subject)
-    test_sample_system_taxonomy["system"][0].privacy_declarations.append(
-        new_declaration
-    )
-    test_sample_system_taxonomy["dataset"] = []
-    output_list = export.build_joined_dataframe(test_sample_system_taxonomy)
+    sample_taxonomy["data_subject"].append(new_data_subject)
+    sample_taxonomy["system"][0].privacy_declarations.append(new_declaration)
+    sample_taxonomy["dataset"] = []
+    output_list = export.build_joined_dataframe(sample_taxonomy)
     assert len(output_list) == 4
