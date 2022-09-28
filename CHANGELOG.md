@@ -37,6 +37,7 @@ The types of changes are:
 * Frontend - ability for users to manually enter PII to an IN PROGRESS subject request [#1016](https://github.com/ethyca/fidesops/pull/1377)
 * Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
 * Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
+* Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
 
 ### Removed
 

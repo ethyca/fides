@@ -42,6 +42,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:delete",
   },
   {
+    privilege: "View user consent preferences",
+    scope: "consent:read",
+  },
+  {
     privilege: "View Datasets",
     scope: "dataset:read",
   },

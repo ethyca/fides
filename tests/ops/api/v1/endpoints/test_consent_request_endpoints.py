@@ -6,9 +6,11 @@ from unittest.mock import patch
 
 import pytest
 
+from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
@@ -232,7 +234,7 @@ class TestSaveConsent:
         }
 
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id='abcd')}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='abcd')}",
             json=data,
         )
         assert response.status_code == 404
@@ -250,7 +252,7 @@ class TestSaveConsent:
         }
 
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 400
@@ -268,7 +270,7 @@ class TestSaveConsent:
             "consent": [{"data_use": "email", "opt_in": True}],
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 403
@@ -296,7 +298,7 @@ class TestSaveConsent:
             "consent": [{"data_use": "email", "opt_in": True}],
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
 
@@ -316,7 +318,7 @@ class TestSaveConsent:
             "consent": None,
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
         assert response.status_code == 422
@@ -353,8 +355,82 @@ class TestSaveConsent:
             "consent": consent_data,
         }
         response = api_client.patch(
-            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES.format(consent_request_id=consent_request.id)}",
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
             json=data,
         )
+        assert response.status_code == 200
+        assert response.json()["consent"] == consent_data
+
+
+class TestGetConsentPreferences:
+    def test_get_consent_peferences_wrong_scope(self, generate_auth_header, api_client):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
+            headers=auth_header,
+            json={"email": "test@user.com"},
+        )
+
+        assert response.status_code == 403
+
+    def test_get_consent_preferences_no_identity_data(
+        self, generate_auth_header, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
+            headers=auth_header,
+            json={"email": None},
+        )
+
+        assert response.status_code == 400
+        assert "No identity information" in response.json()["detail"]
+
+    def test_get_consent_preferences_identity_not_found(
+        self, generate_auth_header, api_client
+    ):
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
+            headers=auth_header,
+            json={"email": "test@email.com"},
+        )
+
+        assert response.status_code == 404
+        assert "Identity not found" in response.json()["detail"]
+
+    def test_get_consent_preferences(
+        self,
+        provided_identity_and_consent_request,
+        db,
+        generate_auth_header,
+        api_client,
+    ):
+        provided_identity, _ = provided_identity_and_consent_request
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+            },
+        ]
+
+        for data in deepcopy(consent_data):
+            data["provided_identity_id"] = provided_identity.id
+            Consent.create(db, data=data)
+
+        auth_header = generate_auth_header(scopes=[CONSENT_READ])
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES}",
+            headers=auth_header,
+            json={"email": provided_identity.encrypted_value["value"]},
+        )
+
         assert response.status_code == 200
         assert response.json()["consent"] == consent_data

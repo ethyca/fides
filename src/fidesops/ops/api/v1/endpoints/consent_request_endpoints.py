@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Security
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -14,9 +14,11 @@ from starlette.status import (
 )
 
 from fidesops.ops.api.deps import get_db
+from fidesops.ops.api.v1.scope_registry import CONSENT_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
@@ -43,6 +45,7 @@ from fidesops.ops.schemas.redis_cache import Identity
 from fidesops.ops.service._verification import send_verification_code_to_user
 from fidesops.ops.util.api_router import APIRouter
 from fidesops.ops.util.logger import Pii
+from fidesops.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -133,8 +136,41 @@ def consent_request_verify(
     return _prepare_consent_preferences(db, provided_identity)
 
 
-@router.patch(
+@router.post(
     CONSENT_REQUEST_PREFERENCES,
+    dependencies=[Security(verify_oauth_client, scopes=[CONSENT_READ])],
+    status_code=HTTP_200_OK,
+    response_model=ConsentPreferences,
+)
+def get_consent_preferences(
+    *, db: Session = Depends(get_db), data: Identity
+) -> ConsentPreferences:
+    """Gets the consent preferences for the specified user."""
+    if data.email:
+        lookup = data.email
+    elif data.phone_number:
+        lookup = data.phone_number
+    else:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST, detail="No identity information provided"
+        )
+
+    identity = ProvidedIdentity.filter(
+        db,
+        conditions=(
+            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(lookup))
+            & (ProvidedIdentity.privacy_request_id.is_(None))
+        ),
+    ).first()
+
+    if not identity:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Identity not found")
+
+    return _prepare_consent_preferences(db, identity)
+
+
+@router.patch(
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
 )

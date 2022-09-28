@@ -7,7 +7,10 @@ CONFIG = "/config"
 
 # Consent request URLs
 CONSENT_REQUEST = "/consent-request"
-CONSENT_REQUEST_PREFERENCES = "/consent-request/{consent_request_id}/preferences"
+CONSENT_REQUEST_PREFERENCES = "/consent-request/preferences"
+CONSENT_REQUEST_PREFERENCES_WITH_ID = (
+    "/consent-request/{consent_request_id}/preferences"
+)
 CONSENT_REQUEST_VERIFY = "/consent-request/{consent_request_id}/verify"
 
 
