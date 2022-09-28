@@ -55,7 +55,7 @@ export const {
   useDeleteDataSubjectMutation,
 } = dataSubjectsApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataSubjectsSlice = createSlice({

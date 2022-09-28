@@ -56,7 +56,7 @@ export const {
   useDeleteDataQualifierMutation,
 } = dataQualifierApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataQualifierSlice = createSlice({
