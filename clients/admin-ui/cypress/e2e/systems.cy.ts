@@ -1,13 +1,16 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "../support/stubs";
 
 describe("System management page", () => {
+  before(() => {
+    cy.login();
+  });
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
       "getSystems"
     );
   });
 
-  it("Can navigate to the system management page", () => {
+  it.only("Can navigate to the system management page", () => {
     cy.visit("/");
     cy.getByTestId("nav-link-Systems").click();
     cy.wait("@getSystems");
