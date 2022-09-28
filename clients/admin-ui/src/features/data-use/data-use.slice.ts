@@ -55,7 +55,7 @@ export const {
   useDeleteDataUseMutation,
 } = dataUseApi;
 
-export interface State { }
+export interface State {}
 const initialState: State = {};
 
 export const dataUseSlice = createSlice({

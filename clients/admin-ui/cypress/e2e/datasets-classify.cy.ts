@@ -43,15 +43,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
         "postDataset"
       );
-<<<<<<< HEAD:clients/admin-ui/cypress/e2e/datasets-classify.cy.ts
-      cy.intercept("POST", "/api/v1/plus/classification", {
-        fixture: "classification/create.json",
-      }).as("postClassification");
-=======
       cy.intercept("POST", "/api/v1/plus/classify", {
         fixture: "classify/create.json",
       }).as("postClassify");
->>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/e2e/datasets-classify.cy.ts
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
@@ -61,11 +55,7 @@ describe("Datasets with Fides Classify", () => {
 
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-<<<<<<< HEAD:clients/admin-ui/cypress/e2e/datasets-classify.cy.ts
-      cy.wait("@postClassification");
-=======
       cy.wait("@postClassify");
->>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/e2e/datasets-classify.cy.ts
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
@@ -83,17 +73,6 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
         "getDatasets"
       );
-<<<<<<< HEAD:clients/admin-ui/cypress/e2e/datasets-classify.cy.ts
-      cy.intercept("GET", "/api/v1/plus/classification", {
-        fixture: "classification/list.json",
-      }).as("getClassificationList");
-    });
-
-    it("Shows the each dataset's classification status", () => {
-      cy.visit("/dataset");
-      cy.wait("@getDatasets");
-      cy.wait("@getClassificationList");
-=======
       cy.intercept("GET", "/api/v1/plus/classify", {
         fixture: "classify/list.json",
       }).as("getClassifyList");
@@ -103,7 +82,6 @@ describe("Datasets with Fides Classify", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
       cy.wait("@getClassifyList");
->>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/e2e/datasets-classify.cy.ts
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-status-demo_users_dataset").contains("Unknown");
       cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
@@ -117,8 +95,6 @@ describe("Datasets with Fides Classify", () => {
       );
     });
   });
-<<<<<<< HEAD:clients/admin-ui/cypress/e2e/datasets-classify.cy.ts
-=======
 
   describe("Dataset collection view", () => {
     beforeEach(() => {
@@ -183,5 +159,4 @@ describe("Datasets with Fides Classify", () => {
       });
     });
   });
->>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/e2e/datasets-classify.cy.ts
 });

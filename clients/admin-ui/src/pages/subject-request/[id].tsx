@@ -8,13 +8,13 @@ import {
   Spinner,
   Text,
 } from "@fidesui/react";
-import Head from "common/Head";
-import NavBar from "common/NavBar";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
 import React from "react";
 import SubjectRequest from "subject-request/SubjectRequest";
+
+import Layout from "~/features/common/Layout";
 
 import { INDEX_ROUTE } from "../../constants";
 import ProtectedRoute from "../../features/auth/ProtectedRoute";
@@ -54,33 +54,25 @@ const SubjectRequestDetails: NextPage = () => {
 
   return (
     <ProtectedRoute>
-      <div>
-        <Head />
+      <Layout title="Subject Request">
+        <Heading fontSize="2xl" fontWeight="semibold">
+          Subject Request
+          <Box mt={2} mb={9}>
+            <Breadcrumb fontWeight="medium" fontSize="sm">
+              <BreadcrumbItem>
+                <BreadcrumbLink href={INDEX_ROUTE}>
+                  Subject Request
+                </BreadcrumbLink>
+              </BreadcrumbItem>
 
-        <NavBar />
-
-        <main>
-          <Box px={9} py={10}>
-            <Heading fontSize="2xl" fontWeight="semibold">
-              Subject Request
-              <Box mt={2} mb={9}>
-                <Breadcrumb fontWeight="medium" fontSize="sm">
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href={INDEX_ROUTE}>
-                      Subject Request
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="#">View Details</BreadcrumbLink>
-                  </BreadcrumbItem>
-                </Breadcrumb>
-              </Box>
-            </Heading>
-            {body}
+              <BreadcrumbItem>
+                <BreadcrumbLink href="#">View Details</BreadcrumbLink>
+              </BreadcrumbItem>
+            </Breadcrumb>
           </Box>
-        </main>
-      </div>
+        </Heading>
+        {body}
+      </Layout>
     </ProtectedRoute>
   );
 };
