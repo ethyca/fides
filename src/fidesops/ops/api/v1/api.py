@@ -2,6 +2,7 @@ from fidesops.ops.api.v1.endpoints import (
     config_endpoints,
     connection_endpoints,
     connection_type_endpoints,
+    consent_request_endpoints,
     dataset_endpoints,
     drp_endpoints,
     email_endpoints,
@@ -25,6 +26,7 @@ api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
 api_router.include_router(connection_type_endpoints.router)
 api_router.include_router(connection_endpoints.router)
+api_router.include_router(consent_request_endpoints.router)
 api_router.include_router(dataset_endpoints.router)
 api_router.include_router(drp_endpoints.router)
 api_router.include_router(encryption_endpoints.router)

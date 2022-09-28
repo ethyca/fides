@@ -18,7 +18,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -787,11 +787,13 @@ class Consent(Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-    data_use = Column(String, nullable=False, unique=True)
+    data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+
+    UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
 
 class ConsentRequest(Base):
@@ -805,6 +807,44 @@ class ConsentRequest(Base):
         ProvidedIdentity,
         back_populates="consent_request",
     )
+
+    def cache_identity_verification_code(self, value: str) -> None:
+        """Cache the generated identity verification code for later comparison."""
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}",
+            value,
+            config.redis.identity_verification_code_ttl_seconds,
+        )
+
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache."""
+        prefix = f"id-{self.id}-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
+
+    def get_cached_verification_code(self) -> Optional[str]:
+        """Retrieve the generated identity verification code if it exists"""
+        cache = get_cache()
+        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
+        if not values:
+            return None
+
+        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
+
+    def verify_identity(self, provided_code: str) -> ConsentRequest:
+        """Verify the identification code supplied by the user."""
+        code: Optional[str] = self.get_cached_verification_code()
+        if not code:
+            raise IdentityVerificationException(
+                f"Identification code expired for {self.id}."
+            )
+
+        if code != provided_code:
+            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+
+        return self
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

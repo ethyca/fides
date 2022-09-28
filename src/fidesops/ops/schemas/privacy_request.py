@@ -214,3 +214,39 @@ class BulkPostPrivacyRequests(BulkResponse):
 
 class BulkReviewResponse(BulkPostPrivacyRequests):
     """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
+
+
+class Consent(BaseSchema):
+    """Schema for consent."""
+
+    data_use: str
+    data_use_description: Optional[str] = None
+    opt_in: bool
+
+
+class ConsentPreferences(BaseSchema):
+    """Schema for consent prefernces."""
+
+    consent: Optional[List[Consent]] = None
+
+
+class ConsentPreferencesWithVerificationCode(BaseSchema):
+    """scheam for consent preferences including the verification code."""
+
+    code: str
+    consent: List[Consent]
+
+
+class ConsentRequestResponse(BaseSchema):
+    """Schema for consent request response."""
+
+    consent_request_id: str
+
+
+class ConsentRequestVerification(BaseSchema):
+    """Schema for consent requests."""
+
+    identity: Identity
+    data_use: str
+    data_use_description: Optional[str] = None
+    opt_in: bool

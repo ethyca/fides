@@ -73,7 +73,6 @@ from fidesops.ops.graph.graph import DatasetGraph, Node
 from fidesops.ops.graph.traversal import Traversal
 from fidesops.ops.models.connectionconfig import ConnectionConfig
 from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.email import EmailConfig
 from fidesops.ops.models.manual_webhook import AccessManualWebhook
 from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPreWebhook
 from fidesops.ops.models.privacy_request import (
@@ -92,7 +91,6 @@ from fidesops.ops.schemas.email.email import (
     FidesopsEmail,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams,
 )
 from fidesops.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fidesops.ops.schemas.privacy_request import (
@@ -109,12 +107,9 @@ from fidesops.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service.email.email_dispatch_service import (
-    dispatch_email,
-    dispatch_email_task,
-)
+from fidesops.ops.service._verification import send_verification_code_to_user
+from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
 from fidesops.ops.service.privacy_request.request_runner_service import (
-    generate_id_verification_code,
     queue_privacy_request,
 )
 from fidesops.ops.service.privacy_request.request_service import (
@@ -236,7 +231,7 @@ async def create_privacy_request(
             )
 
             if config.execution.subject_identity_verification_required:
-                _send_verification_code_to_user(
+                send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity.email
                 )
                 created.append(privacy_request)
@@ -284,27 +279,6 @@ async def create_privacy_request(
     return BulkPostPrivacyRequests(
         succeeded=created,
         failed=failed,
-    )
-
-
-def _send_verification_code_to_user(
-    db: Session, privacy_request: PrivacyRequest, email: Optional[str]
-) -> None:
-    """Generate and cache a verification code, and then email to the user"""
-    EmailConfig.get_configuration(
-        db=db
-    )  # Validates Fidesops is currently configured to send emails
-    verification_code: str = generate_id_verification_code()
-    privacy_request.cache_identity_verification_code(verification_code)
-    # synchronous call for now since failure to send verification code is fatal to request
-    dispatch_email(
-        db=db,
-        action_type=EmailActionType.SUBJECT_IDENTITY_VERIFICATION,
-        to_email=email,
-        email_body_params=SubjectIdentityVerificationBodyParams(
-            verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
-        ),
     )
 
 

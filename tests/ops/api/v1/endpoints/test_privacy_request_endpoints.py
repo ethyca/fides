@@ -2957,9 +2957,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fidesops.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    @mock.patch(
-        "fidesops.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email"
-    )
+    @mock.patch("fidesops.ops.service._verification.dispatch_email")
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_email,

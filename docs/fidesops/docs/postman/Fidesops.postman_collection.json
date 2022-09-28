@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "296aa41f-49f7-4988-bbfb-b57c480a695f",
+		"_postman_id": "8f48b8e3-0a39-4e5e-b505-8087064dc1af",
 		"name": "Fidesops",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "1984786"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -936,35 +935,6 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"verify"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Restart failed node",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{client_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"privacy-request",
-								"{{privacy_request_id}}",
-								"retry"
 							]
 						}
 					},
@@ -4444,6 +4414,40 @@
 			]
 		},
 		{
+			"name": "Restart from Failure",
+			"item": [
+				{
+					"name": "Restart failed node",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/{{privacy_request_id}}/retry",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"{{privacy_request_id}}",
+								"retry"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "ConnectionType",
 			"item": [
 				{
@@ -4753,6 +4757,116 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Consent Request",
+			"item": [
+				{
+					"name": "Create Verification Code for Consent Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone_number\": \"{{phone_number}}\",\n  \"email\": \"{{email}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Return Current Preferences",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/verify",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Code and Save Preferences",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"identity\": {\n    \"phone_number\": \"{{phone_number}}\",\n    \"email\": \"{{email}}\"\n  },\n  \"consent\": [\n    {\n      \"data_use\": \"{{data_use}}\",\n      \"data_use_description\": \"{{data_use_description}}\",\n      \"opt_in\": {{opt_in}}\n    }\n  ],\n  \"code\": \"{{verification_code}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/consent-request/{{consent_request_id}}/preferences",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"consent-request",
+								"{{consent_request_id}}",
+								"preferences"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"event": [
@@ -5021,7 +5135,27 @@
 			"type": "string"
 		},
 		{
+			"key": "consent_request_id",
+			"value": "",
+			"type": "default"
+		},
+		{
 			"key": "timescale_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "phone_number",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "verification_code",
 			"value": "",
 			"type": "string"
 		}
