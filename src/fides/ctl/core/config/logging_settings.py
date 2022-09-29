@@ -1,4 +1,4 @@
-"""This module handles finding and parsing fides configuration files."""
+"""This module handles configuring logging for the appliation."""
 
 # pylint: disable=C0115,C0116, E0213
 import os
@@ -8,6 +8,7 @@ from typing import Union
 from pydantic import validator
 
 from .fides_settings import FidesSettings
+from .utils import get_test_mode
 
 ENV_PREFIX = "FIDES__LOGGING__"
 
@@ -33,7 +34,7 @@ class LoggingSettings(FidesSettings):
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""
 
-        if os.getenv("FIDES_TEST_MODE", "false").lower() == "true":
+        if get_test_mode():
             return getLevelName(DEBUG)
 
         valid_values = [
@@ -43,7 +44,7 @@ class LoggingSettings(FidesSettings):
             ERROR,
             CRITICAL,
         ]
-        value = value.upper()  # force uppercase, for safety
+        value = value.upper()  # force uppercase for safety
 
         if getLevelName(value) not in valid_values:
             raise ValueError(

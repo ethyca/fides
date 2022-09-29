@@ -25,7 +25,7 @@ services:
       FIDES__DEV_MODE: "True"
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       FIDES__REDIS__ENABLED: "True"
-      FIDES_TEST_MODE: "True"
+      FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
@@ -101,6 +101,9 @@ services:
       redis:
         condition: service_started
     restart: always
+    environment:
+      FIDES__TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
         source: ./

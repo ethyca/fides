@@ -40,7 +40,7 @@ API_COMMANDS = [
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
-    command.name for command in API_COMMANDS if command.name not in ["status"]
+    command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
 VERSION = fides.__version__
 APP = fides.__name__
@@ -83,26 +83,25 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     else:
         config.cli.local_mode = True
 
-    ctx.obj["CONFIG"] = config
-
     # Run the help command if no subcommand is passed
     if not ctx.invoked_subcommand:
         click.echo(cli.get_help(ctx))
 
     # Check the server health and version if an API command is invoked
-
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, config.cli.server_url, quiet=True)
+
+    ctx.obj["CONFIG"] = config
 
     # init also handles this workflow
     if ctx.invoked_subcommand != "init":
         check_and_update_analytics_config(ctx, config_path)
 
         # Analytics requires explicit opt-in
-        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
+        if config.user.analytics_opt_out is False:
             ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-                client_id=ctx.obj["CONFIG"].cli.analytics_id,
-                developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
+                client_id=config.cli.analytics_id,
+                developer_mode=config.test_mode,
                 os=system(),
                 product_name=APP + "-cli",
                 production_version=version(PACKAGE),

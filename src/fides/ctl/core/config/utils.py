@@ -1,10 +1,16 @@
+from os import getenv
 from typing import Any, Dict, Union
 
 from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
 
-from fides.ctl.core.config import DEFAULT_CONFIG_PATH
+DEFAULT_CONFIG_PATH = ".fides/fides.toml"
+
+
+def get_test_mode() -> bool:
+    test_mode = getenv("FIDES__TEST_MODE", "").lower() == "true"
+    return test_mode
 
 
 def get_config_from_file(

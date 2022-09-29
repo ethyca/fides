@@ -1,13 +1,14 @@
-"""This module handles finding and parsing fides configuration files."""
+"""This module handles database credentials for the application database.."""
 
 # pylint: disable=C0115,C0116, E0213
 
 import logging
-import os
 from typing import Dict, Optional
 
 from fideslib.core.config import DatabaseSettings as FideslibDatabaseSettings
 from pydantic import PostgresDsn, validator
+
+from fides.ctl.core.config.utils import get_test_mode
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +37,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
         if isinstance(value, str):
             return value
 
-        db_name = (
-            values["test_db"]
-            if os.getenv("FIDES_TEST_MODE") == "True"
-            else values["db"]
-        )
+        db_name = values["test_db"] if get_test_mode() else values["db"]
         return PostgresDsn.build(
             scheme="postgresql+psycopg2",
             user=values["user"],
@@ -59,11 +56,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
         if isinstance(value, str):
             return value
 
-        db_name = (
-            values["test_db"]
-            if os.getenv("FIDES_TEST_MODE") == "True"
-            else values["db"]
-        )
+        db_name = values["test_db"] if get_test_mode() else values["db"]
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
             user=values["user"],

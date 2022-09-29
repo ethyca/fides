@@ -68,12 +68,8 @@ def run_infrastructure(
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(
-        f"docker compose {path} up -d {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
+        f"docker compose {path} up --wait {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
     )
-
-    wait = min(DOCKER_WAIT * len(datastores), 15)
-    print(f"Sleeping for {wait} seconds while infrastructure loads...")
-    sleep(wait)
 
     seed_initial_data(
         datastores,

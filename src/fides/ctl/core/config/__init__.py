@@ -24,10 +24,9 @@ from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
+from .utils import get_test_mode, DEFAULT_CONFIG_PATH
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
 
 class FidesConfig(BaseModel):

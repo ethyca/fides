@@ -14,6 +14,7 @@ from fides.api.ops.models.connectionconfig import (
 from fides.api.ops.service.connectors import TimescaleConnector
 from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 integration_config = load_toml(["tests/ops/integration_test_config.toml"])
 
 
@@ -47,7 +48,7 @@ def setup():
 
     engine = get_db_engine(database_uri=uri)
     SessionLocal = get_db_session(
-        config=config,
+        config=CONFIG,
         engine=engine,
         autocommit=True,
         autoflush=True,

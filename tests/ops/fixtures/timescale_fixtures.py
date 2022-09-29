@@ -17,6 +17,7 @@ from fides.ctl.core.config import get_config
 
 from .application_fixtures import integration_secrets
 
+CONFIG = get_config()
 
 @pytest.fixture(scope="function")
 def timescale_connection_config(
@@ -43,7 +44,7 @@ def timescale_integration_session_cls(timescale_connection_config):
     example_timescale_uri = TimescaleConnector(timescale_connection_config).build_uri()
     engine = get_db_engine(database_uri=example_timescale_uri)
     SessionLocal = get_db_session(
-        config=config,
+        config=CONFIG,
         engine=engine,
         autocommit=True,
         autoflush=True,

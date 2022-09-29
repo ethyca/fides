@@ -77,7 +77,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 
 @patch.dict(
     os.environ,
-    {"FIDES_CONFIG_PATH": ""},
+    {"FIDES__CONFIG_PATH": ""},
     clear=True,
 )
 @pytest.mark.unit
@@ -147,7 +147,7 @@ def test_config_from_env_vars() -> None:
 )
 @pytest.mark.unit
 def test_database_url_test_mode_disabled() -> None:
-    os.environ["FIDES_TEST_MODE"] = "False"
+    os.environ["FIDES__TEST_MODE"] = "False"
     database_settings = DatabaseSettings(
         user="postgres",
         password="fides",
@@ -201,7 +201,7 @@ def test_config_from_path() -> None:
     },
     clear=True,
 )
-def test_config_from_env_vars() -> None:
+def test_overriding_config_from_env_vars() -> None:
     """Test overriding config using ENV vars."""
     config = get_config()
     assert config.database.server == "envserver"
