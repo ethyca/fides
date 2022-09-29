@@ -1,4 +1,3 @@
-from typing import Optional
 
 from .fides_settings import FidesSettings
 
@@ -16,7 +15,7 @@ class ExecutionSettings(FidesSettings):
     require_manual_request_approval: bool = False
     masking_strict: bool = True
     worker_enabled: bool = False
-    celery_config_path: Optional[str] = ".fides/celery.toml"
+    celery_config_path: str = ".fides/celery.toml"
 
     class Config:
         env_prefix = ENV_PREFIX

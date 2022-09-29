@@ -144,6 +144,7 @@ testpaths="tests"
 log_level = "INFO"
 addopts = ["--cov=fides.ctl.core",
             "--cov=fides.cli",
+            "--cov=fides.api",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",
