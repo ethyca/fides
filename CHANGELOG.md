@@ -44,7 +44,6 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
-* Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
 
 ### Security
 
@@ -55,6 +54,10 @@ The types of changes are:
 ### Added
 
 * Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
+
+### Fixed
+
+* Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
 
 ## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
 
