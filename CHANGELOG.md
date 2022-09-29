@@ -39,6 +39,7 @@ The types of changes are:
 * Enable retries on saas connectors for failures at the http request level [#1376](https://github.com/ethyca/fidesops/pull/1376)
 * Add consent request api [#1387](https://github.com/ethyca/fidesops/pull/1387)
 * Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
+* Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
 
 ### Removed
 
