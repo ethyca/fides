@@ -198,11 +198,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy",
+							"raw": "{{host}}/dsr/policy",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy"
 							]
 						}
@@ -241,11 +242,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/rule/",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/rule/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"rule",
@@ -286,11 +288,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/rule/{{rule_key}}/target",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/rule/{{rule_key}}/target",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"rule",
@@ -600,11 +603,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy",
+							"raw": "{{host}}/dsr/policy",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy"
 							]
 						}
@@ -636,11 +640,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{separate_policy_key}}/rule/",
+							"raw": "{{host}}/dsr/policy/{{separate_policy_key}}/rule/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{separate_policy_key}}",
 								"rule",
@@ -675,11 +680,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{separate_policy_key}}/rule/{{erasure_rule_key}}/target",
+							"raw": "{{host}}/dsr/policy/{{separate_policy_key}}/rule/{{erasure_rule_key}}/target",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{separate_policy_key}}",
 								"rule",
@@ -1125,11 +1131,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								""
@@ -1172,11 +1179,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy",
+							"raw": "{{host}}/dsr/policy",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy"
 							]
 						}
@@ -1649,11 +1657,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/pre_execution",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1679,11 +1688,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1719,11 +1729,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1750,11 +1761,12 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/pre_execution/{{pre_webhook_one}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1790,11 +1802,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/post_execution",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1820,11 +1833,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1860,11 +1874,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_one}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",
@@ -1891,11 +1906,12 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_two}}",
+							"raw": "{{host}}/dsr/policy/{{policy_key}}/webhook/post_execution/{{post_webhook_two}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
+								"dsr",
 								"policy",
 								"{{policy_key}}",
 								"webhook",

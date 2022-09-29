@@ -17,14 +17,9 @@
     "build-privacy-portal": "npm run build"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@chakra-ui/react": "^1.7.4",
-    "@chakra-ui/system": ">=1.0.0",
-=======
     "@chakra-ui/icons": "^1.1.7",
     "@chakra-ui/react": "^1.7.4",
     "@chakra-ui/system": "^1.12.1",
->>>>>>> unified-fides-2
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@fidesui/react": "^0.0.9",
@@ -32,7 +27,7 @@
     "formik": "^2.2.9",
     "framer-motion": "^5",
     "headers-polyfill": "^3.0.10",
-    "next": "12.1.0",
+    "next": "12.2.5",
     "next-auth": "^4.10.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

@@ -16,14 +16,5 @@
     "incremental": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.d.ts"],
-<<<<<<<< HEAD:clients/ops/privacy-center/tsconfig.json
   "exclude": ["node_modules"]
-========
-  "exclude": [
-    "node_modules",
-    "cypress/**/*.ts",
-    "cypress/**/*.tsx",
-    "cypress.config.ts"
-  ]
->>>>>>>> unified-fides-2:clients/ctl/admin-ui/tsconfig.json
 }
