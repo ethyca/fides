@@ -6,7 +6,7 @@ services:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
       timeout: 5s
-      retries: 5
+      retries: 10
     ports:
       - "8080:8080"
     depends_on:
