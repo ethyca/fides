@@ -152,7 +152,7 @@ def fides_db_scan(session: nox.Session) -> None:
         nox.param("not external", id="not-external"),
     ],
 )
-def pytest(session: nox.Session, mark: str) -> None:
+def pytest_ctl(session: nox.Session, mark: str) -> None:
     """Runs fidesctl tests."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
