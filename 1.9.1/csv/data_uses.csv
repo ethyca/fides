@@ -1,0 +1,25 @@
+fides_key,name,parent_key,description
+data_use,Data Use,,
+provide,Provide the capability,data_use,"Provide, give, or make available the product, service, application or system."
+provide.system,System,provide,"The source system, product, service or application being provided to the user."
+provide.system.operations,System Operations,provide.system,Use of specified data categories to operate and protect the system in order to provide the service.
+provide.system.operations.support,Operations Support,provide.system.operations,Use of specified data categories to provide support for operation and protection of the system in order to provide the service.
+provide.system.operations.support.optimization,Support Optimization,provide.system.operations.support,Use of specified data categories to optimize and improve support operations in order to provide the service.
+provide.system.upgrades,Offer Upgrades,provide.system,Offer upgrades or upsales such as increased capacity for the service based on monitoring of service usage.
+improve,Improve the capability,data_use,"Improve the product, service, application or system."
+improve.system,System,improve,"The source system, product, service or application being improved."
+personalize,Personalize the capability,data_use,"Personalize the product, service, application or system."
+personalize.system,System,personalize,"The source system, product, service or application being personalized."
+advertising,"Advertising, Marketing or Promotion",data_use,The promotion of products or services targeted to users based on the the processing of user provided data in the system.
+advertising.first_party,First Party Advertising,advertising,The promotion of products or services targeting users based on processing of derviced data from prior use of the system.
+advertising.third_party,Third Party Advertising,advertising,The promotion of products or services targeting users based on processing of specific categories of data acquired from third party sources.
+advertising.first_party.contextual,First Party Contextual Advertising,advertising.first_party,The promotion of products or services targeted to users based on the processing of derived data from the users prior use of the services.
+advertising.first_party.personalized,First Party Personalized Advertising,advertising.first_party,The targeting and changing of promotional content based on processing of specific data categories from the user.
+advertising.third_party.personalized,Third Party Personalized Advertising,advertising.third_party,The targeting and changing of promotional content based on processing of specific categories of user data acquired from third party sources.
+third_party_sharing,Third Party Sharing,data_use,The transfer of specified data categories to third parties outside of the system/application's scope.
+third_party_sharing.payment_processing,Sharing for Processing Payments,third_party_sharing,Sharing of specified data categories with a third party for payment processing.
+third_party_sharing.personalized_advertising,Sharing for Personalized Advertising,third_party_sharing,Sharing of specified data categories for the purpose of marketing/advertising/promotion.
+third_party_sharing.fraud_detection,Sharing for Fraud Detection,third_party_sharing,Sharing of specified data categories with a third party fo fraud prevention/detection.
+third_party_sharing.legal_obligation,Sharing for Legal Obligation,third_party_sharing,"Sharing of data for legal obligations, including contracts, applicable laws or regulations."
+collect,Collect,data_use,Collecting and storing data in order to use it for another purpose such as data training for ML.
+train_ai_system,Train AI System,data_use,"Training an AI system. Please note when this data use is specified, the method and degree to which a user may be directly identified in the resulting AI system should be appended."
