@@ -219,7 +219,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run non-external test suite
-        run: nox -s "pytest(not-external)"
+        run: nox -s "pytest_ctl(not-external)"
 
 
   Pytest-Unit-Ops:
@@ -246,7 +246,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run unit test suite
-        run: nox -s pytest_unit
+        run: nox -s "pytest_ops(unit)"
 
   Pytest-Integration-Ops:
     needs: Build
@@ -272,7 +272,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run integration test suite
-        run: nox -s pytest_integration
+        run: nox -s "pytest_ops(integration)"
 
 ##################
 ## Unsafe Tests ##
@@ -303,7 +303,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run external test suite
-        run: nox -s pytest_external
+        run: nox -s "pytest_ctl(external)"
         env:
           SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
           REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
@@ -345,7 +345,7 @@ jobs:
           BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
           SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
-        run: nox -s pytest_integration_external
+        run: nox -s "pytest_ops(external-datastores)"
 
   External-SaaS-Connectors:
     needs: Build
@@ -388,4 +388,4 @@ jobs:
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
-        run: nox -s pytest_saas
+        run: nox -s "pytest_ops(saas)"

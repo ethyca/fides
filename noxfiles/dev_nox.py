@@ -1,7 +1,7 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import ANALYTICS_OPT_OUT, COMPOSE_SERVICE_NAME, RUN, START_APP
+from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
@@ -32,23 +32,6 @@ def dev(session: nox.Session) -> None:
         run_infrastructure(
             open_shell=open_shell, run_application=True, datastores=datastores
         )
-
-
-@nox.session()
-def dev_with_worker(session: nox.Session) -> None:
-    """Spin up the entire application and open a development shell."""
-    build(session, "dev")
-    session.notify("teardown")
-    session.run("docker", "compose", "up", "worker", "--wait", external=True)
-    session.run(
-        "docker-compose",
-        "run",
-        *ANALYTICS_OPT_OUT,
-        "-e",
-        "FIDES__EXECUTION__WORKER_ENABLED=True",
-        COMPOSE_SERVICE_NAME,
-        external=True,
-    )
 
 
 @nox.session()
