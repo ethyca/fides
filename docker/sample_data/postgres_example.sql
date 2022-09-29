@@ -100,24 +100,6 @@ CREATE TABLE public.type_link_test (
     name CHARACTER VARYING(100)
 );
 
-CREATE TABLE public.onsite_personnel (
-    responsible CHARACTER VARYING(100),
-    time TIMESTAMP PRIMARY KEY
-);
-
-
-INSERT INTO public.onsite_personnel VALUES
-('employee-1@example.com', '2022-01-01 09:00:00'),
-('employee-1@example.com', '2022-01-02 09:00:00'),
-('employee-1@example.com', '2022-01-03 09:00:00'),
-('employee-2@example.com', '2022-01-04 09:00:00'),
-('employee-1@example.com', '2022-01-05 09:00:00'),
-('employee-2@example.com', '2022-01-06 09:00:00'),
-('employee-2@example.com', '2022-01-07 09:00:00'),
-('employee-2@example.com', '2022-01-08 09:00:00');
-
-SELECT create_hypertable('onsite_personnel', 'time', migrate_data => true);
-
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),
