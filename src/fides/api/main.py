@@ -221,9 +221,8 @@ async def setup_server() -> None:
     if not scheduler.running:
         scheduler.start()
 
-    # TODO: Figure out why this blocks server startup
-    # logger.info("Starting scheduled request intake...")
-    # initiate_scheduled_request_intake()
+    logger.info("Starting scheduled request intake...")
+    initiate_scheduled_request_intake()
 
     logging.debug("Sending startup analytics events...")
     await send_analytics_event(

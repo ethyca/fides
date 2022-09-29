@@ -43,7 +43,7 @@ class FidesConfig(BaseModel):
     security: SecuritySettings = SecuritySettings()
     user: UserSettings = UserSettings()
 
-    test_mode: bool = getenv("FIDES_TEST_MODE", "").lower() == "true"
+    test_mode: bool = get_test_mode()
     is_test_mode: bool = test_mode
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
