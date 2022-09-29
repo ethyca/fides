@@ -60,6 +60,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     registry_file,
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
+from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -210,20 +211,18 @@ async def setup_server() -> None:
     logger.info("Validating SaaS connector templates...")
     load_registry(registry_file)
 
-    if CONFIG.redis.enabled:
-        logger.info("Running Redis connection test...")
-        try:
-            get_cache()
-        except (RedisConnectionError, ResponseError) as e:
-            logger.error("Connection to cache failed: %s", Pii(str(e)))
-            return
+    logger.info("Running Redis connection test...")
+    try:
+        get_cache()
+    except (RedisConnectionError, ResponseError) as e:
+        logger.error("Connection to cache failed: %s", Pii(str(e)))
+        return
 
     if not scheduler.running:
         scheduler.start()
 
-    # TODO: Fix this, this line is preventing the webserver from starting properly
-    # logger.info("Starting scheduled request intake...")
-    # initiate_scheduled_request_intake()
+    logger.info("Starting scheduled request intake...")
+    initiate_scheduled_request_intake()
 
     logging.debug("Sending startup analytics events...")
     await send_analytics_event(

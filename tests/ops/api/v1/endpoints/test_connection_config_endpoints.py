@@ -419,7 +419,7 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fidesops.main.prepare_and_log_request")
+    @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_connections_incorrect_scope_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -441,7 +441,7 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fidesops.main.prepare_and_log_request")
+    @mock.patch("fides.api.main.prepare_and_log_request")
     def test_patch_http_connection_successful_analytics(
         self,
         mocked_prepare_and_log_request,
@@ -1212,7 +1212,7 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
-    @mock.patch("fidesops.ops.service.connectors.email_connector.dispatch_email")
+    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_email")
     def test_put_email_connection_config_secrets(
         self,
         mock_dispatch_email,

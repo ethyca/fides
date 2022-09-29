@@ -7,8 +7,8 @@ from requests import RequestException
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     S3AuthMethod,
+    StorageSecrets,
     StorageSecretsOnetrust,
-    StorageSecretsS3,
     StorageType,
 )
 from fides.api.ops.util.storage_authenticator import (

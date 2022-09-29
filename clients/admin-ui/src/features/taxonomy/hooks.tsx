@@ -1,4 +1,3 @@
-import { YesNoOptions } from "common/constants";
 import { ReactNode } from "react";
 
 import { RTKResult } from "~/features/common/types";

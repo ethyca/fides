@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 from typing import Dict, List, Optional, Type
 
-from fides.api.ops.core.config import config
 from fides.api.ops.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.ops.schemas.masking.masking_secrets import (
     MaskingSecretCache,
@@ -19,6 +18,9 @@ from fides.api.ops.service.masking.strategy.format_preservation import (
 )
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.ops.util.encryption.secrets_util import SecretsUtil
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 class HashMaskingStrategy(MaskingStrategy):
@@ -103,13 +105,13 @@ class HashMaskingStrategy(MaskingStrategy):
     @staticmethod
     def _hash_sha256(value: str, salt: str) -> str:
         return hashlib.sha256(
-            (value + salt).encode(config.security.encoding)
+            (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()
 
     @staticmethod
     def _hash_sha512(value: str, salt: str) -> str:
         return hashlib.sha512(
-            (value + salt).encode(config.security.encoding)
+            (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()
 
     @classmethod

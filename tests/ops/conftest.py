@@ -17,16 +17,16 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from sqlalchemy_utils.functions import drop_database
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.core.config import config
 from fides.api.ops.db.base import Base
-from fides.api.ops.db.database import init_db
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
+from fides.ctl.core.api import db_action
+from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
@@ -65,7 +65,8 @@ logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
-def migrate_test_db() -> None:
+@pytest.fixture(scope="session", autouse=True)
+def setup_db():
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
     assert CONFIG.test_mode
@@ -82,7 +83,6 @@ def db() -> Generator:
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )
 
-    migrate_test_db()
     if not scheduler.running:
         scheduler.start()
     SessionLocal = get_db_session(CONFIG, engine=engine)
@@ -92,10 +92,6 @@ def db() -> Generator:
     # Teardown below...
     the_session.close()
     engine.dispose()
-    logger.debug("Dropping database at: %s", engine.url)
-    # We don't need to perform any extra checks before dropping the DB
-    # here since we know the engine will always be connected to the test DB
-    drop_database(engine.url)
     logger.debug("Database at: %s successfully dropped", engine.url)
 
 

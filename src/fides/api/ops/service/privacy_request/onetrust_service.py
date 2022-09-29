@@ -13,7 +13,6 @@ from fides.api.ops.common_exceptions import (
     PolicyNotFoundException,
     StorageConfigNotFoundException,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
@@ -36,11 +35,13 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.util.storage_authenticator import get_onetrust_access_token
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
 ONETRUST_POLICY_KEY = "onetrust"
 FIDES_TASK = "fides task"
+CONFIG = get_config()
 
 
 class OneTrustService:
@@ -49,7 +50,7 @@ class OneTrustService:
     @staticmethod
     def intake_onetrust_requests(config_key: FidesOpsKey) -> None:
         """Intake onetrust requests"""
-        SessionLocal = get_db_session(config)
+        SessionLocal = get_db_session(CONFIG)
         db = SessionLocal()
 
         onetrust_config: Optional[StorageConfig] = StorageConfig.get_by(

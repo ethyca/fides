@@ -19,6 +19,7 @@ class EmailActionType(str, Enum):
     """Enum for email action type"""
 
     # verify email upon acct creation
+    CONSENT_REQUEST = "consent_request"
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
     EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"

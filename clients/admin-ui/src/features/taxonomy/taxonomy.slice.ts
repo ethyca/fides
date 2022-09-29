@@ -1,11 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-<<<<<<< HEAD:clients/admin-ui/src/features/taxonomy/taxonomy.slice.ts
 import type { RootState } from "~/app/store";
-=======
-import type { AppState } from "~/app/store";
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/taxonomy/taxonomy.slice.ts
 import { DataCategory } from "~/types/api";
 
 export const taxonomyApi = createApi({
@@ -82,21 +78,13 @@ export const taxonomySlice = createSlice({
 export const { setIsAddFormOpen } = taxonomySlice.actions;
 
 const emptyDataCategories: DataCategory[] = [];
-<<<<<<< HEAD:clients/admin-ui/src/features/taxonomy/taxonomy.slice.ts
 export const selectDataCategories: (state: RootState) => DataCategory[] =
-=======
-export const selectDataCategories: (state: AppState) => DataCategory[] =
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/taxonomy/taxonomy.slice.ts
   createSelector(
     taxonomyApi.endpoints.getAllDataCategories.select(),
     ({ data }) => data ?? emptyDataCategories
   );
 
-<<<<<<< HEAD:clients/admin-ui/src/features/taxonomy/taxonomy.slice.ts
 const selectTaxonomy = (state: RootState) => state.taxonomy;
-=======
-const selectTaxonomy = (state: AppState) => state.taxonomy;
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/taxonomy/taxonomy.slice.ts
 
 export const selectIsAddFormOpen = createSelector(
   selectTaxonomy,

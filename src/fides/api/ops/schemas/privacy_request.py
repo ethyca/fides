@@ -6,7 +6,6 @@ from fideslib.models.audit_log import AuditLogAction
 from fideslib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import ActionType
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -21,6 +20,9 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     verify_encryption_key,
 )
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -69,7 +71,7 @@ class PrivacyRequestCreate(BaseSchema):
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:
-            verify_encryption_key(value.encode(config.security.encoding))
+            verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value
 
 

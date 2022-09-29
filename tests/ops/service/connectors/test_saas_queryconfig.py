@@ -3,7 +3,6 @@ from typing import List, Optional
 
 import pytest
 
-from fides.api.ops.core.config import config
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal
@@ -11,7 +10,9 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_query_config import SaaSQueryConfig
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 privacy_request = PrivacyRequest(id="234544")
 
 
@@ -347,7 +348,7 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Override masking_strict to False
-        config.execution.masking_strict = False
+        CONFIG.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
         saas_request: SaaSRequest = query_config.get_masking_request()
@@ -366,7 +367,7 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "PUT"
 
         # Reset
-        config.execution.masking_strict = True
+        CONFIG.execution.masking_strict = True
         del endpoints["conversations"].requests["delete"]
 
     def test_list_param_values(

@@ -1,11 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-<<<<<<< HEAD:clients/admin-ui/src/features/system/system.slice.ts
 import type { RootState } from "~/app/store";
-=======
-import type { AppState } from "~/app/store";
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/system/system.slice.ts
 import { System } from "~/types/api";
 
 interface SystemDeleteResponse {
@@ -115,11 +111,7 @@ export const { setActiveSystem } = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
-<<<<<<< HEAD:clients/admin-ui/src/features/system/system.slice.ts
 const selectSystem = (state: RootState) => state.system;
-=======
-const selectSystem = (state: AppState) => state.system;
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/system/system.slice.ts
 
 export const selectActiveSystem = createSelector(
   selectSystem,

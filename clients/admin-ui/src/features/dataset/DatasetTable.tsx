@@ -10,7 +10,7 @@ import {
 } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { useClassificationsMap } from "~/features/common/plus.slice";
+import { useClassifyInstancesMap } from "~/features/common/plus.slice";
 import { Dataset } from "~/types/api";
 
 import { STATUS_DISPLAY } from "./constants";
@@ -25,7 +25,7 @@ const DatasetsTable = () => {
   const activeDatasetFidesKey = useSelector(selectActiveDatasetFidesKey);
 
   const { data: datasets } = useGetAllDatasetsQuery();
-  const classificationsMap = useClassificationsMap();
+  const classifyInstancesMap = useClassifyInstancesMap();
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
@@ -55,9 +55,9 @@ const DatasetsTable = () => {
             activeDatasetFidesKey &&
             activeDatasetFidesKey === dataset.fides_key;
 
-          const classification = classificationsMap.get(dataset.fides_key);
+          const classifyInstance = classifyInstancesMap.get(dataset.fides_key);
           const statusDisplay =
-            STATUS_DISPLAY[classification?.status ?? "default"];
+            STATUS_DISPLAY[classifyInstance?.status ?? "unknown"];
 
           return (
             <Tr

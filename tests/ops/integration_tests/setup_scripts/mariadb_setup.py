@@ -5,15 +5,15 @@ import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.ops.service.connectors.sql_connector import MariaDBConnector
+from fides.ctl.core.config import get_config
 
-integration_config = load_toml(["fidesops-integration.toml"])
+integration_config = load_toml(["tests/ops/integration_test_config.toml"])
 
 
 def truncate_tables(db_session):

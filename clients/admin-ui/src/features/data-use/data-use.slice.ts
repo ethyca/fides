@@ -67,11 +67,7 @@ export const dataUseSlice = createSlice({
 export const { reducer } = dataUseSlice;
 
 const emptyDataUses: DataUse[] = [];
-<<<<<<< HEAD:clients/admin-ui/src/features/data-use/data-use.slice.ts
 export const selectDataUses: (state: RootState) => DataUse[] = createSelector(
-=======
-export const selectDataUses: (state: AppState) => DataUse[] = createSelector(
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/data-use/data-use.slice.ts
   dataUseApi.endpoints.getAllDataUses.select(),
   ({ data }) => data ?? emptyDataUses
 );

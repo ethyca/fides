@@ -9,7 +9,9 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.models.email import EmailConfig
 from fides.api.ops.schemas.email.email import EmailConfigRequest, EmailConfigResponse
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +21,7 @@ def create_email_config(db: Session, config: EmailConfigRequest) -> EmailConfigR
         raise EmailConfigAlreadyExistsException(
             f"Only one email config is supported at a time. Config with key {config.key} is already configured."
         )
-    return _create_or_update_email_config(db=db, config=config)
+    return _create_or_update_email_config(db=db, config=CONFIG)
 
 
 def update_email_config(
@@ -30,7 +32,7 @@ def update_email_config(
     )
     if not existing_config_with_key:
         raise EmailConfigNotFoundException(f"No email config found with key {key}")
-    return _create_or_update_email_config(db=db, config=config)
+    return _create_or_update_email_config(db=db, config=CONFIG)
 
 
 def _create_or_update_email_config(

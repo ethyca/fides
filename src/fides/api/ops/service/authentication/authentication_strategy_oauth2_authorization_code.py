@@ -7,7 +7,6 @@ from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.core.config import config
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.saas.strategy_configuration import (
@@ -17,8 +16,10 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_base im
     OAuth2AuthenticationStrategyBase,
 )
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
+CONFIG = get_config()
 
 
 class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
@@ -123,6 +124,6 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         """
 
         state = str(uuid4())
-        if config.oauth_instance:
-            state = f"{config.oauth_instance}-{state}"
+        if CONFIG.oauth_instance:
+            state = f"{CONFIG.oauth_instance}-{state}"
         return state

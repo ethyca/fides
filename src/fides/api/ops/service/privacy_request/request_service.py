@@ -2,14 +2,15 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +24,7 @@ def build_required_privacy_request_kwargs(
     """
     status = (
         PrivacyRequestStatus.identity_unverified
-        if config.execution.subject_identity_verification_required
+        if CONFIG.execution.subject_identity_verification_required
         else PrivacyRequestStatus.pending
     )
     return {

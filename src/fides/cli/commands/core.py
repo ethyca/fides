@@ -17,6 +17,7 @@ from fides.ctl.core import pull as _pull
 from fides.ctl.core import push as _push
 from fides.ctl.core.utils import git_is_dirty
 
+
 @click.command()
 @click.pass_context
 @dry_flag

@@ -9,11 +9,5 @@
       "~/*": ["src/*"]
     }
   },
-<<<<<<< HEAD:clients/admin-ui/cypress/tsconfig.json
-  "include": ["**/*.ts",
-    "../cypress.config.ts"
-  ]
-=======
   "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"]
->>>>>>> unified-fides-2:clients/ctl/admin-ui/cypress/tsconfig.json
 }

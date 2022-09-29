@@ -51,9 +51,9 @@ module = [
 ]
 ignore_missing_imports = true
 
-#######
-# Black
-#######
+###########
+## Black ##
+###########
 [tool.black]
 py39 = true
 line-length = 88
@@ -76,17 +76,17 @@ exclude = '''
 )/
 '''
 
-#######
-# isort
-#######
+###########
+## isort ##
+###########
 [tool.isort]
 profile = "black"
 line_length = 88
 src_paths = ["src", "tests", "noxfiles"]
 
-########
-# Pylint
-########
+############
+## Pylint ##
+############
 [tool.pylint.messages_control]
 disable=[
     "bad-option-value",
@@ -131,9 +131,9 @@ ignore="migrations,tests"
 [tool.pylint.whitelist]
 extension-pkg-whitelist = ["pydantic", "zlib"]
 
-########
-# Pytest
-########
+############
+## Pytest ##
+############
 [tool.pytest.ini_options]
 env = [
   "TESTING=True"
@@ -144,6 +144,7 @@ testpaths="tests"
 log_level = "INFO"
 addopts = ["--cov=fides.ctl.core",
             "--cov=fides.cli",
+            "--cov=fides.api",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",

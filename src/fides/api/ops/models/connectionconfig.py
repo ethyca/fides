@@ -16,12 +16,13 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.manual_webhook import AccessManualWebhook
+CONFIG = get_config()
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -107,7 +108,7 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

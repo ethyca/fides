@@ -1,4 +1,8 @@
 describe("Dataset", () => {
+  before(() => {
+    cy.login();
+  });
+
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
       "getDatasets"
@@ -12,7 +16,7 @@ describe("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
-    it.skip("Can navigate to the datasets list view", () => {
+    it("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");

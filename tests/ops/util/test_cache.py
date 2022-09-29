@@ -1,10 +1,12 @@
 import random
 from typing import Any, List
 
-from fides.api.ops.core.config import config
 from fides.api.ops.util.cache import FidesopsRedis
+from fides.ctl.core.config import get_config
 
 from ..fixtures.application_fixtures import faker
+
+CONFIG = get_config()
 
 
 def test_get_cache(cache: FidesopsRedis) -> None:
@@ -18,8 +20,8 @@ def test_cache_set_with_autoexpire(cache: FidesopsRedis) -> None:
     ttl_range = list(
         range(
             # Let's give this a 3 second buffer time to still pass
-            config.redis.default_ttl_seconds - 2,
-            config.redis.default_ttl_seconds + 1,
+            CONFIG.redis.default_ttl_seconds - 2,
+            CONFIG.redis.default_ttl_seconds + 1,
         )
     )
     cache.set_with_autoexpire(key, value)

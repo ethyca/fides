@@ -18,6 +18,7 @@ from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.ctl.core.config import FidesConfig, get_config
 
+CONFIG = get_config()
 router = APIRouter(tags=["Users"], prefix=f"{API_PREFIX}")
 
 
@@ -82,7 +83,7 @@ def update_user_password(
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), config.security.encoding
+        b64_str_to_str(data.old_password), CONFIG.security.encoding
     ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."

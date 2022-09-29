@@ -6,10 +6,11 @@ from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_session
 from sqlalchemy.orm import Session
 
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 
 logger = get_task_logger(__name__)
 
+CONFIG = get_config()
 EMAIL_QUEUE_NAME = "fidesops.email"
 
 
@@ -20,13 +21,13 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     def session(self) -> ContextManager[Session]:
         """Creates Session once per process"""
         if self._session is None:
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             self._session = SessionLocal()
 
         return self._session
 
 
-def _create_celery(config_path: str = config.execution.celery_config_path) -> Celery:
+def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -35,8 +36,8 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
-        "broker_url": config.redis.connection_url,
-        "result_backend": config.redis.connection_url,
+        "broker_url": CONFIG.redis.connection_url,
+        "result_backend": CONFIG.redis.connection_url,
         # Fidesops requires this to route emails to separate queues
         "task_create_missing_queues": True,
     }
@@ -44,7 +45,7 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
     try:
         celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
     except FileNotFoundError as e:
-        logger.warning("celery.toml could not be loaded: %s", e)
+        logger.warning(f"{config_path} could not be loaded: %s", e)
     else:
         celery_config.update(celery_config_overrides)
 
@@ -53,9 +54,9 @@ def _create_celery(config_path: str = config.execution.celery_config_path) -> Ce
     logger.info("Autodiscovering tasks...")
     app.autodiscover_tasks(
         [
-            "fidesops.ops.tasks",
-            "fidesops.ops.tasks.scheduled",
-            "fidesops.ops.service.privacy_request",
+            "fides.api.ops.tasks",
+            "fides.api.ops.tasks.scheduled",
+            "fides.api.ops.service.privacy_request",
         ]
     )
     return app

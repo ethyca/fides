@@ -17,7 +17,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
-from fides.api.ops.core.config import FidesopsConfig, config
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -58,12 +57,14 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
-integration_config = load_toml(["fidesops-integration.toml"])
+integration_config = load_toml(["tests/ops/integration_test_config.toml"])
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -117,7 +118,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fidesops.ops.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.api.ops.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         yield _fixture
 
@@ -1266,10 +1267,10 @@ def application_user(
 
 
 @pytest.fixture(scope="function")
-def short_redis_cache_expiration() -> FidesopsConfig:
-    original_value: int = config.redis.default_ttl_seconds
-    config.redis.default_ttl_seconds = (
+def short_redis_cache_expiration():
+    original_value: int = CONFIG.redis.default_ttl_seconds
+    CONFIG.redis.default_ttl_seconds = (
         1  # Set redis cache to expire very quickly for testing purposes
     )
-    yield config
-    config.redis.default_ttl_seconds = original_value
+    yield CONFIG
+    CONFIG.redis.default_ttl_seconds = original_value

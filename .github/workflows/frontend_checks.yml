@@ -1,4 +1,4 @@
-name: Frontend PR Checks
+name: Frontend Code Checks
 
 on:
   pull_request:

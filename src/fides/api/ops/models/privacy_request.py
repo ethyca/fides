@@ -33,7 +33,6 @@ from fides.api.ops.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph_differences import GraphRepr
@@ -68,8 +67,10 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
+CONFIG = get_config()
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -137,7 +138,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), config.security.app_encryption_key)
+    return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
 
 
 class PrivacyRequest(Base):  # pylint: disable=R0904
@@ -594,7 +595,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         cache.set_with_autoexpire(
             f"IDENTITY_VERIFICATION_CODE__{self.id}",
             value,
-            config.redis.identity_verification_code_ttl_seconds,
+            CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
     def get_cached_verification_code(self) -> Optional[str]:
@@ -749,7 +750,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                config.security.app_encryption_key,
+                CONFIG.security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

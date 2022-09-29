@@ -28,14 +28,15 @@ from fides.api.ops.api.v1.scope_registry import (
     USER_UPDATE,
 )
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.core.config import config
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import (
     get_current_user,
     oauth2_scheme,
     verify_oauth_client,
 )
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
@@ -101,7 +102,7 @@ def update_user_password(
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), config.security.encoding
+        b64_str_to_str(data.old_password), CONFIG.security.encoding
     ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
@@ -126,19 +127,19 @@ def logout_oauth_client(
 
     try:
         token_data = json.loads(
-            extract_payload(authorization, config.security.app_encryption_key)
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
     except jose.exceptions.JWEParseError:
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if (
-        not client_id or client_id == config.security.oauth_root_client_id
+        not client_id or client_id == CONFIG.security.oauth_root_client_id
     ):  # The root client is not a persisted object
         return None
 
     client = ClientDetail.get(
-        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
     )
 
     return client

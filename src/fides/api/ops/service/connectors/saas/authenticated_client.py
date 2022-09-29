@@ -9,7 +9,7 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.api.ops.core.config import config
+from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
+CONFIG = get_config()
 
 
 class AuthenticatedClient:
@@ -88,7 +89,7 @@ class AuthenticatedClient:
             )
             response = self.session.send(prepared_request)
         except Exception as exc:  # pylint: disable=W0703
-            if config.dev_mode:  # pylint: disable=R1720
+            if CONFIG.dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to '{self.key}' with error: {exc}"
                 )
@@ -118,7 +119,7 @@ def log_request_and_response_for_debugging(
     prepared_request: PreparedRequest, response: Response
 ) -> None:
     """Log SaaS request and response in dev mode only"""
-    if config.dev_mode:
+    if CONFIG.dev_mode:
         logger.info(
             "\n\n-----------SAAS REQUEST-----------"
             "\n%s %s"

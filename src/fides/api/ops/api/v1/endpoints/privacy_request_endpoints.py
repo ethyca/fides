@@ -134,9 +134,11 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
+CONFIG = get_config()
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -245,11 +247,11 @@ async def create_privacy_request(
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
-            if config.notifications.send_request_receipt_notification:
+            if CONFIG.notifications.send_request_receipt_notification:
                 _send_privacy_request_receipt_email_to_user(
                     policy, privacy_request_data.identity.email
                 )
-            if not config.execution.require_manual_request_approval:
+            if not CONFIG.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
                     data={
@@ -1173,7 +1175,7 @@ async def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if config.notifications.send_request_receipt_notification:
+        if CONFIG.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_email_to_user(
                 policy, privacy_request.get_persisted_identity().email
             )
@@ -1185,7 +1187,7 @@ async def verify_identification_code(
 
     logger.info("Identity verified for %s.", privacy_request.id)
 
-    if not config.execution.require_manual_request_approval:
+    if not CONFIG.execution.require_manual_request_approval:
         AuditLog.create(
             db=db,
             data={
@@ -1232,7 +1234,7 @@ def approve_privacy_request(
                 "message": "",
             },
         )
-        if config.notifications.send_request_review_notification:
+        if CONFIG.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                 email=privacy_request.get_cached_identity_data().get(
@@ -1284,7 +1286,7 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        if config.notifications.send_request_review_notification:
+        if CONFIG.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
                 action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 email=privacy_request.get_cached_identity_data().get(

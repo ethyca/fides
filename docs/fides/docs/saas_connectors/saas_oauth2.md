@@ -13,8 +13,9 @@ This Authentication Code flow has the following configuration values:
 The Client Credential flow has all these values except for `authorization_request` since it is not required for this flow.
 
 ## Sample Configuration
+
 Each OAuth2 request is fully configurable to account for the different ways the parameters can be mapped to a request. The following examples demonstrate the requests generated from sample configuration files.
- 
+
 ```yaml title="OAuth2 Authorization Code example"
 authentication:
   strategy: oauth2_authorization_code
@@ -28,6 +29,7 @@ authentication:
 ```
 
 ### Authorization Request
+
 ```yaml
 authorization_request:
     method: GET
@@ -51,7 +53,7 @@ The above `authentication_request` will generate the following:
 https://<domain>/auth/authorize?client_id=<client_id>&redirect_uri=<redirect_uri>&response_type=code&scope=<scope>&state=<state>
 ```
 
-The placeholders are sourced from the values defined in the [`connector_params`](saas_config.md#connector-params) of your SaaS config. 
+The placeholders are sourced from the values defined in the [`connector_params`](saas_config.md#connector-params) of your SaaS config.
 
 The `<state>` placeholder is generated automatically with each authorization request. This authorization URL can be retrieved by calling:
 
@@ -60,6 +62,7 @@ https://{{domain}}/api/v1/connection/{{connection_key}}/authorize
 ```
 
 ### Token Request
+
 ```yaml
 token_request:
     method: POST
@@ -75,11 +78,7 @@ token_request:
         value: <code>
 ```
 
-<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_oauth2.md
-The `<code>` placeholder is defined automatically by Fides. 
-=======
-The `<code>` placeholder is defined automatically by Fidesops. 
->>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_oauth2.md
+The `<code>` placeholder is defined automatically by Fides.
 
 The above `token_request` configuration generates the following:
 
@@ -87,13 +86,10 @@ The above `token_request` configuration generates the following:
 https://<domain>/oauth_token?client_id=<client_id>&client_secret=<client_secret>&grant_type=authorization_code&code=<code>
 ```
 
-<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_oauth2.md
 This request is called automatically after Fides receives a callback response to the `https://{{domain}}/api/v1/oauth/callback` endpoint.
-=======
-This request is called automatically after Fidesops receives a callback response to the `https://{{domain}}/api/v1/oauth/callback` endpoint.
->>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_oauth2.md
 
 #### Refresh Request
+
 ```yaml
 refresh_request:
     method: POST
@@ -109,11 +105,7 @@ refresh_request:
         value: <refresh_token>
 ```
 
-<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_oauth2.md
-The `<refresh_token>` placeholder is defined automatically by Fides. 
-=======
-The `<refresh_token>` placeholder is defined automatically by Fidesops. 
->>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_oauth2.md
+The `<refresh_token>` placeholder is defined automatically by Fides.
 
 The above `refresh_request` configuration generates the following:
 
@@ -137,30 +129,30 @@ authentication:
 ```
 
 ## Usage Checklist
+
 To use OAuth2 as a connection strategy, the following must be configured first:
 
 ### For All OAuth2 Flows
+
 #### Per-connector Configuration
-<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_oauth2.md
+
 - Fides must be able to connect to the SaaS provider (Outreach, Salesforce, etc.).
-=======
-- Fidesops must be able to connect to the SaaS provider (Outreach, Salesforce, etc.).
->>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_oauth2.md
 - A **Client ID** and **Client Secret** must be generated within the SaaS provider’s admin console.
-    - This is dependent on the individual SaaS provider. Refer to the provider's documentation.
+  - This is dependent on the individual SaaS provider. Refer to the provider's documentation.
 - The connector using OAuth2 is configured using the steps for [how to configure a SaaS connector](../saas_connectors/#how-to-configure-a-saas-connector).
+
 ### Additional Steps for Authentication Code Flow
+
 #### One-time Configuration
-<<<<<<< HEAD:docs/fides/docs/saas_connectors/saas_oauth2.md
+
 - A callback server or network rules are required to forward the callback response from the SaaS providers to an instance of Fides. This is dependent on the user environment where Fides is deployed, and is out of scope for this documentation.
-=======
-- A callback server or network rules are required to forward the callback response from the SaaS providers to an instance of Fidesops. This is dependent on the user environment where Fidesops is deployed, and is out of scope for this documentation.
->>>>>>> unified-fides-2:docs/fidesops/docs/saas_connectors/saas_oauth2.md
 - These incoming requests must be routed to `https://{{host}}/api/v1/oauth/callback`.
 
 #### Per-connector Configuration
+
 - The **Redirect URI** must be registered within the SaaS provider's admin console.
 - The OAuth2 workflow is initialized by following the URL returned from `https://{{domain}}/api/v1/connection/{{connection_key}}/authorize`.
 
 ## OAuth2 Authentication Code Flow Diagram
+
 ![OAuth2 Workflow](../img/oauth2_workflow.png "OAuth2 Workflow")

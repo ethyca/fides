@@ -20,7 +20,6 @@ from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.api.ops.core.config import config
 from fides.api.ops.models.policy import DrpAction, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import (

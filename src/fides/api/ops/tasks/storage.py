@@ -15,7 +15,6 @@ from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 
-from fides.api.ops.core.config import config
 from fides.api.ops.models.storage import ResponseFormat
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
 from fides.api.ops.util.cache import get_cache, get_encryption_cache_key
@@ -26,9 +25,11 @@ from fides.api.ops.util.storage_authenticator import (
     get_onetrust_access_token,
     get_s3_session,
 )
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
+CONFIG = get_config()
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
@@ -40,16 +41,16 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         encryption_attr="key",
     )
     if isinstance(data, bytes):
-        data = data.decode(config.security.encoding)
+        data = data.decode(CONFIG.security.encoding)
 
     encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
     bytes_encryption_key: bytes = encryption_key.encode(
-        encoding=config.security.encoding
+        encoding=CONFIG.security.encoding
     )
-    nonce: bytes = secrets.token_bytes(config.security.aes_gcm_nonce_length)
+    nonce: bytes = secrets.token_bytes(CONFIG.security.aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
     return bytes_to_b64_str(
         nonce
@@ -73,7 +74,7 @@ def write_to_in_memory_buffer(
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
             encrypt_access_request_results(json_str, request_id).encode(
-                config.security.encoding
+                CONFIG.security.encoding
             )
         )
 
@@ -83,7 +84,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=config.security.encoding)
+                df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
@@ -110,7 +111,7 @@ def create_presigned_url_for_s3(
     response = s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket_name, "Key": object_name},
-        ExpiresIn=config.security.subject_request_download_link_ttl_seconds,
+        ExpiresIn=CONFIG.security.subject_request_download_link_ttl_seconds,
     )
 
     # The response contains the presigned URL

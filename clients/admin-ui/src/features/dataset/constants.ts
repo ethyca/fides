@@ -85,19 +85,12 @@ export const FIELD = {
  * classification feature.
  */
 export const STATUS_DISPLAY = {
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/constants.ts
-  processing: {
-=======
   [ClassifyStatusEnum.IN_WORK]: {
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/constants.ts
     title: "Processing",
     tooltip:
       "This dataset is currently being generated and classified. You will be notified when this process is complete",
     color: "orange",
   },
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/constants.ts
-  review: {
-=======
   [ClassifyStatusEnum.CREATED]: {
     title: "Processing",
     tooltip:
@@ -105,31 +98,22 @@ export const STATUS_DISPLAY = {
     color: "orange",
   },
   [ClassifyStatusEnum.COMPLETE]: {
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/constants.ts
     title: "Awaiting Review",
     tooltip:
       "This dataset has been automatically classified. Review the results and update the dataset.",
     color: "orange",
   },
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/constants.ts
-  classified: {
-=======
   [ClassifyStatusEnum.REVIEWED]: {
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/constants.ts
     title: "Classified",
     tooltip: "This dataset has been classified.",
     color: "green",
   },
-<<<<<<< HEAD:clients/admin-ui/src/features/dataset/constants.ts
-  default: {
-=======
   [ClassifyStatusEnum.FAILED]: {
     title: "Failed",
     tooltip: "This dataset must be manually updated.",
     color: "red",
   },
   unknown: {
->>>>>>> unified-fides-2:clients/ctl/admin-ui/src/features/dataset/constants.ts
     title: "Unknown",
     tooltip: "This dataset must be manually updated.",
     color: "gray",

@@ -1,30 +1,21 @@
-import { Box, Heading } from "@fidesui/react";
-import Head from "common/Head";
-import NavBar from "common/NavBar";
+import { Heading } from "@fidesui/react";
 import type { NextPage } from "next";
 import React from "react";
 import UserManagementTable from "user-management/UserManagementTable";
 import UserManagementTableActions from "user-management/UserManagementTableActions";
 
-import ProtectedRoute from "../../features/auth/ProtectedRoute";
+import ProtectedRoute from "~/features/auth/ProtectedRoute";
+import Layout from "~/features/common/Layout";
 
 const UserManagement: NextPage = () => (
   <ProtectedRoute>
-    <div>
-      <Head />
-
-      <NavBar />
-
-      <main>
-        <Box px={9} py={10}>
-          <Heading fontSize="2xl" fontWeight="semibold">
-            User Management
-          </Heading>
-          <UserManagementTableActions />
-          <UserManagementTable />
-        </Box>
-      </main>
-    </div>
+    <Layout title="User Management">
+      <Heading fontSize="2xl" fontWeight="semibold">
+        User Management
+      </Heading>
+      <UserManagementTableActions />
+      <UserManagementTable />
+    </Layout>
   </ProtectedRoute>
 );
 

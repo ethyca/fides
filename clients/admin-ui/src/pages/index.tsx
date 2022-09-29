@@ -1,29 +1,21 @@
-import { Box, Heading } from "@fidesui/react";
-import Head from "common/Head";
-import NavBar from "common/NavBar";
+import { Heading } from "@fidesui/react";
 import type { NextPage } from "next";
 import RequestFilters from "privacy-requests/RequestFilters";
 import RequestTable from "privacy-requests/RequestTable";
 
-import { LOGIN_ROUTE } from "../constants";
-import ProtectedRoute from "../features/auth/ProtectedRoute";
+import { LOGIN_ROUTE } from "~/constants";
+import ProtectedRoute from "~/features/auth/ProtectedRoute";
+import Layout from "~/features/common/Layout";
 
 const Home: NextPage = () => (
   <ProtectedRoute redirectUrl={LOGIN_ROUTE}>
-    <>
-      <Head />
-      <NavBar />
-
-      <main>
-        <Box px={9} py={10}>
-          <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-            Subject Requests
-          </Heading>
-          <RequestFilters />
-          <RequestTable />
-        </Box>
-      </main>
-    </>
+    <Layout title="Subject Requests">
+      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        Subject Requests
+      </Heading>
+      <RequestFilters />
+      <RequestTable />
+    </Layout>
   </ProtectedRoute>
 );
 
