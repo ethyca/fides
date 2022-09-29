@@ -1,20 +1,10 @@
+import { stubDatasetCrud, stubPlus } from "cypress/support/stubs";
+
 describe("Dataset", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-      "getDatasets"
-    );
-    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-      "getDataset"
-    );
-    cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_categories.json",
-    }).as("getDataCategory");
-
+    stubDatasetCrud();
     // Ensure these tests all run with Plus features disabled.
-    cy.intercept("GET", "/api/v1/plus/health", {
-      statusCode: 400,
-      body: {},
-    }).as("getPlusHealth");
+    stubPlus(false);
   });
 
   describe("List of datasets view", () => {
@@ -159,11 +149,6 @@ describe("Dataset", () => {
   });
 
   describe("Can edit datasets", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-        "putDataset"
-      );
-    });
     it("Can edit dataset fields", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
@@ -211,18 +196,6 @@ describe("Dataset", () => {
   });
 
   describe("Deleting datasets", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*").as("putDataset");
-      cy.fixture("dataset.json").then((dataset) => {
-        cy.intercept("DELETE", "/api/v1/dataset/*", {
-          body: {
-            message: "resource deleted",
-            resource: dataset,
-          },
-        }).as("deleteDataset");
-      });
-    });
-
     it("Can delete a field from a dataset", () => {
       const fieldName = "uuid";
       cy.visit("/dataset/demo_users_dataset");
@@ -282,9 +255,6 @@ describe("Dataset", () => {
     });
 
     it("Can create a dataset via yaml", () => {
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
       cy.visit("/dataset/new");
       cy.getByTestId("upload-yaml-btn").click();
       cy.fixture("dataset.json").then((dataset) => {
@@ -350,9 +320,7 @@ describe("Dataset", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
+
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
       cy.getByTestId("input-url").type(connectionString);
@@ -385,9 +353,6 @@ describe("Dataset", () => {
             },
           }).as("postGenerate");
         }
-      );
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
       );
 
       cy.visit("/dataset/new");
@@ -424,9 +389,7 @@ describe("Dataset", () => {
           error: "SyntaxError: Unexpected token I in JSON at position 0",
         },
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
+
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
 
@@ -470,12 +433,6 @@ describe("Dataset", () => {
   });
 
   describe("Data category checkbox tree", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-        "putDataset"
-      );
-    });
-
     it("Can render chosen data categories", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();

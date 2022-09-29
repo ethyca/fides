@@ -1,3 +1,5 @@
+import { stubDatasetCrud, stubPlus } from "cypress/support/stubs";
+
 import {
   ClassifyInstance,
   ClassifyStatusEnum,
@@ -10,13 +12,8 @@ import {
  */
 describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/plus/health", {
-      statusCode: 200,
-      body: {
-        status: "healthy",
-        core_fidesctl_version: "1.8",
-      },
-    }).as("getPlusHealth");
+    stubDatasetCrud();
+    stubPlus(true);
     cy.intercept("GET", "/api/v1/plus/classify", {
       fixture: "classify/list.json",
     }).as("getClassifyList");
@@ -48,15 +45,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
       cy.intercept("POST", "/api/v1/plus/classify", {
         fixture: "classify/create.json",
       }).as("postClassify");
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
-      );
 
       // Confirm the request.
       cy.getByTestId("confirmation-modal").getByTestId("continue-btn").click();
@@ -77,12 +68,6 @@ describe("Datasets with Fides Classify", () => {
   });
 
   describe("List of datasets with classifications", () => {
-    beforeEach(() => {
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
-      );
-    });
-
     it("Shows the each dataset's classify status", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
@@ -106,9 +91,6 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/data_category", {
-        fixture: "data_categories.json",
-      }).as("getDataCategory");
     });
 
     /**
@@ -166,9 +148,6 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/data_category", {
-        fixture: "data_categories.json",
-      }).as("getDataCategory");
 
       cy.intercept("PUT", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
