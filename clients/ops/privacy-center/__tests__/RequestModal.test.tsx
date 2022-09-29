@@ -47,6 +47,7 @@ const defaultModalProperties: RequestModalProps = {
   privacyRequestId: "",
   setPrivacyRequestId: () => {},
   isVerificationRequired: false,
+  successHandler: () => {},
 };
 
 describe("RequestModal", () => {
