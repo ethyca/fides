@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.6...main)
 
 ### Added
 
@@ -32,7 +32,6 @@ The types of changes are:
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
   * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 * Cypress component testing [#1106](https://github.com/ethyca/fides/pull/1106)
-* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
 
 ### Changed
 
@@ -44,11 +43,20 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
-* Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
 
 ### Security
 
 * Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
+
+## [1.8.6](https://github.com/ethyca/fides/compare/1.8.5...1.8.6)
+
+### Added
+
+* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
+
+### Fixed
+
+* Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
 
 ## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
 
