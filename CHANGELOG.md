@@ -45,6 +45,11 @@ The types of changes are:
 
 * Removed `query_param` auth strategy as `api_key` auth strategy now supersedes it [#1331](https://github.com/ethyca/fidesops/pull/1331)
 
+### Developer Experience
+
+* Update Fidesops config with sane defaults where necessary [#1393](https://github.com/ethyca/fidesops/pull/1395)
+
+
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...main)
 
 ### Developer Experience
