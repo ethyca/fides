@@ -17,7 +17,6 @@ def test_create_task(celery_session_app, celery_session_worker):
 
 
 def test_celery_default_config() -> None:
-    print(CONFIG.execution)
     celery_app = _create_celery()
     assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
     assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
