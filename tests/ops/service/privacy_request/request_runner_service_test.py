@@ -317,7 +317,7 @@ def get_privacy_request_results(
 @mock.patch(
     "fides.api.ops.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
 )
-def test_create_and_process_access_request(
+def test_create_and_process_access_request_postgres(
     trigger_webhook_mock,
     postgres_example_test_dataset_config_read_access,
     postgres_integration_db,
@@ -724,7 +724,7 @@ def test_create_and_process_erasure_request_specific_category_postgres(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -766,7 +766,7 @@ def test_create_and_process_erasure_request_specific_category_mssql(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -808,7 +808,7 @@ def test_create_and_process_erasure_request_specific_category_mysql(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -850,7 +850,7 @@ def test_create_and_process_erasure_request_specific_category_mariadb(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is `None`
             assert row.name is None
@@ -899,7 +899,7 @@ def test_create_and_process_erasure_request_generic_category(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `email` field is `None` and that its data category
             # ("user.contact.email") has been erased by the parent
@@ -954,7 +954,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `email` field is not original val and that its data category
             # ("user.contact.email") has been erased by the parent
@@ -1062,7 +1062,7 @@ def test_create_and_process_erasure_request_read_access(
 
     customer_found = False
     for row in res:
-        if customer_id in row:
+        if customer_id == row.id:
             customer_found = True
             # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
             # "read" access
