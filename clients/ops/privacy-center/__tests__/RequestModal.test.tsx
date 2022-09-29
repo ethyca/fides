@@ -12,15 +12,9 @@ import { rest } from "msw";
 import { setupServer } from "msw/node";
 
 import {
-<<<<<<< HEAD
-  RequestModal,
-  RequestModalProps,
-} from "../components/modals/RequestModal";
-=======
   PrivacyRequestModal,
   RequestModalProps,
 } from "../components/modals/privacy-request-modal/PrivacyRequestModal";
->>>>>>> unified-fides-2
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
@@ -57,24 +51,16 @@ const defaultModalProperties: RequestModalProps = {
 
 describe("RequestModal", () => {
   it("renders a modal when isOpen is true", () => {
-<<<<<<< HEAD
-    render(<RequestModal {...defaultModalProperties} />);
-=======
     render(<PrivacyRequestModal {...defaultModalProperties} />);
->>>>>>> unified-fides-2
 
     const modal = screen.getByRole("dialog");
     expect(modal).toBeInTheDocument();
   });
 
   it("renders the appropriate inputs", () => {
-<<<<<<< HEAD
-    let { unmount } = render(<RequestModal {...defaultModalProperties} />);
-=======
     let { unmount } = render(
       <PrivacyRequestModal {...defaultModalProperties} />
     );
->>>>>>> unified-fides-2
 
     expect(screen.getByPlaceholderText("Name*")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Email*")).toBeInTheDocument();
@@ -83,11 +69,7 @@ describe("RequestModal", () => {
     unmount();
 
     ({ unmount } = render(
-<<<<<<< HEAD
-      <RequestModal
-=======
       <PrivacyRequestModal
->>>>>>> unified-fides-2
         {...defaultModalProperties}
         openAction={mockConfig.actions[1].policy_key}
       />
@@ -100,11 +82,7 @@ describe("RequestModal", () => {
     unmount();
 
     ({ unmount } = render(
-<<<<<<< HEAD
-      <RequestModal
-=======
       <PrivacyRequestModal
->>>>>>> unified-fides-2
         {...defaultModalProperties}
         openAction={mockConfig.actions[2].policy_key}
       />
@@ -118,21 +96,13 @@ describe("RequestModal", () => {
   });
 
   it("renders the button as disabled before inputs are filled", () => {
-<<<<<<< HEAD
-    render(<RequestModal {...defaultModalProperties} />);
-=======
     render(<PrivacyRequestModal {...defaultModalProperties} />);
->>>>>>> unified-fides-2
     const submitButton = screen.getByText("Continue");
     expect(submitButton).toBeDisabled();
   });
 
   it("renders the button as enabled after inputs are filled correctly", async () => {
-<<<<<<< HEAD
-    render(<RequestModal {...defaultModalProperties} />);
-=======
     render(<PrivacyRequestModal {...defaultModalProperties} />);
->>>>>>> unified-fides-2
     act(() => {
       fireEvent.change(screen.getByPlaceholderText("Name*"), {
         target: { value: "Ethyca" },

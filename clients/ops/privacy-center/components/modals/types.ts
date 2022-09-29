@@ -5,10 +5,7 @@ export enum ModalViews {
   IdentityVerification = "identityVerification",
   RequestSubmitted = "requestSubmitted",
 }
-<<<<<<< HEAD
-=======
 
 export enum VerificationType {
   PrivacyRequest = "privacy-request",
 }
->>>>>>> unified-fides-2
