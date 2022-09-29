@@ -48,8 +48,14 @@ See API docs on how to [Set a ConnectionConfig's Secrets](/fidesops/api#operatio
 ```json title="<code>PUT /v1/connection/test_webhook_connection_config</code>"
     {
         "url": "https://www.example.com",
-        "authorization": "test_authorization"
+        "authorization": "Bearer test_38234823482348"
     }
+```
+
+Note that the authorization secret specified here will be added directly to an authorization header when fidesops later
+makes a call to the configured webhook:
+```json
+{"Authorization": "Bearer test_38234823482348"}
 ```
 
 ### Define pre-execution or post-execution webhooks
@@ -141,7 +147,7 @@ PATCH /policy/{policy_key}/webhook/post_execution/{post_execution_key}
 See API docs for more information on how to [PATCH a PolicyPreWebhook](/fidesops/api#operations-Policy_Webhooks-update_pre_execution_webhook_api_v1_policy__policy_key__webhook_pre_execution__pre_webhook_key__patch)
 and how to [PATCH a PolicyPostWebhook](/fidesops/api#operations-Policy_Webhooks-update_post_execution_webhook_api_v1_policy__policy_key__webhook_post_execution__post_webhook_key__patch).
 
-## Webhook request format
+## Policy Webhook request format
 
 Before and after running access or erasure requests, fidesops will send requests to any configured webhooks in sequential order
 with the following request body:

@@ -61,7 +61,7 @@ Fidesops currently supports Mailgun for email integrations. Ensure you register 
 |---|----|
 | `mailgun_api_key` | Your Mailgun Domain Sending Key. |
 
-## Email third-party services
+## Email third party services to mask data
 
 Once your email server is configured, you can create an email connector to send automatic erasure requests to third-party services. Fidesops will gather details about each collection described in the connector, and send a single email to the service after all collections have been visited. 
 

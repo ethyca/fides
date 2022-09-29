@@ -29,6 +29,7 @@ nav:
       - Data Rights Protocol: guides/data_rights_protocol.md
       - Configure Automatic Emails: guides/email_communications.md
       - Configure Manual Webhooks: guides/manual_webhooks.md
+      - Understanding Privacy Request Execution: guides/fidesops_workflow.md
   - SaaS Connectors:
       - Connect to SaaS Applications: saas_connectors/saas_connectors.md
       - SaaS Configuration: saas_connectors/saas_config.md

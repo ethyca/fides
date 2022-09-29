@@ -101,7 +101,7 @@ dataset:
 
 We trigger a retrieval with identity data, such as an email address or user ID, that's provided by the user. What we do is...
 
-1. Identify the collections that contain the identity data that the user.
+1. Identify the collections that contain the identity data that belong to the user.
 2. Find all related records.
 3. Use the data to find all connected data.
 4. Continue until we've found all related data.
