@@ -18,7 +18,7 @@ def dev(session: nox.Session) -> None:
 
     if "ui" in session.posargs:
         build(session, "ui")
-        session.run("docker", "compose", "up", "fides-ui", external=True)
+        session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
 
     open_shell = "shell" in session.posargs
     if not datastores:
