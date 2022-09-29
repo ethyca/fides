@@ -7,6 +7,7 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
+from dask import delayed
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
@@ -650,7 +651,7 @@ async def run_access_request(
         )
         privacy_request.cache_access_graph(format_graph_for_caching(env, end_nodes))
 
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
         return v.compute()
 
 
@@ -746,7 +747,7 @@ async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
                 privacy_request, env, end_nodes, resources, ActionType.erasure
             )
         )
-        v = dask.delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
 
         update_cts: Tuple[int, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide
