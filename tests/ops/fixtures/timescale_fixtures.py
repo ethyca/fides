@@ -19,6 +19,7 @@ from .application_fixtures import integration_secrets
 
 CONFIG = get_config()
 
+
 @pytest.fixture(scope="function")
 def timescale_connection_config(
     db: Session,

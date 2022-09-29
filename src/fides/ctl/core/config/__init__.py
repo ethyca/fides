@@ -24,7 +24,7 @@ from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import get_test_mode, DEFAULT_CONFIG_PATH
+from .utils import DEFAULT_CONFIG_PATH, get_test_mode
 
 logger = logging.getLogger(__name__)
 

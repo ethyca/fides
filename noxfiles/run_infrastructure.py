@@ -6,7 +6,6 @@ and related workflows.
 import argparse
 import subprocess
 import sys
-from time import sleep
 from typing import List
 
 from constants_nox import COMPOSE_SERVICE_NAME
