@@ -15,7 +15,9 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.6...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.0...main)
+
+## [1.9.0](https://github.com/ethyca/fides/compare/1.8.6...1.9.0) - 2022-09-29
 
 ### Added
 
@@ -48,7 +50,7 @@ The types of changes are:
 
 * Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
 
-## [1.8.6](https://github.com/ethyca/fides/compare/1.8.5...1.8.6)
+## [1.8.6](https://github.com/ethyca/fides/compare/1.8.5...1.8.6) - 2022-09-28
 
 ### Added
 
@@ -58,7 +60,7 @@ The types of changes are:
 
 * Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
 
-## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5) - 2022-09-21
 
 ### Changed
 
