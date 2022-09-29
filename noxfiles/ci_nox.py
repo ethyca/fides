@@ -17,28 +17,6 @@ from utils_nox import install_requirements
 
 RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
-
-@nox.session()
-def ci_suite(session: nox.Session) -> None:
-    """
-    Runs the CI check suite.
-
-    Excludes external tests so that no additional secrets/tooling are required.
-    """
-    # Use "notify" instead of direct calls here to provide better user feedback
-    session.notify("teardown")
-    session.notify("build", ["test"])
-    session.notify("black")
-    session.notify("isort")
-    session.notify("xenon")
-    session.notify("mypy")
-    session.notify("pylint")
-    session.notify("check_install")
-    session.notify("pytest_unit")
-    session.notify("pytest_integration")
-    session.notify("teardown")
-
-
 # Static Checks
 @nox.session()
 def static_checks(session: nox.Session) -> None:
@@ -150,147 +128,140 @@ def fides_db_scan(session: nox.Session) -> None:
         nox.param("unit", id="unit"),
         nox.param("integration", id="integration"),
         nox.param("not external", id="not-external"),
+        nox.param("external", id="external"),
     ],
 )
-def pytest(session: nox.Session, mark: str) -> None:
+def pytest_ctl(session: nox.Session, mark: str) -> None:
     """Runs fidesctl tests."""
     session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *RUN_NO_DEPS,
-        "pytest",
-        "tests/ctl/",
-        "-m",
-        mark,
-    )
-    session.run(*run_command, external=True)
+    if mark == "external":
+        start_command = (
+            "docker-compose",
+            "-f",
+            COMPOSE_FILE,
+            "-f",
+            INTEGRATION_COMPOSE_FILE,
+            "up",
+            "-d",
+            IMAGE_NAME,
+        )
+        session.run(*start_command, external=True)
+        run_command = (
+            "docker-compose",
+            "run",
+            "-e",
+            "SNOWFLAKE_FIDESCTL_PASSWORD",
+            "-e",
+            "REDSHIFT_FIDESCTL_PASSWORD",
+            "-e",
+            "AWS_ACCESS_KEY_ID",
+            "-e",
+            "AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "AWS_DEFAULT_REGION",
+            "-e",
+            "OKTA_CLIENT_TOKEN",
+            "-e",
+            "BIGQUERY_CONFIG",
+            "--rm",
+            CI_ARGS,
+            IMAGE_NAME,
+            "pytest",
+            "-m",
+            "external",
+            "tests/ctl",
+        )
+        session.run(*run_command, external=True)
+    else:
+        session.run(*START_APP, external=True)
+        run_command = (
+            *RUN_NO_DEPS,
+            "pytest",
+            "tests/ctl/",
+            "-m",
+            mark,
+        )
+        session.run(*run_command, external=True)
 
 
 @nox.session()
-def pytest_unit(session: nox.Session) -> None:
-    """Runs fidesops unit tests."""
+@nox.parametrize(
+    "mark",
+    [
+        nox.param("unit", id="unit"),
+        nox.param("integration", id="integration"),
+        nox.param("external_datastores", id="external-datastores"),
+        nox.param("saas", id="saas"),
+    ],
+)
+def pytest_ops(session: nox.Session, mark: str) -> None:
+    """Runs fidesops tests."""
     session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *RUN_NO_DEPS,
-        "pytest",
-        OPS_TEST_DIR,
-        "-m",
-        "not integration and not integration_external and not integration_saas",
-    )
-    session.run(*run_command, external=True)
-
-
-@nox.session()
-def pytest_external(session: nox.Session) -> None:
-    """Run all fidesctl tests that rely on the third-party databases and services."""
-    start_command = (
-        "docker-compose",
-        "-f",
-        COMPOSE_FILE,
-        "-f",
-        INTEGRATION_COMPOSE_FILE,
-        "up",
-        "-d",
-        IMAGE_NAME,
-    )
-    session.run(*start_command, external=True)
-    run_command = (
-        "docker-compose",
-        "run",
-        "-e",
-        "SNOWFLAKE_FIDESCTL_PASSWORD",
-        "-e",
-        "REDSHIFT_FIDESCTL_PASSWORD",
-        "-e",
-        "AWS_ACCESS_KEY_ID",
-        "-e",
-        "AWS_SECRET_ACCESS_KEY",
-        "-e",
-        "AWS_DEFAULT_REGION",
-        "-e",
-        "OKTA_CLIENT_TOKEN",
-        "-e",
-        "BIGQUERY_CONFIG",
-        "--rm",
-        CI_ARGS,
-        IMAGE_NAME,
-        "pytest",
-        "-m",
-        "external",
-        "tests/ctl",
-    )
-    session.run(*run_command, external=True)
-
-
-@nox.session()
-def pytest_integration(session: nox.Session) -> None:
-    """Runs fidesops integration tests."""
-    session.notify("teardown")
-    run_infrastructure(
-        run_tests=True,
-        analytics_opt_out=True,
-        datastores=[],
-        pytest_path=OPS_TEST_DIR,
-    )
-
-
-@nox.session()
-def pytest_integration_external(session: nox.Session) -> None:
-    """Run all tests that rely on the third-party databases and services."""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        "docker",
-        "compose",
-        "run",
-        "-e",
-        "ANALYTICS_OPT_OUT",
-        "-e",
-        "REDSHIFT_TEST_URI",
-        "-e",
-        "SNOWFLAKE_TEST_URI",
-        "-e",
-        "REDSHIFT_TEST_DB_SCHEMA",
-        "-e",
-        "BIGQUERY_KEYFILE_CREDS",
-        "-e",
-        "BIGQUERY_DATASET",
-        "--rm",
-        CI_ARGS,
-        COMPOSE_SERVICE_NAME,
-        "pytest",
-        OPS_TEST_DIR,
-        "-m",
-        "integration_external",
-    )
-    session.run(*run_command, external=True)
-
-
-@nox.session()
-def pytest_saas(session: nox.Session) -> None:
-    """Run all saas tests that rely on the third-party databases and services."""
-    session.notify("teardown")
-    run_command = (
-        "docker-compose",
-        "run",
-        "-e",
-        "ANALYTICS_OPT_OUT",
-        "-e",
-        "VAULT_ADDR",
-        "-e",
-        "VAULT_NAMESPACE",
-        "-e",
-        "VAULT_TOKEN",
-        "--rm",
-        CI_ARGS,
-        COMPOSE_SERVICE_NAME,
-        "pytest",
-        OPS_TEST_DIR,
-        "-m",
-        "integration_saas",
-    )
-    session.run(*run_command, external=True)
+    if mark == "unit":
+        session.run(*START_APP, external=True)
+        run_command = (
+            *RUN_NO_DEPS,
+            "pytest",
+            OPS_TEST_DIR,
+            "-m",
+            "not integration and not integration_external and not integration_saas",
+        )
+        session.run(*run_command, external=True)
+    elif mark == "integration":
+        run_infrastructure(
+            run_tests=True,
+            analytics_opt_out=True,
+            datastores=[],
+            pytest_path=OPS_TEST_DIR,
+        )
+    elif mark == "external_datastores":
+        session.run(*START_APP, external=True)
+        run_command = (
+            "docker",
+            "compose",
+            "run",
+            "-e",
+            "ANALYTICS_OPT_OUT",
+            "-e",
+            "REDSHIFT_TEST_URI",
+            "-e",
+            "SNOWFLAKE_TEST_URI",
+            "-e",
+            "REDSHIFT_TEST_DB_SCHEMA",
+            "-e",
+            "BIGQUERY_KEYFILE_CREDS",
+            "-e",
+            "BIGQUERY_DATASET",
+            "--rm",
+            CI_ARGS,
+            COMPOSE_SERVICE_NAME,
+            "pytest",
+            OPS_TEST_DIR,
+            "-m",
+            "integration_external",
+        )
+        session.run(*run_command, external=True)
+    elif mark == "saas":
+        run_command = (
+            "docker-compose",
+            "run",
+            "-e",
+            "ANALYTICS_OPT_OUT",
+            "-e",
+            "VAULT_ADDR",
+            "-e",
+            "VAULT_NAMESPACE",
+            "-e",
+            "VAULT_TOKEN",
+            "--rm",
+            CI_ARGS,
+            COMPOSE_SERVICE_NAME,
+            "pytest",
+            OPS_TEST_DIR,
+            "-m",
+            "integration_saas",
+        )
+        session.run(*run_command, external=True)
 
 
 @nox.session()
