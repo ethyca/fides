@@ -1,4 +1,4 @@
-import { Box, Select, Spinner } from "@fidesui/react";
+import { Box, HStack, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -6,6 +6,7 @@ import { useFeatures } from "~/features/common/features.slice";
 import { useGetAllClassifyInstancesQuery } from "~/features/common/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
+import ApproveClassification from "./ApproveClassification";
 import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollection,
@@ -17,6 +18,7 @@ import {
   useGetDatasetByKeyQuery,
 } from "./dataset.slice";
 import DatasetFieldsTable from "./DatasetFieldsTable";
+import DatasetHeading from "./DatasetHeading";
 import EditCollectionDrawer from "./EditCollectionDrawer";
 import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
@@ -91,7 +93,9 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
 
   return (
     <Box>
-      <Box mb={4} display="flex" justifyContent="space-between">
+      <DatasetHeading />
+
+      <HStack mb={4} justifyContent="space-between">
         <Select
           onChange={handleChangeCollection}
           mr={2}
@@ -104,8 +108,9 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
             </option>
           ))}
         </Select>
-        <Box display="flex">
-          <Box mr={2}>
+        <ApproveClassification />
+        <HStack>
+          <Box>
             <ColumnDropdown
               allColumns={ALL_COLUMNS}
               selectedColumns={columns}
@@ -120,8 +125,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
               dispatch(setActiveEditor(EditableType.DATASET))
             }
           />
-        </Box>
-      </Box>
+        </HStack>
+      </HStack>
 
       <DatasetFieldsTable columns={columns} />
 

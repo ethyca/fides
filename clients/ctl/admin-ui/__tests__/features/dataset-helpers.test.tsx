@@ -1,11 +1,16 @@
 import {
   getUpdatedCollectionFromField,
+  getUpdatedDatasetFromClassifyDataset,
   getUpdatedDatasetFromCollection,
   getUpdatedDatasetFromField,
   removeCollectionFromDataset,
   removeFieldFromDataset,
 } from "~/features/dataset/helpers";
 import {
+  mockClassification,
+  mockClassifyCollection,
+  mockClassifyDataset,
+  mockClassifyField,
   mockDataset,
   mockDatasetCollection,
   mockDatasetField,
@@ -27,6 +32,7 @@ describe("dataset helpers", () => {
       );
       expect(updatedCollection.fields[0].name).toEqual(newName);
     });
+
     it("should update a dataset from a collection", () => {
       const newDescription = "updated description";
       const originalCollection = mockDatasetCollection();
@@ -42,6 +48,7 @@ describe("dataset helpers", () => {
       );
       expect(updatedDataset.collections[0].description).toEqual(newDescription);
     });
+
     it("should update a dataset from a field", () => {
       const newName = "a fancy email";
       const originalField = mockDatasetField({ name: "a regular email" });
@@ -69,7 +76,85 @@ describe("dataset helpers", () => {
         updatedDataset.collections[collectionIndex].fields[fieldIndex].name
       ).toEqual(newName);
     });
+
+    it("should update a Dataset from a ClassifyInstance", () => {
+      const originalDataset = mockDataset({
+        collections: [
+          mockDatasetCollection({
+            name: "users",
+            fields: [
+              // Field without data categories:
+              mockDatasetField({
+                name: "email",
+                data_categories: [],
+              }),
+              // Field with data categories:
+              mockDatasetField({
+                name: "state",
+                data_categories: ["system.operations"],
+              }),
+              // Field without a corresponding classify field:
+              mockDatasetField({
+                name: "shoe_size",
+                data_categories: [],
+              }),
+            ],
+          }),
+        ],
+      });
+      const classifyDataset = mockClassifyDataset({
+        collections: [
+          mockClassifyCollection({
+            name: "users",
+            fields: [
+              mockClassifyField({
+                name: "email",
+                classifications: [
+                  mockClassification({
+                    label: "user.contact",
+                    score: 0.75,
+                  }),
+                  mockClassification({
+                    label: "user.email",
+                    score: 0.95,
+                  }),
+                ],
+              }),
+              mockClassifyField({
+                name: "state",
+                classifications: [
+                  mockClassification({
+                    label: "user.address",
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      });
+
+      const updatedDataset = getUpdatedDatasetFromClassifyDataset(
+        originalDataset,
+        classifyDataset
+      );
+
+      // It should return a new object.
+      expect(updatedDataset).not.toBe(originalDataset);
+      // A field without any categories should be filled in with the high score suggestion.
+      expect(updatedDataset.collections[0].fields[0].data_categories).toEqual([
+        "user.email",
+      ]);
+      // A field that already has a category should be unchanged.
+      expect(updatedDataset.collections[0].fields[1].data_categories).toEqual([
+        "system.operations",
+      ]);
+      // A field that had no classification match should be unchanged.
+      expect(updatedDataset.collections[0].fields[2].data_categories).toEqual(
+        []
+      );
+    });
   });
+
   describe("removing from datasets", () => {
     it("should be able to remove a dataset field", () => {
       const deleteName = "remove me";
@@ -101,6 +186,7 @@ describe("dataset helpers", () => {
         )
       ).toHaveLength(0);
     });
+
     it("should be able to remove a dataset collection", () => {
       const deleteName = "remove me";
       const collection = mockDatasetCollection({ name: deleteName });
