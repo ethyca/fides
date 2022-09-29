@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.0...main)
 
+### Changed
+
+* Update fideslang to v1.3.1 [#1136](https://github.com/ethyca/fides/pull/1136)
+
 ## [1.9.0](https://github.com/ethyca/fides/compare/1.8.6...1.9.0) - 2022-09-29
 
 ### Added
