@@ -1,4 +1,3 @@
-
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__EXECUTION__"

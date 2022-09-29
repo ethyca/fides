@@ -25,6 +25,7 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
+from fides.ctl.core.api import db_action
 from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
@@ -58,7 +59,6 @@ from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
 from .fixtures.timescale_fixtures import *
-from fides.ctl.core.api import db_action
 
 logger = logging.getLogger(__name__)
 

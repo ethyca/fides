@@ -207,9 +207,8 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    # TODO: This is hanging and blocking webserver startup
-    # logger.info("Validating SaaS connector templates...")
-    # load_registry(registry_file)
+    logger.info("Validating SaaS connector templates...")
+    load_registry(registry_file)
 
     logger.info("Running Redis connection test...")
     try:
