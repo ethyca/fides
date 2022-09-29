@@ -392,13 +392,11 @@ describe("Dataset", () => {
       });
 
       // Two requests should be intercepted.
-      cy.wait("@postDataset").then((interception) => {
-        const generatedKeys = [];
-        generatedKeys.push(interception.request.body.fides_key);
-        cy.wait("@postDataset").then((interception2) => {
-          generatedKeys.push(interception2.request.body.fides_key);
-          expect(generatedKeys.sort()).to.eql(["generated-1", "generated-2"]);
-        });
+      cy.wait(["@postDataset", "@postDataset"]).then((interceptions) => {
+        const generatedKeys = interceptions.map(
+          (i) => i.request.body.fides_key
+        );
+        expect(generatedKeys.sort()).to.eql(["generated-1", "generated-2"]);
       });
 
       // Should navigate to the first created dataset.
