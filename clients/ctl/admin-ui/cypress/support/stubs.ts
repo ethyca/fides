@@ -33,12 +33,52 @@ export const stubSystemCrud = () => {
   });
 };
 
-export const stubPlusHealth = () => {
-  cy.intercept("GET", "/api/v1/plus/health", {
-    statusCode: 200,
-    body: {
-      status: "healthy",
-      core_fidesctl_version: "1.8",
-    },
-  }).as("getPlusHealth");
+export const stubDatasetCrud = () => {
+  // Dataset editing references taxonomy info, like data categories.
+  stubTaxonomyEntities();
+
+  // Create
+  cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
+    "postDataset"
+  );
+
+  // Read
+  cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
+    "getDatasets"
+  );
+  cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+    "getDataset"
+  );
+
+  // Update
+  cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+    "putDataset"
+  );
+
+  // Delete
+  cy.fixture("dataset.json").then((dataset) => {
+    cy.intercept("DELETE", "/api/v1/dataset/*", {
+      body: {
+        message: "resource deleted",
+        resource: dataset,
+      },
+    }).as("deleteDataset");
+  });
+};
+
+export const stubPlus = (available: boolean) => {
+  if (available) {
+    cy.intercept("GET", "/api/v1/plus/health", {
+      statusCode: 200,
+      body: {
+        status: "healthy",
+        core_fidesctl_version: "1.8",
+      },
+    }).as("getPlusHealth");
+  } else {
+    cy.intercept("GET", "/api/v1/plus/health", {
+      statusCode: 400,
+      body: {},
+    }).as("getPlusHealth");
+  }
 };

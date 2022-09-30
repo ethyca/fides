@@ -15,7 +15,19 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.1...main)
+
+## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
+
+### Changed
+
+* Update fideslang to v1.3.1 [#1136](https://github.com/ethyca/fides/pull/1136)
+
+### Changed
+
+* Update fideslang to v1.3.1 [#1136](https://github.com/ethyca/fides/pull/1136)
+
+## [1.9.0](https://github.com/ethyca/fides/compare/1.8.6...1.9.0) - 2022-09-29
 
 ### Added
 
@@ -25,6 +37,7 @@ The types of changes are:
   * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
   * Component for choosing data categories based on classification results. [#1110](https://github.com/ethyca/fides/pull/1110)
   * The dataset fields table shows data categories from the classifier (if available). [#1088](https://github.com/ethyca/fides/pull/1088)
+  * The "Approve" button can be used to update the dataset with the classifier's suggestions. [#1129](https://github.com/ethyca/fides/pull/1129)
 * System management UI:
   * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
   * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
@@ -33,6 +46,7 @@ The types of changes are:
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
   * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 * Cypress component testing [#1106](https://github.com/ethyca/fides/pull/1106)
+
 ### Changed
 
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
@@ -43,12 +57,23 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+* Fixed a bug in Data Category Dropdowns where checking i.e. `user.biometric` would also check `user.biometric_health` [#1126](https://github.com/ethyca/fides/pull/1126)
 
 ### Security
 
 * Upgraded pymysql to version `1.0.2` [#1094](https://github.com/ethyca/fides/pull/1094)
 
-## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5)
+## [1.8.6](https://github.com/ethyca/fides/compare/1.8.5...1.8.6) - 2022-09-28
+
+### Added
+
+* Added classification tables for Plus users [#1060](https://github.com/ethyca/fides/pull/1060)
+
+### Fixed
+
+* Fixed a bug where rows were being excluded from a data map [#1124](https://github.com/ethyca/fides/pull/1124)
+
+## [1.8.5](https://github.com/ethyca/fides/compare/1.8.4...1.8.5) - 2022-09-21
 
 ### Changed
 

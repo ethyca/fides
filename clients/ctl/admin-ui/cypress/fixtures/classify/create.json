@@ -1,8 +1,10 @@
 {
   "id": "classification-response",
-  "status": "In Work",
-  "datasets": {
-    "fides_key": "demo_users_dataset",
-    "collections": []
-  }
+  "datasets": [
+    {
+      "fides_key": "demo_users_dataset",
+      "status": "In Work",
+      "collections": []
+    }
+  ]
 }

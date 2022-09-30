@@ -1,20 +1,20 @@
 [
   {
     "id": "2",
-    "status": "In Work",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_2",
+        "status": "In Work",
         "collections": []
       }
     ]
   },
   {
     "id": "3",
-    "status": "Complete",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_3",
+        "status": "Complete",
         "collections": [
           {
             "name": "users",
@@ -38,10 +38,10 @@
   },
   {
     "id": "4",
-    "status": "Reviewed",
     "datasets": [
       {
         "fides_key": "demo_users_dataset_4",
+        "status": "Reviewed",
         "collections": [
           {
             "name": "users",
@@ -65,10 +65,10 @@
   },
   {
     "id": "classification_in_review",
-    "status": "Complete",
     "datasets": [
       {
         "fides_key": "dataset_in_review",
+        "status": "Complete",
         "collections": [
           {
             "name": "users",

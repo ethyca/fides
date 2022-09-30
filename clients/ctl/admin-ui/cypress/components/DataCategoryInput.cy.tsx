@@ -1,10 +1,9 @@
+import { stubPlus } from "cypress/support/stubs";
 import * as React from "react";
 
 import DataCategoryInput from "~/features/dataset/DataCategoryInput";
 import { MOCK_DATA_CATEGORIES } from "~/mocks/data";
 import { DataCategory } from "~/types/api";
-
-import { stubPlusHealth } from "../support/stubs";
 
 describe("DataCategoryInput", () => {
   it("can check a category", () => {
@@ -31,7 +30,7 @@ describe("DataCategoryInput", () => {
   });
 
   it("can render the classified version", () => {
-    stubPlusHealth();
+    stubPlus(true);
 
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     cy.mount(
