@@ -1,5 +1,5 @@
 """Script to create test data for the Admin UI"""
-
+import asyncio
 import string
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -10,8 +10,7 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
-from fides.ctl.core.config import get_config
-from fides.api.ops.db.database import init_db
+from fides.api.ctl.database.database import init_db
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -32,6 +31,9 @@ from fides.api.ops.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 def _create_policy(
@@ -268,7 +270,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    init_db(CONFIG.database.sqlalchemy_database_uri)
+    asyncio.run(init_db(CONFIG.database.sqlalchemy_database_uri))
     session_local = get_db_session(CONFIG)
     with session_local() as session:
         create_test_data(session)
