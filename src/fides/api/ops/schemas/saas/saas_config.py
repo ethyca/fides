@@ -252,6 +252,7 @@ class SaaSType(Enum):
     auth0 = "auth0"
     shopify = "shopify"
     mailchimp = "mailchimp"
+    marketo = "marketo"
     hubspot = "hubspot"
     outreach = "outreach"
     salesforce = "salesforce"

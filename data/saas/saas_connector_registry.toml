@@ -81,3 +81,9 @@ config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Rollbar"
+
+[marketo]
+config = "data/saas/config/marketo_config.yml"
+dataset = "data/saas/dataset/marketo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Marketo"
