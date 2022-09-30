@@ -2,6 +2,7 @@
 import nox
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
+from docker_nox import build
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
@@ -20,6 +21,8 @@ COMPOSE_DOWN = (
     "-f",
     "docker/docker-compose.integration-postgres.yml",
     "-f",
+    "docker/docker-compose.integration-timescale.yml",
+    "-f",
     "docker/docker-compose.integration-mssql.yml",
     "down",
     "--remove-orphans",
@@ -30,7 +33,10 @@ COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:
     """Seed test data in the Postgres application database."""
-    run_infrastructure(datastores=["postgres"], run_create_test_data=True)
+    session.notify("teardown")
+    build(session, "dev")
+    build(session, "ui")
+    run_infrastructure(run_create_test_data=True)
 
 
 @nox.session()
