@@ -1,16 +1,22 @@
 # Based on vercel/next.js example https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
+##############################
+## Install the dependencies ##
+##############################
 FROM node:16-alpine as deps
 
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-COPY package.json package-lock.json .
+COPY package.json package-lock.json ./
 RUN npm clean-install
 
 
-from node:16-alpine as builder
+###########################
+## Build the application ##
+###########################
+FROM node:16-alpine as builder
 
 WORKDIR /app
 
@@ -22,6 +28,9 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 
+##########################
+## Setup the prod image ##
+##########################
 FROM node:16-alpine as runner
 
 WORKDIR /app
