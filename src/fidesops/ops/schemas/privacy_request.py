@@ -231,7 +231,7 @@ class ConsentPreferences(BaseSchema):
 
 
 class ConsentPreferencesWithVerificationCode(BaseSchema):
-    """scheam for consent preferences including the verification code."""
+    """Schema for consent preferences including the verification code."""
 
     code: str
     consent: List[Consent]
