@@ -16,7 +16,7 @@ from fides.api.ops.common_exceptions import (
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
-from fides.api.ops.schemas.privacy_request import Identity
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import StorageDetails, StorageSecrets
 from fides.api.ops.schemas.third_party.onetrust import (

@@ -1,61 +1,89 @@
+# Because these modules are imported into the __init__.py and used elsewhere they need
+# to be explicitely exported in order to prevent implicit reexport errors in mypy.
+# This is done by importing "as": `from fides.module import MyClass as MyClass`.
+
 from typing import Any, Dict, Optional, Union
 
-from fides.api.ops.models.connectionconfig import ConnectionType
+from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionType
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
-    ConnectionConfigSecretsSchema,
+    ConnectionConfigSecretsSchema as ConnectionConfigSecretsSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
-    BigQueryDocsSchema,
-    BigQuerySchema,
+    BigQueryDocsSchema as BigQueryDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_bigquery import (
+    BigQuerySchema as BigQuerySchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
-    EmailDocsSchema,
-    EmailSchema,
+    EmailDocsSchema as EmailDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_email import (
+    EmailSchema as EmailSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_manual_webhook import (
-    ManualWebhookSchema,
-    ManualWebhookSchemaforDocs,
+    ManualWebhookSchema as ManualWebhookSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_manual_webhook import (
+    ManualWebhookSchemaforDocs as ManualWebhookSchemaforDocs,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
-    MariaDBDocsSchema,
-    MariaDBSchema,
+    MariaDBDocsSchema as MariaDBDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mariadb import (
+    MariaDBSchema as MariaDBSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
-    MongoDBDocsSchema,
-    MongoDBSchema,
+    MongoDBDocsSchema as MongoDBDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mongodb import (
+    MongoDBSchema as MongoDBSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mssql import (
-    MicrosoftSQLServerSchema,
-    MSSQLDocsSchema,
+    MicrosoftSQLServerSchema as MicrosoftSQLServerSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mssql import (
+    MSSQLDocsSchema as MSSQLDocsSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
-    MySQLDocsSchema,
-    MySQLSchema,
+    MySQLDocsSchema as MySQLDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_mysql import (
+    MySQLSchema as MySQLSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_postgres import (
-    PostgreSQLDocsSchema,
-    PostgreSQLSchema,
+    PostgreSQLDocsSchema as PostgreSQLDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_postgres import (
+    PostgreSQLSchema as PostgreSQLSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
-    RedshiftDocsSchema,
-    RedshiftSchema,
+    RedshiftDocsSchema as RedshiftDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_redshift import (
+    RedshiftSchema as RedshiftSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
-    SaaSSchema,
-    SaaSSchemaFactory,
+    SaaSSchema as SaaSSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
+    SaaSSchemaFactory as SaaSSchemaFactory,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
-    SnowflakeDocsSchema,
-    SnowflakeSchema,
+    SnowflakeDocsSchema as SnowflakeDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_snowflake import (
+    SnowflakeSchema as SnowflakeSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_timescale import (
-    TimescaleDocsSchema,
-    TimescaleSchema,
+    TimescaleDocsSchema as TimescaleDocsSchema,
+)
+from fides.api.ops.schemas.connection_configuration.connection_secrets_timescale import (
+    TimescaleSchema as TimescaleSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connections_secrets_https import (
-    HttpsSchema,
+    HttpsSchema as HttpsSchema,
 )
-from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_validators: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,

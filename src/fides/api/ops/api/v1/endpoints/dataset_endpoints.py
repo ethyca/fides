@@ -35,7 +35,8 @@ from fides.api.ops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fides.api.ops.graph.traversal import DatasetGraph, Traversal
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.models.datasetconfig import (
     DatasetConfig,

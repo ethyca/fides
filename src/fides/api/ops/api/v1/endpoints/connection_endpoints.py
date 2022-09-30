@@ -38,7 +38,11 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.connectionconfig import (
+    ConnectionConfig,
+    ConnectionTestStatus,
+    ConnectionType,
+)
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
@@ -53,7 +57,6 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
-    ConnectionTestStatus,
     TestStatusMessage,
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey

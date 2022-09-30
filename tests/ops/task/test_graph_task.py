@@ -1,4 +1,3 @@
-import dask
 import pytest
 from bson import ObjectId
 

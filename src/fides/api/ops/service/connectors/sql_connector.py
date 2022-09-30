@@ -17,7 +17,7 @@ from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.ops.common_exceptions import ConnectionException
-from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -45,6 +45,7 @@ from fides.api.ops.service.connectors.query_config import (
     SnowflakeQueryConfig,
     SQLQueryConfig,
 )
+from fides.api.ops.util.collection_util import Row
 
 logger = logging.getLogger(__name__)
 
