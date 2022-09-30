@@ -18,7 +18,7 @@ class LoggingSettings(FidesSettings):
 
     # Logging
     destination: str = ""
-    level: Union[int, str] = "INFO"
+    level: str = "INFO"
     serialization: str = ""
 
     @validator("destination", pre=True)

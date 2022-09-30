@@ -28,6 +28,10 @@ class DatabaseUnavailableError(HTTPException):
         )
 
 
+class FidesError(Exception):
+    """General fides exception"."""
+
+
 class NotFoundError(HTTPException):
     """
     To be raised when a requested resource does not exist in the database.

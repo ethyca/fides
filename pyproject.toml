@@ -10,7 +10,6 @@ disallow_untyped_defs = true
 files = ["src"]
 exclude = ["migrations/"]
 no_implicit_reexport = true
-ignore_missing_imports = true
 plugins = ["pydantic.mypy", "sqlmypy"]
 pretty = true
 show_error_codes = true
@@ -24,8 +23,12 @@ warn_required_dynamic_aliases = true
 warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
-module= "src.fides._version"
+module= "fides._version"
 ignore_errors=true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = [
@@ -36,16 +39,20 @@ module = [
   "bson.*",
   "celery.*",
   "dask.*",
+  "deepdiff.*",
   "fideslang.*",
   "fideslib.*",
   "fideslog.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "okta.*",
   "pandas.*",
+  "plotly.*",
   "pydash.*",
   "pymongo.*",
   "snowflake.*",
+  "sqlalchemy.ext.*",
   "sqlalchemy_utils.*",
   "uvicorn.*"
 ]
