@@ -172,5 +172,5 @@ After the configuration is updated the docker image can be run using your custom
 directory name to match the name you used) start the docker container:
 
 ```
-docker run --rm -v $(pwd)/config:/app/config -p 3000:3000 ethyca/fides-privacy-center:latest`.
+docker run --rm -v $(pwd)/config:/app/config -p 3000:3000 ethyca/fides-privacy-center:latest
 ```
