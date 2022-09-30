@@ -41,6 +41,7 @@ from fides.api.ctl.ui import (
     get_path_to_admin_ui_file,
     match_route,
 )
+from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.analytics import (
     accessed_through_local_host,
@@ -206,7 +207,10 @@ async def setup_server() -> None:
         )
         CONFIG.log_all_config_values()
 
-    await configure_db(CONFIG.database.sync_database_uri)
+    if not CONFIG.database.sync_database_uri:
+        raise FidesError("No database uri provided")
+
+    await configure_db(str(CONFIG.database.sync_database_uri))
 
     logger.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
