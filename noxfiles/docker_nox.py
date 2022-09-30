@@ -38,17 +38,27 @@ def build(session: nox.Session, image: str) -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
-    target = build_matrix[image]["target"]
-    tag = build_matrix[image]["tag"]
-    session.run(
-        "docker",
-        "build",
-        f"--target={target}",
-        "--tag",
-        tag(),
-        ".",
-        external=True,
-    )
+    if image == "pc":
+        session.run(
+            "docker",
+            "build",
+            "clients/ops/privacy-center",
+            "--tag",
+            "ethyca/fides-privacy-center:local",
+            external=True,
+        )
+    else:
+        target = build_matrix[image]["target"]
+        tag = build_matrix[image]["tag"]
+        session.run(
+            "docker",
+            "build",
+            f"--target={target}",
+            "--tag",
+            tag(),
+            ".",
+            external=True,
+        )
 
 
 @nox.session()
