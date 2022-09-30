@@ -17,6 +17,7 @@ RUN npm run export
 #############
 ## Backend ##
 #############
+# Don't force the platform by default
 FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-bullseye as backend
 
 # Install auxiliary software
