@@ -27,6 +27,9 @@ services:
       FIDES__REDIS__ENABLED: "True"
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      VAULT_ADDR: ${VAULT_ADDR}
+      VAULT_NAMESPACE: ${VAULT_NAMESPACE}
+      VAULT_TOKEN: ${VAULT_TOKEN}
     volumes:
       - type: bind
         source: .
