@@ -57,7 +57,7 @@ const ClassifiedDataCategoryDropdown = ({
     })
     .map((c) => {
       const confidence =
-        c.confidence === undefined ? "N/A" : `${c.confidence}%`;
+        c.confidence === undefined ? "N/A" : `${c.confidence.toFixed()}%`;
       return {
         label: `${c.fides_key} (${confidence})`,
         value: c.fides_key,
