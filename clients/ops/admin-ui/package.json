@@ -43,6 +43,7 @@
     "react-dom": "^17.0.2",
     "react-feature-flags": "^1.0.0",
     "react-redux": "^7.2.6",
+    "redux-persist": "^6.0.0",
     "whatwg-fetch": "^3.6.2",
     "yup": "^0.32.11"
   },
