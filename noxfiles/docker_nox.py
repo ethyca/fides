@@ -1,5 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import nox
+import platform
 
 from constants_nox import (
     IMAGE,
@@ -28,6 +29,8 @@ def get_current_image() -> str:
 )
 def build(session: nox.Session, image: str) -> None:
     """Build the Docker containers."""
+    machine_type = platform.machine().lower()
+    docker_platforms = {"amd64": "linux/amd64", "mac": "arm64"}
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -43,6 +46,8 @@ def build(session: nox.Session, image: str) -> None:
         "docker",
         "build",
         f"--target={target}",
+        "--build-arg",
+        docker_platforms[machine_type],
         "--tag",
         tag(),
         ".",
