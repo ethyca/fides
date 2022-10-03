@@ -33,11 +33,9 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
 
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
-        # If Fidesops is running in test mode, it's OK to show
-        # parameters inside queries for debugging purposes. By
-        # default we assume that Fidesops is not running in test
-        # mode.
-        self.hide_parameters = not CONFIG.test_mode
+        # If Fidesops is running in dev mode, it's OK to show
+        # parameters inside queries for debugging purposes.
+        self.hide_parameters = not CONFIG.dev_mode
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod
