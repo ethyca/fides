@@ -1,9 +1,10 @@
-import { stubPlus } from "cypress/support/stubs";
 import * as React from "react";
 
 import DataCategoryInput from "~/features/dataset/DataCategoryInput";
 import { MOCK_DATA_CATEGORIES } from "~/mocks/data";
 import { DataCategory } from "~/types/api";
+
+import { stubPlus } from "../support/stubs";
 
 describe("DataCategoryInput", () => {
   it("can check a category", () => {
