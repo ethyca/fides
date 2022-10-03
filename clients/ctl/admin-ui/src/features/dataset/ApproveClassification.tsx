@@ -5,9 +5,8 @@ import { useSelector } from "react-redux";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   ClassifyStatusEnum,
-  selectActiveClassifyInstance,
+  selectActiveClassifyDataset,
   selectClassifyInstanceCollection,
-  selectClassifyInstanceDataset,
   useUpdateClassifyInstanceMutation,
 } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -17,8 +16,7 @@ import { getUpdatedDatasetFromClassifyDataset } from "./helpers";
 
 const ApproveClassification = () => {
   const dataset = useSelector(selectActiveDataset);
-  const classifyInstance = useSelector(selectActiveClassifyInstance);
-  const classifyDataset = useSelector(selectClassifyInstanceDataset);
+  const classifyDataset = useSelector(selectActiveClassifyDataset);
   const classifyCollection = useSelector(selectClassifyInstanceCollection);
 
   const [updateDataset, { isLoading: datasetIsLoading }] =
@@ -39,7 +37,7 @@ const ApproveClassification = () => {
   );
 
   const handleApprove = async () => {
-    if (isLoading || !(dataset && classifyInstance && classifyDataset)) {
+    if (isLoading || !(dataset && classifyDataset)) {
       return;
     }
 

@@ -5,11 +5,11 @@ import { useSelector } from "react-redux";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import {
   ClassifyStatusEnum,
-  selectClassifyInstanceDataset,
+  selectActiveClassifyDataset,
 } from "~/features/common/plus.slice";
 
 const DatasetHeading = () => {
-  const classifyDataset = useSelector(selectClassifyInstanceDataset);
+  const classifyDataset = useSelector(selectActiveClassifyDataset);
   const status = classifyDataset?.status ?? ClassifyStatusEnum.REVIEWED;
 
   const fieldCount = useMemo(

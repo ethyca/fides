@@ -111,6 +111,10 @@ export const plusApi = createApi({
       query: () => `classify/`,
       providesTags: ["ClassifyInstances"],
     }),
+    getClassifyDataset: build.query<ClassificationResponse, string>({
+      query: (dataset_fides_key: string) => `classify/${dataset_fides_key}`,
+      providesTags: ["ClassifyInstances"],
+    }),
   }),
 });
 
@@ -118,6 +122,7 @@ export const {
   useGetHealthQuery,
   useCreateClassifyInstanceMutation,
   useGetAllClassifyInstancesQuery,
+  useGetClassifyDatasetQuery,
   useUpdateClassifyInstanceMutation,
 } = plusApi;
 
@@ -150,21 +155,23 @@ export const selectClassifyInstanceMap = createSelector(
 );
 
 /**
- * ClassifyInstance selectors that parallel the dataset's structure. These used the
- * cached getAllClassifyInstances response state, as well as the "active" dataset according
- * to the dataset feature's state.
+ * This is the root of ClassifyInstance selectors that parallel the dataset's structure. These used
+ * the cached getClassifyDataset response state, which is a query using  the "active" dataset's
+ * fides_key.
  */
-export const selectClassifyInstanceDataset = createSelector(
-  [selectClassifyDatasetMap, selectActiveDatasetFidesKey],
-  (classifyDatasetMap, fidesKey) =>
-    classifyDatasetMap && fidesKey
-      ? classifyDatasetMap.get(fidesKey)
+export const selectActiveClassifyDataset = createSelector(
+  // The endpoint `select` utility returns a function that runs on the root state.
+  [(state) => state, selectActiveDatasetFidesKey],
+  (state, fidesKey) =>
+    fidesKey
+      ? plusApi.endpoints.getClassifyDataset.select(fidesKey)(state)?.data
+          ?.datasets?.[0]
       : undefined
 );
 
 const emptyCollectionMap: Map<string, ClassifyCollection> = new Map();
 export const selectClassifyInstanceCollectionMap = createSelector(
-  selectClassifyInstanceDataset,
+  selectActiveClassifyDataset,
   (classifyInstance) =>
     classifyInstance?.collections
       ? new Map(classifyInstance.collections.map((c) => [c.name, c]))
