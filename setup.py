@@ -36,26 +36,16 @@ def optional_requirements(dependency_names: List[str]) -> List[str]:
 
 # Human-Readable Extras
 # Versions are read from corresponding lines in `optional-requirements.txt`
-aws = optional_requirements(["boto3"])
-bigquery = optional_requirements(["sqlalchemy-bigquery"])
-mongo = optional_requirements(["pymongo"])
-mssql = optional_requirements(["pyodbc"])
-mysql = optional_requirements(["PyMySQL"])
-okta = optional_requirements(["okta"])
-redis = optional_requirements(["redis", "fastapi-caching[redis]"])
-redshift = optional_requirements(["sqlalchemy-redshift"])
-snowflake = optional_requirements(["snowflake-sqlalchemy"])
-
 extras = {
-    "aws": aws,
-    "bigquery": bigquery,
-    "mongo": mongo,
-    "mssql": mssql,
-    "mysql": mysql,
-    "okta": okta,
-    "redis": redis,
-    "redshift": redshift,
-    "snowflake": snowflake,
+    "aws": optional_requirements(["boto3"]),
+    "bigquery": optional_requirements(["sqlalchemy-bigquery"]),
+    "mongo": optional_requirements(["pymongo"]),
+    "mssql": optional_requirements(["pyodbc"]),
+    "mysql": optional_requirements(["PyMySQL"]),
+    "okta": optional_requirements(["okta"]),
+    "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),
+    "redshift": optional_requirements(["sqlalchemy-redshift"]),
+    "snowflake": optional_requirements(["snowflake-sqlalchemy"]),
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(
