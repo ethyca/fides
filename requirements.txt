@@ -11,6 +11,7 @@ fastapi[all]==0.82.0
 fideslang==1.2.0
 fideslib==3.1.4
 fideslog==1.2.3
+firebase-admin==5.3.0
 hvac==0.11.2
 Jinja2==3.1.2
 multidimensional_urlencode==0.0.4

@@ -43,6 +43,7 @@ The types of changes are:
 * Add authenticated route to get consent preferences [#1402](https://github.com/ethyca/fidesops/pull/1402)
 * Access and erasure support for Braze [#1248](https://github.com/ethyca/fidesops/pull/1248)
 * Admin UI: Persist Redux store to localStorage [#1401](https://github.com/ethyca/fidesops/pull/1409)
+* Access and update support for Firebase Auth [#1339](https://github.com/ethyca/fidesops/pull/1399)
 
 ### Removed
 

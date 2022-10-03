@@ -1,0 +1,48 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Firebase Auth SaaS Config
+  type: firebase_auth
+  description: A sample schema representing the Firebase Auth connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: https://identitytoolkit.googleapis.com
+    - name: type
+      default_value: service_account
+    - name: project_id
+    - name: private_key_id
+    - name: private_key
+    - name: client_email
+    - name: client_id
+    - name: auth_uri
+      default_value: https://accounts.google.com/o/oauth2/auth
+    - name: token_uri
+      default_value: https://oauth2.googleapis.com/token
+    - name: auth_provider_x509_cert_url
+      default_value: https://www.googleapis.com/oauth2/v1/certs
+    - name: client_x509_cert_url
+
+
+  client_config:
+    protocol: NOT_USED
+    host: NOT_USED
+
+  test_request:
+    method: POST
+    path: /v1/accounts:createAuthUri
+
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          request_override: firebase_auth_user_access
+          param_values:
+            - name: email
+              identity: email
+        update:
+          request_override: firebase_auth_user_update
+          param_values:
+            - name: email
+              identity: email
