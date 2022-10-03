@@ -71,7 +71,7 @@ WORKDIR /fides
 ENV PYTHONUNBUFFERED=TRUE
 
 # Reset the busted git cache
-RUN git rm --cached -r .
+RUN git rm --cached -rf .
 RUN git reset --hard
 
 # Enable detection of running within Docker
