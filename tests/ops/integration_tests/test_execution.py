@@ -30,6 +30,8 @@ from ..service.privacy_request.request_runner_service_test import (
     get_privacy_request_results,
 )
 
+CONFIG = get_config()
+
 
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
     return [
@@ -134,7 +136,7 @@ class TestDeleteCollection:
             Delete the mongo connection in a separate session, for testing purposes, while the privacy request
             is in progress. Arbitrarily hooks into the log_start method to do this.
             """
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             new_session = SessionLocal()
             try:
                 reloaded_config = new_session.query(ConnectionConfig).get(
@@ -405,7 +407,7 @@ class TestSkipDisabledCollection:
             in a new session, to mimic the ConnectionConfig being disabled by a separate request while request
             is in progress.
             """
-            SessionLocal = get_db_session(config)
+            SessionLocal = get_db_session(CONFIG)
             new_session = SessionLocal()
             reloaded_config = new_session.query(ConnectionConfig).get(
                 mongo_connection_config.id
