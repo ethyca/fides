@@ -30,7 +30,7 @@ def get_current_image() -> str:
 def build(session: nox.Session, image: str) -> None:
     """Build the Docker containers."""
     machine_type = platform.machine().lower()
-    docker_platforms = {"amd64": "linux/amd64", "mac": "arm64"}
+    docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
