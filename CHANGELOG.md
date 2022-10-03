@@ -16,7 +16,10 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.7.2...main)
+## [Unreleased](https://github.com/ethyca/fidesops/compare/1.8.1...main)
+
+
+## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
 ### Changed
 
