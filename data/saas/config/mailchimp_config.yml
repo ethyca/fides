@@ -3,7 +3,7 @@ saas_config:
   name: Mailchimp SaaS Config
   type: mailchimp
   description: A sample schema representing the Mailchimp connector for Fidesops
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
