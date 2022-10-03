@@ -69,11 +69,8 @@ export interface ClassificationResponse {
   datasets: ClassifyDataset[];
 }
 export interface ClassifyInstanceUpdateRequest {
-  id: string;
-  datasets: Array<{
-    fides_key: string;
-    status: ClassifyStatusEnum;
-  }>;
+  dataset_fides_key: string;
+  status: ClassifyStatusEnum;
 }
 
 export const plusApi = createApi({

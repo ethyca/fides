@@ -55,13 +55,8 @@ const ApproveClassification = () => {
       }
 
       const statusResult = await updateClassifyInstance({
-        id: classifyInstance?.id,
-        datasets: [
-          {
-            fides_key: dataset.fides_key,
-            status: ClassifyStatusEnum.REVIEWED,
-          },
-        ],
+        dataset_fides_key: dataset.fides_key,
+        status: ClassifyStatusEnum.REVIEWED,
       });
       if (isErrorResult(statusResult)) {
         toast(errorToastParams(getErrorMessage(statusResult.error)));
