@@ -66,6 +66,9 @@ export const stubDatasetCrud = () => {
   });
 };
 
+export const CONNECTION_STRING =
+  "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
+
 export const stubPlus = (available: boolean) => {
   if (available) {
     cy.intercept("GET", "/api/v1/plus/health", {

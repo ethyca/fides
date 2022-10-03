@@ -1,7 +1,11 @@
-import { stubDatasetCrud, stubPlus } from "cypress/support/stubs";
+import {
+  CONNECTION_STRING,
+  stubDatasetCrud,
+  stubPlus,
+} from "cypress/support/stubs";
 
 import {
-  ClassifyInstance,
+  ClassificationResponse,
   ClassifyStatusEnum,
 } from "~/features/common/plus.slice";
 
@@ -33,9 +37,7 @@ describe("Datasets with Fides Classify", () => {
       // Fill out the form.
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
-      cy.getByTestId("input-url").type(
-        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
-      );
+      cy.getByTestId("input-url").type(CONNECTION_STRING);
       cy.getByTestId("create-dataset-btn").click();
 
       // A modal opens to confirm the classify request.
@@ -54,7 +56,17 @@ describe("Datasets with Fides Classify", () => {
 
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.wait("@postClassify");
+      cy.wait("@postClassify").then((interception) => {
+        expect(
+          interception.request.body.schema_config.generate.config
+            .connection_string
+        ).to.eql(CONNECTION_STRING);
+        expect(interception.request.body.datasets).to.eql([
+          { fides_key: "public", name: "public" },
+        ]);
+      });
+
+      // The dataset query should be re-fetched.
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
@@ -91,6 +103,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
+      cy.intercept("GET", "/api/v1/plus/classify/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
     });
 
     /**
@@ -119,7 +134,7 @@ describe("Datasets with Fides Classify", () => {
     it("Shows the classifiers field suggestions", () => {
       cy.visit("/dataset/dataset_in_review");
       cy.wait("@getDataset");
-      cy.wait("@getClassifyList");
+      cy.wait("@getClassify");
 
       cy.getByTestId("dataset-fields-table");
 
@@ -148,6 +163,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
+      cy.intercept("GET", "/api/v1/plus/classify/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
 
       cy.intercept("PUT", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
@@ -160,21 +178,18 @@ describe("Datasets with Fides Classify", () => {
     it("Updates blank fields with top classifications", () => {
       cy.visit("/dataset/dataset_in_review");
       cy.wait("@getDataset");
-      cy.wait("@getClassifyList");
+      cy.wait("@getClassify");
 
       // The button triggers a chain of requests that will modify the classify list response.
-      // TODO(#1120): When the APIs are locked in, the list request will be replaced with a
-      // get-by-fides-key request, and the PUT requests can have assertions about their content.
-      cy.fixture("classify/list.json").then((instances) => {
-        const instance: ClassifyInstance = instances.find(
-          (ci: ClassifyInstance) => ci.id === "classification_in_review"
-        );
-        instance.datasets[0].status = ClassifyStatusEnum.REVIEWED;
+      cy.fixture("classify/get-in-review.json").then(
+        (draftInstance: ClassificationResponse) => {
+          draftInstance.datasets[0].status = ClassifyStatusEnum.REVIEWED;
 
-        cy.intercept("GET", "/api/v1/plus/classify", {
-          body: instances,
-        }).as("getClassifyList");
-      });
+          cy.intercept("GET", "/api/v1/plus/classify/*", {
+            body: draftInstance,
+          }).as("getClassify");
+        }
+      );
 
       cy.getByTestId("approve-classification-btn")
         .should("be.enabled")
@@ -185,8 +200,8 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@putDataset");
       cy.wait("@putClassify");
 
-      // The instances should be re-fetched.
-      cy.wait("@getClassifyList");
+      // The instance should be re-fetched.
+      cy.wait("@getClassify");
 
       // The updated status should make the button disappear.
       cy.getByTestId("approve-classification-btn").should("not.exist");
