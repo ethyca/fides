@@ -20,11 +20,18 @@ optional_requires = (
 
 
 def optional_requirements(dependency_names: List[str]) -> List[str]:
+    """
+    Matches the provided dependency names to lines in `optional-requirements.txt`,
+    and returns the full dependency string for each one.
+
+    Prevents the need to store version numbers in two places.
+    """
+
     requirements: List[str] = []
 
     for dependency in dependency_names:
         for optional_dependency in optional_requires:
-            if dependency in optional_dependency:
+            if optional_dependency.startswith(dependency):
                 requirements.append(optional_dependency)
                 break
 
