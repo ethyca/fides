@@ -35,6 +35,7 @@ The types of changes are:
   * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
   * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
   * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
+  * Component for choosing data categories based on classification results. [#1110](https://github.com/ethyca/fides/pull/1110)
   * The dataset fields table shows data categories from the classifier (if available). [#1088](https://github.com/ethyca/fides/pull/1088)
   * The "Approve" button can be used to update the dataset with the classifier's suggestions. [#1129](https://github.com/ethyca/fides/pull/1129)
 * System management UI:
