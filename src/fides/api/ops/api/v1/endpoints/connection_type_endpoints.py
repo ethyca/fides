@@ -22,7 +22,7 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
     SystemType,
 )
-from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSType
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     load_registry,
@@ -71,14 +71,14 @@ def get_connection_types(
             ]
         )
     if system_type == SystemType.saas or system_type is None:
+        registry: ConnectorRegistry = load_registry(registry_file)
         saas_types: List[str] = sorted(
             [
-                saas_type.value
-                for saas_type in SaaSType
-                if saas_type != SaaSType.custom and is_match(saas_type.value)
+                saas_type
+                for saas_type in registry.connector_types()
+                if saas_type != "custom" and is_match(saas_type)
             ]
         )
-        registry: ConnectorRegistry = load_registry(registry_file)
 
         for item in saas_types:
             human_readable_name: str = item
