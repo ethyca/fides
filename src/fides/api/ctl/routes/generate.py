@@ -9,14 +9,14 @@ from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
 
-from fides.api.ctl.routes.crud import get_resource
+from fides.api.ctl.database.crud import get_resource
 from fides.api.ctl.routes.util import (
     API_PREFIX,
     route_requires_aws_connector,
     route_requires_bigquery_connector,
     route_requires_okta_connector,
 )
-from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.ctl.connectors.models import (
     AWSConfig,
@@ -144,7 +144,7 @@ async def generate(
             )
         elif generate_request_payload.generate.target.lower() == "db":
             generate_results = generate_db(
-                db_config=generate_request_payload.generate.config,
+                db_config=generate_request_payload.generate.config,  # type: ignore[arg-type]
             )
         elif generate_request_payload.generate.target.lower() == "okta":
             generate_results = await generate_okta(
