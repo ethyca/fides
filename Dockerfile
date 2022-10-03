@@ -1,7 +1,10 @@
 # Pin to 3.10.6 to avoid a mypy error in 3.10.7
 # If you update this, also update `DEFAULT_PYTHON_VERSION`
 # in the GitHub workflow files
-ARG PYTHON_VERSION=3.10.6
+ARG PYTHON_VERSION="3.10.6"
+ARG PLATFORM="linux/amd64"
+
+
 
 ##############
 ## Frontend ##
@@ -18,7 +21,7 @@ RUN npm run export
 ## Backend ##
 #############
 # Don't force the platform by default
-FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-bullseye as backend
+FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as backend
 
 # Install auxiliary software
 RUN apt-get update && \
