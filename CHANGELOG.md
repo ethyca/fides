@@ -40,6 +40,7 @@ The types of changes are:
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
+* Update all fidesops/fidesctl logos to use the default Fides logo [#1149](https://github.com/ethyca/fides/pull/1158)
 
 ### Security
 

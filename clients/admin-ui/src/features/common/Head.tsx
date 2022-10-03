@@ -3,7 +3,7 @@ import React from "react";
 
 const FidesHead = () => (
   <Head>
-    <title>fidesops</title>
+    <title>Fides</title>
     <meta name="description" content="admin ui" />
     <link rel="icon" href="/clients/admin-ui/public/favicon.ico" />
   </Head>
