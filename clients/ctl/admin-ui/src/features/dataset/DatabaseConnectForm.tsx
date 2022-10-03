@@ -9,7 +9,7 @@ import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
-  ClassifyInstance,
+  ClassifyInstanceValues,
   useCreateClassifyInstanceMutation,
 } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -136,16 +136,21 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        classifyInstance: ClassifyInstance;
+        classifyInstances: ClassifyInstanceValues[];
       }
   > => {
     const result = await classifyMutation({
-      organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-      datasets: datasets.map(({ fides_key }) => ({ fides_key })),
-      generate: {
-        config: { connection_string: values.url },
-        target: ValidTargets.DB,
-        type: GenerateTypes.DATASETS,
+      datasets: datasets.map(({ name, fides_key }) => ({
+        fides_key,
+        name,
+      })),
+      schema_config: {
+        organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+        generate: {
+          config: { connection_string: values.url },
+          target: ValidTargets.DB,
+          type: GenerateTypes.DATASETS,
+        },
       },
     });
 
@@ -156,7 +161,7 @@ const DatabaseConnectForm = () => {
     }
 
     return {
-      classifyInstance: result.data,
+      classifyInstances: result.data.classify_instances,
     };
   };
 

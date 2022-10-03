@@ -6,7 +6,7 @@ import {
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
-import { Generate } from "~/types/api";
+import { GenerateRequestPayload } from "~/types/api";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -17,12 +17,12 @@ interface HealthResponse {
  * These interfaces will be replaced with the OpenAPI generated models when the backend is ready.
  */
 export interface ClassifyInstanceRequest {
-  organization_key: string;
   // Array of objects because we might need to match by more DB info than just the fides_key.
   datasets: Array<{
     fides_key: string;
+    name?: string;
   }>;
-  generate: Generate;
+  schema_config: GenerateRequestPayload;
 }
 
 // TODO(ssangervasi): Resolves the assumptions commented below when the API is done.
@@ -55,12 +55,19 @@ export enum ClassifyStatusEnum {
   // Name TBD by the backend.
   REVIEWED = "Reviewed",
 }
-export interface ClassifyInstance {
-  // ClassifyInstances probably have a UID not a key
+export interface ClassifyInstanceValues {
   id: string;
+  status: ClassifyStatusEnum;
+  organization_fides_key: string;
+  dataset_fides_key: string;
+  dataset_name: string;
+}
+export interface ClassifyDatasetResponse {
+  classify_instances: ClassifyInstanceValues[];
+}
+export interface ClassificationResponse {
   datasets: ClassifyDataset[];
 }
-
 export interface ClassifyInstanceUpdateRequest {
   id: string;
   datasets: Array<{
@@ -83,7 +90,7 @@ export const plusApi = createApi({
      * Fidescls endpoints:
      */
     createClassifyInstance: build.mutation<
-      ClassifyInstance,
+      ClassifyDatasetResponse,
       ClassifyInstanceRequest
     >({
       query: (body) => ({
@@ -93,18 +100,17 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["ClassifyInstances"],
     }),
-    updateClassifyInstance: build.mutation<
-      ClassifyInstance,
-      ClassifyInstanceUpdateRequest
-    >({
-      query: (body) => ({
-        url: `classify/`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: ["ClassifyInstances"],
-    }),
-    getAllClassifyInstances: build.query<ClassifyInstance[], void>({
+    updateClassifyInstance: build.mutation<void, ClassifyInstanceUpdateRequest>(
+      {
+        query: (body) => ({
+          url: `classify/`,
+          method: "PUT",
+          body,
+        }),
+        invalidatesTags: ["ClassifyInstances"],
+      }
+    ),
+    getAllClassifyInstances: build.query<ClassifyInstanceValues[], void>({
       query: () => `classify/`,
       providesTags: ["ClassifyInstances"],
     }),
@@ -123,7 +129,7 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
-const emptyClassifyInstances: ClassifyInstance[] = [];
+const emptyClassifyInstances: ClassifyInstanceValues[] = [];
 export const selectClassifyInstances = createSelector(
   plusApi.endpoints.getAllClassifyInstances.select(),
   ({ data: instances }) => instances ?? emptyClassifyInstances
