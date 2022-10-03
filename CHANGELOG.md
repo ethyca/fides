@@ -37,6 +37,10 @@ The types of changes are:
 * Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
 * Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
 
+### Developer Experience
+
+* Optional dependencies may have their version defined only once, in `optional-requirements.txt` [#1171](https://github.com/ethyca/fides/pull/1171)
+
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
