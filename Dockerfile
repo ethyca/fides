@@ -1,6 +1,5 @@
 # Pin to 3.10.6 to avoid a mypy error in 3.10.7
-# If you update this, also update `DEFAULT_PYTHON_VERSION`
-# in the GitHub workflow files
+# If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
 ARG PYTHON_VERSION="3.10.6"
 ARG PLATFORM="linux/amd64"
 
@@ -17,23 +16,49 @@ COPY clients/admin-ui/ .
 RUN npm install
 RUN npm run export
 
-#############
-## Backend ##
-#############
-# Don't force the platform by default
-FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as backend
+#########################
+## Compile Python Deps ##
+#########################
+FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as compile_image
 
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    git \
-    make \
-    vim \
-    curl \
     g++ \
     gnupg \
     gcc \
-    python3-wheel \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python Dependencies
+COPY optional-requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r optional-requirements.txt
+
+COPY dev-requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+
+COPY requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
+
+##################
+## Backend Base ##
+##################
+FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as backend
+
+# Loads compiled requirements and adds the to the path
+COPY --from=compile_image /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+
+# These are all required for MSSQL
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    apt-transport-https \
+    curl \
+    git \
+    gnupg \
+    unixodbc-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,28 +71,11 @@ RUN : \
     && apt-get update \
     && apt-get install \
     -y --no-install-recommends \
-    apt-transport-https \
-    unixodbc-dev \
     mssql-tools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-#########################
-## Python Dependencies ##
-#########################
-
-COPY optional-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
-
-COPY dev-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
-
-COPY requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r requirements.txt
-
-###############################
-## General Application Setup ##
-###############################
+# General Application Setup ##
 COPY . /fides
 WORKDIR /fides
 
