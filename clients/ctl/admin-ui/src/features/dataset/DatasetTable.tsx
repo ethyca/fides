@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useFeatures } from "~/features/common/features.slice";
 import {
-  selectClassifyDatasetMap,
+  selectClassifyInstanceMap,
   useGetAllClassifyInstancesQuery,
 } from "~/features/common/plus.slice";
 import { Dataset } from "~/types/api";
@@ -33,7 +33,7 @@ const DatasetsTable = () => {
   useGetAllClassifyInstancesQuery(undefined, {
     skip: !features.plus,
   });
-  const classifyDatasetMap = useSelector(selectClassifyDatasetMap);
+  const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
@@ -63,7 +63,7 @@ const DatasetsTable = () => {
             activeDatasetFidesKey &&
             activeDatasetFidesKey === dataset.fides_key;
 
-          const classifyDataset = classifyDatasetMap.get(dataset.fides_key);
+          const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
           const statusDisplay =
             STATUS_DISPLAY[classifyDataset?.status ?? "unknown"];
 

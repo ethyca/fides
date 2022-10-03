@@ -135,29 +135,17 @@ export const selectClassifyInstances = createSelector(
   ({ data: instances }) => instances ?? emptyClassifyInstances
 );
 
-export const selectActiveClassifyInstance = createSelector(
-  [selectClassifyInstances, selectActiveDatasetFidesKey],
-  (instances, fidesKey) =>
-    instances && fidesKey
-      ? instances.find((ci) =>
-          ci.datasets.find((ds) => ds.fides_key === fidesKey)
-        )
-      : undefined
-);
-
-const emptyClassifyDatasetMap: Map<string, ClassifyDataset> = new Map();
-export const selectClassifyDatasetMap = createSelector(
+const emptyClassifyInstanceMap: Map<string, ClassifyInstanceValues> = new Map();
+export const selectClassifyInstanceMap = createSelector(
   selectClassifyInstances,
   (instances) => {
-    const map = new Map<string, ClassifyDataset>();
+    const map = new Map<string, ClassifyInstanceValues>();
     instances.forEach((ci) => {
-      ci.datasets?.forEach((ds) => {
-        map.set(ds.fides_key, ds);
-      });
+      map.set(ci.dataset_fides_key, ci);
     });
 
     if (map.size === 0) {
-      return emptyClassifyDatasetMap;
+      return emptyClassifyInstanceMap;
     }
 
     return map;
