@@ -77,7 +77,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
 ROUTERS = (
-    crud.routers
+    crud.routers  # type: ignore[attr-defined]
     + visualize.routers
     + [
         admin.router,

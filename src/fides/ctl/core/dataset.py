@@ -1,4 +1,5 @@
 """Module that adds functionality for generating or scanning datasets."""
+import sys
 from typing import Dict, List, Optional, Tuple
 
 import sqlalchemy
@@ -37,6 +38,10 @@ def get_all_server_datasets(
         exclude_keys=exclude_dataset_keys,
         headers=headers,
     )
+    if not dataset_list:
+        print("No datasets found")
+        sys.exit(1)
+
     return dataset_list
 
 

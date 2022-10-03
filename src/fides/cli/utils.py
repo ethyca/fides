@@ -70,7 +70,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         )
 
 
-def pretty_echo(dict_object: Dict, color: str = "white") -> None:
+def pretty_echo(dict_object: Union[Dict, str], color: str = "white") -> None:
     """
     Given a dict-like object and a color, pretty click echo it.
     """
@@ -316,7 +316,7 @@ def handle_bigquery_config_options(
     dataset: str,
     keyfile_path: str,
     credentials_id: str,
-) -> Optional[BigQueryConfig]:
+) -> BigQueryConfig:
     """
     Handles the connections options for passing a keyfile, dictionary, or credentials-id.
     """
@@ -341,8 +341,10 @@ def handle_bigquery_config_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, bigquery_config)
-    else:
+
+    if not bigquery_config:
         raise click.UsageError("Illegal usage: No connection configuration provided")
+
     return bigquery_config
 
 

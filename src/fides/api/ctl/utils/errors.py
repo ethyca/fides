@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import HTTPException, status
 
 
@@ -21,10 +23,11 @@ class DatabaseUnavailableError(HTTPException):
     To be raised when attempting to connect to an uninitialized database.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, error_message: str = "database unavailable") -> None:
         super().__init__(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": "database unavailable"},
+            detail={"error": error_message},
+            # detail={"error": "database unavailable"},
         )
 
 
@@ -37,9 +40,14 @@ class NotFoundError(HTTPException):
     To be raised when a requested resource does not exist in the database.
     """
 
-    def __init__(self, resource_type: str, fides_key: str) -> None:
+    def __init__(
+        self,
+        resource_type: str,
+        fides_key: str,
+        error_message: str = "resource does not exist",
+    ) -> None:
         detail = {
-            "error": "resource does not exist",
+            "error": error_message,
             "resource_type": resource_type,
             "fides_key": fides_key,
         }
