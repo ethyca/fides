@@ -26,17 +26,8 @@ def get_db() -> Generator:
         db.close()
 
 
-def get_db_for_health_check() -> Generator:
-    """Gets a database session regardless of whether the application db is disabled, for a health check."""
-    try:
-        db = _get_session()
-        yield db
-    finally:
-        db.close()
-
-
 def _get_session() -> Session:
-    """Gets a database session"""
+    """Gets a database session, using the global engine if defined"""
     global _engine  # pylint: disable=W0603
     if not _engine:
         _engine = get_db_engine(config=CONFIG)
