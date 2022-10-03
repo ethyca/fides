@@ -64,6 +64,12 @@ dataset = "data/saas/dataset/shopify_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Shopify"
 
+[square]
+config = "data/saas/config/square_config.yml"
+dataset = "data/saas/dataset/square_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Square"
+
 [stripe]
 config = "data/saas/config/stripe_config.yml"
 dataset = "data/saas/dataset/stripe_dataset.yml"
