@@ -1,26 +1,28 @@
 import random
 import time
-import uuid
 from typing import Any, Dict, Generator
 
+from uuid import uuid4
 import pydash
 import pytest
 import requests
 from faker import Faker
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
-from fidesops.ops.models.connectionconfig import (
+from requests import Response
+from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
+
+from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.util.saas_util import (
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from sqlalchemy.orm import Session
-
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -113,7 +115,7 @@ def square_idempotency_key():
     https://developer.squareup.com/docs/build-basics/common-api-patterns/idempotency
     """
     # "idempotency_key": "4a1b1a54-a1e5-4691-88ca-2548ce09ee71",
-    return str(uuid.uuid4())
+    return str(uuid4())
 
 
 class SquareTestClient:
@@ -130,16 +132,14 @@ class SquareTestClient:
         }
         self.base_url = f"https://{self.square_secrets['domain']}/v2"
 
-    def create_customer(
-        self, email_address: str, idempotency_key: str
-    ) -> requests.Response:
+    def create_customer(self, email_address: str, idempotency_key: str) -> Response:
         # create a new customer in square
         random_num = random.randint(0, 999)
         body = {
             "idempotency_key": idempotency_key,
             "email_address": email_address,
             "company_name": f"test_connector_ethyca_{random_num}",
-            "nickname": f"ethcya_{random_num}",
+            "nickname": f"ethyca_{random_num}",
             "address": {
                 "address_line_1": faker.street_address(),
                 "address_line_2": faker.street_address(),
@@ -151,33 +151,31 @@ class SquareTestClient:
             "given_name": faker.last_name(),
             "phone_number": faker.phone_number(),
         }
-        customer_response: requests.Response = requests.post(
+        customer_response: Response = requests.post(
             url=f"{self.base_url}/customers", json=body, headers=self.headers
         )
         return customer_response
 
-    def get_customer(self, email: str) -> requests.Response:
+    def get_customer(self, email: str) -> Response:
         # get a customer
         body = {"query": {"filter": {"email_address": {"exact": f"{email}"}}}}
-        customer_response: requests.Response = requests.post(
+        customer_response: Response = requests.post(
             url=f"{self.base_url}/customers/search",
             json=body,
             headers=self.headers,
         )
         return customer_response
 
-    def delete_customer(self, customer_id) -> requests.Response:
+    def delete_customer(self, customer_id) -> Response:
         # delete customer created for erasure purposes
         url = f"{self.base_url}/customers/{customer_id}"
-        customer_response: requests.Response = requests.delete(
-            url=url, headers=self.headers
-        )
+        customer_response: Response = requests.delete(url=url, headers=self.headers)
         return customer_response
 
-    def get_location(self) -> requests.Response:
+    def get_location(self) -> Response:
         # Provides details about all the seller's locations, including those with an inactive status.
 
-        customer_response: requests.Response = requests.get(
+        customer_response: Response = requests.get(
             url=f"{self.base_url}/locations",
             headers=self.headers,
         )
@@ -185,22 +183,22 @@ class SquareTestClient:
 
     def create_order(
         self, location_id: str, customer_id: str, idempotency_key: str
-    ) -> requests.Response:
+    ) -> Response:
         # creates a new order
         body = {
             "idempotency_key": idempotency_key,
             "order": {"location_id": location_id, "customer_id": customer_id},
         }
-        order_response: requests.Response = requests.post(
+        order_response: Response = requests.post(
             url=f"{self.base_url}/orders", json=body, headers=self.headers
         )
         return order_response
 
-    def get_order(self, location_id: str, order_id) -> requests.Response:
+    def get_order(self, location_id: str, order_id) -> Response:
         # Retrieves a set of orders by their IDs
         body = {"location_id": location_id, "order_ids": [order_id]}
         url = f"{self.base_url}/orders/batch-retrieve"
-        customer_response: requests.Response = requests.post(
+        customer_response: Response = requests.post(
             url=url,
             json=body,
             headers=self.headers,

@@ -9,8 +9,10 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -189,8 +191,8 @@ async def test_square_erasure_request_task(
         min_size=1,
         keys=["id", "location_id", "customer_id", "state"],
     )
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = True
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -213,4 +215,4 @@ async def test_square_erasure_request_task(
     assert customer["family_name"] == "MASKED"
     assert customer["nickname"] == "MASKED"
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking
