@@ -41,6 +41,8 @@ from ..task.traversal_data import (
     str_converter,
 )
 
+CONFIG = get_config()
+
 logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
@@ -1060,9 +1062,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.task_retry_count = 1
-        config.execution.task_retry_delay = 0.1
-        config.execution.task_retry_backoff = 0.01
+        CONFIG.execution.task_retry_count = 1
+        CONFIG.execution.task_retry_delay = 0.1
+        CONFIG.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
@@ -1113,9 +1115,9 @@ class TestRetryIntegration:
         policy,
         integration_postgres_config,
     ):
-        config.execution.task_retry_count = 2
-        config.execution.task_retry_delay = 0.1
-        config.execution.task_retry_backoff = 0.01
+        CONFIG.execution.task_retry_count = 2
+        CONFIG.execution.task_retry_delay = 0.1
+        CONFIG.execution.task_retry_backoff = 0.01
 
         dataset = FidesopsDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
@@ -1172,7 +1174,7 @@ class TestRetryIntegration:
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_postgres_access_request_task(
+async def test_timescale_access_request_task(
     db,
     policy,
     timescale_connection_config,
