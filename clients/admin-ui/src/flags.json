@@ -1,1 +1,6 @@
-[{ "name": "createNewConnection", "isActive": false }]
+[
+  {
+    "name": "createNewConnection",
+    "isActive": true
+  }
+]

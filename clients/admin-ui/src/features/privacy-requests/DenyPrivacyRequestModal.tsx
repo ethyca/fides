@@ -47,7 +47,8 @@ const DenyPrivacyRequestModal = ({
     <ModalContent width="100%" maxWidth="456px">
       <ModalHeader>Data subject request denial</ModalHeader>
       <ModalBody color="gray.500" fontSize="14px">
-        Please enter a reason for denying this data subject request
+        Please enter a reason for denying this data subject request. Please
+        note: this can be seen by the data subject in their notification email.
       </ModalBody>
       <ModalBody>
         <Textarea

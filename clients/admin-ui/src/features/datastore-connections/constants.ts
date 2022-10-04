@@ -23,7 +23,7 @@ export enum ConnectionType {
   MSSQL = "mssql",
   MARIADB = "mariadb",
   BIGQUERY = "bigquery",
-  MANUAL = "manual",
+  MANUAL_WEBHOOK = "manual_webhook",
 }
 
 export enum DisabledStatus {
@@ -67,6 +67,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<
   ConnectionType | SaasType,
   string
 >([
+  [ConnectionType.MANUAL_WEBHOOK, "manual_webhook.svg"],
   [ConnectionType.MARIADB, "mariadb.svg"],
   [ConnectionType.MONGODB, "mongodb.svg"],
   [ConnectionType.MSSQL, "sqlserver.svg"],

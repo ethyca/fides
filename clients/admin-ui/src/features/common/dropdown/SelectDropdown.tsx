@@ -28,6 +28,10 @@ type SelectDropdownProps = {
    */
   label: string;
   /**
+   * Sort the list items before rendering
+   */
+  enableSorting?: boolean;
+  /**
    * Display the Clear button. Default value is true.
    */
   hasClear?: boolean;
@@ -42,6 +46,7 @@ type SelectDropdownProps = {
 };
 
 const SelectDropdown: React.FC<SelectDropdownProps> = ({
+  enableSorting = true,
   hasClear = true,
   label,
   list,
@@ -104,36 +109,38 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
               </Flex>
             )}
             {/* MenuItems are not rendered unless Menu is open */}
-            {[...list].sort().map(([key, option]) => (
-              <Tooltip
-                aria-label={option.toolTip}
-                hasArrow
-                label={option.toolTip}
-                key={key}
-                placement="auto-start"
-                openDelay={500}
-                shouldWrapChildren
-              >
-                <MenuItem
-                  color={
-                    selectedValue === option.value
-                      ? "complimentary.500"
-                      : undefined
-                  }
-                  isDisabled={option.isDisabled}
-                  onClick={() => onChange(option.value)}
-                  paddingTop="10px"
-                  paddingRight="8.5px"
-                  paddingBottom="10px"
-                  paddingLeft="8.5px"
-                  _focus={{
-                    bg: "gray.100",
-                  }}
+            {(enableSorting ? [...list].sort() : [...list]).map(
+              ([key, option]) => (
+                <Tooltip
+                  aria-label={option.toolTip}
+                  hasArrow
+                  label={option.toolTip}
+                  key={key}
+                  placement="auto-start"
+                  openDelay={500}
+                  shouldWrapChildren
                 >
-                  <Text fontSize="0.75rem">{key}</Text>
-                </MenuItem>
-              </Tooltip>
-            ))}
+                  <MenuItem
+                    color={
+                      selectedValue === option.value
+                        ? "complimentary.500"
+                        : undefined
+                    }
+                    isDisabled={option.isDisabled}
+                    onClick={() => onChange(option.value)}
+                    paddingTop="10px"
+                    paddingRight="8.5px"
+                    paddingBottom="10px"
+                    paddingLeft="8.5px"
+                    _focus={{
+                      bg: "gray.100",
+                    }}
+                  >
+                    <Text fontSize="0.75rem">{key}</Text>
+                  </MenuItem>
+                </Tooltip>
+              )
+            )}
           </MenuList>
         ) : null}
       </Menu>
