@@ -417,7 +417,7 @@ def build_joined_dataframe(
     return joined_df
 
 
-def export_datamap(
+def export_datamap(  # pylint: disable=too-many-locals
     url: str,
     headers: Dict[str, str],
     organization_fides_key: str,
