@@ -6,71 +6,19 @@ import {
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
-import { GenerateRequestPayload } from "~/types/api";
+import {
+  ClassificationResponse,
+  ClassifyCollection,
+  ClassifyDatasetResponse,
+  ClassifyField,
+  ClassifyInstanceResponseValues,
+  ClassifyRequestPayload,
+  ClassifyStatusUpdatePayload,
+} from "~/types/api";
 
 interface HealthResponse {
   core_fidesctl_version: string;
   status: "healthy";
-}
-
-/**
- * These interfaces will be replaced with the OpenAPI generated models when the backend is ready.
- */
-export interface ClassifyInstanceRequest {
-  // Array of objects because we might need to match by more DB info than just the fides_key.
-  datasets: Array<{
-    fides_key: string;
-    name?: string;
-  }>;
-  schema_config: GenerateRequestPayload;
-}
-
-// TODO(ssangervasi): Resolves the assumptions commented below when the API is done.
-// https://github.com/ethyca/fidesctl-plus/pull/106#pullrequestreview-1112775197
-export interface Classification {
-  label: string;
-  score: number;
-  aggregated_score: number;
-  classification_paradigm: string;
-}
-export interface ClassifyField {
-  name: string;
-  classifications: Classification[];
-}
-export interface ClassifyCollection {
-  name: string;
-  fields: ClassifyField[];
-}
-export interface ClassifyDataset {
-  fides_key: string;
-  // Assuming these are empty while the instance is in the "processing" status.
-  collections: ClassifyCollection[];
-  status: ClassifyStatusEnum;
-}
-export enum ClassifyStatusEnum {
-  CREATED = "Created",
-  IN_WORK = "In Work",
-  COMPLETE = "Complete",
-  FAILED = "Failed",
-  // Name TBD by the backend.
-  REVIEWED = "Reviewed",
-}
-export interface ClassifyInstanceValues {
-  id: string;
-  status: ClassifyStatusEnum;
-  organization_fides_key: string;
-  dataset_fides_key: string;
-  dataset_name: string;
-}
-export interface ClassifyDatasetResponse {
-  classify_instances: ClassifyInstanceValues[];
-}
-export interface ClassificationResponse {
-  datasets: ClassifyDataset[];
-}
-export interface ClassifyInstanceUpdateRequest {
-  dataset_fides_key: string;
-  status: ClassifyStatusEnum;
 }
 
 export const plusApi = createApi({
@@ -88,7 +36,7 @@ export const plusApi = createApi({
      */
     createClassifyInstance: build.mutation<
       ClassifyDatasetResponse,
-      ClassifyInstanceRequest
+      ClassifyRequestPayload
     >({
       query: (body) => ({
         url: `classify/`,
@@ -97,17 +45,18 @@ export const plusApi = createApi({
       }),
       invalidatesTags: ["ClassifyInstances"],
     }),
-    updateClassifyInstance: build.mutation<void, ClassifyInstanceUpdateRequest>(
-      {
-        query: (body) => ({
-          url: `classify/`,
-          method: "PUT",
-          body,
-        }),
-        invalidatesTags: ["ClassifyInstances"],
-      }
-    ),
-    getAllClassifyInstances: build.query<ClassifyInstanceValues[], void>({
+    updateClassifyInstance: build.mutation<void, ClassifyStatusUpdatePayload>({
+      query: (body) => ({
+        url: `classify/`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["ClassifyInstances"],
+    }),
+    getAllClassifyInstances: build.query<
+      ClassifyInstanceResponseValues[],
+      void
+    >({
       query: () => `classify/`,
       providesTags: ["ClassifyInstances"],
     }),
@@ -131,19 +80,20 @@ export const useHasPlus = () => {
   return hasPlus;
 };
 
-const emptyClassifyInstances: ClassifyInstanceValues[] = [];
+const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectClassifyInstances = createSelector(
   plusApi.endpoints.getAllClassifyInstances.select(),
   ({ data: instances }) => instances ?? emptyClassifyInstances
 );
 
-const emptyClassifyInstanceMap: Map<string, ClassifyInstanceValues> = new Map();
+const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =
+  new Map();
 export const selectClassifyInstanceMap = createSelector(
   selectClassifyInstances,
   (instances) => {
-    const map = new Map<string, ClassifyInstanceValues>();
+    const map = new Map<string, ClassifyInstanceResponseValues>();
     instances.forEach((ci) => {
-      map.set(ci.dataset_fides_key, ci);
+      map.set(ci.dataset_key, ci);
     });
 
     if (map.size === 0) {

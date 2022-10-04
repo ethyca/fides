@@ -1,8 +1,8 @@
 [
   {
     "id": "2",
-    "dataset_fides_key": "demo_users_dataset_2",
-    "status": "In Work",
+    "dataset_key": "demo_users_dataset_2",
+    "status": "Processing",
     "dataset_name": "Demo Users Dataset 2",
     "organization_fides_key": "default_organization",
     "type": "datasets",
@@ -12,7 +12,7 @@
   },
   {
     "id": "3",
-    "dataset_fides_key": "demo_users_dataset_3",
+    "dataset_key": "demo_users_dataset_3",
     "dataset_name": "Demo Users Dataset 3",
     "status": "Complete",
     "organization_fides_key": "default_organization",
@@ -23,7 +23,7 @@
   },
   {
     "id": "4",
-    "dataset_fides_key": "demo_users_dataset_4",
+    "dataset_key": "demo_users_dataset_4",
     "status": "Reviewed",
     "dataset_name": "Demo Users Dataset 4",
     "organization_fides_key": "default_organization",
@@ -34,7 +34,7 @@
   },
   {
     "id": "classification_in_review",
-    "dataset_fides_key": "dataset_in_review",
+    "dataset_key": "dataset_in_review",
     "dataset_name": "Classified Dataset Needs Review",
     "status": "Complete",
     "organization_fides_key": "default_organization",

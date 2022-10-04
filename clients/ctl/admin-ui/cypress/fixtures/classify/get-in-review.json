@@ -1,8 +1,8 @@
 {
-  "id": "classification_in_review",
   "datasets": [
     {
       "fides_key": "dataset_in_review",
+      "name": "dataset_in_review",
       "status": "Complete",
       "collections": [
         {

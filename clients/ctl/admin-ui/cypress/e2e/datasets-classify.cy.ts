@@ -4,10 +4,7 @@ import {
   stubPlus,
 } from "cypress/support/stubs";
 
-import {
-  ClassificationResponse,
-  ClassifyStatusEnum,
-} from "~/features/common/plus.slice";
+import { ClassificationResponse, ClassificationStatus } from "~/types/api";
 
 /**
  * This test suite is a parallel of datasets.cy.ts for testing Dataset features when the user has
@@ -61,7 +58,7 @@ describe("Datasets with Fides Classify", () => {
           interception.request.body.schema_config.generate.config
             .connection_string
         ).to.eql(CONNECTION_STRING);
-        expect(interception.request.body.datasets).to.eql([
+        expect(interception.request.body.dataset_schemas).to.eql([
           { fides_key: "public", name: "public" },
         ]);
       });
@@ -183,7 +180,7 @@ describe("Datasets with Fides Classify", () => {
       // The button triggers a chain of requests that will modify the classify list response.
       cy.fixture("classify/get-in-review.json").then(
         (draftInstance: ClassificationResponse) => {
-          draftInstance.datasets[0].status = ClassifyStatusEnum.REVIEWED;
+          draftInstance.datasets[0].status = ClassificationStatus.REVIEWED;
 
           cy.intercept("GET", "/api/v1/plus/classify/*", {
             body: draftInstance,

@@ -8,13 +8,16 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import {
-  ClassifyInstanceValues,
-  useCreateClassifyInstanceMutation,
-} from "~/features/common/plus.slice";
+import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
+import {
+  ClassifyInstanceResponseValues,
+  Dataset,
+  GenerateTypes,
+  System,
+  ValidTargets,
+} from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,
@@ -136,11 +139,11 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        classifyInstances: ClassifyInstanceValues[];
+        classifyInstances: ClassifyInstanceResponseValues[];
       }
   > => {
     const result = await classifyMutation({
-      datasets: datasets.map(({ name, fides_key }) => ({
+      dataset_schemas: datasets.map(({ name, fides_key }) => ({
         fides_key,
         name,
       })),

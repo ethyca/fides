@@ -3,14 +3,12 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import {
-  ClassifyStatusEnum,
-  selectActiveClassifyDataset,
-} from "~/features/common/plus.slice";
+import { selectActiveClassifyDataset } from "~/features/common/plus.slice";
+import { ClassificationStatus } from "~/types/api";
 
 const DatasetHeading = () => {
   const classifyDataset = useSelector(selectActiveClassifyDataset);
-  const status = classifyDataset?.status ?? ClassifyStatusEnum.REVIEWED;
+  const status = classifyDataset?.status ?? ClassificationStatus.REVIEWED;
 
   const fieldCount = useMemo(
     () =>
@@ -39,7 +37,7 @@ const DatasetHeading = () => {
 
   return (
     <VStack align="left" mb={6}>
-      {status === ClassifyStatusEnum.COMPLETE ? (
+      {status === ClassificationStatus.COMPLETE ? (
         <>
           <HStack>
             <Heading fontSize="2xl">

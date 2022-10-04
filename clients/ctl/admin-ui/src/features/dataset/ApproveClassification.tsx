@@ -4,12 +4,12 @@ import { useSelector } from "react-redux";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  ClassifyStatusEnum,
   selectActiveClassifyDataset,
   selectClassifyInstanceCollection,
   useUpdateClassifyInstanceMutation,
 } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { ClassificationStatus } from "~/types/api";
 
 import { selectActiveDataset, useUpdateDatasetMutation } from "./dataset.slice";
 import { getUpdatedDatasetFromClassifyDataset } from "./helpers";
@@ -54,7 +54,7 @@ const ApproveClassification = () => {
 
       const statusResult = await updateClassifyInstance({
         dataset_fides_key: dataset.fides_key,
-        status: ClassifyStatusEnum.REVIEWED,
+        status: ClassificationStatus.REVIEWED,
       });
       if (isErrorResult(statusResult)) {
         toast(errorToastParams(getErrorMessage(statusResult.error)));
@@ -72,7 +72,7 @@ const ApproveClassification = () => {
     !(
       classifyDataset &&
       classifyCollection &&
-      classifyDataset.status === ClassifyStatusEnum.COMPLETE
+      classifyDataset.status === ClassificationStatus.COMPLETE
     )
   ) {
     return null;

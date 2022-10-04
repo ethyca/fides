@@ -12,5 +12,5 @@ export enum EditableType {
 }
 
 export interface DataCategoryWithConfidence extends DataCategory {
-  confidence: number;
+  confidence?: number;
 }

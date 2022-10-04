@@ -1,7 +1,11 @@
 import produce from "immer";
 
-import { ClassifyDataset } from "~/features/common/plus.slice";
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import {
+  ClassifyDataset,
+  Dataset,
+  DatasetCollection,
+  DatasetField,
+} from "~/types/api";
 
 /**
  * Because there is only one /dataset endpoint which handles dataset, collection,
@@ -97,7 +101,10 @@ export const getUpdatedDatasetFromClassifyDataset = (
 
         const topClassification = classifyField.classifications.reduce(
           (maxClassification, next) => {
-            if (maxClassification.aggregated_score < next.aggregated_score) {
+            if (
+              (maxClassification.aggregated_score ?? 0) <
+              (next.aggregated_score ?? 0)
+            ) {
               return next;
             }
             return maxClassification;

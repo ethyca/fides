@@ -2,7 +2,7 @@
   "classify_instances": [
     {
       "id": "classifying",
-      "status": "In Work",
+      "status": "Processing",
       "dataset_fides_key": "dataset_classifying",
       "dataset_name": "Dataset Classifying",
       "organization_fides_key": "default_organization",
