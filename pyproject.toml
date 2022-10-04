@@ -43,6 +43,7 @@ module = [
   "fideslang.*",
   "fideslib.*",
   "fideslog.*",
+  "google.api_core.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
