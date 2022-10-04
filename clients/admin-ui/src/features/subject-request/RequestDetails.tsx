@@ -7,13 +7,15 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
-import ClipboardButton from "common/ClipboardButton";
+import DaysLeftTag from "common/DaysLeftTag";
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
-import RequestStatusBadge from "common/RequestStatusBadge";
-import RequestType from "common/RequestType";
 import { useRetryMutation } from "privacy-requests/privacy-requests.slice";
 import { PrivacyRequest } from "privacy-requests/types";
 import { useState } from "react";
+
+import ClipboardButton from "../common/ClipboardButton";
+import RequestStatusBadge from "../common/RequestStatusBadge";
+import RequestType from "../common/RequestType";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequest;
@@ -48,7 +50,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
   return (
     <>
-      <Heading fontSize="lg" fontWeight="semibold" mb={4}>
+      <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
         Request details
       </Heading>
       <Divider />
@@ -93,6 +95,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
               Retry
             </Button>
           )}
+
+          <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />
         </HStack>
       </Flex>
     </>

@@ -1,5 +1,24 @@
-import { configureStore, StateFromReducersMapObject } from "@reduxjs/toolkit";
+import {
+  AnyAction,
+  combineReducers,
+  configureStore,
+  StateFromReducersMapObject,
+} from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
+import {
+  FLUSH,
+  PAUSE,
+  PERSIST,
+  persistReducer,
+  persistStore,
+  PURGE,
+  REGISTER,
+  REHYDRATE,
+} from "redux-persist";
+import createWebStorage from "redux-persist/lib/storage/createWebStorage";
+
+import { STORAGE_ROOT_KEY } from "../constants";
+import { authApi, AuthState, reducer as authReducer } from "../features/auth";
 import {
   connectionTypeApi,
   reducer as connectionTypeReducer,
@@ -50,6 +69,29 @@ import {
   reducer as authReducer,
 } from "../features/auth";
 
+
+/**
+ * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
+ * console message within Next.js, the following snippet is required.
+ * {@https://mightycoders.xyz/redux-persist-failed-to-create-sync-storage-falling-back-to-noop-storage}
+ */
+ const createNoopStorage = () => ({
+  getItem() {
+    return Promise.resolve(null);
+  },
+  setItem(_key: any, value: any) {
+    return Promise.resolve(value);
+  },
+  removeItem() {
+    return Promise.resolve();
+  },
+});
+
+const storage =
+  typeof window !== "undefined"
+    ? createWebStorage("local")
+    : createNoopStorage();
+
 const reducer = {
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   subjectRequests: privacyRequestsReducer,
@@ -79,16 +121,27 @@ const reducer = {
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
+  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  datastoreConnections: datastoreConnectionReducer,
+  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
+  subjectRequests: privacyRequestsReducer,
+  [userApi.reducerPath]: userApi.reducer,
+  userManagement: userManagementReducer,
 };
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
 export const makeStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
-    reducer,
+    reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(
-        credentialStorage.middleware,
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }).concat(
         privacyRequestApi.middleware,
         userApi.middleware,
         authApi.middleware,
@@ -110,7 +163,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
 
 let storedAuthState: AuthState | undefined;
 if (typeof window !== "undefined" && "localStorage" in window) {
-  const storedAuthStateString = localStorage.getItem(STORED_CREDENTIALS_KEY);
+  const storedAuthStateString = localStorage.getItem(STORAGE_ROOT_KEY);
   if (storedAuthStateString) {
     try {
       storedAuthState = JSON.parse(storedAuthStateString);
@@ -126,8 +179,7 @@ const store = makeStore({
   auth: storedAuthState,
 });
 
-type AppStore = ReturnType<typeof makeStore>;
-export type AppDispatch = AppStore["dispatch"];
+export const persistor = persistStore(store);
 
 setupListeners(store.dispatch);
 

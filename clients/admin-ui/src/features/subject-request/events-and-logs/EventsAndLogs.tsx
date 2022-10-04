@@ -14,7 +14,7 @@ const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
 
   return (
     <>
-      <Heading fontSize="lg" fontWeight="semibold" mb={4}>
+      <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
         Events and logs
       </Heading>
       <Divider />
