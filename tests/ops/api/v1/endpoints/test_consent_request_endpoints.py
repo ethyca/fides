@@ -5,7 +5,6 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-
 from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fidesops.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,

@@ -1,9 +1,6 @@
 import random
 
 import pytest
-from firebase_admin import auth
-from firebase_admin.auth import UserNotFoundError, UserRecord
-
 from fidesops.ops.graph.graph import DatasetGraph
 from fidesops.ops.models.privacy_request import PrivacyRequest
 from fidesops.ops.schemas.redis_cache import Identity
@@ -13,6 +10,9 @@ from fidesops.ops.service.saas_request.override_implementations.firebase_auth_re
 )
 from fidesops.ops.task import graph_task
 from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from firebase_admin import auth
+from firebase_admin.auth import UserNotFoundError, UserRecord
+
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 

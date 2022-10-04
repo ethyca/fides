@@ -4,11 +4,6 @@ import pydash
 import pytest
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
-from firebase_admin import auth
-from firebase_admin.auth import UserNotFoundError
-from firebase_admin.exceptions import FirebaseError
-from sqlalchemy.orm import Session
-
 from fidesops.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -22,6 +17,11 @@ from fidesops.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from firebase_admin import auth
+from firebase_admin.auth import UserNotFoundError
+from firebase_admin.exceptions import FirebaseError
+from sqlalchemy.orm import Session
+
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("firebase_auth")

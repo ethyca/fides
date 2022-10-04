@@ -38,11 +38,11 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fidesops.ops.schemas.api import BulkUpdateFailed
-from fidesops.ops.schemas.connection_configuration import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.schemas.api import BulkUpdateFailed
+from fides.api.ops.schemas.connection_configuration import (
     connection_secrets_schemas,
     get_connection_secrets_validator,
 )
@@ -58,14 +58,14 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionTestStatus,
     TestStatusMessage,
 )
-from fidesops.ops.schemas.shared_schemas import FidesOpsKey
-from fidesops.ops.service.connectors import get_connector
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.schemas.shared_schemas import FidesOpsKey
+from fides.api.ops.service.connectors import get_connector
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

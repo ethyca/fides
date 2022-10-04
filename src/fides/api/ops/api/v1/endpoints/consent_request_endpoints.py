@@ -13,42 +13,43 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fidesops.ops.api.deps import get_db
-from fidesops.ops.api.v1.scope_registry import CONSENT_READ
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.v1.scope_registry import CONSENT_READ
+from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
-from fidesops.ops.schemas.privacy_request import Consent as ConsentSchema
-from fidesops.ops.schemas.privacy_request import (
+from fides.api.ops.schemas.privacy_request import Consent as ConsentSchema
+from fides.api.ops.schemas.privacy_request import (
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentRequestResponse,
     VerificationCode,
 )
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service._verification import send_verification_code_to_user
-from fidesops.ops.util.api_router import APIRouter
-from fidesops.ops.util.logger import Pii
-from fidesops.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service._verification import send_verification_code_to_user
+from fides.api.ops.util.api_router import APIRouter
+from fides.api.ops.util.logger import Pii
+from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.ctl.core.config import get_config
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -63,12 +64,12 @@ def create_consent_request(
     data: Identity,
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
-    if not config.redis.enabled:
+    if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not config.execution.subject_identity_verification_required:
+    if not CONFIG.execution.subject_identity_verification_required:
         raise FunctionalityNotConfigured(
             "Subject identity verification is required, but it is currently disabled! Please update your application configuration to enable subject identity verification."
         )

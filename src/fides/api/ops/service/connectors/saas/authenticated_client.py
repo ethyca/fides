@@ -124,7 +124,7 @@ class AuthenticatedClient:
                             retry_after_time if retry_after_time else sleep_time
                         )
                     except Exception as exc:  # pylint: disable=W0703
-                        dev_mode_log = f" with error: {exc}" if config.dev_mode else ""
+                        dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
                         last_exception = ConnectionException(
                             f"Operational Error connecting to '{self.key}'{dev_mode_log}"
                         )

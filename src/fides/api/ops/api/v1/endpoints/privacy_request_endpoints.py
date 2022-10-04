@@ -68,15 +68,19 @@ from fides.api.ops.common_exceptions import (
     TraversalError,
     ValidationError,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.graph.graph import DatasetGraph, Node
-from fidesops.ops.graph.traversal import Traversal
-from fidesops.ops.models.connectionconfig import ConnectionConfig
-from fidesops.ops.models.datasetconfig import DatasetConfig
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.policy import ActionType, CurrentStep, Policy, PolicyPreWebhook
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.graph.graph import DatasetGraph, Node
+from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import (
+    ActionType,
+    CurrentStep,
+    Policy,
+    PolicyPreWebhook,
+)
+from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -108,9 +112,9 @@ from fides.api.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
-from fidesops.ops.service._verification import send_verification_code_to_user
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email_task
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service._verification import send_verification_code_to_user
+from fides.api.ops.service.email.email_dispatch_service import dispatch_email_task
+from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
 from fides.api.ops.service.privacy_request.request_service import (
@@ -234,7 +238,7 @@ async def create_privacy_request(
             )
 
             if CONFIG.execution.subject_identity_verification_required:
-                _send_verification_code_to_user(
+                send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity.email
                 )
                 created.append(privacy_request)

@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
-from fidesops.ops.core.config import config
-from fidesops.ops.models.email import EmailConfig
-from fidesops.ops.models.privacy_request import ConsentRequest, PrivacyRequest
-from fidesops.ops.schemas.email.email import (
+from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.privacy_request import ConsentRequest, PrivacyRequest
+from fides.api.ops.schemas.email.email import (
     EmailActionType,
     SubjectIdentityVerificationBodyParams,
 )
-from fidesops.ops.service.email.email_dispatch_service import dispatch_email
-from fidesops.ops.service.privacy_request.request_runner_service import (
+from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.service.privacy_request.request_runner_service import (
     generate_id_verification_code,
 )
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
 def send_verification_code_to_user(
@@ -35,7 +37,7 @@ def send_verification_code_to_user(
         to_email=email,
         email_body_params=SubjectIdentityVerificationBodyParams(
             verification_code=verification_code,
-            verification_code_ttl_seconds=config.redis.identity_verification_code_ttl_seconds,
+            verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         ),
     )
 

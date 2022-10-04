@@ -854,7 +854,7 @@ class ConsentRequest(Base):
         cache.set_with_autoexpire(
             f"IDENTITY_VERIFICATION_CODE__{self.id}",
             value,
-            config.redis.identity_verification_code_ttl_seconds,
+            CONFIG.redis.identity_verification_code_ttl_seconds,
         )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
