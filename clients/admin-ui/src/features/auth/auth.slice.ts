@@ -9,7 +9,7 @@ import { utf8ToB64 } from "common/utils";
 import { User } from "user-management/types";
 
 import type { RootState } from "../../app/store";
-import { BASE_URL, STORED_CREDENTIALS_KEY } from "../../constants";
+import { BASE_URL, STORAGE_ROOT_KEY } from "../../constants";
 import {
   LoginRequest,
   LoginResponse,
@@ -62,7 +62,7 @@ credentialStorage.startListening({
   effect: (action, { getState }) => {
     if (window && window.localStorage) {
       localStorage.setItem(
-        STORED_CREDENTIALS_KEY,
+        STORAGE_ROOT_KEY,
         JSON.stringify(selectAuth(getState() as RootState))
       );
     }
@@ -72,7 +72,7 @@ credentialStorage.startListening({
   actionCreator: logout,
   effect: () => {
     if (window && window.localStorage) {
-      localStorage.removeItem(STORED_CREDENTIALS_KEY);
+      localStorage.removeItem(STORAGE_ROOT_KEY);
     }
   },
 });

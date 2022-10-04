@@ -39,6 +39,7 @@ module = [
   "fideslang.*",
   "fideslib.*",
   "fideslog.*",
+  "firebase_admin.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",

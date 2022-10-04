@@ -11,4 +11,5 @@ export const SubjectRequestStatusMap = new Map<string, string>([
   ["New", "pending"],
   ["Paused", "paused"],
   ["Unverified", "identity_unverified"],
+  ["Requires input", "requires_input"],
 ]);

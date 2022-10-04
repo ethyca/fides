@@ -27,7 +27,7 @@ const useConstantFilters = () => {
 const ConnectionFilters: React.FC = () => {
   const { handleSearchChange, search } = useConstantFilters();
   return (
-    <Flex minWidth="max-content" alignItems="center" gap="4" mb={6}>
+    <Flex minWidth="fit-content" alignItems="center" gap="4" mb={6}>
       <InputGroup size="sm" minWidth="308px">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
