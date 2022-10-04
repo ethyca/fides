@@ -13,8 +13,8 @@
               "classifications": [
                 {
                   "label": "user.email",
-                  "score": 1,
-                  "aggregated_score": 1,
+                  "score": 0.99,
+                  "aggregated_score": 0.99,
                   "classification_paradigm": ""
                 }
               ]
@@ -24,14 +24,14 @@
               "classifications": [
                 {
                   "label": "user.device",
-                  "score": 1,
-                  "aggregated_score": 1,
+                  "score": 0.95,
+                  "aggregated_score": 0.95,
                   "classification_paradigm": ""
                 },
                 {
                   "label": "user.contact.phone_number",
-                  "score": 1,
-                  "aggregated_score": 1,
+                  "score": 0.8,
+                  "aggregated_score": 0.8,
                   "classification_paradigm": ""
                 }
               ]
@@ -41,8 +41,8 @@
               "classifications": [
                 {
                   "label": "user.contact.address",
-                  "score": 1,
-                  "aggregated_score": 1,
+                  "score": 0.8,
+                  "aggregated_score": 0.8,
                   "classification_paradigm": ""
                 }
               ]

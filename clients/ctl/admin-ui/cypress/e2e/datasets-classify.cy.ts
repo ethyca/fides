@@ -208,4 +208,57 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("toast-success-msg");
     });
   });
+
+  describe("Data category input", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("getDataset");
+      cy.intercept("GET", "/api/v1/plus/classify/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
+    });
+
+    it("Allows selection of suggested and non-suggested categories", () => {
+      cy.visit("/dataset/dataset_in_review");
+      cy.wait("@getDataset");
+      cy.wait("@getClassify");
+
+      // Open the "device" field editor.
+      cy.getByTestId("field-row-device").click();
+
+      // The plain list of categories should be replaced with the classified selector.
+      cy.getByTestId("selected-categories").should("not.exist");
+
+      // Select a suggested category.
+      cy.getByTestId("classified-select")
+        .click()
+        .contains("user.contact.phone_number (80%)")
+        .click();
+
+      // Select a category from the taxonomy.
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("data-category-checkbox-tree")
+        .contains("Location Data")
+        .click();
+      cy.getByTestId("data-category-done-btn").click();
+
+      // Both selected categories should be rendered.
+      cy.getByTestId("classified-select").contains(
+        "user.contact.phone_number (80%)"
+      );
+      cy.getByTestId("classified-select").contains("user.location (N/A)");
+
+      // Both selected categories should be submitted on the dataset.
+      cy.getByTestId("save-btn");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields[1].data_categories).to.eql([
+          "user.contact.phone_number",
+          "user.location",
+        ]);
+      });
+    });
+  });
 });

@@ -1,14 +1,16 @@
 import { Box, Button, Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
+import { selectClassifyInstanceField } from "../common/plus.slice";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
+import { DataCategoryWithConfidence } from "./types";
 
 const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
   value: dq.key,
@@ -47,6 +49,31 @@ const EditCollectionOrFieldForm = ({
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
     initialValues.data_categories ?? []
   );
+
+  // This data is only relevant for editing a field. Maybe another reason to split the field/
+  // collection cases into two components.
+  const classifyField = useSelector(selectClassifyInstanceField);
+  const mostLikelyCategories: DataCategoryWithConfidence[] | undefined =
+    useMemo(() => {
+      if (!(allDataCategories && classifyField)) {
+        return undefined;
+      }
+
+      const dataCategoryMap = new Map(
+        allDataCategories.map((dc) => [dc.fides_key, dc])
+      );
+      return classifyField.classifications.map(
+        ({ label, aggregated_score }) => {
+          const dc = dataCategoryMap.get(label);
+
+          return {
+            fides_key: label,
+            confidence: aggregated_score,
+            ...dc,
+          };
+        }
+      );
+    }, [allDataCategories, classifyField]);
 
   const descriptionTooltip =
     dataType === "collection"
@@ -96,6 +123,7 @@ const EditCollectionOrFieldForm = ({
             />
             <DataCategoryInput
               dataCategories={allDataCategories}
+              mostLikelyCategories={mostLikelyCategories}
               checked={checkedDataCategories}
               onChecked={setCheckedDataCategories}
               tooltip={dataCategoryTooltip}
