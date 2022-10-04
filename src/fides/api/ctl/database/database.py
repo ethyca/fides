@@ -12,7 +12,7 @@ from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import (
     AlreadyExistsError,
     QueryError,

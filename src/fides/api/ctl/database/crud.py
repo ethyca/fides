@@ -32,11 +32,11 @@ async def create_resource(
         except errors.NotFoundError:
             pass
         else:
-            error = errors.AlreadyExistsError(
+            already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
-            log.bind(error=error.detail["error"]).error("Failed to insert resource")
-            raise error
+            log.bind(error=already_exists_error.detail["error"]).error("Failed to insert resource")  # type: ignore[index]
+            raise already_exists_error
 
         async with async_session() as session:
             async with session.begin():
@@ -45,11 +45,11 @@ async def create_resource(
                     query = _insert(sql_model).values(resource_dict)
                     await session.execute(query)
                 except SQLAlchemyError:
-                    error = errors.QueryError()
-                    log.bind(error=error.detail["error"]).error(
+                    sa_error = errors.QueryError()
+                    log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
                         "Failed to create resource"
                     )
-                    raise error
+                    raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"])
 
@@ -68,15 +68,17 @@ async def get_resource(sql_model: Base, fides_key: str) -> Base:
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
                 result = await session.execute(query)
             except SQLAlchemyError:
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).error("Failed to fetch resource")
-                raise error
+                sa_error = errors.QueryError()
+                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
+                    "Failed to fetch resource"
+                )
+                raise sa_error
 
         sql_resource = result.scalars().first()
         if sql_resource is None:
-            error = errors.NotFoundError(sql_model.__name__, fides_key)
-            log.bind(error=error.detail["error"]).error("Resource not found")
-            raise error
+            not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
+            log.bind(error=not_found_error.detail["error"]).error("Resource not found")  # type: ignore[index]
+            raise not_found_error
 
         return sql_resource
 
@@ -97,7 +99,7 @@ async def list_resource(sql_model: Base) -> List[Base]:
                     sql_resources = result.scalars().all()
                 except SQLAlchemyError:
                     error = errors.QueryError()
-                    log.bind(error=error.detail["error"]).error(
+                    log.bind(error=error.detail["error"]).error(  # type: ignore[index]
                         "Failed to fetch resources"
                     )
                     raise error
@@ -123,7 +125,7 @@ async def update_resource(sql_model: Base, resource_dict: Dict) -> Dict:
                     )
                 except SQLAlchemyError:
                     error = errors.QueryError()
-                    log.bind(error=error.detail["error"]).error(
+                    log.bind(error=error.detail["error"]).error(  # type: ignore[index]
                         "Failed to update resource"
                     )
                     raise error
@@ -175,7 +177,7 @@ async def upsert_resources(
 
                 except SQLAlchemyError:
                     error = errors.QueryError()
-                    log.bind(error=error.detail["error"]).error(
+                    log.bind(error=error.detail["error"]).error(  # type: ignore[index]
                         "Failed to upsert resources"
                     )
                     raise error
@@ -214,7 +216,7 @@ async def delete_resource(sql_model: Base, fides_key: str) -> Base:
                     await session.execute(query)
                 except SQLAlchemyError:
                     error = errors.QueryError()
-                    log.bind(error=error.detail["error"]).error(
+                    log.bind(error=error.detail["error"]).error(  # type: ignore[index]
                         "Failed to delete resource"
                     )
                     raise error

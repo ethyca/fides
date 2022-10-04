@@ -1,5 +1,4 @@
 """Contains reusable utils for the CLI commands."""
-
 import json
 import pprint
 import sys
@@ -23,7 +22,12 @@ from fideslog.sdk.python.utils import (
 )
 
 import fides
-from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fides.ctl.connectors.models import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    OktaConfig,
+)
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config.credentials_settings import (
@@ -243,8 +247,9 @@ def handle_database_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        _validate_credentials_id_exists(credentials_id, database_credentials)
-        actual_connection_string = database_credentials.connection_string
+        if database_credentials:
+            _validate_credentials_id_exists(credentials_id, database_credentials)
+            actual_connection_string = database_credentials.connection_string
     return actual_connection_string
 
 
@@ -255,7 +260,7 @@ def handle_okta_credentials_options(
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
-    okta_config = {}
+    okta_config: Optional[OktaConfig] = None
     if token or org_url:
         if not token or not org_url:
             raise click.UsageError(
@@ -271,7 +276,9 @@ def handle_okta_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        _validate_credentials_id_exists(credentials_id, okta_config)
+        if okta_config:
+            _validate_credentials_id_exists(credentials_id, okta_config)
+
     return okta_config
 
 
@@ -307,7 +314,13 @@ def handle_aws_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        _validate_credentials_id_exists(credentials_id, aws_config)
+        if aws_config:
+            _validate_credentials_id_exists(credentials_id, aws_config)
+
+    if not aws_config:
+        click.secho("No AWS configuration provided", fg="red")
+        sys.exit(1)
+
     return aws_config
 
 
@@ -340,7 +353,12 @@ def handle_bigquery_config_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        _validate_credentials_id_exists(credentials_id, bigquery_config)
+        if bigquery_config:
+            _validate_credentials_id_exists(credentials_id, bigquery_config)
+
+    if not bigquery_config:
+        click.secho("No BigQuery configuration provided", fg="red")
+        sys.exit(1)
 
     if not bigquery_config:
         raise click.UsageError("Illegal usage: No connection configuration provided")
@@ -350,7 +368,7 @@ def handle_bigquery_config_options(
 
 def _validate_credentials_id_exists(
     credentials_id: str,
-    credentials_config: Union[OktaConfig, BigQueryConfig, AWSConfig],
+    credentials_config: Union[AWSConfig, BigQueryConfig, DatabaseConfig, OktaConfig],
 ) -> None:
     if not credentials_config:
         raise click.UsageError(

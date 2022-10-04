@@ -9,6 +9,7 @@ from fideslib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
+from fideslib.db.base import ClientDetail, FidesUser
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
@@ -17,7 +18,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.sql_models import ClientDetail, FidesUser
 from fides.ctl.core.config import get_config
 
 oauth2_scheme = OAuth2ClientCredentialsBearer(

@@ -53,6 +53,7 @@ module = [
   "pymongo.*",
   "snowflake.*",
   "sqlalchemy.ext.*",
+  "sqlalchemy.future.*",
   "sqlalchemy_utils.*",
   "uvicorn.*"
 ]
