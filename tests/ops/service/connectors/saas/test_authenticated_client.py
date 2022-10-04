@@ -4,6 +4,8 @@ from email.utils import formatdate
 from typing import Any, Dict
 
 import pytest
+from requests import ConnectionError, Response, Session
+
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
@@ -15,7 +17,6 @@ from fides.api.ops.service.connectors.saas.authenticated_client import (
     get_retry_after,
 )
 from fides.api.ops.util.saas_util import load_config_with_replacement
-from requests import ConnectionError, Response, Session
 
 
 @pytest.fixture

@@ -8,6 +8,15 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslib.models.client import ClientDetail
+from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
+from fides.api.ops.api.v1.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+    STORAGE_DELETE,
+)
 from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -20,15 +29,6 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.email.email import EmailActionType
 from fides.api.ops.tasks import EMAIL_QUEUE_NAME
-from sqlalchemy.orm import Session
-from starlette.testclient import TestClient
-
-from fides.api.ops.api.v1.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-    STORAGE_DELETE,
-)
 
 page_size = Params().size
 

@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+
 from fides.api.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -13,12 +14,12 @@ from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fides.ctl.core.config import get_config
 from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
 )
+from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 
