@@ -76,7 +76,7 @@ def get_connection_types(
             [
                 saas_type
                 for saas_type in registry.connector_types()
-                if saas_type != "custom" and is_match(saas_type)
+                if is_match(saas_type)
             ]
         )
 
@@ -114,7 +114,6 @@ def get_connection_types(
                 for item in manual_types
             ]
         )
-
     return connection_system_types
 
 
