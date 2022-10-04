@@ -9,6 +9,31 @@ dataset:
   data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   retention: 1 year post employment
   collections:
+  - name: accessmanualwebhook
+    description: 'Fides Generated Description for Table: accessmanualwebhook'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: connection_config_id
+      description: 'Fides Generated Description for Column: connection_config_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: fields
+      description: 'Fides Generated Description for Column: fields'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: alembic_version
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
@@ -81,6 +106,39 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: consent
+    description: 'Fides Generated Description for Table: consent'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_use
+      description: 'Fides Generated Description for Column: data_use'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: data_use_description
+      description: 'Fides Generated Description for Column: data_use_description'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: opt_in
+      description: 'Fides Generated Description for Column: opt_in'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: provided_identity_id
+      description: 'Fides Generated Description for Column: provided_identity_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: ctl_data_categories
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -876,6 +934,27 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: consentrequest
+    description: 'Fides Generated Description for Table: consentrequest'
+    data_categories: []
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: provided_identity_id
+      description: 'Fides Generated Description for Column: provided_identity_id'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: datasetconfig
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -996,6 +1075,10 @@ dataset:
     - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: execution_timeframe
+      description: 'Fides Generated Description for Column: execution_timeframe'
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: drp_action
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -1087,6 +1170,10 @@ dataset:
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: created_at
+      data_categories: [system.operations]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: due_date
+      description: 'Fides Generated Description for Column: due_date'
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: external_id
