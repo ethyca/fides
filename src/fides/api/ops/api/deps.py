@@ -20,14 +20,14 @@ def get_config() -> FidesConfig:
 def get_db() -> Generator:
     """Return our database session"""
     try:
-        db = _get_session()
+        db = get_api_session()
         yield db
     finally:
         db.close()
 
 
-def _get_session() -> Session:
-    """Gets a database session, using the global engine if defined"""
+def get_api_session() -> Session:
+    """Gets the shared database session to use for API functionality"""
     global _engine  # pylint: disable=W0603
     if not _engine:
         _engine = get_db_engine(config=CONFIG)
