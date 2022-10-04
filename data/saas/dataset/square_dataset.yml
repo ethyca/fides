@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: square_instance
+  - fides_key: <instance_fides_key>
     name: Square Dataset
     description: A sample dataset representing the Square connector for Fidesops
     collections:
