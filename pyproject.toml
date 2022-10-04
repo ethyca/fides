@@ -91,6 +91,7 @@ src_paths = ["src", "tests"]
 disable=[
     "bad-option-value",
     "broad-except",
+    "consider-using-f-string",
     "dangerous-default-value",
     "duplicate-code",
     "fixme",

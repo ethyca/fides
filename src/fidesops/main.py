@@ -65,39 +65,46 @@ if config.security.cors_origins:
     )
 
 
-@app.middleware("http")
-async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
-    """
-    HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
-    :param request: Request to fidesops api
-    :param call_next: Callable api endpoint
-    :return: Response
-    """
-    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
-    now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url}"
+if not config.root_user.analytics_opt_out:
 
-    try:
-        response = await call_next(request)
-        # HTTPExceptions are considered a handled err by default so are not thrown here.
-        # Accepted workaround is to inspect status code of response.
-        # More context- https://github.com/tiangolo/fastapi/issues/1840
-        response.background = BackgroundTask(
-            prepare_and_log_request,
-            endpoint,
-            request.url.hostname,
-            response.status_code,
-            now,
-            fides_source,
-            "HTTPException" if response.status_code >= 400 else None,
-        )
-        return response
+    @app.middleware("http")
+    async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
+        """
+        HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
+        :param request: Request to fidesops api
+        :param call_next: Callable api endpoint
+        :return: Response
+        """
+        fides_source: Optional[str] = request.headers.get("X-Fides-Source")
+        now: datetime = datetime.now(tz=timezone.utc)
+        endpoint = f"{request.method}: {request.url}"
 
-    except Exception as e:
-        await prepare_and_log_request(
-            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
-        )
-        raise
+        try:
+            response = await call_next(request)
+            # HTTPExceptions are considered a handled err by default so are not thrown here.
+            # Accepted workaround is to inspect status code of response.
+            # More context- https://github.com/tiangolo/fastapi/issues/1840
+            response.background = BackgroundTask(
+                prepare_and_log_request,
+                endpoint,
+                request.url.hostname,
+                response.status_code,
+                now,
+                fides_source,
+                "HTTPException" if response.status_code >= 400 else None,
+            )
+            return response
+
+        except Exception as e:
+            await prepare_and_log_request(
+                endpoint,
+                request.url.hostname,
+                500,
+                now,
+                fides_source,
+                e.__class__.__name__,
+            )
+            raise
 
 
 async def prepare_and_log_request(

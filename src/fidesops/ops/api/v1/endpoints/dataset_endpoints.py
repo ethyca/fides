@@ -8,6 +8,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from pydantic import conlist
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -251,11 +252,23 @@ def create_or_update_dataset(
         # Try to find an existing DatasetConfig matching the given connection & key
         dataset_config = DatasetConfig.create_or_update(db, data=data)
         created_or_updated.append(dataset_config.dataset)
-    except (SaaSConfigNotFoundException, ValidationError) as exception:
+    except (
+        SaaSConfigNotFoundException,
+        ValidationError,
+    ) as exception:
         logger.warning(exception.message)
         failed.append(
             BulkUpdateFailed(
                 message=exception.message,
+                data=data,
+            )
+        )
+    except IntegrityError:
+        message = "Dataset with key '%s' already exists." % data["fides_key"]
+        logger.warning(message)
+        failed.append(
+            BulkUpdateFailed(
+                message=message,
                 data=data,
             )
         )
