@@ -52,14 +52,10 @@ RUN : \
 ## Python Dependencies ##
 #########################
 
-COPY optional-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
-
-COPY dev-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
-
-COPY requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r requirements.txt
+COPY pyproject.toml .
+RUN pip install -U --no-cache-dir -e .
+RUN pip install -U --no-cache-dir -e ".[dev]"
+RUN pip install -U --no-cache-dir -e ".[all]"
 
 ###############################
 ## General Application Setup ##
@@ -93,8 +89,8 @@ RUN pip install -e .
 FROM backend as prod
 
 # Install without a symlink
-RUN python setup.py sdist
-RUN pip install dist/ethyca-fides-*.tar.gz
+RUN python -m build
+RUN pip install dist/ethyca_fides-*\d+.\d+.\d+.*.tar.gz
 
 # Copy frontend build over
 COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin

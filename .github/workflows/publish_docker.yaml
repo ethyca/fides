@@ -27,7 +27,7 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
+        run: pip install -e ".[dev]"
 
       - name: Build Fidesctl Image
         run: nox -s "build(prod)"

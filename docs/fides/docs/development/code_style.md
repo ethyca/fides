@@ -73,7 +73,7 @@ foods_list: List[str] = ["apple", "banana"]
 
 ## Pre-commit hooks
 
-Fides includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `dev-requirements.txt`. Once that is installed, follow these steps to get up and running:
+Fides includes a `.pre-commit-config.yaml` to facilitate running CI checks before pushing up to a PR. The `pre-commit` package is included in the `.[dev]`. Once that is installed, follow these steps to get up and running:
 
 1. `pre-commit install` - This is a one-time setup step to create the git pre-commit hooks.
 1. These pre-commit hooks will now run automatically. However you can also use `pre-commit run` to run them manually once all of your changes have been staged.

@@ -268,8 +268,8 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
 @nox.parametrize(
     "dist",
     [
-        nox.param("sdist", id="source"),
-        nox.param("bdist_wheel", id="wheel"),
+        nox.param("--sdist", id="source"),
+        nox.param("--wheel", id="wheel"),
     ],
 )
 def python_build(session: nox.Session, dist: str) -> None:
@@ -277,7 +277,8 @@ def python_build(session: nox.Session, dist: str) -> None:
     session.run(
         *RUN_NO_DEPS,
         "python",
-        "setup.py",
+        "-m",
+        "build",
         dist,
         external=True,
     )

@@ -36,18 +36,18 @@ jobs:
           cd clients/ctl/admin-ui
           npm run prod-export
 
-      - name: Install Twine and wheel
-        run: pip install twine wheel
+      - name: Install Twine and build
+        run: pip install twine build
 
       # The git reset is required here because the build modifies
       # egg-info and the wheel becomes a dirty version
       - name: Build the sdist
         run: |
-          python setup.py sdist
+          python -m build --sdist
           git reset --hard
 
       - name: Build the wheel
-        run: python setup.py bdist_wheel
+        run: python -m build --wheel
 
       - name: Upload to test pypi
         run: twine upload --repository testpypi dist/*

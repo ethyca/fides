@@ -1,6 +1,3 @@
 """Fides CLI"""
 
-from ._version import get_versions
-
-__version__ = get_versions()["version"]
-del get_versions
+__version__ = "1.8.5.post0.dev632"

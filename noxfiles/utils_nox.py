@@ -56,5 +56,5 @@ def teardown(session: nox.Session) -> None:
 
 
 def install_requirements(session: nox.Session) -> None:
-    session.install("-r", "requirements.txt")
-    session.install("-r", "dev-requirements.txt")
+    session.install("-e", ".")
+    session.install('-e', ".[dev]")
