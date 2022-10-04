@@ -17,7 +17,6 @@ from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy_utils.functions import drop_database
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -250,10 +249,10 @@ def require_manual_request_approval():
 @pytest.fixture(scope="function")
 def subject_identity_verification_required():
     """Enable identity verification."""
-    original_value = config.execution.subject_identity_verification_required
-    config.execution.subject_identity_verification_required = True
+    original_value = CONFIG.execution.subject_identity_verification_required
+    CONFIG.execution.subject_identity_verification_required = True
     yield
-    config.execution.subject_identity_verification_required = original_value
+    CONFIG.execution.subject_identity_verification_required = original_value
 
 
 @pytest.fixture(autouse=True, scope="function")

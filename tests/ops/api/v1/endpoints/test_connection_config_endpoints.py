@@ -193,7 +193,7 @@ class TestPatchConnections:
         )
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
     )
     def test_disable_manual_webhook(
         self,
@@ -871,7 +871,7 @@ class TestDeleteConnection:
         )
 
     @mock.patch(
-        "fidesops.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
+        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
     )
     def test_delete_manual_webhook_connection_config(
         self,

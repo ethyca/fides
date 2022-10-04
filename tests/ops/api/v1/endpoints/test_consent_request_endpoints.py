@@ -57,7 +57,7 @@ class TestConsentRequest:
         "email_dataset_config",
         "subject_identity_verification_required",
     )
-    @patch("fidesops.ops.service._verification.dispatch_email")
+    @patch("fides.api.ops.service._verification.dispatch_email")
     def test_consent_request(self, mock_dispatch_email, api_client):
         data = {"email": "test@example.com"}
         response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
@@ -70,7 +70,7 @@ class TestConsentRequest:
         "email_dataset_config",
         "subject_identity_verification_required",
     )
-    @patch("fidesops.ops.service._verification.dispatch_email")
+    @patch("fides.api.ops.service._verification.dispatch_email")
     def test_consent_request_identity_present(
         self, mock_dispatch_email, provided_identity_and_consent_request, api_client
     ):
