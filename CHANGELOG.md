@@ -15,8 +15,21 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesops/compare/1.8.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.8.5...main)
 
+### Added
+
+* Dataset generation enhancements using Fides Classify for Plus users:
+  * Added toggle for enabling classify during generation. [#1057](https://github.com/ethyca/fides/pull/1057)
+  * Initial implementation of API request to kick off classify, with confirmation modal. [#1069](https://github.com/ethyca/fides/pull/1069)
+  * Initial Classification & Review status for generated datasets. [#1074](https://github.com/ethyca/fides/pull/1074)
+* System management UI:
+  * New page to add a system via yaml [#1062](https://github.com/ethyca/fides/pull/1062)
+  * Skeleton of page to add a system manually [#1068](https://github.com/ethyca/fides/pull/1068)
+  * Refactor config wizard system forms to be reused for system management [#1072](https://github.com/ethyca/fides/pull/1072)
+  * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
+  * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
+  * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
