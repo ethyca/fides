@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { STORED_CREDENTIALS_KEY } from "~/constants";
+import { STORAGE_ROOT_KEY } from "~/constants";
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
@@ -13,7 +13,7 @@ Cypress.Commands.add("login", () => {
       token: body.token_data.access_token,
     };
     window.localStorage.setItem(
-      STORED_CREDENTIALS_KEY,
+        STORAGE_ROOT_KEY,
       JSON.stringify(authState)
     );
   });

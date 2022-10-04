@@ -1,4 +1,4 @@
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import {
   selectConnectionTypeFilters,

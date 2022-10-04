@@ -1,5 +1,5 @@
 import { Box, Center, Spinner, VStack } from "@fidesui/react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {

@@ -16,7 +16,7 @@ import {
   Tooltip,
   VStack,
 } from "@fidesui/react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";

@@ -1,5 +1,5 @@
 import { makeStore } from "../../../app/store";
-import { STORED_CREDENTIALS_KEY } from "../../../constants";
+import { STORAGE_ROOT_KEY } from "../../../constants";
 import { login, logout } from "../auth.slice";
 
 describe("Auth", () => {
@@ -19,7 +19,7 @@ describe("Auth", () => {
     );
 
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
-      STORED_CREDENTIALS_KEY,
+      STORAGE_ROOT_KEY,
       JSON.stringify({
         token: "test-access-token",
         user: {
@@ -36,7 +36,7 @@ describe("Auth", () => {
     store.dispatch(logout());
 
     expect(window.localStorage.removeItem).toHaveBeenCalledWith(
-      STORED_CREDENTIALS_KEY
+      STORAGE_ROOT_KEY
     );
   });
 });

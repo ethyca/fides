@@ -4,7 +4,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
 } from "@fidesui/react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React, { useCallback } from "react";
 

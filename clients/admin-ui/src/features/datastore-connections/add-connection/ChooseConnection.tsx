@@ -7,7 +7,7 @@ import {
   InputLeftElement,
   Spinner,
 } from "@fidesui/react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
 import {

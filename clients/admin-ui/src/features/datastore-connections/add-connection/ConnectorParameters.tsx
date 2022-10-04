@@ -1,5 +1,5 @@
 import { Box, Center, Flex, SlideFade, Spinner, VStack } from "@fidesui/react";
-import { useAppSelector } from "app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
