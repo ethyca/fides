@@ -26,15 +26,6 @@ def get_db() -> Generator:
         db.close()
 
 
-def get_db_for_health_check() -> Generator:
-    """Gets a database session regardless of whether the application db is disabled, for a health check."""
-    try:
-        db = get_api_session()
-        yield db
-    finally:
-        db.close()
-
-
 def get_api_session() -> Session:
     """Gets the shared database session to use for API functionality"""
     global _engine  # pylint: disable=W0603
