@@ -4,17 +4,17 @@ from email.utils import formatdate
 from typing import Any, Dict
 
 import pytest
-from fidesops.ops.common_exceptions import (
+from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fidesops.ops.service.connectors.saas.authenticated_client import (
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
+from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
     get_retry_after,
 )
-from fidesops.ops.util.saas_util import load_config_with_replacement
+from fides.api.ops.util.saas_util import load_config_with_replacement
 from requests import ConnectionError, Response, Session
 
 

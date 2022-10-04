@@ -5,20 +5,22 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
-from fidesops.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
-from fidesops.ops.api.v1.urn_registry import (
+from fides.api.ops.api.v1.scope_registry import CONNECTION_READ, CONSENT_READ
+from fides.api.ops.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fidesops.ops.core.config import config
-from fidesops.ops.models.privacy_request import (
+from fides.ctl.core.config import get_config
+from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     ProvidedIdentity,
 )
+
+CONFIG = get_config()
 
 
 @pytest.fixture
@@ -41,10 +43,10 @@ def provided_identity_and_consent_request(db):
 
 @pytest.fixture
 def disable_redis():
-    current = config.redis.enabled
-    config.redis.enabled = False
+    current = CONFIG.redis.enabled
+    CONFIG.redis.enabled = False
     yield
-    config.redis.enabled = current
+    CONFIG.redis.enabled = current
 
 
 class TestConsentRequest:

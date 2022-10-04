@@ -8,18 +8,18 @@ import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslib.models.client import ClientDetail
-from fidesops.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
-from fidesops.ops.graph.config import CollectionAddress
-from fidesops.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fidesops.ops.models.manual_webhook import AccessManualWebhook
-from fidesops.ops.models.policy import CurrentStep
-from fidesops.ops.models.privacy_request import (
+from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.api.ops.graph.config import CollectionAddress
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.policy import CurrentStep
+from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ManualAction,
     PrivacyRequestStatus,
 )
-from fidesops.ops.schemas.email.email import EmailActionType
-from fidesops.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.tasks import EMAIL_QUEUE_NAME
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 

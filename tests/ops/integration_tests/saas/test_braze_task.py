@@ -3,15 +3,17 @@ import time
 
 import pytest
 import requests
-from fidesops.ops.core.config import config
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service.connectors import get_connector
-from fidesops.ops.task import graph_task
-from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
+from fides.api.ops.task import graph_task
+from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
 
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -146,8 +148,8 @@ async def test_saas_erasure_task(
         ],
     )
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = True
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -201,4 +203,4 @@ async def test_saas_erasure_task(
         assert user["first_name"] == "MASKED"
         assert user["last_name"] == "MASKED"
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking

@@ -1,15 +1,15 @@
 import random
 
 import pytest
-from fidesops.ops.graph.graph import DatasetGraph
-from fidesops.ops.models.privacy_request import PrivacyRequest
-from fidesops.ops.schemas.redis_cache import Identity
-from fidesops.ops.service.saas_request.override_implementations.firebase_auth_request_overrides import (
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.saas_request.override_implementations.firebase_auth_request_overrides import (
     firebase_auth_user_delete,
     initialize_firebase,
 )
-from fidesops.ops.task import graph_task
-from fidesops.ops.task.graph_task import get_cached_data_for_erasures
+from fides.api.ops.task import graph_task
+from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError, UserRecord
 
