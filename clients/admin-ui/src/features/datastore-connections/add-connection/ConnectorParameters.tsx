@@ -1,11 +1,12 @@
 import { Box, Center, Flex, SlideFade, Spinner, VStack } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
 import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+
+import { useAppSelector } from "~/app/hooks";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
 import { replaceURL } from "./helpers";

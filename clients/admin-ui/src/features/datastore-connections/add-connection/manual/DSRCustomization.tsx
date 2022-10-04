@@ -1,5 +1,4 @@
 import { Box, Center, Spinner, VStack } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { useAlert, useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
@@ -14,6 +13,8 @@ import {
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
+
+import { useAppSelector } from "~/app/hooks";
 
 import { replaceURL } from "../helpers";
 import DSRCustomizationForm from "./DSRCustomizationForm";

@@ -1,5 +1,4 @@
 import { Box } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
@@ -20,6 +19,8 @@ import {
 } from "datastore-connections/types";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey, replaceURL } from "../helpers";

@@ -1,5 +1,4 @@
 import { Flex } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeState,
   setConnection,
@@ -8,6 +7,8 @@ import {
 import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import Breadcrumb from "./Breadcrumb";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";

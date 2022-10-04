@@ -7,7 +7,6 @@ import {
   InputLeftElement,
   Spinner,
 } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { SearchLineIcon } from "common/Icon";
 import { debounce } from "common/utils";
 import {
@@ -18,6 +17,8 @@ import {
 } from "connection-type/connection-type.slice";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import Breadcrumb from "./Breadcrumb";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";

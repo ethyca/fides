@@ -1,11 +1,12 @@
 /* eslint-disable no-param-reassign */
 import { VStack } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 import * as Yup from "yup";
+
+import { useAppSelector } from "~/app/hooks";
 
 import CustomInput from "../forms/CustomInput";
 import { BaseConnectorParametersFields } from "../types";

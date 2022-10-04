@@ -59,12 +59,7 @@ import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
 // import { createWrapper } from "next-redux-wrapper";
-import {
-  authApi,
-  AuthState,
-  credentialStorage,
-  reducer as authReducer,
-} from "../features/auth";
+import { authApi, AuthState, reducer as authReducer } from "../features/auth";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"

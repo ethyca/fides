@@ -7,11 +7,12 @@ import {
   Text,
   VStack,
 } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { ErrorWarningIcon, GreenCheckCircleIcon } from "common/Icon";
 import { formatDate } from "common/utils";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import React from "react";
+
+import { useAppSelector } from "~/app/hooks";
 
 type TestConnectionProps = {
   response: any;

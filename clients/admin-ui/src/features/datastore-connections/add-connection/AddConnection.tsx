@@ -1,5 +1,4 @@
 import { Box, Heading, Text } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import {
   selectConnectionTypeState,
   setConnectionOption,
@@ -9,6 +8,8 @@ import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";

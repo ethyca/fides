@@ -1,5 +1,4 @@
 import { Box, Text, VStack } from "@fidesui/react";
-import { useAppSelector } from "~/app/hooks";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
@@ -11,6 +10,8 @@ import { usePatchDatastoreConnectionMutation } from "datastore-connections/datas
 import { DatastoreConnectionRequest } from "datastore-connections/types";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import { BaseConnectorParametersFields } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";

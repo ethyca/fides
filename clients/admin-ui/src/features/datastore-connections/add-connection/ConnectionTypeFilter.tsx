@@ -1,4 +1,3 @@
-import { useAppSelector } from "~/app/hooks";
 import SelectDropdown from "common/dropdown/SelectDropdown";
 import {
   selectConnectionTypeFilters,
@@ -6,6 +5,8 @@ import {
 } from "connection-type/connection-type.slice";
 import React, { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import {
   CONNECTION_TYPE_FILTER_MAP,
