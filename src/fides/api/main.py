@@ -210,9 +210,8 @@ async def setup_server() -> None:
 
     logger.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
-    db = get_api_session()
-    update_saas_configs(registry, db)
-    db.close()
+    with get_api_session() as db:
+        update_saas_configs(registry, db)
 
     logger.info("Running Redis connection test...")
     try:
