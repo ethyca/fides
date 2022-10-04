@@ -42,6 +42,9 @@ export type CreateAccessManualWebhookResponse = {
   id: string;
 };
 
+export type GetAllEnabledAccessManualWebhooksResponse =
+  GetAccessManualWebhookResponse[];
+
 export type GetAccessManualWebhookResponse = CreateAccessManualWebhookResponse;
 
 export type PatchAccessManualWebhookRequest = CreateAccessManualWebhookRequest;

@@ -6,7 +6,10 @@ const API_URL = process.env.NEXT_PUBLIC_FIDESOPS_API
   : "";
 export const BASE_URL = API_URL + BASE_API_URN;
 
-export const STORED_CREDENTIALS_KEY = "auth.fidesops-admin-ui";
+/**
+ * Redux-persist storage root key
+ */
+export const STORAGE_ROOT_KEY = "persist:root";
 
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
@@ -40,6 +43,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   {
     privilege: "Delete datastore connections",
     scope: "connection:delete",
+  },
+  {
+    privilege: "View user consent preferences",
+    scope: "consent:read",
   },
   {
     privilege: "View Datasets",

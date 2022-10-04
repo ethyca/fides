@@ -18,35 +18,11 @@ import { AddConnectionStep } from "./types";
 const AddConnection: React.FC = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { connectorType, key, step: currentStep } = router.query;
+  const { connectorType, step: currentStep } = router.query;
 
   const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
 
-  /**
-   * NOTE: If the user reloads the web page via F5, the react redux store state is lost.
-   * By default its persisted in internal memory. As a result, a runtime exception occurs
-   * which impedes the page rendering.
-   *
-   * @example
-   * The above error occurred in the <AddConnection> component
-   *
-   * For now, a temporary solution is to redirect the user
-   * to the "Choose your connection" step. This allows a better overall user experience.
-   * A permanent solution will be to persist the react redux store state to either local storage
-   * or session storage. Once completed, this method can be deleted.
-   */
-  const reload = useCallback(() => {
-    if (
-      key &&
-      currentStep &&
-      (currentStep as unknown as number) !== step?.stepId
-    ) {
-      window.location.href = STEPS[1].href;
-    }
-  }, [currentStep, key, step?.stepId]);
-
   useEffect(() => {
-    reload();
     if (connectorType) {
       dispatch(setConnectionOption(JSON.parse(connectorType as string)));
     }
@@ -55,19 +31,7 @@ const AddConnection: React.FC = () => {
       dispatch(setStep(item || STEPS[1]));
     }
     return () => {};
-  }, [connectorType, currentStep, dispatch, reload, router.query.step]);
-
-  const getComponent = useCallback(() => {
-    switch (step.stepId) {
-      case 1:
-        return <ChooseConnection />;
-      case 2:
-      case 3:
-        return <ConfigureConnector />;
-      default:
-        return <ChooseConnection />;
-    }
-  }, [step.stepId]);
+  }, [connectorType, currentStep, dispatch, router.query.step]);
 
   const getLabel = useCallback(
     (s: AddConnectionStep): string => {
@@ -108,7 +72,17 @@ const AddConnection: React.FC = () => {
           {!connectionOption && <Text>{getLabel(step)}</Text>}
         </Box>
       </Heading>
-      {getComponent()}
+      {(() => {
+        switch (step.stepId) {
+          case 1:
+            return <ChooseConnection />;
+          case 2:
+          case 3:
+            return <ConfigureConnector />;
+          default:
+            return <ChooseConnection />;
+        }
+      })()}
     </>
   );
 };

@@ -7,6 +7,8 @@ import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import {
   DenyPrivacyRequest,
+  GetUpdloadedManualWebhookDataRequest,
+  PatchUploadManualWebhookDataRequest,
   PrivacyRequest,
   PrivacyRequestParams,
   PrivacyRequestResponse,
@@ -64,17 +66,6 @@ export const privacyRequestApi = createApi({
   }),
   tagTypes: ["Request"],
   endpoints: (build) => ({
-    getAllPrivacyRequests: build.query<
-      PrivacyRequestResponse,
-      Partial<PrivacyRequestParams>
-    >({
-      query: (filters) => ({
-        url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
-        )}`,
-      }),
-      providesTags: () => ["Request"],
-    }),
     approveRequest: build.mutation<
       PrivacyRequest,
       Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
@@ -99,6 +90,32 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
+    getAllPrivacyRequests: build.query<
+      PrivacyRequestResponse,
+      Partial<PrivacyRequestParams>
+    >({
+      query: (filters) => ({
+        url: `privacy-request?${decodeURIComponent(
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+        )}`,
+      }),
+      providesTags: () => ["Request"],
+    }),
+    getUploadedManualWebhookData: build.query<
+      any,
+      GetUpdloadedManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+      }),
+    }),
+    resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
+      query: (privacy_request_id) => ({
+        url: `privacy-request/${privacy_request_id}/resume_from_requires_input`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
     retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
       query: ({ id }) => ({
         url: `privacy-request/${id}/retry`,
@@ -106,14 +123,27 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
+    uploadManualWebhookData: build.mutation<
+      any,
+      PatchUploadManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+        method: "PATCH",
+        body: params.body,
+      }),
+    }),
   }),
 });
 
 export const {
-  useGetAllPrivacyRequestsQuery,
   useApproveRequestMutation,
   useDenyRequestMutation,
+  useGetAllPrivacyRequestsQuery,
+  useGetUploadedManualWebhookDataQuery,
+  useResumePrivacyRequestFromRequiresInputMutation,
   useRetryMutation,
+  useUploadManualWebhookDataMutation,
 } = privacyRequestApi;
 
 export const requestCSVDownload = async ({

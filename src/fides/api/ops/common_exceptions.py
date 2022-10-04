@@ -109,6 +109,10 @@ class NoCachedManualWebhookEntry(BaseException):
     """No manual data exists for this webhook on the given privacy request."""
 
 
+class ManualWebhookFieldsUnset(BaseException):
+    """Manual webhook has fields that are not explicitly set: Likely new field has been added"""
+
+
 class PrivacyRequestErasureEmailSendRequired(BaseException):
     """Erasure requests will need to be fulfilled by email send.  Exception is raised to change ExecutionLog details"""
 

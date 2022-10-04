@@ -101,10 +101,10 @@ dataset:
 
 Fides triggers a retrieval with identity data, such as an email address or user ID, that's provided by the user, and will then:
 
-1. Identify the collections that contain the identity data that the user
-2. Find all related records
-3. Use the initial data to find all connected data
-4. Continue until all related data is discovered
+1. Identify the collections that contain the identity data that belong to the user.
+2. Find all related records.
+3. Use the data to find all connected data.
+4. Continue until we've found all related data.
 
 For the first step, Fides uses the concept of an `identity`. In the Fides [Dataset](../getting-started/datasets.md) specification, any field may be marked with an `identity` notation:
 

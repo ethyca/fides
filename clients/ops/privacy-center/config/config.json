@@ -27,5 +27,25 @@
         "phone": "optional"
       }
     }
-  ]
+  ],
+  "includeConsent": true,
+  "consent": {
+    "consentOptions": [
+      {
+        "fidesDataUseKey": "third_party_sharing",
+        "name": "Do not sell my personal information",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit. Lorem ipsum dolor sit amet, consectetur.",
+        "highlight": true,
+        "url": "https://example.com/privacy#data-sales"
+      },
+      {
+        "default": true,
+        "fidesDataUseKey": "provide.service",
+        "name": "Provide a service",
+        "url": "https://example.com/privacy#provide-service",
+        "highlight": false,
+        "description": "Manage how we use your data, including Do Not Sell My Personal Information."
+      }
+    ]
+  }
 }

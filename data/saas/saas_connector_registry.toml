@@ -16,6 +16,12 @@ dataset = "data/saas/dataset/datadog_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Datadog"
 
+[firebase_auth]
+config = "data/saas/config/firebase_auth_config.yml"
+dataset = "data/saas/dataset/firebase_auth_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Firebase Auth"
+
 [hubspot]
 config = "data/saas/config/hubspot_config.yml"
 dataset = "data/saas/dataset/hubspot_dataset.yml"
@@ -81,3 +87,9 @@ config = "data/saas/config/rollbar_config.yml"
 dataset = "data/saas/dataset/rollbar_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Rollbar"
+
+[braze]
+config = "data/saas/config/braze_config.yml"
+dataset = "data/saas/dataset/braze_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Braze"
