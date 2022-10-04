@@ -68,7 +68,7 @@ def get_cache_health() -> str:
 )
 async def health() -> Dict:
     """Confirm that the API is running and healthy."""
-    database_health = get_db_health(CONFIG.database.sync_database_uri)
+    database_health = get_db_health(str(CONFIG.database.sync_database_uri))
     cache_health = get_cache_health()
     response = {
         "webserver": "healthy",
