@@ -82,7 +82,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?search=re", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
         assert data == [
             {
                 "identifier": ConnectionType.postgres.value,
@@ -98,6 +98,11 @@ class TestGetConnections:
                 "identifier": SaaSType.outreach.value,
                 "type": SystemType.saas.value,
                 "human_readable": "Outreach",
+            },
+            {
+                "identifier": SaaSType.square.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Square",
             },
         ]
 
