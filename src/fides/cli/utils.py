@@ -247,9 +247,8 @@ def handle_database_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if database_credentials:
-            _validate_credentials_id_exists(credentials_id, database_credentials)
-            actual_connection_string = database_credentials.connection_string
+        _validate_credentials_id_exists(credentials_id, database_credentials)
+        actual_connection_string = database_credentials.connection_string  # type: ignore[union-attr]
     return actual_connection_string
 
 
@@ -276,8 +275,7 @@ def handle_okta_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if okta_config:
-            _validate_credentials_id_exists(credentials_id, okta_config)
+        _validate_credentials_id_exists(credentials_id, okta_config)
 
     return okta_config
 
@@ -314,12 +312,7 @@ def handle_aws_credentials_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if aws_config:
-            _validate_credentials_id_exists(credentials_id, aws_config)
-
-    if not aws_config:
-        click.secho("No AWS configuration provided", fg="red")
-        sys.exit(1)
+        _validate_credentials_id_exists(credentials_id, aws_config)
 
     return aws_config
 
@@ -353,12 +346,7 @@ def handle_bigquery_config_options(
             credentials_config=fides_config.credentials,
             credentials_id=credentials_id,
         )
-        if bigquery_config:
-            _validate_credentials_id_exists(credentials_id, bigquery_config)
-
-    if not bigquery_config:
-        click.secho("No BigQuery configuration provided", fg="red")
-        sys.exit(1)
+        _validate_credentials_id_exists(credentials_id, bigquery_config)
 
     if not bigquery_config:
         raise click.UsageError("Illegal usage: No connection configuration provided")
@@ -368,7 +356,9 @@ def handle_bigquery_config_options(
 
 def _validate_credentials_id_exists(
     credentials_id: str,
-    credentials_config: Union[AWSConfig, BigQueryConfig, DatabaseConfig, OktaConfig],
+    credentials_config: Optional[
+        Union[AWSConfig, BigQueryConfig, DatabaseConfig, OktaConfig]
+    ],
 ) -> None:
     if not credentials_config:
         raise click.UsageError(
