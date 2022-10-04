@@ -30,6 +30,7 @@ The types of changes are:
   * Add additional optional fields to system management forms [#1082](https://github.com/ethyca/fides/pull/1082)
   * Delete a system through the UI [#1085](https://github.com/ethyca/fides/pull/1085)
   * Edit a system through the UI [#1096](https://github.com/ethyca/fides/pull/1096)
+  * Access and erasure support for Square [#1193](https://github.com/ethyca/fides/pull/1193)
 
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 

@@ -1,12 +1,14 @@
 import logging
 from typing import Dict
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from redis.exceptions import ResponseError
+from sqlalchemy.orm import Session
 
 import fides
 from fides.api.ctl.database.database import get_db_health
 from fides.api.ctl.utils.api_router import APIRouter
+from fides.api.ops.api.deps import get_db
 from fides.api.ops.common_exceptions import RedisConnectionError
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii
@@ -66,9 +68,11 @@ def get_cache_health() -> str:
         },
     },
 )
-async def health() -> Dict:
+async def health(
+    db: Session = Depends(get_db),
+) -> Dict:  # Intentionally injecting the ops get_db
     """Confirm that the API is running and healthy."""
-    database_health = get_db_health(CONFIG.database.sync_database_uri)
+    database_health = get_db_health(CONFIG.database.sync_database_uri, db)
     cache_health = get_cache_health()
     response = {
         "webserver": "healthy",
