@@ -1,5 +1,4 @@
 # Set the fidesctl core team as the default codeowners
-* @ethyca/fidesctl-team
 * @ethyca/automation-team
 * @ethyca/experience-team
 
