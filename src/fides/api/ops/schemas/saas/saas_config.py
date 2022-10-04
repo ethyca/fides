@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
@@ -243,31 +242,6 @@ class ConnectorParam(BaseModel):
         return values
 
 
-class SaaSType(Enum):
-    """
-    Enum to store saas connection type in Fidesops
-    """
-
-    adobe_campaign = "adobe_campaign"
-    auth0 = "auth0"
-    braze = "braze"
-    custom = "custom"
-    datadog = "datadog"
-    firebase_auth = "firebase_auth"
-    hubspot = "hubspot"
-    mailchimp = "mailchimp"
-    outreach = "outreach"
-    rollbar = "rollbar"
-    salesforce = "salesforce"
-    segment = "segment"
-    sendgrid = "sendgrid"
-    sentry = "sentry"
-    shopify = "shopify"
-    square = "square"
-    stripe = "stripe"
-    zendesk = "zendesk"
-
-
 class SaaSConfigBase(BaseModel):
     """
     Used to store base info for a saas config
@@ -275,7 +249,7 @@ class SaaSConfigBase(BaseModel):
 
     fides_key: FidesOpsKey
     name: str
-    type: SaaSType
+    type: str
 
     @property
     def fides_key_prop(self) -> FidesOpsKey:

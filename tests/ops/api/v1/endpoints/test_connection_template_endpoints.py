@@ -22,13 +22,21 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import SystemType
-from fides.api.ops.schemas.saas.saas_config import SaaSType
+from fides.api.ops.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    load_registry,
+    registry_file,
+)
 
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
         return V1_URL_PREFIX + CONNECTION_TYPES
+
+    @pytest.fixture(scope="session")
+    def saas_template_registry(self):
+        return load_registry(registry_file)
 
     def test_get_connection_types_not_authenticated(self, api_client, url):
         resp = api_client.get(url, headers={})
@@ -42,23 +50,33 @@ class TestGetConnections:
         assert resp.status_code == 403
 
     def test_get_connection_types(
-        self, api_client: TestClient, generate_auth_header, url
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        saas_template_registry: ConnectorRegistry,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 27
+        assert (
+            len(data)
+            == len(ConnectionType) + len(saas_template_registry.connector_types()) - 4
+        )  # there are 4 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
         } in data
+        first_saas_type = saas_template_registry.connector_types().pop()
         assert {
-            "identifier": SaaSType.stripe.value,
+            "identifier": first_saas_type,
             "type": SystemType.saas.value,
-            "human_readable": "Stripe",
+            "human_readable": saas_template_registry.get_connector_template(
+                first_saas_type
+            ).human_readable,
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -66,104 +84,160 @@ class TestGetConnections:
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
 
-    def test_search_connection_types(self, api_client, generate_auth_header, url):
-        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-
-        resp = api_client.get(url + "?search=str", headers=auth_header)
-        assert resp.status_code == 200
-        data = resp.json()["items"]
-        assert len(data) == 1
-        assert data[0] == {
-            "identifier": SaaSType.stripe.value,
-            "type": SystemType.saas.value,
-            "human_readable": "Stripe",
-        }
-
-        resp = api_client.get(url + "?search=re", headers=auth_header)
-        assert resp.status_code == 200
-        data = resp.json()["items"]
-        assert len(data) == 5
-        assert data == [
-            {
-                "identifier": ConnectionType.postgres.value,
-                "type": SystemType.database.value,
-                "human_readable": "PostgreSQL",
-            },
-            {
-                "identifier": ConnectionType.redshift.value,
-                "type": SystemType.database.value,
-                "human_readable": "Amazon Redshift",
-            },
-            {
-                "identifier": SaaSType.firebase_auth.value,
-                "type": SystemType.saas.value,
-                "human_readable": "Firebase Auth",
-            },
-            {
-                "identifier": SaaSType.outreach.value,
-                "type": SystemType.saas.value,
-                "human_readable": "Outreach",
-            },
-            {
-                "identifier": SaaSType.square.value,
-                "type": SystemType.saas.value,
-                "human_readable": "Square",
-            },
-        ]
-
-    def test_search_connection_types_case_insensitive(
-        self, api_client, generate_auth_header, url
+    def test_search_connection_types(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
-        resp = api_client.get(url + "?search=St", headers=auth_header)
+        search = "str"
+        expected_saas_types = [
+            connector_type
+            for connector_type in saas_template_registry.connector_types()
+            if search.lower() in connector_type.lower()
+        ]
+        expected_saas_data = [
+            {
+                "identifier": saas_type,
+                "type": SystemType.saas.value,
+                "human_readable": saas_template_registry.get_connector_template(
+                    saas_type
+                ).human_readable,
+            }
+            for saas_type in expected_saas_types
+        ]
+
+        resp = api_client.get(url + f"?search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2
-        assert data[0] == {
+
+        assert len(data) == len(expected_saas_types)
+        assert data[0] in expected_saas_data
+
+        search = "re"
+        expected_saas_types = [
+            connector_type
+            for connector_type in saas_template_registry.connector_types()
+            if search.lower() in connector_type.lower()
+        ]
+        expected_saas_data = [
+            {
+                "identifier": saas_type,
+                "type": SystemType.saas.value,
+                "human_readable": saas_template_registry.get_connector_template(
+                    saas_type
+                ).human_readable,
+            }
+            for saas_type in expected_saas_types
+        ]
+
+        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+
+        # 2 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 2
+
+        assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
-        }
-        assert data[1] == {
-            "identifier": SaaSType.stripe.value,
-            "type": SystemType.saas.value,
-            "human_readable": "Stripe",
-        }
+        } in data
+        assert {
+            "identifier": ConnectionType.redshift.value,
+            "type": SystemType.database.value,
+            "human_readable": "Amazon Redshift",
+        } in data
+        for expected_data in expected_saas_data:
+            assert expected_data in data
 
-        resp = api_client.get(url + "?search=Re", headers=auth_header)
-        assert resp.status_code == 200
-        data = resp.json()["items"]
-        assert len(data) == 5
-        assert data == [
+    def test_search_connection_types_case_insensitive(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+        saas_template_registry: ConnectorRegistry,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+
+        search = "St"
+        expected_saas_types = [
+            connector_type
+            for connector_type in saas_template_registry.connector_types()
+            if search.lower() in connector_type.lower()
+        ]
+        expected_saas_data = [
             {
-                "identifier": ConnectionType.postgres.value,
-                "type": SystemType.database.value,
-                "human_readable": "PostgreSQL",
-            },
-            {
-                "identifier": ConnectionType.redshift.value,
-                "type": SystemType.database.value,
-                "human_readable": "Amazon Redshift",
-            },
-            {
-                "identifier": SaaSType.firebase_auth.value,
+                "identifier": saas_type,
                 "type": SystemType.saas.value,
-                "human_readable": "Firebase Auth",
-            },
-            {
-                "identifier": SaaSType.outreach.value,
-                "type": SystemType.saas.value,
-                "human_readable": "Outreach",
-            },
-            {
-                "identifier": SaaSType.square.value,
-                "type": SystemType.saas.value,
-                "human_readable": "Square",
-            },
+                "human_readable": saas_template_registry.get_connector_template(
+                    saas_type
+                ).human_readable,
+            }
+            for saas_type in expected_saas_types
         ]
 
-    def test_search_system_type(self, api_client, generate_auth_header, url):
+        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        # 1 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 1
+        assert {
+            "identifier": ConnectionType.postgres.value,
+            "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
+        } in data
+
+        for expected_data in expected_saas_data:
+            assert expected_data in data
+
+        search = "Re"
+        expected_saas_types = [
+            connector_type
+            for connector_type in saas_template_registry.connector_types()
+            if search.lower() in connector_type.lower()
+        ]
+        expected_saas_data = [
+            {
+                "identifier": saas_type,
+                "type": SystemType.saas.value,
+                "human_readable": saas_template_registry.get_connector_template(
+                    saas_type
+                ).human_readable,
+            }
+            for saas_type in expected_saas_types
+        ]
+
+        resp = api_client.get(url + f"?search={search}", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        # 2 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 2
+        assert {
+            "identifier": ConnectionType.postgres.value,
+            "type": SystemType.database.value,
+            "human_readable": "PostgreSQL",
+        } in data
+        assert {
+            "identifier": ConnectionType.redshift.value,
+            "type": SystemType.database.value,
+            "human_readable": "Amazon Redshift",
+        } in data
+
+        for expected_data in expected_saas_data:
+            assert expected_data in data
+
+    def test_search_system_type(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+        saas_template_registry: ConnectorRegistry,
+    ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
         resp = api_client.get(url + "?system_type=nothing", headers=auth_header)
@@ -172,7 +246,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 17
+        assert len(data) == len(saas_template_registry.connector_types())
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
@@ -180,14 +254,26 @@ class TestGetConnections:
         assert len(data) == 9
 
     def test_search_system_type_and_connection_type(
-        self, api_client, generate_auth_header, url
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+        saas_template_registry: ConnectorRegistry,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
-        resp = api_client.get(url + "?search=str&system_type=saas", headers=auth_header)
+        search = "str"
+        resp = api_client.get(
+            url + f"?search={search}&system_type=saas", headers=auth_header
+        )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
+        expected_saas_types = [
+            connector_type
+            for connector_type in saas_template_registry.connector_types()
+            if search.lower() in connector_type.lower()
+        ]
+        assert len(data) == len(expected_saas_types)
 
         resp = api_client.get(
             url + "?search=re&system_type=database", headers=auth_header
