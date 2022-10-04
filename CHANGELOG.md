@@ -45,6 +45,8 @@ The types of changes are:
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
 * Update all fidesops/fidesctl logos to use the default Fides logo [#1149](https://github.com/ethyca/fides/pull/1158)
+* ESLint: Parsing error: Cannot read file tsconfig.json file [#1177](https://github.com/ethyca/fides/pull/1181)
+* Duplicate key in fides admin ui package.json file [#1191](https://github.com/ethyca/fides/pull/1192)
 
 ### Security
 
