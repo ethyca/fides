@@ -153,7 +153,7 @@ def audit_organizations(
         )
 
     if not organization_resources:
-        print(f"No organization resources were found.")
+        print("No organization resources were found.")
         return
 
     print(f"Found {len(organization_resources)} Organization resource(s) to audit...")
