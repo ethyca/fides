@@ -97,7 +97,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
 
         const topClassification = classifyField.classifications.reduce(
           (maxClassification, next) => {
-            if (maxClassification.score < next.score) {
+            if (maxClassification.aggregated_score < next.aggregated_score) {
               return next;
             }
             return maxClassification;
