@@ -48,7 +48,7 @@ class TestGetConnections:
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
         assert resp.status_code == 200
-        assert len(data) == 24
+        assert len(data) == 25
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -82,7 +82,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?search=re", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
         assert data == [
             {
                 "identifier": ConnectionType.postgres.value,
@@ -98,6 +98,11 @@ class TestGetConnections:
                 "identifier": SaaSType.outreach.value,
                 "type": SystemType.saas.value,
                 "human_readable": "Outreach",
+            },
+            {
+                "identifier": SaaSType.square.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Square",
             },
         ]
 
@@ -124,7 +129,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?search=Re", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
         assert data == [
             {
                 "identifier": ConnectionType.postgres.value,
@@ -141,6 +146,11 @@ class TestGetConnections:
                 "type": SystemType.saas.value,
                 "human_readable": "Outreach",
             },
+            {
+                "identifier": SaaSType.square.value,
+                "type": SystemType.saas.value,
+                "human_readable": "Square",
+            },
         ]
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
@@ -152,7 +162,7 @@ class TestGetConnections:
         resp = api_client.get(url + "?system_type=saas", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 14
+        assert len(data) == 15
 
         resp = api_client.get(url + "?system_type=database", headers=auth_header)
         assert resp.status_code == 200
