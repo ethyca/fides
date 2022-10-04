@@ -5,15 +5,13 @@ import { useMemo } from "react";
 import { DataCategory } from "~/types/api";
 
 import DataCategoryDropdown from "./DataCategoryDropdown";
-import type { Props as DataCategoryDropdownProps } from "./DataCategoryInput";
+import { DataCategoryWithConfidence } from "./types";
 
-// TODO: just making up a structure until we have something real from the API
-interface DataCategoryWithConfidence extends DataCategory {
-  confidence: number;
-}
-
-interface Props extends Omit<DataCategoryDropdownProps, "tooltip"> {
+interface Props {
+  dataCategories: DataCategory[];
   mostLikelyCategories: DataCategoryWithConfidence[];
+  checked: string[];
+  onChecked: (newChecked: string[]) => void;
 }
 
 const ClassifiedDataCategoryDropdown = ({
@@ -57,7 +55,9 @@ const ClassifiedDataCategoryDropdown = ({
     })
     .map((c) => {
       const confidence =
-        c.confidence === undefined ? "N/A" : `${c.confidence.toFixed()}%`;
+        c.confidence === undefined
+          ? "N/A"
+          : `${(c.confidence * 100).toFixed()}%`;
       return {
         label: `${c.fides_key} (${confidence})`,
         value: c.fides_key,

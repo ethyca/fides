@@ -2,14 +2,15 @@ import { Box, FormLabel, Grid, Stack } from "@fidesui/react";
 
 import { DataCategory } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
 import QuestionTooltip from "../common/QuestionTooltip";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import ClassifiedDataCategoryDropdown from "./ClassifiedDataCategoryDropdown";
 import DataCategoryDropdown from "./DataCategoryDropdown";
+import { DataCategoryWithConfidence } from "./types";
 
 export interface Props {
   dataCategories: DataCategory[];
+  mostLikelyCategories?: DataCategoryWithConfidence[];
   checked: string[];
   onChecked: (newChecked: string[]) => void;
   tooltip?: string;
@@ -17,11 +18,11 @@ export interface Props {
 
 const DataCategoryInput = ({
   dataCategories,
+  mostLikelyCategories,
   checked,
   onChecked,
   tooltip,
 }: Props) => {
-  const features = useFeatures();
   const handleRemoveDataCategory = (dataCategoryName: string) => {
     onChecked(checked.filter((dc) => dc !== dataCategoryName));
   };
@@ -33,15 +34,12 @@ const DataCategoryInput = ({
   return (
     <Grid templateColumns="1fr 3fr">
       <FormLabel>Data Categories</FormLabel>
-      {features.plus ? (
+      {mostLikelyCategories ? (
         <Box display="flex" alignItems="center">
           <Box mr="2" width="100%">
             <ClassifiedDataCategoryDropdown
               dataCategories={dataCategories}
-              // TODO: make this real
-              mostLikelyCategories={dataCategories
-                .slice(0, 5)
-                .map((d) => ({ ...d, confidence: 97 }))}
+              mostLikelyCategories={mostLikelyCategories}
               checked={checked}
               onChecked={onChecked}
             />
