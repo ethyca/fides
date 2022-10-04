@@ -30,7 +30,6 @@ from fides.api.ctl.routes import (
     datamap,
     generate,
     health,
-    user,
     validate,
     visualize,
 )
@@ -83,7 +82,6 @@ ROUTERS = (
         datamap.router,
         generate.router,
         health.router,
-        user.router,
         validate.router,
         view.router,
     ]

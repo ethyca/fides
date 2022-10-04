@@ -252,3 +252,30 @@ def disable_subject_identity_verification():
     CONFIG.execution.subject_identity_verification_required = False
     yield
     CONFIG.execution.subject_identity_verification_required = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_complete_email_notification_disabled():
+    """Disable request completion email for most tests unless overridden"""
+    original_value = CONFIG.notifications.send_request_completion_notification
+    CONFIG.notifications.send_request_completion_notification = False
+    yield
+    CONFIG.notifications.send_request_completion_notification = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_receipt_email_notification_disabled():
+    """Disable request receipt email for most tests unless overridden"""
+    original_value = CONFIG.notifications.send_request_receipt_notification
+    CONFIG.notifications.send_request_receipt_notification = False
+    yield
+    CONFIG.notifications.send_request_receipt_notification = original_value
+
+
+@pytest.fixture(autouse=True, scope="function")
+def privacy_request_review_email_notification_disabled():
+    """Disable request review email for most tests unless overridden"""
+    original_value = CONFIG.notifications.send_request_review_notification
+    CONFIG.notifications.send_request_review_notification = False
+    yield
+    CONFIG.notifications.send_request_review_notification = original_value

@@ -9,7 +9,6 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.models.email import EmailConfig
 from fides.api.ops.schemas.email.email import EmailConfigRequest, EmailConfigResponse
-from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
