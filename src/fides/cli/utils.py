@@ -244,7 +244,7 @@ def handle_database_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, database_credentials)
-        actual_connection_string = database_credentials.connection_string
+        actual_connection_string = database_credentials.connection_string  # type: ignore[union-attr]
     return actual_connection_string
 
 
@@ -272,6 +272,7 @@ def handle_okta_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, okta_config)
+
     return okta_config
 
 
@@ -308,6 +309,7 @@ def handle_aws_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, aws_config)
+
     return aws_config
 
 
@@ -350,7 +352,9 @@ def handle_bigquery_config_options(
 
 def _validate_credentials_id_exists(
     credentials_id: str,
-    credentials_config: Union[OktaConfig, BigQueryConfig, AWSConfig],
+    credentials_config: Optional[
+        Union[AWSConfig, BigQueryConfig, DatabaseConfig, OktaConfig]
+    ],
 ) -> None:
     if not credentials_config:
         raise click.UsageError(
