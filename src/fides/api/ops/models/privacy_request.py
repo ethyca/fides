@@ -18,7 +18,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -30,6 +30,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_CALLBACK_RESUME
 from fides.api.ops.common_exceptions import (
     IdentityVerificationException,
+    ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -505,26 +506,49 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             parsed_data.dict(),
         )
 
-    def get_manual_webhook_input(
+    def get_manual_webhook_input_strict(
         self, manual_webhook: AccessManualWebhook
     ) -> Dict[str, Any]:
-        """Retrieve manually added data that matches fields supplied in the specified manual webhook.
-
-        This is for use by the *manual_webhook* connector which is *NOT* integrated with the garph.
         """
-        cache: FidesopsRedis = get_cache()
-        cached_results: Optional[
-            Optional[Dict[str, Any]]
-        ] = cache.get_encoded_objects_by_prefix(
-            f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}"
+        Retrieves manual webhook fields saved to the privacy request in strict mode.
+        Fails either if extra saved fields are detected (webhook definition had fields removed) or fields were not
+        explicitly set (webhook definition had fields added). This mode lets us know if webhooks data needs to be re-uploaded.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
         )
+
         if cached_results:
-            return manual_webhook.fields_schema.parse_obj(
-                list(cached_results.values())[0]
-            ).dict()
+            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+                cached_results
+            ).dict(exclude_unset=True)
+            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+                raise ManualWebhookFieldsUnset(
+                    f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
+                )
+            return data
         raise NoCachedManualWebhookEntry(
             f"No data cached for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
         )
+
+    def get_manual_webhook_input_non_strict(
+        self, manual_webhook: AccessManualWebhook
+    ) -> Dict[str, Any]:
+        """Retrieves manual webhook fields saved to the privacy request in non-strict mode.
+        Returns None for any fields not explicitly set and ignores extra fields.
+
+        This is for use by the *manual_webhook* connector which is *NOT* integrated with the graph.
+        """
+        cached_results: Optional[Dict[str, Any]] = _get_manual_input_from_cache(
+            privacy_request=self, manual_webhook=manual_webhook
+        )
+        if cached_results:
+            return manual_webhook.fields_non_strict_schema.parse_obj(
+                cached_results
+            ).dict()
+        return manual_webhook.empty_fields_dict
 
     def cache_manual_input(
         self, collection: CollectionAddress, manual_rows: Optional[List[Row]]
@@ -713,6 +737,22 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         )
 
 
+def _get_manual_input_from_cache(
+    privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
+) -> Optional[Dict[str, Any]]:
+    """Get raw manual input uploaded to the privacy request for the given webhook
+    from the cache without attempting to coerce into a Pydantic schema"""
+    cache: FidesopsRedis = get_cache()
+    cached_results: Optional[
+        Optional[Dict[str, Any]]
+    ] = cache.get_encoded_objects_by_prefix(
+        f"WEBHOOK_MANUAL_INPUT__{privacy_request.id}__{manual_webhook.id}"
+    )
+    if cached_results:
+        return list(cached_results.values())[0]
+    return None
+
+
 class ProvidedIdentityType(EnumType):
     """Enum for privacy request identity types"""
 
@@ -787,11 +827,13 @@ class Consent(Base):
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )
-    data_use = Column(String, nullable=False, unique=True)
+    data_use = Column(String, nullable=False)
     data_use_description = Column(String)
     opt_in = Column(Boolean, nullable=False)
 
     provided_identity = relationship(ProvidedIdentity, back_populates="consent")
+
+    UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
 
 class ConsentRequest(Base):
@@ -805,6 +847,44 @@ class ConsentRequest(Base):
         ProvidedIdentity,
         back_populates="consent_request",
     )
+
+    def cache_identity_verification_code(self, value: str) -> None:
+        """Cache the generated identity verification code for later comparison."""
+        cache: FidesopsRedis = get_cache()
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}",
+            value,
+            CONFIG.redis.identity_verification_code_ttl_seconds,
+        )
+
+    def get_cached_identity_data(self) -> Dict[str, Any]:
+        """Retrieves any identity data pertaining to this request from the cache."""
+        prefix = f"id-{self.id}-identity-*"
+        cache: FidesopsRedis = get_cache()
+        keys = cache.keys(prefix)
+        return {key.split("-")[-1]: cache.get(key) for key in keys}
+
+    def get_cached_verification_code(self) -> Optional[str]:
+        """Retrieve the generated identity verification code if it exists"""
+        cache = get_cache()
+        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
+        if not values:
+            return None
+
+        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
+
+    def verify_identity(self, provided_code: str) -> ConsentRequest:
+        """Verify the identification code supplied by the user."""
+        code: Optional[str] = self.get_cached_verification_code()
+        if not code:
+            raise IdentityVerificationException(
+                f"Identification code expired for {self.id}."
+            )
+
+        if code != provided_code:
+            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+
+        return self
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

@@ -31,12 +31,6 @@ dataset:
             data_categories: [system.operations]
           - name: list_id
             data_categories: [system.operations]
-          - name: from_email
-            data_categories: [user.contact.email]
-          - name: from_label
-            data_categories: [user.contact.email]
-          - name: subject
-            data_categories: [user]
       - name: member
         fields:
           - name: id

@@ -17,7 +17,12 @@ import {
   usePrivactRequestModal,
   PrivacyRequestModal,
 } from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+import {
+  useConsentRequestModal,
+  ConsentRequestModal,
+} from "../components/modals/consent-request-modal/ConsentRequestModal";
 import PrivacyCard from "../components/PrivacyCard";
+import ConsentCard from "../components/ConsentCard";
 import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
@@ -28,16 +33,27 @@ const Home: NextPage = () => {
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const {
-    isOpen,
-    onClose,
-    onOpen,
+    isOpen: isPrivacyModalOpen,
+    onClose: onPrivacyModalClose,
+    onOpen: onPrivacyModalOpen,
     openAction,
-    currentView,
-    setCurrentView,
+    currentView: currentPrivacyModalView,
+    setCurrentView: setCurrentPrivacyModalView,
     privacyRequestId,
     setPrivacyRequestId,
-    successHandler,
+    successHandler: privacyModalSuccessHandler,
   } = usePrivactRequestModal();
+
+  const {
+    isOpen: isConsentModalOpen,
+    onOpen: onConsentModalOpen,
+    onClose: onConsentModalClose,
+    currentView: currentConsentModalView,
+    setCurrentView: setCurrentConsentModalView,
+    consentRequestId,
+    setConsentRequestId,
+    successHandler: consentModalSuccessHandler,
+  } = useConsentRequestModal();
 
   useEffect(() => {
     if (alert?.status) {
@@ -70,10 +86,14 @@ const Home: NextPage = () => {
         policyKey={action.policy_key}
         iconPath={action.icon_path}
         description={action.description}
-        onOpen={onOpen}
+        onOpen={onPrivacyModalOpen}
       />
     );
   });
+
+  if (config.includeConsent) {
+    content.push(<ConsentCard key="consentCard" onOpen={onConsentModalOpen} />);
+  }
 
   return (
     <div>
@@ -144,16 +164,28 @@ const Home: NextPage = () => {
           </Flex>
         </Stack>
         <PrivacyRequestModal
-          isOpen={isOpen}
-          onClose={onClose}
+          isOpen={isPrivacyModalOpen}
+          onClose={onPrivacyModalClose}
           openAction={openAction}
           setAlert={setAlert}
-          currentView={currentView}
-          setCurrentView={setCurrentView}
+          currentView={currentPrivacyModalView}
+          setCurrentView={setCurrentPrivacyModalView}
           privacyRequestId={privacyRequestId}
           setPrivacyRequestId={setPrivacyRequestId}
           isVerificationRequired={isVerificationRequired}
-          successHandler={successHandler}
+          successHandler={privacyModalSuccessHandler}
+        />
+
+        <ConsentRequestModal
+          isOpen={isConsentModalOpen}
+          onClose={onConsentModalClose}
+          setAlert={setAlert}
+          currentView={currentConsentModalView}
+          setCurrentView={setCurrentConsentModalView}
+          consentRequestId={consentRequestId}
+          setConsentRequestId={setConsentRequestId}
+          isVerificationRequired={isVerificationRequired}
+          successHandler={consentModalSuccessHandler}
         />
       </main>
     </div>

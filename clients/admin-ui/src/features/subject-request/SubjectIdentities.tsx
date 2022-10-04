@@ -1,8 +1,9 @@
 import { Divider, Flex, Heading, Text } from "@fidesui/react";
-import PII from "common/PII";
-import PIIToggle from "common/PIIToggle";
-import { PrivacyRequest } from "privacy-requests/types";
 import React from "react";
+
+import PII from "../common/PII";
+import PIIToggle from "../common/PIIToggle";
+import { PrivacyRequest } from "../privacy-requests/types";
 
 type SubjectIdentitiesProps = {
   subjectRequest: PrivacyRequest;
@@ -14,7 +15,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   return (
     <>
       <Flex direction="row" justifyContent="space-between">
-        <Heading fontSize="lg" fontWeight="semibold" mb={4}>
+        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
           Subject identities
         </Heading>
         <Flex flexShrink={0} alignItems="flex-start">

@@ -16,8 +16,6 @@ from fides.ctl.core.config import FidesConfig
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 
-TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
-
 
 # Helper Functions
 def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
@@ -350,7 +348,7 @@ def test_api_ping(
     monkeypatch: MonkeyPatch,
     test_client: TestClient,
 ) -> None:
-    def mock_get_db_health(url: str) -> str:
+    def mock_get_db_health(url: str, db) -> str:
         return database_health
 
     monkeypatch.setattr(health, "get_db_health", mock_get_db_health)

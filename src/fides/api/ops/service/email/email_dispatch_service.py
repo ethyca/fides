@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict, List, Optional, Union
 
@@ -92,6 +94,17 @@ def _build_email(  # pylint: disable=too-many-return-statements
     action_type: EmailActionType,
     body_params: Any,
 ) -> EmailForActionType:
+    if action_type == EmailActionType.CONSENT_REQUEST:
+        template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Your one-time code",
+            body=template.render(
+                {
+                    "code": body_params.verification_code,
+                    "minutes": body_params.get_verification_code_ttl_minutes(),
+                }
+            ),
+        )
     if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
         return EmailForActionType(

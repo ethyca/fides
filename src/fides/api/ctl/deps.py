@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from typing import Generator
 
 from fastapi import Depends, Security
 from fastapi.security import SecurityScopes
@@ -15,24 +14,14 @@ from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from fideslib.oauth.scopes import SCOPES
 from sqlalchemy.orm import Session
 
-from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import ClientDetail, FidesUser
+from fides.api.ops.api.deps import get_db
 from fides.ctl.core.config import get_config
 
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(f"{API_PREFIX}/oauth/token"),
 )
-
-
-def get_db() -> Generator:
-    """Return our database session"""
-
-    try:
-        db = sync_session()  # pylint: disable=invalid-name
-        yield db
-    finally:
-        db.close()
 
 
 async def verify_oauth_client(  # pylint: disable=invalid-name
