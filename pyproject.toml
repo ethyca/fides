@@ -144,6 +144,7 @@ packages = [
 ]
 
 [tool.hatch.version]
+source = "code"
 path = "src/fides/__init__.py"
 
 [project.scripts]
@@ -170,6 +171,10 @@ init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
 warn_untyped_fields = true
+
+[[tool.mypy.overrides]]
+module= "src.fides._version"
+ignore_errors=true
 
 [[tool.mypy.overrides]]
 module = [
@@ -225,6 +230,7 @@ exclude = '''
 ## isort ##
 ###########
 [tool.isort]
+known_first_party = ["versioneer"]
 profile = "black"
 line_length = 88
 src_paths = ["src", "tests", "noxfiles"]
