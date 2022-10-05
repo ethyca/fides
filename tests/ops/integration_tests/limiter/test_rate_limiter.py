@@ -32,7 +32,7 @@ def simulate_calls_with_limiter(num_calls: int) -> Dict:
 def test_limiter_respects_rate_limit() -> None:
     """Make a number of calls which requires limiter slow down and verify limit is not breached"""
     num_calls = 500
-    call_log = simmulate_calls_with_limiter(num_calls=num_calls)
+    call_log = simulate_calls_with_limiter(num_calls=num_calls)
 
     assert sum(call_log.values()) == num_calls
     for value in call_log.values():
@@ -50,7 +50,7 @@ def test_limiter_respects_rate_limit_multiple_threads() -> None:
     with ThreadPoolExecutor(max_workers=concurrent_executions) as executor:
         for _ in range(concurrent_executions):
             call_futures.append(
-                executor.submit(simmulate_calls_with_limiter, num_calls)
+                executor.submit(simulate_calls_with_limiter, num_calls)
             )
 
     total_counts = Counter()
