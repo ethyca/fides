@@ -1,4 +1,7 @@
 import time
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Dict
 
 import pytest
 
@@ -9,11 +12,9 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
 )
 
 
-@pytest.mark.integration
-def test_limiter_respecsts_rate_limit() -> None:
-    """Make a number of calls which requires limiter slow down and verify limit is not breached"""
+def simmulate_calls_with_limiter(num_calls: int) -> Dict:
+    """Simmulates calling an endpoint with rate limiter enabled and return a call log"""
     limiter: RateLimiter = RateLimiter()
-    num_calls = 500
     call_log = {}
     for _ in range(num_calls):
         limiter.limit(
@@ -23,11 +24,40 @@ def test_limiter_respecsts_rate_limit() -> None:
         count = call_log.get(current_time, 0)
         call_log[current_time] = count + 1
         time.sleep(0.002)
+    return call_log
+
+
+@pytest.mark.integration
+def test_limiter_respecsts_rate_limit() -> None:
+    """Make a number of calls which requires limiter slow down and verify limit is not breached"""
+    num_calls = 500
+    call_log = simmulate_calls_with_limiter(num_calls=num_calls)
 
     assert sum(call_log.values()) == num_calls
     for value in call_log.values():
         # even though we set the rate limit at 100 there is a small chance our
         # seconds dont line up with the second used by the rate limiter
+        assert value < 105
+
+
+@pytest.mark.integration
+def test_limiter_respecsts_rate_limit_multiple_threads() -> None:
+    """Make a number of calls from multiple threads and verify limit is not reached"""
+    num_calls = 100
+    concurrent_executions = 5
+    call_futures = []
+    with ThreadPoolExecutor(max_workers=concurrent_executions) as executor:
+        for _ in range(concurrent_executions):
+            call_futures.append(
+                executor.submit(simmulate_calls_with_limiter, num_calls)
+            )
+
+    total_counts = Counter()
+    for call_future in as_completed(call_futures):
+        total_counts += Counter(call_future.result())
+
+    assert sum(total_counts.values()) == num_calls * concurrent_executions
+    for value in total_counts.values():
         assert value < 105
 
 
