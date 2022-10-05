@@ -61,7 +61,8 @@ export const plusApi = createApi({
       providesTags: ["ClassifyInstances"],
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
-      query: (dataset_fides_key: string) => `classify/${dataset_fides_key}`,
+      query: (dataset_fides_key: string) =>
+        `classify/details/${dataset_fides_key}`,
       providesTags: ["ClassifyInstances"],
     }),
   }),

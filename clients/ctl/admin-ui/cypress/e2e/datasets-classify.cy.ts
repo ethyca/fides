@@ -100,7 +100,7 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/plus/classify/*", {
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
         fixture: "classify/get-in-review.json",
       }).as("getClassify");
     });
@@ -160,7 +160,7 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/plus/classify/*", {
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
         fixture: "classify/get-in-review.json",
       }).as("getClassify");
 
@@ -182,7 +182,7 @@ describe("Datasets with Fides Classify", () => {
         (draftInstance: ClassificationResponse) => {
           draftInstance.datasets[0].status = ClassificationStatus.REVIEWED;
 
-          cy.intercept("GET", "/api/v1/plus/classify/*", {
+          cy.intercept("GET", "/api/v1/plus/classify/details/*", {
             body: draftInstance,
           }).as("getClassify");
         }
@@ -211,7 +211,7 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/plus/classify/*", {
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
         fixture: "classify/get-in-review.json",
       }).as("getClassify");
     });
