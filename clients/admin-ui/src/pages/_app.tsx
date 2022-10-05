@@ -9,8 +9,9 @@ import React from "react";
 // @ts-ignore
 import { FlagsProvider } from "react-feature-flags";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
-import store from "../app/store";
+import store, { persistor } from "../app/store";
 import flags from "../flags.json";
 import theme from "../theme";
 
@@ -29,9 +30,11 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
   <FlagsProvider value={flags}>
     <SafeHydrate>
       <Provider store={store}>
-        <ChakraProvider theme={theme}>
-          <Component {...pageProps} />
-        </ChakraProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <ChakraProvider theme={theme}>
+            <Component {...pageProps} />
+          </ChakraProvider>
+        </PersistGate>
       </Provider>
     </SafeHydrate>
   </FlagsProvider>

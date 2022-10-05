@@ -17,6 +17,7 @@ export { default as MoreIcon } from "./More";
 export { default as OktaLogoIcon } from "./OktaLogo";
 export { default as QuestionIcon } from "./Question";
 export { default as SearchLineIcon } from "./SearchLine";
+export { default as SortArrowIcon } from "./SortArrow";
 export { default as StepperCircleIcon } from "./StepperCircle";
 export { default as StepperCircleCheckmarkIcon } from "./StepperCircleCheckmark";
 export { default as TrashCanSolidIcon } from "./TrashCanSolid";

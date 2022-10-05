@@ -1,5 +1,4 @@
 import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
-import { capitalize } from "common/utils";
 import { ConnectionOption } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import Link from "next/link";
@@ -10,7 +9,7 @@ type ConnectionTypeListProps = {
 };
 
 const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
-  <SimpleGrid minChildWidth="232px" spacing="16px">
+  <SimpleGrid columns={4} spacingX="16px" spacingY="16px">
     {items.map((i) => (
       <Link
         href={{
@@ -39,7 +38,7 @@ const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
             h="80px"
           >
             <ConnectionTypeLogo data={i.identifier} />
-            <Text ml="12px">{capitalize(i.identifier)}</Text>
+            <Text ml="12px">{i.human_readable}</Text>
           </Center>
         </Box>
       </Link>

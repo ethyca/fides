@@ -5,20 +5,16 @@
     "prettier",
     "next/core-web-vitals"
   ],
-  "plugins": [
-    "simple-import-sort"
-  ],
+  "plugins": ["simple-import-sort"],
   "root": true,
   "parserOptions": {
-    "project": "./tsconfig.json"
-//    "tsconfigRootDir": "__dirname"
+    "project": "tsconfig.json",
+    "tsconfigRootDir": "./"
   },
   "rules": {
     // causes bug in re-exporting default exports, see
     // https://github.com/eslint/eslint/issues/15617
-    "no-restricted-exports": [
-      0
-    ],
+    "no-restricted-exports": [0],
     "react/function-component-definition": [
       2,
       {
@@ -28,14 +24,10 @@
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [
-          ".tsx"
-        ]
+        "extensions": [".tsx"]
       }
     ],
-    "react/jsx-props-no-spreading": [
-      0
-    ],
+    "react/jsx-props-no-spreading": [0],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     // since we are using static site export
@@ -47,9 +39,7 @@
       "error",
       {
         "props": true,
-        "ignorePropertyModificationsForRegex": [
-          "^draft"
-        ]
+        "ignorePropertyModificationsForRegex": ["^draft"]
       }
     ],
     // Default exports are slightly preferred for component files, but this rule has too many false positives.

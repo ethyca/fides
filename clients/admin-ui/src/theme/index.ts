@@ -15,6 +15,11 @@ const theme = extendTheme({
   },
   components: {
     Button,
+    Divider: {
+      baseStyle: {
+        opacity: 1,
+      },
+    },
     Spinner: {
       baseStyle: {
         color: "secondary.500",

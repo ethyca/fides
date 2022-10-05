@@ -1,16 +1,15 @@
+import { Box, Heading, Text } from "@fidesui/react";
 import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Heading,
-  Text,
-} from "@fidesui/react";
-import { capitalize } from "common/utils";
-import { ConnectionOption } from "connection-type/types";
+  selectConnectionTypeState,
+  setConnectionOption,
+  setStep,
+} from "connection-type/connection-type.slice";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
+import { useDispatch } from "react-redux";
+
+import { useAppSelector } from "~/app/hooks";
 
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
@@ -18,56 +17,41 @@ import { STEPS } from "./constants";
 import { AddConnectionStep } from "./types";
 
 const AddConnection: React.FC = () => {
+  const dispatch = useDispatch();
   const router = useRouter();
+  const { connectorType, step: currentStep } = router.query;
 
-  const [currentStep, setCurrentStep] = useState(STEPS[1]);
-  const [connectionOption, setConnectionOption] = useState(
-    undefined as unknown as ConnectionOption
-  );
+  const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
 
   useEffect(() => {
-    if (router.query.connectorType) {
-      setConnectionOption(JSON.parse(router.query.connectorType as string));
+    if (connectorType) {
+      dispatch(setConnectionOption(JSON.parse(connectorType as string)));
     }
     if (router.query.step) {
-      const item = STEPS.find((s) => s.stepId === Number(router.query.step));
-      setCurrentStep(item || STEPS[1]);
+      const item = STEPS.find((s) => s.stepId === Number(currentStep));
+      dispatch(setStep(item || STEPS[1]));
     }
-  }, [router.query.connectorType, router.query.step]);
-
-  const getComponent = useCallback(() => {
-    switch (currentStep.stepId) {
-      case 1:
-        return <ChooseConnection currentStep={currentStep} />;
-      case 2:
-        return (
-          <ConfigureConnector
-            currentStep={currentStep}
-            connectionOption={connectionOption}
-          />
-        );
-      default:
-        return <ChooseConnection currentStep={currentStep} />;
-    }
-  }, [connectionOption, currentStep]);
+    return () => {};
+  }, [connectorType, currentStep, dispatch, router.query.step]);
 
   const getLabel = useCallback(
-    (step: AddConnectionStep): string => {
+    (s: AddConnectionStep): string => {
       let value: string = "";
-      switch (currentStep.stepId) {
+      switch (s.stepId) {
         case 2:
-          value = step.label.replace(
+        case 3:
+          value = s.label.replace(
             "{identifier}",
-            capitalize(connectionOption.identifier)
+            connectionOption!.human_readable
           );
           break;
         default:
-          value = step.label;
+          value = s.label;
           break;
       }
       return value;
     },
-    [connectionOption?.identifier, currentStep.stepId]
+    [connectionOption]
   );
 
   return (
@@ -75,42 +59,31 @@ const AddConnection: React.FC = () => {
       <Heading
         fontSize="2xl"
         fontWeight="semibold"
-        maxHeight="52px"
-        mb="32px"
+        maxHeight="40px"
+        mb="4px"
         whiteSpace="nowrap"
       >
         <Box alignItems="center" display="flex">
           {connectionOption && (
             <>
               <ConnectionTypeLogo data={connectionOption.identifier} />
-              <Text ml="8px">{getLabel(currentStep)}</Text>
+              <Text ml="8px">{getLabel(step)}</Text>
             </>
           )}
-        </Box>
-        <Box mt={2} mb={7}>
-          <Breadcrumb fontSize="sm" fontWeight="medium">
-            {STEPS.slice(0, currentStep.stepId + 1).map((step) => (
-              <BreadcrumbItem key={step.stepId}>
-                {step !== currentStep && (
-                  <BreadcrumbLink href={step.href}>
-                    {getLabel(step)}
-                  </BreadcrumbLink>
-                )}
-                {step === currentStep && (
-                  <BreadcrumbLink
-                    isCurrentPage
-                    color="complimentary.500"
-                    _hover={{ textDecoration: "none" }}
-                  >
-                    {getLabel(step)}
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-            ))}
-          </Breadcrumb>
+          {!connectionOption && <Text>{getLabel(step)}</Text>}
         </Box>
       </Heading>
-      {getComponent()}
+      {(() => {
+        switch (step.stepId) {
+          case 1:
+            return <ChooseConnection />;
+          case 2:
+          case 3:
+            return <ConfigureConnector />;
+          default:
+            return <ChooseConnection />;
+        }
+      })()}
     </>
   );
 };

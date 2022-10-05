@@ -30,7 +30,6 @@ from fides.api.ctl.routes import (
     datamap,
     generate,
     health,
-    user,
     validate,
     visualize,
 )
@@ -48,6 +47,7 @@ from fides.api.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
+from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
@@ -58,6 +58,7 @@ from fides.api.ops.schemas.analytics import Event, ExtraData
 from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
+    update_saas_configs,
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
@@ -82,7 +83,6 @@ ROUTERS = (
         datamap.router,
         generate.router,
         health.router,
-        user.router,
         validate.router,
         view.router,
     ]
@@ -209,7 +209,9 @@ async def setup_server() -> None:
     await configure_db(CONFIG.database.sync_database_uri)
 
     logger.info("Validating SaaS connector templates...")
-    load_registry(registry_file)
+    registry = load_registry(registry_file)
+    with get_api_session() as db:
+        update_saas_configs(registry, db)
 
     logger.info("Running Redis connection test...")
     try:

@@ -1,41 +1,58 @@
 import pathlib
+from typing import List
 
 from setuptools import find_packages, setup
 
 import versioneer
 
 here = pathlib.Path(__file__).parent.resolve()
-long_description = open("README.md").read()
+long_description = open("README.md", encoding="utf-8").read()
 
 ##################
 ## Requirements ##
 ##################
 
-install_requires = open("requirements.txt").read().strip().split("\n")
-dev_requires = open("dev-requirements.txt").read().strip().split("\n")
+install_requires = open("requirements.txt", encoding="utf-8").read().strip().split("\n")
+dev_requires = open("dev-requirements.txt", encoding="utf-8").read().strip().split("\n")
+optional_requires = (
+    open("optional-requirements.txt", encoding="utf-8").read().strip().split("\n")
+)
+
+
+def optional_requirements(dependency_names: List[str]) -> List[str]:
+    """
+    Matches the provided dependency names to lines in `optional-requirements.txt`,
+    and returns the full dependency string for each one.
+
+    Prevents the need to store version numbers in two places.
+    """
+
+    requirements: List[str] = []
+
+    for dependency in dependency_names:
+        for optional_dependency in optional_requires:
+            if optional_dependency.startswith(dependency):
+                requirements.append(optional_dependency)
+                break
+
+    if len(requirements) == len(dependency_names):
+        return requirements
+
+    raise ModuleNotFoundError
+
 
 # Human-Readable Extras
-# Add these to `optional-requirements.txt` as well for Docker caching
-aws = ["boto3~=1.24.46"]
-bigquery = ["sqlalchemy-bigquery==1.4.4"]
-mongo = ["pymongo==3.12.0"]
-mssql = ["pyodbc==4.0.34"]
-mysql = ["pymysql==1.0.2"]
-okta = ["okta==2.5.0"]
-redis = ["redis==3.5.3", "fastapi-caching[redis]"]
-redshift = ["sqlalchemy-redshift==0.8.11"]
-snowflake = ["snowflake-sqlalchemy==1.4.1"]
-
+# Versions are read from corresponding lines in `optional-requirements.txt`
 extras = {
-    "aws": aws,
-    "bigquery": bigquery,
-    "mongo": mongo,
-    "mssql": mssql,
-    "mysql": mysql,
-    "okta": okta,
-    "redis": redis,
-    "redshift": redshift,
-    "snowflake": snowflake,
+    "aws": optional_requirements(["boto3"]),
+    "bigquery": optional_requirements(["sqlalchemy-bigquery"]),
+    "mongo": optional_requirements(["pymongo"]),
+    "mssql": optional_requirements(["pyodbc"]),
+    "mysql": optional_requirements(["PyMySQL"]),
+    "okta": optional_requirements(["okta"]),
+    "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),
+    "redshift": optional_requirements(["sqlalchemy-redshift"]),
+    "snowflake": optional_requirements(["snowflake-sqlalchemy"]),
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(

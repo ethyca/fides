@@ -8,7 +8,7 @@ from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase, SaaSType
+from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
@@ -60,7 +60,7 @@ class ConnectionSystemTypeMap(BaseModel):
     Describes the returned schema for connection types
     """
 
-    identifier: Union[ConnectionType, SaaSType]
+    identifier: Union[ConnectionType, str]
     type: SystemType
     human_readable: str
 
