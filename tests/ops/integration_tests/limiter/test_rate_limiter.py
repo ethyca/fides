@@ -49,9 +49,7 @@ def test_limiter_respects_rate_limit_multiple_threads() -> None:
     call_futures = []
     with ThreadPoolExecutor(max_workers=concurrent_executions) as executor:
         for _ in range(concurrent_executions):
-            call_futures.append(
-                executor.submit(simulate_calls_with_limiter, num_calls)
-            )
+            call_futures.append(executor.submit(simulate_calls_with_limiter, num_calls))
 
     total_counts = Counter()
     for call_future in as_completed(call_futures):
