@@ -13,10 +13,10 @@ class RateLimiterPeriod(Enum):
     Defines the periods which rate limiter supports for time buckets
     """
 
-    SECONDS = ("seconds", 1)
-    MINUTES = ("minutes", 60)
-    HOURS = ("hours", 3600)
-    DAYS = ("days", 86400)
+    SECOND = ("second", 1)
+    MINUTE = ("minute", 60)
+    HOUR = ("hour", 3600)
+    DAY = ("day", 86400)
 
     def __init__(self, label: str, factor: int):
         self.label = label

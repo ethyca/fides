@@ -17,7 +17,7 @@ def test_limiter_respecsts_rate_limit() -> None:
     call_log = {}
     for _ in range(num_calls):
         limiter.limit(
-            key="my_test_key", rate_limit=100, period=RateLimiterPeriod.SECONDS
+            key="my_test_key", rate_limit=100, period=RateLimiterPeriod.SECOND
         )
         current_time = int(time.time())
         count = call_log.get(current_time, 0)
@@ -40,7 +40,7 @@ def test_limiter_times_out_when_bucket_full() -> None:
             limiter.limit(
                 key="my_test_key",
                 rate_limit=100,
-                period=RateLimiterPeriod.HOURS,
+                period=RateLimiterPeriod.HOUR,
                 timeout_seconds=10,
             )
             time.sleep(0.002)
