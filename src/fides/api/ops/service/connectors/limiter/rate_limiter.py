@@ -40,6 +40,7 @@ class RateLimiter:
         rate_limit: int,
         period: RateLimiterPeriod,
         timeout_seconds: int = 30,
+        expire_after_period_seconds: int = 500,
     ) -> None:
         """
         Registers a call for the current time bucket and verifies that it is within the
@@ -51,7 +52,9 @@ class RateLimiter:
         try:
             redis: FidesopsRedis = get_cache()
         except RedisConnectionError as exc:
-            logger.warning("Failed to connect to redis, skipping limiter. %s", exc)
+            logger.warning(
+                "Failed to connect to redis, skipping limiter for key %s. %s", key, exc
+            )
             return
 
         start_time = time.time()
@@ -62,14 +65,17 @@ class RateLimiter:
             redis_key = f"{key}:{period.label}:{fixed_time_filter}"
             pipe = redis.pipeline()
             pipe.incrby(redis_key, 1)
-            pipe.expire(redis_key, period.factor + 300)
+            pipe.expire(redis_key, period.factor + expire_after_period_seconds)
             response = pipe.execute()
 
             if int(response[0]) > rate_limit:
                 time.sleep(0.1)
             else:
-                logger.debug("Used %s of rate limit %s", response[0], rate_limit)
+                logger.debug(
+                    "Used %s of rate limit %s for key %s", response[0], rate_limit, key
+                )
                 return
 
-        logger.error("Timeout waiting for rate limiter")
-        raise RateLimiterTimeoutException("Timeout waiting for rate limiter")
+        error_message = f"Timeout waiting for rate limiter with key {key}. period: {period.label}, rate: {rate_limit}"
+        logger.error(error_message)
+        raise RateLimiterTimeoutException(error_message)
