@@ -12,7 +12,7 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
 )
 
 
-def simmulate_calls_with_limiter(num_calls: int) -> Dict:
+def simulate_calls_with_limiter(num_calls: int) -> Dict:
     """Simulates calling an endpoint with rate limiter enabled and return a call log"""
     limiter: RateLimiter = RateLimiter()
     call_log = {}
