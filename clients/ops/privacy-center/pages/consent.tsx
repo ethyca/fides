@@ -146,9 +146,10 @@ const Consent: NextPage = () => {
       }
     );
     (await response.json()) as ApiUserConcents;
+    router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch
-  }, [consentItems, consentRequestId, verificationCode]);
+  }, [consentItems, consentRequestId, verificationCode, router]);
 
   return (
     <div>
