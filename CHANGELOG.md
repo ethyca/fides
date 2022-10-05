@@ -33,6 +33,10 @@ The types of changes are:
   * Access and erasure support for Square [#1193](https://github.com/ethyca/fides/pull/1193)
   * Adds a rate limiter implementation to be used by connectors [#1189](https://github.com/ethyca/fides/pull/1189)
 
+### Developer Experience
+
+* Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1243](https://github.com/ethyca/fides/pull/1243)
+
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
 ### Changed
