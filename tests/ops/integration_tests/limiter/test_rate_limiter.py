@@ -23,6 +23,7 @@ def simmulate_calls_with_limiter(num_calls: int) -> Dict:
         current_time = int(time.time())
         count = call_log.get(current_time, 0)
         call_log[current_time] = count + 1
+        # server allows 500 calls a second
         time.sleep(0.002)
     return call_log
 
