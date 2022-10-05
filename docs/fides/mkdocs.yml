@@ -10,13 +10,13 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
-      - Installation: 
+      - Installation:
           - Overview: installation/overview.md
           - Project Requirements: installation/requirements.md
           - Installation from PyPI: installation/pypi.md
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
-      - Working with Fides: 
+      - Working with Fides:
           - Connect to Databases: getting-started/database_connectors.md
           - Generate Resources: getting-started/generate_resources.md
           - Create Datasets: getting-started/datasets.md
@@ -29,6 +29,7 @@ nav:
           - Extend the Taxonomy: guides/extend_taxonomy.md
           - Generate Data Maps: guides/generate_datamaps.md
           - Configure Email Communications: guides/email_communications.md
+          - View Available Connection Types: guides/connection_types.md
           - Annotate Complex Fields: guides/complex_fields.md
           - Configure Data Masking: guides/masking_strategies.md
           - Execution Policy Webhooks: guides/policy_webhooks.md
@@ -36,6 +37,7 @@ nav:
           - Integrate with OneTrust: guides/onetrust.md
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
+          - Configure Manual Webhooks: guides/manual_webhooks.md
       - SaaS Connectors:
           - Connect to SaaS Applications: saas_connectors/saas_connectors.md
           - SaaS Configuration: saas_connectors/saas_config.md
@@ -81,7 +83,7 @@ nav:
       - Github, Slack, and Discord: community/overview.md
       - Community Hints and Tips: community/hints_tips.md
       - Code of Conduct: community/code_of_conduct.md
-  - About Ethyca: 
+  - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md
 
