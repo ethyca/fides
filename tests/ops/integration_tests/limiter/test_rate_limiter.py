@@ -43,7 +43,7 @@ def test_limiter_respects_rate_limit() -> None:
 
 @pytest.mark.integration
 def test_limiter_respects_rate_limit_multiple_threads() -> None:
-    """Make a number of calls from multiple threads and verify limit is not reached"""
+    """Make a number of calls from multiple threads and verify limit is not breached"""
     num_calls = 200
     concurrent_executions = 3
     call_futures = []
