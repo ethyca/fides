@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.8.0"]
+requires = ["hatchling>=1.8.0", "versioneer-518"]
 build-backend = "hatchling.build"
 
 [project]
@@ -145,6 +145,7 @@ packages = [
 
 [tool.hatch.version]
 source = "code"
+search-paths = ["src"]
 path = "src/fides/__init__.py"
 
 [project.scripts]
