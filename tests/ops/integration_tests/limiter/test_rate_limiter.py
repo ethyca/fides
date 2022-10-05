@@ -13,7 +13,7 @@ from fides.api.ops.service.connectors.limiter.rate_limiter import (
 
 
 def simmulate_calls_with_limiter(num_calls: int) -> Dict:
-    """Simmulates calling an endpoint with rate limiter enabled and return a call log"""
+    """Simulates calling an endpoint with rate limiter enabled and return a call log"""
     limiter: RateLimiter = RateLimiter()
     call_log = {}
     for _ in range(num_calls):
@@ -28,7 +28,7 @@ def simmulate_calls_with_limiter(num_calls: int) -> Dict:
 
 
 @pytest.mark.integration
-def test_limiter_respecsts_rate_limit() -> None:
+def test_limiter_respects_rate_limit() -> None:
     """Make a number of calls which requires limiter slow down and verify limit is not breached"""
     num_calls = 500
     call_log = simmulate_calls_with_limiter(num_calls=num_calls)
@@ -41,10 +41,10 @@ def test_limiter_respecsts_rate_limit() -> None:
 
 
 @pytest.mark.integration
-def test_limiter_respecsts_rate_limit_multiple_threads() -> None:
+def test_limiter_respects_rate_limit_multiple_threads() -> None:
     """Make a number of calls from multiple threads and verify limit is not reached"""
-    num_calls = 100
-    concurrent_executions = 5
+    num_calls = 200
+    concurrent_executions = 3
     call_futures = []
     with ThreadPoolExecutor(max_workers=concurrent_executions) as executor:
         for _ in range(concurrent_executions):
