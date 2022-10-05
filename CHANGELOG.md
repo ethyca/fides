@@ -33,6 +33,10 @@ The types of changes are:
   * Access and erasure support for Square [#1193](https://github.com/ethyca/fides/pull/1193)
   * Adds a rate limiter implementation to be used by connectors [#1189](https://github.com/ethyca/fides/pull/1189)
 
+### Fixed
+* Privacy Center:
+  * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
+
 ## [1.8.0](https://github.com/ethyca/fidesops/compare/1.8.0...1.8.1)
 
 ### Changed
