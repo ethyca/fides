@@ -53,6 +53,8 @@ RUN : \
 #########################
 
 COPY pyproject.toml .
+COPY src/fides/__init__.py src/fides/__init__.py
+COPY README.md .
 RUN pip install -U --no-cache-dir -e .
 RUN pip install -U --no-cache-dir -e ".[dev]"
 RUN pip install -U --no-cache-dir -e ".[all]"
@@ -89,7 +91,7 @@ RUN pip install -e .
 FROM backend as prod
 
 # Install without a symlink
-RUN python -m build
+RUN python -m build --sdist
 RUN pip install dist/ethyca_fides-*\d+.\d+.\d+.*.tar.gz
 
 # Copy frontend build over
