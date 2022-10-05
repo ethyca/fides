@@ -397,10 +397,10 @@ describe("Dataset", () => {
 
       // Two requests should be intercepted. (Cypress waits in LIFO order.)
       cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-2");
+        expect(interception.request.body.fides_key).to.eql("generated-1");
       });
       cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-1");
+        expect(interception.request.body.fides_key).to.eql("generated-2");
       });
 
       // Should navigate to the first created dataset.

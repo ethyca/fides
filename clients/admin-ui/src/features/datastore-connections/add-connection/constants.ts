@@ -2,31 +2,53 @@ import { ItemOption } from "common/dropdown/types";
 import { SystemType } from "datastore-connections/constants";
 
 import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
-import { AddConnectionStep } from "./types";
+import { AddConnectionStep, ConnectorParameterOption } from "./types";
+
+export enum ConfigurationSettings {
+  CONNECTOR_PARAMETERS = "Connector parameters",
+  DATASET_CONFIGURATION = "Dataset configuration",
+  DSR_CUSTOMIZATION = "DSR customization",
+}
 
 export const CONNECTION_TYPE_FILTER_MAP = new Map<string, ItemOption>([
+  ["Manual connectors", { value: SystemType.MANUAL }],
   [
-    "Database connectors",
+    "Database",
     {
-      isDisabled: true,
-      toolTip: `You cannot add database connections from here at this time. Please refer to our documentation on how you can do so from our API.`,
       value: SystemType.DATABASE.toString(),
     },
   ],
-  ["Third party connectors", { value: SystemType.SAAS.toString() }],
-  // TODO: Uncomment the following when Database connectors are supported
-  // ["Show all", { value: "" }],
+  ["3rd party integrations", { value: SystemType.SAAS.toString() }],
+  ["Show all", { value: "" }],
 ]);
 
-export const CONNECTOR_PARAMETERS_OPTIONS = [
-  "Connector parameters",
-  "Dataset configuration",
+export const CONNECTOR_PARAMETERS_OPTIONS: ConnectorParameterOption[] = [
+  {
+    type: SystemType.DATABASE,
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DATASET_CONFIGURATION,
+    ],
+  },
+  {
+    type: SystemType.MANUAL,
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DSR_CUSTOMIZATION,
+    ],
+  },
+  {
+    type: SystemType.SAAS,
+    options: [
+      ConfigurationSettings.CONNECTOR_PARAMETERS,
+      ConfigurationSettings.DATASET_CONFIGURATION,
+    ],
+  },
 ];
 
-// TODO: Update this to Show all when Database connectors are supported
 export const DEFAULT_CONNECTION_TYPE_FILTER = CONNECTION_TYPE_FILTER_MAP.get(
-  "Third party connectors"
-)?.value;
+  "Show all"
+)?.value as string;
 
 export const STEPS: AddConnectionStep[] = [
   {
@@ -40,20 +62,18 @@ export const STEPS: AddConnectionStep[] = [
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=1`,
     description:
       "The building blocks of your data map are the list of systems that exist in your organization. Think of systems as as anything that might store or process data in your organization, from a web application, to a database, or data warehouse.",
-    parentStepId: 1,
+    parentStepId: 0,
   },
   {
     stepId: 2,
     label: "Configure your {identifier} connection",
-    description:
-      "Connect to your {identifier} environment by providing credential information below. Once you have saved your connector credentials, you can review what data is included when processing a privacy request in your Dataset configuration.",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=2`,
+    parentStepId: 1,
   },
   {
     stepId: 3,
     label: "Configure your {identifier} connection",
-    description:
-      "View your system yaml below! You can also modify the yaml if you need to assign any references between datasets.",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=3`,
+    parentStepId: 1,
   },
 ];

@@ -140,13 +140,6 @@ class TestConnectionConfigModel:
         connection_config.update_saas_config(db, saas_config=saas_config)
         assert connection_config.secrets["domain"] == saas_example_secrets["domain"]
 
-    def test_default_value_saas_config_invalid_type(
-        self, db, saas_example_config, saas_example_secrets
-    ):
-        saas_example_config["type"] = "invalid"
-        with pytest.raises(ValueError):
-            SaaSConfig(**saas_example_config)
-
     def test_connection_type_human_readable(self):
         for connection in ConnectionType:
             connection.human_readable  # Makes sure all ConnectionTypes have been added to human_readable mapping

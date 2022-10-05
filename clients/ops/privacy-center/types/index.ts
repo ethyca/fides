@@ -12,3 +12,14 @@ export enum PrivacyRequestStatus {
   IDENTITY_UNVERIFIED = "identity_unverified",
   REQUIRES_INPUT = "requires_input",
 }
+
+export type ConsentItem = {
+  fidesDataUseKey: string;
+  name: string;
+  description: string;
+  highlight: boolean;
+  url: string;
+  defaultValue: boolean;
+  // eslint-disable-next-line react/require-default-props
+  consentValue?: boolean;
+};

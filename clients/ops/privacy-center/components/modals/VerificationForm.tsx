@@ -20,6 +20,7 @@ import { Headers } from "headers-polyfill";
 import type { AlertState } from "../../types/AlertState";
 import { ModalViews, VerificationType } from "./types";
 import { addCommonHeaders } from "../../common/CommonHeaders";
+import { useLocalStorage } from "../../common/hooks";
 
 import { hostUrl } from "../../constants";
 
@@ -41,6 +42,11 @@ const useVerificationForm = ({
   successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [verificationCode, setVerificationCode] = useLocalStorage(
+    "verificationCode",
+    ""
+  );
   const resetVerificationProcess = useCallback(() => {
     setCurrentView(resetView);
   }, [setCurrentView, resetView]);
@@ -83,7 +89,7 @@ const useVerificationForm = ({
           handleError(data?.detail);
           return;
         }
-
+        setVerificationCode(values.code);
         successHandler();
       } catch (error) {
         handleError("");

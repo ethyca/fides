@@ -7,7 +7,8 @@ export type PrivacyRequestStatus =
   | "paused"
   | "canceled"
   | "pending"
-  | "identity_unverified";
+  | "identity_unverified"
+  | "requires_input";
 
 export enum ActionType {
   ACCESS = "access",
@@ -44,11 +45,22 @@ export interface ExecutionLog {
   updated_at: string;
 }
 
+export type GetUpdloadedManualWebhookDataRequest = {
+  connection_key: string;
+  privacy_request_id: string;
+};
+
 export interface Rule {
   name: string;
   key: string;
   action_type: ActionType;
 }
+
+export type PatchUploadManualWebhookDataRequest = {
+  body: object;
+  connection_key: string;
+  privacy_request_id: string;
+};
 
 export type PrivacyRequestResults = Record<string, ExecutionLog[]>;
 
@@ -71,6 +83,7 @@ export interface PrivacyRequest {
   created_at: string;
   reviewed_by: string;
   id: string;
+  days_left?: number;
 }
 
 export interface PrivacyRequestResponse {
@@ -86,4 +99,6 @@ export interface PrivacyRequestParams {
   page: number;
   size: number;
   verbose?: boolean;
+  sort_field?: string;
+  sort_direction?: string;
 }

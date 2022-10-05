@@ -33,10 +33,10 @@ const ConnectionsContainer: React.FC = () => {
     };
   }, [setCachedFilters, filters]);
 
-  const { data, isFetching, isLoading } =
+  const { data, isFetching, isLoading, isSuccess } =
     useGetAllDatastoreConnectionsQuery(cachedFilters);
 
-  const hasData = data!?.items.length > 0;
+  const hasData = data!?.items?.length > 0;
 
   return (
     <>
@@ -47,8 +47,13 @@ const ConnectionsContainer: React.FC = () => {
           <Spinner />
         </Center>
       )}
-      {!mounted.current && !hasData && <ConnectionsEmptyState />}
-      {hasData && <ConnectionGrid items={data!?.items} total={data!?.total} />}
+      {mounted.current &&
+        isSuccess &&
+        (hasData ? (
+          <ConnectionGrid items={data!?.items} total={data!?.total} />
+        ) : (
+          <ConnectionsEmptyState />
+        ))}
     </>
   );
 };

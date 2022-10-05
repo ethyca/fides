@@ -42,7 +42,10 @@ def access_manual_webhook(db, integration_manual_webhook_config) -> ConnectionCo
         },
     )
     yield manual_webhook
-    manual_webhook.delete(db)
+    try:
+        manual_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture(scope="function")
