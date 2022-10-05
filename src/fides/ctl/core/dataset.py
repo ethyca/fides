@@ -26,7 +26,7 @@ SCHEMA_EXCLUSION = {
 
 def get_all_server_datasets(
     url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
-) -> List[Dataset]:
+) -> Optional[List[Dataset]]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
     provided in exclude_datasets
@@ -39,8 +39,7 @@ def get_all_server_datasets(
         headers=headers,
     )
     if not dataset_list:
-        print("No datasets found")
-        sys.exit(1)
+        return None
 
     return dataset_list
 
@@ -239,6 +238,9 @@ def scan_dataset_db(
     server_datasets = get_all_server_datasets(
         url=url, headers=headers, exclude_datasets=manifest_datasets
     )
+
+    if not server_datasets:
+        server_datasets = []
 
     dataset_keys = [
         dataset.fides_key for dataset in manifest_datasets + server_datasets
