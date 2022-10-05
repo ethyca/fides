@@ -17,6 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.1...main)
 
+### Added
+
+* Dataset generation enhancements using Fides Classify for Plus users:
+  * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
+
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
 ### Changed
