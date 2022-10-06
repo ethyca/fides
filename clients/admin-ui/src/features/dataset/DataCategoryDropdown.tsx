@@ -4,6 +4,7 @@ import {
   ButtonProps,
   Menu,
   MenuButton,
+  MenuButtonProps,
   MenuDivider,
   MenuItem,
   MenuList,
@@ -55,7 +56,7 @@ const DataCategoryDropdown = ({
     <Menu closeOnSelect>
       <MenuButton
         as={Button}
-        {...menuButtonProps}
+        {...(menuButtonProps as MenuButtonProps)}
         data-testid="data-category-dropdown"
       >
         {label}
