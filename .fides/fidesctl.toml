@@ -12,7 +12,6 @@ level = "INFO"
 [cli]
 server_host = "localhost"
 server_port = 8080
-analytics_id = "eb755d72f426c376ae9f6472870b4bc5"
 
 [user]
 analytics_opt_out = false
