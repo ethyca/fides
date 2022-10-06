@@ -25,7 +25,7 @@
     "@fidesui/react": "^0.0.9",
     "@fontsource/inter": "^4.5.4",
     "formik": "^2.2.9",
-    "framer-motion": "^5",
+    "framer-motion": "^6",
     "headers-polyfill": "^3.0.10",
     "next": "12.2.5",
     "next-auth": "^4.10.3",
