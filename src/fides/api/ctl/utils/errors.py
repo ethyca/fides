@@ -27,7 +27,6 @@ class DatabaseUnavailableError(HTTPException):
         super().__init__(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": error_message},
-            # detail={"error": "database unavailable"},
         )
 
 
