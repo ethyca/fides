@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DatasetSchema } from './DatasetSchema';
-import type { GenerateRequestPayload } from './GenerateRequestPayload';
+import type { DatasetSchema } from "./DatasetSchema";
+import type { GenerateRequestPayload } from "./GenerateRequestPayload";
 
 export type ClassifyRequestPayload = {
   schema_config: GenerateRequestPayload;
