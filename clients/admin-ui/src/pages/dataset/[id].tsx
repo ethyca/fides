@@ -1,4 +1,4 @@
-import { Box, Breadcrumb, BreadcrumbItem, Heading } from "@fidesui/react";
+import { Box, Breadcrumb, BreadcrumbItem } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -18,10 +18,7 @@ const DatasetDetail: NextPage = () => {
 
   return (
     <Layout title={`Dataset - ${id}`}>
-      <Heading mb={2} fontSize="2xl" fontWeight="semibold">
-        Dataset
-      </Heading>
-      <Box mb={8}>
+      <Box mb={6}>
         <Breadcrumb fontWeight="medium" fontSize="sm" color="gray.600">
           <BreadcrumbItem>
             <NextLink href="/dataset">Datasets</NextLink>

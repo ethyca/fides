@@ -1,3 +1,11 @@
+import {
+  CONNECTION_STRING,
+  stubDatasetCrud,
+  stubPlus,
+} from "cypress/support/stubs";
+
+import { ClassificationResponse, ClassificationStatus } from "~/types/api";
+
 /**
  * This test suite is a parallel of datasets.cy.ts for testing Dataset features when the user has
  * access to the  Fidescls API. This suite should cover the behavior that is different when a
@@ -5,13 +13,11 @@
  */
 describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/plus/health", {
-      statusCode: 200,
-      body: {
-        status: "healthy",
-        core_fidesctl_version: "1.8",
-      },
-    }).as("getPlusHealth");
+    stubDatasetCrud();
+    stubPlus(true);
+    cy.intercept("GET", "/api/v1/plus/classify", {
+      fixture: "classify/list.json",
+    }).as("getClassifyList");
   });
 
   describe("Creating datasets", () => {
@@ -28,9 +34,7 @@ describe("Datasets with Fides Classify", () => {
       // Fill out the form.
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
-      cy.getByTestId("input-url").type(
-        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
-      );
+      cy.getByTestId("input-url").type(CONNECTION_STRING);
       cy.getByTestId("create-dataset-btn").click();
 
       // A modal opens to confirm the classify request.
@@ -40,22 +44,26 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
       cy.intercept("POST", "/api/v1/plus/classify", {
         fixture: "classify/create.json",
       }).as("postClassify");
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
-      );
 
       // Confirm the request.
       cy.getByTestId("confirmation-modal").getByTestId("continue-btn").click();
 
       cy.wait("@postGenerate");
       cy.wait("@postDataset");
-      cy.wait("@postClassify");
+      cy.wait("@postClassify").then((interception) => {
+        expect(
+          interception.request.body.schema_config.generate.config
+            .connection_string
+        ).to.eql(CONNECTION_STRING);
+        expect(interception.request.body.dataset_schemas).to.eql([
+          { fides_key: "public", name: "public" },
+        ]);
+      });
+
+      // The dataset query should be re-fetched.
       cy.wait("@getDatasets");
 
       cy.url().should("match", /dataset$/);
@@ -69,15 +77,6 @@ describe("Datasets with Fides Classify", () => {
   });
 
   describe("List of datasets with classifications", () => {
-    beforeEach(() => {
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
-      );
-      cy.intercept("GET", "/api/v1/plus/classify", {
-        fixture: "classify/list.json",
-      }).as("getClassifyList");
-    });
-
     it("Shows the each dataset's classify status", () => {
       cy.visit("/dataset");
       cy.wait("@getDatasets");
@@ -101,13 +100,9 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("GET", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("getDataset");
-      cy.intercept("GET", "/api/v1/data_category", {
-        fixture: "data_categories.json",
-      }).as("getDataCategory");
-
-      cy.intercept("GET", "/api/v1/plus/classify", {
-        fixture: "classify/list.json",
-      }).as("getClassifyList");
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
     });
 
     /**
@@ -136,7 +131,7 @@ describe("Datasets with Fides Classify", () => {
     it("Shows the classifiers field suggestions", () => {
       cy.visit("/dataset/dataset_in_review");
       cy.wait("@getDataset");
-      cy.wait("@getClassifyList");
+      cy.wait("@getClassify");
 
       cy.getByTestId("dataset-fields-table");
 
@@ -156,6 +151,110 @@ describe("Datasets with Fides Classify", () => {
         name: "state",
         identifiability: "Unlinked Pseudonymized",
         taxonomyEntities: ["system.operations"],
+      });
+    });
+  });
+
+  describe("Approve classification button", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("getDataset");
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
+
+      cy.intercept("PUT", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("putDataset");
+      cy.intercept("PUT", "/api/v1/plus/classify", {
+        fixture: "classify/update.json",
+      }).as("putClassify");
+    });
+
+    it("Updates blank fields with top classifications", () => {
+      cy.visit("/dataset/dataset_in_review");
+      cy.wait("@getDataset");
+      cy.wait("@getClassify");
+
+      // The button triggers a chain of requests that will modify the classify list response.
+      cy.fixture("classify/get-in-review.json").then(
+        (draftInstance: ClassificationResponse) => {
+          draftInstance.datasets[0].status = ClassificationStatus.REVIEWED;
+
+          cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+            body: draftInstance,
+          }).as("getClassify");
+        }
+      );
+
+      cy.getByTestId("approve-classification-btn")
+        .should("be.enabled")
+        .click()
+        .should("be.disabled");
+
+      // The mutations should run.
+      cy.wait("@putDataset");
+      cy.wait("@putClassify");
+
+      // The instance should be re-fetched.
+      cy.wait("@getClassify");
+
+      // The updated status should make the button disappear.
+      cy.getByTestId("approve-classification-btn").should("not.exist");
+      cy.getByTestId("toast-success-msg");
+    });
+  });
+
+  describe("Data category input", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/dataset/*", {
+        fixture: "classify/dataset-in-review.json",
+      }).as("getDataset");
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+        fixture: "classify/get-in-review.json",
+      }).as("getClassify");
+    });
+
+    it("Allows selection of suggested and non-suggested categories", () => {
+      cy.visit("/dataset/dataset_in_review");
+      cy.wait("@getDataset");
+      cy.wait("@getClassify");
+
+      // Open the "device" field editor.
+      cy.getByTestId("field-row-device").click();
+
+      // The plain list of categories should be replaced with the classified selector.
+      cy.getByTestId("selected-categories").should("not.exist");
+
+      // Select a suggested category.
+      cy.getByTestId("classified-select")
+        .click()
+        .contains("user.contact.phone_number (80%)")
+        .click();
+
+      // Select a category from the taxonomy.
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("data-category-checkbox-tree")
+        .contains("Location Data")
+        .click();
+      cy.getByTestId("data-category-done-btn").click();
+
+      // Both selected categories should be rendered.
+      cy.getByTestId("classified-select").contains(
+        "user.contact.phone_number (80%)"
+      );
+      cy.getByTestId("classified-select").contains("user.location (N/A)");
+
+      // Both selected categories should be submitted on the dataset.
+      cy.getByTestId("save-btn");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.collections[0].fields[1].data_categories).to.eql([
+          "user.contact.phone_number",
+          "user.location",
+        ]);
       });
     });
   });

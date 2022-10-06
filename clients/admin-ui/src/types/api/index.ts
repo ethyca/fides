@@ -2,6 +2,18 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export type { Classification } from "./models/Classification";
+export type { ClassificationResponse } from "./models/ClassificationResponse";
+export { ClassificationStatus } from "./models/ClassificationStatus";
+export type { ClassifyCollection } from "./models/ClassifyCollection";
+export type { ClassifyDataset } from "./models/ClassifyDataset";
+export type { ClassifyDatasetResponse } from "./models/ClassifyDatasetResponse";
+export type { ClassifyField } from "./models/ClassifyField";
+export type { ClassifyInstanceResponseValues } from "./models/ClassifyInstanceResponseValues";
+export type { ClassifyRequestPayload } from "./models/ClassifyRequestPayload";
+export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdatePayload";
+export type { DataFlow } from "./models/DataFlow";
+export type { DatasetSchema } from "./models/DatasetSchema";
 export type { AccessToken } from "./models/AccessToken";
 export type { AWSConfig } from "./models/AWSConfig";
 export type { BigQueryConfig } from "./models/BigQueryConfig";
