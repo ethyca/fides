@@ -20,13 +20,16 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/700.css";
 
 import { ChakraProvider } from "@chakra-ui/react";
+import { EnhancedStore } from "@reduxjs/toolkit";
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { mount } from "cypress/react";
+import { mount, MountOptions, MountReturn } from "cypress/react";
 import * as React from "react";
+import { Provider } from "react-redux";
 
-import theme from "../../src/theme";
+import { AppState, makeStore } from "~/app/store";
+import theme from "~/theme";
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -35,14 +38,29 @@ import theme from "../../src/theme";
 declare global {
   namespace Cypress {
     interface Chainable {
-      mount: typeof mount;
+      /**
+       * Mounts a React node
+       * @param component React Node to mount
+       * @param options Additional options to pass into mount
+       */
+      mount(
+        component: React.ReactNode,
+        options?: MountOptions & { reduxStore?: EnhancedStore<AppState> }
+      ): Cypress.Chainable<MountReturn>;
     }
   }
 }
 
-Cypress.Commands.add("mount", (jsx, options) =>
-  mount(React.createElement(ChakraProvider, { theme }, jsx), options)
-);
-
-// Example use:
-// cy.mount(<MyComponent />)
+/**
+ * Wrap the default mount in Redux and Chakra
+ */
+Cypress.Commands.add("mount", (component, options = {}) => {
+  const { reduxStore = makeStore(), ...mountOptions } = options;
+  const wrapChakra = React.createElement(ChakraProvider, { theme }, component);
+  const wrapRedux = React.createElement(
+    Provider,
+    { store: reduxStore },
+    wrapChakra
+  );
+  return mount(wrapRedux, mountOptions);
+});

@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ContactDetails } from "./ContactDetails";
+import type { DataFlow } from "./DataFlow";
 import type { DataProtectionImpactAssessment } from "./DataProtectionImpactAssessment";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { PrivacyDeclaration } from "./PrivacyDeclaration";
@@ -62,6 +63,14 @@ export type System = {
    */
   data_responsibility_title?: DataResponsibilityTitle;
   /**
+   * The resources to which the System sends data.
+   */
+  egress?: Array<DataFlow>;
+  /**
+   * The resources from which the System receives data.
+   */
+  ingress?: Array<DataFlow>;
+  /**
    *
    * The PrivacyDeclaration resource model.
    *
@@ -108,3 +117,17 @@ export type System = {
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
 };
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About

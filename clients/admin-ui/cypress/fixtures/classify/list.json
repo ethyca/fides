@@ -1,159 +1,46 @@
 [
   {
     "id": "2",
-    "status": "In Work",
-    "datasets": [
-      {
-        "fides_key": "demo_users_dataset_2",
-        "collections": []
-      }
-    ]
+    "dataset_key": "demo_users_dataset_2",
+    "status": "Processing",
+    "dataset_name": "Demo Users Dataset 2",
+    "organization_fides_key": "default_organization",
+    "type": "datasets",
+    "target": "db",
+    "created_at": "2022-09-23T17:35:14.163046+00:00",
+    "updated_at": "2022-09-23T17:37:32.550719+00:00"
   },
   {
     "id": "3",
+    "dataset_key": "demo_users_dataset_3",
+    "dataset_name": "Demo Users Dataset 3",
     "status": "Complete",
-    "datasets": [
-      {
-        "fides_key": "demo_users_dataset_3",
-        "collections": [
-          {
-            "name": "users",
-            "fields": [
-              {
-                "name": "device",
-                "classifications": [
-                  {
-                    "label": "user.device",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    "organization_fides_key": "default_organization",
+    "type": "datasets",
+    "target": "db",
+    "created_at": "2022-09-23T17:35:14.163046+00:00",
+    "updated_at": "2022-09-23T17:37:32.550719+00:00"
   },
   {
     "id": "4",
+    "dataset_key": "demo_users_dataset_4",
     "status": "Reviewed",
-    "datasets": [
-      {
-        "fides_key": "demo_users_dataset_4",
-        "collections": [
-          {
-            "name": "users",
-            "fields": [
-              {
-                "name": "device",
-                "classifications": [
-                  {
-                    "label": "user.device",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    "dataset_name": "Demo Users Dataset 4",
+    "organization_fides_key": "default_organization",
+    "type": "datasets",
+    "target": "db",
+    "created_at": "2022-09-23T17:35:14.163046+00:00",
+    "updated_at": "2022-09-23T17:37:32.550719+00:00"
   },
   {
     "id": "classification_in_review",
+    "dataset_key": "dataset_in_review",
+    "dataset_name": "Classified Dataset Needs Review",
     "status": "Complete",
-    "datasets": [
-      {
-        "fides_key": "dataset_in_review",
-        "collections": [
-          {
-            "name": "users",
-            "fields": [
-              {
-                "name": "email",
-                "classifications": [
-                  {
-                    "label": "user.email",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              },
-              {
-                "name": "device",
-                "classifications": [
-                  {
-                    "label": "user.device",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  },
-                  {
-                    "label": "user.contact.phone_number",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              },
-              {
-                "name": "state",
-                "classifications": [
-                  {
-                    "label": "user.contact.address",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "products",
-            "fields": [
-              {
-                "name": "created_at",
-                "classifications": [
-                  {
-                    "label": "system.operations",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              },
-              {
-                "name": "name",
-                "classifications": [
-                  {
-                    "label": "system.operations",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              },
-              {
-                "name": "price",
-                "classifications": [
-                  {
-                    "label": "system.operations",
-                    "score": 1,
-                    "aggregated_score": 1,
-                    "classification_paradigm": ""
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    "organization_fides_key": "default_organization",
+    "type": "datasets",
+    "target": "db",
+    "created_at": "2022-09-23T17:35:14.163046+00:00",
+    "updated_at": "2022-09-23T17:37:32.550719+00:00"
   }
 ]

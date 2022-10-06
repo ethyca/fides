@@ -1,4 +1,4 @@
-import { DatasetField } from "~/types/api";
+import { DataCategory, DatasetField } from "~/types/api";
 
 export interface ColumnMetadata {
   name: string;
@@ -9,4 +9,8 @@ export enum EditableType {
   DATASET = "dataset",
   COLLECTION = "collection",
   FIELD = "field",
+}
+
+export interface DataCategoryWithConfidence extends DataCategory {
+  confidence?: number;
 }

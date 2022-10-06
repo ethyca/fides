@@ -1,4 +1,4 @@
-import { ClassifyStatusEnum } from "~/features/common/plus.slice";
+import { ClassificationStatus } from "~/types/api";
 
 export const DATA_QUALIFIERS = [
   {
@@ -85,30 +85,30 @@ export const FIELD = {
  * classification feature.
  */
 export const STATUS_DISPLAY = {
-  [ClassifyStatusEnum.IN_WORK]: {
+  [ClassificationStatus.PROCESSING]: {
     title: "Processing",
     tooltip:
       "This dataset is currently being generated and classified. You will be notified when this process is complete",
     color: "orange",
   },
-  [ClassifyStatusEnum.CREATED]: {
+  [ClassificationStatus.CREATED]: {
     title: "Processing",
     tooltip:
       "This dataset is currently being generated and classified. You will be notified when this process is complete",
     color: "orange",
   },
-  [ClassifyStatusEnum.COMPLETE]: {
+  [ClassificationStatus.COMPLETE]: {
     title: "Awaiting Review",
     tooltip:
       "This dataset has been automatically classified. Review the results and update the dataset.",
     color: "orange",
   },
-  [ClassifyStatusEnum.REVIEWED]: {
+  [ClassificationStatus.REVIEWED]: {
     title: "Classified",
     tooltip: "This dataset has been classified.",
     color: "green",
   },
-  [ClassifyStatusEnum.FAILED]: {
+  [ClassificationStatus.FAILED]: {
     title: "Failed",
     tooltip: "This dataset must be manually updated.",
     color: "red",
