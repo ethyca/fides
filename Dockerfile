@@ -52,12 +52,9 @@ RUN : \
 ## Python Dependencies ##
 #########################
 
-COPY pyproject.toml .
-COPY src/fides/__init__.py src/fides/__init__.py
-COPY README.md .
-RUN pip install -U --no-cache-dir -e .
-RUN pip install -U --no-cache-dir -e ".[dev]"
-RUN pip install -U --no-cache-dir -e ".[all]"
+COPY pyproject.toml README.md .
+COPY src/fides/__init__.py src/fides/_version.py ./src/fides/
+RUN pip install -U --no-cache-dir -e .[all,dev]
 
 ###############################
 ## General Application Setup ##
