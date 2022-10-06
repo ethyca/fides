@@ -7,7 +7,7 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
-from dask import delayed
+from dask import delayed  # type: ignore[attr-defined]
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
@@ -34,7 +34,7 @@ from fides.api.ops.graph.traversal import Traversal, TraversalNode
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import ExecutionLogStatus, PrivacyRequest
-from fides.api.ops.service.connectors import BaseConnector
+from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.ops.task.filter_element_match import filter_element_match
 from fides.api.ops.task.refine_target_path import FieldPathNodeInput

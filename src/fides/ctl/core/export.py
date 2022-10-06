@@ -5,7 +5,7 @@ Exports various resources as data maps.
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from fideslang.models import ContactDetails
+from fideslang.models import ContactDetails, FidesModel
 
 from fides.ctl.core.api_helpers import (
     get_server_resource,
@@ -458,11 +458,21 @@ def export_datamap(  # pylint: disable=too-many-locals
             resource_type,
             exclude_keys=[],
         )
-        filtered_server_resources = [
-            resource
-            for resource in server_resources
-            if resource.organization_fides_key == organization_fides_key
-        ]
+
+        if not server_resources:
+            continue
+
+        filtered_server_resources = []
+        for resource in server_resources:
+            key = (
+                resource.organization_fides_key
+                if isinstance(resource, FidesModel)
+                else resource["organization_fides_key"]
+            )
+
+            if key == organization_fides_key:
+                filtered_server_resources.append(resource)
+
         server_resource_dict[resource_type] = filtered_server_resources
 
     # transform the resources to join a system and referenced datasets

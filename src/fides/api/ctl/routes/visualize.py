@@ -8,9 +8,9 @@ from fastapi import HTTPException
 from fastapi.responses import HTMLResponse
 from fideslang import model_map
 
-from fides.api.ctl.routes.crud import list_resource
+from fides.api.ctl.database.crud import list_resource
 from fides.api.ctl.routes.util import API_PREFIX, get_resource_type
-from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.ctl.core import visualize
 

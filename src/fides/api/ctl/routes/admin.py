@@ -23,7 +23,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(CONFIG.database.sync_database_uri)
+        database.reset_db(str(CONFIG.database.sync_database_uri))
         action_text = DBActions.reset
-    await database.configure_db(CONFIG.database.sync_database_uri)
+    await database.configure_db(str(CONFIG.database.sync_database_uri))
     return {"data": {"message": f"fides database {action_text}"}}

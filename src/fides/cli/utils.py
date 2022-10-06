@@ -23,7 +23,12 @@ from fideslog.sdk.python.utils import (
 )
 
 import fides
-from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fides.ctl.connectors.models import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    OktaConfig,
+)
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config.credentials_settings import (
@@ -255,7 +260,7 @@ def handle_okta_credentials_options(
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
-    okta_config = {}
+    okta_config: Optional[OktaConfig] = None
     if token or org_url:
         if not token or not org_url:
             raise click.UsageError(
