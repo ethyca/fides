@@ -15,6 +15,12 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+
+### Fixed
+
+* Fix startup of docs container [#1261](https://github.com/ethyca/fides/pull/1261)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
 
 ### Deprecated
