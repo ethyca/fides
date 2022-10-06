@@ -112,11 +112,11 @@ describe("dataset helpers", () => {
                 classifications: [
                   mockClassification({
                     label: "user.contact",
-                    score: 0.75,
+                    aggregated_score: 0.75,
                   }),
                   mockClassification({
                     label: "user.email",
-                    score: 0.95,
+                    aggregated_score: 0.95,
                   }),
                 ],
               }),

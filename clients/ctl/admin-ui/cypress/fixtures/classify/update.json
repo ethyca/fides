@@ -1,8 +1,4 @@
 {
   "id": "classification-response",
-  "status": "In Work",
-  "datasets": {
-    "fides_key": "demo_users_dataset",
-    "collections": []
-  }
+  "status": "Processing"
 }

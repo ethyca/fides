@@ -4,21 +4,19 @@ import { useSelector } from "react-redux";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
-  ClassifyStatusEnum,
-  selectActiveClassifyInstance,
+  selectActiveClassifyDataset,
   selectClassifyInstanceCollection,
-  selectClassifyInstanceDataset,
   useUpdateClassifyInstanceMutation,
 } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { ClassificationStatus } from "~/types/api";
 
 import { selectActiveDataset, useUpdateDatasetMutation } from "./dataset.slice";
 import { getUpdatedDatasetFromClassifyDataset } from "./helpers";
 
 const ApproveClassification = () => {
   const dataset = useSelector(selectActiveDataset);
-  const classifyInstance = useSelector(selectActiveClassifyInstance);
-  const classifyDataset = useSelector(selectClassifyInstanceDataset);
+  const classifyDataset = useSelector(selectActiveClassifyDataset);
   const classifyCollection = useSelector(selectClassifyInstanceCollection);
 
   const [updateDataset, { isLoading: datasetIsLoading }] =
@@ -39,7 +37,7 @@ const ApproveClassification = () => {
   );
 
   const handleApprove = async () => {
-    if (isLoading || !(dataset && classifyInstance && classifyDataset)) {
+    if (isLoading || !(dataset && classifyDataset)) {
       return;
     }
 
@@ -55,13 +53,8 @@ const ApproveClassification = () => {
       }
 
       const statusResult = await updateClassifyInstance({
-        id: classifyInstance?.id,
-        datasets: [
-          {
-            fides_key: dataset.fides_key,
-            status: ClassifyStatusEnum.REVIEWED,
-          },
-        ],
+        dataset_fides_key: dataset.fides_key,
+        status: ClassificationStatus.REVIEWED,
       });
       if (isErrorResult(statusResult)) {
         toast(errorToastParams(getErrorMessage(statusResult.error)));
@@ -79,7 +72,7 @@ const ApproveClassification = () => {
     !(
       classifyDataset &&
       classifyCollection &&
-      classifyDataset.status === ClassifyStatusEnum.COMPLETE
+      classifyDataset.status === ClassificationStatus.COMPLETE
     )
   ) {
     return null;

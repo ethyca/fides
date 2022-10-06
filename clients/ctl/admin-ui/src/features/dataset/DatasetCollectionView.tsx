@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useFeatures } from "~/features/common/features.slice";
-import { useGetAllClassifyInstancesQuery } from "~/features/common/plus.slice";
+import { useGetClassifyDatasetQuery } from "~/features/common/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 
 import ApproveClassification from "./ApproveClassification";
@@ -38,14 +38,16 @@ const useSubscriptions = (key: string) => {
   const { data: dataset, isLoading: isDatasetLoading } =
     useGetDatasetByKeyQuery(key);
   const features = useFeatures();
-  const { isLoading: isClassifyInstancesLoading } =
-    useGetAllClassifyInstancesQuery(undefined, {
+  const { isLoading: isClassifyDatasetLoading } = useGetClassifyDatasetQuery(
+    key,
+    {
       skip: !features.plus,
-    });
+    }
+  );
   useGetAllDataCategoriesQuery();
 
   return {
-    isLoading: isDatasetLoading || isClassifyInstancesLoading,
+    isLoading: isDatasetLoading || isClassifyDatasetLoading,
     dataset,
   };
 };
