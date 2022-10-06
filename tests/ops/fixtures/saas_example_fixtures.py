@@ -11,6 +11,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
@@ -29,6 +30,11 @@ def saas_example_secrets():
         "api_version": "2.0",
         "account_types": ["checking"],
         "page_size": "10",
+        "customer_id": {  # an example external dataset reference
+            "dataset": "some_other_dataset",
+            "field": "customer_id_reference_table.customer_id",
+            "direction": "from",
+        },
     }
 
 

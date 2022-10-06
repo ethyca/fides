@@ -4,6 +4,7 @@ from typing import Any, Dict, Type
 from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
 from pydantic.fields import FieldInfo
 
+from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
@@ -35,25 +36,28 @@ class SaaSSchema(BaseModel, abc.ABC):
         # check the types and values are consistent with the option and multivalue fields
         for name, value in values.items():
             connector_param = cls.get_connector_param(name)
-            options = connector_param.get("options")
-            multiselect = connector_param.get("multiselect")
+            if connector_param:
+                options = connector_param.get("options")
+                multiselect = connector_param.get("multiselect")
 
-            if options:
-                if isinstance(value, str):
-                    if value not in options:
-                        raise ValueError(
-                            f"'{name}' must be one of [{', '.join(options)}]"
-                        )
-                elif isinstance(value, list):
-                    if not multiselect:
-                        raise ValueError(
-                            "f'{name}' must be a single value when multiselect is not enabled, not a list"
-                        )
-                    invalid_options = [entry for entry in value if entry not in options]
-                    if invalid_options:
-                        raise ValueError(
-                            f"[{', '.join(invalid_options)}] are not valid options, '{name}' must be a list of values from [{', '.join(options)}]"
-                        )
+                if options:
+                    if isinstance(value, str):
+                        if value not in options:
+                            raise ValueError(
+                                f"'{name}' must be one of [{', '.join(options)}]"
+                            )
+                    elif isinstance(value, list):
+                        if not multiselect:
+                            raise ValueError(
+                                "f'{name}' must be a single value when multiselect is not enabled, not a list"
+                            )
+                        invalid_options = [
+                            entry for entry in value if entry not in options
+                        ]
+                        if invalid_options:
+                            raise ValueError(
+                                f"[{', '.join(invalid_options)}] are not valid options, '{name}' must be a list of values from [{', '.join(options)}]"
+                            )
 
         return values
 
@@ -100,11 +104,10 @@ class SaaSSchemaFactory:
             )
         for external_reference in self.saas_config.external_references:
             field_definitions[external_reference.name] = (
-                str,
+                FidesopsDatasetReference,
                 FieldInfo(
                     title=external_reference.label,
                     description=external_reference.description,
-                    format="dataset_reference",
                 ),
             )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
@@ -123,6 +126,12 @@ class SaaSSchemaFactory:
                     }
                     for connector_param in self.saas_config.connector_params
                 }
+            ),
+            _external_references=PrivateAttr(
+                [
+                    external_reference.name
+                    for external_reference in self.saas_config.external_references
+                ]
             ),
         )
 

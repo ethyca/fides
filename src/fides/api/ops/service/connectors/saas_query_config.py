@@ -12,6 +12,7 @@ from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
@@ -157,11 +158,22 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
         """Return a filtered map of secrets used by the request"""
-
         param_names = [
             param_value.connector_param
             for param_value in current_request.param_values or []
         ]
+        param_names.extend(
+            [
+                external_reference
+                for reference_list in [
+                    param_value.references
+                    for param_value in current_request.param_values
+                    if param_value.references
+                ]
+                for external_reference in reference_list
+                if isinstance(external_reference, str)
+            ]
+        )
         return {
             name: value for name, value in self.secrets.items() if name in param_names
         }
@@ -282,8 +294,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values: Dict[str, Any] = {}
         for param_value in saas_request.param_values or []:
             if param_value.references:
+                reference: FidesopsDatasetReference = (
+                    pydash.get(self.secrets, param_value.references[0])
+                    if isinstance(param_value.references[0], str)
+                    else param_value.references[0]
+                )
                 param_values[param_value.name] = pydash.get(
-                    collection_values, param_value.references[0].field
+                    collection_values, reference.field
                 )
             elif param_value.identity:
                 param_values[param_value.name] = pydash.get(

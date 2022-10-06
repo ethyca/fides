@@ -282,6 +282,8 @@ def validate_secrets(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
         )
 
+    # TODO: check that external dataset references resolve correctly
+
     return connection_secrets
 
 

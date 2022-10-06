@@ -83,6 +83,15 @@ class FidesopsDatasetReference(BaseModel):
     direction: Optional[EdgeDirection]
 
 
+class FidesopsSaasDatasetReference(FidesopsDatasetReference):
+    """A dataset reference that comes from a SaaS config"""
+
+    # TODO: clean this up
+    dataset: FidesOpsKey
+    field: str
+    direction: EdgeDirection = "from"
+
+
 class FidesopsDatasetMeta(BaseModel):
     """ "Dataset-level fidesops-specific annotations used for query traversal"""
 

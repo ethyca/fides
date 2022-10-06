@@ -86,7 +86,7 @@ class DatasetConfig(Base):
 
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(),  # type: ignore
+                self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore
             )
         else:
             logger.debug(

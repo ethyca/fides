@@ -23,20 +23,21 @@ class ParamValue(BaseModel):
 
     name: str
     identity: Optional[str]
-    references: Optional[List[FidesopsDatasetReference]]
+    references: Optional[List[Union[FidesopsDatasetReference, str]]]
     connector_param: Optional[str]
     unpack: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(
-        cls, references: Optional[List[FidesopsDatasetReference]]
+        cls, references: Optional[List[Union[FidesopsDatasetReference, str]]]
     ) -> Optional[List[FidesopsDatasetReference]]:
         """Validates the request_param only contains inbound references"""
         for reference in references or {}:
-            if reference.direction == "to":
-                raise ValueError(
-                    "References can only have a direction of 'from', found 'to'"
-                )
+            if isinstance(reference, FidesopsDatasetReference):
+                if reference.direction == "to":
+                    raise ValueError(
+                        "References can only have a direction of 'from', found 'to'"
+                    )
         return references
 
     @root_validator
@@ -302,7 +303,7 @@ class SaaSConfig(SaaSConfigBase):
         """Returns a map of endpoint names mapped to Endpoints"""
         return {endpoint.name: endpoint for endpoint in self.endpoints}
 
-    def get_graph(self) -> Dataset:
+    def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
         for endpoint in self.endpoints:
@@ -311,6 +312,10 @@ class SaaSConfig(SaaSConfigBase):
                 if param.references:
                     references = []
                     for reference in param.references:
+                        if isinstance(reference, str):
+                            reference = FidesopsDatasetReference.parse_obj(
+                                secrets[reference]
+                            )
                         first, *rest = reference.field.split(".")
                         references.append(
                             (
