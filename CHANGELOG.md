@@ -15,6 +15,12 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+
+### Developer Experience
+
+* Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
 
 ### Deprecated
