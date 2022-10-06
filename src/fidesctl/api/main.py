@@ -83,7 +83,7 @@ async def setup_server() -> None:
 
     docs_link = "https://ethyca.github.io/fides/"
     log.warning(
-        f"WARNING: 'Fidesctl' has been deprecated and replace by a more robust 'Fides' tool, which includes existing 'fidesctl' functionality. Run `pip install ethyca-fides` to get the latest version of Fides and visit '{docs_link}' for up-to-date documentation.\n"
+        f"WARNING: 'Fidesctl' has been deprecated and replaced by a more robust 'Fides' tool, which includes existing 'fidesctl' functionality. Run `pip install ethyca-fides` to get the latest version of Fides and visit '{docs_link}' for up-to-date documentation.\n"
     )
     await configure_db(CONFIG.database.sync_database_uri)
 
