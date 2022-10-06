@@ -16,7 +16,7 @@ pyodbc==4.0.34
 PyMySQL==1.0.2
 
 # Okta
-okta==2.5.0
+okta==2.7.0
 
 # Redis
 redis==3.5.3
