@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - unified-fides-2
     tags:
       - "*"
 

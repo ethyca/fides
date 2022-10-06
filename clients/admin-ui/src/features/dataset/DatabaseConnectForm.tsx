@@ -11,7 +11,13 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
-import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
+import {
+  ClassifyInstanceResponseValues,
+  Dataset,
+  GenerateTypes,
+  System,
+  ValidTargets,
+} from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,
@@ -133,16 +139,21 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        status: string;
+        classifyInstances: ClassifyInstanceResponseValues[];
       }
   > => {
     const result = await classifyMutation({
-      organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
-      datasets: datasets.map(({ fides_key }) => ({ fides_key })),
-      generate: {
-        config: { connection_string: values.url },
-        target: ValidTargets.DB,
-        type: GenerateTypes.DATASETS,
+      dataset_schemas: datasets.map(({ name, fides_key }) => ({
+        fides_key,
+        name,
+      })),
+      schema_config: {
+        organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
+        generate: {
+          config: { connection_string: values.url },
+          target: ValidTargets.DB,
+          type: GenerateTypes.DATASETS,
+        },
       },
     });
 
@@ -153,7 +164,7 @@ const DatabaseConnectForm = () => {
     }
 
     return {
-      status: result.data.status,
+      classifyInstances: result.data.classify_instances,
     };
   };
 

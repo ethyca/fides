@@ -1,18 +1,18 @@
+import {
+  CONNECTION_STRING,
+  stubDatasetCrud,
+  stubPlus,
+} from "cypress/support/stubs";
+
 describe("Dataset", () => {
   before(() => {
     cy.login();
   });
 
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-      "getDatasets"
-    );
-    cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-      "getDataset"
-    );
-    cy.intercept("GET", "/api/v1/data_category", {
-      fixture: "data_categories.json",
-    }).as("getDataCategory");
+    stubDatasetCrud();
+    // Ensure these tests all run with Plus features disabled.
+    stubPlus(false);
   });
 
   describe("List of datasets view", () => {
@@ -23,6 +23,9 @@ describe("Dataset", () => {
       cy.getByTestId("dataset-table");
       cy.getByTestId("dataset-row-demo_users_dataset_4");
       cy.url().should("contain", "/dataset");
+
+      // The classifier toggle should not be available.
+      cy.get("input-classify").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
@@ -154,11 +157,6 @@ describe("Dataset", () => {
   });
 
   describe("Can edit datasets", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-        "putDataset"
-      );
-    });
     it("Can edit dataset fields", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
@@ -206,18 +204,6 @@ describe("Dataset", () => {
   });
 
   describe("Deleting datasets", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*").as("putDataset");
-      cy.fixture("dataset.json").then((dataset) => {
-        cy.intercept("DELETE", "/api/v1/dataset/*", {
-          body: {
-            message: "resource deleted",
-            resource: dataset,
-          },
-        }).as("deleteDataset");
-      });
-    });
-
     it("Can delete a field from a dataset", () => {
       const fieldName = "uuid";
       cy.visit("/dataset/demo_users_dataset");
@@ -277,9 +263,6 @@ describe("Dataset", () => {
     });
 
     it("Can create a dataset via yaml", () => {
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
       cy.visit("/dataset/new");
       cy.getByTestId("upload-yaml-btn").click();
       cy.fixture("dataset.json").then((dataset) => {
@@ -340,22 +323,18 @@ describe("Dataset", () => {
     });
 
     it("Can create a dataset by connecting to a database", () => {
-      const connectionString =
-        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
+
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
-      cy.getByTestId("input-url").type(connectionString);
+      cy.getByTestId("input-url").type(CONNECTION_STRING);
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate").then((interception) => {
         expect(
           interception.request.body.generate.config.connection_string
-        ).to.eql(connectionString);
+        ).to.eql(CONNECTION_STRING);
       });
       cy.wait("@postDataset").then((interception) => {
         // should be whatever is in the generate fixture
@@ -381,9 +360,6 @@ describe("Dataset", () => {
           }).as("postGenerate");
         }
       );
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
 
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
@@ -395,12 +371,12 @@ describe("Dataset", () => {
         ).to.eql(connectionString);
       });
 
-      // Two requests should be intercepted. (Cypress waits in LIFO order.)
-      cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-1");
-      });
-      cy.wait("@postDataset").then((interception) => {
-        expect(interception.request.body.fides_key).to.eql("generated-2");
+      // Two requests should be intercepted.
+      cy.wait(["@postDataset", "@postDataset"]).then((interceptions) => {
+        const generatedKeys = interceptions.map(
+          (i) => i.request.body.fides_key
+        );
+        expect(generatedKeys.sort()).to.eql(["generated-1", "generated-2"]);
       });
 
       // Should navigate to the first created dataset.
@@ -419,9 +395,7 @@ describe("Dataset", () => {
           error: "SyntaxError: Unexpected token I in JSON at position 0",
         },
       }).as("postGenerate");
-      cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-        "postDataset"
-      );
+
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
 
@@ -465,12 +439,6 @@ describe("Dataset", () => {
   });
 
   describe("Data category checkbox tree", () => {
-    beforeEach(() => {
-      cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-        "putDataset"
-      );
-    });
-
     it("Can render chosen data categories", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("field-row-uuid").click();
