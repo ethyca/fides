@@ -61,7 +61,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     docs_link = "https://ethyca.github.io/fides/"
     click.secho(
-        f"WARNING: 'Fidesctl' has been deprecated and replace by a more robust 'Fides' tool, which includes existing 'fidesctl' functionality. Run `pip install ethyca-fides` to get the latest version of Fides and visit '{docs_link}' for up-to-date documentation.\n",
+        f"WARNING: 'Fidesctl' has been deprecated and replaced by a more robust 'Fides' tool, which includes existing 'fidesctl' functionality. Run `pip install ethyca-fides` to get the latest version of Fides and visit '{docs_link}' for up-to-date documentation.\n",
         fg="red",
     )
     ctx.ensure_object(dict)
