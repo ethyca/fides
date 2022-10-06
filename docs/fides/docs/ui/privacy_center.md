@@ -12,8 +12,8 @@ The fidesops Privacy Center's text and actions are managed by a `config.json` fi
 {
   "title": "Take control of your data",
   "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
-  "fidesops_host_development": "http://localhost:8080/api/v1",
-  "fidesops_host_production": "",
+  "server_url_development": "http://localhost:8080/api/v1",
+  "server_url_production": "https://<$YOUR_SERVER_URL>/api/v1",
   "logo_path": "/logo.svg",
   "actions": [
     {
@@ -45,8 +45,8 @@ The fidesops Privacy Center's text and actions are managed by a `config.json` fi
 | Key | Description |
 |----|----|
 | `title` and `dscription` | Text fields to override the default text of either the main portal, or the associated action. |
-| `fidesops_host_development` | The URL to use for development deployments. |
-| `fidesops_host_production` | The URL to use for production deployments. |
+| `server_url_development` | The Fides server URL to use for development deployments. |
+| `server_url_production` | The Fides server URL to use for production deployments. |
 | `logo_path` | The relative path to a brand or site logo to replace the default. |
 | `actions` | A list of [action objects](#actions), each of which represent a new tile available in the portal, and are associated to a single fidesops policy. |
 | `policy_key` | The key of the [policy](../guides/policies.md) to use for this action. |
