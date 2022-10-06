@@ -125,15 +125,13 @@ describe("RequestModal", () => {
   it("handles form submission success with an appropriate alert", async () => {
     render(<IndexPage />);
     server.use(
-      rest.post(
-        `${hostUrl}/privacy-request`,
-        (req, res, ctx) =>
-          res(
-            ctx.json({
-              succeeded: [{}],
-              failed: [],
-            })
-          )
+      rest.post(`${hostUrl}/privacy-request`, (req, res, ctx) =>
+        res(
+          ctx.json({
+            succeeded: [{}],
+            failed: [],
+          })
+        )
       )
     );
 
@@ -170,15 +168,13 @@ describe("RequestModal", () => {
   it("handles form submission failure with an appropriate alert", async () => {
     render(<IndexPage />);
     server.use(
-      rest.post(
-        `${hostUrl}/privacy-request`,
-        (req, res, ctx) =>
-          res(
-            ctx.json({
-              succeeded: [],
-              failed: [{}],
-            })
-          )
+      rest.post(`${hostUrl}/privacy-request`, (req, res, ctx) =>
+        res(
+          ctx.json({
+            succeeded: [],
+            failed: [{}],
+          })
+        )
       )
     );
 
