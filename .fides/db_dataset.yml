@@ -110,35 +110,105 @@ dataset:
   - name: consent
     description: 'Fides Generated Description for Table: consent'
     data_categories: []
+  - name: cls_classification_detail
+    description: 'Fides Generated Description for Table: cls_classification_detail'
+    data_categories: null
+    data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    fields:
+    - name: collection
+      description: 'Fides Generated Description for Column: collection'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset
+      description: 'Fides Generated Description for Column: dataset'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: field
+      description: 'Fides Generated Description for Column: field'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: instance_id
+      description: 'Fides Generated Description for Column: instance_id'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: labels
+      description: 'Fides Generated Description for Column: labels'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: status
+      description: 'Fides Generated Description for Column: status'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+  - name: cls_classification_instance
+    description: 'Fides Generated Description for Table: cls_classification_instance'
+    data_categories: null
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
     - name: created_at
       description: 'Fides Generated Description for Column: created_at'
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: data_use
-      description: 'Fides Generated Description for Column: data_use'
-      data_categories: [system.operations]
-      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: data_use_description
-      description: 'Fides Generated Description for Column: data_use_description'
-      data_categories: [system.operations]
+      data_categories:
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: id
       description: 'Fides Generated Description for Column: id'
-      data_categories: [system.operations]
+      data_categories:
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: opt_in
-      description: 'Fides Generated Description for Column: opt_in'
-      data_categories: [system.operations]
+    - name: organization_key
+      description: 'Fides Generated Description for Column: organization_key'
+      data_categories:
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-    - name: provided_identity_id
-      description: 'Fides Generated Description for Column: provided_identity_id'
-      data_categories: [system.operations]
+    - name: dataset_key
+      description: 'Fides Generated Description for Column: dataset_key'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: dataset_name
+      description: 'Fides Generated Description for Column: dataset_name'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: status
+      description: 'Fides Generated Description for Column: status'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: target
+      description: 'Fides Generated Description for Column: target'
+      data_categories:
+      - system.operations
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: type
+      description: 'Fides Generated Description for Column: type'
+      data_categories:
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
-      data_categories: [system.operations]
+      data_categories:
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: ctl_data_categories
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

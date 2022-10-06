@@ -1,0 +1,93 @@
+{
+  "datasets": [
+    {
+      "fides_key": "dataset_in_review",
+      "name": "dataset_in_review",
+      "status": "Complete",
+      "collections": [
+        {
+          "name": "users",
+          "fields": [
+            {
+              "name": "email",
+              "classifications": [
+                {
+                  "label": "user.email",
+                  "score": 0.99,
+                  "aggregated_score": 0.99,
+                  "classification_paradigm": ""
+                }
+              ]
+            },
+            {
+              "name": "device",
+              "classifications": [
+                {
+                  "label": "user.device",
+                  "score": 0.95,
+                  "aggregated_score": 0.95,
+                  "classification_paradigm": ""
+                },
+                {
+                  "label": "user.contact.phone_number",
+                  "score": 0.8,
+                  "aggregated_score": 0.8,
+                  "classification_paradigm": ""
+                }
+              ]
+            },
+            {
+              "name": "state",
+              "classifications": [
+                {
+                  "label": "user.contact.address",
+                  "score": 0.8,
+                  "aggregated_score": 0.8,
+                  "classification_paradigm": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "products",
+          "fields": [
+            {
+              "name": "created_at",
+              "classifications": [
+                {
+                  "label": "system.operations",
+                  "score": 1,
+                  "aggregated_score": 1,
+                  "classification_paradigm": ""
+                }
+              ]
+            },
+            {
+              "name": "name",
+              "classifications": [
+                {
+                  "label": "system.operations",
+                  "score": 1,
+                  "aggregated_score": 1,
+                  "classification_paradigm": ""
+                }
+              ]
+            },
+            {
+              "name": "price",
+              "classifications": [
+                {
+                  "label": "system.operations",
+                  "score": 1,
+                  "aggregated_score": 1,
+                  "classification_paradigm": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

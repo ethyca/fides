@@ -15,6 +15,8 @@ describe("DataCategoryInput", () => {
       />
     );
 
+    cy.getByTestId("classified-select").should("not.exist");
+
     cy.getByTestId("selected-categories").should("contain", "user");
     cy.getByTestId("data-category-dropdown").click();
     cy.getByTestId("expand-System Data").click();
@@ -24,5 +26,23 @@ describe("DataCategoryInput", () => {
       "user",
       "system.authentication",
     ]);
+  });
+
+  it("can render the classified version", () => {
+    const onCheckedSpy = cy.spy().as("onCheckedSpy");
+    cy.mount(
+      <DataCategoryInput
+        dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
+        mostLikelyCategories={[
+          {
+            ...MOCK_DATA_CATEGORIES[0],
+            confidence: 1,
+          },
+        ]}
+        checked={[MOCK_DATA_CATEGORIES[0].fides_key]}
+        onChecked={onCheckedSpy}
+      />
+    );
+    cy.getByTestId("classified-select");
   });
 });
