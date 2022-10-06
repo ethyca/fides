@@ -126,7 +126,7 @@ class ConnectionConfig(Base):
     )
 
     access_manual_webhook = relationship(
-        "AccessManualWebhook",
+        AccessManualWebhook,
         back_populates="connection_config",
         cascade="delete",
         uselist=False,
