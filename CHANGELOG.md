@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.1...main)
 
+### Deprecated
+
+* Added a deprecation warning for the entire package [#1244](https://github.com/ethyca/fides/pull/1244)
+
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
 ### Changed
