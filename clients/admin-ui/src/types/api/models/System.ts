@@ -117,17 +117,3 @@ export type System = {
    */
   data_protection_impact_assessment?: DataProtectionImpactAssessment;
 };
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
