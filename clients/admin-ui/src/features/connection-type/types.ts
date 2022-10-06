@@ -32,6 +32,7 @@ export type ConnectionTypeSecretSchemaReponse = {
       default?: string;
       title: string;
       type: string;
+      description?: string;
     };
   };
   required: string[];

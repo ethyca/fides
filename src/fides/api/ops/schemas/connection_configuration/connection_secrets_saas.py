@@ -1,7 +1,8 @@
 import abc
 from typing import Any, Dict, Type
 
-from pydantic import BaseModel, Extra, PrivateAttr, create_model, root_validator
+from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
+from pydantic.fields import FieldInfo
 
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
@@ -83,9 +84,28 @@ class SaaSSchemaFactory:
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
             field_definitions[connector_param.name] = (
-                connector_param.default_value
+                Field(
+                    title=connector_param.label,
+                    description=connector_param.description,
+                    default=connector_param.default_value,
+                )
                 if connector_param.default_value
-                else (param_type, ...)
+                else (
+                    param_type,
+                    FieldInfo(
+                        title=connector_param.label,
+                        description=connector_param.description,
+                    ),
+                )
+            )
+        for external_reference in self.saas_config.external_references:
+            field_definitions[external_reference.name] = (
+                str,
+                FieldInfo(
+                    title=external_reference.label,
+                    description=external_reference.description,
+                    format="dataset_reference",
+                ),
             )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
 

@@ -201,6 +201,7 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
+    label: Optional[str]
     options: Optional[List[str]]  # list of possible values for the connector param
     default_value: Optional[Union[str, List[str]]]
     multiselect: Optional[bool] = False
@@ -240,6 +241,12 @@ class ConnectorParam(BaseModel):
             )
 
         return values
+
+
+class ExternalDatasetReference(BaseModel):
+    name: str
+    label: Optional[str]
+    description: Optional[str]
 
 
 class SaaSConfigBase(BaseModel):
@@ -284,6 +291,7 @@ class SaaSConfig(SaaSConfigBase):
     description: str
     version: str
     connector_params: List[ConnectorParam]
+    external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest

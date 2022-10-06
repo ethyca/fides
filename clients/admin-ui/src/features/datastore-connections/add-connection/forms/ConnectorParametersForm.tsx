@@ -95,9 +95,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </FormLabel>
   );
 
+  const getPlaceholderForFormat = (format?: string) => {
+    if (format == "dataset_reference") {
+      return "Enter dataset.collection.field"
+    }
+    return null
+  };
+
   const getFormField = (
     key: string,
-    item: { title: string; type: string }
+    item: { title: string; type: string; format?: string, description?: string}
   ): JSX.Element => (
     <Field
       id={key}
@@ -118,7 +125,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
             {item.type !== "integer" && (
-              <Input {...field} autoComplete="off" color="gray.700" size="sm" />
+              <Input {...field} placeholder={getPlaceholderForFormat(item.format)} autoComplete="off" color="gray.700" size="sm" />
             )}
             {item.type === "integer" && (
               <NumberInput
@@ -137,7 +144,19 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+          <Tooltip
+            aria-label={item.description}
+            hasArrow
+            label={item.description}
+            placement="right-start"
+            openDelay={500}
+          >
+            <CircleHelpIcon
+              marginLeft="8px"
+              _hover={{ cursor: "pointer" }}
+              visibility={item.description ? "visible": "hidden"}
+            />
+          </Tooltip>
         </FormControl>
       )}
     </Field>
@@ -274,7 +293,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       autoComplete="off"
                       color="gray.700"
                       isDisabled={connection?.key}
-                      placeholder={`A a unique identifier for your new ${
+                      placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } connection`}
                       size="sm"
