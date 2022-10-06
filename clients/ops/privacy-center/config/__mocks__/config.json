@@ -1,8 +1,8 @@
 {
   "title": "Privacy center",
   "description": "Privacy center test configuration",
-  "fidesops_host_development": "http://localhost:8080/api/v1",
-  "fidesops_host_production": "http://localhost:8080/api/v1",
+  "server_url_development": "http://localhost:8080/api/v1",
+  "fidesops_host_production": "http://example.com/api/v1",
   "logo_path": "/logo.svg",
   "actions": [
     {
