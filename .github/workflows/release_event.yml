@@ -8,10 +8,11 @@ jobs:
   Notify-of-New-Release:
     runs-on: ubuntu-latest
     steps:
+
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
-          repository: ethyca/fidesctl-plus
-          event-type: new-fidesctl-release
+          repository: ethyca/fidesplus
+          event-type: new-fides-release
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'

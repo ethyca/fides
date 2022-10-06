@@ -7,9 +7,9 @@ from fideslang.models import System, SystemMetadata
 from okta.models import Application as OktaApplication
 from py._path.local import LocalPath
 
-import fidesctl.ctl.connectors.okta as okta_connector
-from fidesctl.ctl.connectors.models import OktaConfig
-from fidesctl.ctl.core.config import FidesctlConfig
+import fides.ctl.connectors.okta as okta_connector
+from fides.ctl.connectors.models import OktaConfig
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture()
@@ -118,7 +118,7 @@ def test_create_okta_datasets_filters_inactive(
 
 # Integration
 @pytest.mark.external
-def test_list_okta_applications(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_list_okta_applications(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     client = okta_connector.get_okta_client(
         OktaConfig(
             orgUrl="https://dev-78908748.okta.com",

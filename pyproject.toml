@@ -1,17 +1,60 @@
 [build-system]
 requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
 
-######
-# MyPy
-######
-# [tool.mypy] Waiting for new version of Mypy
-# warn_unused_configs = true
-# ignore_missing_imports = true
-# pretty = true
+##########
+## MyPy ##
+##########
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+files = ["src"]
+exclude = ["migrations/"]
+no_implicit_reexport = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy", "sqlmypy"]
+pretty = true
+show_error_codes = true
+warn_redundant_casts = true
+warn_unused_configs = true
 
-#######
-# Black
-#######
+[pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[[tool.mypy.overrides]]
+module= "src.fides._version"
+ignore_errors=true
+
+[[tool.mypy.overrides]]
+module = [
+  "alembic.*",
+  "apscheduler.*",
+  "boto3.*",
+  "botocore.*",
+  "bson.*",
+  "celery.*",
+  "dask.*",
+  "fideslang.*",
+  "fideslib.*",
+  "fideslog.*",
+  "firebase_admin.*",
+  "jose.*",
+  "jwt.*",
+  "multidimensional_urlencode.*",
+  "pandas.*",
+  "pydash.*",
+  "pymongo.*",
+  "snowflake.*",
+  "sqlalchemy_utils.*",
+  "uvicorn.*"
+]
+ignore_missing_imports = true
+
+###########
+## Black ##
+###########
 [tool.black]
 py39 = true
 line-length = 88
@@ -34,33 +77,45 @@ exclude = '''
 )/
 '''
 
-#######
-# isort
-#######
+###########
+## isort ##
+###########
 [tool.isort]
+known_first_party = ["versioneer"]
 profile = "black"
 line_length = 88
-src_paths = ["src", "tests"]
+src_paths = ["src", "tests", "noxfiles"]
 
-########
-# Pylint
-########
+############
+## Pylint ##
+############
 [tool.pylint.messages_control]
-ignore="migrations"
 disable=[
-    "line-too-long",
-    "too-few-public-methods",
+    "bad-option-value",
+    "broad-except",
+    "consider-using-f-string",
+    "dangerous-default-value",
     "duplicate-code",
+    "fixme",
     "import-error",
-    "unused-argument",
-    "no-self-use",
     "import-outside-toplevel",
-    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
-    "too-many-arguments",
+    "invalid-name",
+    "line-too-long",
+    "missing-class-docstring",
+    "missing-function-docstring",
     "missing-module-docstring",
+    "missing-timeout",
+    "no-self-argument",
+    "no-self-use",
     "raise-missing-from",
-    "fixme"]
-extension-pkg-whitelist = ["pydantic", "zlib"]
+    "too-few-public-methods",
+    "too-many-ancestors",
+    "too-many-arguments",
+    "unnecessary-comprehension",
+    "unnecessary-lambda-assignment",
+    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "unused-argument",
+]
 
 [tool.pylint.reports]
 reports="no"
@@ -72,14 +127,26 @@ max-line-length="88"
 [tool.pylint.basic]
 good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
 
-########
-# Pytest
-########
+[tool.pylint.ignore]
+ignore="migrations,tests"
+
+[tool.pylint.whitelist]
+extension-pkg-whitelist = ["pydantic", "zlib"]
+
+############
+## Pytest ##
+############
 [tool.pytest.ini_options]
+env = [
+  "TESTING=True"
+]
+log_cli=false
+filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
-log_level = "DEBUG"
-addopts = ["--cov=fidesctl.ctl.core",
-            "--cov=fidesctl.cli",
+log_level = "INFO"
+addopts = ["--cov=fides.ctl.core",
+            "--cov=fides.cli",
+            "--cov=fides.api",
             "--cov-report=term-missing",
             "-vv",
             "--no-cov-on-fail",
@@ -90,6 +157,34 @@ markers = [
     "external: only runs tests that require access to non-docker, external services (i.e. Snowflake)",
     "postgres: only runs the integration tests for postgres",
     "mssql: only runs the integration tests for sqlserver/mssql",
-    "mysql: only runs the integration tests for mysql"
+    "mysql: only runs the integration tests for mysql",
+    "integration",
+    "integration_external",
+    "integration_mysql",
+    "integration_postgres",
+    "integration_mongodb",
+    "integration_mssql",
+    "integration_redshift",
+    "integration_snowflake",
+    "integration_mariadb",
+    "integration_bigquery",
+    "integration_saas",
+    "integration_saas_override",
+    "integration_mailchimp",
+    "integration_zendesk",
+    "integration_sentry",
+    "integration_stripe",
+    "integration_hubspot",
+    "integration_datadog",
+    "integration_segment",
+    "integration_sendgrid",
+    "integration_auth0",
+    "integration_shopify",
+    "integration_square",
+    "integration_outreach",
+    "integration_salesforce",
+    "integration_logi_id",
+    "integration_adobe_campaign",
+    "unit_saas"
 ]
 asyncio_mode = "auto"

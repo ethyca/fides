@@ -83,7 +83,7 @@ Policies use the following attributes:
 | data_subjects | List[DataRule] | The individual persons to whom you data rule pertains |
 | data_qualifier | String | The acceptable or non-acceptable level of deidentification |
 
-> For more detail on Policy resources, see the full [Policy resource documentation](../language/resources/policy.md).
+> For more detail on Policy resources, see the full [Policy resource documentation](https://ethyca.github.io/fideslang/resources/policy).
 
 ### Maintaining a Policy
 

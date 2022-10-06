@@ -1,0 +1,39 @@
+{
+  "title": "Privacy center",
+  "description": "Privacy center test configuration",
+  "fidesops_host_development": "http://localhost:8080/api/v1",
+  "fidesops_host_production": "http://localhost:8080/api/v1",
+  "logo_path": "/logo.svg",
+  "actions": [
+    {
+      "policy_key": "download",
+      "icon_path": "/download.svg",
+      "title": "Download your data",
+      "description": "We will email you a report of the data related to your account.",
+      "identity_inputs": {
+        "name": "required",
+        "email": "required",
+        "phone": "optional"
+      }
+    },
+    {
+      "policy_key": "delete",
+      "icon_path": "/delete.svg",
+      "title": "Delete your data",
+      "description": "We will delete all of your account data. This action cannot be undone.",
+      "identity_inputs": {
+        "name": "optional",
+        "email": "required"
+      }
+    },
+    {
+      "policy_key": "edit",
+      "icon_path": "/edit.svg",
+      "title": "Edit your data",
+      "description": "Manage how we use your data, including Do Not Sell My Personal Information.",
+      "identity_inputs": {
+        "phone": "optional"
+      }
+    }
+  ]
+}

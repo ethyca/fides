@@ -9,14 +9,12 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 
-from fidesctl.ctl.core import api
-from fidesctl.ctl.core import dataset as _dataset
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import api
+from fides.ctl.core import dataset as _dataset
+from fides.ctl.core.config import FidesConfig
 
 
-def create_server_datasets(
-    test_config: FidesctlConfig, datasets: List[Dataset]
-) -> None:
+def create_server_datasets(test_config: FidesConfig, datasets: List[Dataset]) -> None:
     for dataset in datasets:
         api.delete(
             url=test_config.cli.server_url,
@@ -359,7 +357,7 @@ class TestDatabase:
         assert actual_result
 
     def test_generate_dataset_passes_(
-        self, test_config: FidesctlConfig, database_type: str
+        self, test_config: FidesConfig, database_type: str
     ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
@@ -376,7 +374,7 @@ class TestDatabase:
         )
 
     def test_generate_dataset_coverage_failure(
-        self, test_config: FidesctlConfig, database_type: str
+        self, test_config: FidesConfig, database_type: str
     ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(
@@ -393,7 +391,7 @@ class TestDatabase:
             )
 
     def test_dataset_coverage_manifest_passes(
-        self, test_config: FidesctlConfig, tmpdir: LocalPath, database_type: str
+        self, test_config: FidesConfig, tmpdir: LocalPath, database_type: str
     ) -> None:
         database_parameters = TEST_DATABASE_PARAMETERS[database_type]
         datasets: List[Dataset] = _dataset.create_db_datasets(

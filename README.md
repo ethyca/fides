@@ -1,4 +1,4 @@
-# Meet Fidesctl: Privacy Policies as Code
+# Meet Fides: Privacy Policies as Code
 
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
@@ -47,7 +47,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
     ```
-    fidesctl init
+    fides init
     ```
 
     This builds the required images, spins up the database, and runs the initialization scripts.
@@ -55,19 +55,19 @@ This guide will walk through generating a mock RoPA using predefined resources i
 3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
 
     ```sh
-    fidesctl push demo_resources/
-    fidesctl export datamap --output-dir demo_resources/
+    fides push demo_resources/
+    fides export datamap --output-dir demo_resources/
     ```
 
     This will `push` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
 
 4. View the newly-generated data map generated from the provided resources.
 
-    #### **Controller**
+#### **Controller**
 
     The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    #### **Article 30 Record of Processing Activities**
+#### **Article 30 Record of Processing Activities**
 
     The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 
@@ -152,8 +152,8 @@ Read about the [Fides community](https://ethyca.github.io/fides/community/hints_
 
 ## :balance_scale: License
 
-The Fides ecosystem of tools ([Fidesops](https://github.com/ethyca/fidesops) and [Fidesctl](https://github.com/ethyca/fides)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
+The Fides ecosystem of tools ([Fides](https://github.com/ethyca/fides) and [fidescls](https://github.com/ethyca/fidescls)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Fides tools are built on [fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
 
 Fides is created and sponsored by Ethyca: a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 

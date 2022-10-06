@@ -18,8 +18,8 @@ from fideslang.models import (
     Taxonomy,
 )
 
-from fidesctl.ctl.core import evaluate
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import evaluate
+from fides.ctl.core.config import FidesConfig
 
 
 # Helpers
@@ -86,7 +86,7 @@ def create_policy_rule_with_keys(
 
 
 @pytest.mark.integration
-def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
+def test_get_all_server_policies(test_config: FidesConfig) -> None:
     result = evaluate.get_all_server_policies(
         url=test_config.cli.server_url, headers=test_config.user.request_headers
     )
@@ -94,7 +94,7 @@ def test_get_all_server_policies(test_config: FidesctlConfig) -> None:
 
 
 @pytest.mark.integration
-def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> None:
+def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
     """
     Test that populate_referenced_keys works recursively. It should be able to
     find the keys in the declaration and also populate any keys which those reference.
@@ -149,7 +149,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesctlConfig) -> No
 
 @pytest.mark.integration
 def test_populate_referenced_keys_fails_missing_keys(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Test that populate_referenced_keys will fail if missing keys
@@ -181,7 +181,7 @@ def test_populate_referenced_keys_fails_missing_keys(
 
 
 @pytest.mark.integration
-def test_hydrate_missing_resources(test_config: FidesctlConfig) -> None:
+def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
     dehydrated_taxonomy = Taxonomy(
         data_category=[
             DataCategory(
@@ -223,9 +223,7 @@ def test_get_evaluation_policies_with_key_found_local() -> None:
     local_policy_1 = Policy(fides_key="fides_key_1", rules=[])
     local_policy_2 = Policy(fides_key="fides_key_2", rules=[])
     get_server_resource_mock = MagicMock(return_value=server_policy)
-    with patch(
-        "fidesctl.ctl.core.evaluate.get_server_resource", get_server_resource_mock
-    ):
+    with patch("fides.ctl.core.evaluate.get_server_resource", get_server_resource_mock):
         policies = evaluate.get_evaluation_policies(
             local_policies=[local_policy_1, local_policy_2],
             evaluate_fides_key="fides_key_1",
@@ -246,9 +244,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
     server_policy = Policy(fides_key="fides_key_1", rules=[])
     local_policy = Policy(fides_key="fides_key_2", rules=[])
     get_server_resource_mock = MagicMock(return_value=server_policy)
-    with patch(
-        "fidesctl.ctl.core.evaluate.get_server_resource", get_server_resource_mock
-    ):
+    with patch("fides.ctl.core.evaluate.get_server_resource", get_server_resource_mock):
         policies = evaluate.get_evaluation_policies(
             local_policies=[local_policy],
             evaluate_fides_key="fides_key_1",
@@ -264,7 +260,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> None:
+def test_get_evaluation_policies_with_no_key(test_config: FidesConfig) -> None:
     """
     Test that when no fides key is supplied all local and server policies are
     returned.
@@ -277,7 +273,7 @@ def test_get_evaluation_policies_with_no_key(test_config: FidesctlConfig) -> Non
         return_value=[server_policy_1, server_policy_2]
     )
     with patch(
-        "fidesctl.ctl.core.evaluate.get_all_server_policies",
+        "fides.ctl.core.evaluate.get_all_server_policies",
         get_all_server_policies_mock,
     ):
         policies = evaluate.get_evaluation_policies(
@@ -563,7 +559,7 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
 
 @pytest.mark.unit
 def test_failed_evaluation_error_message(
-    test_config: FidesctlConfig, capsys: pytest.CaptureFixture
+    test_config: FidesConfig, capsys: pytest.CaptureFixture
 ) -> None:
     """
     Check that the returned error message matches what is expected.

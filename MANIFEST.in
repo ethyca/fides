@@ -1,7 +1,16 @@
 include LICENSE
+include README.md
 include requirements.txt
 include dev-requirements.txt
+include optional-requirements.txt
 include versioneer.py
-include src/fidesctl/api/ctl/alembic.ini
-include src/fidesctl/templates/fides_datamap_template.xlsx
-recursive-include src/fidesctl/ui-build *
+include src/fides/api/ctl/alembic.ini
+include src/fides/_version.py
+include src/fides/py.typed
+include src/fides/templates/fides_datamap_template.xlsx
+
+recursive-include src/fides/ui-build *
+
+graft src/fides/api/ops/email_templates/templates
+
+global-exclude *.pyc

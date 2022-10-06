@@ -5,6 +5,6 @@ These docs reflect the latest PyPI release.
 ---
 
 ::: mkdocs-click
-    :module: fidesctl.cli
+    :module: fides.cli
     :command: cli
     :depth: 1

@@ -6,8 +6,8 @@ import pytest
 from py._path.local import LocalPath
 from toml import dump, load
 
-from fidesctl.ctl.core.config import FidesctlConfig
-from fidesctl.ctl.core.config.utils import update_config_file
+from fides.ctl.core.config import FidesConfig
+from fides.ctl.core.config.utils import update_config_file
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def test_change_config() -> Generator:
 
 @pytest.mark.unit
 def test_update_config_file_new_value(
-    test_change_config: FidesctlConfig, tmpdir: LocalPath
+    test_change_config: FidesConfig, tmpdir: LocalPath
 ) -> None:
     """
     Create an example config.toml and validate both updating an

@@ -1,5 +1,6 @@
 """Contains the nox sessions for developing docs."""
 import nox
+
 from constants_nox import CI_ARGS, RUN
 from docker_nox import build
 
@@ -13,7 +14,7 @@ def docs_build(session: nox.Session, build_type: str) -> None:
     session.notify("teardown")
     if build_type == "local":
         build(session, "dev")
-    run_shell = (*RUN, "python", "generate_docs.py", "docs/fides/docs/")
+    run_shell = (*RUN, "python", "scripts/generate_docs.py", "docs/fides/docs")
     session.run(*run_shell, external=True)
 
 
@@ -32,7 +33,7 @@ def docs_serve(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "pip install -e /fides[all] && mkdocs serve --dev-addr=0.0.0.0:8000",
+        "pip install -e /fides && mkdocs serve --dev-addr=0.0.0.0:8000",
     )
     session.run(*run_shell, external=True)
 
@@ -52,6 +53,6 @@ def docs_check(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "pip install -e /fides[all] && mkdocs build",
+        "pip install -e /fides && mkdocs build",
     )
     session.run(*run_shell, external=True)

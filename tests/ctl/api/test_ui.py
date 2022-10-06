@@ -5,7 +5,7 @@ from typing import Dict
 
 import pytest
 
-from fidesctl.api.ctl.ui import generate_route_file_map, match_route
+from fides.api.ctl.ui import generate_route_file_map, match_route
 
 # Path segments of temporary files whose routes are tested.
 STATIC_FILES = (

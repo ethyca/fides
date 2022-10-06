@@ -6,9 +6,9 @@ from os import getenv
 import pytest
 from starlette.testclient import TestClient
 
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.api.ctl.routes.validate import ValidateResponse
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.api.ctl.routes.validate import ValidateResponse
+from fides.ctl.core.config import FidesConfig
 
 EXTERNAL_CONFIG_BODY = {
     "aws": {
@@ -32,7 +32,7 @@ EXTERNAL_CONFIG_BODY = {
 @pytest.mark.external
 @pytest.mark.parametrize("validate_target", ["aws", "okta", "bigquery"])
 def test_validate_success(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     validate_target: str,
     test_client: TestClient,
 ) -> None:
@@ -86,7 +86,7 @@ EXPECTED_FAILURE_MESSAGES = {
 @pytest.mark.external
 @pytest.mark.parametrize("validate_target", ["aws", "okta", "bigquery"])
 def test_validate_failure(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     validate_target: str,
     test_client: TestClient,
 ) -> None:

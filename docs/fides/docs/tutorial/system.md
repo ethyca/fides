@@ -46,7 +46,7 @@ Systems use the following attributes:
 | data_qualifier | List[FidesKey] | The level of deidentification for the dataset |
 | dataset_refereneces | List[FidesKey] | The `fides_key`(s) of the dataset fields used in this Privacy Declaration |
 
-> For more detail on System resources, see the full [System resource documentation](../language/resources/system.md).
+> For more detail on System resources, see the full [System resource documentation](https://ethyca.github.io/fideslang/resources/system).
 
 ### Maintaining a System Resource
 
@@ -56,7 +56,7 @@ As use cases evolve, your systems' data subjects, data categories, and data uses
 
 **PRO TIP**
 
-As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a [Registry](../language/resources/registry.md).
+As more systems are added to a data ecosystem, consider grouping systems into another Fides resource type, called a [Registry](https://ethyca.github.io/fideslang/resources/registry/).
 
 ---
 

@@ -1,0 +1,81 @@
+saas_config:
+  fides_key: mailchimp_override_connector_example
+  name: Mailchimp SaaS Override Config
+  type: mailchimp
+  description: A sample schema representing the Mailchimp connector for Fidesops that includes request function overrides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: username
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /3.0/lists
+
+  endpoints:
+    - name: messages
+      requests:
+        read:
+          request_override: mailchimp_messages_access
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: mailchimp_override_connector_example
+                  field: conversations.id
+                  direction: from
+    - name: conversations
+      requests:
+        read:
+          method: GET
+          path: /3.0/conversations
+          query_params:
+            - name: count
+              value: 1000
+            - name: offset
+              value: 0
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: conversations
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 1000
+              limit: 10000
+    - name: member
+      requests:
+        read:
+          method: GET
+          path: /3.0/search-members
+          query_params:
+            - name: query
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+          data_path: exact_matches.members
+        update:
+          request_override: mailchimp_member_update
+          param_values:
+            - name: list_id
+              references:
+                - dataset: mailchimp_override_connector_example
+                  field: member.list_id
+                  direction: from
+            - name: subscriber_hash
+              references:
+                - dataset: mailchimp_override_connector_example
+                  field: member.id
+                  direction: from

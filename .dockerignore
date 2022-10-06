@@ -1,8 +1,14 @@
 # Ignore existing build artifacts
 build/
 dist/
-src/fidesctl.egg-info/
-src/fidesctl/ui-build/
+src/fides.egg-info/
+src/fides/ui-build/
+src/ui-build/
+
+# Frontend
+**/node_modules
+**/.next
+
 
 # Ignore Python-Specific Files
 .mypy_cache/
@@ -10,6 +16,9 @@ src/fidesctl/ui-build/
 .pytest_cache/
 __pycache__/
 .coverage
+**.*.pyc
+**.*.pyo
+**.*.pyd
 
 # pyenv
 .python-version
@@ -30,8 +39,8 @@ docs/
 # Ignore dev files
 .github/
 .devcontainer/
-**/node_modules/
 
 # Ignore cypress artifacts
 **/videos/
 **/screenshots/
+.DS_Store
