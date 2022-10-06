@@ -89,7 +89,6 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve mongo data"""
-        # pylint: disable = too-many-locals
         query_config = self.query_config(node)
         client = self.client()
 
@@ -118,7 +117,6 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         rows: List[Row],
         input_data: Dict[str, List[Any]],
     ) -> int:
-        # pylint: disable=too-many-locals
         """Execute a masking request"""
         query_config = self.query_config(node)
         collection_name = node.address.collection

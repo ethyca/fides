@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-locals,too-many-lines, too-many-statements
+# pylint: disable=too-many-branches,too-many-lines, too-many-statements
 
 import csv
 import io

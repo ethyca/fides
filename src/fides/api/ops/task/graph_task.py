@@ -688,7 +688,7 @@ def update_erasure_mapping_from_cache(
         )
 
 
-async def run_erasure(  # pylint: disable = too-many-arguments, too-many-locals
+async def run_erasure(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     policy: Policy,
     graph: DatasetGraph,
