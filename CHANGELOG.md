@@ -26,6 +26,10 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
 
+### Fixed
+* Privacy Center:
+  * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
+
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
 ### Changed
