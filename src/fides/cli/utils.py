@@ -249,7 +249,11 @@ def handle_database_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, database_credentials)
-        actual_connection_string = database_credentials.connection_string  # type: ignore[union-attr]
+        actual_connection_string = (
+            database_credentials.connection_string
+            if database_credentials is not None
+            else actual_connection_string
+        )
     return actual_connection_string
 
 
