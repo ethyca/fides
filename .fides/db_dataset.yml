@@ -107,9 +107,6 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: consent
-    description: 'Fides Generated Description for Table: consent'
-    data_categories: []
   - name: cls_classification_detail
     description: 'Fides Generated Description for Table: cls_classification_detail'
     data_categories: null
