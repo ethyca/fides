@@ -8,7 +8,7 @@ from fideslib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.db.base import Base, ClientDetail, FidesUser
+from fideslib.db.base import ClientDetail, FidesUser
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
