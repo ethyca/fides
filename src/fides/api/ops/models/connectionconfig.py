@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type
 
 from fideslib.db.base import Base
 from fideslib.db.base_class import get_key_from_data
@@ -20,8 +20,6 @@ from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.ctl.core.config import get_config
 
-if TYPE_CHECKING:
-    from fides.api.ops.models.manual_webhook import AccessManualWebhook
 CONFIG = get_config()
 
 
@@ -125,8 +123,8 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    access_manual_webhook = relationship(
-        AccessManualWebhook,
+    access_manual_webhook = relationship(  # type: ignore[misc]
+        "AccessManualWebhook",
         back_populates="connection_config",
         cascade="delete",
         uselist=False,
