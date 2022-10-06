@@ -34,7 +34,7 @@ SERVER_CHECK_COMMAND_NAMES = [
 VERSION = fidesctl.__version__
 APP = fidesctl.__name__
 
-# Deprecate me
+
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
@@ -59,6 +59,11 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     The parent group for the Fidesctl CLI.
     """
 
+    docs_link = "https://ethyca.github.io/fides/"
+    click.secho(
+        f"WARNING: 'Fidesctl' has been deprecated and replace by a more robust 'Fides' tool, which includes existing 'fidesctl' functionality. Run `pip install ethyca-fides` to get the latest version of Fides and visit '{docs_link}' for up-to-date documentation.\n",
+        fg="red",
+    )
     ctx.ensure_object(dict)
     config = get_config(config_path)
 
