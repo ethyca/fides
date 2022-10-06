@@ -1,0 +1,17 @@
+fides_key,name,parent_key,description
+data_subject,Data Subject,,
+anonymous_user,Anonymous User,data_subject,An individual that is unidentifiable to the systems. Note - This should only be applied to truly anonymous users where there is no risk of re-identification
+citizen_voter,Citizen Voter,data_subject,An individual registered to voter with a state or authority.
+commuter,Commuter,data_subject,An individual that is traveling or transiting in the context of location tracking.
+consultant,Consultant,data_subject,An individual employed in a consultative/temporary capacity by the organization.
+customer,Custom,data_subject,An individual or other organization that purchases goods or services from the organization.
+employee,Employee,data_subject,An individual employed by the organization.
+job_applicant,Job Applicant,data_subject,An individual applying for employment to the organization.
+next_of_kin,Next of Kin,data_subject,A relative of any other individual subject where such a relationship is known.
+passenger,Passenger,data_subject,An individual traveling on some means of provided transport.
+patient,Patient,data_subject,An individual identified for the purposes of any medical care.
+prospect,Prospect,data_subject,An individual or organization to whom an organization is selling goods or services.
+shareholder,Shareholder,data_subject,An individual or organization that holds equity in the organization.
+supplier_vendor,Supplier/Vendor,data_subject,An individual or organization that provides services or goods to the organization.
+trainee,Trainee,data_subject,An individual undergoing training by the organization.
+visitor,Visitor,data_subject,An individual visiting a location.
