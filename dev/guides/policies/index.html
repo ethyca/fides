@@ -15,7 +15,7 @@
     
     
       
-        <title>Example Policies - Fides</title>
+        <title>Create Policies - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#example-policies" class="md-skip">
+        <a href="#create-a-fides-policy" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Example Policies
+              Create Policies
             
           </span>
         </div>
@@ -209,6 +209,121 @@ You're not viewing the latest version.
       
         
           
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link md-tabs__link--active">
+        Fides
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../ui/overview/" class="md-tabs__link">
+        Fides UI
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="https://ethyca.github.io/fideslang/" class="md-tabs__link">
+      Fides Lang
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../api/" class="md-tabs__link">
+      API
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../development/overview/" class="md-tabs__link">
+        Development
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../community/overview/" class="md-tabs__link">
+        Community
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../ethyca/" class="md-tabs__link">
+        About Ethyca
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
         
       
       <main class="md-main" data-md-component="main">
@@ -221,8 +336,10 @@ You're not viewing the latest version.
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
       
@@ -252,40 +369,27 @@ You're not viewing the latest version.
 
   
   
-  
-    <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
-        What is Fides?
-      </a>
-    </li>
-  
-
     
-      
-      
-      
-
-  
   
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_2">
-          Quick Start
+        <label class="md-nav__link" for="__nav_1">
+          Fides
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Quick Start" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
+      <nav class="md-nav" aria-label="Fides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
           <span class="md-nav__icon md-icon"></span>
-          Quick Start
+          Fides
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -295,7 +399,47 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../quickstart/overview/" class="md-nav__link">
+      <a href="../.." class="md-nav__link">
+        What is Fides?
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_2" type="checkbox" id="__nav_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -309,98 +453,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../quickstart/local_standalone/" class="md-nav__link">
-        Running Fidesctl Locally (Standalone)
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../quickstart/local_full/" class="md-nav__link">
-        Running Fidesctl Locally (Full Installation)
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../quickstart/docker/" class="md-nav__link">
-        Running Fidesctl in Docker
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_3">
-          Installation
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Installation" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          Installation
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/installation/" class="md-nav__link">
-        Installation Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/prerequisites_dependencies/" class="md-nav__link">
-        Prerequisites & Dependencies
+      <a href="../../installation/requirements/" class="md-nav__link">
+        Project Requirements
       </a>
     </li>
   
@@ -441,20 +495,6 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../installation/database/" class="md-nav__link">
-        Setting up the database
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../installation/configuration/" class="md-nav__link">
         Configuration
       </a>
@@ -468,11 +508,10 @@ You're not viewing the latest version.
     </li>
   
 
-    
-      
-      
-      
-
+            
+          
+            
+              
   
   
   
@@ -480,20 +519,20 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_3" type="checkbox" id="__nav_1_3" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_4">
-          Tutorial
+        <label class="md-nav__link" for="__nav_1_3">
+          Working with Fides
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+      <nav class="md-nav" aria-label="Working with Fides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_3">
           <span class="md-nav__icon md-icon"></span>
-          Tutorial
+          Working with Fides
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -503,8 +542,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/" class="md-nav__link">
-        Overview
+      <a href="../../getting-started/database_connectors/" class="md-nav__link">
+        Connect to Databases
       </a>
     </li>
   
@@ -517,8 +556,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/add/" class="md-nav__link">
-        Add Fidesctl to the App
+      <a href="../../getting-started/generate_resources/" class="md-nav__link">
+        Generate Resources
       </a>
     </li>
   
@@ -531,8 +570,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/dataset/" class="md-nav__link">
-        Annotate the Dataset
+      <a href="../../getting-started/datasets/" class="md-nav__link">
+        Create Datasets
       </a>
     </li>
   
@@ -545,8 +584,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/system/" class="md-nav__link">
-        Annotate the System
+      <a href="../../getting-started/storage/" class="md-nav__link">
+        Configure Storage Destinations
       </a>
     </li>
   
@@ -559,8 +598,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/policy/" class="md-nav__link">
-        Write a Policy
+      <a href="../../getting-started/execution_policies/" class="md-nav__link">
+        Create Execution Policies
       </a>
     </li>
   
@@ -573,22 +612,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../tutorial/google/" class="md-nav__link">
-        Add Google Analytics
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../tutorial/pass/" class="md-nav__link">
-        Manage Google Analytics with Fidesctl
+      <a href="../../getting-started/privacy_requests/" class="md-nav__link">
+        Execute Privacy Requests
       </a>
     </li>
   
@@ -600,11 +625,10 @@ You're not viewing the latest version.
     </li>
   
 
-    
-      
-      
-      
-
+            
+          
+            
+              
   
   
     
@@ -614,18 +638,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" checked>
       
       
       
       
-        <label class="md-nav__link" for="__nav_5">
+        <label class="md-nav__link" for="__nav_1_4">
           How-To Guides
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="How-To Guides" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
+      <nav class="md-nav" aria-label="How-To Guides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_4">
           <span class="md-nav__icon md-icon"></span>
           How-To Guides
         </label>
@@ -637,8 +661,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../generate_resources/" class="md-nav__link">
-        Generating Resources
+      <a href="../oauth/" class="md-nav__link">
+        Authenticate with OAuth
       </a>
     </li>
   
@@ -661,12 +685,12 @@ You're not viewing the latest version.
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Example Policies
+          Create Policies
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Example Policies
+        Create Policies
       </a>
       
         
@@ -685,37 +709,84 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#what-is-a-policy" class="md-nav__link">
+    What is a Policy?
+  </a>
+  
+    <nav class="md-nav" aria-label="What is a Policy?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-attributes" class="md-nav__link">
+    Policy attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sample-policy" class="md-nav__link">
+    Sample Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintaining-your-policies" class="md-nav__link">
+    Maintaining your Policies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-policies" class="md-nav__link">
+    Example Policies
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#no-third-party-data-sharing" class="md-nav__link">
     No Third-Party Data Sharing
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#respecting-employee-data-privacy" class="md-nav__link">
     Respecting Employee Data Privacy
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#respecting-biometric-pii" class="md-nav__link">
     Respecting Biometric PII
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#anonymous-derived-user-contact-data" class="md-nav__link">
     Anonymous Derived User Contact Data
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#phone-numbers-for-transactional-messaging" class="md-nav__link">
     Phone Numbers for Transactional Messaging
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -734,8 +805,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../extending_taxonomy/" class="md-nav__link">
-        Extending the Taxonomy
+      <a href="../extend_taxonomy/" class="md-nav__link">
+        Extend the Taxonomy
       </a>
     </li>
   
@@ -748,8 +819,459 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../generating_datamap/" class="md-nav__link">
-        Generating a Data Map
+      <a href="../generate_datamaps/" class="md-nav__link">
+        Generate Data Maps
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email_communications/" class="md-nav__link">
+        Configure Email Communications
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../complex_fields/" class="md-nav__link">
+        Annotate Complex Fields
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../masking_strategies/" class="md-nav__link">
+        Configure Data Masking
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policy_webhooks/" class="md-nav__link">
+        Execution Policy Webhooks
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reporting/" class="md-nav__link">
+        Report on Privacy Requests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../onetrust/" class="md-nav__link">
+        Integrate with OneTrust
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../query_execution/" class="md-nav__link">
+        Preview Query Execution
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_rights_protocol/" class="md-nav__link">
+        Data Rights Protocol
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_5">
+          SaaS Connectors
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SaaS Connectors" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
+          <span class="md-nav__icon md-icon"></span>
+          SaaS Connectors
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/saas_connectors/" class="md-nav__link">
+        Connect to SaaS Applications
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/saas_config/" class="md-nav__link">
+        SaaS Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/saas_oauth2/" class="md-nav__link">
+        SaaS OAuth2 Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/saas_postprocessors/" class="md-nav__link">
+        SaaS Post-Processors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/saas_pagination/" class="md-nav__link">
+        SaaS Pagination
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_6" type="checkbox" id="__nav_1_5_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_5_6">
+          Connection Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Connection Examples" data-md-level="3">
+        <label class="md-nav__title" for="__nav_1_5_6">
+          <span class="md-nav__icon md-icon"></span>
+          Connection Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/adobe/" class="md-nav__link">
+        Adobe Campaign
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/hubspot/" class="md-nav__link">
+        Hubspot
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/mailchimp/" class="md-nav__link">
+        Mailchimp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/outreach/" class="md-nav__link">
+        Outreach
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/salesforce/" class="md-nav__link">
+        Salesforce
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/segment/" class="md-nav__link">
+        Segment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/sendgrid/" class="md-nav__link">
+        Sendgrid
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/sentry/" class="md-nav__link">
+        Sentry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/stripe/" class="md-nav__link">
+        Stripe
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../saas_connectors/example_configs/zendesk/" class="md-nav__link">
+        Zendesk
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cicd/" class="md-nav__link">
+        CI/CD Integrations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/" class="md-nav__link">
+        Deployment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        Glossary
       </a>
     </li>
   
@@ -773,18 +1295,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_6">
+        <label class="md-nav__link" for="__nav_2">
           Fides UI
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Fides UI" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
           Fides UI
         </label>
@@ -796,7 +1318,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../admin_ui/overview/" class="md-nav__link">
+      <a href="../../ui/overview/" class="md-nav__link">
         Overview
       </a>
     </li>
@@ -810,7 +1332,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../admin_ui/wizard/" class="md-nav__link">
+      <a href="../../ui/wizard/" class="md-nav__link">
         Configuration Wizard
       </a>
     </li>
@@ -824,8 +1346,64 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../admin_ui/datasets/" class="md-nav__link">
-        Managing Datasets
+      <a href="../../ui/subject_requests/" class="md-nav__link">
+        Subject Requests
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/datasets/" class="md-nav__link">
+        Manage Datasets
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/datastores/" class="md-nav__link">
+        Manage Datastores
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/user_management/" class="md-nav__link">
+        Manage Users
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/privacy_center/" class="md-nav__link">
+        Privacy Center
       </a>
     </li>
   
@@ -845,353 +1423,9 @@ You're not viewing the latest version.
   
   
   
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_7">
-          CI/CD Integration
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="CI/CD Integration" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
-          <span class="md-nav__icon md-icon"></span>
-          CI/CD Integration
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../cicd/overview/" class="md-nav__link">
-        Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../cicd/examples/" class="md-nav__link">
-        Example Integrations
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_8">
-          Fides Language
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Fides Language" data-md-level="1">
-        <label class="md-nav__title" for="__nav_8">
-          <span class="md-nav__icon md-icon"></span>
-          Fides Language
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/overview/" class="md-nav__link">
-        Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/syntax/" class="md-nav__link">
-        Syntax
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8_3" type="checkbox" id="__nav_8_3" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_8_3">
-          Resources
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Resources" data-md-level="2">
-        <label class="md-nav__title" for="__nav_8_3">
-          <span class="md-nav__icon md-icon"></span>
-          Resources
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/resources/organization/" class="md-nav__link">
-        Organization
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/resources/policy/" class="md-nav__link">
-        Policy
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/resources/registry/" class="md-nav__link">
-        Registry
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/resources/system/" class="md-nav__link">
-        System
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/resources/dataset/" class="md-nav__link">
-        Dataset
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8_4" type="checkbox" id="__nav_8_4" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_8_4">
-          Taxonomy
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Taxonomy" data-md-level="2">
-        <label class="md-nav__title" for="__nav_8_4">
-          <span class="md-nav__icon md-icon"></span>
-          Taxonomy
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/overview/" class="md-nav__link">
-        Overview
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/explorer/" class="md-nav__link">
-        Taxonomy Explorer
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/data_categories/" class="md-nav__link">
-        Data Categories
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/data_uses/" class="md-nav__link">
-        Data Uses
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/data_subjects/" class="md-nav__link">
-        Data Subjects
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../language/taxonomy/data_qualifiers/" class="md-nav__link">
-        Data Qualifiers
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../cli/" class="md-nav__link">
-        CLI
+      <a href="https://ethyca.github.io/fideslang/" class="md-nav__link">
+        Fides Lang
       </a>
     </li>
   
@@ -1223,18 +1457,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_11">
+        <label class="md-nav__link" for="__nav_5">
           Development
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Development" data-md-level="1">
-        <label class="md-nav__title" for="__nav_11">
+        <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           Development
         </label>
@@ -1260,8 +1494,36 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
+      <a href="../../development/contributing_details/" class="md-nav__link">
+        Contributing Details
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../development/code_style/" class="md-nav__link">
         Code Style
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/fideslog/" class="md-nav__link">
+        Fideslog Analytics
       </a>
     </li>
   
@@ -1355,18 +1617,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_12" type="checkbox" id="__nav_12" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_12">
+        <label class="md-nav__link" for="__nav_6">
           Community
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Community" data-md-level="1">
-        <label class="md-nav__title" for="__nav_12">
+        <label class="md-nav__title" for="__nav_6">
           <span class="md-nav__icon md-icon"></span>
           Community
         </label>
@@ -1379,7 +1641,7 @@ You're not viewing the latest version.
   
     <li class="md-nav__item">
       <a href="../../community/overview/" class="md-nav__link">
-        Github, Slack & Discord
+        Github, Slack, and Discord
       </a>
     </li>
   
@@ -1393,7 +1655,7 @@ You're not viewing the latest version.
   
     <li class="md-nav__item">
       <a href="../../community/hints_tips/" class="md-nav__link">
-        Community Hints & Tips
+        Community Hints and Tips
       </a>
     </li>
   
@@ -1427,6 +1689,32 @@ You're not viewing the latest version.
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          About Ethyca
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="About Ethyca" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          About Ethyca
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../ethyca/" class="md-nav__link">
         About Ethyca
@@ -1434,11 +1722,10 @@ You're not viewing the latest version.
     </li>
   
 
-    
-      
-      
-      
-
+            
+          
+            
+              
   
   
   
@@ -1446,6 +1733,13 @@ You're not viewing the latest version.
       <a href="../../license/" class="md-nav__link">
         License
       </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -1477,37 +1771,84 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#what-is-a-policy" class="md-nav__link">
+    What is a Policy?
+  </a>
+  
+    <nav class="md-nav" aria-label="What is a Policy?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#policy-attributes" class="md-nav__link">
+    Policy attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sample-policy" class="md-nav__link">
+    Sample Policy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maintaining-your-policies" class="md-nav__link">
+    Maintaining your Policies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-policies" class="md-nav__link">
+    Example Policies
+  </a>
+  
+    <nav class="md-nav" aria-label="Example Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#no-third-party-data-sharing" class="md-nav__link">
     No Third-Party Data Sharing
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#respecting-employee-data-privacy" class="md-nav__link">
     Respecting Employee Data Privacy
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#respecting-biometric-pii" class="md-nav__link">
     Respecting Biometric PII
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#anonymous-derived-user-contact-data" class="md-nav__link">
     Anonymous Derived User Contact Data
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#phone-numbers-for-transactional-messaging" class="md-nav__link">
     Phone Numbers for Transactional Messaging
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1529,9 +1870,179 @@ You're not viewing the latest version.
 
 
 
-<h1 id="example-policies">Example Policies</h1>
-<p>This page gives a few examples of different policies one might want to use in their own organizations.</p>
-<h2 id="no-third-party-data-sharing">No Third-Party Data Sharing</h2>
+<h1 id="create-a-fides-policy">Create a Fides Policy</h1>
+<h2 id="what-is-a-policy">What is a Policy?</h2>
+<p>Fides resources provide metadata about systems and services, the data categories they process, and the uses of that data. <em>Policies</em> allow you to enforce constraints on these declarations, decide what combinations to allow or reject, and begin to control data privacy at its source.</p>
+<p>The purpose of a privacy policy is to state what types of data are allowed for certain means of use. In Fides, a Policy is made up of rules against which the system's <a href="../../getting-started/generate_resources/">resources</a> are evaluated. Policies evaluate the data subjects, data category, and data qualifier values against data use cases. This generates a boolean output to either allow or reject the process from proceeding.</p>
+<h3 id="policy-attributes">Policy attributes</h3>
+<p>Policies use the following attributes:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fides_key</code></td>
+<td>FidesKey</td>
+<td>An identifier label that must be unique within your organization. A fides_key can only contain alphanumeric characters and <code>_</code>.</td>
+</tr>
+<tr>
+<td><code>data_categories</code></td>
+<td>List[DataRule]</td>
+<td>The types of sensitive data as defined by the taxonomy.</td>
+</tr>
+<tr>
+<td><code>data_uses</code></td>
+<td>List[DataRule]</td>
+<td>The various categories of data processing and operations within your organization.</td>
+</tr>
+<tr>
+<td><code>data_subjects</code></td>
+<td>List[DataRule]</td>
+<td>The individual persons to whom you data rule pertains.</td>
+</tr>
+<tr>
+<td><code>data_qualifier</code></td>
+<td>String</td>
+<td>The acceptable or non-acceptable level of de-identification.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">For more detail on Policy resources, see the full <a href="https://ethyca.github.io/fideslang/resources/policy">Policy resource documentation</a>.</p>
+</div>
+<h3 id="sample-policy">Sample Policy</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">policy</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">flaskr_policy</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Flaskr Privacy Policy</span><span class="w"></span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">A privacy policy for the example Flask app</span><span class="w"></span>
+<span class="w">    </span><span class="nt">rules</span><span class="p">:</span><span class="w"></span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">minimize_user_identifiable_data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Minimize User Identifiable Data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting any user identifiable data for uses other than system operations</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.derived.identifiable</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">fides_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reject_sensitive_data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject Sensitive Data</span><span class="w"></span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reject collecting sensitive user data for any use</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_categories</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.biometric</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.childrens</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.genetic</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.health_and_medical</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.political_opinion</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.race</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.religious_belief</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user.provided.identifiable.sexual_orientation</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_uses</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provide</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">improve</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">personalize</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">advertising</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">third_party_sharing</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">collect</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_ai_system</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_subjects</span><span class="p">:</span><span class="w"></span>
+<span class="w">          </span><span class="nt">matches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ANY</span><span class="w"></span>
+<span class="w">          </span><span class="nt">values</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">customer</span><span class="w"></span>
+<span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>This Fides policy is relatively restrictive. The two rules (<code>minimize_user_identifiable_data</code> and <code>reject_sensitive_data</code>) can be interpreted as:</p>
+<ol>
+<li>Do not use identifiable data for anything other than the app's primary functions.</li>
+<li>Do not collect <em>any</em> sensitive data at all. As a safe default, this is the type of policy you might add to all projects.</li>
+</ol>
+<h2 id="maintaining-your-policies">Maintaining your Policies</h2>
+<p>As global privacy laws change and businesses scale, a company's policies will evolve with them. Updating this resource file should become a regular part of the development planning process when building a new feature. </p>
+<h2 id="example-policies">Example Policies</h2>
+<p>The following are examples of real-world use cases for Fides Policies, representing common business requirements or legislation.</p>
+<div class="admonition note">
+<p class="admonition-title">Always ensure your Policies accurately represent your business needs prior to using them in production environments.</p>
+</div>
+<h3 id="no-third-party-data-sharing">No Third-Party Data Sharing</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">data_sharing_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1576,7 +2087,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<h2 id="respecting-employee-data-privacy">Respecting Employee Data Privacy</h2>
+<h3 id="respecting-employee-data-privacy">Respecting Employee Data Privacy</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">employee_data_processing_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1623,7 +2134,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<h2 id="respecting-biometric-pii">Respecting Biometric PII</h2>
+<h3 id="respecting-biometric-pii">Respecting Biometric PII</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">biometric_data_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1676,7 +2187,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="c1"># And the data is identifiable, trigger a violation</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<h2 id="anonymous-derived-user-contact-data">Anonymous Derived User Contact Data</h2>
+<h3 id="anonymous-derived-user-contact-data">Anonymous Derived User Contact Data</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">derived_user_data_policy.yml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1719,7 +2230,7 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="c1"># And the data is either pseudonymized or more identifiable, trigger a violation</span><span class="w"></span>
 <span class="w">        </span><span class="nt">data_qualifier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aggregated.anonymized.unlinked_pseudonymized.pseudonymized</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
-<h2 id="phone-numbers-for-transactional-messaging">Phone Numbers for Transactional Messaging</h2>
+<h3 id="phone-numbers-for-transactional-messaging">Phone Numbers for Transactional Messaging</h3>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">transactional_messaging_policy.yaml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -1811,9 +2322,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../generate_resources/"
+          href="../oauth/"
           class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Generating Resources"
+          aria-label="Previous: Authenticate with OAuth"
           rel="prev"
         >
           <div class="md-footer__button md-icon">
@@ -1824,7 +2335,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Previous
               </span>
-              Generating Resources
+              Authenticate with OAuth
             </div>
           </div>
         </a>
@@ -1834,9 +2345,9 @@ You're not viewing the latest version.
       
         
         <a
-          href="../extending_taxonomy/"
+          href="../extend_taxonomy/"
           class="md-footer__link md-footer__link--next"
-          aria-label="Next: Extending the Taxonomy"
+          aria-label="Next: Extend the Taxonomy"
           rel="next"
         >
           <div class="md-footer__title">
@@ -1844,7 +2355,7 @@ You're not viewing the latest version.
               <span class="md-footer__direction">
                 Next
               </span>
-              Extending the Taxonomy
+              Extend the Taxonomy
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -1922,7 +2433,7 @@ You're not viewing the latest version.
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.e87a5f81.min.js"></script>
