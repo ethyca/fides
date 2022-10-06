@@ -15,7 +15,11 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.1...main)
+## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
+
+### Deprecated
+
+* Added a deprecation warning for the entire package [#1244](https://github.com/ethyca/fides/pull/1244)
 
 ### Added
 
@@ -60,6 +64,7 @@ The types of changes are:
 * Dataset fields table shows categories in the last column. [#1088](https://github.com/ethyca/fides/pull/1088)
 
 ### Docs
+
 * Updated the footer links [#1130](https://github.com/ethyca/fides/pull/1130)
 
 ### Fixed
