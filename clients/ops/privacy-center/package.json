@@ -22,7 +22,7 @@
     "@chakra-ui/system": "^1.12.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
-    "@fidesui/react": "^0.0.9",
+    "@fidesui/react": "^0.0.17",
     "@fontsource/inter": "^4.5.4",
     "formik": "^2.2.9",
     "framer-motion": "^5",
