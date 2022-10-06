@@ -4,8 +4,6 @@ import DataCategoryInput from "~/features/dataset/DataCategoryInput";
 import { MOCK_DATA_CATEGORIES } from "~/mocks/data";
 import { DataCategory } from "~/types/api";
 
-import { stubPlus } from "../support/stubs";
-
 describe("DataCategoryInput", () => {
   it("can check a category", () => {
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
@@ -31,13 +29,17 @@ describe("DataCategoryInput", () => {
   });
 
   it("can render the classified version", () => {
-    stubPlus(true);
-
     const onCheckedSpy = cy.spy().as("onCheckedSpy");
     cy.mount(
       <DataCategoryInput
         dataCategories={MOCK_DATA_CATEGORIES as DataCategory[]}
-        checked={["user"]}
+        mostLikelyCategories={[
+          {
+            ...MOCK_DATA_CATEGORIES[0],
+            confidence: 1,
+          },
+        ]}
+        checked={[MOCK_DATA_CATEGORIES[0].fides_key]}
         onChecked={onCheckedSpy}
       />
     );

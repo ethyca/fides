@@ -1,9 +1,8 @@
 import { Box, Tooltip } from "@fidesui/react";
 
-import { ClassifyField } from "~/features/common/plus.slice";
 import IdentifiabilityTag from "~/features/taxonomy/IdentifiabilityTag";
 import TaxonomyEntityTag from "~/features/taxonomy/TaxonomyEntityTag";
-import { DatasetField } from "~/types/api";
+import { ClassifyField, DatasetField } from "~/types/api";
 
 // This component is used within a Chakra Td element in the DatasetFieldsTable. Chakra requires a
 // JSX.Element in that context, so all returns in this component need to be wrapped in a fragment.

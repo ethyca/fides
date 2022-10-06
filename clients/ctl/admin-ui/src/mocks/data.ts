@@ -1,11 +1,9 @@
 import {
   Classification,
+  ClassificationStatus,
   ClassifyCollection,
   ClassifyDataset,
   ClassifyField,
-  ClassifyStatusEnum,
-} from "~/features/common/plus.slice";
-import {
   DataResponsibilityTitle,
   Dataset,
   DatasetCollection,
@@ -256,7 +254,8 @@ export const mockClassifyDataset = (
 ): ClassifyDataset => {
   const initial: ClassifyDataset = {
     fides_key: "sample_dataset",
-    status: ClassifyStatusEnum.COMPLETE,
+    name: "sample_dataset",
+    status: ClassificationStatus.COMPLETE,
     collections: [mockClassifyCollection()],
   };
   return Object.assign(initial, partial);

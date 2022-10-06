@@ -33,4 +33,12 @@ export type PrivacyDeclaration = {
    * Referenced Dataset fides keys used by the system.
    */
   dataset_references?: Array<string>;
+  /**
+   * The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
+   */
+  egress?: Array<string>;
+  /**
+   * The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
+   */
+  ingress?: Array<string>;
 };

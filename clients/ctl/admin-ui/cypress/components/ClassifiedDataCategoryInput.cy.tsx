@@ -6,7 +6,7 @@ import { DataCategory } from "~/types/api";
 
 const CATEGORIES_WITH_CONFIDENCE = MOCK_DATA_CATEGORIES.map((dc) => ({
   ...dc,
-  confidence: Math.floor(Math.random() * 100),
+  confidence: Math.random(),
 }));
 const MOST_LIKELY_CATEGORIES = CATEGORIES_WITH_CONFIDENCE.slice(0, 5);
 

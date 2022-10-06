@@ -99,7 +99,7 @@ const DataCategoryDropdown = ({
             </MenuOptionGroup>
             <MenuDivider />
           </Box>
-          <Box px={2}>
+          <Box px={2} data-testid="data-category-checkbox-tree">
             <CheckboxTree
               nodes={dataCategoryNodes}
               selected={checked}

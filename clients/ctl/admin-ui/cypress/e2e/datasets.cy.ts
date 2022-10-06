@@ -1,4 +1,8 @@
-import { stubDatasetCrud, stubPlus } from "cypress/support/stubs";
+import {
+  CONNECTION_STRING,
+  stubDatasetCrud,
+  stubPlus,
+} from "cypress/support/stubs";
 
 describe("Dataset", () => {
   beforeEach(() => {
@@ -315,20 +319,18 @@ describe("Dataset", () => {
     });
 
     it("Can create a dataset by connecting to a database", () => {
-      const connectionString =
-        "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/dataset.json",
       }).as("postGenerate");
 
       cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
-      cy.getByTestId("input-url").type(connectionString);
+      cy.getByTestId("input-url").type(CONNECTION_STRING);
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate").then((interception) => {
         expect(
           interception.request.body.generate.config.connection_string
-        ).to.eql(connectionString);
+        ).to.eql(CONNECTION_STRING);
       });
       cy.wait("@postDataset").then((interception) => {
         // should be whatever is in the generate fixture

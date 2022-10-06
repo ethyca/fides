@@ -21,6 +21,11 @@ The types of changes are:
 
 * Added a deprecation warning for the entire package [#1244](https://github.com/ethyca/fides/pull/1244)
 
+### Added
+
+* Dataset generation enhancements using Fides Classify for Plus users:
+  * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
+
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
 ### Changed
@@ -57,6 +62,10 @@ The types of changes are:
 * Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
 * Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
 * Dataset fields table shows categories in the last column. [#1088](https://github.com/ethyca/fides/pull/1088)
+
+### Docs
+
+* Updated the footer links [#1130](https://github.com/ethyca/fides/pull/1130)
 
 ### Fixed
 
