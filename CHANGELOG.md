@@ -59,6 +59,9 @@ The types of changes are:
 * Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
 * Dataset fields table shows categories in the last column. [#1088](https://github.com/ethyca/fides/pull/1088)
 
+### Docs
+* Updated the footer links [#1130](https://github.com/ethyca/fides/pull/1130)
+
 ### Fixed
 
 * Fixed the "help" link in the UI header [#1078](https://github.com/ethyca/fides/pull/1078)
