@@ -142,9 +142,11 @@ async def generate(
                 aws_config=generate_request_payload.generate.config,
                 organization=organization,
             )
-        elif generate_request_payload.generate.target.lower() == "db":
+        elif generate_request_payload.generate.target.lower() == "db" and isinstance(
+            generate_request_payload, DatabaseConfig
+        ):
             generate_results = generate_db(
-                db_config=generate_request_payload.generate.config,  # type: ignore[arg-type]
+                db_config=generate_request_payload.generate.config,
             )
         elif generate_request_payload.generate.target.lower() == "okta":
             generate_results = await generate_okta(

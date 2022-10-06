@@ -107,7 +107,7 @@ async def export_datamap(
             not_found_error = NotFoundError(
                 "organization", organization_fides_key, "Resource not found."
             )
-            log.bind(error=not_found_error.detail["error"]).error(
+            log.bind(error=not_found_error.detail["error"]).error(  # type: ignore[index]
                 "No organizations found"
             )
             raise not_found_error
