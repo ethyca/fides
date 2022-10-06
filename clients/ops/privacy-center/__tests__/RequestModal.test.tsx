@@ -126,7 +126,7 @@ describe("RequestModal", () => {
     render(<IndexPage />);
     server.use(
       rest.post(
-        `${mockConfig.fidesops_host_production}/privacy-request`,
+        `${hostUrl}/privacy-request`,
         (req, res, ctx) =>
           res(
             ctx.json({
@@ -171,7 +171,7 @@ describe("RequestModal", () => {
     render(<IndexPage />);
     server.use(
       rest.post(
-        `${mockConfig.fidesops_host_production}/privacy-request`,
+        `${hostUrl}/privacy-request`,
         (req, res, ctx) =>
           res(
             ctx.json({
