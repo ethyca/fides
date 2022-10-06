@@ -77,7 +77,8 @@ services:
 
   docs:
     build:
-      context: docs/fides/
+      context: .
+      dockerfile: docs/fides/Dockerfile
     volumes:
       - ./docs/fides:/docs
       - ./:/fides

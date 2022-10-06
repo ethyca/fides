@@ -33,8 +33,9 @@ venv/
 .vscode/
 .idea/
 
-# Ignore the docs
-docs/
+# the docs directory is needed when building the docs container so it can't be in the
+# .dockerignore
+# docs/
 
 # Ignore dev files
 .github/
