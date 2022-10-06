@@ -35,7 +35,7 @@ FROM node:16-alpine as runner
 
 WORKDIR /app
 
-ENV NODE_END production
+ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
