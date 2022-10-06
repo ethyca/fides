@@ -34,7 +34,7 @@ SERVER_CHECK_COMMAND_NAMES = [
 VERSION = fidesctl.__version__
 APP = fidesctl.__name__
 
-
+# Deprecate me
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
