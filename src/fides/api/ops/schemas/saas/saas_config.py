@@ -151,8 +151,13 @@ class SaaSRequest(BaseModel):
                             "Grouped input fields must either be reference fields or identity fields."
                         )
                     if param.references:
-                        collect = param.references[0].field.split(".")[0]
-                        referenced_collections.append(collect)
+                        # reference may be a str, in which case it's an external reference.
+                        # since external references are parameterized via secrets,
+                        # they cannot be resolved and checked at this point in the validation.
+                        # so here we only perform the check if the reference is a FidesopsDatasetReference
+                        if isinstance(param.references[0], FidesopsDatasetReference):
+                            collect = param.references[0].field.split(".")[0]
+                            referenced_collections.append(collect)
 
             if len(set(referenced_collections)) != 1:
                 raise ValueError(

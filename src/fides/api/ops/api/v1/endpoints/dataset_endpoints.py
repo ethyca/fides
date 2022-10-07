@@ -111,7 +111,7 @@ def validate_dataset(
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)
             graph = merge_datasets(
-                graph, connection_config.get_saas_config().get_graph()  # type: ignore
+                graph, connection_config.get_saas_config().get_graph(connection_config.secrets)  # type: ignore
             )
         complete_graph = DatasetGraph(graph)
         unique_identities = set(complete_graph.identity_keys.values())

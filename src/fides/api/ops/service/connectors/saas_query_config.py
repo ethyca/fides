@@ -295,7 +295,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         for param_value in saas_request.param_values or []:
             if param_value.references:
                 reference: FidesopsDatasetReference = (
-                    pydash.get(self.secrets, param_value.references[0])
+                    FidesopsDatasetReference.parse_obj(
+                        pydash.get(self.secrets, param_value.references[0])
+                    )
                     if isinstance(param_value.references[0], str)
                     else param_value.references[0]
                 )
