@@ -11,7 +11,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
+from fides.api.ops.schemas.saas.saas_config import ParamValue
 from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
@@ -172,6 +172,15 @@ def saas_example_connection_config_with_invalid_saas_config(
 ) -> Generator:
     invalid_saas_config = saas_example_config.copy()
     invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
+
+    # remove external reference params since we don't want to test that with this fixture
+    # replace with placholder identity
+    invalid_saas_config["endpoints"][6]["requests"]["read"]["param_values"].pop()
+    invalid_saas_config["endpoints"][6]["requests"]["read"]["param_values"].append(
+        ParamValue(name="placeholder", identity="email").dict()
+    )
+    invalid_saas_config["endpoints"][6]["requests"]["update"]["param_values"].pop()
+
     connection_config = ConnectionConfig.create(
         db=db,
         data={
