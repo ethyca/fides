@@ -31,13 +31,13 @@ export type ConnectionTypeSecretSchemaProperty = {
   description?: string;
   allOf?: {
     $ref: string;
-  }[]
-}
+  }[];
+};
 
 export type ConnectionTypeSecretSchemaReponse = {
   additionalProperties: boolean;
   description: string;
-  properties: {[key: string]: ConnectionTypeSecretSchemaProperty};
+  properties: { [key: string]: ConnectionTypeSecretSchemaProperty };
   required: string[];
   title: string;
   type: string;

@@ -19,7 +19,10 @@ import {
 import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaProperty, ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import {
+  ConnectionTypeSecretSchemaProperty,
+  ConnectionTypeSecretSchemaReponse,
+} from "connection-type/types";
 import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik, FormikProps } from "formik";
@@ -32,7 +35,7 @@ import {
   SaasConnectorParametersFormFields,
 } from "../types";
 
-const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference"
+const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -84,11 +87,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     }
     if (type === FIDESOPS_DATASET_REFERENCE) {
       if (!value.includes(".")) {
-        error = 'Dataset reference must be dot delimited'
+        error = "Dataset reference must be dot delimited";
       } else {
-        const parts = value.split(".")
+        const parts = value.split(".");
         if (parts.length < 3) {
-          error = 'Dataset reference must include at least three parts'
+          error = "Dataset reference must include at least three parts";
         }
       }
     }
@@ -109,9 +112,9 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
     if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
-      return "Enter dataset.collection.field"
+      return "Enter dataset.collection.field";
     }
-    return null
+    return null;
   };
 
   const getFormField = (
@@ -124,7 +127,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       key={key}
       validate={
         data.required?.includes(key) || item.type === "integer"
-          ? (value: string) => validateField(item.title, value, item.allOf?.[0].$ref)
+          ? (value: string) =>
+              validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -137,7 +141,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
             {item.type !== "integer" && (
-              <Input {...field} placeholder={getPlaceholder(item)} autoComplete="off" color="gray.700" size="sm" />
+              <Input
+                {...field}
+                placeholder={getPlaceholder(item)}
+                autoComplete="off"
+                color="gray.700"
+                size="sm"
+              />
             )}
             {item.type === "integer" && (
               <NumberInput
@@ -166,7 +176,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             <CircleHelpIcon
               marginLeft="8px"
               _hover={{ cursor: "pointer" }}
-              visibility={item.description ? "visible": "hidden"}
+              visibility={item.description ? "visible" : "hidden"}
             />
           </Tooltip>
         </FormControl>
@@ -206,17 +216,17 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const handleSubmit = (values: any, actions: any) => {
     // convert each property value of type FidesopsDatasetReference
     // from a dot delimited string to a FidesopsDatasetReference
-    const updatedValues = {...values}
-    Object.keys(data.properties).forEach(key => {
-        if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
-          const referencePath = values[key].split(".")
-          updatedValues[key] = {
-            "dataset": referencePath.shift(),
-            "field": referencePath.join("."),
-            "direction": "from"
-         }
+    const updatedValues = { ...values };
+    Object.keys(data.properties).forEach((key) => {
+      if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+        const referencePath = values[key].split(".");
+        updatedValues[key] = {
+          dataset: referencePath.shift(),
+          field: referencePath.join("."),
+          direction: "from",
+        };
       }
-    })
+    });
     onSaveClick(updatedValues, actions);
   };
 
