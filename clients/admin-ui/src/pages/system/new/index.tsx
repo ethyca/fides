@@ -6,14 +6,17 @@ import {
   Heading,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { useCreateSystemsFromScanMutation } from "~/features/common/plus.slice";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import SystemYamlForm from "~/features/system/SystemYamlForm";
 
@@ -22,10 +25,16 @@ const NewSystem: NextPage = () => {
   const { systemScanning: systemScanningEnabled } = useFeatures();
   const [scanMutation, { isLoading: isScanning }] =
     useCreateSystemsFromScanMutation();
+  const toast = useToast();
 
   const startScan = async () => {
     const result = await scanMutation(DEFAULT_ORGANIZATION_FIDES_KEY);
-    console.log({ result });
+    if ("error" in result) {
+      const errorMessage = getErrorMessage(result.error);
+      toast(errorToastParams(errorMessage));
+    } else if ("data" in result) {
+      toast(successToastParams("Successfully created systems"));
+    }
   };
 
   return (
