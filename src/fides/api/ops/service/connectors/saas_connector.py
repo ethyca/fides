@@ -124,6 +124,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             # if a delete request is specified for this endpoint without a read request
             # then we return a single empty row to still trigger the mask_data method
             if delete_request:
+                logger.info(
+                    f"Skipping read for the '{self.collection_name}' collection since it is delete-only"
+                )
                 return [{}]
 
             raise FidesopsException(

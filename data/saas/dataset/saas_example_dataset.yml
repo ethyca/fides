@@ -224,3 +224,9 @@ dataset:
           - name: mailing_list_name
             fidesops_meta:
               data_type: string
+      - name: people
+        fields:
+          - name: id
+            fidesops_meta:
+              data_type: integer
+              primary_key: True
