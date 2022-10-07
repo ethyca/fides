@@ -1281,6 +1281,11 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
+        body = json.loads(resp.text)
+        assert (
+            body["detail"]
+            == f"Unknown dataset 'non_existent_dataset' referenced by external reference"
+        )
 
         db.refresh(saas_example_connection_config)
         assert saas_example_connection_config.secrets != saas_example_secrets
