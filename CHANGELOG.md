@@ -15,7 +15,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+
+### Docs
+
+* Add unlinked docs and fix any remaining broken links [#1266]https://github.com/ethyca/fides/pull/1266)
+
+## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
 
@@ -26,9 +32,12 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
 
+
 ### Fixed
 * Privacy Center:
   * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
+  * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
+
 
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
