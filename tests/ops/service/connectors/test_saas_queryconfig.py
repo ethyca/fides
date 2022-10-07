@@ -275,6 +275,7 @@ class TestSaaSQueryConfig:
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
+        saas_example_secrets,
     ):
         saas_config: Optional[
             SaaSConfig
@@ -288,7 +289,9 @@ class TestSaaSQueryConfig:
         # omit read-only fields and fields not defined in the dataset
         # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
         update_request = endpoints["customer"].requests.get("update")
-        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
+        config = SaaSQueryConfig(
+            customer, endpoints, saas_example_secrets, update_request
+        )
         row = {
             "id": 1,
             "name": {"first": "A", "last": "B"},

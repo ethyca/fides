@@ -175,11 +175,13 @@ saas_config:
               - customer_id
         update:
           method: POST
-          path: /v1/customers/1/<customer_id>
+          path: /v1/customers/<customer_id>
           param_values:
             - name: customer_id
               references: 
-              - customer_id
+              - dataset: saas_connector_example
+                field: customer.id
+                direction: from
           headers:
             - name: Content-Type
               value: application/x-www-form-urlencoded
