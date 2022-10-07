@@ -7,7 +7,7 @@ from time import sleep
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
-from dask import delayed
+from dask import delayed  # type: ignore[attr-defined]
 from dask.threaded import get
 from sqlalchemy.orm import Session
 
