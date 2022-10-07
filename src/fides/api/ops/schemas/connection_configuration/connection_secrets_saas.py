@@ -102,14 +102,15 @@ class SaaSSchemaFactory:
                     ),
                 )
             )
-        for external_reference in self.saas_config.external_references:
-            field_definitions[external_reference.name] = (
-                FidesopsDatasetReference,
-                FieldInfo(
-                    title=external_reference.label,
-                    description=external_reference.description,
-                ),
-            )
+        if self.saas_config.external_references:
+            for external_reference in self.saas_config.external_references:
+                field_definitions[external_reference.name] = (
+                    FidesopsDatasetReference,
+                    FieldInfo(
+                        title=external_reference.label,
+                        description=external_reference.description,
+                    ),
+                )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
 
         # set the connector_params as a private attribute on the schema class
@@ -132,6 +133,8 @@ class SaaSSchemaFactory:
                     external_reference.name
                     for external_reference in self.saas_config.external_references
                 ]
+                if self.saas_config.external_references
+                else []
             ),
         )
 
