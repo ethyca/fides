@@ -46,19 +46,15 @@ def _create_policy(
     """
     Util method to create policies
     """
-    created, policy = Policy.get_or_create(
-        db=db,
-        data={
-            "key": policy_key,
-        },
-    )
+    policy = Policy.get_by(db=db, field="key", value=policy_key)
 
-    if not created:
+    if policy:
         # If the Policy is already created, don't create it again
         return policy
     else:
-        policy.client_id = client_id
-        policy.name = policy_key
+        policy = Policy.create(
+            db=db, data={"client_id": client_id, "name": policy_key, "key": policy_key}
+        )
         policy.save(db=db)
 
     rand = string.ascii_lowercase[:5]
