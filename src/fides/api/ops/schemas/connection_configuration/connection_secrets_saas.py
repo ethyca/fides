@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, List, Type
 
 from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
-from pydantic.fields import FieldInfo, ModelField
+from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.datasetconfig import validate_dataset_reference
