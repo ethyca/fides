@@ -77,10 +77,20 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return error;
   };
 
-  const validateField = (label: string, value: string) => {
+  const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "") {
       error = `${label} is required`;
+    }
+    if (type === FIDESOPS_DATASET_REFERENCE) {
+      if (!value.includes(".")) {
+        error = 'Dataset reference must be dot delimited'
+      } else {
+        const parts = value.split(".")
+        if (parts.length < 3) {
+          error = 'Dataset reference must include at least three parts'
+        }
+      }
     }
     return error;
   };
@@ -114,7 +124,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       key={key}
       validate={
         data.required?.includes(key) || item.type === "integer"
-          ? (value: string) => validateField(item.title, value)
+          ? (value: string) => validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -196,18 +206,18 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   const handleSubmit = (values: any, actions: any) => {
     // convert each property value of type FidesopsDatasetReference
     // from a dot delimited string to a FidesopsDatasetReference
-    const updated_values = {...values}
+    const updatedValues = {...values}
     Object.keys(data.properties).forEach(key => {
         if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
-          const reference_path = values[key].split(".")
-          updated_values[key] = {
-            "dataset": reference_path.shift(),
-            "field": reference_path.join("."),
+          const referencePath = values[key].split(".")
+          updatedValues[key] = {
+            "dataset": referencePath.shift(),
+            "field": referencePath.join("."),
             "direction": "from"
          }
       }
     })
-    onSaveClick(updated_values, actions);
+    onSaveClick(updatedValues, actions);
   };
 
   const handleTestConnectionClick = async () => {
