@@ -72,7 +72,11 @@ async def health(
     db: Session = Depends(get_db),
 ) -> Dict:  # Intentionally injecting the ops get_db
     """Confirm that the API is running and healthy."""
-    database_health = get_db_health(str(CONFIG.database.sync_database_uri), db=db)
+    database_health = (
+        "No database uri provided"
+        if not CONFIG.database.sync_database_uri
+        else get_db_health(CONFIG.database.sync_database_uri, db=db)
+    )
     cache_health = get_cache_health()
     response = {
         "webserver": "healthy",
@@ -82,7 +86,7 @@ async def health(
     }
 
     for _, value in response.items():
-        if value == "unhealthy":
+        if value == "unhealthy" or "No database uri" in value:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
             )

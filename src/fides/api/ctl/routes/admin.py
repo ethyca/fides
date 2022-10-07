@@ -1,6 +1,9 @@
 from enum import Enum
 from typing import Dict
 
+from fastapi.exceptions import HTTPException
+from starlette.status import HTTP_400_BAD_REQUEST
+
 from fides.api.ctl.database import database
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
@@ -21,9 +24,15 @@ async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
     """
+
+    if not CONFIG.database.sync_database_uri:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST, detail="No database uri provided"
+        )
+
     action_text = "initialized"
     if action == DBActions.reset:
-        database.reset_db(str(CONFIG.database.sync_database_uri))
+        database.reset_db(CONFIG.database.sync_database_uri)
         action_text = DBActions.reset
-    await database.configure_db(str(CONFIG.database.sync_database_uri))
+    await database.configure_db(CONFIG.database.sync_database_uri)
     return {"data": {"message": f"fides database {action_text}"}}

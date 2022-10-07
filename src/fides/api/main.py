@@ -210,7 +210,7 @@ async def setup_server() -> None:
     if not CONFIG.database.sync_database_uri:
         raise FidesError("No database uri provided")
 
-    await configure_db(str(CONFIG.database.sync_database_uri))
+    await configure_db(CONFIG.database.sync_database_uri)
 
     logger.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
