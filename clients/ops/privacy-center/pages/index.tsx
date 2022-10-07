@@ -65,13 +65,18 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const getConfig = async () => {
-      const response = await fetch(`${hostUrl}/id-verification/config`, {
-        headers: {
-          "X-Fides-Source": "fidesops-privacy-center",
-        },
-      });
-      const data = await response.json();
-      setIsVerificationRequired(data.identity_verification_required);
+      try {
+        const response = await fetch(`${hostUrl}/id-verification/config`, {
+          headers: {
+            "X-Fides-Source": "fidesops-privacy-center",
+          },
+        });
+        const data = await response.json();
+        setIsVerificationRequired(data.identity_verification_required);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
     };
     getConfig();
   }, [setIsVerificationRequired]);
