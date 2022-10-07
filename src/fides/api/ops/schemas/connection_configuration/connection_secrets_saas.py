@@ -71,7 +71,7 @@ class SaaSSchema(BaseModel, abc.ABC):
         return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     @classmethod
-    def external_references(cls) -> List[ModelField]:
+    def external_references(cls) -> List[str]:
         return [
             name
             for name, property in cls.schema()["properties"].items()
@@ -159,7 +159,7 @@ def validate_saas_secrets_external_references(
     db: Session,
     schema: SaaSSchema,
     connection_secrets: ConnectionConfigSecretsSchema,
-):
+) -> None:
     external_references = schema.external_references()
     for external_reference in external_references:
         dataset_reference: FidesopsDatasetReference = getattr(

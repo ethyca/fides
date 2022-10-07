@@ -230,7 +230,7 @@ def convert_dataset_to_graph(
 
 def validate_dataset_reference(
     db: Session, dataset_reference: FidesopsDatasetReference
-):
+) -> None:
     dataset_config: DatasetConfig = (
         db.query(DatasetConfig)
         .filter(DatasetConfig.fides_key == dataset_reference.dataset)
