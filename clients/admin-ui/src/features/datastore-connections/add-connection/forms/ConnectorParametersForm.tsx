@@ -19,7 +19,7 @@ import {
 import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaProperty, ConnectionTypeSecretSchemaReponse } from "connection-type/types";
 import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik, FormikProps } from "formik";
@@ -31,6 +31,8 @@ import {
   DatabaseConnectorParametersFormFields,
   SaasConnectorParametersFormFields,
 } from "../types";
+
+const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference"
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -95,8 +97,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </FormLabel>
   );
 
-  const getPlaceholderForFormat = (format?: string) => {
-    if (format == "dataset_reference") {
+  const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
+    if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
       return "Enter dataset.collection.field"
     }
     return null
@@ -104,7 +106,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getFormField = (
     key: string,
-    item: { title: string; type: string; format?: string, description?: string}
+    item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
       id={key}
@@ -125,7 +127,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
             {item.type !== "integer" && (
-              <Input {...field} placeholder={getPlaceholderForFormat(item.format)} autoComplete="off" color="gray.700" size="sm" />
+              <Input {...field} placeholder={getPlaceholder(item)} autoComplete="off" color="gray.700" size="sm" />
             )}
             {item.type === "integer" && (
               <NumberInput
@@ -192,7 +194,20 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleSubmit = (values: any, actions: any) => {
-    onSaveClick(values, actions);
+    // convert each property value of type FidesopsDatasetReference
+    // from a dot delimited string to a FidesopsDatasetReference
+    const updated_values = {...values}
+    Object.keys(data.properties).forEach(key => {
+        if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+          const reference_path = values[key].split(".")
+          updated_values[key] = {
+            "dataset": reference_path.shift(),
+            "field": reference_path.join("."),
+            "direction": "from"
+         }
+      }
+    })
+    onSaveClick(updated_values, actions);
   };
 
   const handleTestConnectionClick = async () => {
