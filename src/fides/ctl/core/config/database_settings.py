@@ -25,7 +25,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
     db: str = "default_db"
     test_db: str = "default_test_db"
 
-    async_database_uri: Optional[PostgresDsn]
+    async_database_uri: Optional[str]
     sync_database_uri: Optional[str]
 
     @validator("sync_database_uri", pre=True)
@@ -59,13 +59,15 @@ class DatabaseSettings(FideslibDatabaseSettings):
             return value
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
-        return PostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            user=values["user"],
-            password=values["password"],
-            host=values["server"],
-            port=values.get("port"),
-            path=f"/{db_name or ''}",
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                user=values["user"],
+                password=values["password"],
+                host=values["server"],
+                port=values.get("port"),
+                path=f"/{db_name or ''}",
+            )
         )
 
     class Config:
