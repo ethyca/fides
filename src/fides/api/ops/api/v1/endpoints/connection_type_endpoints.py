@@ -16,7 +16,7 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.schemas.connection_configuration import (
     SaaSSchemaFactory,
-    secrets_validators,
+    secrets_schemas,
 )
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionSystemTypeMap,
@@ -156,7 +156,7 @@ def get_connection_type_secret_schema(
         )
 
     if connection_type in [db_type.value for db_type in ConnectionType]:
-        return secrets_validators[connection_type].schema()
+        return secrets_schemas[connection_type].schema()
 
     config: SaaSConfig = SaaSConfig(
         **load_config(f"data/saas/config/{connection_type}_config.yml")

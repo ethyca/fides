@@ -3,8 +3,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fides.api.ops.api.v1.endpoints.connection_endpoints import validate_secrets
-from fides.api.ops.graph.config import CollectionAddress, EdgeDirection, FieldAddress
+from fides.api.ops.graph.config import CollectionAddress, FieldAddress
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import (

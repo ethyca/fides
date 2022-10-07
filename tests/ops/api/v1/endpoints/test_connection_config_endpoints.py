@@ -1226,6 +1226,8 @@ class TestPutConnectionConfigSecrets:
         db: Session,
         generate_auth_header,
         saas_example_connection_config,
+        saas_example_dataset_config,
+        saas_external_example_dataset_config,
         saas_example_secrets,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -1251,6 +1253,37 @@ class TestPutConnectionConfigSecrets:
         assert saas_example_connection_config.secrets == saas_example_secrets
         assert saas_example_connection_config.last_test_timestamp is None
         assert saas_example_connection_config.last_test_succeeded is None
+
+    @pytest.mark.unit_saas
+    def test_put_saas_example_connection_config_secrets_invalid_external_reference(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        saas_example_connection_config,
+        saas_example_dataset_config,
+        saas_external_example_dataset_config,
+        saas_example_secrets,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = (
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{saas_example_connection_config.key}/secret"
+        )
+
+        # replace external reference entry with a pointer to an invalid dataset
+        saas_example_secrets["customer_id"]["dataset"] = "non_existent_dataset"
+
+        payload = saas_example_secrets
+
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+
+        db.refresh(saas_example_connection_config)
+        assert saas_example_connection_config.secrets != saas_example_secrets
 
     @pytest.mark.unit_saas
     def test_put_saas_example_connection_config_secrets_missing_saas_config(

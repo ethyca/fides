@@ -1,9 +1,14 @@
 import abc
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Type
 
 from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
-from pydantic.fields import FieldInfo
+from pydantic.fields import FieldInfo, ModelField
+from sqlalchemy.orm import Session
 
+from fides.api.ops.models.datasetconfig import validate_dataset_reference
+from fides.api.ops.schemas.connection_configuration.connection_secrets import (
+    ConnectionConfigSecretsSchema,
+)
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
@@ -65,6 +70,14 @@ class SaaSSchema(BaseModel, abc.ABC):
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
         return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
+    @classmethod
+    def external_references(cls) -> List[ModelField]:
+        return [
+            name
+            for name, property in cls.schema()["properties"].items()
+            if "external_reference" in property and property["external_reference"]
+        ]
+
     class Config:
         """Only permit selected secret fields to be stored."""
 
@@ -109,6 +122,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,
+                        external_reference=True,
                     ),
                 )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
@@ -139,3 +153,16 @@ class SaaSSchemaFactory:
         )
 
         return model
+
+
+def validate_saas_secrets_external_references(
+    db: Session,
+    schema: SaaSSchema,
+    connection_secrets: ConnectionConfigSecretsSchema,
+):
+    external_references = schema.external_references()
+    for external_reference in external_references:
+        dataset_reference: FidesopsDatasetReference = getattr(
+            connection_secrets, external_reference
+        )
+        validate_dataset_reference(db, dataset_reference)
