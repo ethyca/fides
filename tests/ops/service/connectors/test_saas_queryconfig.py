@@ -20,10 +20,14 @@ privacy_request = PrivacyRequest(id="234544")
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(
-        self, saas_example_connection_config, saas_example_dataset_config
+        self,
+        saas_example_connection_config,
+        saas_example_dataset_config,
+        saas_external_example_dataset_config,
     ):
         merged_graph = saas_example_dataset_config.get_graph()
-        graph = DatasetGraph(merged_graph)
+        merged_graph_external = saas_external_example_dataset_config.get_graph()
+        graph = DatasetGraph(merged_graph, merged_graph_external)
         return Traversal(graph, {"email": "customer-1@example.com"})
 
     def test_generate_requests(

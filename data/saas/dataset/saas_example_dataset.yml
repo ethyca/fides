@@ -224,3 +224,11 @@ dataset:
           - name: mailing_list_name
             fidesops_meta:
               data_type: string
+  - fides_key: saas_connector_external_example
+    name: An Example External SaaS Dataset
+    description: An example "external" dataset used for a SaaS connector
+    collections:
+      - name: customer_id_reference_table
+        fields:
+          - name: customer_id
+            data_categories: [system.operations]

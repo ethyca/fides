@@ -31,7 +31,7 @@ def saas_example_secrets():
         "account_types": ["checking"],
         "page_size": "10",
         "customer_id": {  # an example external dataset reference
-            "dataset": "some_other_dataset",
+            "dataset": "saas_connector_external_example",
             "field": "customer_id_reference_table.customer_id",
             "direction": "from",
         },
@@ -44,8 +44,18 @@ def saas_example_config() -> Dict:
 
 
 @pytest.fixture
+def saas_external_example_config() -> Dict:
+    return load_config("data/saas/config/saas_external_example_config.yml")
+
+
+@pytest.fixture
 def saas_example_dataset() -> Dict:
     return load_dataset("data/saas/dataset/saas_example_dataset.yml")[0]
+
+
+@pytest.fixture
+def saas_external_example_dataset() -> Dict:
+    return load_dataset("data/saas/dataset/saas_example_dataset.yml")[1]
 
 
 @pytest.fixture(scope="function")
@@ -70,6 +80,28 @@ def saas_example_connection_config(
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="function")
+def saas_external_example_connection_config(
+    db: Session,
+    saas_external_example_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
+) -> Generator:
+    fides_key = saas_external_example_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": saas_example_secrets,
+            "saas_config": saas_external_example_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
 @pytest.fixture
 def saas_example_dataset_config(
     db: Session,
@@ -86,6 +118,28 @@ def saas_example_dataset_config(
             "connection_config_id": saas_example_connection_config.id,
             "fides_key": fides_key,
             "dataset": saas_example_dataset,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+
+
+@pytest.fixture
+def saas_external_example_dataset_config(
+    db: Session,
+    saas_external_example_connection_config: ConnectionConfig,
+    saas_external_example_dataset: Dict,
+) -> Generator:
+    fides_key = saas_external_example_dataset["fides_key"]
+    saas_external_example_connection_config.name = fides_key
+    saas_external_example_connection_config.key = fides_key
+    saas_external_example_connection_config.save(db=db)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": saas_external_example_connection_config.id,
+            "fides_key": fides_key,
+            "dataset": saas_external_example_dataset,
         },
     )
     yield dataset
