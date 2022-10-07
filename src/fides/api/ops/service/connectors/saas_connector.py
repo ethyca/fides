@@ -125,7 +125,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             # then we return a single empty row to still trigger the mask_data method
             if delete_request:
                 logger.info(
-                    f"Skipping read for the '{self.collection_name}' collection since it is delete-only"
+                    "Skipping read for the '%s' collection, it is delete-only",
+                    self.collection_name,
                 )
                 return [{}]
 
