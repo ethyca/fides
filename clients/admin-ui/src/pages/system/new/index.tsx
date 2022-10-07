@@ -11,11 +11,22 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
 
+import { useFeatures } from "~/features/common/features.slice";
 import Layout from "~/features/common/Layout";
+import { useCreateSystemsFromScanMutation } from "~/features/common/plus.slice";
+import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import SystemYamlForm from "~/features/system/SystemYamlForm";
 
 const NewSystem: NextPage = () => {
   const [showYamlForm, setShowYamlForm] = useState(false);
+  const { systemScanning: systemScanningEnabled } = useFeatures();
+  const [scanMutation, { isLoading: isScanning }] =
+    useCreateSystemsFromScanMutation();
+
+  const startScan = async () => {
+    const result = await scanMutation(DEFAULT_ORGANIZATION_FIDES_KEY);
+    console.log({ result });
+  };
 
   return (
     <Layout title="Systems">
@@ -52,6 +63,7 @@ const NewSystem: NextPage = () => {
           </Button>
           <Button
             size="sm"
+            mr={2}
             variant="outline"
             data-testid="manually-generate-btn"
           >
@@ -59,6 +71,18 @@ const NewSystem: NextPage = () => {
               Manually generate a system
             </NextLink>
           </Button>
+          {systemScanningEnabled ? (
+            <Button
+              size="sm"
+              mr={2}
+              variant="outline"
+              onClick={startScan}
+              data-testid="scan-btn"
+              isLoading={isScanning}
+            >
+              Scan for systems
+            </Button>
+          ) : null}
         </Box>
         <Box w={{ base: "100%", lg: "50%" }}>
           {showYamlForm ? <SystemYamlForm /> : null}
