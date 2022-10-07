@@ -125,7 +125,9 @@ async def export_datamap(
         database_unavailable_error = DatabaseUnavailableError(
             error_message="Database unavailable"
         )
-        log.bind(error=database_unavailable_error)
+        log.bind(error=not_found_error.detail["error"]).error(  # type: ignore[index]
+            "Database unavailable"
+        )
         raise database_unavailable_error
 
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
