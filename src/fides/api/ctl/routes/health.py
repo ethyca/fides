@@ -73,9 +73,9 @@ async def health(
 ) -> Dict:  # Intentionally injecting the ops get_db
     """Confirm that the API is running and healthy."""
     database_health = (
-        "No database uri provided"
-        if not CONFIG.database.sync_database_uri
-        else get_db_health(CONFIG.database.sync_database_uri, db=db)
+        get_db_health(CONFIG.database.sync_database_uri, db=db)
+        if CONFIG.database.sync_database_uri is not None
+        else "No database uri provided"
     )
     cache_health = get_cache_health()
     response = {
