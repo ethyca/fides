@@ -7,7 +7,6 @@ src/ui-build/
 
 # Frontend
 **/node_modules
-**/.next
 
 
 # Ignore Python-Specific Files

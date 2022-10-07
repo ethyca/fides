@@ -3,7 +3,10 @@
 
 import config from "../config/config.json";
 
+// Compute the host URL for the server, while being backwards compatible with
+// the previous "fidesops_host_***" configuration
+// DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
 export const hostUrl =
   process.env.NODE_ENV === "development"
-    ? config.fidesops_host_development
-    : config.fidesops_host_production;
+    ? (config.server_url_development || (config as any).fidesops_host_development)
+    : (config.server_url_production || (config as any).fidesops_host_production);
