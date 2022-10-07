@@ -26,11 +26,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/dev/getting_started/</loc>
-         <lastmod>2022-10-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/dev/glossary/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
@@ -101,17 +96,17 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/dev/development/release_checklist/</loc>
-         <lastmod>2022-10-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/dev/development/releases/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/development/testing/</loc>
+         <lastmod>2022-10-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/development/ui/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -162,11 +157,6 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/guides/connection_types/</loc>
-         <lastmod>2022-10-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/guides/creating_users/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -257,11 +247,6 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/installation/requirements/</loc>
-         <lastmod>2022-10-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/postman/using_postman/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -387,11 +372,6 @@
     </url>
     <url>
          <loc>https://ethyca.github.io/fides/dev/ui/deployment/</loc>
-         <lastmod>2022-10-07</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/ui/local_dev/</loc>
          <lastmod>2022-10-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
