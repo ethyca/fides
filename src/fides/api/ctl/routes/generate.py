@@ -143,7 +143,7 @@ async def generate(
                 organization=organization,
             )
         elif generate_request_payload.generate.target.lower() == "db" and isinstance(
-            generate_request_payload, DatabaseConfig
+            generate_request_payload.generate.config, DatabaseConfig
         ):
             generate_results = generate_db(
                 db_config=generate_request_payload.generate.config,
