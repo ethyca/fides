@@ -19,7 +19,7 @@ The types of changes are:
 
 ### Fixed
 
-* Fix startup of docs container [#1261](https://github.com/ethyca/fides/pull/1261)
+* Fix startup of docs container [##1271](https://github.com/ethyca/fides/pull/1271)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
 
