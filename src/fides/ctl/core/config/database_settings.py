@@ -25,8 +25,10 @@ class DatabaseSettings(FideslibDatabaseSettings):
     db: str = "default_db"
     test_db: str = "default_test_db"
 
-    async_database_uri: Optional[str]
-    sync_database_uri: Optional[str]
+    # These default to blank strings in order to prevent them from needing to be
+    # Opitonal. The blank value will be replaced in the pre validators.
+    async_database_uri: str = ""
+    sync_database_uri: str = ""
 
     @validator("sync_database_uri", pre=True)
     @classmethod
@@ -34,8 +36,9 @@ class DatabaseSettings(FideslibDatabaseSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(value, str):
-            return value
+        if isinstance(value, str) and value != "":
+            # This validates that the string is a valid PostgresDns.
+            return str(PostgresDsn(value))
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
@@ -55,8 +58,9 @@ class DatabaseSettings(FideslibDatabaseSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(value, str):
-            return value
+        if isinstance(value, str) and value != "":
+            # This validates that the string is a valid PostgresDns.
+            return str(PostgresDsn(value))
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
         return str(
