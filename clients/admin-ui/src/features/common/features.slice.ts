@@ -6,12 +6,15 @@ import { useHasPlus } from "./plus.slice";
  */
 export interface Features {
   plus: boolean;
+  systemScanning: boolean;
 }
 
 export const useFeatures = (): Features => {
   const hasPlus = useHasPlus();
+  const systemScanning = true; // TODO
 
   return {
     plus: hasPlus,
+    systemScanning,
   };
 };

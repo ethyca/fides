@@ -14,11 +14,22 @@ import {
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
+  System,
 } from "~/types/api";
 
 interface HealthResponse {
   core_fidesctl_version: string;
   status: "healthy";
+}
+
+// TODO(allisonking): Autogenerate these types once I can actually start the backend with scan endpoints
+export interface SystemScanResponse {
+  systems: System[];
+}
+
+export enum SystemScanDestinations {
+  DATABASE = "database",
+  MANIFEST = "manifest",
 }
 
 export const plusApi = createApi({
@@ -65,6 +76,22 @@ export const plusApi = createApi({
         `classify/details/${dataset_fides_key}`,
       providesTags: ["ClassifyInstances"],
     }),
+    /**
+     * Scanner endpoints
+     */
+    getScanResults: build.query<SystemScanResponse, void>({
+      query: () => `scan/`,
+    }),
+    createSystemsFromScan: build.mutation<void, string>({
+      query: (organization) => ({
+        url: `scan/`,
+        method: "PUT",
+        body: {
+          destination: SystemScanDestinations.DATABASE,
+          organization,
+        },
+      }),
+    }),
   }),
 });
 
@@ -74,6 +101,7 @@ export const {
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
   useUpdateClassifyInstanceMutation,
+  useCreateSystemsFromScanMutation,
 } = plusApi;
 
 export const useHasPlus = () => {
