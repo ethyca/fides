@@ -35,7 +35,9 @@ The types of changes are:
 
 ### Fixed
 * Privacy Center:
+  * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
   * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
+
 
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
