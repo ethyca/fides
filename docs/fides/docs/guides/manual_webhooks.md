@@ -1,12 +1,12 @@
 # Manual Webhooks
 
 Manual webhooks are a simple way for data to be manually uploaded for an access request. Erasure requests are not supported at this time.
-They differ from the more complex [manual connection configs](datasets.md#Configure-a-manual-Dataset) that integrate directly with the graph.
+They differ from the more complex [manual connection configs](../getting-started/datasets.md#Configure-a-manual-Dataset) that integrate directly with the graph.
 Manual webhooks gather data *outside* of the graph as a first step, and are more similar to [policy_webhooks](policy_webhooks.md).
 
 
 If you have manual webhooks defined, privacy request execution will exit early and remain in a state of `requires_input`.
-Once data has been manually uploaded for all the manual webhooks, then the privacy request can be resumed. Data uploaded 
+Once data has been manually uploaded for all the manual webhooks, then the privacy request can be resumed. Data uploaded
 for manual webhooks is passed on directly to the data subject alongside the data package. It is
 not filtered on data category.  Any manual data uploaded is passed on as-is.
 
