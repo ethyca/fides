@@ -1,6 +1,11 @@
 import { ConfigConsentOption } from "~/config/types";
 
-import { ConsentItem, ApiUserConsents, ApiUserConsent } from "./types";
+import {
+  ConsentItem,
+  ApiUserConsents,
+  ApiUserConsent,
+  DataUseConsent,
+} from "./types";
 
 export const makeConsentItems = (
   data: ApiUserConsents,
@@ -52,4 +57,15 @@ export const makeConsentItems = (
     defaultValue: option.default ? option.default : false,
   }));
   return temp;
+};
+
+export const makeDataUseConsent = (
+  consentItems: ConsentItem[]
+): DataUseConsent => {
+  const dataUseConsent: DataUseConsent = {};
+  consentItems.forEach((item) => {
+    dataUseConsent[item.fidesDataUseKey] =
+      item.consentValue ?? item.defaultValue;
+  });
+  return dataUseConsent;
 };

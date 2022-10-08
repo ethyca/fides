@@ -17,3 +17,7 @@ export type ApiUserConsent = {
 export type ApiUserConsents = {
   consent?: ApiUserConsent[];
 };
+
+export type DataUseConsent = {
+  [dataUse: string]: boolean | undefined;
+};

@@ -30,6 +30,7 @@
   ],
   "includeConsent": true,
   "consent": {
+    "cookieName": "ethyca_consent",
     "consentOptions": [
       {
         "fidesDataUseKey": "advertising",

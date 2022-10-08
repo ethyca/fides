@@ -5,7 +5,11 @@ import { Flex, Heading, Text, Stack, Image, Button } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { Headers } from "headers-polyfill";
-import { makeConsentItems } from "~/features/consent/helpers";
+import {
+  makeConsentItems,
+  makeDataUseConsent,
+} from "~/features/consent/helpers";
+import { setConsentCookie } from "~/features/consent/cookie";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 import ConsentItemCard from "../components/ConsentItemCard";
 
@@ -46,7 +50,13 @@ const Consent: NextPage = () => {
       if (!response.ok) {
         router.push("/");
       }
-      setConsentItems(makeConsentItems(data, config.consent.consentOptions));
+
+      const updatedConsentItems = makeConsentItems(
+        data,
+        config.consent.consentOptions
+      );
+      setConsentItems(updatedConsentItems);
+      setConsentCookie(makeDataUseConsent(updatedConsentItems));
     };
     getUserConsents();
   }, [router, consentRequestId, verificationCode]);
@@ -89,9 +99,17 @@ const Consent: NextPage = () => {
         method: "PATCH",
         headers,
         body: JSON.stringify(body),
+        credentials: "include",
       }
     );
-    (await response.json()) as ApiUserConsents;
+
+    const data = (await response.json()) as ApiUserConsents;
+    const updatedConsentItems = makeConsentItems(
+      data,
+      config.consent.consentOptions
+    );
+    setConsentCookie(makeDataUseConsent(updatedConsentItems));
+
     router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch

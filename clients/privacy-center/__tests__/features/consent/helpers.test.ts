@@ -1,5 +1,8 @@
-import { makeConsentItems } from "~/features/consent/helpers";
-import { ApiUserConsents } from "~/features/consent/types";
+import {
+  makeConsentItems,
+  makeDataUseConsent,
+} from "~/features/consent/helpers";
+import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 
 describe("makeConsentItems", () => {
   const consentOptions = [
@@ -103,5 +106,48 @@ describe("makeConsentItems", () => {
         url: "https://example.com/privacy#provide-service",
       },
     ]);
+  });
+});
+
+describe("makeDataUseConsent", () => {
+  const irrelevantProps = {
+    description: "",
+    highlight: false,
+    name: "",
+    url: "https://example.com/privacy#data-sales",
+  };
+  const consentItems: ConsentItem[] = [
+    {
+      consentValue: false,
+      defaultValue: false,
+      fidesDataUseKey: "third_party_sharing",
+      ...irrelevantProps,
+    },
+    {
+      consentValue: true,
+      defaultValue: false,
+      fidesDataUseKey: "custom.use",
+      ...irrelevantProps,
+    },
+    {
+      consentValue: false,
+      defaultValue: true,
+      fidesDataUseKey: "not.default",
+      ...irrelevantProps,
+    },
+    {
+      defaultValue: true,
+      fidesDataUseKey: "provide.service",
+      ...irrelevantProps,
+    },
+  ];
+
+  it("Merges the items into a map from Data Use to consent boolean", () => {
+    expect(makeDataUseConsent(consentItems)).toEqual({
+      third_party_sharing: false,
+      "custom.use": true,
+      "not.default": false,
+      "provide.service": true,
+    });
   });
 });
