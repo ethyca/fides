@@ -47,7 +47,7 @@ extras = {
     "aws": optional_requirements(["boto3"]),
     "bigquery": optional_requirements(["sqlalchemy-bigquery"]),
     "mongo": optional_requirements(["pymongo"]),
-    "mssql": optional_requirements(["pyodbc"]),
+    "mssql": ["pyodbc==4.0.34"],
     "mysql": optional_requirements(["PyMySQL"]),
     "okta": optional_requirements(["okta"]),
     "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),

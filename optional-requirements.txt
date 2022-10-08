@@ -9,9 +9,6 @@ sqlalchemy-bigquery==1.4.4
 # Mongodb
 pymongo==3.12.0
 
-# MSSQL
-pyodbc==4.0.34
-
 # MySQL
 PyMySQL==1.0.2
 
