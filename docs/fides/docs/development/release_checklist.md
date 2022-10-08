@@ -1,23 +1,33 @@
-### Code Changes
+# Release Checklist
 
-* [ ] add functionality checks for ctl features
-* [ ] add UI feature checks
-* [ ] update ops feature checks
+The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are _only_ tested here as part of this check.
 
-### Steps to Confirm
+This checklist can be copy/pasted into the final pre-release PR.
 
-* [ ] _list any manual steps taken to confirm the changes_
+## General
 
-### Pre-Merge Checklist
+- [ ] Quickstart verified working and up-to-date
+- [ ] New tables/columns added to database diagram
 
-* [ ] All CI Pipelines Succeeded
-* Documentation Updated:
-  - [ ] documentation complete, or draft/outline provided (tag docs-team to complete/review on this branch)
-  - [ ] documentation issue created (tag docs-team to complete issue separately)
-* [ ] Issue Requirements are Met
-* [ ] Relevant Follow-Up Issues Created
-* [ ] Update `CHANGELOG.md`
+## API
 
-### Description Of Changes
+- [ ] Verify that the generated API docs are correct
+- [ ] Verify that the Postman collection has been updated
 
-This PR updates the release checklist, so that we have a baseline of quality for every single release, including the initial release of unified-fides
+## CLI
+
+- [ ] Run a local evaluation
+- [ ] Run a standard evaluation
+- [ ] Scan the database
+
+## Admin UI
+
+- [ ] Every navigation button works
+
+## Privacy Center
+
+- [ ] Every navigation button works
+
+## Documentation
+
+- [ ] Verify that the changelog

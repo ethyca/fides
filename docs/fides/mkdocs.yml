@@ -65,7 +65,6 @@ nav:
               - Stripe: saas_connectors/example_configs/stripe.md
               - Zendesk: saas_connectors/example_configs/zendesk.md
       - CI/CD Integrations: cicd.md
-      - CLI: cli.md
       - Deployment: deployment.md
       - Glossary: glossary.md
   - Fides UI:
@@ -79,6 +78,7 @@ nav:
       - Deployment: ui/deployment.md
   - Fides Lang: https://ethyca.github.io/fideslang/
   - API: api/index.md
+  - CLI: cli.md
   - Development:
       - Overview: development/overview.md
       - Contributing Details: development/contributing_details.md
@@ -90,6 +90,7 @@ nav:
       - Testing: development/testing.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
+      - Release Checklist: development/release_checklist.md
       - Jetbrains Debugging: development/jetbrains_debugging.md
       - Using Postman: development/postman/using_postman.md
       - Updating the Database Diagram: development/update_erd_diagram.md
