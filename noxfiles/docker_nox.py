@@ -48,7 +48,7 @@ def build(session: nox.Session, image: str) -> None:
         "build",
         f"--target={target}",
         "--platform",
-        docker_platforms["arm64"],
+        docker_platforms[machine_type],
         "--tag",
         tag(),
         ".",
