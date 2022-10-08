@@ -46,7 +46,7 @@ VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
-
+# Refactor into smaller functions
 @click.group(
     context_settings=CONTEXT_SETTINGS,
     invoke_without_command=True,
