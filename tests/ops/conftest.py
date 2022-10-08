@@ -71,7 +71,6 @@ CONFIG = get_config()
 def setup_db():
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
-    assert CONFIG.test_mode
     yield db_action(CONFIG.cli.server_url, "reset")
     logger.debug("Migrations successfully applied")
 
@@ -80,7 +79,6 @@ def setup_db():
 def db() -> Generator:
     """Return a connection to the test DB"""
     # Create the test DB enginge
-    assert CONFIG.test_mode
     engine = get_db_engine(
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,
     )

@@ -8,7 +8,6 @@ from typing import Union
 from pydantic import validator
 
 from .fides_settings import FidesSettings
-from .utils import get_test_mode
 
 ENV_PREFIX = "FIDES__LOGGING__"
 
@@ -33,9 +32,6 @@ class LoggingSettings(FidesSettings):
     @classmethod
     def validate_log_level(cls, value: str) -> str:
         """Ensure the provided LEVEL is a valid value."""
-
-        if get_test_mode():
-            return getLevelName(DEBUG)
 
         valid_values = [
             DEBUG,

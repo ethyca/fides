@@ -145,28 +145,6 @@ def test_config_from_env_vars() -> None:
     {},
     clear=True,
 )
-@pytest.mark.unit
-def test_database_url_test_mode_disabled() -> None:
-    os.environ["FIDES__TEST_MODE"] = "False"
-    database_settings = DatabaseSettings(
-        user="postgres",
-        password="fides",
-        server="fides-db",
-        port="5432",
-        db="database",
-        test_db="test_database",
-    )
-    assert (
-        database_settings.async_database_uri
-        == "postgresql+asyncpg://postgres:fides@fides-db:5432/database"
-    )
-
-
-@patch.dict(
-    os.environ,
-    {},
-    clear=True,
-)
 def test_config_from_default() -> None:
     """Test building a config from the local project TOML."""
     config = get_config()

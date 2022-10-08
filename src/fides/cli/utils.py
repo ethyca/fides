@@ -149,7 +149,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
+            developer_mode=bool(getenv("FIDES__DEV_MODE") == "True"),
             os=system(),
             product_name=app_name + "-cli",
             production_version=version(app_name),

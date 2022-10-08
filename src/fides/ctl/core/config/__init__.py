@@ -24,7 +24,7 @@ from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import DEFAULT_CONFIG_PATH, get_test_mode
+from .utils import DEFAULT_CONFIG_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,6 @@ class FidesConfig(BaseModel):
     security: SecuritySettings = SecuritySettings()
     user: UserSettings = UserSettings()
 
-    test_mode: bool = get_test_mode()
-    is_test_mode: bool = test_mode
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
     oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")

@@ -8,11 +8,6 @@ from toml import dump, load
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
 
-def get_test_mode() -> bool:
-    test_mode = getenv("FIDES__TEST_MODE", "").lower() == "true"
-    return test_mode
-
-
 def get_config_from_file(
     config_path_override: str,
     section: str,

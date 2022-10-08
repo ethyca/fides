@@ -83,7 +83,7 @@ The `fides.toml` file should specify the following variables:
 | `server` | String | `fides-db` | The hostname of the Postgres database server. |
 | `port` | String | `5432` | The port at which the Postgres database will be accessible. |
 | `db` | String | `fides` | The name of the Postgres database. |
-| `test_db` | String | `""` | Used instead of the `db` config when the `FIDES_TEST_MODE` environment variable is set to `True`, to avoid overwriting production data. | 
+| `test_db` | String | `""` | The name of the database that Pytest will create for test runs. |
 
 #### Redis cache
 
@@ -106,7 +106,7 @@ The `fides.toml` file should specify the following variables:
 | `level` | Enum (String) | `INFO` | The minimum log entry level to produce. Also accepts `TRACE`, `DEBUG`, `WARNING`, `ERROR`, or `CRITICAL` (case insensitive). |
 | `serialization` | Enum (String) | `""` | The format with which to produce log entries. If left unset, produces log entries formatted using the internal custom formatter. Also accepts `"JSON"` (case insensitive). |
 
-#### CLI 
+#### CLI
 
 | Name | Type | Default | Description |
 | :---- | :---- | :------- | :----------- |
@@ -129,7 +129,7 @@ The `fides.toml` file should specify the following variables:
 | `root_password` | string | None | If set, this can be used in conjunction with `root_username` to log in without first creating a user in the database. |
 | `root_user_scopes` | list of strings | All available scopes | The scopes granted to the root user when logging in with `root_username` and `root_password`. |
 
-#### Execution 
+#### Execution
 
 | Name | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -143,7 +143,7 @@ The `fides.toml` file should specify the following variables:
 |`celery_config_path` | string | N/A | An optional override for the [Celery](#celery-configuration) configuration file path. |
 |`worker_enabled` | bool | `True` | By default, Fides uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `worker_enabled` to `False` will run the worker on the same node as the webserver. |
 
-#### User 
+#### User
 
 | Name | Type | Default | Description |
 | :---- | :---- | :------- | :----------- |
@@ -152,7 +152,7 @@ The `fides.toml` file should specify the following variables:
 
 #### Credentials
 
-The credentials section uses custom keys which can be referenced in certain commands. 
+The credentials section uses custom keys which can be referenced in certain commands.
 
 | Name | Type | Description |
 | :---- | :---- | :----------- |
@@ -163,8 +163,8 @@ The credentials section uses custom keys which can be referenced in certain comm
 | `my_okta.orgUrl` | String | Sets the `orgUrl` for `my_okta` credentials |
 | `my_okta.token` | String | Sets the `token` for `my_okta` credentials |
 
-
 #### Admin UI
+
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `enabled` | bool | `True` | Toggle whether the Admin UI is served from `/`. |
@@ -199,7 +199,7 @@ The following environment variables are not included in the default `fides.toml`
 
 ## Celery configuration
 
-Fides uses [Celery](https://docs.celeryq.dev/en/stable/index.html) for asynchronous task management. 
+Fides uses [Celery](https://docs.celeryq.dev/en/stable/index.html) for asynchronous task management.
 
 The `celery.toml` file provided contains a brief configuration reference for managing Celery variables. By default, Fides will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate `celery_config_path` in your `fides.toml`.
 
@@ -249,7 +249,6 @@ Fides will filter out any sensitive configuration variables. The full list of va
 - `cors_origins`
 - `encoding`
 - `oauth_access_token_expire_minutes`
-
 
 **Execution settings**
 

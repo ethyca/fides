@@ -101,7 +101,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         if config.user.analytics_opt_out is False:
             ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
                 client_id=config.cli.analytics_id,
-                developer_mode=config.test_mode,
+                developer_mode=config.dev_mode,
                 os=system(),
                 product_name=APP + "-cli",
                 production_version=version(PACKAGE),
