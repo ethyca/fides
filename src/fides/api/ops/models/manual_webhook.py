@@ -26,7 +26,7 @@ class AccessManualWebhook(Base):
         nullable=False,
     )
     connection_config = relationship(
-        "ConnectionConfig", back_populates="access_manual_webhook", uselist=False
+        ConnectionConfig, back_populates="access_manual_webhook", uselist=False
     )
 
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
