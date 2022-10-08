@@ -1,6 +1,7 @@
 """Contains the nox sessions for docker-related tasks."""
-import nox
 import platform
+
+import nox
 
 from constants_nox import (
     IMAGE,
@@ -47,7 +48,7 @@ def build(session: nox.Session, image: str) -> None:
         "build",
         f"--target={target}",
         "--build-arg",
-        docker_platforms[machine_type],
+        f"PLATFORM={docker_platforms[machine_type]}",
         "--tag",
         tag(),
         ".",
