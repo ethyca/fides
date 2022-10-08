@@ -27,7 +27,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
 
     # These values are always set by validators, and are never empty strings within the
     # application. The defaults are needed in order to prevent them from needing to be
-    # Opitonal.
+    # "Opitonal[str]".
     async_database_uri: str = ""
     sync_database_uri: str = ""
 
