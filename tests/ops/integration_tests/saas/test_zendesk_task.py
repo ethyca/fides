@@ -12,6 +12,8 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_zendesk
@@ -189,7 +191,7 @@ async def test_zendesk_erasure_request_task(
     zendesk_create_erasure_data,
 ) -> None:
     """Full erasure request based on the zendesk SaaS config"""
-    config.execution.masking_strict = False  # Allow Delete
+    CONFIG.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
         id=f"test_zendesk_erasure_request_task_{random.randint(0, 1000)}"
@@ -333,4 +335,4 @@ async def test_zendesk_erasure_request_task(
         # Since ticket is deleted, it won't be available so response is 404
         assert response.status_code == 404
 
-    config.execution.masking_strict = True
+    CONFIG.execution.masking_strict = True
