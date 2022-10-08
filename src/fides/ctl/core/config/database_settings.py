@@ -25,8 +25,9 @@ class DatabaseSettings(FideslibDatabaseSettings):
     db: str = "default_db"
     test_db: str = "default_test_db"
 
-    # These default to blank strings in order to prevent them from needing to be
-    # Opitonal. The blank value will be replaced in the pre validators.
+    # These values are always set by validators, and are never empty strings within the
+    # application. The defaults are needed in order to prevent them from needing to be
+    # Opitonal.
     async_database_uri: str = ""
     sync_database_uri: str = ""
 
