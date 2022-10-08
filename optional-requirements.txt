@@ -1,4 +1,4 @@
-# This file exists for caching within the Docker build
+# This file exists for caching optional dependencies within the Docker build
 
 # AWS
 boto3~=1.24.46

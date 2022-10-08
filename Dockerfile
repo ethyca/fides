@@ -19,6 +19,7 @@ RUN npm run export
 ## Compile Python Deps ##
 #########################
 FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
+ARG TARGETPLATFORM
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -30,6 +31,9 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python Dependencies
+COPY dangerous-requirements.txt .
+RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
+
 COPY optional-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r optional-requirements.txt
 
@@ -67,7 +71,7 @@ RUN : \
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN if [ "$TARGETPLATFORM" == "linux/amd64" ] ; \
+RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
     then apt-get update \
     && apt-get install \
     -y --no-install-recommends \
@@ -98,10 +102,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN if [ "$TARGETPLATFORM" == "linux/arm64" ] ; \
-    then pip install -e . --no-deps ; \
-    else pip install -e ".[mssql]" ; \
-    fi
+RUN pip install -e . --no-deps
 
 #############################
 ## Production Application ##
