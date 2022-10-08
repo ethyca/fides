@@ -1,5 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import nox
+import platform
 
 from constants_nox import (
     IMAGE,
@@ -24,11 +25,12 @@ def get_current_image() -> str:
         nox.param("dev", id="dev"),
         nox.param("test", id="test"),
         nox.param("ui", id="ui"),
-        nox.param("pc", id="pc"),
     ],
 )
 def build(session: nox.Session, image: str) -> None:
     """Build the Docker containers."""
+    machine_type = platform.machine().lower()
+    docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -38,27 +40,19 @@ def build(session: nox.Session, image: str) -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
-    if image == "pc":
-        session.run(
-            "docker",
-            "build",
-            "clients/ops/privacy-center",
-            "--tag",
-            "ethyca/fides-privacy-center:local",
-            external=True,
-        )
-    else:
-        target = build_matrix[image]["target"]
-        tag = build_matrix[image]["tag"]
-        session.run(
-            "docker",
-            "build",
-            f"--target={target}",
-            "--tag",
-            tag(),
-            ".",
-            external=True,
-        )
+    target = build_matrix[image]["target"]
+    tag = build_matrix[image]["tag"]
+    session.run(
+        "docker",
+        "build",
+        f"--target={target}",
+        "--build-arg",
+        docker_platforms[machine_type],
+        "--tag",
+        tag(),
+        ".",
+        external=True,
+    )
 
 
 @nox.session()
