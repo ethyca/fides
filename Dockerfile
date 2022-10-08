@@ -1,7 +1,6 @@
 # Pin to 3.10.6 to avoid a mypy error in 3.10.7
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
 ARG PYTHON_VERSION="3.10.6"
-ARG PLATFORM="linux/amd64"
 
 
 
@@ -19,7 +18,7 @@ RUN npm run export
 #########################
 ## Compile Python Deps ##
 #########################
-FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as compile_image
+FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
 
 # Install auxiliary software
 RUN apt-get update && \
@@ -43,7 +42,8 @@ RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
 ##################
 ## Backend Base ##
 ##################
-FROM --platform=${PLATFORM} python:${PYTHON_VERSION}-slim-bullseye as backend
+FROM python:${PYTHON_VERSION}-slim-bullseye as backend
+ARG TARGETPLATFORM
 
 # Loads compiled requirements and adds the to the path
 COPY --from=compile_image /root/.local /root/.local
@@ -67,13 +67,14 @@ RUN : \
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN : \
-    && apt-get update \
+RUN if [ "$TARGETPLATFORM" == "linux/amd64" ] ; \
+    then apt-get update \
     && apt-get install \
     -y --no-install-recommends \
     mssql-tools \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* ; \
+    fi
 
 # General Application Setup ##
 COPY . /fides
@@ -97,7 +98,10 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pip install -e .
+RUN if [ "$TARGETPLATFORM" == "linux/arm64" ] ; \
+    then pip install -e . --no-deps ; \
+    else pip install -e ".[mssql]" ; \
+    fi
 
 #############################
 ## Production Application ##
