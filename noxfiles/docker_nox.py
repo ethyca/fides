@@ -43,7 +43,7 @@ def build(session: nox.Session, image: str) -> None:
     }
     target = build_matrix[image]["target"]
     tag = build_matrix[image]["tag"]
-    session.run(
+    build_command = (
         "docker",
         "build",
         f"--target={target}",
@@ -52,8 +52,11 @@ def build(session: nox.Session, image: str) -> None:
         "--tag",
         tag(),
         ".",
-        external=True,
     )
+    if "nocache" in session.posargs:
+        build_command = (*build_command, "--no-cache")
+
+    session.run(*build_command, external=True)
 
 
 @nox.session()
