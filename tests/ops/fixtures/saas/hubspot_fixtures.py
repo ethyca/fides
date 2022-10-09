@@ -264,6 +264,7 @@ def hubspot_erasure_data(
         _contact_exists,
         (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
         error_message=error_message,
+        interval=60,
     )
 
     error_message = f"User with user id {user_id} could not be added to Hubspot"
