@@ -1,7 +1,7 @@
 import { Box, HStack, Text, VStack } from "@fidesui/react";
 import { useAlert } from "common/hooks";
 import { TrashCanSolidIcon } from "common/Icon";
-import { FieldArray, Form, Formik } from "formik";
+import { FieldArray, Form, Formik, FormikProps } from "formik";
 import { useRouter } from "next/router";
 import React from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
@@ -40,6 +40,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
 
   return (
     <Formik
+      enableReinitialize
       initialValues={{
         fields:
           data.length > 0

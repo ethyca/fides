@@ -20,7 +20,7 @@ type ConnectorParametersProp = {
   /**
    * Parent callback invoked when a connection is initially created
    */
-  onConnectionCreated: () => void;
+  onConnectionCreated?: () => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
@@ -61,7 +61,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
         successAlert(
           `Connector successfully ${connection?.key ? "updated" : "added"}!`
         );
-        if (!connection?.key) {
+        if (!connection?.key && onConnectionCreated) {
           onConnectionCreated();
         }
       }

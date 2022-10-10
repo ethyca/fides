@@ -37,6 +37,7 @@ const mapFiltersToSearchParams = ({
 const initialState: ConnectionTypeState = {
   connection: undefined,
   connectionOption: undefined,
+  connectionOptions: [],
   search: "",
   step: STEPS.find((step) => step.stepId === 1)!,
   system_type: undefined,
@@ -60,6 +61,13 @@ export const connectionTypeSlice = createSlice({
       ...state,
       connectionOption: action.payload,
     }),
+    setConnectionOptions: (
+      state,
+      action: PayloadAction<ConnectionOption[]>
+    ) => ({
+      ...state,
+      connectionOptions: action.payload,
+    }),
     setSearch: (state, action: PayloadAction<string>) => ({
       ...state,
       search: action.payload,
@@ -78,6 +86,7 @@ export const connectionTypeSlice = createSlice({
 export const {
   setConnection,
   setConnectionOption,
+  setConnectionOptions,
   setSearch,
   setStep,
   setSystemType,

@@ -1,9 +1,9 @@
 import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
-import { capitalize } from "common/utils";
 import React, { useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
-import { ConnectionType } from "../constants";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { selectConnectionTypeState } from "~/features/connection-type";
+
 import {
   selectDatastoreConnectionFilters,
   setConnectionType,
@@ -16,34 +16,36 @@ export type ConnectionTypeFilterProps = {
 const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
   width,
 }) => {
+  const { connectionOptions } = useAppSelector(selectConnectionTypeState);
+
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { connection_type } = useSelector(selectDatastoreConnectionFilters);
+  const { connection_type } = useAppSelector(selectDatastoreConnectionFilters);
 
   const loadList = useCallback((): Map<string, boolean> => {
     const list = new Map<string, boolean>();
-    const valuesList = Object.values(ConnectionType).sort();
-    valuesList.forEach((value) => {
+    connectionOptions.forEach((option) => {
       let result = false;
-      if (connection_type?.includes(value)) {
+      if (connection_type?.includes(option.identifier)) {
         result = true;
       }
-      list.set(capitalize(value), result);
+      list.set(option.human_readable, result);
     });
+
     return list;
-  }, [connection_type]);
+  }, [connectionOptions, connection_type]);
 
   const list = useMemo(() => loadList(), [loadList]);
   const selectedList = new Map([...list].filter(([, v]) => v === true));
 
   // Hooks
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Listeners
   const handleChange = (values: string[]) => {
-    const payload = values.map(
-      (value) => value.toLowerCase() as ConnectionType
+    const payload = connectionOptions.filter((option) =>
+      values.includes(option.human_readable)
     );
-    dispatch(setConnectionType(payload));
+    dispatch(setConnectionType(payload.map((obj) => obj.identifier)));
   };
 
   return (

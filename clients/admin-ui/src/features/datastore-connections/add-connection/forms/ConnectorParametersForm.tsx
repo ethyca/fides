@@ -196,6 +196,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   return (
     <Formik
+      enableReinitialize
       initialValues={getInitialValues()}
       onSubmit={handleSubmit}
       validateOnBlur={false}
@@ -316,6 +317,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               <Button
                 bg="primary.800"
                 color="white"
+                isDisabled={isSubmitting}
                 isLoading={isSubmitting}
                 loadingText="Submitting"
                 size="sm"

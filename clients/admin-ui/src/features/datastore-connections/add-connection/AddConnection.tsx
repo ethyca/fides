@@ -14,6 +14,7 @@ import { useAppSelector } from "~/app/hooks";
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
 import { STEPS } from "./constants";
+import { replaceURL } from "./helpers";
 import { AddConnectionStep } from "./types";
 
 const AddConnection: React.FC = () => {
@@ -21,7 +22,9 @@ const AddConnection: React.FC = () => {
   const router = useRouter();
   const { connectorType, step: currentStep } = router.query;
 
-  const { connectionOption, step } = useAppSelector(selectConnectionTypeState);
+  const { connection, connectionOption, step } = useAppSelector(
+    selectConnectionTypeState
+  );
 
   useEffect(() => {
     if (connectorType) {
@@ -31,8 +34,19 @@ const AddConnection: React.FC = () => {
       const item = STEPS.find((s) => s.stepId === Number(currentStep));
       dispatch(setStep(item || STEPS[1]));
     }
+    if (!router.query.id && connection?.key) {
+      replaceURL(connection.key, step.href);
+    }
     return () => {};
-  }, [connectorType, currentStep, dispatch, router.query.step]);
+  }, [
+    connection?.key,
+    connectorType,
+    currentStep,
+    dispatch,
+    router.query.id,
+    router.query.step,
+    step.href,
+  ]);
 
   const getLabel = useCallback(
     (s: AddConnectionStep): string => {
@@ -42,7 +56,7 @@ const AddConnection: React.FC = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!.human_readable
+            connectionOption!?.human_readable
           );
           break;
         default:

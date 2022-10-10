@@ -5,19 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Chrome",
+            "name": "Launch Chrome: Admin UI",
             "request": "launch",
             "type": "chrome",
             "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}/clients/ops/admin-ui"
+            "webRoot": "${workspaceFolder}/clients/admin-ui"
         },
         {
-            "name": "Attach to Chrome",
+            "name": "Attach to Chrome: Admin UI",
             "port": 9222,
             "request": "attach",
             "type": "chrome",
             "urlFilter": "http://localhost:3000/*", // use urlFilter instead of url!
-            "webRoot": "${workspaceFolder}/clients/ops/admin-ui"
+            "webRoot": "${workspaceFolder}/clients/admin-ui"
         }
     ]
 }

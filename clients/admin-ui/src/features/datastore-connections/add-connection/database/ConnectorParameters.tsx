@@ -29,7 +29,7 @@ type ConnectorParametersProps = {
   /**
    * Parent callback invoked when a connection is initially created
    */
-  onConnectionCreated: () => void;
+  onConnectionCreated?: () => void;
   /**
    * Parent callback when Test Connection is clicked
    */
@@ -75,7 +75,6 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       if (payload.failed?.length > 0) {
         errorAlert(payload.failed[0].message);
       } else {
-        dispatch(setConnection(payload.succeeded[0]));
         const params2: DatastoreConnectionSecretsRequest = {
           connection_key: payload.succeeded[0].key,
           secrets: {},
@@ -95,10 +94,11 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
             </>
           );
         } else {
+          dispatch(setConnection(payload.succeeded[0]));
           successAlert(
             `Connector successfully ${connection?.key ? "updated" : "added"}!`
           );
-          if (!connection?.key) {
+          if (!connection?.key && onConnectionCreated) {
             onConnectionCreated();
           }
         }

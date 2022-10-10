@@ -163,7 +163,7 @@ export const isDatastoreConnection = (obj: any): obj is DatastoreConnection =>
 
 export type DatastoreConnectionParams = {
   search: string;
-  connection_type?: ConnectionType[];
+  connection_type?: string[];
   test_status?: TestingStatus;
   system_type?: SystemType;
   disabled_status?: DisabledStatus;
