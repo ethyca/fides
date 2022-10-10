@@ -33,7 +33,7 @@ def docs_serve(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "pip install -e /fides && mkdocs serve --dev-addr=0.0.0.0:8000",
+        "mkdocs serve --dev-addr=0.0.0.0:8000",
     )
     session.run(*run_shell, external=True)
 
