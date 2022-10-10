@@ -110,7 +110,8 @@ def get_connections(
 
     Connection_type supports "or" filtering:
     ?connection_type=postgres&connection_type=mongo will be translated
-    into an "or" query.
+    into an "or" query. This parameter can also be used to filter by specific
+    SaaS connector types.
     """
     logger.info(
         "Finding connection configurations with pagination params %s and search query: '%s'.",
