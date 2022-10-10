@@ -20,9 +20,6 @@ The types of changes are:
 ### Added
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 
-### Added
-* Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
-
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
