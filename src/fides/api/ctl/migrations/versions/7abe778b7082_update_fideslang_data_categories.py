@@ -8,8 +8,9 @@ Create Date: 2022-07-29 17:54:53.719453
 
 """
 import logging
+from os import getenv
 
-from fideslib.db.session import get_db_session
+from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.exc import ProgrammingError
 
 from fides.api.ops.db.base import DatasetConfig
@@ -168,7 +169,16 @@ def update_field(field: dict, migration_direction: str) -> dict:
 
 
 def run_migration(migration_direction: str) -> None:
-    sessionlocal = get_db_session(CONFIG)
+
+    # This only gets set to true during pytest runs
+    database_uri = (
+        CONFIG.database.test_sync_database_uri
+        if getenv("TESTING") == "True"
+        else CONFIG.database.sync_database_uri
+    )
+    db_engine = get_db_engine(database_uri=database_uri)
+
+    sessionlocal = get_db_session(config=CONFIG, engine=db_engine)
     with sessionlocal() as session:
         try:
             datasets = DatasetConfig.all(db=session)

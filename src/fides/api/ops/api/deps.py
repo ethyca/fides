@@ -1,3 +1,4 @@
+from os import getenv
 from typing import Generator
 
 from fideslib.db.session import get_db_engine, get_db_session
@@ -28,9 +29,17 @@ def get_db() -> Generator:
 
 def get_api_session() -> Session:
     """Gets the shared database session to use for API functionality"""
+
+    # This only gets set to true during pytest runs
+    database_uri = (
+        CONFIG.database.sync_database_uri
+        if getenv("TESTING") == "True"
+        else CONFIG.database.test_sync_database_uri
+    )
+
     global _engine  # pylint: disable=W0603
     if not _engine:
-        _engine = get_db_engine(config=CONFIG)
+        _engine = get_db_engine(database_uri=database_uri)
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     db = SessionLocal()
     return db

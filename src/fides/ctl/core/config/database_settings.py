@@ -37,7 +37,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
         if isinstance(value, str):
             return value
 
-        db_name =  values["db"]
+        db_name = values["db"]
         return PostgresDsn.build(
             scheme="postgresql+psycopg2",
             user=values["user"],
@@ -56,7 +56,7 @@ class DatabaseSettings(FideslibDatabaseSettings):
         if isinstance(value, str):
             return value
 
-        db_name =  values["db"]
+        db_name = values["db"]
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
             user=values["user"],
