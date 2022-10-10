@@ -767,6 +767,7 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
         assert ordered[1].key == items[1]["key"]
 
+    @pytest.mark.unit_saas
     def test_filter_connection_type(
         self,
         db,
@@ -774,7 +775,7 @@ class TestGetConnections:
         read_connection_config,
         api_client,
         generate_auth_header,
-        stripe_connection_config,
+        saas_example_connection_config,
         url,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
@@ -797,13 +798,13 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
         assert ordered[1].key == items[1]["key"]
 
-        resp = api_client.get(url + "?connection_type=stripe", headers=auth_header)
+        resp = api_client.get(url + "?connection_type=custom", headers=auth_header)
         assert resp.status_code == 200
         items = resp.json()["items"]
         assert len(items) == 1
         ordered = (
             db.query(ConnectionConfig)
-            .filter(ConnectionConfig.key == stripe_connection_config.key)
+            .filter(ConnectionConfig.key == saas_example_connection_config.key)
             .order_by(ConnectionConfig.name.asc())
             .all()
         )
@@ -811,7 +812,7 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
 
         resp = api_client.get(
-            url + "?connection_type=stripe&connection_type=postgres",
+            url + "?connection_type=custom&connection_type=postgres",
             headers=auth_header,
         )
         assert resp.status_code == 200
@@ -824,7 +825,7 @@ class TestGetConnections:
                     [
                         read_connection_config.key,
                         connection_config.key,
-                        stripe_connection_config.key,
+                        saas_example_connection_config.key,
                     ]
                 )
             )
