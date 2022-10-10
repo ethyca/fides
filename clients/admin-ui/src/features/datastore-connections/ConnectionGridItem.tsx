@@ -80,7 +80,7 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         />
       </Flex>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
-        {connectionData.description}
+        {connectionData.description ? connectionData.description : <br/>}
       </Text>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         Edited on {formatDate(connectionData.updated_at!)}
