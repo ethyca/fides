@@ -5,6 +5,7 @@ import { Flex, Heading, Text, Stack, Image, Button } from "@fidesui/react";
 import { useRouter } from "next/router";
 
 import { Headers } from "headers-polyfill";
+import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 import ConsentItemCard from "../components/ConsentItemCard";
 
 import config from "../config/config.json";
@@ -12,17 +13,6 @@ import { hostUrl } from "../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import { VerificationType } from "../components/modals/types";
 import { useLocalStorage } from "../common/hooks";
-import { ConsentItem } from "../types";
-
-type ApiUserConsent = {
-  data_use: string;
-  data_use_description?: string;
-  opt_in: boolean;
-};
-
-type ApiUserConcents = {
-  consent: ApiUserConsent[];
-};
 
 const Consent: NextPage = () => {
   const content: any = [];
@@ -51,7 +41,7 @@ const Consent: NextPage = () => {
           body: JSON.stringify({ code: verificationCode }),
         }
       );
-      const data = (await response.json()) as ApiUserConcents;
+      const data = (await response.json()) as ApiUserConsents;
       if (!response.ok) {
         router.push("/");
       }
@@ -145,7 +135,7 @@ const Consent: NextPage = () => {
         body: JSON.stringify(body),
       }
     );
-    (await response.json()) as ApiUserConcents;
+    (await response.json()) as ApiUserConsents;
     router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch
