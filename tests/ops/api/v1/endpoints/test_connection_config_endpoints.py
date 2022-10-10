@@ -767,6 +767,73 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
         assert ordered[1].key == items[1]["key"]
 
+    def test_filter_connection_type(
+        self,
+        db,
+        connection_config,
+        read_connection_config,
+        api_client,
+        generate_auth_header,
+        stripe_connection_config,
+        url,
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url + "?connection_type=postgres", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [read_connection_config.key, connection_config.key]
+                )
+            )
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 2
+        assert ordered[0].key == items[0]["key"]
+        assert ordered[1].key == items[1]["key"]
+
+        resp = api_client.get(url + "?connection_type=stripe", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 1
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(ConnectionConfig.key == stripe_connection_config.key)
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 1
+        assert ordered[0].key == items[0]["key"]
+
+        resp = api_client.get(
+            url + "?connection_type=stripe&connection_type=postgres",
+            headers=auth_header,
+        )
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 3
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [
+                        read_connection_config.key,
+                        connection_config.key,
+                        stripe_connection_config.key,
+                    ]
+                )
+            )
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 3
+        assert ordered[0].key == items[0]["key"]
+
 
 class TestGetConnection:
     @pytest.fixture(scope="function")

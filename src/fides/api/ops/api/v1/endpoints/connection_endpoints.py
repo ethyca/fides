@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Query, Security
@@ -99,7 +99,7 @@ def get_connections(
     disabled: Optional[bool] = None,
     test_status: Optional[TestStatus] = None,
     system_type: Optional[SystemType] = None,
-    connection_type: Optional[List[ConnectionType]] = Query(
+    connection_type: Optional[List[Union[ConnectionType, str]]] = Query(
         default=None
     ),  # type:ignore
 ) -> AbstractPage[ConnectionConfig]:
@@ -129,7 +129,17 @@ def get_connections(
         )
 
     if connection_type:
-        query = query.filter(ConnectionConfig.connection_type.in_(connection_type))
+        saas_connection_types = []
+        for ct in connection_type:
+            if not isinstance(ct, ConnectionType):
+                connection_type.remove(ct)
+                saas_connection_types.append(ct)
+        query = query.filter(
+            or_(
+                ConnectionConfig.connection_type.in_(connection_type),
+                ConnectionConfig.saas_config["type"].astext.in_(saas_connection_types),
+            )
+        )
 
     if disabled is not None:
         query = query.filter(ConnectionConfig.disabled == disabled)
