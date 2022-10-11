@@ -6,6 +6,7 @@ export type ConsentItem = {
   url: string;
   defaultValue: boolean;
   consentValue?: boolean;
+  cookieKeys: string[];
 };
 
 export type ApiUserConsent = {
@@ -18,6 +19,9 @@ export type ApiUserConsents = {
   consent?: ApiUserConsent[];
 };
 
-export type DataUseConsent = {
-  [dataUse: string]: boolean | undefined;
+/**
+ * A mapping from the cookie keys (defined in config.json) to the resolved consent value.
+ */
+export type CookieKeyConsent = {
+  [cookieKey: string]: boolean | undefined;
 };

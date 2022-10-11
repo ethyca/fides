@@ -30,7 +30,7 @@
   ],
   "includeConsent": true,
   "consent": {
-    "cookieName": "ethyca_consent",
+    "cookieName": "fides_consent",
     "consentOptions": [
       {
         "fidesDataUseKey": "advertising",
@@ -38,7 +38,8 @@
         "description": "We may use some of your personal information for advertising performance analysis and audience modeling for ongoing advertising which may be interpreted as 'Data Sharing' under some regulations.",
         "url": "https://example.com/privacy#advertising",
         "default": true,
-        "highlight": false
+        "highlight": false,
+        "cookieKeys": ["data_sales"]
       },
       {
         "fidesDataUseKey": "improve",
@@ -46,7 +47,32 @@
         "description": "We may use some of your personal information to collect analytics about how you use our products & services, in order to improve our service.",
         "url": "https://example.com/privacy#data-sales",
         "default": true,
-        "highlight": false
+        "highlight": false,
+        "cookieKeys": ["data_sales"]
+      },
+      {
+        "name": "Analytics",
+        "fidesDataUseKey": "third_party_sharing",
+        "description": "...",
+        "url": "https://example.com/privacy#analytics",
+        "cookieKeys": ["data_sharing"]
+      },
+      {
+        "name": "Personalize",
+        "fidesDataUseKey": "personalize",
+        "default": true,
+        "url": "https://example.com/privacy#personalize",
+        "description": "...",
+        "cookieKeys": ["functional"]
+      },
+      {
+        "name": "Essential",
+        "fidesDataUseKey": "provide.service",
+        "default": true,
+        "url": "https://example.com/privacy#essential",
+        "highlight": true,
+        "description": "...",
+        "cookieKeys": ["essential"]
       }
     ]
   }

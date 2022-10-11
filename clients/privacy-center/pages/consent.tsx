@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { Headers } from "headers-polyfill";
 import {
   makeConsentItems,
-  makeDataUseConsent,
+  makeCookieKeyConsent,
 } from "~/features/consent/helpers";
 import { setConsentCookie } from "~/features/consent/cookie";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
@@ -56,7 +56,7 @@ const Consent: NextPage = () => {
         config.consent.consentOptions
       );
       setConsentItems(updatedConsentItems);
-      setConsentCookie(makeDataUseConsent(updatedConsentItems));
+      setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     };
     getUserConsents();
   }, [router, consentRequestId, verificationCode]);
@@ -108,7 +108,7 @@ const Consent: NextPage = () => {
       data,
       config.consent.consentOptions
     );
-    setConsentCookie(makeDataUseConsent(updatedConsentItems));
+    setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
 
     router.push("/");
     // TODO: display alert on successful patch
