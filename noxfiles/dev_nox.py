@@ -37,6 +37,10 @@ def dev(session: nox.Session) -> None:
             open_shell=open_shell, run_application=True, datastores=datastores
         )
 
+@nox.session()
+def test_env(session: nox.Session) -> None:
+    """Spins up a comprehensive test environment seeded with data."""
+    pass
 
 @nox.session()
 def quickstart(session: nox.Session) -> None:
