@@ -5,7 +5,7 @@ Admin UI for managing Fides privacy requests. A web application built in Next.js
 ## Running Locally
 
 1. Run `nox -s create_user` and follow prompts to create a user. Note that password requires 8 or more characters, upper and lowercase chars, a number, and a symbol.
-2. In a new shell, `cd` into `clients/ops/admin-ui`, then run `npm run dev`.
+2. In a new shell, `cd` into `clients/admin-ui`, then run `npm run dev`.
 3. Nav to `http://localhost:3000/` and logged in using created user. The `email` field is simply the `user` that was created, not a valid email address.
 
 ## Testing Entire Request Flow
