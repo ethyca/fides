@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def configure_mailchimp_connector(
+def create_mailchimp_connector(
     auth_header: Dict[str, str],
     key: str = "mailchimp",
 ):

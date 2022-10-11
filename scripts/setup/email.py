@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def configure_email(
+def create_email_integration(
     auth_header: Dict[str, str],
     key: str = "fidesops_email",
 ):
