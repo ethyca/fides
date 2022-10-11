@@ -38,6 +38,7 @@ def black(session: nox.Session) -> None:
         "src",
         "tests",
         "noxfiles",
+        "scripts",
     )
     session.run(*command)
 
@@ -46,7 +47,7 @@ def black(session: nox.Session) -> None:
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
     session.run(*command)
 
 
@@ -75,6 +76,7 @@ def xenon(session: nox.Session) -> None:
         "noxfiles",
         "src",
         "tests",
+        "scripts",
         "--max-absolute B",
         "--max-modules B",
         "--max-average A",
