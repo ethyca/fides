@@ -12,6 +12,8 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
+
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
@@ -712,8 +714,8 @@ async def test_salesforce_erasure_request_task(
         ],
     )
 
-    masking_strict = config.execution.masking_strict
-    config.execution.masking_strict = True
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = True
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -783,4 +785,4 @@ async def test_salesforce_erasure_request_task(
     assert lead["LastName"] == "MASKED"
 
     # reset
-    config.execution.masking_strict = masking_strict
+    CONFIG.execution.masking_strict = masking_strict
