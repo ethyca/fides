@@ -40,8 +40,10 @@ const EditDatastoreConnection: NextPage = () => {
       );
     }
     return () => {
-      // Reset the connection type slice to its initial state
-      dispatch(reset());
+      if (connection && connectionOption) {
+        // Reset the connection type slice to its initial state
+        dispatch(reset());
+      }
     };
   }, [connection, connectionOption, connectionOptions, data, dispatch]);
 
