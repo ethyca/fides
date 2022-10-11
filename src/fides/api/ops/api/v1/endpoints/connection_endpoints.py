@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Query, Security
@@ -99,9 +99,7 @@ def get_connections(
     disabled: Optional[bool] = None,
     test_status: Optional[TestStatus] = None,
     system_type: Optional[SystemType] = None,
-    connection_type: Optional[List[Union[ConnectionType, str]]] = Query(
-        default=None
-    ),  # type:ignore
+    connection_type: Optional[List[str]] = Query(default=None),  # type: ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
     Optionally filter the key, name, and description with a search query param.
@@ -130,14 +128,20 @@ def get_connections(
         )
 
     if connection_type:
+        connection_types = []
         saas_connection_types = []
         for ct in connection_type:
-            if not isinstance(ct, ConnectionType):
-                connection_type.remove(ct)
+            ct = ct.lower()
+            try:
+                ct = ConnectionType(ct)
+                connection_types.append(ct)
+            except ValueError:
+                # if not a ConnectionType enum, assume it's
+                # a SaaS type, since those are dynamic
                 saas_connection_types.append(ct)
         query = query.filter(
             or_(
-                ConnectionConfig.connection_type.in_(connection_type),
+                ConnectionConfig.connection_type.in_(connection_types),
                 ConnectionConfig.saas_config["type"].astext.in_(saas_connection_types),
             )
         )

@@ -798,7 +798,40 @@ class TestGetConnections:
         assert ordered[0].key == items[0]["key"]
         assert ordered[1].key == items[1]["key"]
 
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url + "?connection_type=POSTGRES", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 2
+
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(
+                ConnectionConfig.key.in_(
+                    [read_connection_config.key, connection_config.key]
+                )
+            )
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 2
+        assert ordered[0].key == items[0]["key"]
+        assert ordered[1].key == items[1]["key"]
+
         resp = api_client.get(url + "?connection_type=custom", headers=auth_header)
+        assert resp.status_code == 200
+        items = resp.json()["items"]
+        assert len(items) == 1
+        ordered = (
+            db.query(ConnectionConfig)
+            .filter(ConnectionConfig.key == saas_example_connection_config.key)
+            .order_by(ConnectionConfig.name.asc())
+            .all()
+        )
+        assert len(ordered) == 1
+        assert ordered[0].key == items[0]["key"]
+
+        resp = api_client.get(url + "?connection_type=CUSTOM", headers=auth_header)
         assert resp.status_code == 200
         items = resp.json()["items"]
         assert len(items) == 1
