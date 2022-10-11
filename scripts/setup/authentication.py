@@ -1,6 +1,6 @@
 import logging
 import requests
-from typing import Optional
+from typing import List, Optional
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -39,16 +39,19 @@ def get_access_token(
     )
 
 
-def create_oauth_client(auth_token: str):
+def create_oauth_client(
+    auth_token: str,
+    scopes: List[str] = SCOPE_REGISTRY,
+):
     """
     Create a new OAuth client in fidesops.
     Returns the response JSON if successful, or throws an error otherwise.
     """
-    oauth_header = {"Authorization": f"Bearer {auth_token}"}
+    auth_header = {"Authorization": f"Bearer {auth_token}"}
     response = requests.post(
         f"{constants.BASE_URL}{urls.CLIENT}",
-        headers=oauth_header,
-        json=SCOPE_REGISTRY,
+        headers=auth_header,
+        json=scopes,
     )
 
     if response.ok:
@@ -66,7 +69,11 @@ def get_auth_header(
     client_id: Optional[str] = None,
     client_secret: Optional[str] = None,
 ):
-    """Use the root oauth client to create a new client"""
+    """
+    Returns a valid authentication header.
+    Uses the root oauth client to create a new client if no credentials
+    are passed in.
+    """
     if not client_id or not client_secret:
         root_token = get_access_token(
             client_id=constants.ROOT_CLIENT_ID,
