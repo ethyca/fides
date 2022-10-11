@@ -1,8 +1,7 @@
 import { Flex } from "@fidesui/react";
 import {
+  reset,
   selectConnectionTypeState,
-  setConnection,
-  setConnectionOption,
   setStep,
 } from "connection-type/connection-type.slice";
 import { SystemType } from "datastore-connections/constants";
@@ -63,9 +62,8 @@ const ConfigureConnector: React.FC = () => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      // Reset the connection state when the component is unmounted
-      dispatch(setConnection(undefined));
-      dispatch(setConnectionOption(undefined));
+      // Reset the connection type slice to its initial state
+      dispatch(reset());
     };
   }, [dispatch]);
 

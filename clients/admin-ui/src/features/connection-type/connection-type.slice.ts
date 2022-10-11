@@ -47,6 +47,7 @@ export const connectionTypeSlice = createSlice({
   name: "connectionType",
   initialState,
   reducers: {
+    reset: () => initialState,
     setConnection: (
       state,
       action: PayloadAction<DatastoreConnection | undefined>
@@ -84,6 +85,7 @@ export const connectionTypeSlice = createSlice({
 });
 
 export const {
+  reset,
   setConnection,
   setConnectionOption,
   setConnectionOptions,

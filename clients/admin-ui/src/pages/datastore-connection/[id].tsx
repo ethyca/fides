@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
+  reset,
   selectConnectionTypeState,
   setConnection,
   setConnectionOption,
@@ -39,8 +40,8 @@ const EditDatastoreConnection: NextPage = () => {
       );
     }
     return () => {
-      if (connection) dispatch(setConnection(undefined));
-      if (connectionOption) dispatch(setConnectionOption(undefined));
+      // Reset the connection type slice to its initial state
+      dispatch(reset());
     };
   }, [connection, connectionOption, connectionOptions, data, dispatch]);
 
