@@ -12,6 +12,7 @@ import {
   setConnectionOption,
 } from "~/features/connection-type";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
+import { ConnectionType } from "~/features/datastore-connections/constants";
 import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
 
 import Custom404 from "../404";
@@ -29,15 +30,13 @@ const EditDatastoreConnection: NextPage = () => {
   useEffect(() => {
     if (data) {
       dispatch(setConnection(data));
-      dispatch(
-        setConnectionOption(
-          connectionOptions.find(
-            (option) =>
-              option.identifier === connection?.connection_type ||
-              connection?.saas_config?.type
-          )
-        )
+      const item = connectionOptions.find(
+        (option) =>
+          (option.identifier === data.connection_type &&
+            option.identifier !== ConnectionType.SAAS) ||
+          option.identifier === data.saas_config?.type
       );
+      dispatch(setConnectionOption(item));
     }
     return () => {
       if (connection && connectionOption) {
