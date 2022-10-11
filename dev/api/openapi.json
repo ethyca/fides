@@ -4788,7 +4788,7 @@
           "Connections"
         ],
         "summary": "Get Connections",
-        "description": "Returns all connection configurations in the database.\nOptionally filter the key, name, and description with a search query param.\n\nCan also filter on disabled, connection_type, test_status, and system_type.\n\nConnection_type supports \"or\" filtering:\n?connection_type=postgres&connection_type=mongo will be translated\ninto an \"or\" query.",
+        "description": "Returns all connection configurations in the database.\nOptionally filter the key, name, and description with a search query param.\n\nCan also filter on disabled, connection_type, test_status, and system_type.\n\nConnection_type supports \"or\" filtering:\n?connection_type=postgres&connection_type=mongo will be translated\ninto an \"or\" query. This parameter can also be used to filter by specific\nSaaS connector types.",
         "operationId": "get_connections_api_v1_connection_get",
         "parameters": [
           {
@@ -4828,9 +4828,10 @@
           {
             "required": false,
             "schema": {
+              "title": "Connection Type",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/ConnectionType"
+                "type": "string"
               }
             },
             "name": "connection_type",
