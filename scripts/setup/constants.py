@@ -1,6 +1,6 @@
 from fides.api.ops.api.v1 import urn_registry as urls
 
-FIDES_URL = "http://localhost:8080"
+FIDES_URL = "http://fides:8080"
 BASE_URL = FIDES_URL + urls.V1_URL_PREFIX
 
 ACCESS_POLICY_KEY = "access"
