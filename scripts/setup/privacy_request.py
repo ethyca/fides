@@ -4,7 +4,7 @@ import requests
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -28,12 +28,12 @@ def create_privacy_request(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops privacy request creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides privacy request creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
     created_privacy_requests = (response.json())["succeeded"]
     if len(created_privacy_requests) > 0:
         logger.info(
-            f"Created fidesops privacy request for email={user_email} via /api/v1/privacy-request"
+            f"Created fides privacy request for email={user_email} via /api/v1/privacy-request"
         )
     return response.json()["succeeded"][0]["id"]

@@ -5,7 +5,7 @@ from typing import Dict
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 import secrets
 
 
@@ -44,5 +44,5 @@ def create_mailchimp_connector(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops mailchimp connector configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides mailchimp connector configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )

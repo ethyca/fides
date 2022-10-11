@@ -4,7 +4,7 @@ from typing import Dict
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 import secrets
 
 
@@ -14,13 +14,13 @@ logging.basicConfig(level=logging.INFO)
 
 def create_email_integration(
     auth_header: Dict[str, str],
-    key: str = "fidesops_email",
+    key: str = "fides_email",
 ):
     response = requests.post(
         f"{constants.BASE_URL}{urls.EMAIL_CONFIG}",
         headers=auth_header,
         json={
-            "name": "Fidesops Emails",
+            "name": "fides Emails",
             "key": key,  # TODO: Randomise this
             "service_type": "mailgun",
             "details": {
@@ -38,7 +38,7 @@ def create_email_integration(
             != f"Only one email config is supported at a time. Config with key {key} is already configured."
         ):
             raise RuntimeError(
-                f"fidesops email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+                f"fides email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
 
     # Now add secrets
@@ -53,7 +53,7 @@ def create_email_integration(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops email config secrets update failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides email config secrets update failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
     logger.info(response.json()["msg"])

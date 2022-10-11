@@ -6,7 +6,7 @@ from typing import Dict
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def create_user(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops user creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides user creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
     user_id = response.json()["id"]
@@ -52,7 +52,7 @@ def create_user(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops user permissions creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides user permissions creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
     else:
         logger.info(f"Created user with username: {username} and password: {password}")

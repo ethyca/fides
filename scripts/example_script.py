@@ -1,5 +1,6 @@
+print("Loading imports...")
+from setup import constants
 from setup.authentication import get_auth_header
-import setup.constants as constants
 from setup.email import create_email_integration
 from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector

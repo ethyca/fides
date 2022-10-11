@@ -4,7 +4,7 @@ from typing import Dict
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -32,9 +32,9 @@ def create_policy(
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created fidesops policy with key=%s via /api/v1/policy", key)
+            logger.info("Created fides policy with key=%s via /api/v1/policy", key)
             return
 
     raise RuntimeError(
-        f"fidesops policy creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        f"fides policy creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
     )

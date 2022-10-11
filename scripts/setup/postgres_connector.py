@@ -3,13 +3,13 @@ import requests
 from typing import Dict
 
 from fides.api.ops.api.v1 import urn_registry as urls
-from database_connector import (
+from setup.database_connector import (
     create_database_connector,
     update_database_connector_secrets,
 )
-from dataset import create_dataset
+from setup.dataset import create_dataset
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)

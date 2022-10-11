@@ -5,7 +5,7 @@ import yaml
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -32,9 +32,9 @@ def create_dataset(
     if response.ok:
         datasets = (response.json())["succeeded"]
         if len(datasets) > 0:
-            logger.info(f"Created fidesops dataset via {url}")
+            logger.info(f"Created fides dataset via {url}")
             return response.json()
 
     raise RuntimeError(
-        f"fidesops dataset creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        f"fides dataset creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
     )

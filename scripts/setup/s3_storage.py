@@ -1,11 +1,10 @@
 import logging
 import requests
-import uuid
 from typing import Dict
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 import secrets
 
 
@@ -40,12 +39,12 @@ def configure_s3_storage(
 
     if not response.ok:
         raise RuntimeError(
-            f"fidesops storage creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides storage creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
     else:
         storage = (response.json())["succeeded"]
         if len(storage) > 0:
-            logger.info(f"Created fidesops storage with key={key} via {url}")
+            logger.info(f"Created fides storage with key={key} via {url}")
 
     storage_secrets_path = urls.STORAGE_SECRETS.format(config_key=key)
     url = f"{constants.BASE_URL}{storage_secrets_path}"
@@ -75,7 +74,7 @@ def configure_s3_storage(
     )
     if not response.ok:
         raise RuntimeError(
-            f"fidesops policy rule creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides policy rule creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
     rule_target_path = urls.RULE_TARGET_LIST.format(
@@ -94,5 +93,5 @@ def configure_s3_storage(
         targets = (response.json())["succeeded"]
         if len(targets) > 0:
             logger.info(
-                f"Created fidesops policy rule target for '{data_category}' via {url}"
+                f"Created fides policy rule target for '{data_category}' via {url}"
             )

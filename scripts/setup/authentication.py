@@ -5,7 +5,7 @@ from typing import List, Optional
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def get_access_token(
     client_secret: str,
 ) -> str:
     """
-    Authorize with fidesops via OAuth.
+    Authorize with fides via OAuth.
     Returns a valid access token if successful, or throws an error otherwise.
     """
     data = {
@@ -31,11 +31,11 @@ def get_access_token(
     if response.ok:
         token = (response.json())["access_token"]
         if token:
-            logger.info(f"Completed fidesops oauth login via {url}")
+            logger.info(f"Completed fides oauth login via {url}")
             return token
 
     raise RuntimeError(
-        f"fidesops oauth login failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        f"fides oauth login failed! response.status_code={response.status_code}, response.json()={response.json()}"
     )
 
 
@@ -44,7 +44,7 @@ def create_oauth_client(
     scopes: List[str] = SCOPE_REGISTRY,
 ):
     """
-    Create a new OAuth client in fidesops.
+    Create a new OAuth client in fides.
     Returns the response JSON if successful, or throws an error otherwise.
     """
     auth_header = {"Authorization": f"Bearer {auth_token}"}
@@ -57,11 +57,11 @@ def create_oauth_client(
     if response.ok:
         created_client = response.json()
         if created_client["client_id"] and created_client["client_secret"]:
-            logger.info("Created fidesops oauth client via /api/v1/oauth/client")
+            logger.info("Created fides oauth client via /api/v1/oauth/client")
             return created_client["client_id"], created_client["client_secret"]
 
     raise RuntimeError(
-        f"fidesops oauth client creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
+        f"fides oauth client creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
     )
 
 

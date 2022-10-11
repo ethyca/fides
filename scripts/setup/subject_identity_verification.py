@@ -3,7 +3,7 @@ import requests
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
-import constants
+import setup.constants as constants
 
 
 logger = logging.getLogger(__name__)
@@ -23,5 +23,5 @@ def verify_subject_identity(
     )
     if not response.ok:
         raise RuntimeError(
-            f"fidesops privacy request verification failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides privacy request verification failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
