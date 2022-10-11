@@ -77,7 +77,7 @@ jobs:
         node-version: [16.x]
     defaults:
       run:
-        working-directory: clients/ops/privacy-center
+        working-directory: clients/privacy-center
     steps:
       - name: Checkout
         uses: actions/checkout@v3
