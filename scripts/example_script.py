@@ -14,7 +14,7 @@ try:
     check_health()
 except RuntimeError:
     print(
-        f"Connection error. Please ensure Fides is healthy and running at {constants.FIDESOPS_URL}."
+        f"Connection error. Please ensure Fides is healthy and running at {constants.FIDES_URL}."
     )
 
 auth_header = get_auth_header()
