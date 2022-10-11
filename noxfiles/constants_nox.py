@@ -50,6 +50,12 @@ RUN = (
     "docker",
     "compose",
     "run",
+    "-e",
+    "VAULT_ADDR",
+    "-e",
+    "VAULT_NAMESPACE",
+    "-e",
+    "VAULT_TOKEN",
     "--rm",
     *ANALYTICS_ID_OVERRIDE,
     *ANALYTICS_OPT_OUT,
@@ -67,7 +73,6 @@ RUN_NO_DEPS = (
     IMAGE_NAME,
 )
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
-START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker",
     "compose",
