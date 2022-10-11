@@ -13,10 +13,10 @@ from typing import Optional
 import requests
 import yaml
 
-from fides.ctl.core.config import get_config
 from fides.api.ops.api.v1 import urn_registry as ops_urls
 from fides.api.ops.models.connectionconfig import ConnectionType
 from fides.api.ops.models.policy import ActionType
+from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

@@ -1,13 +1,12 @@
 import logging
-import requests
+import secrets
 import uuid
 from typing import Dict
 
-from fides.api.ops.api.v1 import urn_registry as urls
-
+import requests
 import setup.constants as constants
-import secrets
 
+from fides.api.ops.api.v1 import urn_registry as urls
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

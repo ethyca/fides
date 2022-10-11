@@ -8,7 +8,6 @@ from setup.postgres_connector import create_postgres_connector
 from setup.stripe_connector import create_stripe_connector
 from setup.user import create_user
 
-
 print("Running an example Fides configuration script...")
 
 try:
