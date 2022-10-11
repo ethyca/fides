@@ -70,7 +70,7 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
-            "icon": None,
+            "encoded_icon": None,
         } in data
         first_saas_type = saas_template_registry.connector_types().pop()
         first_saas_template = saas_template_registry.get_connector_template(
@@ -80,7 +80,7 @@ class TestGetConnections:
             "identifier": first_saas_type,
             "type": SystemType.saas.value,
             "human_readable": first_saas_template.human_readable,
-            "icon": encode_file_contents(first_saas_template.icon),
+            "encoded_icon": encode_file_contents(first_saas_template.icon),
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -111,7 +111,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
             for saas_template in expected_saas_templates
         ]
@@ -137,7 +137,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
             for saas_template in expected_saas_templates
         ]
@@ -153,13 +153,13 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
-            "icon": None,
+            "encoded_icon": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
-            "icon": None,
+            "encoded_icon": None,
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data
@@ -187,7 +187,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
             for saas_template in expected_saas_types
         ]
@@ -202,7 +202,7 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
-            "icon": None,
+            "encoded_icon": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -222,7 +222,7 @@ class TestGetConnections:
                 "identifier": saas_template[0],
                 "type": SystemType.saas.value,
                 "human_readable": saas_template[1].human_readable,
-                "icon": encode_file_contents(saas_template[1].icon),
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
             for saas_template in expected_saas_types
         ]
@@ -236,13 +236,13 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
-            "icon": None,
+            "encoded_icon": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
-            "icon": None,
+            "encoded_icon": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -311,7 +311,7 @@ class TestGetConnections:
                 "identifier": "manual_webhook",
                 "type": "manual",
                 "human_readable": "Manual Webhook",
-                "icon": None,
+                "encoded_icon": None,
             }
         ]
 

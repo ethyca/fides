@@ -63,7 +63,7 @@ class ConnectionSystemTypeMap(BaseModel):
     identifier: Union[ConnectionType, str]
     type: SystemType
     human_readable: str
-    icon: Optional[str]
+    encoded_icon: Optional[str]
 
     class Config:
         """Use enum values and set orm mode"""

@@ -91,7 +91,7 @@ def get_connection_types(
                     identifier=item,
                     type=SystemType.saas,
                     human_readable=connector_template.human_readable,
-                    icon=encode_file_contents(connector_template.icon),
+                    encoded_icon=encode_file_contents(connector_template.icon),
                 )
             )
 
