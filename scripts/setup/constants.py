@@ -6,6 +6,12 @@ BASE_URL = FIDESOPS_URL + urls.V1_URL_PREFIX
 ACCESS_POLICY_KEY = "access"
 ERASURE_POLICY_KEY = "erasure"
 
+MONGO_SERVER = "mongodb_example"
+MONGO_USER = "mongo_user"
+MONGO_PASSWORD = "mongo_pass"
+MONGO_PORT = 27017
+MONGO_DB = "mongo_test"
+
 # These are external datastores so don't read them from the config
 POSTGRES_SERVER = "host.docker.internal"
 # POSTGRES_SERVER = "postgres_example"

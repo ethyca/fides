@@ -2,7 +2,6 @@ import logging
 import requests
 from typing import Dict
 
-from fides.api.ops.api.v1 import urn_registry as urls
 from database_connector import (
     create_database_connector,
     update_database_connector_secrets,
@@ -16,29 +15,29 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def create_postgres_connector(
+def create_mongodb_connector(
     auth_header: Dict[str, str],
-    key: str = "postgres_connector",
+    key: str = "mongodb_connector",
     verify: bool = True,
 ):
     create_database_connector(
         auth_header=auth_header,
         key=key,
-        connection_type="postgres",
+        connection_type="mongodb",
     )
     update_database_connector_secrets(
         auth_header=auth_header,
         key=key,
         secrets={
-            "host": constants.POSTGRES_SERVER,
-            "port": constants.POSTGRES_PORT,
-            "dbname": constants.POSTGRES_DB_NAME,
-            "username": constants.POSTGRES_USER,
-            "password": constants.POSTGRES_PASSWORD,
+            "host": constants.MONGO_SERVER,
+            "port": constants.MONGO_PORT,
+            "defaultauthdb": constants.MONGO_DB,
+            "username": constants.MONGO_USER,
+            "password": constants.MONGO_PASSWORD,
         },
         verify=verify,
     )
     create_dataset(
         connection_key=key,
-        yaml_path="data/dataset/postgres_example_test_dataset.yml",
+        yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )
