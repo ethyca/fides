@@ -8,7 +8,6 @@ from fides.api.ops.api.v1 import urn_registry as urls
 
 import setup.constants as constants
 
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
@@ -21,6 +20,19 @@ def create_user(
     """Adds a user with full permissions"""
     if not username:
         username = str(uuid.uuid4())
+
+    login_response = requests.post(
+        f"{constants.BASE_URL}{urls.LOGIN}",
+        headers=auth_header,
+        json={
+            "username": username,
+            "password": password,
+        },
+    )
+
+    if login_response.ok:
+        logger.info(f"Successfully logged in as {username}")
+        return
 
     response = requests.post(
         f"{constants.BASE_URL}{urls.USERS}",
@@ -43,7 +55,7 @@ def create_user(
     user_permissions_url = urls.USER_PERMISSIONS.format(user_id=user_id)
     response = requests.put(
         f"{constants.BASE_URL}{user_permissions_url}",
-        headers=constants.auth_header,
+        headers=auth_header,
         json={
             "id": user_id,
             "scopes": SCOPE_REGISTRY,
