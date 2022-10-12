@@ -26,6 +26,7 @@ def get_current_image() -> str:
         nox.param("dev", id="dev"),
         nox.param("test", id="test"),
         nox.param("ui", id="ui"),
+        nox.param("pc", id="pc"),
     ],
 )
 def build(session: nox.Session, image: str) -> None:
