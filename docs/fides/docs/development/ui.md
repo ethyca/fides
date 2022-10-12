@@ -17,7 +17,7 @@ additional [user endpoints](#managing-users).
 From the root `fidesops` directory, run the following:
 
 ``` sh
-    cd clients/ops/admin-ui
+    cd clients/admin-ui
     npm install
     npm run dev
 ```
@@ -43,7 +43,7 @@ Fidesops automatically serves a version of the UI when running `nox -s dev`.
 To deploy a full version of the UI from a backend, run the following from the root fidesops directory:
 
 ```sh
-    cd clients/ops/admin-ui
+    cd clients/admin-ui
     npm install
     npm run prod-export
 ```

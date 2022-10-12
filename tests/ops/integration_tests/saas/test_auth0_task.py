@@ -11,6 +11,8 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
+
 
 @pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
@@ -108,8 +110,8 @@ async def test_auth0_erasure_request_task(
     merged_graph = auth0_dataset_config.get_graph()
     graph = DatasetGraph(merged_graph)
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = True
     v = await graph_task.run_access_request(
         privacy_request,
         policy,
@@ -164,4 +166,4 @@ async def test_auth0_erasure_request_task(
     user = user_response.json()
     assert user[0]["name"] == "MASKED"
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking

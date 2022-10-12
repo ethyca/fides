@@ -45,7 +45,7 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
       backgroundColor={backgroundColor}
       justifyContent="center"
     >
-      <Flex mb="24px" mt="24px" mr="35px" ml="35px">
+      <Flex mb="24px" mt="24px" mr="35px" ml="35px" width="100%">
         <Box width="100%" pr="60px">
           <Text
             fontSize="lg"

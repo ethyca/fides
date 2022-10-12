@@ -243,3 +243,14 @@ saas_config:
                   field: users.list_ids
                   direction: from
               unpack: True
+    - name: people
+      requests:
+        delete:
+          method: POST
+          path: /api/1/people/delete_jobs
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email

@@ -3,7 +3,12 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fides.api.ops.graph.config import CollectionAddress, FieldAddress
+from fides.api.ops.graph.config import (
+    CollectionAddress,
+    FieldAddress,
+    FieldPath,
+    ScalarField,
+)
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import (
@@ -89,7 +94,11 @@ def test_saas_config_to_dataset(saas_example_connection_config: ConnectionConfig
     # convert endpoint references to dataset references to be able to hook SaaS connectors into the graph traversal
     saas_config = SaaSConfig(**saas_example_connection_config.saas_config)
     saas_dataset = saas_config.get_graph(saas_example_connection_config.secrets)
-    messages_collection = saas_dataset.collections[0]
+    # messages
+    messages_collection = next(
+        col for col in saas_dataset.collections if col.name == "messages"
+    )
+
     conversation_id_field = messages_collection.fields[0]
     conversations_reference = conversation_id_field.references[0]
     field_address, direction = conversations_reference
@@ -110,6 +119,10 @@ def test_saas_config_to_dataset(saas_example_connection_config: ConnectionConfig
     assert field_address == FieldAddress(saas_config.fides_key, "conversations", "id")
     assert direction == "from"
 
+    member_collection = next(
+        col for col in saas_dataset.collections if col.name == "member"
+    )
+    query_field = member_collection.fields[0]
     assert query_field.name == "email"
     assert query_field.identity == "email"
 
@@ -121,27 +134,39 @@ def test_saas_config_to_dataset(saas_example_connection_config: ConnectionConfig
     )
     assert customer_id_reference_direction == "from"
 
-    user_collection = saas_dataset.collections[5]
-    assert user_collection.after == {
+    # users
+    users_collection = next(
+        col for col in saas_dataset.collections if col.name == "users"
+    )
+    org_slug_reference, direction = users_collection.fields[0].references[0]
+    assert users_collection.after == {
         CollectionAddress("saas_connector_example", "projects")
     }
-    assert user_collection.grouped_inputs == {
+    assert users_collection.grouped_inputs == {
         "organization_slug",
         "project_slug",
         "query",
     }
-
-    org_slug_reference, direction = user_collection.fields[0].references[0]
     assert org_slug_reference == FieldAddress(
         saas_config.fides_key, "projects", "organization", "slug"
     )
     assert direction == "from"
 
-    project_slug_reference, direction = user_collection.fields[1].references[0]
+    project_slug_reference, direction = users_collection.fields[1].references[0]
     assert project_slug_reference == FieldAddress(
         saas_config.fides_key, "projects", "slug"
     )
     assert direction == "from"
+
+    # assert that delete-only endpoints generate a collection with
+    # a single primary key identity field as a placeholder
+    people_collection = next(
+        col for col in saas_dataset.collections if col.name == "people"
+    )
+    people_id_field = people_collection.field(FieldPath("placeholder"))
+    assert people_id_field == ScalarField(
+        name="placeholder", identity="email", primary_key="True"
+    )
 
 
 @pytest.mark.unit_saas

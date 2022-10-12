@@ -17,6 +17,15 @@ The types of changes are:
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
 
+### Added
+* Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
+
+### Docs
+
+* Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+
+## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
+
 ### Deprecated
 
 * Added a deprecation warning for the entire package [#1244](https://github.com/ethyca/fides/pull/1244)
@@ -25,6 +34,13 @@ The types of changes are:
 
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
+
+### Fixed
+* Privacy Center:
+  * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
+  * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
+  * Redirect to index on consent save [#1238](https://github.com/ethyca/fides/pull/1238)
+
 
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 

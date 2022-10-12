@@ -6,6 +6,7 @@ from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
+    Field,
     FieldAddress,
     ScalarField,
 )
@@ -311,26 +312,45 @@ class SaaSConfig(SaaSConfigBase):
     def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
-        for endpoint in self.endpoints:
-            fields = []
-            for param in endpoint.requests["read"].param_values or []:
-                if param.references:
-                    references = []
-                    for reference in param.references:
-                        if isinstance(reference, str):
-                            reference = FidesopsDatasetReference.parse_obj(
-                                secrets[reference]
+        for endpoint in self.endpoints:  # pylint: disable=too-many-nested-blocks
+            fields: List[Field] = []
+            read_request = endpoint.requests.get("read")
+            delete_request = endpoint.requests.get("delete")
+            if read_request:
+                for param in read_request.param_values or []:
+                    if param.references:
+                        references = []
+                        for reference in param.references:
+                            if isinstance(reference, str):
+                                reference = FidesopsDatasetReference.parse_obj(
+                                    secrets[reference]
+                                )
+                            first, *rest = reference.field.split(".")
+                            references.append(
+                                (
+                                    FieldAddress(reference.dataset, first, *rest),
+                                    reference.direction,
+                                )
                             )
-                        first, *rest = reference.field.split(".")
-                        references.append(
-                            (
-                                FieldAddress(reference.dataset, first, *rest),
-                                reference.direction,
-                            )
+                        fields.append(
+                            ScalarField(name=param.name, references=references)
                         )
-                    fields.append(ScalarField(name=param.name, references=references))
-                if param.identity:
-                    fields.append(ScalarField(name=param.name, identity=param.identity))
+                    if param.identity:
+                        fields.append(
+                            ScalarField(name=param.name, identity=param.identity)
+                        )
+            elif delete_request:
+                # The preferred way to build the graph for a SaaS connector is to convert
+                # a read requests' param_values into identity and dataset references.
+                # If the endpoint only specifies a delete request without a read,
+                # then we must create a single placeholder field for the graph traversal
+                # to still visit this delete-only collection and call the delete request.
+                fields.append(
+                    ScalarField(
+                        name="placeholder", identity="email", primary_key="True"
+                    )
+                )
+
             if fields:
                 grouped_inputs: Optional[Set[str]] = set()
                 if endpoint.requests.get("read"):
@@ -351,6 +371,28 @@ class SaaSConfig(SaaSConfigBase):
             collections=collections,
             connection_key=super().fides_key_prop,
         )
+
+    @staticmethod
+    def _process_param_values(
+        fields: List[Field], param_values: Optional[List[ParamValue]]
+    ) -> None:
+        """
+        Converts param values to dataset fields with identity and dataset references
+        """
+        for param in param_values or []:
+            if param.references:
+                references = []
+                for reference in param.references:
+                    first, *rest = reference.field.split(".")
+                    references.append(
+                        (
+                            FieldAddress(reference.dataset, first, *rest),
+                            reference.direction,
+                        )
+                    )
+                fields.append(ScalarField(name=param.name, references=references))
+            if param.identity:
+                fields.append(ScalarField(name=param.name, identity=param.identity))
 
 
 class SaaSConfigValidationDetails(BaseSchema):

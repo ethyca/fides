@@ -11,6 +11,8 @@ from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+CONFIG = get_config()
+
 
 @pytest.mark.skip(reason="Only staging credentials available")
 @pytest.mark.integration_saas
@@ -171,8 +173,8 @@ async def test_adobe_campaign_saas_erasure_request_task(
     adobe_campaign_erasure_data,
 ) -> None:
     """Full erasure request based on the Adobe Campaign SaaS config"""
-    masking_strict = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow GDPR Delete
+    masking_strict = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow GDPR Delete
 
     # Create user for GDPR delete
     erasure_email = adobe_campaign_erasure_identity_email
@@ -311,4 +313,4 @@ async def test_adobe_campaign_saas_erasure_request_task(
         "adobe_instance:marketing_history": 0,
     }
 
-    config.execution.masking_strict = masking_strict  # Reset
+    CONFIG.execution.masking_strict = masking_strict  # Reset

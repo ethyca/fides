@@ -5,10 +5,15 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 
+from fides.api.ops.graph.graph import Node
+from fides.api.ops.graph.traversal import TraversalNode
+from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from src.fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
 @pytest.mark.unit_saas
@@ -116,6 +121,29 @@ class TestSaasConnector:
 
         unwrapped = SaaSConnector._unwrap_response_data(fake_request, fake_response)
         assert response_body == unwrapped
+
+    def test_delete_only_endpoint(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Uses the SaaS example connector which contains an endpoint
+        that only contains a delete request and no read request.
+        """
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "people"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            traversal_node, Policy(), PrivacyRequest(id="123"), {}
+        ) == [{}]
 
 
 @pytest.mark.integration_saas
