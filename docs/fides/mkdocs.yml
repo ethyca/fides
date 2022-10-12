@@ -87,7 +87,8 @@ nav:
       - Fideslog Analytics: development/fideslog.md
       - Database Migration: development/database_migration.md
       - Documentation: development/documentation.md
-      - Testing: development/testing.md
+      - Writing Tests: development/testing.md
+      - Testing Environment: development/testing_environment.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
       - Jetbrains Debugging: development/jetbrains_debugging.md
