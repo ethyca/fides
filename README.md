@@ -37,10 +37,10 @@ This guide will walk through generating a mock RoPA using predefined resources i
 2. From the root fides directory, run the following commands:
 
     ```
-    nox -s dev
+    nox -s dev -- shell
     ```
 
-    This will spin up the entire project and open a shell within the `fidesctl` container.
+    This will spin up the entire project and open a shell within the `fides` container.
 
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
