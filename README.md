@@ -11,8 +11,6 @@
 
 ![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
 
- _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_
-
 ## :zap: Overview
 
 Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).

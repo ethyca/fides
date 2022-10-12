@@ -41,22 +41,32 @@ def build(session: nox.Session, image: str) -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
-    target = build_matrix[image]["target"]
-    tag = build_matrix[image]["tag"]
-    build_command = (
-        "docker",
-        "build",
-        f"--target={target}",
-        "--platform",
-        docker_platforms[machine_type],
-        "--tag",
-        tag(),
-        ".",
-    )
-    if "nocache" in session.posargs:
-        build_command = (*build_command, "--no-cache")
+    if image == "pc":
+        session.run(
+            "docker",
+            "build",
+            "clients/privacy-center",
+            "--tag",
+            "ethyca/fides-privacy-center:local",
+            external=True,
+        )
+    else:
+        target = build_matrix[image]["target"]
+        tag = build_matrix[image]["tag"]
+        build_command = (
+            "docker",
+            "build",
+            f"--target={target}",
+            "--platform",
+            docker_platforms[machine_type],
+            "--tag",
+            tag(),
+            ".",
+        )
+        if "nocache" in session.posargs:
+            build_command = (*build_command, "--no-cache")
 
-    session.run(*build_command, external=True)
+        session.run(*build_command, external=True)
 
 
 @nox.session()
