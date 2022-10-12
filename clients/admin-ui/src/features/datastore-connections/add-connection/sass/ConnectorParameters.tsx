@@ -118,7 +118,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         const payload = await createSassConnectionConfig(params).unwrap();
         dispatch(setConnection(payload.connection));
         successAlert(`Connector successfully added!`);
-        if (onConnectionCreated) onConnectionCreated();
+        onConnectionCreated?.();
       }
     } catch (error) {
       handleError(error);

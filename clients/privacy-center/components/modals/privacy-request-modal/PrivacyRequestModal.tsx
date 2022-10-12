@@ -77,7 +77,9 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
 
-  if (!action) return null;
+  if (!action) {
+    return null;
+  }
 
   let form = null;
 

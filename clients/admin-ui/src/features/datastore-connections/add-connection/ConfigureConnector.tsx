@@ -81,7 +81,9 @@ const ConfigureConnector: React.FC = () => {
           ? ConfigurationSettings.DATASET_CONFIGURATION
           : ConfigurationSettings.DSR_CUSTOMIZATION
       );
-      if (canRedirect) setCanRedirect(false);
+      if (canRedirect) {
+        setCanRedirect(false);
+      }
     }
   }, [
     canRedirect,
