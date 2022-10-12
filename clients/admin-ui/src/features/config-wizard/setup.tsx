@@ -19,7 +19,7 @@ const Setup = ({ wizardStep }: Props) => {
         <Image
           boxSize="100%"
           objectFit="cover"
-          src="/config_splash.svg"
+          src="/images/config_splash.svg"
           alt="Data Map"
         />
       </Container>
