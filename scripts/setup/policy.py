@@ -31,7 +31,9 @@ def create_policy(
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created or updated fides policy with key=%s via /api/v1/policy", key)
+            logger.info(
+                "Created or updated fides policy with key=%s via /api/v1/policy", key
+            )
             return
 
     raise RuntimeError(

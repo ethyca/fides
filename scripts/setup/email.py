@@ -39,7 +39,9 @@ def create_email_integration(
             raise RuntimeError(
                 f"fides email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
-        logger.info(f"fides email config is already created. Using the existing config.")
+        logger.info(
+            f"fides email config is already created. Using the existing config."
+        )
         return
 
     # Now add secrets
