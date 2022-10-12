@@ -501,8 +501,8 @@ if __name__ == "__main__":
     # via ENV vars or similar, but we've inlined everything here for simplicity
     FIDESOPS_URL = "http://fides:8080"
     FIDESOPS_V1_API_URL = f"{FIDESOPS_URL}{ops_urls.V1_URL_PREFIX}"
-    ROOT_CLIENT_ID = "fidesopsadmin"
-    ROOT_CLIENT_SECRET = "fidesopsadminsecret"
+    ROOT_CLIENT_ID = "fidesadmin"
+    ROOT_CLIENT_SECRET = "fidesadminsecret"
 
     POSTGRES_SERVER = "host.docker.internal"
     POSTGRES_USER = "postgres"
