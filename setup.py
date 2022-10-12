@@ -17,9 +17,14 @@ dev_requires = open("dev-requirements.txt", encoding="utf-8").read().strip().spl
 optional_requires = (
     open("optional-requirements.txt", encoding="utf-8").read().strip().split("\n")
 )
+dangerous_requires = (
+    open("dangerous-requirements.txt", encoding="utf-8").read().strip().split("\n")
+)
 
 
-def optional_requirements(dependency_names: List[str]) -> List[str]:
+def optional_requirements(
+    dependency_names: List[str], requires: List[str] = optional_requires
+) -> List[str]:
     """
     Matches the provided dependency names to lines in `optional-requirements.txt`,
     and returns the full dependency string for each one.
@@ -30,7 +35,7 @@ def optional_requirements(dependency_names: List[str]) -> List[str]:
     requirements: List[str] = []
 
     for dependency in dependency_names:
-        for optional_dependency in optional_requires:
+        for optional_dependency in requires:
             if optional_dependency.startswith(dependency):
                 requirements.append(optional_dependency)
                 break
@@ -47,7 +52,7 @@ extras = {
     "aws": optional_requirements(["boto3"]),
     "bigquery": optional_requirements(["sqlalchemy-bigquery"]),
     "mongo": optional_requirements(["pymongo"]),
-    "mssql": optional_requirements(["pyodbc"]),
+    "mssql": optional_requirements(["pyodbc"], dangerous_requires),
     "mysql": optional_requirements(["PyMySQL"]),
     "okta": optional_requirements(["okta"]),
     "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),

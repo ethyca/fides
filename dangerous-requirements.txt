@@ -1,0 +1,5 @@
+# This file exists for caching optional dependencies within the Docker build
+# These requirements will cause build failures on ARM platforms
+
+# MSSQL
+pyodbc==4.0.34

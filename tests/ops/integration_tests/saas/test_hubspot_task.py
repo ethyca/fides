@@ -14,6 +14,8 @@ from tests.ops.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exi
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
+CONFIG = get_config()
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
@@ -169,8 +171,8 @@ async def test_saas_erasure_request_task(
         keys=["recipient", "subscriptionStatuses"],
     )
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow delete
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow delete
     erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -180,7 +182,7 @@ async def test_saas_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking
 
     # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
     assert erasure == {
