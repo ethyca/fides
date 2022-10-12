@@ -17,14 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
 
+### Added
+* Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
+
 ### Developer Experience
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
-
-## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
-
-### Added
-* Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 
 ### Docs
 
