@@ -99,9 +99,7 @@ def get_connections(
     disabled: Optional[bool] = None,
     test_status: Optional[TestStatus] = None,
     system_type: Optional[SystemType] = None,
-    connection_type: Optional[List[ConnectionType]] = Query(
-        default=None
-    ),  # type:ignore
+    connection_type: Optional[List[str]] = Query(default=None),  # type: ignore
 ) -> AbstractPage[ConnectionConfig]:
     """Returns all connection configurations in the database.
     Optionally filter the key, name, and description with a search query param.
@@ -110,7 +108,8 @@ def get_connections(
 
     Connection_type supports "or" filtering:
     ?connection_type=postgres&connection_type=mongo will be translated
-    into an "or" query.
+    into an "or" query. This parameter can also be used to filter by specific
+    SaaS connector types.
     """
     logger.info(
         "Finding connection configurations with pagination params %s and search query: '%s'.",
@@ -129,7 +128,23 @@ def get_connections(
         )
 
     if connection_type:
-        query = query.filter(ConnectionConfig.connection_type.in_(connection_type))
+        connection_types = []
+        saas_connection_types = []
+        for ct in connection_type:
+            ct = ct.lower()
+            try:
+                ct = ConnectionType(ct)
+                connection_types.append(ct)
+            except ValueError:
+                # if not a ConnectionType enum, assume it's
+                # a SaaS type, since those are dynamic
+                saas_connection_types.append(ct)
+        query = query.filter(
+            or_(
+                ConnectionConfig.connection_type.in_(connection_types),
+                ConnectionConfig.saas_config["type"].astext.in_(saas_connection_types),
+            )
+        )
 
     if disabled is not None:
         query = query.filter(ConnectionConfig.disabled == disabled)

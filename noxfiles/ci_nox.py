@@ -244,6 +244,7 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
+        session.run(*START_APP, external=True)
         run_command = (
             "docker-compose",
             "run",
