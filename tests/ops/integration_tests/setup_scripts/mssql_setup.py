@@ -36,4 +36,7 @@ def mssql_setup():
 
 
 if __name__ == "__main__":
-    mssql_setup()
+    try:
+        mssql_setup()
+    except ModuleNotFoundError:
+        print("MSSQL Drivers not installed, skipping setup...")

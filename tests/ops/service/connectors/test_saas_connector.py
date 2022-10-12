@@ -13,6 +13,7 @@ from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from src.fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
 @pytest.mark.unit_saas

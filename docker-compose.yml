@@ -61,7 +61,7 @@ services:
       - "3001:3000"
     volumes:
       - type: bind
-        source: ./clients/ops/privacy-center/config
+        source: ./clients/privacy-center/config
         target: /app/config
         read_only: False
 
@@ -89,7 +89,8 @@ services:
 
   docs:
     build:
-      context: docs/fides/
+      context: .
+      dockerfile: docs/fides/Dockerfile
     volumes:
       - ./docs/fides:/docs
       - ./:/fides

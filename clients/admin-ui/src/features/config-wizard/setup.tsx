@@ -1,6 +1,5 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
-import React from "react";
 
 interface Props {
   wizardStep: Function;
@@ -19,15 +18,21 @@ const Setup = ({ wizardStep }: Props) => {
       >
         <Image
           boxSize="100%"
-          // fallback={}
-          objectFit="fill"
-          // src=""
+          objectFit="cover"
+          src="/images/config_splash.svg"
           alt="Data Map"
         />
       </Container>
 
       <main>
-        <Stack px={9} py={10} spacing={6}>
+        <Stack
+          px={9}
+          py={10}
+          spacing={6}
+          position="absolute"
+          top="10%"
+          width="50%"
+        >
           <Heading as="h3" size="lg">
             Get Started
           </Heading>
