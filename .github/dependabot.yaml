@@ -9,7 +9,7 @@ updates:
       - python
       - dependabot
   - package-ecosystem: npm
-    directory: "/clients/ops/admin-ui"
+    directory: "/clients/admin-ui"
     schedule:
       interval: weekly
     labels:
@@ -17,7 +17,7 @@ updates:
       - javascript
       - dependabot
   - package-ecosystem: npm
-    directory: "/clients/ops/privacy-center"
+    directory: "/clients/privacy-center"
     schedule:
       interval: weekly
     labels:

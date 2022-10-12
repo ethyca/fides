@@ -42,7 +42,7 @@ def build(session: nox.Session, image: str) -> None:
         session.run(
             "docker",
             "build",
-            "clients/ops/privacy-center",
+            "clients/privacy-center",
             "--tag",
             "ethyca/fides-privacy-center:local",
             external=True,
