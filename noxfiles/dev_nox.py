@@ -54,7 +54,7 @@ def test_env(session: nox.Session) -> None:
     build(session, "privacy_center")
 
     # Run the quickstart to seed data
-    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True, run_create_test_data=True)
     input("Quickstart complete, press any key to continue...")
     teardown(session)
 
