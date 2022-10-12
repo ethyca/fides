@@ -23,8 +23,8 @@ def get_current_image() -> str:
         nox.param("prod", id="prod"),
         nox.param("dev", id="dev"),
         nox.param("test", id="test"),
-        nox.param("ui", id="ui"),
-        nox.param("pc", id="pc"),
+        nox.param("admin_ui", id="admin-ui"),
+        nox.param("privacy_center", id="privacy-center"),
     ],
 )
 def build(session: nox.Session, image: str) -> None:
@@ -36,7 +36,7 @@ def build(session: nox.Session, image: str) -> None:
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
-        "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
+        "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
     if image == "pc":
         session.run(

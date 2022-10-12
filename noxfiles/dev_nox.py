@@ -17,11 +17,11 @@ def dev(session: nox.Session) -> None:
     ] or None
 
     if "ui" in session.posargs:
-        build(session, "ui")
+        build(session, "admin_ui")
         session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
 
     if "pc" in session.posargs:
-        build(session, "pc")
+        build(session, "privacy_center")
         session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
 
     open_shell = "shell" in session.posargs
