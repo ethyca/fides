@@ -11,12 +11,10 @@ from fides.api.ops.api.v1 import urn_registry as urls
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-STRIPE_KEY = "stripe"
-
 
 def create_stripe_connector(
     auth_header: Dict[str, str],
-    key: str = STRIPE_KEY,
+    key: str = "stripe",
 ):
     if not key:
         key = str(uuid.uuid4())
@@ -29,7 +27,7 @@ def create_stripe_connector(
         # No need to create a new connector for the given key
         return
 
-    path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type=STRIPE_KEY)
+    path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type="stripe")
     url = f"{constants.BASE_URL}{path}"
     response = requests.post(
         url,
