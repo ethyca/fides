@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 def configure_s3_storage(
     auth_header: Dict[str, str],
-    key: str = "s3_storage",
+    key: str = constants.STORAGE_KEY,
     policy_key: str = constants.ACCESS_POLICY_KEY,
 ):
     logger.info(f"Configuring S3 storage for policy {policy_key}")

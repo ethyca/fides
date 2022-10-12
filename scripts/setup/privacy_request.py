@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 
 import requests
 import setup.constants as constants
