@@ -6,6 +6,7 @@ import setup.constants as constants
 import setup.secrets as secrets
 
 from fides.api.ops.api.v1 import urn_registry as urls
+from setup.policy import create_policy
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +56,7 @@ def configure_s3_storage(
             "aws_access_secret_id": secrets.AWS_ACCESS_SECRET_ID,
         },
     )
+    create_policy(auth_header=auth_header, key=policy_key)
 
     rule_key = f"{key}_rule"
     rule_create_data = {

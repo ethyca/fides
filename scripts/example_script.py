@@ -6,7 +6,12 @@ from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector
 from setup.postgres_connector import create_postgres_connector
 from setup.stripe_connector import create_stripe_connector
+from setup.s3_storage import configure_s3_storage
 from setup.user import create_user
+from setup.mongodb_connector import create_mongodb_connector
+from setup.policy import create_policy
+from setup.privacy_request import create_privacy_request
+from setup.subject_identity_verification import verify_subject_identity
 
 print("Running an example Fides configuration script...")
 
@@ -35,5 +40,11 @@ create_mailchimp_connector(
 create_stripe_connector(
     auth_header=auth_header,
 )
+
+create_mongodb_connector(auth_header=auth_header)
+configure_s3_storage(auth_header=auth_header)
+
+create_policy(auth_header=auth_header)
+
 
 print("Example end.")
