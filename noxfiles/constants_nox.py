@@ -81,7 +81,6 @@ START_APP_EXTERNAL = (
     "-f",
     INTEGRATION_COMPOSE_FILE,
     "up",
-    "-d",
-    IMAGE_NAME,
+    "--wait",
     COMPOSE_SERVICE_NAME,
 )

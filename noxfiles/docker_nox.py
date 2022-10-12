@@ -38,7 +38,7 @@ def build(session: nox.Session, image: str) -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
-    if image == "pc":
+    if image == "privacy_center":
         session.run(
             "docker",
             "build",

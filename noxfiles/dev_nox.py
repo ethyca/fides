@@ -1,7 +1,14 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP, START_APP_EXTERNAL
+from constants_nox import (
+    COMPOSE_SERVICE_NAME,
+    RUN,
+    START_APP,
+    START_APP_EXTERNAL,
+    RUN_NO_DEPS,
+)
+from utils_nox import teardown
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
@@ -41,18 +48,20 @@ def dev(session: nox.Session) -> None:
 @nox.session()
 def test_env(session: nox.Session) -> None:
     """Spins up a comprehensive test environment seeded with data."""
-    # TODO: Account for the automatic emulation avoidance
-    session.notify("teardown")
+    session.notify("teardown", posargs=["volumes"])
     build(session, "test")
-    build(session, "ui")
-    build(session, "pc")
+    build(session, "admin_ui")
+    build(session, "privacy_center")
 
-    session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
-    session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
+    # Run the quickstart to seed data
+    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+    input("Quickstart complete, press any key to continue...")
+    teardown(session)
 
-    # TODO: Run the example data script
-    session.run(*START_APP_EXTERNAL, external=True)
-    session.run(*RUN, "/bin/bash", external=True)
+    # Spin up the app + UI components and load ctl demo resources and a shell
+    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    session.run(*RUN_NO_DEPS, "fides", "push", "demo_resources/", external=True)
+    session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
 
 @nox.session()

@@ -1,7 +1,5 @@
 """
 This file aggregates nox commands for various development tasks.
-
-To learn more about nox, visit https://nox.thea.codes/en/stable/index.html
 """
 import sys
 
