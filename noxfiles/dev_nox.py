@@ -1,7 +1,11 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
+from constants_nox import (
+    COMPOSE_SERVICE_NAME,
+    RUN,
+    START_APP,
+)
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
@@ -44,3 +48,25 @@ def quickstart(session: nox.Session) -> None:
     build(session, "dev")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+
+
+@nox.session()
+@nox.parametrize(
+    "script_name",
+    [
+        nox.param("example_script", id="example_script"),
+    ],
+)
+def run_script(session: nox.Session, script_name: str) -> None:
+    """
+    Run a script from the scripts/ directory. This command will not run
+    the server automatically.
+    """
+    session.run(
+        "docker",
+        "compose",
+        "run",
+        COMPOSE_SERVICE_NAME,
+        "python",
+        f"/fides/scripts/{script_name}.py",
+    )
