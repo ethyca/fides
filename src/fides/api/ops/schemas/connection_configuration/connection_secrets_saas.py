@@ -5,6 +5,7 @@ from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_va
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
+from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.models.datasetconfig import validate_dataset_reference
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -16,8 +17,8 @@ from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 class SaaSSchema(BaseModel, abc.ABC):
     """
     Abstract base schema for updating SaaS connection configuration secrets.
-    Fields are added during runtime based on the connector_params in the
-    passed in saas_config"""
+    Fields are added during runtime based on the connector_params and any
+    external_references in the passed in saas_config"""
 
     @root_validator
     @classmethod
@@ -122,7 +123,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,
-                        external_reference=True,
+                        external_reference=True,  # metadata added so we can identify these secret schema fields as external references
                     ),
                 )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
@@ -165,4 +166,8 @@ def validate_saas_secrets_external_references(
         dataset_reference: FidesopsDatasetReference = getattr(
             connection_secrets, external_reference
         )
+        if dataset_reference.direction == "to":
+            raise ValidationError(
+                "External references can only have a direction of 'from', found 'to'"
+            )
         validate_dataset_reference(db, dataset_reference)

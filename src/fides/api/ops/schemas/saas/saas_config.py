@@ -159,6 +159,10 @@ class SaaSRequest(BaseModel):
                         if isinstance(param.references[0], FidesopsDatasetReference):
                             collect = param.references[0].field.split(".")[0]
                             referenced_collections.append(collect)
+                        else:
+                            raise ValueError(
+                                "Grouped inputs do not currently support external dataset references"
+                            )
 
             if len(set(referenced_collections)) != 1:
                 raise ValueError(
@@ -312,7 +316,7 @@ class SaaSConfig(SaaSConfigBase):
     def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
-        for endpoint in self.endpoints:  # pylint: disable=too-many-nested-blocks
+        for endpoint in self.endpoints:
             fields: List[Field] = []
             read_request = endpoint.requests.get("read")
             delete_request = endpoint.requests.get("delete")
@@ -321,10 +325,9 @@ class SaaSConfig(SaaSConfigBase):
                     if param.references:
                         references = []
                         for reference in param.references:
-                            if isinstance(reference, str):
-                                reference = FidesopsDatasetReference.parse_obj(
-                                    secrets[reference]
-                                )
+                            reference = SaaSConfig.resolve_param_reference(
+                                reference, secrets
+                            )  # resolve the param reference in case it's an external reference
                             first, *rest = reference.field.split(".")
                             references.append(
                                 (
@@ -371,6 +374,24 @@ class SaaSConfig(SaaSConfigBase):
             collections=collections,
             connection_key=super().fides_key_prop,
         )
+
+    @staticmethod
+    def resolve_param_reference(
+        reference: Union[str, FidesopsDatasetReference], secrets: Dict[str, Any]
+    ) -> FidesopsDatasetReference:
+        """
+        If needed, resolves the given `reference` using the provided `secrets` `dict`.
+        For ease of use, the given `reference` can either be a `str` or `FidesopsDatasetReference`,
+        since a `ParamValue`'s `reference` may be of either type.
+
+        If the `reference` is a `str`, then it's used as a key look up a value in the provided secrets dict,
+        and a `FidesopsDatasetReference` is created and returned from the retrieved secrets object.
+
+        If the `reference` is a `FidesopsDatasetReference`, then it's just returned as-is.
+        """
+        if isinstance(reference, str):
+            reference = FidesopsDatasetReference.parse_obj(secrets[reference])
+        return reference
 
     @staticmethod
     def _process_param_values(

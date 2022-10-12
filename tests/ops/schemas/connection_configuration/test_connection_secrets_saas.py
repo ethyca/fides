@@ -46,7 +46,9 @@ class TestSaaSConnectionSecrets:
             for connector_param in (
                 saas_config.connector_params + saas_config.external_references
             )
-            if isinstance(connector_param, ExternalDatasetReference)
+            if isinstance(
+                connector_param, ExternalDatasetReference
+            )  # external refs are required
             or not connector_param.default_value
         ]
         assert (

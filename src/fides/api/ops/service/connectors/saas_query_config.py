@@ -13,7 +13,7 @@ from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
-from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util import saas_util
@@ -162,6 +162,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             param_value.connector_param
             for param_value in current_request.param_values or []
         ]
+
+        # add external references used in the request, as their values
+        # are stored in secrets
         param_names.extend(
             [
                 external_reference
@@ -171,7 +174,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                     if param_value.references
                 ]
                 for external_reference in reference_list
-                if isinstance(external_reference, str)
+                if isinstance(
+                    external_reference, str
+                )  # str references are external references
             ]
         )
         return {
@@ -294,12 +299,15 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values: Dict[str, Any] = {}
         for param_value in saas_request.param_values or []:
             if param_value.references:
+                # we resolve the param reference here for consistency,
+                # i.e. as if it may be a pointer to an `external_reference`.
+                # however, `references` in update requests can, currently, only reference
+                # the same collection the same collection, and so it is highly unlikely
+                # that this would be an external reference at this point.
                 reference: FidesopsDatasetReference = (
-                    FidesopsDatasetReference.parse_obj(
-                        pydash.get(self.secrets, param_value.references[0])
+                    SaaSConfig.resolve_param_reference(
+                        param_value.references[0], self.secrets
                     )
-                    if isinstance(param_value.references[0], str)
-                    else param_value.references[0]
                 )
                 param_values[param_value.name] = pydash.get(
                     collection_values, reference.field

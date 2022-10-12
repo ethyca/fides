@@ -96,7 +96,7 @@ def get_connection_secrets_schema(
         return schema
     except KeyError:
         raise NotImplementedError(
-            f"Add {connection_type} to the 'secrets_validators' mapping."
+            f"Add {connection_type} to the 'secrets_schema' mapping."
         )
 
 

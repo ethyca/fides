@@ -231,6 +231,11 @@ def convert_dataset_to_graph(
 def validate_dataset_reference(
     db: Session, dataset_reference: FidesopsDatasetReference
 ) -> None:
+    """
+    Validates that the provided FidesopsDatasetReference refers
+    to a `Dataset`, `Collection` and `Field` that actually exist in the DB.
+    Raises a `ValidationError` if not.
+    """
     dataset_config: DatasetConfig = (
         db.query(DatasetConfig)
         .filter(DatasetConfig.fides_key == dataset_reference.dataset)
@@ -244,6 +249,10 @@ def validate_dataset_reference(
         FidesopsDataset(**dataset_config.dataset), dataset_config.fides_key
     )
     collection_name, *field = dataset_reference.field.split(".")
+    if not field or not collection_name or not field[0]:
+        raise ValidationError(
+            "Dataset reference field specifications must include at least two dot-separated components"
+        )
     collection = next(
         (
             collection
@@ -256,7 +265,7 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown collection '{collection_name}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
-    collection.field(FieldPath.parse(*field))
+    field = collection.field(FieldPath.parse(*field))
     if field is None:
         raise ValidationError(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
