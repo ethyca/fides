@@ -1,5 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 import platform
+from typing import List
 
 import nox
 
@@ -18,6 +19,20 @@ def get_current_image() -> str:
     return f"{IMAGE}:{get_current_tag()}"
 
 
+def get_platform(posargs: List[str]) -> str:
+    """
+    Calculate the CPU platform or get it from the
+    positional arguments.
+    """
+    docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
+    if "amd64" in posargs:
+        return docker_platforms["amd64"]
+    elif "arm64" in posargs:
+        return docker_platforms["arm64"]
+    else:
+        return docker_platforms[platform.machine().lower()]
+
+
 @nox.session()
 @nox.parametrize(
     "image",
@@ -29,10 +44,9 @@ def get_current_image() -> str:
         nox.param("pc", id="pc"),
     ],
 )
-def build(session: nox.Session, image: str) -> None:
+def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     """Build the Docker containers."""
-    machine_type = platform.machine().lower()
-    docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
+    platform = get_platform(session.posargs)
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -59,7 +73,7 @@ def build(session: nox.Session, image: str) -> None:
             "build",
             f"--target={target}",
             "--platform",
-            docker_platforms[machine_type],
+            platform,
             "--tag",
             tag(),
             ".",
