@@ -1,9 +1,9 @@
-import requests
 from time import sleep
 
-from fides.api.ops.api.v1 import urn_registry as urls
-
+import requests
 import setup.constants as constants
+
+from fides.api.ops.api.v1 import urn_registry as urls
 
 
 def check_health(connection_retry_count: int = 0):

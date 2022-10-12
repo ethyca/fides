@@ -1,11 +1,10 @@
 import logging
-import requests
 from typing import Dict
 
-from fides.api.ops.api.v1 import urn_registry as urls
-
+import requests
 import setup.constants as constants
 
+from fides.api.ops.api.v1 import urn_registry as urls
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +31,9 @@ def create_policy(
     if response.ok:
         policies = (response.json())["succeeded"]
         if len(policies) > 0:
-            logger.info("Created fides policy with key=%s via /api/v1/policy", key)
+            logger.info(
+                "Created or updated fides policy with key=%s via /api/v1/policy", key
+            )
             return
 
     raise RuntimeError(

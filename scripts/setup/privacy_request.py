@@ -1,11 +1,10 @@
-import datetime
 import logging
+from datetime import datetime
+
 import requests
-
-from fides.api.ops.api.v1 import urn_registry as urls
-
 import setup.constants as constants
 
+from fides.api.ops.api.v1 import urn_registry as urls
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

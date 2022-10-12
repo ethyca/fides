@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def create_mailchimp_connector(
+def create_stripe_connector(
     auth_header: Dict[str, str],
-    key: str = "mailchimp",
+    key: str = "stripe",
 ):
     if not key:
         key = str(uuid.uuid4())
@@ -27,21 +27,21 @@ def create_mailchimp_connector(
         # No need to create a new connector for the given key
         return
 
-    path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type="mailchimp")
+    path = urls.SAAS_CONNECTOR_FROM_TEMPLATE.format(saas_connector_type="stripe")
     url = f"{constants.BASE_URL}{path}"
     response = requests.post(
         url,
         headers=auth_header,
         json={
-            "instance_key": f"mailchimp_instance_{key}",
-            "secrets": secrets.MAILCHIMP_SECRETS,
-            "name": f"Mailchimp Connector {key}",
-            "description": "Mailchimp ConnectionConfig description",
+            "name": f"Stripe Connector {key}",
+            "instance_key": f"stripe_instance_{key}",
+            "secrets": secrets.STRIPE_SECRETS,
+            "description": "Stripe ConnectionConfig description",
             "key": key,
         },
     )
 
     if not response.ok:
         raise RuntimeError(
-            f"fides mailchimp connector configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides Stripe connector configuration failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )

@@ -1,12 +1,12 @@
 import logging
-import requests
 from typing import Dict
 
-from fides.api.ops.api.v1 import urn_registry as urls
-
+import requests
 import setup.constants as constants
-import secrets
+import setup.secrets as secrets
+from setup.policy import create_policy
 
+from fides.api.ops.api.v1 import urn_registry as urls
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 def configure_s3_storage(
     auth_header: Dict[str, str],
-    key: str = "s3_storage",
+    key: str = constants.STORAGE_KEY,
     policy_key: str = constants.ACCESS_POLICY_KEY,
 ):
     logger.info(f"Configuring S3 storage for policy {policy_key}")
@@ -56,6 +56,7 @@ def configure_s3_storage(
             "aws_access_secret_id": secrets.AWS_ACCESS_SECRET_ID,
         },
     )
+    create_policy(auth_header=auth_header, key=policy_key)
 
     rule_key = f"{key}_rule"
     rule_create_data = {

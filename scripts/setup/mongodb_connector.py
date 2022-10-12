@@ -1,15 +1,13 @@
 import logging
-import requests
 from typing import Dict
 
+import requests
+import setup.constants as constants
 from setup.database_connector import (
     create_database_connector,
     update_database_connector_secrets,
 )
 from setup.dataset import create_dataset
-
-import setup.constants as constants
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +36,7 @@ def create_mongodb_connector(
         verify=verify,
     )
     create_dataset(
+        auth_header=auth_header,
         connection_key=key,
         yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )

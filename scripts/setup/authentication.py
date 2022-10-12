@@ -1,12 +1,11 @@
 import logging
-import requests
 from typing import List, Optional
 
-from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
-from fides.api.ops.api.v1 import urn_registry as urls
-
+import requests
 import setup.constants as constants
 
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
