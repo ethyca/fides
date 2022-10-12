@@ -27,10 +27,9 @@ def get_platform(posargs: List[str]) -> str:
     docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
     if "amd64" in posargs:
         return docker_platforms["amd64"]
-    elif "arm64" in posargs:
+    if "arm64" in posargs:
         return docker_platforms["arm64"]
-    else:
-        return docker_platforms[platform.machine().lower()]
+    return docker_platforms[platform.machine().lower()]
 
 
 @nox.session()
@@ -46,7 +45,7 @@ def get_platform(posargs: List[str]) -> str:
 )
 def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     """Build the Docker containers."""
-    platform = get_platform(session.posargs)
+    build_platform = get_platform(session.posargs)
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
@@ -73,7 +72,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             "build",
             f"--target={target}",
             "--platform",
-            platform,
+            build_platform,
             "--tag",
             tag(),
             ".",
