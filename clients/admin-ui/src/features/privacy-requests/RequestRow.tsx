@@ -13,7 +13,7 @@ import {
   Text,
   Tr,
   useClipboard,
-  useToast,
+  useToast
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { formatDate } from "common/utils";
@@ -26,8 +26,9 @@ import RequestStatusBadge from "../common/RequestStatusBadge";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import {
   useApproveRequestMutation,
-  useDenyRequestMutation,
+  useDenyRequestMutation
 } from "./privacy-requests.slice";
+import ReprocessButton from "./ReprocessButton";
 import { PrivacyRequest } from "./types";
 
 const useRequestRow = (request: PrivacyRequest) => {
@@ -215,53 +216,68 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           shadow="base"
           borderRadius="md"
         >
-          {request.status === "pending" ? (
-            <>
-              <Button
-                size="xs"
-                mr="-px"
-                bg="white"
-                onClick={handleApproveRequest}
-                isLoading={approveRequestResult.isLoading}
-                _loading={{
-                  opacity: 1,
-                  div: { opacity: 0.4 },
-                }}
-                _hover={{
-                  bg: "gray.100",
-                }}
-                ref={hoverButtonRef}
-              >
-                Approve
-              </Button>
-              <Button
-                size="xs"
-                mr="-px"
-                bg="white"
-                onClick={handleModalOpen}
-                _loading={{
-                  opacity: 1,
-                  div: { opacity: 0.4 },
-                }}
-                _hover={{
-                  bg: "gray.100",
-                }}
-              >
-                Deny
-              </Button>
-              <DenyPrivacyRequestModal
-                isOpen={modalOpen}
-                isLoading={denyRequestResult.isLoading}
-                handleMenuClose={handleModalClose}
-                handleDenyRequest={handleDenyRequest}
-                denialReason={denialReason}
-                onChange={(e) => {
-                  setDenialReason(e.target.value);
-                }}
-              />
-            </>
-          ) : null}
-
+          {(() => {
+            switch (request.status) {
+              case "error":
+                return (
+                  <ReprocessButton
+                    buttonProps={{ mr: "-px" }}
+                    ref={hoverButtonRef}
+                    subjectRequest={request}
+                  />
+                );
+              case "pending":
+                return (
+                  <>
+                    <Button
+                      size="xs"
+                      mr="-px"
+                      bg="white"
+                      onClick={handleApproveRequest}
+                      isLoading={approveRequestResult.isLoading}
+                      _loading={{
+                        opacity: 1,
+                        div: { opacity: 0.4 },
+                      }}
+                      _hover={{
+                        bg: "gray.100",
+                      }}
+                      ref={hoverButtonRef}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="xs"
+                      mr="-px"
+                      bg="white"
+                      onClick={handleModalOpen}
+                      _loading={{
+                        opacity: 1,
+                        div: { opacity: 0.4 },
+                      }}
+                      _hover={{
+                        bg: "gray.100",
+                      }}
+                    >
+                      Deny
+                    </Button>
+                    <DenyPrivacyRequestModal
+                      isOpen={modalOpen}
+                      isLoading={denyRequestResult.isLoading}
+                      handleMenuClose={handleModalClose}
+                      handleDenyRequest={handleDenyRequest}
+                      denialReason={denialReason}
+                      onChange={(e) => {
+                        setDenialReason(e.target.value);
+                      }}
+                    />
+                  </>
+                );
+              default:
+                return null;
+            }
+          })()}
+          {/* Hamburger menu */}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}
