@@ -12,6 +12,8 @@ from tests.ops.fixtures.saas.sendgrid_fixtures import contact_exists
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
+CONFIG = get_config()
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_sendgrid
@@ -126,8 +128,8 @@ async def test_sendgrid_erasure_request_task(
             "updated_at",
         ],
     )
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = False  # Allow delete
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = False  # Allow delete
     erasure = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -146,4 +148,4 @@ async def test_sendgrid_erasure_request_task(
         existence_desired=False,
     )
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking
