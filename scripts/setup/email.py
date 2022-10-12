@@ -1,9 +1,9 @@
 import logging
-import secrets
 from typing import Dict
 
 import requests
 import setup.constants as constants
+import setup.secrets as secrets
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
@@ -39,6 +39,8 @@ def create_email_integration(
             raise RuntimeError(
                 f"fides email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
             )
+        logger.info(f"Fides email config is already created. Using the existing config.")
+        return
 
     # Now add secrets
     email_secrets_path = urls.EMAIL_SECRETS.format(config_key=key)

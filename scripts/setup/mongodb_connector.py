@@ -36,6 +36,7 @@ def create_mongodb_connector(
         verify=verify,
     )
     create_dataset(
+        auth_header=auth_header,
         connection_key=key,
         yaml_path="data/dataset/mongo_example_test_dataset.yml",
     )
