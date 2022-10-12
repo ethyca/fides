@@ -102,8 +102,8 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
   useEffect(() => {
     const fetchUploadedManuaWebhookData = () => {
       if (dataList.length > 0) {
-        return
-      };
+        return;
+      }
       const promises: any[] = [];
       const keys = data?.map((item) => item.connection_config.key);
       keys?.every((k) =>

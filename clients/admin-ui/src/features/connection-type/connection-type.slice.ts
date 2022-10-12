@@ -6,12 +6,15 @@ import { AddConnectionStep } from "datastore-connections/add-connection/types";
 import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
+import {
+  ConnectionSystemTypeMap,
+  Page_ConnectionSystemTypeMap_,
+} from "~/types/api";
+
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import {
-  AllConnectionTypesResponse,
-  ConnectionOption,
   ConnectionTypeParams,
   ConnectionTypeSecretSchemaReponse,
   ConnectionTypeState,
@@ -57,14 +60,14 @@ export const connectionTypeSlice = createSlice({
     }),
     setConnectionOption: (
       state,
-      action: PayloadAction<ConnectionOption | undefined>
+      action: PayloadAction<ConnectionSystemTypeMap | undefined>
     ) => ({
       ...state,
       connectionOption: action.payload,
     }),
     setConnectionOptions: (
       state,
-      action: PayloadAction<ConnectionOption[]>
+      action: PayloadAction<ConnectionSystemTypeMap[]>
     ) => ({
       ...state,
       connectionOptions: action.payload,
@@ -118,7 +121,7 @@ export const connectionTypeApi = createApi({
   tagTypes: ["ConnectionType"],
   endpoints: (build) => ({
     getAllConnectionTypes: build.query<
-      AllConnectionTypesResponse,
+      Page_ConnectionSystemTypeMap_,
       Partial<ConnectionTypeParams>
     >({
       query: (filters) => ({

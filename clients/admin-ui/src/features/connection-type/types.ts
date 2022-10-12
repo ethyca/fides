@@ -2,18 +2,7 @@ import { AddConnectionStep } from "datastore-connections/add-connection/types";
 import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
-export type AllConnectionTypesResponse = {
-  items: ConnectionOption[];
-  total: number;
-  page: number;
-  size: number;
-};
-
-export type ConnectionOption = {
-  identifier: string;
-  human_readable: string;
-  type: SystemType;
-};
+import { ConnectionSystemTypeMap } from "~/types/api";
 
 export type ConnectionTypeParams = {
   search: string;
@@ -37,7 +26,7 @@ export type ConnectionTypeSecretSchemaReponse = {
 
 export type ConnectionTypeState = ConnectionTypeParams & {
   connection?: DatastoreConnection;
-  connectionOption?: ConnectionOption;
-  connectionOptions: ConnectionOption[];
+  connectionOption?: ConnectionSystemTypeMap;
+  connectionOptions: ConnectionSystemTypeMap[];
   step: AddConnectionStep;
 };
