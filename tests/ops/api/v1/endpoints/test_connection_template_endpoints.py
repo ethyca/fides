@@ -27,6 +27,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     load_registry,
     registry_file,
 )
+from fides.api.ops.util.saas_util import encode_file_contents
 
 
 class TestGetConnections:
@@ -69,14 +70,17 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
+            "encoded_icon": None,
         } in data
         first_saas_type = saas_template_registry.connector_types().pop()
+        first_saas_template = saas_template_registry.get_connector_template(
+            first_saas_type
+        )
         assert {
             "identifier": first_saas_type,
             "type": SystemType.saas.value,
-            "human_readable": saas_template_registry.get_connector_template(
-                first_saas_type
-            ).human_readable,
+            "human_readable": first_saas_template.human_readable,
+            "encoded_icon": encode_file_contents(first_saas_template.icon),
         } in data
 
         assert "saas" not in [item["identifier"] for item in data]
@@ -94,44 +98,48 @@ class TestGetConnections:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
 
         search = "str"
-        expected_saas_types = [
-            connector_type
+        expected_saas_templates = [
+            (
+                connector_type,
+                saas_template_registry.get_connector_template(connector_type),
+            )
             for connector_type in saas_template_registry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
             {
-                "identifier": saas_type,
+                "identifier": saas_template[0],
                 "type": SystemType.saas.value,
-                "human_readable": saas_template_registry.get_connector_template(
-                    saas_type
-                ).human_readable,
+                "human_readable": saas_template[1].human_readable,
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
-            for saas_type in expected_saas_types
+            for saas_template in expected_saas_templates
         ]
 
         resp = api_client.get(url + f"?search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        assert len(data) == len(expected_saas_types)
+        assert len(data) == len(expected_saas_templates)
         assert data[0] in expected_saas_data
 
         search = "re"
-        expected_saas_types = [
-            connector_type
+        expected_saas_templates = [
+            (
+                connector_type,
+                saas_template_registry.get_connector_template(connector_type),
+            )
             for connector_type in saas_template_registry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
             {
-                "identifier": saas_type,
+                "identifier": saas_template[0],
                 "type": SystemType.saas.value,
-                "human_readable": saas_template_registry.get_connector_template(
-                    saas_type
-                ).human_readable,
+                "human_readable": saas_template[1].human_readable,
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
-            for saas_type in expected_saas_types
+            for saas_template in expected_saas_templates
         ]
 
         resp = api_client.get(url + f"?search={search}", headers=auth_header)
@@ -139,17 +147,19 @@ class TestGetConnections:
         data = resp.json()["items"]
 
         # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        assert len(data) == len(expected_saas_templates) + 2
 
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
+            "encoded_icon": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
+            "encoded_icon": None,
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data
@@ -165,19 +175,21 @@ class TestGetConnections:
 
         search = "St"
         expected_saas_types = [
-            connector_type
+            (
+                connector_type,
+                saas_template_registry.get_connector_template(connector_type),
+            )
             for connector_type in saas_template_registry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
             {
-                "identifier": saas_type,
+                "identifier": saas_template[0],
                 "type": SystemType.saas.value,
-                "human_readable": saas_template_registry.get_connector_template(
-                    saas_type
-                ).human_readable,
+                "human_readable": saas_template[1].human_readable,
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
-            for saas_type in expected_saas_types
+            for saas_template in expected_saas_types
         ]
 
         resp = api_client.get(url + f"?search={search}", headers=auth_header)
@@ -190,6 +202,7 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
+            "encoded_icon": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -197,19 +210,21 @@ class TestGetConnections:
 
         search = "Re"
         expected_saas_types = [
-            connector_type
+            (
+                connector_type,
+                saas_template_registry.get_connector_template(connector_type),
+            )
             for connector_type in saas_template_registry.connector_types()
             if search.lower() in connector_type.lower()
         ]
         expected_saas_data = [
             {
-                "identifier": saas_type,
+                "identifier": saas_template[0],
                 "type": SystemType.saas.value,
-                "human_readable": saas_template_registry.get_connector_template(
-                    saas_type
-                ).human_readable,
+                "human_readable": saas_template[1].human_readable,
+                "encoded_icon": encode_file_contents(saas_template[1].icon),
             }
-            for saas_type in expected_saas_types
+            for saas_template in expected_saas_types
         ]
 
         resp = api_client.get(url + f"?search={search}", headers=auth_header)
@@ -221,11 +236,13 @@ class TestGetConnections:
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
             "human_readable": "PostgreSQL",
+            "encoded_icon": None,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
             "type": SystemType.database.value,
             "human_readable": "Amazon Redshift",
+            "encoded_icon": None,
         } in data
 
         for expected_data in expected_saas_data:
@@ -294,6 +311,7 @@ class TestGetConnections:
                 "identifier": "manual_webhook",
                 "type": "manual",
                 "human_readable": "Manual Webhook",
+                "encoded_icon": None,
             }
         ]
 
