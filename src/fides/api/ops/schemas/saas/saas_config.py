@@ -356,27 +356,6 @@ class SaaSConfig(SaaSConfigBase):
             if param.identity:
                 fields.append(ScalarField(name=param.name, identity=param.identity))
 
-    def _process_param_values(
-        fields: List[Field], param_values: Optional[List[ParamValue]]
-    ):
-        """
-        Converts param values to dataset fields with identity and dataset references
-        """
-        for param in param_values or []:
-            if param.references:
-                references = []
-                for reference in param.references:
-                    first, *rest = reference.field.split(".")
-                    references.append(
-                        (
-                            FieldAddress(reference.dataset, first, *rest),
-                            reference.direction,
-                        )
-                    )
-                fields.append(ScalarField(name=param.name, references=references))
-            if param.identity:
-                fields.append(ScalarField(name=param.name, identity=param.identity))
-
 
 class SaaSConfigValidationDetails(BaseSchema):
     """
