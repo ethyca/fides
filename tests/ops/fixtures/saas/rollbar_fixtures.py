@@ -113,10 +113,7 @@ def rollbar_dataset_config(
 
 
 class RollbarTestClient:
-
-    headers: object = {}
-    base_url: str = ""
-    rollbar_secrets: object = {}
+    """Helper to call various Rollbar data management requests"""
 
     def __init__(self, rollbar_connection_config: ConnectionConfig):
         self.rollbar_secrets = rollbar_connection_config.secrets
@@ -139,18 +136,16 @@ class RollbarTestClient:
         )
         return project_response
 
-    def delete_project(self, project_id) -> requests.Response:
+    def delete_project(self, project_id) -> Response:
         # delete project created for erasure purposes
         url = f"{self.base_url}/project/{project_id}"
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
             "write_access_token"
         ]
-        project_response: requests.Response = requests.delete(
-            url=url, headers=self.headers
-        )
+        project_response: Response = requests.delete(url=url, headers=self.headers)
         return project_response
 
-    def get_project_tokens(self, project_id: str) -> requests.Response:
+    def get_project_tokens(self, project_id: str) -> Response:
         # get a project access tokens
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
             "read_access_token"
@@ -162,13 +157,13 @@ class RollbarTestClient:
         )
         return project_response
 
-    def get_project(self, project_id: str) -> requests.Response:
+    def get_project(self, project_id: str) -> Response:
         # get a project details
         self.headers["X-Rollbar-Access-Token"] = self.rollbar_secrets[
             "read_access_token"
         ]
         #     Use an Account Access Token with 'read' scope
-        project_response: requests.Response = requests.get(
+        project_response: Response = requests.get(
             url=f"{self.base_url}/project/{project_id}",
             headers=self.headers,
         )
@@ -238,7 +233,9 @@ def _project_exists(project_id: str, rollbar_test_client: RollbarTestClient):
 def _item_exists(project_tokens, rollbar_test_client: RollbarTestClient):
     item_response = rollbar_test_client.get_item(project_tokens=project_tokens)
 
-    if not item_response.status_code == 404 and item_response.json()["result"]:
+    if not item_response.status_code == 404 and len(
+        item_response.json()["result"]["items"]
+    ):
         return item_response.json()
 
 
@@ -276,7 +273,7 @@ def rollbar_erasure_data(
     access_tokens = project_access_token_response.json()
     access_tokens_result = access_tokens["result"]
     # fetch only specific tokens from token list
-    project_tokens = {"read": "", "post_server_item": ""}
+    project_tokens: Dict[str, Any] = {}
     for token in access_tokens_result:
         if token["name"] == "read":
             project_tokens["read"] = token["access_token"]
