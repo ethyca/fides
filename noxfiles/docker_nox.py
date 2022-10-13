@@ -24,6 +24,7 @@ def get_platform(posargs: List[str]) -> str:
     Calculate the CPU platform or get it from the
     positional arguments.
     """
+    # Support Intel Macs
     docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
     if "amd64" in posargs:
         return docker_platforms["amd64"]
