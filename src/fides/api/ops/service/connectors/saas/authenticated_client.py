@@ -15,16 +15,17 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
     FidesopsException,
 )
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiter,
+    RateLimiterPeriod,
     RateLimiterRequest,
 )
 from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
-    from fides.api.ops.schemas.saas.saas_config import ClientConfig
+    from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
+    from fides.api.ops.schemas.saas.saas_config import SaaSRequest
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -147,7 +148,28 @@ class AuthenticatedClient:
         return decorator
 
     def build_rate_limit_requests(self) -> List[RateLimiterRequest]:
-        return []
+        """
+        Builds rate limit requests from saas config and saas request.
+        If both are found, limits from both are respected.
+        """
+        connector_limit_configs: List[RateLimitConfig] = (
+            self.saas_config.rate_limits or []
+        )
+        request_limit_configs: List[RateLimitConfig] = (
+            self.saas_request.rate_limits
+            if self.saas_request and self.saas_request.rate_limits
+            else []
+        )
+
+        rate_limit_requests = [
+            RateLimiterRequest(
+                key=rate_limit_config.custom_key or self.saas_config.fides_key,
+                rate_limit=rate_limit_config.rate,
+                period=RateLimiterPeriod[rate_limit_config.period.name.capitalize()],
+            )
+            for rate_limit_config in connector_limit_configs + request_limit_configs
+        ]
+        return rate_limit_requests
 
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(self, request_params: SaaSRequestParams) -> Response:
