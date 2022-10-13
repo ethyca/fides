@@ -74,7 +74,12 @@ class AuthenticatedClient:
         ).prepare()
 
         # add authentication if provided
-        client_config = self.saas_request.client_config if self.saas_request and self.saas_request.client_config else self.saas_config.client_config  # type: ignore
+        request_client_config = (
+            self.saas_request.client_config
+            if self.saas_request and self.saas_request.client_config
+            else None
+        )
+        client_config = request_client_config or self.saas_config.client_config  # type: ignore
         if client_config.authentication:
             auth_strategy = AuthenticationStrategy.get_strategy(
                 client_config.authentication.strategy,
