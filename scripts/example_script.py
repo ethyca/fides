@@ -32,6 +32,7 @@ create_user(
 )
 create_policy(auth_header=auth_header)
 create_policy(auth_header=auth_header, key=constants.ERASURE_POLICY_KEY)
+configure_s3_storage(auth_header=auth_header)
 create_rule(auth_header=auth_header)
 create_rule(
     auth_header=auth_header,
@@ -64,8 +65,6 @@ create_stripe_connector(
 
 create_mongodb_connector(auth_header=auth_header)
 
-
-configure_s3_storage(auth_header=auth_header)
 
 create_privacy_request(user_email="an_example_user")
 
