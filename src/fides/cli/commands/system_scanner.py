@@ -3,7 +3,7 @@
 from click import Context, group, pass_context
 
 from fides.cli.options import dry_flag, verbose_flag
-from fides.cli.utils import require_plus, with_analytics
+from fides.cli.utils import with_analytics
 
 
 @group(name="system_scanner")
@@ -16,7 +16,6 @@ def system_scanner(ctx: Context) -> None:
 
 @system_scanner.command(name="deploy")
 @pass_context
-@require_plus
 @verbose_flag
 @dry_flag
 @with_analytics

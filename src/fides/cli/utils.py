@@ -70,6 +70,23 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         )
 
 
+def check_plus_server(server_url: str, quiet: bool = False) -> None:
+    """
+    Check that fidesctl-plus API is available.
+    """
+
+    healthcheck_url = server_url + "/api/v1/plus/health"
+
+    try:
+        check_response(_api.ping(healthcheck_url)).raise_for_status()
+    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
+        echo_red("The fidesctl-plus API is not available.")
+        raise SystemExit(1)
+
+    if not quiet:
+        echo_green("The fidesctl-plus API is available.")
+
+
 def pretty_echo(dict_object: Dict, color: str = "white") -> None:
     """
     Given a dict-like object and a color, pretty click echo it.
@@ -210,26 +227,6 @@ def with_analytics(func: Callable) -> Callable:
                     pass  # cli analytics should fail silently
 
     return update_wrapper(wrapper_func, func)
-
-
-def require_plus(func: Callable) -> Callable:
-    """
-    Decorator that enforces the presence of the fidesctl-plus
-    API before executing the decorated function.
-    """
-
-    def wrapper(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
-        healthcheck_url = ctx.obj["CONFIG"].cli.server_url + "/api/v1/plus/health"
-
-        try:
-            check_response(_api.ping(healthcheck_url)).raise_for_status()
-        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
-            echo_red("The fidesctl-plus API is not available.")
-            raise SystemExit(1)
-
-        return ctx.invoke(func, ctx, *args, **kwargs)
-
-    return wrapper
 
 
 def print_divider(character: str = "-", character_length: int = 10) -> None:

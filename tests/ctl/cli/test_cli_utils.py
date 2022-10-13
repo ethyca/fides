@@ -1,6 +1,9 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+from typing import Optional
+
 import click
 import pytest
+import requests
 from requests_mock import Mocker
 
 import fides.cli.utils as utils
@@ -53,6 +56,72 @@ def test_check_server_version_comparisons(
         assert captured.out == ""
     else:
         assert expected_output in captured.out
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "quiet, expected",
+    [
+        (True, ""),
+        (False, "The fidesctl-plus API is available.\n"),
+    ],
+)
+def test_check_plus_server(
+    requests_mock: Mocker,
+    capsys: pytest.CaptureFixture,
+    quiet: bool,
+    expected: Optional[str],
+) -> None:
+    fake_url = "https://foobar:8080"
+    requests_mock.get(f"{fake_url}/api/v1/plus/health", json={})
+    utils.check_plus_server(fake_url, quiet)
+    captured = capsys.readouterr()
+    assert captured.out == expected
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "quiet, expected",
+    [
+        (True, ""),
+        (False, "The fidesctl-plus API is not available.\n"),
+    ],
+)
+def test_check_plus_server_bad_ping(
+    capsys: pytest.CaptureFixture,
+    quiet: bool,
+    expected: Optional[str],
+) -> None:
+    with pytest.raises(SystemExit):
+        utils.check_plus_server("https://foobar:8080", quiet)
+        captured = capsys.readouterr()
+        assert captured.out == expected
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "quiet, expected",
+    [
+        (True, ""),
+        (False, "The fidesctl-plus API is not available.\n"),
+    ],
+)
+def test_check_plus_server_bad_status_code(
+    requests_mock: Mocker,
+    capsys: pytest.CaptureFixture,
+    quiet: bool,
+    expected: Optional[str],
+) -> None:
+    with pytest.raises(SystemExit):
+        fake_url = "https://foobar:8080"
+        requests_mock.get(
+            f"{fake_url}/api/v1/plus/health",
+            json={},
+            status_code=requests.codes["not_found"],
+        )
+        utils.check_plus_server(fake_url, quiet)
+        captured = capsys.readouterr()
+        assert captured.out == expected
 
 
 @pytest.mark.unit
