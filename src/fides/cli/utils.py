@@ -212,6 +212,26 @@ def with_analytics(func: Callable) -> Callable:
     return update_wrapper(wrapper_func, func)
 
 
+def require_plus(func: Callable) -> Callable:
+    """
+    Decorator that enforces the presence of the fidesctl-plus
+    API before executing the decorated function.
+    """
+
+    def wrapper(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
+        healthcheck_url = ctx.obj["CONFIG"].cli.server_url + "/api/v1/plus/health"
+
+        try:
+            check_response(_api.ping(healthcheck_url)).raise_for_status()
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
+            echo_red("The fidesctl-plus API is not available.")
+            raise SystemExit(1)
+
+        return ctx.invoke(func, ctx, *args, **kwargs)
+
+    return wrapper
+
+
 def print_divider(character: str = "-", character_length: int = 10) -> None:
     """
     Returns a consistent divider to print to the console for use within fides
