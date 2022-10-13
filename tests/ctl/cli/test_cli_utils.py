@@ -1,13 +1,13 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+
 from typing import Optional
 
-import click
 import pytest
-import requests
+from click import UsageError
+from requests import codes
 from requests_mock import Mocker
 
-import fides.cli.utils as utils
-from fides.api.ctl.routes.util import API_PREFIX
+from fides.cli import utils
 from fides.ctl.core.config import FidesConfig
 
 
@@ -117,7 +117,7 @@ def test_check_plus_server_bad_status_code(
         requests_mock.get(
             f"{fake_url}/api/v1/plus/health",
             json={},
-            status_code=requests.codes["not_found"],
+            status_code=codes["not_found"],
         )
         utils.check_plus_server(fake_url, quiet)
         captured = capsys.readouterr()
@@ -131,7 +131,7 @@ class TestHandleDatabaseCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if neither option is supplied."
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_connection_string = ""
             input_credentials_id = ""
             utils.handle_database_credentials_options(
@@ -145,7 +145,7 @@ class TestHandleDatabaseCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if both options are supplied."
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_connection_string = "my_connection_string"
             input_credentials_id = "postgres_1"
             utils.handle_database_credentials_options(
@@ -159,7 +159,7 @@ class TestHandleDatabaseCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_connection_string = ""
             input_credentials_id = "UNKNOWN"
             utils.handle_database_credentials_options(
@@ -204,7 +204,7 @@ def test_handle_okta_credentials_options_both_raises(
     test_config: FidesConfig,
 ) -> None:
     "Check for an exception if both credentials options are supplied."
-    with pytest.raises(click.UsageError):
+    with pytest.raises(UsageError):
         input_org_url = "hello.com"
         input_token = "abcd12345"
         input_credentials_id = "okta_1"
@@ -223,7 +223,7 @@ class TestHandleOktaCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_org_url = ""
             input_token = ""
             input_credentials_id = "UNKNOWN"
@@ -277,7 +277,7 @@ class TestHandleAWSCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if both credentials options are supplied."
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_access_key = "access_key"
             input_access_key_id = "access_key_id"
             input_region = "us-east-1"
@@ -295,7 +295,7 @@ class TestHandleAWSCredentialsOptions:
         test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             input_access_key = ""
             input_access_key_id = ""
             input_region = ""
@@ -360,7 +360,7 @@ class TestHandleBigQueryCredentialsOptions:
         self,
         test_config: FidesConfig,
     ) -> None:
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             utils.handle_bigquery_config_options(
                 fides_config=test_config,
                 dataset="dataset",
@@ -372,7 +372,7 @@ class TestHandleBigQueryCredentialsOptions:
         self,
         test_config: FidesConfig,
     ) -> None:
-        with pytest.raises(click.UsageError):
+        with pytest.raises(UsageError):
             utils.handle_bigquery_config_options(
                 fides_config=test_config,
                 dataset="dataset",

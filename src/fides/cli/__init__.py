@@ -1,16 +1,15 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
-from os import getenv
 from platform import system
 from typing import List
 
 import click
 from fideslog.sdk.python.client import AnalyticsClient
 
-import fides
-from fides.cli.utils import check_and_update_analytics_config, check_server
-from fides.ctl.core.config import get_config
+from fides import __name__ as app_name
+from fides import __version__ as fides_version
 
+from ..ctl.core.config import get_config
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
 from .commands.crud import delete, get, ls
@@ -21,6 +20,7 @@ from .commands.scan import scan
 from .commands.system_scanner import system_scanner
 from .commands.util import init, status, webserver, worker
 from .commands.view import view
+from .utils import check_and_update_analytics_config, check_plus_server, check_server
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 LOCAL_COMMANDS: List[click.Command] = [
@@ -54,8 +54,6 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS + PLUS_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
-VERSION = fides.__version__
-APP = fides.__name__
 PACKAGE = "ethyca-fides"
 
 
@@ -64,7 +62,7 @@ PACKAGE = "ethyca-fides"
     invoke_without_command=True,
     name="fides",
 )
-@click.version_option(version=VERSION)
+@click.version_option(version=fides_version)
 @click.option(
     "--config-path",
     "-f",
@@ -101,7 +99,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     # Check the server health and version if an API command is invoked
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
-        check_server(VERSION, config.cli.server_url, quiet=True)
+        check_server(fides_version, str(config.cli.server_url), quiet=True)
 
     # Enforce that the fidesctl-plus API is available for plus-only commands
     if ctx.invoked_subcommand in PLUS_COMMANDS:
@@ -119,7 +117,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
                 client_id=config.cli.analytics_id,
                 developer_mode=config.test_mode,
                 os=system(),
-                product_name=APP + "-cli",
+                product_name=app_name + "-cli",
                 production_version=version(PACKAGE),
             )
 

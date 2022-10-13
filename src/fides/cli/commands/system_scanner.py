@@ -2,8 +2,8 @@
 
 from click import Context, group, pass_context
 
-from fides.cli.options import dry_flag, verbose_flag
-from fides.cli.utils import with_analytics
+from ..options import dry_flag, verbose_flag
+from ..utils import with_analytics
 
 
 @group(name="system_scanner")
