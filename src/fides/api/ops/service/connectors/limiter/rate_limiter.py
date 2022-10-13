@@ -38,7 +38,7 @@ class RateLimiterRequest:
         self.rate_limit = rate_limit
         self.period = period
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"RateLimiterRequest(key={self.key},rate_limit={self.rate_limit},period={self.period})"
 
 

@@ -17,8 +17,8 @@ from fides.api.ops.common_exceptions import (
 )
 from fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiter
 from fides.ctl.core.config import get_config
-from src.fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from src.fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiterRequest
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiterRequest
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -46,7 +46,6 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.saas_request = saas_request
         self.session = Session()
-        self.rate_limiter = RateLimiter()
         self.uri = uri
         self.key = configuration.key
         self.secrets = configuration.secrets
@@ -145,7 +144,7 @@ class AuthenticatedClient:
 
         return decorator
 
-    def build_rate_limit_requests() -> List[RateLimiterRequest]:
+    def build_rate_limit_requests(self) -> List[RateLimiterRequest]:
         return []
 
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
@@ -155,7 +154,7 @@ class AuthenticatedClient:
         Optionally ignores non-200 responses if ignore_errors is set to True
         """
         rate_limit_requests = self.build_rate_limit_requests()
-        self.rate_limiter.limit(rate_limit_requests)
+        RateLimiter().limit(rate_limit_requests)
 
         prepared_request: PreparedRequest = self.get_authenticated_request(
             request_params
