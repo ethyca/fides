@@ -41,7 +41,7 @@ from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
 from fides.ctl.core.utils import get_db_engine
 from fides.api.ctl.database.session import sync_session
-from src.fides.api.ops.models.policy import ActionType
+from src.fides.api.ops.models.policy import ActionType, DrpAction
 
 from .crud import create_resource, list_resource
 
@@ -157,6 +157,7 @@ async def load_default_policies() -> None:
             "key": "default_access_policy",
             "execution_timeframe": 45,
             "client_id": client_id,
+            "drp_action": DrpAction.access.value,
         },
     )
     local_storage_config = StorageConfig.create_or_update(
@@ -200,6 +201,7 @@ async def load_default_policies() -> None:
             "key": erasure_policy_key,
             "execution_timeframe": 45,
             "client_id": client_id,
+            "drp_action": DrpAction.erasure.value,
         },
     )
     erasure_rule = Rule.create_or_update(
@@ -209,8 +211,11 @@ async def load_default_policies() -> None:
             "name": "Default Erasure Policy Rule",
             "key": "default_erasure_policy_rule",
             "policy_id": erasure_policy.id,
-            "storage_destination_id": local_storage_config.id,
             "client_id": client_id,
+            "masking_strategy": {
+                "strategy": STRING_REWRITE_STRATEGY_NAME,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
         },
     )
     for target in default_data_categories:
@@ -218,7 +223,7 @@ async def load_default_policies() -> None:
             db=sync_session,
             data={
                 "data_category": target,
-                "rule_id": access_rule.id,
+                "rule_id": erasure_rule.id,
                 "client_id": client_id,
             },
         )
