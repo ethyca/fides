@@ -22,7 +22,7 @@ export interface State {
 }
 
 const initialState: State = {
-  step: 1,
+  step: 0,
   reviewStep: 1,
   systemToCreate: null,
 };
@@ -89,6 +89,14 @@ export const slice = createSlice({
         (system) => fidesKeySet.has(system.fides_key)
       );
     },
+    /**
+     * Reset the wizard to its initial state, except for the organization which will probably
+     * be the same if the user comes back.
+     */
+    reset: (draftState) => ({
+      ...initialState,
+      organization: draftState.organization,
+    }),
   },
 });
 
@@ -96,6 +104,7 @@ export const {
   changeStep,
   changeReviewStep,
   setSystemToCreate,
+  reset,
   setOrganization,
   setSystemsForReview,
   chooseSystemsForReview,

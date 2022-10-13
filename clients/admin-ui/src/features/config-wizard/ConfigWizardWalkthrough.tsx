@@ -1,7 +1,6 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import { useRouter } from "next/router";
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -17,6 +16,7 @@ import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
   changeStep,
+  reset,
   selectReviewStep,
   selectStep,
   selectSystemToCreate,
@@ -28,15 +28,13 @@ import ScanResultsForm from "./ScanResultsForm";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
-  const router = useRouter();
-
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemToCreate);
 
   const handleCancelSetup = () => {
-    router.push("/");
+    dispatch(reset());
   };
 
   const handleSuccess = (values: System) => {
