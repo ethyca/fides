@@ -19,7 +19,10 @@ import {
 import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import {
+  ConnectionTypeSecretSchemaProperty,
+  ConnectionTypeSecretSchemaReponse,
+} from "connection-type/types";
 import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik, FormikProps } from "formik";
@@ -31,6 +34,8 @@ import {
   DatabaseConnectorParametersFormFields,
   SaasConnectorParametersFormFields,
 } from "../types";
+
+const FIDESOPS_DATASET_REFERENCE = "#/definitions/FidesopsDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaReponse;
@@ -75,10 +80,20 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     return error;
   };
 
-  const validateField = (label: string, value: string) => {
+  const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "") {
       error = `${label} is required`;
+    }
+    if (type === FIDESOPS_DATASET_REFERENCE) {
+      if (!value.includes(".")) {
+        error = "Dataset reference must be dot delimited";
+      } else {
+        const parts = value.split(".");
+        if (parts.length < 3) {
+          error = "Dataset reference must include at least three parts";
+        }
+      }
     }
     return error;
   };
@@ -95,9 +110,16 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </FormLabel>
   );
 
+  const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
+    if (item.allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+      return "Enter dataset.collection.field";
+    }
+    return null;
+  };
+
   const getFormField = (
     key: string,
-    item: { title: string; type: string }
+    item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
       id={key}
@@ -105,7 +127,8 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       key={key}
       validate={
         data.required?.includes(key) || item.type === "integer"
-          ? (value: string) => validateField(item.title, value)
+          ? (value: string) =>
+              validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -118,7 +141,13 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
           {getFormLabel(key, item.title)}
           <VStack align="flex-start" w="inherit">
             {item.type !== "integer" && (
-              <Input {...field} autoComplete="off" color="gray.700" size="sm" />
+              <Input
+                {...field}
+                placeholder={getPlaceholder(item)}
+                autoComplete="off"
+                color="gray.700"
+                size="sm"
+              />
             )}
             {item.type === "integer" && (
               <NumberInput
@@ -137,7 +166,19 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <CircleHelpIcon marginLeft="8px" visibility="hidden" />
+          <Tooltip
+            aria-label={item.description}
+            hasArrow
+            label={item.description}
+            placement="right-start"
+            openDelay={500}
+          >
+            <CircleHelpIcon
+              marginLeft="8px"
+              _hover={{ cursor: "pointer" }}
+              visibility={item.description ? "visible" : "hidden"}
+            />
+          </Tooltip>
         </FormControl>
       )}
     </Field>
@@ -173,7 +214,20 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleSubmit = (values: any, actions: any) => {
-    onSaveClick(values, actions);
+    // convert each property value of type FidesopsDatasetReference
+    // from a dot delimited string to a FidesopsDatasetReference
+    const updatedValues = { ...values };
+    Object.keys(data.properties).forEach((key) => {
+      if (data.properties[key].allOf?.[0].$ref === FIDESOPS_DATASET_REFERENCE) {
+        const referencePath = values[key].split(".");
+        updatedValues[key] = {
+          dataset: referencePath.shift(),
+          field: referencePath.join("."),
+          direction: "from",
+        };
+      }
+    });
+    onSaveClick(updatedValues, actions);
   };
 
   const handleTestConnectionClick = async () => {
@@ -274,7 +328,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       autoComplete="off"
                       color="gray.700"
                       isDisabled={connection?.key}
-                      placeholder={`A a unique identifier for your new ${
+                      placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
                       } connection`}
                       size="sm"

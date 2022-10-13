@@ -134,7 +134,7 @@ def instantiate_connector(
     )
 
     connection_config.secrets = validate_secrets(
-        template_vals.secrets, connection_config
+        db, template_vals.secrets, connection_config
     ).dict()
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
