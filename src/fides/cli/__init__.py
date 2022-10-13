@@ -17,6 +17,7 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
+from .commands.system_scanner import system_scanner
 from .commands.util import init, status, webserver, worker
 from .commands.view import view
 
@@ -32,9 +33,10 @@ API_COMMANDS = [
     export,
     get,
     ls,
-    status,
     pull,
     push,
+    status,
+    system_scanner,
     worker,
 ]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
