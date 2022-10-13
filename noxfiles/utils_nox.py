@@ -62,7 +62,7 @@ def teardown(session: nox.Session) -> None:
 @nox.session()
 def check_docker_compose_version(session: nox.Session) -> bool:
     """Verify the Docker Compose version."""
-    raw = run("docker-compose --version", stdout=PIPE, check=True)
+    raw = run("docker-compose --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_compose_version = parsed.split("v")[-1]
     print(parsed)
@@ -79,7 +79,7 @@ def check_docker_compose_version(session: nox.Session) -> bool:
 @nox.session()
 def check_docker_version(session: nox.Session) -> bool:
     """Verify the Docker version."""
-    raw = run("docker --version", stdout=PIPE, check=True)
+    raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("version ")[-1].split(",")[0]
     print(parsed)
