@@ -2,6 +2,7 @@
 Provides functions that seed the application with data.
 """
 from typing import List
+
 from fideslang import DEFAULT_TAXONOMY
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
@@ -54,16 +55,13 @@ def filter_data_categories(
             for category in user_categories
             if not category.startswith(excluded_category)
         ]
-        default_categories = set(
-            [
-                category
-                for category in duplicated_categories
-                if duplicated_categories.count(category) == len(excluded_categories)
-            ]
-        )
+        default_categories = {
+            category
+            for category in duplicated_categories
+            if duplicated_categories.count(category) == len(excluded_categories)
+        }
         return sorted(list(default_categories))
-    else:
-        return sorted(user_categories)
+    return sorted(user_categories)
 
 
 async def load_default_dsr_policies() -> None:
