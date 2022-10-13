@@ -4,11 +4,11 @@ import {
   selectConnectionTypeState,
   setStep,
 } from "connection-type/connection-type.slice";
-import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { SystemType } from "~/types/api";
 
 import Breadcrumb from "./Breadcrumb";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";

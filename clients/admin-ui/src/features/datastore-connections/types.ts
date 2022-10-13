@@ -1,10 +1,10 @@
+import { ConnectionType, SystemType } from "~/types/api";
+
 import {
   AccessLevel,
   ConnectionTestStatus,
-  ConnectionType,
   DisabledStatus,
   SaasType,
-  SystemType,
   TestingStatus,
 } from "./constants";
 

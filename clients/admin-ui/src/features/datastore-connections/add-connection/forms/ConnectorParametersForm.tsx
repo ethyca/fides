@@ -20,12 +20,12 @@ import { useAPIHelper } from "common/hooks";
 import { CircleHelpIcon } from "common/Icon";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { ConnectionType } from "~/types/api";
 
 import {
   DatabaseConnectorParametersFormFields,

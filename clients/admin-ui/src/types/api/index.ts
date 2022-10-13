@@ -13,6 +13,7 @@ export type { ClassifyInstanceResponseValues } from "./models/ClassifyInstanceRe
 export type { ClassifyRequestPayload } from "./models/ClassifyRequestPayload";
 export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdatePayload";
 export type { ConnectionSystemTypeMap } from "./models/ConnectionSystemTypeMap";
+export { ConnectionType } from "./models/ConnectionType";
 export type { DataFlow } from "./models/DataFlow";
 export type { DatasetSchema } from "./models/DatasetSchema";
 export type { AccessToken } from "./models/AccessToken";
@@ -59,6 +60,7 @@ export { SpecialCategoriesEnum } from "./models/SpecialCategoriesEnum";
 export { StatusEnum } from "./models/StatusEnum";
 export type { System } from "./models/System";
 export type { SystemMetadata } from "./models/SystemMetadata";
+export { SystemType } from "./models/SystemType";
 export type { UserCreate } from "./models/UserCreate";
 export type { UserCreateResponse } from "./models/UserCreateResponse";
 export type { UserLogin } from "./models/UserLogin";

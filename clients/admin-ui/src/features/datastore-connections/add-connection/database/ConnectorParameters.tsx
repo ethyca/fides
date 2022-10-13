@@ -6,7 +6,6 @@ import {
   setConnection,
 } from "connection-type/connection-type.slice";
 import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
-import { ConnectionType } from "datastore-connections/constants";
 import {
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
@@ -19,6 +18,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { ConnectionType } from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";

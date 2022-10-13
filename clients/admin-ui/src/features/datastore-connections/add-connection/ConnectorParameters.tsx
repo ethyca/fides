@@ -3,10 +3,10 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
-import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
 import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";

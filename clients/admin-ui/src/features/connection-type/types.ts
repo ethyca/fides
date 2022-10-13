@@ -1,8 +1,7 @@
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
-import { ConnectionSystemTypeMap } from "~/types/api";
+import { ConnectionSystemTypeMap, SystemType } from "~/types/api";
 
 export type ConnectionTypeParams = {
   search: string;

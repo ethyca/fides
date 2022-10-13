@@ -11,8 +11,9 @@ import NextLink from "next/link";
 import React from "react";
 
 import { DATASTORE_CONNECTION_ROUTE } from "~/constants";
+import { ConnectionType } from "~/types/api";
 
-import { AccessLevel, ConnectionType } from "./constants";
+import { AccessLevel } from "./constants";
 import DeleteConnectionModal from "./DeleteConnectionModal";
 import DisableConnectionModal from "./DisableConnectionModal";
 

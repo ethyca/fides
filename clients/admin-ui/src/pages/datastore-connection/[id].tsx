@@ -12,8 +12,8 @@ import {
   setConnectionOption,
 } from "~/features/connection-type";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
-import { ConnectionType } from "~/features/datastore-connections/constants";
 import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
+import { ConnectionType } from "~/types/api";
 
 import Custom404 from "../404";
 

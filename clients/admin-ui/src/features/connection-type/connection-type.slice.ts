@@ -3,12 +3,12 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
 import {
   ConnectionSystemTypeMap,
   Page_ConnectionSystemTypeMap_,
+  SystemType,
 } from "~/types/api";
 
 import type { RootState } from "../../app/store";

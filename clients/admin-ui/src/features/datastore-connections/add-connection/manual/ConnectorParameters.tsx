@@ -5,13 +5,13 @@ import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionType } from "datastore-connections/constants";
 import { usePatchDatastoreConnectionMutation } from "datastore-connections/datastore-connection.slice";
 import { DatastoreConnectionRequest } from "datastore-connections/types";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { ConnectionType } from "~/types/api";
 
 import { BaseConnectorParametersFields } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
