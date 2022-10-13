@@ -34,11 +34,9 @@ class TestFilterDataCategories:
             "user.credentials",
         ]
         all_data_categories = [
-            "system",
-            "system.authentication",
-            "system.operations",
             "user.name",
-            # These are excluded
+            "user.test",
+            # These should be excluded
             "user.payment",
             "user.payment.financial_account_number",
             "user.credentials",
@@ -47,53 +45,93 @@ class TestFilterDataCategories:
             "user.financial",
         ]
         expected_result = [
-            "system",
-            "system.authentication",
-            "system.operations",
             "user.name",
+            "user.test",
         ]
-        assert (
-            seed.filter_data_categories(all_data_categories, excluded_data_categories)
-            == expected_result
-        )
+        assert seed.filter_data_categories(
+            all_data_categories, excluded_data_categories
+        ) == sorted(expected_result)
+
+    def test_filter_data_categories_no_third_level(self) -> None:
+        """Test that the filter method works as intended"""
+        excluded_data_categories = [
+            "user.financial",
+            "user.payment",
+            "user.credentials",
+        ]
+        all_data_categories = [
+            "user.name",
+            "user.test",
+            # These should be excluded
+            "user.payment",
+            "user.payment.financial_account_number",
+            "user.credentials",
+            "user.credentials.biometric_credentials",
+            "user.financial.account_number",
+            "user.financial",
+        ]
+        expected_result = [
+            "user.name",
+            "user.test",
+        ]
+        assert seed.filter_data_categories(
+            all_data_categories, excluded_data_categories
+        ) == sorted(expected_result)
+
+    def test_filter_data_categories_no_top_level(self) -> None:
+        """Test that the filter method works as intended"""
+        all_data_categories = [
+            "user",
+            "user.name",
+            "user.test",
+        ]
+        expected_result = [
+            "user.name",
+            "user.test",
+        ]
+        assert seed.filter_data_categories(all_data_categories, []) == expected_result
 
     def test_filter_data_categories_empty_excluded(self) -> None:
         """Test that the filter method works as intended"""
         all_data_categories = [
-            "system",
-            "system.authentication",
-            "system.operations",
             "user.name",
-            # These are excluded
             "user.payment",
-            "user.payment.financial_account_number",
             "user.credentials",
-            "user.credentials.biometric_credentials",
-            "user.financial.account_number",
             "user.financial",
         ]
-        assert (
-            seed.filter_data_categories(all_data_categories, []) == all_data_categories
+        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+            all_data_categories
         )
 
     def test_filter_data_categories_no_exclusions(self) -> None:
         """Test that the filter method works as intended"""
-        excluded_data_categories = [
-            "system",
-        ]
+        excluded_data_categories = ["user.payment"]
         all_data_categories = [
             "user.name",
-            # These are excluded
-            "user.payment",
-            "user.payment.financial_account_number",
             "user.credentials",
-            "user.credentials.biometric_credentials",
-            "user.financial.account_number",
             "user.financial",
         ]
-        assert (
-            seed.filter_data_categories(all_data_categories, excluded_data_categories)
-            == all_data_categories
+        assert seed.filter_data_categories(
+            all_data_categories, excluded_data_categories
+        ) == sorted(all_data_categories)
+
+    def test_filter_data_categories_only_return_users(self) -> None:
+        """Test that the filter method works as intended"""
+        all_data_categories = [
+            "user.name",
+            "user.credentials",
+            "user.financial",
+            # These are excluded
+            "nonuser.foo",
+            "anotheruser.foo",
+        ]
+        expected_categories = [
+            "user.name",
+            "user.credentials",
+            "user.financial",
+        ]
+        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+            expected_categories
         )
 
 

@@ -8,7 +8,6 @@ from fideslib.models.client import ClientDetail
 from fideslib.utils.text import to_snake_case
 from loguru import logger as log
 
-from fides.api.ops.util.data_category import DataCategory
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
@@ -37,21 +36,34 @@ DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 def filter_data_categories(
     categories: List[str], excluded_categories: List[str]
 ) -> List[str]:
-    """Filter data categories and their children out of a list of categories."""
-    duplicated_data_categories = [
+    """
+    Filter data categories and their children out of a list of categories.
+
+    We only want user-related data categories, but not the parent category
+    We also only want 2nd level categories, otherwise there are policy conflicts
+    """
+    user_categories = [
         category
-        for excluded_category in excluded_categories
         for category in categories
-        if not category.startswith(excluded_category)
+        if category.startswith("user.") and len(category.split(".")) < 3
     ]
-    default_data_categories = set(
-        [
+    if excluded_categories:
+        duplicated_categories = [
             category
-            for category in duplicated_data_categories
-            if duplicated_data_categories.count(category) == len(excluded_categories)
+            for excluded_category in excluded_categories
+            for category in user_categories
+            if not category.startswith(excluded_category)
         ]
-    )
-    return list(default_data_categories)
+        default_categories = set(
+            [
+                category
+                for category in duplicated_categories
+                if duplicated_categories.count(category) == len(excluded_categories)
+            ]
+        )
+        return sorted(list(default_categories))
+    else:
+        return sorted(user_categories)
 
 
 async def load_default_dsr_policies() -> None:
@@ -77,16 +89,11 @@ async def load_default_dsr_policies() -> None:
     client_id = client.id
 
     excluded_data_categories = ["user.financial", "user.payment", "user.credentials"]
-    # We only want user-related data categories, but not the parent category
-    # We also only want 2nd level categories, otherwise there are policy conflicts
-    user_data_categories = [
-        str(category.fides_key)
-        for category in DEFAULT_TAXONOMY.data_category
-        if str(category.fides_key).startswith("user.")
-        and len(str(category.fides_key).split(".")) < 3
+    all_data_categories = [
+        str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category
     ]
     default_data_categories = filter_data_categories(
-        user_data_categories, excluded_data_categories
+        all_data_categories, excluded_data_categories
     )
     log.info(f"Loading the following Data Categories: {default_data_categories}")
 
@@ -190,6 +197,7 @@ async def load_default_dsr_policies() -> None:
         except KeyOrNameAlreadyExists:
             # This rule target already exists against the Policy
             pass
+    log.info("All Policy & Erasure Rules Seeded.")
 
 
 async def load_default_organiztion() -> None:
