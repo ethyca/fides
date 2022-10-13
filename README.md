@@ -127,7 +127,7 @@ Now that you've seen how Fides can generate a data map from your resources and a
 
 ## :book: Learn More
 
-The Fides core team is committed to providing a variety of documentation to help get you started using Fidesctl.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
@@ -164,8 +164,8 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [release-url]: https://github.com/ethyca/fides/releases
 [docker-workflow-image]: https://github.com/ethyca/fides/workflows/Docker%20Build%20&%20Push/badge.svg
 [docs-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20Docs/badge.svg
-[release-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20fidesctl/badge.svg
-[docker-actions-url]: https://github.com/ethyca/fides/actions/workflows/docker.yaml
+[release-workflow-image]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml/badge.svg
+[docker-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docker.yaml
 [docs-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docs.yaml
 [publish-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg
