@@ -66,10 +66,12 @@ def check_docker_compose_version(session: nox.Session) -> bool:
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_compose_version = parsed.split("v")[-1]
     print(parsed)
-    version_is_valid = docker_compose_version >= REQUIRED_DOCKER_COMPOSE_VERSION
+    version_is_valid = int(docker_compose_version.replace(".", "")) >= int(
+        REQUIRED_DOCKER_COMPOSE_VERSION.replace(".", "")
+    )
     if not version_is_valid:
         session.error(
-            f"Docker Compose version is not compatible, please update to at least version {REQUIRED_DOCKER_COMPOSE_VERSION}!"
+            f"Your Docker Compose version (v{docker_compose_version})is not compatible, please update to at least version {REQUIRED_DOCKER_COMPOSE_VERSION}!"
         )
     return version_is_valid
 
@@ -79,12 +81,14 @@ def check_docker_version(session: nox.Session) -> bool:
     """Verify the Docker version."""
     raw = run("docker --version", stdout=PIPE, check=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_version = parsed.split("v")[-1]
+    docker_version = parsed.split("version ")[-1].split(",")[0]
     print(parsed)
-    version_is_valid = docker_version >= REQUIRED_DOCKER_VERSION
+    version_is_valid = int(docker_version.replace(".", "")) >= int(
+        REQUIRED_DOCKER_VERSION.replace(".", "")
+    )
     if not version_is_valid:
         session.error(
-            f"Docker version is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
+            f"Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
         )
     return version_is_valid
 
