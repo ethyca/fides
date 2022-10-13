@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def configure_s3_storage(
+def create_s3_storage(
     auth_header: Dict[str, str],
     key: str = constants.STORAGE_KEY,
     policy_key: str = constants.ACCESS_POLICY_KEY,
