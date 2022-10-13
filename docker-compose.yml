@@ -53,6 +53,18 @@ services:
     environment:
       - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
 
+  fides-pc:
+    image: ethyca/fides-privacy-center:local
+    expose:
+      - 3000
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./clients/privacy-center/config
+        target: /app/config
+        read_only: False
+
   fides-db:
     image: postgres:12
     healthcheck:
@@ -77,7 +89,8 @@ services:
 
   docs:
     build:
-      context: docs/fides/
+      context: .
+      dockerfile: docs/fides/Dockerfile
     volumes:
       - ./docs/fides:/docs
       - ./:/fides

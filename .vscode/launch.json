@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "chrome",
             "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}/clients/ops/admin-ui"
+            "webRoot": "${workspaceFolder}/clients/admin-ui"
         },
         {
             "name": "Attach to Chrome",
@@ -17,7 +17,7 @@
             "request": "attach",
             "type": "chrome",
             "urlFilter": "http://localhost:3000/*", // use urlFilter instead of url!
-            "webRoot": "${workspaceFolder}/clients/ops/admin-ui"
+            "webRoot": "${workspaceFolder}/clients/admin-ui"
         }
     ]
 }
