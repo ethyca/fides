@@ -78,7 +78,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
 5. Assess the Organization and System datasets using the `--audit` flag.
 
     ```
-    fidesctl evaluate demo_resources/ --audit
+    fides evaluate demo_resources/ --audit
     ```
 
     This command will identify any missing information in your resources, which should be added to generate a compliant Record of Processing Activities.
@@ -117,6 +117,11 @@ This guide will walk through generating a mock RoPA using predefined resources i
     </details>
 
     `--audit` flags any empty fields, along with the System or Organization they belong to, and returns where or not the system is incomplete or fully compliant. In the above example, the Organization resource is compliant, but both the Marketing and Analytics systems are missing information that would be required in your RoPA.
+
+6. Running the `exit` command will close the shell and stop the Docker containers. The
+Docker volumes created at startup will still be present so on the next start of the containers
+the data previously created will still be present. If you would like to remove these
+volumes run `nox -s teardown -- volumes`.
 
 Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and push your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
 
