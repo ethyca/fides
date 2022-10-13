@@ -1,5 +1,6 @@
 """Contains various utility-related nox sessions."""
-from subprocess import run, PIPE
+from subprocess import PIPE, run
+
 import nox
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
@@ -26,6 +27,8 @@ COMPOSE_DOWN = (
     "--remove-orphans",
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
+REQUIRED_DOCKER_VERSION = "20.10.17"
+REQUIRED_DOCKER_COMPOSE_VERSION = "2.10.2"
 
 
 @nox.session()
@@ -59,15 +62,14 @@ def teardown(session: nox.Session) -> None:
 @nox.session()
 def check_docker_compose_version(session: nox.Session) -> bool:
     """Verify the Docker Compose version."""
-    required_docker_compose_version = "2.10.2"
-    raw = run("docker-compose --version", stdout=PIPE)
+    raw = run("docker-compose --version", stdout=PIPE, check=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_compose_version = parsed.split("v")[-1]
     print(parsed)
-    version_is_valid = docker_compose_version >= required_docker_compose_version
+    version_is_valid = docker_compose_version >= REQUIRED_DOCKER_COMPOSE_VERSION
     if not version_is_valid:
         session.error(
-            f"Docker Compose version is not compatible, please update to at least version {required_docker_compose_version}!"
+            f"Docker Compose version is not compatible, please update to at least version {REQUIRED_DOCKER_COMPOSE_VERSION}!"
         )
     return version_is_valid
 
@@ -75,15 +77,14 @@ def check_docker_compose_version(session: nox.Session) -> bool:
 @nox.session()
 def check_docker_version(session: nox.Session) -> bool:
     """Verify the Docker version."""
-    required_docker_version = "20.10.17"
-    raw = run("docker --version", stdout=PIPE)
+    raw = run("docker --version", stdout=PIPE, check=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("v")[-1]
     print(parsed)
-    version_is_valid = docker_version >= required_docker_version
+    version_is_valid = docker_version >= REQUIRED_DOCKER_VERSION
     if not version_is_valid:
         session.error(
-            f"Docker version is not compatible, please update to at least version {required_docker_version}!"
+            f"Docker version is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
         )
     return version_is_valid
 

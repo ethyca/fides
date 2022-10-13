@@ -1,11 +1,10 @@
 """Contains the nox sessions for running development environments."""
-from tabnanny import check
 import nox
 
 from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
-from utils_nox import check_docker_compose_version, check_docker_version
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
+from utils_nox import check_docker_compose_version, check_docker_version
 
 
 @nox.session()
