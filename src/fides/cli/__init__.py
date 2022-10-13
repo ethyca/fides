@@ -36,11 +36,12 @@ API_COMMANDS = [
     pull,
     push,
     status,
-    system_scanner,
     worker,
 ]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
-ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
+PLUS_COMMANDS = [system_scanner]
+PLUS_COMMAND_DICT = {command.name or str(command): command for command in PLUS_COMMANDS}
+ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS + PLUS_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
@@ -81,7 +82,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
 
     if not (local or config.cli.local_mode):
         config.cli.local_mode = False
-        cli.commands = {**cli.commands, **API_COMMAND_DICT}
+        cli.commands = {**cli.commands, **API_COMMAND_DICT, **PLUS_COMMAND_DICT}
     else:
         config.cli.local_mode = True
 
@@ -92,6 +93,10 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     # Check the server health and version if an API command is invoked
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, config.cli.server_url, quiet=True)
+
+    # Enforce that the fidesctl-plus API is available for plus-only commands
+    if ctx.invoked_subcommand in PLUS_COMMANDS:
+        check_plus_server(str(config.cli.server_url), quiet=True)
 
     ctx.obj["CONFIG"] = config
 
