@@ -22,6 +22,7 @@ from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.manual_webhook import AccessManualWebhook
+
 CONFIG = get_config()
 
 
@@ -127,6 +128,7 @@ class ConnectionConfig(Base):
 
     access_manual_webhook = relationship(
         "AccessManualWebhook",
+        # AccessManualWebhook,
         back_populates="connection_config",
         cascade="delete",
         uselist=False,
