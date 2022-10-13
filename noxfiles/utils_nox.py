@@ -92,9 +92,7 @@ def check_docker_version(session: nox.Session) -> bool:
     raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("version ")[-1].split(",")[0]
-    split_docker_version = [
-        int(x) for x in docker_version.split(".")
-    ]
+    split_docker_version = [int(x) for x in docker_version.split(".")]
     print(parsed)
     split_required_docker_version = [int(x) for x in REQUIRED_DOCKER_VERSION.split(".")]
     version_is_valid = (
