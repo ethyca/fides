@@ -15,10 +15,12 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
     FidesopsException,
 )
-from fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiter
-from fides.ctl.core.config import get_config
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
-from fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiterRequest
+from fides.api.ops.service.connectors.limiter.rate_limiter import (
+    RateLimiter,
+    RateLimiterRequest,
+)
+from fides.ctl.core.config import get_config
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
