@@ -29,7 +29,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     registry_file,
 )
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.api.ops.util.saas_util import load_config
+from fides.api.ops.util.saas_util import encode_file_contents, load_config
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 
@@ -81,17 +81,17 @@ def get_connection_types(
         )
 
         for item in saas_types:
-            human_readable_name: str = item
             if registry.get_connector_template(item) is not None:
-                human_readable_name = registry.get_connector_template(  # type: ignore[union-attr]
+                connector_template = registry.get_connector_template(  # type: ignore[union-attr]
                     item
-                ).human_readable
+                )
 
             connection_system_types.append(
                 ConnectionSystemTypeMap(
                     identifier=item,
                     type=SystemType.saas,
-                    human_readable=human_readable_name,
+                    human_readable=connector_template.human_readable,
+                    encoded_icon=encode_file_contents(connector_template.icon),
                 )
             )
 
