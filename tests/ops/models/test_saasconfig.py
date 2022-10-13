@@ -3,6 +3,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.graph.config import CollectionAddress, FieldAddress
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
@@ -158,6 +159,16 @@ def test_saas_config_to_dataset(saas_example_connection_config: ConnectionConfig
         col for col in saas_dataset.collections if col.name == "people"
     )
     assert any(field for field in people_collection.fields if field.primary_key)
+
+
+@pytest.mark.unit_saas
+def test_saas_config_to_dataset_external_reference_no_secrets(
+    saas_example_connection_config: ConnectionConfig,
+):
+    saas_config = SaaSConfig(**saas_example_connection_config.saas_config)
+    with pytest.raises(FidesopsValidationError) as e:
+        saas_config.get_graph({})
+    assert "External dataset reference with provided name" in e.value.message
 
 
 @pytest.mark.unit_saas

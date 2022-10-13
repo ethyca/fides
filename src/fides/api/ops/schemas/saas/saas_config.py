@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
 
+from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -394,6 +395,10 @@ class SaaSConfig(SaaSConfigBase):
         If the `reference` is a `FidesopsDatasetReference`, then it's just returned as-is.
         """
         if isinstance(reference, str):
+            if reference not in secrets.keys():
+                raise ValidationError(
+                    f"External dataset reference with provided name {reference} not found in connector's secrets."
+                )
             reference = FidesopsDatasetReference.parse_obj(secrets[reference])
         return reference
 
