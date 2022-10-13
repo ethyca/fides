@@ -21,7 +21,7 @@ const NewSystem: NextPage = () => {
   const [showYamlForm, setShowYamlForm] = useState(false);
 
   useEffect(() => {
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   }, [dispatch]);
 
   return (

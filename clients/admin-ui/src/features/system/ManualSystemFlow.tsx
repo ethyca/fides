@@ -51,7 +51,7 @@ const ManualSystemFlow = () => {
 
   const goBack = () => {
     router.back();
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   };
 
   const handleSuccess = (system: System) => {
@@ -61,7 +61,7 @@ const ManualSystemFlow = () => {
 
   const goToIndex = () => {
     router.push("/system");
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   };
 
   return (
