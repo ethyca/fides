@@ -8,6 +8,7 @@ import pytest
 from fides.api.ops.service.connectors.limiter.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
+    RateLimiterRequest,
     RateLimiterTimeoutException,
 )
 
@@ -18,7 +19,11 @@ def simulate_calls_with_limiter(num_calls: int) -> Dict:
     call_log = {}
     for _ in range(num_calls):
         limiter.limit(
-            key="my_test_key", rate_limit=100, period=RateLimiterPeriod.SECOND
+            requests=[
+                RateLimiterRequest(
+                    key="my_test_key", rate_limit=100, period=RateLimiterPeriod.SECOND
+                )
+            ],
         )
         current_time = int(time.time())
         count = call_log.get(current_time, 0)
@@ -67,9 +72,18 @@ def test_limiter_times_out_when_bucket_full() -> None:
     with pytest.raises(RateLimiterTimeoutException):
         for _ in range(500):
             limiter.limit(
-                key="my_test_key",
-                rate_limit=100,
-                period=RateLimiterPeriod.HOUR,
+                requests=[
+                    RateLimiterRequest(
+                        key="my_test_key_1",
+                        rate_limit=100,
+                        period=RateLimiterPeriod.SECOND,
+                    ),
+                    RateLimiterRequest(
+                        key="my_test_key_2",
+                        rate_limit=100,
+                        period=RateLimiterPeriod.HOUR,
+                    ),
+                ],
                 timeout_seconds=10,
             )
             time.sleep(0.002)

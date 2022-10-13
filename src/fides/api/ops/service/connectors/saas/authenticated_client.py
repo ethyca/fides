@@ -15,7 +15,10 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
     FidesopsException,
 )
+from fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiter
 from fides.ctl.core.config import get_config
+from src.fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from src.fides.api.ops.service.connectors.limiter.rate_limiter import RateLimiterRequest
 
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -37,18 +40,15 @@ class AuthenticatedClient:
         self,
         uri: str,
         configuration: ConnectionConfig,
-        request_client_config: Optional[ClientConfig] = None,
+        saas_request: Optional[SaaSRequest] = None,
     ):
-        saas_config = configuration.get_saas_config()
+        self.saas_config = configuration.get_saas_config()
         self.configuration = configuration
+        self.saas_request = saas_request
         self.session = Session()
+        self.rate_limiter = RateLimiter()
         self.uri = uri
         self.key = configuration.key
-        self.client_config = (
-            request_client_config
-            if request_client_config
-            else saas_config.client_config  # type: ignore
-        )
         self.secrets = configuration.secrets
 
     def get_authenticated_request(
@@ -72,10 +72,11 @@ class AuthenticatedClient:
         ).prepare()
 
         # add authentication if provided
-        if self.client_config.authentication:
+        client_config = self.saas_request.client_config if self.saas_request and self.saas_request.client_config else self.saas_config.client_config  # type: ignore
+        if client_config.authentication:
             auth_strategy = AuthenticationStrategy.get_strategy(
-                self.client_config.authentication.strategy,
-                self.client_config.authentication.configuration,
+                client_config.authentication.strategy,
+                client_config.authentication.configuration,
             )
             return auth_strategy.add_authentication(req, self.configuration)
 
@@ -144,14 +145,18 @@ class AuthenticatedClient:
 
         return decorator
 
+    def build_rate_limit_requests() -> List[RateLimiterRequest]:
+        return []
+
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
-    def send(
-        self, request_params: SaaSRequestParams, ignore_errors: Optional[bool] = False
-    ) -> Response:
+    def send(self, request_params: SaaSRequestParams) -> Response:
         """
         Builds and executes an authenticated request.
         Optionally ignores non-200 responses if ignore_errors is set to True
         """
+        rate_limit_requests = self.build_rate_limit_requests()
+        self.rate_limiter.limit(rate_limit_requests)
+
         prepared_request: PreparedRequest = self.get_authenticated_request(
             request_params
         )
@@ -162,7 +167,7 @@ class AuthenticatedClient:
         )  # Dev mode only
 
         if not response.ok:
-            if ignore_errors:
+            if self.saas_request and self.saas_request.ignore_errors:
                 logger.info(
                     "Ignoring errors on response with status code %s as configured.",
                     response.status_code,
