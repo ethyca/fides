@@ -2,6 +2,7 @@
 from importlib.metadata import version
 from os import getenv
 from platform import system
+from typing import List
 
 import click
 from fideslog.sdk.python.client import AnalyticsClient
@@ -22,11 +23,19 @@ from .commands.util import init, status, webserver, worker
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMANDS: List[click.Command] = [
+    evaluate,
+    generate,
+    init,
+    parse,
+    scan,
+    view,
+    webserver,
+]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
-API_COMMANDS = [
+API_COMMANDS: List[click.Command] = [
     annotate,
     database,
     delete,
@@ -39,7 +48,7 @@ API_COMMANDS = [
     worker,
 ]
 API_COMMAND_DICT = {command.name or str(command): command for command in API_COMMANDS}
-PLUS_COMMANDS = [system_scanner]
+PLUS_COMMANDS: List[click.Command] = [system_scanner]
 PLUS_COMMAND_DICT = {command.name or str(command): command for command in PLUS_COMMANDS}
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS + PLUS_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
