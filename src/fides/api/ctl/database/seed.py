@@ -104,7 +104,7 @@ async def load_default_dsr_policies() -> None:
         default_data_categories = filter_data_categories(
             all_data_categories, excluded_data_categories
         )
-        log.info(f"Loading the following Data Categories: {default_data_categories}")
+        log.info(f"Will create default rules for the following Data Categories: {default_data_categories}")
 
         log.info(f"Creating: {DEFAULT_ACCESS_POLICY}...")
         access_policy = Policy.create_or_update(
@@ -145,7 +145,7 @@ async def load_default_dsr_policies() -> None:
             },
         )
 
-        log.info("Creating: Ops Data Category Access Rules...")
+        log.info("Creating: Data Category Access Rules...")
         for target in default_data_categories:
             data = {
                 "data_category": target,
@@ -190,7 +190,7 @@ async def load_default_dsr_policies() -> None:
             },
         )
 
-        log.info("Creating: Ops Data Category Erasure Rules...")
+        log.info("Creating: Data Category Erasure Rules...")
         for target in default_data_categories:
             data = {
                 "data_category": target,
