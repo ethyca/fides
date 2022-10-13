@@ -25,7 +25,11 @@ def get_platform(posargs: List[str]) -> str:
     positional arguments.
     """
     # Support Intel Macs
-    docker_platforms = {"amd64": "linux/amd64", "arm64": "linux/arm64"}
+    docker_platforms = {
+        "amd64": "linux/amd64",
+        "arm64": "linux/arm64",
+        "x86_64": "linux/amd64",
+    }
     if "amd64" in posargs:
         return docker_platforms["amd64"]
     if "arm64" in posargs:
