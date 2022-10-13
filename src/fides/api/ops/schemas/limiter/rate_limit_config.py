@@ -17,8 +17,7 @@ class RateLimitPeriod(str, Enum):
 
 class RateLimitConfig(BaseModel):
     """
-    A named variable which can be sourced from identities, dataset references, or connector params. These values
-    are used to replace the placeholders in the path, header, query, and body param values.
+    A config object which allows configuring rate limits for connectors
     """
 
     rate: str
