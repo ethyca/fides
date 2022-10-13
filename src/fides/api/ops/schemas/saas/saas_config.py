@@ -303,35 +303,15 @@ class SaaSConfig(SaaSConfigBase):
             read_request = endpoint.requests.get("read")
             delete_request = endpoint.requests.get("delete")
             if read_request:
-                for param in read_request.param_values or []:
-                    if param.references:
-                        references = []
-                        for reference in param.references:
-                            first, *rest = reference.field.split(".")
-                            references.append(
-                                (
-                                    FieldAddress(reference.dataset, first, *rest),
-                                    reference.direction,
-                                )
-                            )
-                        fields.append(
-                            ScalarField(name=param.name, references=references)
-                        )
-                    if param.identity:
-                        fields.append(
-                            ScalarField(name=param.name, identity=param.identity)
-                        )
+                self._process_param_values(fields, read_request.param_values)
             elif delete_request:
-                # The preferred way to build the graph for a SaaS connector is to convert
-                # a read requests' param_values into identity and dataset references.
                 # If the endpoint only specifies a delete request without a read,
-                # then we must create a single placeholder field for the graph traversal
-                # to still visit this delete-only collection and call the delete request.
-                fields.append(
-                    ScalarField(
-                        name="placeholder", identity="email", primary_key="True"
-                    )
-                )
+                # then we must use the delete request's param_values instead.
+                # One of the fields must automatically be flagged as a primary key
+                # in order for the deletion to execute. See fides#1199
+                self._process_param_values(fields, delete_request.param_values)
+                if fields:
+                    fields[0].primary_key = True
 
             if fields:
                 grouped_inputs: Optional[Set[str]] = set()
