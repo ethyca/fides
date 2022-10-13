@@ -3,12 +3,7 @@ from typing import Dict
 import pytest
 from pydantic import ValidationError
 
-from fides.api.ops.graph.config import (
-    CollectionAddress,
-    FieldAddress,
-    FieldPath,
-    ScalarField,
-)
+from fides.api.ops.graph.config import CollectionAddress, FieldAddress
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import (
     ConnectorParam,
@@ -139,15 +134,11 @@ def test_saas_config_to_dataset(saas_example_config: Dict[str, Dict]):
     )
     assert direction == "from"
 
-    # assert that delete-only endpoints generate a collection with
-    # a single primary key identity field as a placeholder
+    # assert that delete-only endpoints generate a collection with at least one primary key field
     people_collection = next(
         col for col in saas_dataset.collections if col.name == "people"
     )
-    people_id_field = people_collection.field(FieldPath("placeholder"))
-    assert people_id_field == ScalarField(
-        name="placeholder", identity="email", primary_key="True"
-    )
+    assert any(field for field in people_collection.fields if field.primary_key)
 
 
 @pytest.mark.unit_saas

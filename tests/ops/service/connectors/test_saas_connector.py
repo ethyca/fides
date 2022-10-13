@@ -9,11 +9,10 @@ from fides.api.ops.graph.graph import Node
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
-from src.fides.api.ops.schemas.saas.saas_config import SaaSConfig
 
 
 @pytest.mark.unit_saas
