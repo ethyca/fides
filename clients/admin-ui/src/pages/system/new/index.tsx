@@ -9,13 +9,20 @@ import {
 } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
+import { setActiveSystem } from "~/features/system/system.slice";
 import SystemYamlForm from "~/features/system/SystemYamlForm";
 
 const NewSystem: NextPage = () => {
+  const dispatch = useAppDispatch();
   const [showYamlForm, setShowYamlForm] = useState(false);
+
+  useEffect(() => {
+    dispatch(setActiveSystem(null));
+  }, [dispatch]);
 
   return (
     <Layout title="Systems">
