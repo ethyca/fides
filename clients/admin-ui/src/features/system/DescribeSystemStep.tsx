@@ -2,7 +2,7 @@ import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -16,6 +16,7 @@ import {
   defaultInitialValues,
   FormValues,
   transformFormValuesToSystem,
+  transformSystemToFormValues,
 } from "~/features/system/form";
 import {
   useCreateSystemMutation,
@@ -33,17 +34,23 @@ interface Props {
   onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
-  initialValues?: FormValues;
+  system?: System;
 }
 
 const DescribeSystemStep = ({
   onCancel,
   onSuccess,
   abridged,
-  initialValues: passedInInitialValues,
+  system: passedInSystem,
 }: Props) => {
-  const isEditing = !!passedInInitialValues;
-  const initialValues = passedInInitialValues ?? defaultInitialValues;
+  const isEditing = !!passedInSystem;
+  const initialValues = useMemo(
+    () =>
+      passedInSystem
+        ? transformSystemToFormValues(passedInSystem)
+        : defaultInitialValues,
+    [passedInSystem]
+  );
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
