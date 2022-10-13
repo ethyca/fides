@@ -63,13 +63,15 @@ def reset_db(database_url: str) -> None:
     """
     log.info("Resetting database...")
     engine = get_db_engine(database_url)
-    connection = engine.connect()
-    Base.metadata.drop_all(connection)
+    with engine.connect() as connection:
+        log.info("Dropping tables...")
+        Base.metadata.drop_all(connection)
 
-    migration_context = migration.MigrationContext.configure(connection)
-    version = migration_context._version  # pylint: disable=protected-access
-    if version.exists(connection):
-        version.drop(connection)
+        log.info("Dropping Alembic table...")
+        migration_context = migration.MigrationContext.configure(connection)
+        version = migration_context._version  # pylint: disable=protected-access
+        if version.exists(connection):
+            version.drop(connection)
     log.info("Reset complete.")
 
 

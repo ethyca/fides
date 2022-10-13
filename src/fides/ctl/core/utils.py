@@ -56,7 +56,9 @@ def get_db_engine(connection_string: str) -> Engine:
     Use SQLAlchemy to create a DB engine.
     """
     try:
-        engine = sqlalchemy.create_engine(connection_string)
+        engine = sqlalchemy.create_engine(
+            connection_string, connect_args={"connect_timeout": 10}
+        )
     except Exception as err:
         raise Exception("Failed to create engine!") from err
 
