@@ -1,6 +1,7 @@
 """
 Provides functions that seed the application with data.
 """
+from typing import List
 from fideslang import DEFAULT_TAXONOMY
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
@@ -33,6 +34,26 @@ DEFAULT_ACCESS_POLICY_RULE = "default_access_policy_rule"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 
 
+def filter_data_categories(
+    categories: List[str], excluded_categories: List[str]
+) -> List[str]:
+    """Filter data categories and their children out of a list of categories."""
+    duplicated_data_categories = [
+        category
+        for excluded_category in excluded_categories
+        for category in categories
+        if not category.startswith(excluded_category)
+    ]
+    default_data_categories = set(
+        [
+            category
+            for category in duplicated_data_categories
+            if duplicated_data_categories.count(category) == len(excluded_categories)
+        ]
+    )
+    return list(default_data_categories)
+
+
 async def load_default_dsr_policies() -> None:
     """
     Checks whether DSR execution policies exist in the database, and
@@ -54,39 +75,14 @@ async def load_default_dsr_policies() -> None:
         )
 
     client_id = client.id
-    default_data_categories = [
-        DataCategory("user.biometric").value,
-        DataCategory("user.biometric_health").value,
-        DataCategory("user.browsing_history").value,
-        DataCategory("user.childrens").value,
-        DataCategory("user.contact").value,
-        DataCategory("user.date_of_birth").value,
-        DataCategory("user.demographic").value,
-        DataCategory("user.device").value,
-        DataCategory("user.gender").value,
-        DataCategory("user.genetic").value,
-        DataCategory("user.government_id").value,
-        DataCategory("user.health_and_medical").value,
-        DataCategory("user.job_title").value,
-        DataCategory("user.location").value,
-        DataCategory("user.media_consumption").value,
-        DataCategory("user.name").value,
-        DataCategory("user.non_specific_age").value,
-        DataCategory("user.observed").value,
-        DataCategory("user.organization").value,
-        DataCategory("user.political_opinion").value,
-        DataCategory("user.profiling").value,
-        DataCategory("user.race").value,
-        DataCategory("user.religious_belief").value,
-        DataCategory("user.search_history").value,
-        DataCategory("user.sensor").value,
-        DataCategory("user.sexual_orientation").value,
-        DataCategory("user.social").value,
-        DataCategory("user.telemetry").value,
-        DataCategory("user.unique_id").value,
-        DataCategory("user.user_sensor").value,
-        DataCategory("user.workplace").value,
+
+    excluded_data_categories = ["user.financial", "user.payment", "user.credentials"]
+    all_data_categories = [
+        str(category.fides_key) for category in DEFAULT_TAXONOMY.data_category
     ]
+    default_data_categories = filter_data_categories(
+        all_data_categories, excluded_data_categories
+    )
 
     log.info(f"Creating: {DEFAULT_ACCESS_POLICY}...")
     access_policy = Policy.create_or_update(
@@ -127,7 +123,7 @@ async def load_default_dsr_policies() -> None:
         },
     )
 
-    log.info(f"Creating: Ops Data Category Access Rules...")
+    log.info("Creating: Ops Data Category Access Rules...")
     for target in default_data_categories:
         data = {
             "data_category": target,
@@ -172,7 +168,7 @@ async def load_default_dsr_policies() -> None:
         },
     )
 
-    log.info(f"Creating: Ops Data Category Erasure Rules...")
+    log.info("Creating: Ops Data Category Erasure Rules...")
     for target in default_data_categories:
         data = {
             "data_category": target,

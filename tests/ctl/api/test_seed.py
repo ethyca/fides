@@ -3,7 +3,7 @@ from typing import Generator
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
 
-from fides.api.ctl.database import database
+from fides.api.ctl.database import seed
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig
 
@@ -22,6 +22,79 @@ def fixture_data_category(test_config: FidesConfig) -> Generator:
         resource_id=fides_key,
         headers=test_config.user.request_headers,
     )
+
+
+@pytest.mark.unit
+class TestFilterDataCategories:
+    def test_filter_data_categories_excluded(self) -> None:
+        """Test that the filter method works as intended"""
+        excluded_data_categories = [
+            "user.financial",
+            "user.payment",
+            "user.credentials",
+        ]
+        all_data_categories = [
+            "system",
+            "system.authentication",
+            "system.operations",
+            "user.name",
+            # These are excluded
+            "user.payment",
+            "user.payment.financial_account_number",
+            "user.credentials",
+            "user.credentials.biometric_credentials",
+            "user.financial.account_number",
+            "user.financial",
+        ]
+        expected_result = [
+            "system",
+            "system.authentication",
+            "system.operations",
+            "user.name",
+        ]
+        assert (
+            seed.filter_data_categories(all_data_categories, excluded_data_categories)
+            == expected_result
+        )
+
+    def test_filter_data_categories_empty_excluded(self) -> None:
+        """Test that the filter method works as intended"""
+        all_data_categories = [
+            "system",
+            "system.authentication",
+            "system.operations",
+            "user.name",
+            # These are excluded
+            "user.payment",
+            "user.payment.financial_account_number",
+            "user.credentials",
+            "user.credentials.biometric_credentials",
+            "user.financial.account_number",
+            "user.financial",
+        ]
+        assert (
+            seed.filter_data_categories(all_data_categories, []) == all_data_categories
+        )
+
+    def test_filter_data_categories_no_exclusions(self) -> None:
+        """Test that the filter method works as intended"""
+        excluded_data_categories = [
+            "system",
+        ]
+        all_data_categories = [
+            "user.name",
+            # These are excluded
+            "user.payment",
+            "user.payment.financial_account_number",
+            "user.credentials",
+            "user.credentials.biometric_credentials",
+            "user.financial.account_number",
+            "user.financial",
+        ]
+        assert (
+            seed.filter_data_categories(all_data_categories, excluded_data_categories)
+            == all_data_categories
+        )
 
 
 @pytest.mark.integration
@@ -46,8 +119,8 @@ class TestLoadDefaultTaxonomy:
         updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
         updated_default_taxonomy.data_category.append(data_category)
 
-        monkeypatch.setattr(database, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-        await database.load_default_taxonomy()
+        monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
+        await seed.load_default_resources()
 
         result = _api.get(
             test_config.cli.server_url,
@@ -75,7 +148,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-        await database.load_default_taxonomy()
+        await seed.load_default_resources()
         result = _api.get(
             test_config.cli.server_url,
             "data_category",
@@ -98,7 +171,7 @@ class TestLoadDefaultTaxonomy:
             headers=test_config.user.request_headers,
         )
 
-        await database.load_default_taxonomy()
+        await seed.load_default_resources()
 
         result = _api.get(
             test_config.cli.server_url,
