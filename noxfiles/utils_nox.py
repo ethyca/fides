@@ -64,10 +64,20 @@ def check_docker_compose_version(session: nox.Session) -> bool:
     """Verify the Docker Compose version."""
     raw = run("docker-compose --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_compose_version = parsed.split("v")[-1]
+    try:
+        docker_compose_version = parsed.split("v")[-1]
+        split_docker_compose = [int(x) for x in docker_compose_version.split(".")]
+    except ValueError:
+        docker_compose_version = parsed.split("version ")[-1].split(",")[0]
+        split_docker_compose = [int(x) for x in docker_compose_version.split(".")]
     print(parsed)
-    version_is_valid = int(docker_compose_version.replace(".", "")) >= int(
-        REQUIRED_DOCKER_COMPOSE_VERSION.replace(".", "")
+    split_required_docker_compose_version = [
+        int(x) for x in REQUIRED_DOCKER_COMPOSE_VERSION.split(".")
+    ]
+    version_is_valid = (
+        split_docker_compose[0] >= split_required_docker_compose_version[0]
+        and split_docker_compose[1] >= split_required_docker_compose_version[1]
+        and split_docker_compose[2] >= split_required_docker_compose_version[2]
     )
     if not version_is_valid:
         session.error(
@@ -82,9 +92,15 @@ def check_docker_version(session: nox.Session) -> bool:
     raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("version ")[-1].split(",")[0]
+    split_docker_version = [
+        int(x) for x in docker_version.split(".")
+    ]
     print(parsed)
-    version_is_valid = int(docker_version.replace(".", "")) >= int(
-        REQUIRED_DOCKER_VERSION.replace(".", "")
+    split_required_docker_version = [int(x) for x in REQUIRED_DOCKER_VERSION.split(".")]
+    version_is_valid = (
+        split_docker_version[0] >= split_required_docker_version[0]
+        and split_docker_version[1] >= split_required_docker_version[1]
+        and split_docker_version[2] >= split_required_docker_version[2]
     )
     if not version_is_valid:
         session.error(
