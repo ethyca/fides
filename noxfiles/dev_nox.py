@@ -1,14 +1,19 @@
 """Contains the nox sessions for running development environments."""
+from tabnanny import check
 import nox
 
 from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
 from docker_nox import build
+from utils_nox import check_docker_compose_version, check_docker_version
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 
 
 @nox.session()
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
+    check_docker_compose_version(session)
+    check_docker_version(session)
+
     build(session, "dev")
     session.notify("teardown")
 
