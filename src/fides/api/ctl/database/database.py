@@ -61,7 +61,7 @@ def reset_db(database_url: str) -> None:
     """
     Drops all tables/metadata from the database.
     """
-    log.info("Resetting database")
+    log.info("Resetting database...")
     engine = get_db_engine(database_url)
     connection = engine.connect()
     Base.metadata.drop_all(connection)
@@ -70,6 +70,7 @@ def reset_db(database_url: str) -> None:
     version = migration_context._version  # pylint: disable=protected-access
     if version.exists(connection):
         version.drop(connection)
+    log.info("Reset complete.")
 
 
 def get_db_health(database_url: str, db: Session) -> str:
