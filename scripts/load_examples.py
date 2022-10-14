@@ -70,4 +70,4 @@ create_stripe_connector(
 create_mongodb_connector(auth_header=auth_header)
 create_privacy_request(user_email="an_example_user")
 
-print("Example end.")
+print("Examples loaded successfully!")
