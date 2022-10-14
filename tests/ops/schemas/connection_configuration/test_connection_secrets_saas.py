@@ -7,7 +7,11 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_saas impo
     SaaSSchema,
     SaaSSchemaFactory,
 )
-from fides.api.ops.schemas.saas.saas_config import ConnectorParam, SaaSConfig
+from fides.api.ops.schemas.saas.saas_config import (
+    ConnectorParam,
+    ExternalDatasetReference,
+    SaaSConfig,
+)
 
 
 @pytest.mark.unit_saas
@@ -39,8 +43,13 @@ class TestSaaSConnectionSecrets:
             schema.parse_obj(config)
         required_fields = [
             connector_param.name
-            for connector_param in saas_config.connector_params
-            if not connector_param.default_value
+            for connector_param in (
+                saas_config.connector_params + saas_config.external_references
+            )
+            if isinstance(
+                connector_param, ExternalDatasetReference
+            )  # external refs are required
+            or not connector_param.default_value
         ]
         assert (
             f"{saas_config.type}_schema must be supplied all of: "
@@ -77,6 +86,7 @@ class TestSaaSConnectionSecrets:
         saas_config.connector_params = [
             ConnectorParam(name="account_type", options=["checking", "savings"])
         ]
+        saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         schema.parse_obj({"account_type": "checking"})
 
@@ -86,6 +96,7 @@ class TestSaaSConnectionSecrets:
                 name="account_type", options=["checking", "savings"], multiselect=True
             )
         ]
+        saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         schema.parse_obj({"account_type": ["checking", "savings"]})
 
@@ -93,6 +104,7 @@ class TestSaaSConnectionSecrets:
         saas_config.connector_params = [
             ConnectorParam(name="account_type", options=["checking", "savings"])
         ]
+        saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         with pytest.raises(ValidationError) as exc:
             schema.parse_obj({"account_type": "investment"})
@@ -104,6 +116,7 @@ class TestSaaSConnectionSecrets:
                 name="account_type", options=["checking", "savings"], multiselect=True
             )
         ]
+        saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         with pytest.raises(ValidationError) as exc:
             schema.parse_obj({"account_type": ["checking", "investment"]})

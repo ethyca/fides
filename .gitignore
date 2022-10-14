@@ -255,3 +255,9 @@ saas_config.toml
 
 # Script secrets
 scripts/secrets.py
+scripts/setup/secrets.py
+
+
+# Frontend files
+clients/privacy-center/node_modules
+clients/privacy-center/.next

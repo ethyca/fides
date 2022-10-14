@@ -6,6 +6,8 @@ import pytest
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal
+from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -20,11 +22,33 @@ privacy_request = PrivacyRequest(id="234544")
 class TestSaaSQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(
-        self, saas_example_connection_config, saas_example_dataset_config
+        self,
+        saas_example_connection_config,
+        saas_example_dataset_config,
+        saas_external_example_dataset_config,
     ):
         merged_graph = saas_example_dataset_config.get_graph()
-        graph = DatasetGraph(merged_graph)
+        merged_graph_external = saas_external_example_dataset_config.get_graph()
+        graph = DatasetGraph(merged_graph, merged_graph_external)
         return Traversal(graph, {"email": "customer-1@example.com"})
+
+    def test_external_reference_traversal(
+        self,
+        combined_traversal: Traversal,
+        saas_example_connection_config: ConnectionConfig,
+        saas_external_example_dataset_config: DatasetConfig,
+    ):
+        customer = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_example_connection_config.key, "customer")
+        ]
+        # assert customer has parents on the expected external dataset and table
+        assert (
+            CollectionAddress(
+                saas_external_example_dataset_config.fides_key,
+                saas_external_example_dataset_config.dataset["collections"][0]["name"],
+            )
+            in customer.parents.keys()
+        )
 
     def test_generate_requests(
         self, policy, combined_traversal, saas_example_connection_config
@@ -271,6 +295,7 @@ class TestSaaSQueryConfig:
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
+        saas_example_secrets,
     ):
         saas_config: Optional[
             SaaSConfig
@@ -284,7 +309,9 @@ class TestSaaSQueryConfig:
         # omit read-only fields and fields not defined in the dataset
         # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
         update_request = endpoints["customer"].requests.get("update")
-        config = SaaSQueryConfig(customer, endpoints, {}, update_request)
+        config = SaaSQueryConfig(
+            customer, endpoints, saas_example_secrets, update_request
+        )
         row = {
             "id": 1,
             "name": {"first": "A", "last": "B"},

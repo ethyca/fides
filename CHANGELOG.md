@@ -19,6 +19,13 @@ The types of changes are:
 
 ### Added
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
+* Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
+    * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
+    * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
+    * Each consent option can provide an array of `cookieKeys`.
+
+### Changed
+* Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
 
 ### Developer Experience
 
