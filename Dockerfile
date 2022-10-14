@@ -1,5 +1,5 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.8"
+ARG PYTHON_VERSION="3.10.7"
 
 
 

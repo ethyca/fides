@@ -21,7 +21,7 @@ The types of changes are:
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 
 ### Changed
-* Updated mypy to version 0.981 and Python to version 3.10.8 [#1448](https://github.com/ethyca/fides/pull/1448)
+* Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
 
 ### Developer Experience
 
