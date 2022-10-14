@@ -1,16 +1,6 @@
 """Define constants to be used across the noxfiles."""
+import nox
 from os import getenv
-
-
-def get_current_tag() -> str:
-    """Get the current git tag."""
-    from git.repo import Repo
-
-    repo = Repo()
-    git_session = repo.git()
-    git_session.fetch("--force", "--tags")
-    current_tag = git_session.describe("--tags", "--dirty", "--always")
-    return current_tag
 
 
 # Files

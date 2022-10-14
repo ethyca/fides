@@ -10,8 +10,18 @@ from constants_nox import (
     IMAGE_LATEST,
     IMAGE_LOCAL,
     IMAGE_LOCAL_UI,
-    get_current_tag,
 )
+
+
+def get_current_tag() -> str:
+    """Get the current git tag."""
+    from git.repo import Repo
+
+    repo = Repo()
+    git_session = repo.git()
+    git_session.fetch("--force", "--tags")
+    current_tag = git_session.describe("--tags", "--dirty", "--always")
+    return current_tag
 
 
 def get_current_image() -> str:
@@ -41,16 +51,24 @@ def get_platform(posargs: List[str]) -> str:
 @nox.parametrize(
     "image",
     [
-        nox.param("prod", id="prod"),
         nox.param("dev", id="dev"),
+        nox.param("pc", id="pc"),
+        nox.param("prod", id="prod"),
         nox.param("test", id="test"),
         nox.param("ui", id="ui"),
-        nox.param("pc", id="pc"),
     ],
 )
 def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     """Build the Docker containers."""
     build_platform = get_platform(session.posargs)
+
+    if image == "prod":
+        try:
+            import git
+        except ModuleNotFoundError:
+            session.error(
+                "Building the prod image requires the GitPython module! Please run 'pip install gitpython' and try again"
+            )
 
     # The lambdas are a workaround to lazily evaluate get_current_image
     # This allows the dev deployment to run without needing other dev requirements
