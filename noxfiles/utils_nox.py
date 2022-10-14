@@ -93,6 +93,8 @@ def check_docker_version(session: nox.Session) -> bool:
     return version_is_valid
 
 
+# Add a session to add the demo resources for the datamap
+
 def install_requirements(session: nox.Session) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "dev-requirements.txt")
