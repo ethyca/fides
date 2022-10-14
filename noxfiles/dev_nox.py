@@ -58,11 +58,15 @@ def run_script(session: nox.Session, script_name: str) -> None:
     Run a script from the scripts/ directory. This command will not run
     the server automatically.
     """
+    posargs = session._runner.posargs
+    posargs.remove(script_name)
     session.run(
         "docker",
         "compose",
         "run",
+        *posargs,
         COMPOSE_SERVICE_NAME,
         "python",
         f"/fides/scripts/{script_name}.py",
+        external=True,
     )
