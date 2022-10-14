@@ -201,6 +201,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - name: Download container
@@ -228,6 +229,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - name: Download container
@@ -254,6 +256,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - name: Download container
@@ -284,6 +287,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     continue-on-error: true
     steps:
@@ -320,6 +324,7 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.6"]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     continue-on-error: true
     steps:
@@ -350,6 +355,7 @@ jobs:
   External-SaaS-Connectors:
     needs: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
     permissions:
