@@ -28,7 +28,7 @@ try:
     from setup import secrets
 except ImportError:
     raise SystemExit(
-        "ERROR! Secrets module not found, checks the 'utility_scripts.md' for help getting set up."
+        "ERROR! Secrets module not found, checks the docs at 'guides/utility_scripts' for help getting set up."
     )
 
 auth_header = get_auth_header()
