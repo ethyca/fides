@@ -3,8 +3,8 @@ import uuid
 from typing import Dict
 
 import requests
+from setup import get_secret
 import setup.constants as constants
-import setup.secrets as secrets
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
@@ -35,7 +35,13 @@ def create_stripe_connector(
         json={
             "name": f"Stripe Connector {key}",
             "instance_key": f"stripe_instance_{key}",
-            "secrets": secrets.STRIPE_SECRETS,
+            "secrets": {
+                "host": get_secret("STRIPE_HOST"),
+                "api_key": get_secret("STRIPE_API_KEY"),
+                "payment_types": get_secret("STRIPE_PAYMENT_TYPES"),
+                "items_per_page": get_secret("STRIPE_ITEMS_PER_PAGE"),
+                "identity_email": get_secret("STRIPE_IDENTITY_EMAIL"),
+            },
             "description": "Stripe ConnectionConfig description",
             "key": key,
         },

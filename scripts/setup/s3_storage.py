@@ -2,8 +2,8 @@ import logging
 from typing import Dict
 
 import requests
+from setup import get_secret
 import setup.constants as constants
-import setup.secrets as secrets
 from setup.policy import create_policy
 
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -52,8 +52,8 @@ def create_s3_storage(
         url,
         headers=auth_header,
         json={
-            "aws_access_key_id": secrets.AWS_ACCESS_KEY_ID,
-            "aws_access_secret_id": secrets.AWS_ACCESS_SECRET_ID,
+            "aws_access_key_id": get_secret("AWS_ACCESS_KEY_ID"),
+            "aws_access_secret_id": get_secret("AWS_ACCESS_SECRET_ID"),
         },
     )
     create_policy(auth_header=auth_header, key=policy_key)

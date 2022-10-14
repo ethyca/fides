@@ -16,6 +16,9 @@ from setup.subject_identity_verification import verify_subject_identity
 from setup.user import create_user
 
 print("Running an example Fides configuration script...")
+import pdb
+
+pdb.set_trace()
 
 try:
     check_health()
