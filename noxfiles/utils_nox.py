@@ -1,5 +1,6 @@
 """Contains various utility-related nox sessions."""
 from subprocess import PIPE, run
+from typing import List
 
 import nox
 
@@ -59,25 +60,71 @@ def teardown(session: nox.Session) -> None:
     print("Teardown complete")
 
 
+def convert_semver_to_list(semver: str) -> List[int]:
+    """
+    Convert a standard semver string to a list of ints
+
+    '2.10.7' -> [2,10,7]
+    """
+    return [int(x) for x in semver.split(".")]
+
+
+def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
+    """
+    Determine which semver-style list of integers is larger.
+
+    [2,10,3], [2,10,2] -> True
+    [3,1,3], [2,10,2] -> True
+    [2,10,2], [2,10,2] -> True
+    [1,1,3], [2,10,2] -> False
+    """
+
+    major, minor, patch = [0, 1, 2]
+    # Compare Major Versions
+    if version_a[major] > version_b[major]:
+        return True
+    if version_a[major] < version_b[major]:
+        return False
+
+    # If Major Versions Match, Compare Minor Versions
+    if version_a[minor] > version_b[minor]:
+        return True
+    if version_a[minor] < version_b[minor]:
+        return False
+
+    # If Both Major & Minor Versions Match, Compare Patch Versions
+    if version_a[patch] < version_b[patch]:
+        return False
+
+    return True
+
+
 @nox.session()
 def check_docker_compose_version(session: nox.Session) -> bool:
     """Verify the Docker Compose version."""
     raw = run("docker-compose --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
+    print(parsed)
+
     try:
         docker_compose_version = parsed.split("v")[-1]
-        split_docker_compose = [int(x) for x in docker_compose_version.split(".")]
+        split_docker_compose = convert_semver_to_list(docker_compose_version)
     except ValueError:
         docker_compose_version = parsed.split("version ")[-1].split(",")[0]
-        split_docker_compose = [int(x) for x in docker_compose_version.split(".")]
-    print(parsed)
-    split_required_docker_compose_version = [
-        int(x) for x in REQUIRED_DOCKER_COMPOSE_VERSION.split(".")
-    ]
-    version_is_valid = (
-        split_docker_compose[0] >= split_required_docker_compose_version[0]
-        and split_docker_compose[1] >= split_required_docker_compose_version[1]
-        and split_docker_compose[2] >= split_required_docker_compose_version[2]
+        split_docker_compose = convert_semver_to_list(docker_compose_version)
+
+    try:
+        assert len(split_docker_compose) == 3
+    except AssertionError:
+        session.error(
+            "Docker Compose version format is invalid, expecting semver format. Please upgrade to a more recent version and try again"
+        )
+
+    split_required_docker_compose_version = convert_semver_to_list(
+        REQUIRED_DOCKER_COMPOSE_VERSION
+    )
+    version_is_valid = compare_semvers(
+        split_docker_compose, split_required_docker_compose_version
     )
     if not version_is_valid:
         session.error(
@@ -92,13 +139,20 @@ def check_docker_version(session: nox.Session) -> bool:
     raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     docker_version = parsed.split("version ")[-1].split(",")[0]
-    split_docker_version = [int(x) for x in docker_version.split(".")]
     print(parsed)
-    split_required_docker_version = [int(x) for x in REQUIRED_DOCKER_VERSION.split(".")]
-    version_is_valid = (
-        split_docker_version[0] >= split_required_docker_version[0]
-        and split_docker_version[1] >= split_required_docker_version[1]
-        and split_docker_version[2] >= split_required_docker_version[2]
+
+    split_docker_version = [int(x) for x in docker_version.split(".")]
+    split_required_docker_version = convert_semver_to_list(REQUIRED_DOCKER_VERSION)
+
+    try:
+        assert len(split_docker_version) == 3
+    except AssertionError:
+        session.error(
+            "Docker version format is invalid, expecting semver format. Please upgrade to a more recent version and try again"
+        )
+
+    version_is_valid = compare_semvers(
+        split_docker_version, split_required_docker_version
     )
     if not version_is_valid:
         session.error(
