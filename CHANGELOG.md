@@ -24,6 +24,9 @@ The types of changes are:
     * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
     * Each consent option can provide an array of `cookieKeys`.
 
+### Changed
+* Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
+
 ### Developer Experience
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
