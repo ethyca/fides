@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 
+### Changed
+* Updated mypy to version 0.981 and Python to version 3.10.8 [#1448](https://github.com/ethyca/fides/pull/1448)
+
 ### Developer Experience
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
@@ -27,9 +30,6 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
-
-### Fixed
-* Fixed issue with an outdated version of mypy[#1448](https://github.com/ethyca/fides/pull/1448)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
