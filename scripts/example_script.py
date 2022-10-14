@@ -16,9 +16,6 @@ from setup.subject_identity_verification import verify_subject_identity
 from setup.user import create_user
 
 print("Running an example Fides configuration script...")
-import pdb
-
-pdb.set_trace()
 
 try:
     check_health()
@@ -26,6 +23,7 @@ except RuntimeError:
     print(
         f"Connection error. Please ensure Fides is healthy and running at {constants.FIDES_URL}."
     )
+    raise
 
 auth_header = get_auth_header()
 create_user(
