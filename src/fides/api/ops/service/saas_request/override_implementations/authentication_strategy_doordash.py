@@ -53,7 +53,7 @@ class DoordashAuthenticationStrategy(AuthenticationStrategy):
                 "iat": str(math.floor(time.time())),
             },
             jwt.utils.base64url_decode(
-                assign_placeholders(self.signing_secret, secrets)
+                assign_placeholders(self.signing_secret, secrets)  # type: ignore
             ),
             algorithm="HS256",
             headers={"dd-ver": "DD-JWT-V1"},
