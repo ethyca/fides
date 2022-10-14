@@ -10,6 +10,7 @@ from constants_nox import (
     RUN,
     RUN_NO_DEPS,
     START_APP,
+    START_APP_WITH_EXTERNAL_POSTGRES,
     WITH_TEST_CONFIG,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
@@ -242,7 +243,15 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
-        session.run(*START_APP, external=True)
+        # This test runs an additional integration Postgres database.
+        # Some connectors cannot be traversed with the standard email
+        # identity and require another dataset to provide a starting value.
+        #
+        #         ┌────────┐                 ┌────────┐
+        # email──►│postgres├──►delivery_id──►│doordash│
+        #         └────────┘                 └────────┘
+        #
+        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker-compose",
             "run",
