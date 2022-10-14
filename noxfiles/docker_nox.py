@@ -4,13 +4,7 @@ from typing import List
 
 import nox
 
-from constants_nox import (
-    IMAGE,
-    IMAGE_DEV,
-    IMAGE_LATEST,
-    IMAGE_LOCAL,
-    IMAGE_LOCAL_UI,
-)
+from constants_nox import IMAGE, IMAGE_DEV, IMAGE_LATEST, IMAGE_LOCAL, IMAGE_LOCAL_UI
 
 
 def get_current_tag() -> str:
@@ -62,9 +56,10 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     """Build the Docker containers."""
     build_platform = get_platform(session.posargs)
 
+    # This check needs to be here so it has access to the session to throw an error
     if image == "prod":
         try:
-            import git
+            import git  # pylint: disable=unused-import
         except ModuleNotFoundError:
             session.error(
                 "Building the prod image requires the GitPython module! Please run 'pip install gitpython' and try again"

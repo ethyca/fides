@@ -1,7 +1,5 @@
 """Define constants to be used across the noxfiles."""
-import nox
 from os import getenv
-
 
 # Files
 COMPOSE_FILE = "docker-compose.yml"
