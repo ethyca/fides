@@ -113,9 +113,7 @@ def check_docker_compose_version(session: nox.Session) -> bool:
         docker_compose_version = parsed.split("version ")[-1].split(",")[0]
         split_docker_compose = convert_semver_to_list(docker_compose_version)
 
-    try:
-        assert len(split_docker_compose) == 3
-    except AssertionError:
+    if len(split_docker_compose) != 3:
         session.error(
             "Docker Compose version format is invalid, expecting semver format. Please upgrade to a more recent version and try again"
         )
@@ -144,9 +142,7 @@ def check_docker_version(session: nox.Session) -> bool:
     split_docker_version = [int(x) for x in docker_version.split(".")]
     split_required_docker_version = convert_semver_to_list(REQUIRED_DOCKER_VERSION)
 
-    try:
-        assert len(split_docker_version) == 3
-    except AssertionError:
+    if len(split_docker_version) != 3:
         session.error(
             "Docker version format is invalid, expecting semver format. Please upgrade to a more recent version and try again"
         )
