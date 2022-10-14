@@ -1,4 +1,5 @@
 import uuid
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -171,6 +172,8 @@ def braze_erasure_data(
 
     assert response.ok
 
+    sleep(30)
+
     error_message = (
         f"User with email {braze_erasure_identity_email} could not be added to Braze"
     )
@@ -178,7 +181,6 @@ def braze_erasure_data(
         _user_exists,
         (braze_erasure_identity_email, braze_secrets),
         error_message=error_message,
-        interval=30,
     )
 
     yield response_data
