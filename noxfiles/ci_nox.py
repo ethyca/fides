@@ -243,16 +243,14 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
-        """
-        This test runs an additional integration Postgres database.
-        Some connectors cannot be traversed with the standard email
-        identity and require another dataset to provide a starting value.
-
-                ┌────────┐                 ┌────────┐
-        email──►│postgres├──►delivery_id──►│doordash│
-                └────────┘                 └────────┘
-
-        """
+        # This test runs an additional integration Postgres database.
+        # Some connectors cannot be traversed with the standard email
+        # identity and require another dataset to provide a starting value.
+        #
+        #         ┌────────┐                 ┌────────┐
+        # email──►│postgres├──►delivery_id──►│doordash│
+        #         └────────┘                 └────────┘
+        #
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker-compose",
