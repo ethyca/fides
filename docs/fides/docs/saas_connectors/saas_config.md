@@ -143,6 +143,15 @@ connector_params:
     default_value: 100
 ```
 
+#### External references
+The `external_references` field is used to describe a list of external dataset references that a user must configure as part of the setup. These dataset references point to fields in a registered Fides dataset that are used to provide necessary values to the SaaS connector execution. The location of these fields depends on the use-case, so they cannot be determined beforehand, and therefore must be configured at the time of setting up the SaaS connector.
+
+```yaml
+external_references:
+    - name: doordash_delivery_id
+      description: An external reference to a field/column in some database table that provides Doordash delivery IDs. This reference must be configured.
+```
+
 #### Client config
 
 The `client_config` describes the necessary information to be able to create a base HTTP client. The values for host, username, and password are not defined here, only referenced in the form of a `connector_param` which Fides uses to insert the actual value from the stored secrets.
@@ -239,7 +248,7 @@ The `requests` configuration further contains the following fields:
 
 ## Param_values in more detail
 
-The `param_values` list is what provides the values to the various placeholders in the path, headers, query params and body. Values can be `identities`, such as email or phone number, `references` to fields in other collections, or `connector_params` which are defined as part of configuring a SaaS connector.
+The `param_values` list is what provides the values to the various placeholders in the path, headers, query params and body. Values can be `identities`, such as email or phone number, `references` to fields in other collections or to an `external_reference`, or `connector_params` which are defined as part of configuring a SaaS connector.
 
 Whenever a placeholder is encountered, the placeholder name is looked up in the list of `param_values` and the corresponding value is used instead. Here is an example of placeholders being used in various locations
 

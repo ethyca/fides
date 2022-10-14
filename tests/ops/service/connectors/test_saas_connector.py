@@ -129,7 +129,7 @@ class TestSaasConnector:
         that only contains a delete request and no read request.
         """
         saas_config = SaaSConfig(**saas_example_config)
-        graph = saas_config.get_graph()
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
         node = Node(
             graph,
             next(
