@@ -226,6 +226,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://ethyca.github.io/fides/dev/guides/utility_scripts/</loc>
+         <lastmod>2022-10-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://ethyca.github.io/fides/dev/installation/configuration/</loc>
          <lastmod>2022-10-14</lastmod>
          <changefreq>daily</changefreq>
