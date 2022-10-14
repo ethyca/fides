@@ -44,7 +44,7 @@ See our [Configuration](../installation/configuration.md) guide for more informa
 
 ## Run Fidesctl via Docker
 
-Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses `docker-compose` to orchestrate resources, so include `fidesctl` as a service by adding the following configuration after the database service:
+Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses `docker compose` to orchestrate resources, so include `fidesctl` as a service by adding the following configuration after the database service:
 
 ```yaml
 fidesctl:

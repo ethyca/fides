@@ -136,7 +136,8 @@ def pytest_ctl(session: nox.Session, mark: str) -> None:
     session.notify("teardown")
     if mark == "external":
         start_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "-f",
             COMPOSE_FILE,
             "-f",
@@ -147,7 +148,8 @@ def pytest_ctl(session: nox.Session, mark: str) -> None:
         )
         session.run(*start_command, external=True)
         run_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "run",
             "-e",
             "SNOWFLAKE_FIDESCTL_PASSWORD",
@@ -244,7 +246,8 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
     elif mark == "saas":
         session.run(*START_APP, external=True)
         run_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "run",
             "-e",
             "ANALYTICS_OPT_OUT",

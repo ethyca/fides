@@ -19,7 +19,7 @@ Once that's complete, there are a few different ways to spin up the project and 
 There are a few different ways to develop Fides, they are listed below _in order of how strongly they are recommended!_
 
 1. The recommended way to work on Fides is by utilizing the `Noxfile` commands:
-    1. Make sure that you have `docker`, `docker-compose` and `nox` (`pip install nox`) installed.
+    1. Make sure that you have `docker` and `nox` (`pip install nox`) installed.
     1. Run `nox` in the root directory to see a list of all of the possible Nox commands. This is helpful as a reference when trying to find new commands or remember old ones!
     1. Run `nox -s dev -- shell` to spin up the entire `fides` application as well as a shell within the `fides` webserver container.
     1. You can and should run all of your various development commands from within this shell, such as `pytest`, `black`, etc.

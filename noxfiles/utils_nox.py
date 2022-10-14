@@ -60,23 +60,6 @@ def teardown(session: nox.Session) -> None:
 
 
 @nox.session()
-def check_docker_compose_version(session: nox.Session) -> bool:
-    """Verify the Docker Compose version."""
-    raw = run("docker-compose --version", stdout=PIPE, check=True, shell=True)
-    parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_compose_version = parsed.split("v")[-1]
-    print(parsed)
-    version_is_valid = int(docker_compose_version.replace(".", "")) >= int(
-        REQUIRED_DOCKER_COMPOSE_VERSION.replace(".", "")
-    )
-    if not version_is_valid:
-        session.error(
-            f"Your Docker Compose version (v{docker_compose_version})is not compatible, please update to at least version {REQUIRED_DOCKER_COMPOSE_VERSION}!"
-        )
-    return version_is_valid
-
-
-@nox.session()
 def check_docker_version(session: nox.Session) -> bool:
     """Verify the Docker version."""
     raw = run("docker --version", stdout=PIPE, check=True, shell=True)
