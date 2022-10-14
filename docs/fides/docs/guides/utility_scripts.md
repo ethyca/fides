@@ -2,7 +2,6 @@
 
 Fides is a complex product, and accurate configuration can be hard. Rather than using the built-in Fides postman collection, you may find it faster to build configuration scripts in Python, using the primitives provided in the `scripts/setup/` directory.
 
-
 ## Available functions
 
 The available functions are listed below:
@@ -22,15 +21,13 @@ The available functions are listed below:
 | `setup.privacy_request.create_privacy_request` |
 | `setup.subject_identity_verification.verify_subject_identity` |
 
-
 Each script uses the Fides API to create its corresponding primitive object in Fides config.
-
 
 ## Secrets management
 
 Some third party integrations require secrets to grant access. Custom scripts are configured to read these secrets as constant variables from a `scripts/setup/secrets.py` file. Due to its sensitive nature, this file is not supplied in the repository, and should be created in the format:
 
-```
+```python
 AWS_ACCESS_KEY_ID = ""
 AWS_ACCESS_SECRET_ID = ""
 
@@ -43,11 +40,9 @@ MAILCHIMP_SECRETS = {
 MAILGUN_API_KEY = ""
 ```
 
-
 ## Writing custom scripts
 
 Custom scripts can be written in the style of `scripts/setup/example_script.py`, where each method is called and given the requisite `auth_header` obtained from the `get_auth_header` primitive. Custom scripts should live in the `scripts/` directory in the root to ensure they are runnable with the nox command detailed below.
-
 
 ## Invoking custom scripts
 
