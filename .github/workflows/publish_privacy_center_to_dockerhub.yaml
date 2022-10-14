@@ -30,7 +30,7 @@ jobs:
       - name: Build and publish
         uses: docker/build-push-action@v3
         with:
-          context: ./clients/ops/privacy-center
+          context: ./clients/privacy-center
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

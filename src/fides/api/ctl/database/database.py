@@ -6,21 +6,18 @@ from os import path
 from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
-from fideslang import DEFAULT_TAXONOMY
 from fideslib.db.base import Base
 from loguru import logger as log
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
-from fides.api.ctl.utils.errors import (
-    AlreadyExistsError,
-    QueryError,
-    get_full_exception_name,
-)
+from fides.api.ctl.utils.errors import get_full_exception_name
+from fides.ctl.core.config import get_config
 from fides.ctl.core.utils import get_db_engine
 
-from .crud import create_resource, list_resource
+from .seed import load_default_resources
+
+CONFIG = get_config()
 
 
 def get_alembic_config(database_url: str) -> Config:
@@ -49,7 +46,7 @@ async def init_db(database_url: str) -> None:
     log.info("Initializing database")
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
-    await load_default_taxonomy()
+    await load_default_resources()
 
 
 def create_db_if_not_exists(database_url: str) -> None:
@@ -60,71 +57,22 @@ def create_db_if_not_exists(database_url: str) -> None:
         create_database(database_url)
 
 
-async def load_default_taxonomy() -> None:
-    """
-    Attempts to insert organization resources into the database,
-    to avoid overwriting a user-created organization under the
-    `default_organization` fides_key.
-
-    Upserts the remaining default taxonomy resources.
-    """
-
-    log.info("Loading the default fideslang taxonomy...")
-
-    log.info("Processing organization resources...")
-    organizations = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
-    inserted = 0
-    for org in organizations:
-        try:
-            await create_resource(sql_model_map["organization"], org)
-            inserted += 1
-        except AlreadyExistsError:
-            pass
-
-    log.info(f"INSERTED {inserted} organization resource(s)")
-    log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
-
-    upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
-    upsert_resource_types.remove("organization")
-
-    log.info("INSERTING new default fideslang taxonomy resources")
-    for resource_type in upsert_resource_types:
-        log.info(f"Processing {resource_type} resources...")
-        default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
-        existing_resources = await list_resource(sql_model_map[resource_type])
-        existing_keys = [item.fides_key for item in existing_resources]
-        resources = [
-            resource
-            for resource in default_resources
-            if resource["fides_key"] not in existing_keys
-        ]
-
-        if len(resources) == 0:
-            log.info(f"No new {resource_type} resources to add from default taxonomy.")
-            continue
-
-        try:
-            for resource in resources:
-                await create_resource(sql_model_map[resource_type], resource)
-        except QueryError:
-            pass  # The create_resource function will log the error
-        else:
-            log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")
-
-
 def reset_db(database_url: str) -> None:
     """
     Drops all tables/metadata from the database.
     """
-    log.info("Resetting database")
+    log.info("Resetting database...")
     engine = get_db_engine(database_url)
-    connection = engine.connect()
-    Base.metadata.drop_all(connection)
+    with engine.connect() as connection:
+        log.info("Dropping tables...")
+        Base.metadata.drop_all(connection)
 
-    migration_context = migration.MigrationContext.configure(connection)
-    version = migration_context._version  # pylint: disable=protected-access
-    if version.exists(connection):
-        version.drop(connection)
+        log.info("Dropping Alembic table...")
+        migration_context = migration.MigrationContext.configure(connection)
+        version = migration_context._version  # pylint: disable=protected-access
+        if version.exists(connection):
+            version.drop(connection)
+    log.info("Reset complete.")
 
 
 def get_db_health(database_url: str, db: Session) -> str:

@@ -1,7 +1,8 @@
 # Pin to 3.10.6 to avoid a mypy error in 3.10.7
-# If you update this, also update `DEFAULT_PYTHON_VERSION`
-# in the GitHub workflow files
-ARG PYTHON_VERSION=3.10.6
+# If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
+ARG PYTHON_VERSION="3.10.6"
+
+
 
 ##############
 ## Frontend ##
@@ -14,22 +15,54 @@ COPY clients/admin-ui/ .
 RUN npm install
 RUN npm run export
 
-#############
-## Backend ##
-#############
-FROM --platform=linux/amd64 python:${PYTHON_VERSION}-slim-bullseye as backend
+#########################
+## Compile Python Deps ##
+#########################
+FROM python:${PYTHON_VERSION}-slim-bullseye as compile_image
+ARG TARGETPLATFORM
 
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    git \
-    make \
-    vim \
-    curl \
     g++ \
     gnupg \
     gcc \
-    python3-wheel \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python Dependencies
+COPY dangerous-requirements.txt .
+RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
+
+COPY optional-requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r optional-requirements.txt
+
+COPY dev-requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+
+COPY requirements.txt .
+RUN pip install --user -U pip --no-cache-dir install -r requirements.txt
+
+##################
+## Backend Base ##
+##################
+FROM python:${PYTHON_VERSION}-slim-bullseye as backend
+ARG TARGETPLATFORM
+
+# Loads compiled requirements and adds the to the path
+COPY --from=compile_image /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+
+# These are all required for MSSQL
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    apt-transport-https \
+    curl \
+    git \
+    gnupg \
+    unixodbc-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,32 +71,16 @@ RUN apt-get update && \
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/11/prod.list | tee /etc/apt/sources.list.d/msprod.list
 ENV ACCEPT_EULA=y DEBIAN_FRONTEND=noninteractive
-RUN : \
-    && apt-get update \
+RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
+    then apt-get update \
     && apt-get install \
     -y --no-install-recommends \
-    apt-transport-https \
-    unixodbc-dev \
     mssql-tools \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* ; \
+    fi
 
-#########################
-## Python Dependencies ##
-#########################
-
-COPY optional-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r optional-requirements.txt
-
-COPY dev-requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r dev-requirements.txt
-
-COPY requirements.txt .
-RUN pip install -U pip --no-cache-dir install -r requirements.txt
-
-###############################
-## General Application Setup ##
-###############################
+# General Application Setup ##
 COPY . /fides
 WORKDIR /fides
 
@@ -85,7 +102,7 @@ CMD [ "fides", "webserver" ]
 #############################
 FROM backend as dev
 
-RUN pip install -e .
+RUN pip install -e . --no-deps
 
 #############################
 ## Production Application ##

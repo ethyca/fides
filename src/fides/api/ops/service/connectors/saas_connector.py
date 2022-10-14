@@ -117,7 +117,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
+        delete_request: Optional[SaaSRequest] = query_config.get_request_by_action(
+            "delete"
+        )
+
         if not read_request:
+            # if a delete request is specified for this endpoint without a read request
+            # then we return a single empty row to still trigger the mask_data method
+            if delete_request:
+                logger.info(
+                    "Skipping read for the '%s' collection, it is delete-only",
+                    self.collection_name,
+                )
+                return [{}]
+
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
                 f"endpoint in {self.saas_config.fides_key}"

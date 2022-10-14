@@ -87,7 +87,7 @@ from fides.api.ops.schemas.connection_configuration.connections_secrets_https im
 )
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
-secrets_validators: Dict[str, Any] = {
+secrets_schemas: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.mongodb.value: MongoDBSchema,
@@ -104,7 +104,7 @@ secrets_validators: Dict[str, Any] = {
 }
 
 
-def get_connection_secrets_validator(
+def get_connection_secrets_schema(
     connection_type: str, saas_config: Optional[SaaSConfig]
 ) -> ConnectionConfigSecretsSchema:
     """
@@ -121,12 +121,12 @@ def get_connection_secrets_validator(
         schema = (
             SaaSSchemaFactory(saas_config).get_saas_schema()
             if saas_config
-            else secrets_validators[connection_type]
+            else secrets_schemas[connection_type]
         )
         return schema
     except KeyError:
         raise NotImplementedError(
-            f"Add {connection_type} to the 'secrets_validators' mapping."
+            f"Add {connection_type} to the 'secrets_schema' mapping."
         )
 
 
