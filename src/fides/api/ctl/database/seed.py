@@ -104,7 +104,9 @@ async def load_default_dsr_policies() -> None:
         default_data_categories = filter_data_categories(
             all_data_categories, excluded_data_categories
         )
-        log.info(f"Will create default rules for the following Data Categories: {default_data_categories}")
+        log.info(
+            f"Preparing to create default rules for the following Data Categories: {default_data_categories}"
+        )
 
         log.info(f"Creating: {DEFAULT_ACCESS_POLICY}...")
         access_policy = Policy.create_or_update(
