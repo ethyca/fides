@@ -90,8 +90,12 @@ def get_connection_types(
                 ConnectionSystemTypeMap(
                     identifier=item,
                     type=SystemType.saas,
-                    human_readable=connector_template.human_readable,
-                    encoded_icon=encode_file_contents(connector_template.icon),
+                    human_readable=connector_template.human_readable
+                    if connector_template is not None
+                    else "",
+                    encoded_icon=encode_file_contents(connector_template.icon)
+                    if connector_template is not None
+                    else None,
                 )
             )
 
