@@ -178,6 +178,7 @@ def braze_erasure_data(
         _user_exists,
         (braze_erasure_identity_email, braze_secrets),
         error_message=error_message,
+        interval=30,
     )
 
     yield response_data
