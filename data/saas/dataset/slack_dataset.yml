@@ -1,0 +1,188 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Slack Dataset
+    description: A sample dataset representing the Slack Connector for Fidesops
+    collections:
+      - name: users_lookup_By_Email
+        fields:
+          - name: id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: team_id
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [ user.name ]
+            fidesops_meta:
+              data_type: string
+          - name: deleted
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: color
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: real_name
+            data_categories: [ user.name ]
+            fidesops_meta:
+              data_type: string
+          - name: tz
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: is_bot
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: boolean
+          - name: profile
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: avatar_hash
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: status_text
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: status_emoji
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: real_name
+                data_categories: [ user.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: display_name
+                data_categories: [ user.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: real_name_normalized
+                data_categories: [ user.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: display_name_normalized
+                data_categories: [ user.name ]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [ user.contact.email ]
+                fidesops_meta:
+                  data_type: string
+      - name: users_conversations
+        fields:
+          - name: channels
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: id
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: is_channel
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_group
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_im
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: created
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: integer
+              - name: creator
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: is_archived
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_general
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: unlinked
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: integer
+              - name: name_normalized
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_shared
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_ext_shared
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_org_shared
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: pending_shared
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: object[]
+              - name: is_pending_ext_shared
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_private
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: is_mpim
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: boolean
+              - name: topic
+                fidesops_meta:
+                  data_type: object
+              - name: purpose
+                fidesops_meta:
+                  data_type: object
+              - name: previous_names
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: objects[]
+
+      - name: conversations_history
+        fields:
+          - name: messages
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: type
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+              - name: user
+                data_categories: [ user.unique_id ]
+                fidesops_meta:
+                  data_type: string
+              - name: text
+                data_categories: [ user ]
+                fidesops_meta:
+                  data_type: string
+              - name: ts
+                data_categories: [ system.operations ]
+                fidesops_meta:
+                  data_type: string
+
+
