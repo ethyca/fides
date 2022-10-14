@@ -10668,6 +10668,10 @@
           "human_readable": {
             "title": "Human Readable",
             "type": "string"
+          },
+          "encoded_icon": {
+            "title": "Encoded Icon",
+            "type": "string"
           }
         },
         "description": "Describes the returned schema for connection types"
@@ -10710,6 +10714,10 @@
         "properties": {
           "name": {
             "title": "Name",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
             "type": "string"
           },
           "options": {
@@ -11992,6 +12000,27 @@
           "skipped"
         ],
         "description": "Enum for execution log statuses, reflecting where they are in their workflow"
+      },
+      "ExternalDatasetReference": {
+        "title": "ExternalDatasetReference",
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          }
+        }
       },
       "FidesDataCategory": {
         "title": "FidesDataCategory",
@@ -13396,7 +13425,14 @@
             "title": "References",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FidesopsDatasetReference"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FidesopsDatasetReference"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             }
           },
           "connector_param": {
@@ -14413,6 +14449,13 @@
               "$ref": "#/components/schemas/ConnectorParam"
             }
           },
+          "external_references": {
+            "title": "External References",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalDatasetReference"
+            }
+          },
           "client_config": {
             "$ref": "#/components/schemas/ClientConfig"
           },
@@ -14549,7 +14592,7 @@
         "type": "object",
         "properties": {},
         "additionalProperties": false,
-        "description": "Abstract base schema for updating SaaS connection configuration secrets.\nFields are added during runtime based on the connector_params in the\npassed in saas_config"
+        "description": "Abstract base schema for updating SaaS connection configuration secrets.\nFields are added during runtime based on the connector_params and any\nexternal_references in the passed in saas_config"
       },
       "SaasConnectionTemplateResponse": {
         "title": "SaasConnectionTemplateResponse",

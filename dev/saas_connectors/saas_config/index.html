@@ -1108,6 +1108,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    External references
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#client-config" class="md-nav__link">
     Client config
   </a>
@@ -2086,6 +2093,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    External references
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#client-config" class="md-nav__link">
     Client config
   </a>
@@ -2456,6 +2470,14 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">page_size</span><span class="w"></span>
 <span class="w">    </span><span class="nt">default_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
+<h4 id="external-references">External references</h4>
+<p>The <code>external_references</code> field is used to describe a list of external dataset references that a user must configure as part of the setup. These dataset references point to fields in a registered Fides dataset that are used to provide necessary values to the SaaS connector execution. The location of these fields depends on the use-case, so they cannot be determined beforehand, and therefore must be configured at the time of setting up the SaaS connector.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">external_references</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doordash_delivery_id</span><span class="w"></span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">An external reference to a field/column in some database table that provides Doordash delivery IDs. This reference must be configured.</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
 <h4 id="client-config">Client config</h4>
 <p>The <code>client_config</code> describes the necessary information to be able to create a base HTTP client. The values for host, username, and password are not defined here, only referenced in the form of a <code>connector_param</code> which Fides uses to insert the actual value from the stored secrets.</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2626,7 +2648,7 @@ You're not viewing the latest version.
 </tbody>
 </table>
 <h2 id="param_values-in-more-detail">Param_values in more detail</h2>
-<p>The <code>param_values</code> list is what provides the values to the various placeholders in the path, headers, query params and body. Values can be <code>identities</code>, such as email or phone number, <code>references</code> to fields in other collections, or <code>connector_params</code> which are defined as part of configuring a SaaS connector.</p>
+<p>The <code>param_values</code> list is what provides the values to the various placeholders in the path, headers, query params and body. Values can be <code>identities</code>, such as email or phone number, <code>references</code> to fields in other collections or to an <code>external_reference</code>, or <code>connector_params</code> which are defined as part of configuring a SaaS connector.</p>
 <p>Whenever a placeholder is encountered, the placeholder name is looked up in the list of <code>param_values</code> and the corresponding value is used instead. Here is an example of placeholders being used in various locations</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
