@@ -28,6 +28,9 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 
+### Fixed
+* Fixed issue with an outdated version of mypy[#1448](https://github.com/ethyca/fides/pull/1448)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
