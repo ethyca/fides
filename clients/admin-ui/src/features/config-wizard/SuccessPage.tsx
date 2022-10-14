@@ -80,9 +80,15 @@ const SuccessPage = ({
                   </Td>
                   <Td>
                     {i <= systemInReviewIndex ? (
-                      <StepperCircleCheckmarkIcon boxSize={5} />
+                      <StepperCircleCheckmarkIcon
+                        boxSize={5}
+                        data-testid="system-reviewed"
+                      />
                     ) : (
-                      <StepperCircleIcon boxSize={5} />
+                      <StepperCircleIcon
+                        boxSize={5}
+                        data-testid="system-needs-review"
+                      />
                     )}
                   </Td>
                 </Tr>
