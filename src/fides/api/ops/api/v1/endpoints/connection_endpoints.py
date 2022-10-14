@@ -38,12 +38,12 @@ from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
 )
+from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.api import BulkUpdateFailed
