@@ -25,7 +25,7 @@ Each script uses the Fides API to create its corresponding primitive object in F
 
 ## Secrets management
 
-Some third party integrations require secrets to grant access. Custom scripts are configured to read these secrets as constant variables from a `scripts/setup/secrets.py` file. Due to its sensitive nature, this file is not supplied in the repository, and should be created in the format:
+Some third party integrations require secrets to grant access. Custom scripts are configured to read these secrets as constant variables from a `scripts/setup/secrets.py` file. Due to its sensitive nature, this file is not supplied in the repository, and should instead be stored somewhere more secure such as a password manager. It must be a valid Python file and the format of the secrets should be:
 
 ```python
 AWS_ACCESS_KEY_ID = ""
