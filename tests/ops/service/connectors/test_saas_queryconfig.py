@@ -348,6 +348,7 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Override masking_strict to False
+        masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
@@ -367,7 +368,7 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "PUT"
 
         # Reset
-        CONFIG.execution.masking_strict = True
+        CONFIG.execution.masking_strict = masking_strict
         del endpoints["conversations"].requests["delete"]
 
     def test_list_param_values(

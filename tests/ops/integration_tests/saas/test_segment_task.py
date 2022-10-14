@@ -5,6 +5,7 @@ import pytest
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
@@ -17,8 +18,15 @@ CONFIG = get_config()
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
+def test_segment_connection_test(segment_connection_config) -> None:
+    get_connector(segment_connection_config).test_connection()
+
+
+@pytest.mark.skip(reason="Pending account resolution")
+@pytest.mark.integration_saas
+@pytest.mark.integration_segment
 @pytest.mark.asyncio
-async def test_segment_saas_access_request_task(
+async def test_segment_access_request_task(
     db,
     policy,
     segment_connection_config,
@@ -28,7 +36,7 @@ async def test_segment_saas_access_request_task(
     """Full access request based on the Segment SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_segment_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": segment_identity_email})
     privacy_request.cache_identity(identity)
@@ -144,7 +152,7 @@ async def test_segment_saas_access_request_task(
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 @pytest.mark.asyncio
-async def test_segment_saas_erasure_request_task(
+async def test_segment_erasure_request_task(
     db,
     policy,
     segment_connection_config,
@@ -153,12 +161,14 @@ async def test_segment_saas_erasure_request_task(
     segment_erasure_data,
 ) -> None:
     """Full erasure request based on the Segment SaaS config"""
+
+    masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow GDPR Delete
 
     # Create user for GDPR delete
     erasure_email = segment_erasure_identity_email
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_segment_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": erasure_email})
     privacy_request.cache_identity(identity)
@@ -232,4 +242,4 @@ async def test_segment_saas_erasure_request_task(
         "segment_instance:track_events": 0,
     }
 
-    CONFIG.execution.masking_strict = True  # Reset
+    CONFIG.execution.masking_strict = masking_strict  # Reset

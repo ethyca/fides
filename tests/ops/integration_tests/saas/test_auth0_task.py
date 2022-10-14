@@ -6,12 +6,20 @@ import requests
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
+
+
+@pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
+@pytest.mark.integration_saas
+@pytest.mark.integration_auth0
+def test_auth0_campaign_connection_test(auth0_connection_config) -> None:
+    get_connector(auth0_connection_config).test_connection()
 
 
 @pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
@@ -26,6 +34,7 @@ async def test_auth0_access_request_task(
     auth0_access_data,
 ) -> None:
     """Full access request based on the Auth0 SaaS config"""
+
     privacy_request = PrivacyRequest(
         id=f"test_auth0_access_request_task_{random.randint(0, 1000)}"
     )
@@ -98,7 +107,7 @@ async def test_auth0_erasure_request_task(
     auth0_erasure_identity_email,
     auth0_erasure_data,
 ) -> None:
-    """Full erasure request based on the auth0 SaaS config"""
+    """Full erasure request based on the Auth0 SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_auth0_erasure_request_task_{random.randint(0, 1000)}"

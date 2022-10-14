@@ -18,10 +18,10 @@ saas_config:
       strategy: api_key
       configuration:
         headers:
-        - name: DD-APPLICATION-KEY
-          value: <app_key>
-        - name: DD-API-KEY
-          value: <api_key>
+          - name: DD-APPLICATION-KEY
+            value: <app_key>
+          - name: DD-API-KEY
+            value: <api_key>
 
   test_request:
     method: GET
