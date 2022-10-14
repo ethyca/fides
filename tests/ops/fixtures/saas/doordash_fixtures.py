@@ -5,8 +5,7 @@ import pytest
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from sqlalchemy_utils.functions import drop_database
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -163,19 +162,9 @@ def doordash_postgres_dataset_config(
 
 @pytest.fixture(scope="function")
 def doordash_postgres_db(postgres_integration_session):
-    if database_exists(postgres_integration_session.bind.url):
-        drop_database(postgres_integration_session.bind.url)
-    create_database(postgres_integration_session.bind.url)
-    with open(
-        "./tests/ops/fixtures/saas/external_datasets/doordash.sql", "r"
-    ) as query_file:
-        lines = query_file.read().splitlines()
-        filtered = [line for line in lines if not line.startswith("--")]
-        queries = " ".join(filtered).split(";")
-        [
-            postgres_integration_session.execute(f"{text(query.strip())};")
-            for query in queries
-            if query
-        ]
+    postgres_integration_session = seed_postgres_data(
+        postgres_integration_session,
+        "./tests/ops/fixtures/saas/external_datasets/doordash.sql",
+    )
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)
