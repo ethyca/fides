@@ -139,8 +139,17 @@ const persistConfig = {
   blacklist: [
     authApi.reducerPath,
     connectionTypeApi.reducerPath,
+    dataQualifierApi.reducerPath,
+    datasetApi.reducerPath,
     datastoreConnectionApi.reducerPath,
+    dataSubjectsApi.reducerPath,
+    dataUseApi.reducerPath,
+    organizationApi.reducerPath,
+    plusApi.reducerPath,
     privacyRequestApi.reducerPath,
+    scannerApi.reducerPath,
+    systemApi.reducerPath,
+    taxonomyApi.reducerPath,
     userApi.reducerPath,
   ],
 };
