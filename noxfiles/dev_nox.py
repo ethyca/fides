@@ -50,7 +50,7 @@ def quickstart(session: nox.Session) -> None:
 @nox.parametrize(
     "script_name",
     [
-        nox.param("example_script", id="example_script"),
+        nox.param("load_examples", id="load_examples"),
     ],
 )
 def run_script(session: nox.Session, script_name: str) -> None:
@@ -58,8 +58,9 @@ def run_script(session: nox.Session, script_name: str) -> None:
     Run a script from the scripts/ directory. This command will not run
     the server automatically.
     """
-    posargs = session._runner.posargs
-    posargs.remove(script_name)
+    posargs = session.posargs
+    if script_name in posargs:
+        posargs.remove(script_name)
     session.run(
         "docker",
         "compose",

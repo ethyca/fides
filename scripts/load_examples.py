@@ -12,7 +12,6 @@ from setup.rule import create_rule
 from setup.rule_target import create_rule_target
 from setup.s3_storage import create_s3_storage
 from setup.stripe_connector import create_stripe_connector
-from setup.subject_identity_verification import verify_subject_identity
 from setup.user import create_user
 
 print("Running an example Fides configuration script...")
@@ -24,6 +23,13 @@ except RuntimeError:
         f"Connection error. Please ensure Fides is healthy and running at {constants.FIDES_URL}."
     )
     raise
+
+try:
+    from setup import secrets
+except ImportError:
+    raise SystemExit(
+        "ERROR! Secrets module not found, checks the 'utility_scripts.md' for help getting set up."
+    )
 
 auth_header = get_auth_header()
 create_user(
