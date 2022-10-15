@@ -72,7 +72,7 @@ async def health(
     db: Session = Depends(get_db),
 ) -> Dict:  # Intentionally injecting the ops get_db
     """Confirm that the API is running and healthy."""
-    database_health = get_db_health(CONFIG.database.sync_database_uri, db)
+    database_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
     cache_health = get_cache_health()
     response = {
         "webserver": "healthy",

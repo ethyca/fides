@@ -1,18 +1,6 @@
 """Define constants to be used across the noxfiles."""
 from os import getenv
 
-
-def get_current_tag() -> str:
-    """Get the current git tag."""
-    from git.repo import Repo
-
-    repo = Repo()
-    git_session = repo.git()
-    git_session.fetch("--force", "--tags")
-    current_tag = git_session.describe("--tags", "--dirty", "--always")
-    return current_tag
-
-
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
@@ -26,6 +14,7 @@ COMPOSE_SERVICE_NAME = "fides"
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 
 # Image Names & Tags
 REGISTRY = "ethyca"
@@ -79,4 +68,16 @@ START_APP_EXTERNAL = (
     "-d",
     IMAGE_NAME,
     COMPOSE_SERVICE_NAME,
+)
+START_APP_WITH_EXTERNAL_POSTGRES = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    INTEGRATION_POSTGRES_COMPOSE_FILE,
+    "up",
+    "--wait",
+    "fides",
+    "postgres_example",
 )

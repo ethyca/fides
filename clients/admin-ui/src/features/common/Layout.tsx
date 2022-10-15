@@ -6,11 +6,13 @@ import Header from "./Header";
 import NavBar from "./nav/NavBar";
 
 const Layout = ({
-  title,
   children,
+  noPadding,
+  title,
 }: {
-  title: string;
   children: React.ReactNode;
+  noPadding?: boolean;
+  title: string;
 }) => (
   <div>
     <Head>
@@ -21,7 +23,7 @@ const Layout = ({
     <Header />
     <NavBar />
     <main>
-      <Box px={9} py={10}>
+      <Box px={noPadding ? 0 : 9} py={noPadding ? 0 : 10}>
         {children}
       </Box>
     </main>

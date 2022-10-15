@@ -14,6 +14,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.service.connectors import TimescaleConnector
 from fides.ctl.core.config import get_config
+from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
 
@@ -62,19 +63,8 @@ def timescale_integration_session(timescale_integration_session_cls):
 
 @pytest.fixture(scope="function")
 def timescale_integration_db(timescale_integration_session):
-    if database_exists(timescale_integration_session.bind.url):
-        # Postgres cannot drop databases from within a transaction block, so
-        # we should drop the DB this way instead
-        drop_database(timescale_integration_session.bind.url)
-    create_database(timescale_integration_session.bind.url)
-    with open("./docker/sample_data/timescale_example.sql", "r") as query_file:
-        lines = query_file.read().splitlines()
-        filtered = [line for line in lines if not line.startswith("--")]
-        queries = " ".join(filtered).split(";")
-        [
-            timescale_integration_session.execute(f"{text(query.strip())};")
-            for query in queries
-            if query
-        ]
+    timescale_integration_session = seed_postgres_data(
+        timescale_integration_session, "./docker/sample_data/timescale_example.sql"
+    )
     yield timescale_integration_session
     drop_database(timescale_integration_session.bind.url)

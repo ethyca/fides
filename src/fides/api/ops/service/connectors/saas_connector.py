@@ -6,7 +6,7 @@ import pydash
 from requests import Response
 
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
-from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -25,6 +25,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
