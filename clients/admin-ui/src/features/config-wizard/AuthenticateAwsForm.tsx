@@ -1,19 +1,22 @@
+import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Accordion,
   AccordionButton,
   AccordionItem,
   AccordionPanel,
   Button,
+  CloseButton,
   Heading,
   HStack,
+  Spinner,
   Stack,
+  Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DocsLink from "~/features/common/DocsLink";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -29,6 +32,8 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import DocsLink from "../common/DocsLink";
+import { GreenCheckCircleIcon } from "../common/Icon";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -71,11 +76,14 @@ const AuthenticateAwsForm = () => {
   const dispatch = useAppDispatch();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
+  const [systemResultsNumber, setSystemResultsNumber] = useState<number | null>(
+    null
+  );
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
-    dispatch(changeStep());
+    setSystemResultsNumber(systems.length);
   };
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -115,10 +123,41 @@ const AuthenticateAwsForm = () => {
       validationSchema={ValidationSchema}
       onSubmit={handleSubmit}
     >
-      {({ isValid, dirty }) => (
+      {({ isValid, isSubmitting, dirty }) => (
         <Form data-testid="authenticate-aws-form">
           <Stack spacing={10}>
-            {!scannerError ? (
+            {isSubmitting ? (
+              <>
+                <Text
+                  alignItems="center"
+                  as="b"
+                  color="gray.900"
+                  display="flex"
+                  fontSize="xl"
+                >
+                  System scanning in progress{" "}
+                  <CloseButton
+                    display="inline-block"
+                    onClick={() => console.log("click")}
+                    // OPENS MODAL ? Which is part of another ticket
+                  />
+                </Text>
+
+                {systemResultsNumber === null ? (
+                  <Stack alignItems="center">
+                    <Spinner
+                      thickness="4px"
+                      speed="0.65s"
+                      emptyColor="gray.200"
+                      color="gray.500"
+                      size="md"
+                    />
+                  </Stack>
+                ) : null}
+              </>
+            ) : null}
+            {scannerError ? <ScannerError error={scannerError} /> : null}
+            {!isSubmitting && !scannerError && !systemResultsNumber ? (
               <>
                 <Heading size="lg">Add a system</Heading>
                 <Accordion allowToggle border="transparent">
@@ -158,49 +197,61 @@ const AuthenticateAwsForm = () => {
                     )}
                   </AccordionItem>
                 </Accordion>
-              </>
-            ) : (
-              <ScannerError error={scannerError} />
-            )}
 
-            <Stack>
-              <CustomTextInput
-                name="aws_access_key_id"
-                label="Access Key ID"
-                // TODO(#724): These fields should link to the AWS docs, but that requires HTML
-                // content instead of just a string label. The message would be:
-                // "You can find more information about creating access keys and secrets on AWS docs here."
-                tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
-              />
-              <CustomTextInput
-                type="password"
-                name="aws_secret_access_key"
-                label="Secret"
-                // "You can find more about creating access keys and secrets on AWS docs here."
-                tooltip="The secret access key is generated when you create your new access key ID."
-              />
-              <CustomSelect
-                name="region_name"
-                label="Default Region"
-                // "You can learn more about regions in AWS docs here."
-                tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
-                options={AWS_REGION_OPTIONS}
-              />
-            </Stack>
-            <HStack>
-              <Button variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                isDisabled={!dirty || !isValid}
-                isLoading={isLoading}
-                data-testid="submit-btn"
-              >
-                Save and Continue
-              </Button>
-            </HStack>
+                <Stack>
+                  <CustomTextInput
+                    name="aws_access_key_id"
+                    label="Access Key ID"
+                    // TODO(#724): These fields should link to the AWS docs, but that requires HTML
+                    // content instead of just a string label. The message would be:
+                    // "You can find more information about creating access keys and secrets on AWS docs here."
+                    tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
+                  />
+                  <CustomTextInput
+                    type="password"
+                    name="aws_secret_access_key"
+                    label="Secret"
+                    // "You can find more about creating access keys and secrets on AWS docs here."
+                    tooltip="The secret access key is generated when you create your new access key ID."
+                  />
+                  <CustomSelect
+                    name="region_name"
+                    label="Default Region"
+                    // "You can learn more about regions in AWS docs here."
+                    tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
+                    options={AWS_REGION_OPTIONS}
+                  />
+                </Stack>
+              </>
+            ) : null}
+            {systemResultsNumber && !isSubmitting ? (
+              <>
+                <Text>
+                  <GreenCheckCircleIcon />
+                  {systemResultsNumber} systems identified
+                </Text>
+                <Text color="purple.500" data-testid="view-scan-results-text">
+                  View results <ChevronRightIcon color="purple.500" />
+                </Text>
+                {/* dispatch(changeStep()); */}
+              </>
+            ) : null}
+            {!systemResultsNumber ? (
+              <HStack>
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isDisabled={!dirty || !isValid}
+                  isLoading={isLoading}
+                  data-testid="submit-btn"
+                >
+                  Save and Continue
+                </Button>
+              </HStack>
+            ) : null}
           </Stack>
         </Form>
       )}
