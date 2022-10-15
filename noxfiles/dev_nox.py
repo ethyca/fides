@@ -56,7 +56,7 @@ def test_env(session: nox.Session) -> None:
     secrets_file_path = "./scripts/setup/load_example_secrets.py"
     if not isfile(secrets_file_path):
         session.error(
-            f"No secrets file found at {secrets_file_path}! The generic secrets file is available in 1Password by searching 'secrets.py'"
+            f"No secrets file found at {secrets_file_path}! The generic secrets file is available in 1Password by searching 'load_example_secrets.py'"
         )
 
     session.notify("teardown", posargs=["volumes"])
@@ -68,9 +68,13 @@ def test_env(session: nox.Session) -> None:
 
     session.log("Starting the application with additional datastores...")
     # External Datastores must exist in docker-compose.integration-tests.yml
-    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    # session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    # Run the webserver with additional datastores
+    run_infrastructure(
+        datastores=["postgres", "mongodb"]
+    )
 
-    session.log("Seeding data for DSR processing...")
+    session.log("Seeding data for DSR automation...")
     session.run(
         *RUN_NO_DEPS,
         "python",

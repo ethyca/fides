@@ -33,7 +33,7 @@ def run_infrastructure(
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
     open_shell: bool = False,  # Should we open a bash shell?
     pytest_path: str = "",  # Which subset of tests should we run?
-    run_application: bool = False,  # Should we run the Fidesops webserver?
+    run_application: bool = False,  # Should we run the Fides webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?

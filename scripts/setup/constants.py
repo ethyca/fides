@@ -13,15 +13,13 @@ STORAGE_KEY = "s3_storage"
 ACCESS_RULE_KEY = "access_rule_key"
 ERASURE_RULE_KEY = "erasure_rule_key"
 
-MONGO_SERVER = "mongodb-test"
+MONGO_SERVER = "mongodb_example"
 MONGO_USER = "mongo_user"
 MONGO_PASSWORD = "mongo_pass"
 MONGO_PORT = 27017
 MONGO_DB = "mongo_test"
 
-# I have no idea why this hostname doesn't work...
-# POSTGRES_SERVER = "postgres-test"
-POSTGRES_SERVER = "host.docker.internal"
+POSTGRES_SERVER = "postgres_example"
 POSTGRES_USER = "postgres"
 POSTGRES_PASSWORD = "postgres"
 POSTGRES_PORT = 6432
