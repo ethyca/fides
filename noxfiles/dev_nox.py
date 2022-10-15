@@ -1,5 +1,6 @@
 """Contains the nox sessions for running development environments."""
 import nox
+from os.path import isfile
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
@@ -52,19 +53,40 @@ def dev(session: nox.Session) -> None:
 @nox.session()
 def test_env(session: nox.Session) -> None:
     """Spins up a comprehensive test environment seeded with data."""
-    session.notify("teardown", posargs=["volumes"])
-    build(session, "test")
-    build(session, "admin_ui")
-    build(session, "privacy_center")
+    secrets_file_path = "./scripts/setup/load_example_secrets.py"
+    if not isfile(secrets_file_path):
+        session.error(
+            f"No secrets file found at {secrets_file_path}! The generic secrets file is available in 1Password by searching 'secrets.py'"
+        )
 
-    # Run the quickstart to seed data
-    run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True, run_create_test_data=True)
-    input("Quickstart complete, press any key to continue...")
-    teardown(session)
+    session.notify("teardown", posargs=["volumes"])
+
+    session.log("Building images...")
+    # build(session, "test")
+    # build(session, "admin_ui")
+    # TODO: Fix the privacy center
+    # build(session, "privacy_center")
 
     # Spin up the app + UI components and load ctl demo resources and a shell
-    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    session.log("Starting the application with additional datastores...")
+    session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
+
+    session.log("Seeding data for DSR processing...")
+    session.run(
+        "docker",
+        "compose",
+        "run",
+        "--rm",
+        COMPOSE_SERVICE_NAME,
+        "python",
+        f"/fides/scripts/load_examples.py",
+        external=True,
+    )
+
+    session.log("Seeding data for Data Mapping...")
     session.run(*RUN_NO_DEPS, "fides", "push", "demo_resources/", external=True)
+
+    session.log("Starting Shell...")
     session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
 
@@ -74,30 +96,3 @@ def quickstart(session: nox.Session) -> None:
     build(session, "dev")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
-
-
-@nox.session()
-@nox.parametrize(
-    "script_name",
-    [
-        nox.param("load_examples", id="load_examples"),
-    ],
-)
-def run_script(session: nox.Session, script_name: str) -> None:
-    """
-    Run a script from the scripts/ directory. This command will not run
-    the server automatically.
-    """
-    posargs = session.posargs
-    if script_name in posargs:
-        posargs.remove(script_name)
-    session.run(
-        "docker",
-        "compose",
-        "run",
-        *posargs,
-        COMPOSE_SERVICE_NAME,
-        "python",
-        f"/fides/scripts/{script_name}.py",
-        external=True,
-    )

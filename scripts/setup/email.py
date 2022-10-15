@@ -50,7 +50,7 @@ def create_email_integration(
         f"{constants.BASE_URL}{email_secrets_path}",
         headers=auth_header,
         json={
-            "mailgun_api_key": get_secret("MAILGUN_API_KEY"),
+            "mailgun_api_key": get_secret("MAILGUN_SECRETS")["api_key"],
         },
     )
 

@@ -1,3 +1,10 @@
+"""
+This script is used to seed the application database with example
+data for DSR processing.
+
+This script is only designed to be run from the Nox session 'nox -s test_env'.
+"""
+
 print("Loading imports...")
 from setup import constants
 from setup.authentication import get_auth_header
@@ -23,13 +30,6 @@ except RuntimeError:
         f"Connection error. Please ensure Fides is healthy and running at {constants.FIDES_URL}."
     )
     raise
-
-try:
-    from setup import secrets
-except ImportError:
-    raise SystemExit(
-        "ERROR! Secrets module not found, checks the docs at 'guides/utility_scripts' for help getting set up."
-    )
 
 auth_header = get_auth_header()
 create_user(

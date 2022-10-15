@@ -52,8 +52,8 @@ def create_s3_storage(
         url,
         headers=auth_header,
         json={
-            "aws_access_key_id": get_secret("AWS_ACCESS_KEY_ID"),
-            "aws_access_secret_id": get_secret("AWS_ACCESS_SECRET_ID"),
+            "aws_access_key_id": get_secret("AWS_SECRETS")["access_key_id"],
+            "aws_access_secret_id": get_secret("AWS_SECRETS")["access_secret_id"],
         },
     )
     create_policy(auth_header=auth_header, key=policy_key)
