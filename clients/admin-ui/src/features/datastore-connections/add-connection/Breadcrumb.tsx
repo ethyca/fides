@@ -27,7 +27,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ steps }) => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!?.human_readable
+            connectionOption!.human_readable
           );
           break;
         default:

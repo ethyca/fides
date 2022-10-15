@@ -2,7 +2,11 @@ import { Box, Flex, Heading, Text } from "@fidesui/react";
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { selectConnectionTypeState, setStep } from "~/features/connection-type";
+import {
+  reset,
+  selectConnectionTypeState,
+  setStep,
+} from "~/features/connection-type";
 
 import Breadcrumb from "../add-connection/Breadcrumb";
 import ConfigurationSettingsNav from "../add-connection/ConfigurationSettingsNav";
@@ -42,6 +46,10 @@ const EditConnection: React.FC = () => {
         dispatch(setStep(STEPS[2]));
       }
     }
+    return () => {
+      // Reset the connection type slice to its initial state
+      dispatch(reset());
+    };
   }, [connectionOption, dispatch]);
 
   return connection && connectionOption ? (

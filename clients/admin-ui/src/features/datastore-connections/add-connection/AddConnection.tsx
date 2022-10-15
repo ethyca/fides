@@ -56,7 +56,7 @@ const AddConnection: React.FC = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!?.human_readable
+            connectionOption!.human_readable
           );
           break;
         default:

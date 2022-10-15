@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
@@ -145,3 +145,10 @@ export const {
   useGetAllConnectionTypesQuery,
   useGetConnectionTypeSecretSchemaQuery,
 } = connectionTypeApi;
+
+export const selectConnectionTypes = createSelector(
+  connectionTypeApi.endpoints.getAllConnectionTypes.select({
+    search: "",
+  }),
+  ({ data }) => data?.items ?? []
+);

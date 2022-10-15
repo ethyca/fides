@@ -1,66 +1,115 @@
-import { Center, Spinner } from "@fidesui/react";
+import { Box, Center, Spinner } from "@fidesui/react";
 import ConnectionsLayout from "datastore-connections/ConnectionsLayout";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { DATASTORE_CONNECTION_ROUTE } from "~/constants";
+import { useAlert } from "~/features/common/hooks";
 import {
-  reset,
-  selectConnectionTypeState,
+  connectionTypeApi,
+  selectConnectionTypes,
   setConnection,
   setConnectionOption,
 } from "~/features/connection-type";
-import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
+import { datastoreConnectionApi } from "~/features/datastore-connections";
 import EditConnection from "~/features/datastore-connections/edit-connection/EditConnection";
-import { ConnectionType } from "~/types/api";
-
-import Custom404 from "../404";
+import { DatastoreConnection } from "~/features/datastore-connections/types";
+import { ConnectionSystemTypeMap, ConnectionType } from "~/types/api";
 
 const EditDatastoreConnection: NextPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { connection, connectionOption, connectionOptions } = useAppSelector(
-    selectConnectionTypeState
-  );
+  const { errorAlert } = useAlert();
+  const connectionOptions = useAppSelector(selectConnectionTypes);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetDatastoreConnectionByKeyQuery(router.query.id as string);
+  const getConnectionOption = (
+    data: DatastoreConnection,
+    options: ConnectionSystemTypeMap[]
+  ): ConnectionSystemTypeMap | undefined => {
+    const item = options.find(
+      (option) =>
+        (option.identifier === data.connection_type &&
+          option.identifier !== ConnectionType.SAAS) ||
+        option.identifier === data.saas_config?.type
+    );
+    return item;
+  };
 
   useEffect(() => {
-    if (data) {
-      dispatch(setConnection(data));
-      const item = connectionOptions.find(
-        (option) =>
-          (option.identifier === data.connection_type &&
-            option.identifier !== ConnectionType.SAAS) ||
-          option.identifier === data.saas_config?.type
-      );
-      dispatch(setConnectionOption(item));
-    }
-    return () => {
-      if (connection && connectionOption) {
-        // Reset the connection type slice to its initial state
-        dispatch(reset());
+    const handleError = () => {
+      errorAlert(`An error occurred while loading ${router.query.id}`);
+      router.push(DATASTORE_CONNECTION_ROUTE, undefined, { shallow: true });
+    };
+
+    const fetchConnectionData = async (key: string) => {
+      try {
+        setIsFetching(true);
+        const promises: any[] = [];
+        promises.push(
+          dispatch(
+            datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
+              key
+            )
+          )
+        );
+        if (connectionOptions.length === 0) {
+          promises.push(
+            dispatch(
+              connectionTypeApi.endpoints.getAllConnectionTypes.initiate({
+                search: "",
+              })
+            )
+          );
+        }
+        const results = await Promise.allSettled(promises);
+        if (results.every((result) => result.status === "fulfilled")) {
+          dispatch(setConnection((results[0] as any).value.data));
+          const options: ConnectionSystemTypeMap[] = [
+            ...(results[1]
+              ? (results[1] as any).value.data.items
+              : connectionOptions),
+          ];
+          const item = getConnectionOption(
+            (results[0] as any).value.data,
+            options
+          );
+          dispatch(setConnectionOption(item));
+          setIsFetching(false);
+          setIsLoading(false);
+        } else {
+          handleError();
+        }
+      } catch (error) {
+        handleError();
       }
     };
-  }, [connection, connectionOption, connectionOptions, data, dispatch]);
+
+    const { id } = router.query;
+    if (id && !isFetching && isLoading) {
+      fetchConnectionData(id as string);
+    }
+
+    return () => {};
+  }, [connectionOptions, dispatch, errorAlert, isFetching, isLoading, router]);
 
   return (
     <>
-      {(isFetching || isLoading) && (
-        <Center>
-          <Spinner />
-        </Center>
+      {isLoading && (
+        <Box display="flex" h="100vh" justifyContent="center">
+          <Center>
+            <Spinner />
+          </Center>
+        </Box>
       )}
-      {isSuccess &&
-        (data ? (
-          <ConnectionsLayout>
-            {connection && <EditConnection />}
-          </ConnectionsLayout>
-        ) : (
-          <Custom404 />
-        ))}
+      {!isLoading && (
+        <ConnectionsLayout>
+          <EditConnection />
+        </ConnectionsLayout>
+      )}
     </>
   );
 };
