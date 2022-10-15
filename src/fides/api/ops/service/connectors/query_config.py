@@ -16,7 +16,7 @@ from fides.api.ops.graph.config import (
     FieldPath,
     MaskingOverride,
 )
-from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import ActionType, Policy, Rule
 from fides.api.ops.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
@@ -27,7 +27,7 @@ from fides.api.ops.task.refine_target_path import (
     build_refined_target_paths,
     join_detailed_path,
 )
-from fides.api.ops.util.collection_util import append, filter_nonempty_values
+from fides.api.ops.util.collection_util import Row, append, filter_nonempty_values
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.querytoken import QueryToken
 

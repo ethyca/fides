@@ -99,7 +99,7 @@ def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
     global _connection  # pylint: disable=W0603
     if _connection is None:
-        _connection = FidesopsRedis(
+        _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.host,

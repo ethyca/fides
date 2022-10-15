@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
-from fideslang.models import DataSubject, DataUse, Organization, System
+from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
 
 from fides.cli.utils import pretty_echo
 from fides.ctl.core.api_helpers import (
@@ -24,16 +24,25 @@ def audit_systems(
     audit functions.
     """
     # get the server resources for systems
+    system_resources: Optional[Union[List[FidesModel], List[Dict]]]
+
     if include_keys:
         system_resources = get_server_resources(url, "system", include_keys, headers)
     else:
         system_resources = list_server_resources(
             url, headers, "system", exclude_keys=[]
         )
+
+    if not system_resources:
+        print("No system resources were found.")
+        return
+
     print(f"Found {len(system_resources)} System resource(s) to audit...")
     audit_findings = 0
     for system in system_resources:
-        pretty_echo(f"Auditing System: {system.name}")
+        pretty_echo(
+            f"Auditing System: {system.name if isinstance(system, FidesModel) else system['name']}"
+        )
         new_findings = validate_system_attributes(system, url, headers)
         audit_findings = audit_findings + new_findings
 
@@ -132,6 +141,8 @@ def audit_organizations(
     correctly populated
     """
 
+    organization_resources: Optional[Union[List[FidesModel], List[dict]]]
+
     if include_keys:
         organization_resources = get_server_resources(
             url, "organization", include_keys, headers
@@ -140,10 +151,18 @@ def audit_organizations(
         organization_resources = list_server_resources(
             url, headers, "organization", exclude_keys=[]
         )
+
+    if not organization_resources:
+        print("No organization resources were found.")
+        return
+
     print(f"Found {len(organization_resources)} Organization resource(s) to audit...")
+
     audit_findings = 0
     for organization in organization_resources:
-        print(f"Auditing Organization: {organization.name}")
+        print(
+            f"Auditing Organization: {organization.name if isinstance(organization, FidesModel) else organization['name']}"
+        )
         new_findings = audit_organization_attributes(organization)
         audit_findings += new_findings
     if audit_findings > 0:

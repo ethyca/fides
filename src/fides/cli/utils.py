@@ -23,7 +23,12 @@ from fideslog.sdk.python.utils import (
 )
 
 import fides
-from fides.ctl.connectors.models import AWSConfig, BigQueryConfig, OktaConfig
+from fides.ctl.connectors.models import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    OktaConfig,
+)
 from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config.credentials_settings import (
@@ -70,7 +75,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         )
 
 
-def pretty_echo(dict_object: Dict, color: str = "white") -> None:
+def pretty_echo(dict_object: Union[Dict, str], color: str = "white") -> None:
     """
     Given a dict-like object and a color, pretty click echo it.
     """
@@ -244,7 +249,11 @@ def handle_database_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, database_credentials)
-        actual_connection_string = database_credentials.connection_string
+        actual_connection_string = (
+            database_credentials.connection_string
+            if database_credentials is not None
+            else actual_connection_string
+        )
     return actual_connection_string
 
 
@@ -255,7 +264,7 @@ def handle_okta_credentials_options(
     Handles the mutually exclusive okta connections options org-url/token and credentials-id.
     It is allowed to provide neither as there is support for environment variables
     """
-    okta_config = {}
+    okta_config: Optional[OktaConfig] = None
     if token or org_url:
         if not token or not org_url:
             raise click.UsageError(
@@ -272,6 +281,7 @@ def handle_okta_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, okta_config)
+
     return okta_config
 
 
@@ -308,6 +318,7 @@ def handle_aws_credentials_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, aws_config)
+
     return aws_config
 
 
@@ -316,7 +327,7 @@ def handle_bigquery_config_options(
     dataset: str,
     keyfile_path: str,
     credentials_id: str,
-) -> Optional[BigQueryConfig]:
+) -> BigQueryConfig:
     """
     Handles the connections options for passing a keyfile, dictionary, or credentials-id.
     """
@@ -341,14 +352,18 @@ def handle_bigquery_config_options(
             credentials_id=credentials_id,
         )
         _validate_credentials_id_exists(credentials_id, bigquery_config)
-    else:
+
+    if not bigquery_config:
         raise click.UsageError("Illegal usage: No connection configuration provided")
+
     return bigquery_config
 
 
 def _validate_credentials_id_exists(
     credentials_id: str,
-    credentials_config: Union[OktaConfig, BigQueryConfig, AWSConfig],
+    credentials_config: Optional[
+        Union[AWSConfig, BigQueryConfig, DatabaseConfig, OktaConfig]
+    ],
 ) -> None:
     if not credentials_config:
         raise click.UsageError(
