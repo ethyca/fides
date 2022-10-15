@@ -3,10 +3,11 @@ import uuid
 from typing import Dict
 
 import requests
-import setup.constants as constants
 
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+
+from . import constants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
