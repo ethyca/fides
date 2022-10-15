@@ -46,7 +46,6 @@ def get_platform(posargs: List[str]) -> str:
     "image",
     [
         nox.param("dev", id="dev"),
-        nox.param("pc", id="pc"),
         nox.param("prod", id="prod"),
         nox.param("test", id="test"),
         nox.param("admin_ui", id="admin-ui"),
