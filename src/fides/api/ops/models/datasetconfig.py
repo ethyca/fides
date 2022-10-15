@@ -246,10 +246,10 @@ def validate_dataset_reference(
             f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
         )
     dataset: Dataset = convert_dataset_to_graph(
-        FidesopsDataset(**dataset_config.dataset), dataset_config.fides_key
+        FidesopsDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
-    collection_name, *field = dataset_reference.field.split(".")
-    if not field or not collection_name or not field[0]:
+    collection_name, *field_name = dataset_reference.field.split(".")
+    if not field_name or not collection_name or not field_name[0]:
         raise ValidationError(
             "Dataset reference field specifications must include at least two dot-separated components"
         )
@@ -265,7 +265,7 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown collection '{collection_name}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
-    field = collection.field(FieldPath.parse(*field))
+    field = collection.field(FieldPath.parse(*field_name))
     if field is None:
         raise ValidationError(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
