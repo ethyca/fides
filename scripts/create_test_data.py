@@ -23,11 +23,11 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.storage.storage import ResponseFormat
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
+    ResponseFormat,
     StorageDetails,
     StorageType,
 )
