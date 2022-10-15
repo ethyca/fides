@@ -131,3 +131,6 @@ services:
 
 volumes:
   postgres: null
+
+networks:
+  fides_network:

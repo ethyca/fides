@@ -28,7 +28,7 @@ def create_postgres_connector(
         key=key,
         secrets={
             "host": constants.POSTGRES_SERVER,
-            "port": constants.POSTGRES_PORT,
+            "port": str(constants.POSTGRES_PORT),
             "dbname": constants.POSTGRES_DB_NAME,
             "username": constants.POSTGRES_USER,
             "password": constants.POSTGRES_PASSWORD,

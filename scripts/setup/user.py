@@ -15,13 +15,10 @@ logging.basicConfig(level=logging.INFO)
 
 def create_user(
     auth_header: Dict[str, str],
-    username: str = None,
-    password: str = "Atestpassword1!",
+    username=constants.FIDES_USERNAME,
+    password=constants.FIDES_PASSWORD,
 ):
     """Adds a user with full permissions"""
-    if not username:
-        username = str(uuid.uuid4())
-
     login_response = requests.post(
         f"{constants.BASE_URL}{urls.LOGIN}",
         headers=auth_header,

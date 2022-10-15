@@ -34,8 +34,6 @@ except RuntimeError:
 auth_header = get_auth_header()
 create_user(
     auth_header=auth_header,
-    username="an_example_user",
-    password="Atestpassword1!",
 )
 create_policy(auth_header=auth_header)
 create_policy(auth_header=auth_header, key=constants.ERASURE_POLICY_KEY)

@@ -1,5 +1,8 @@
 from fides.api.ops.api.v1 import urn_registry as urls
 
+FIDES_USERNAME = "fidestest"
+FIDES_PASSWORD = "Apassword1!"
+
 FIDES_URL = "http://fides:8080"
 BASE_URL = FIDES_URL + urls.V1_URL_PREFIX
 
@@ -10,15 +13,15 @@ STORAGE_KEY = "s3_storage"
 ACCESS_RULE_KEY = "access_rule_key"
 ERASURE_RULE_KEY = "erasure_rule_key"
 
-MONGO_SERVER = "mongodb_example"
+MONGO_SERVER = "mongodb-test"
 MONGO_USER = "mongo_user"
 MONGO_PASSWORD = "mongo_pass"
 MONGO_PORT = 27017
 MONGO_DB = "mongo_test"
 
-# These are external datastores so don't read them from the config
+# I have no idea why this hostname doesn't work...
+# POSTGRES_SERVER = "postgres-test"
 POSTGRES_SERVER = "host.docker.internal"
-# POSTGRES_SERVER = "postgres_example"
 POSTGRES_USER = "postgres"
 POSTGRES_PASSWORD = "postgres"
 POSTGRES_PORT = 6432

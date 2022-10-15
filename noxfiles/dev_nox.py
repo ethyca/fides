@@ -59,25 +59,21 @@ def test_env(session: nox.Session) -> None:
             f"No secrets file found at {secrets_file_path}! The generic secrets file is available in 1Password by searching 'secrets.py'"
         )
 
-    session.notify("teardown", posargs=["volumes"])
+    # session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
-    # build(session, "test")
+    # build(session, "dev")
     # build(session, "admin_ui")
     # TODO: Fix the privacy center
     # build(session, "privacy_center")
 
-    # Spin up the app + UI components and load ctl demo resources and a shell
     session.log("Starting the application with additional datastores...")
-    session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
+    # External Datastores must exist in docker-compose.integration-tests.yml
+    # session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
 
     session.log("Seeding data for DSR processing...")
     session.run(
-        "docker",
-        "compose",
-        "run",
-        "--rm",
-        COMPOSE_SERVICE_NAME,
+        *RUN_NO_DEPS,
         "python",
         f"/fides/scripts/load_examples.py",
         external=True,
