@@ -6,7 +6,7 @@ export type ConsentItem = {
   url: string;
   defaultValue: boolean;
   consentValue?: boolean;
-  cookieKeys: string[];
+  cookieKeys?: string[];
 };
 
 export type ApiUserConsent = {
