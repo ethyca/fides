@@ -254,8 +254,8 @@ fides_uploads
 saas_config.toml
 
 # Script secrets
-scripts/secrets.py
-scripts/setup/secrets.py
+scripts/load_example_secrets.py
+scripts/setup/load_example_secrets.py
 
 
 # Frontend files
