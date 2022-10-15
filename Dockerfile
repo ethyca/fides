@@ -80,6 +80,15 @@ RUN if [ "$TARGETPLATFORM" != "linux/arm64" ] ; \
     && rm -rf /var/lib/apt/lists/* ; \
     fi
 
+# Required for the System Scanner
+ARG PX_CLI_VERSION="0.7.17"
+RUN curl \
+    --location \
+    --output px \
+    --output-dir /usr/local/bin \
+    https://github.com/pixie-io/pixie/releases/download/release/cli/v${PX_CLI_VERSION}/cli_linux_amd64
+RUN chmod +x /usr/local/bin/px
+
 # General Application Setup ##
 COPY . /fides
 WORKDIR /fides
