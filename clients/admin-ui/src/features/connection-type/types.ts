@@ -24,16 +24,20 @@ export type ConnectionTypeParams = {
   system_type?: SystemType;
 };
 
+export type ConnectionTypeSecretSchemaProperty = {
+  default?: string;
+  title: string;
+  type: string;
+  description?: string;
+  allOf?: {
+    $ref: string;
+  }[];
+};
+
 export type ConnectionTypeSecretSchemaReponse = {
   additionalProperties: boolean;
   description: string;
-  properties: {
-    [key: string]: {
-      default?: string;
-      title: string;
-      type: string;
-    };
-  };
+  properties: { [key: string]: ConnectionTypeSecretSchemaProperty };
   required: string[];
   title: string;
   type: string;

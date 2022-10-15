@@ -39,6 +39,7 @@ nav:
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
           - Understanding Privacy Request Execution: guides/fidesops_workflow.md
+          - Configuring Fides with Scripts: guides/utility_scripts.md
       - Tutorial:
           - Overview: tutorial/index.md
           - Add Fides to the App: tutorial/add.md

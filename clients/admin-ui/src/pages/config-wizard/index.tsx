@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useState } from "react";
+import { useState } from "react";
 
 import Header from "~/features/common/Header";
 import Layout from "~/features/common/Layout";
@@ -15,7 +15,7 @@ const ConfigWizard: NextPage = () => {
   };
 
   return !configWizardStep ? (
-    <Layout title="Config Wizard">
+    <Layout title="Config Wizard" noPadding>
       <Setup wizardStep={handleWizardStep} />
     </Layout>
   ) : (

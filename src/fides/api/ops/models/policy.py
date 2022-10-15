@@ -360,6 +360,21 @@ class RuleTarget(Base):
     )
 
     @classmethod
+    def get_compound_key(cls, data: Dict[str, Any]) -> str:
+        data_category = data.get("data_category")
+        if not data_category:
+            raise common_exceptions.RuleTargetValidationError(
+                "A data_category must be supplied."
+            )
+        rule_id = data.get("rule_id")
+        if not rule_id:
+            raise common_exceptions.RuleTargetValidationError(
+                "A rule_id must be supplied."
+            )
+
+        return f"{rule_id}-{data_category}"
+
+    @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
         An override of `FidesBase.create_or_update` that handles the specific edge case where
@@ -401,7 +416,7 @@ class RuleTarget(Base):
                 "A rule_id must be supplied."
             )
 
-        default_name = f"{rule_id}-{data_category}"
+        default_name = cls.get_compound_key(data=data)
         if data.get("name") is None:
             data["name"] = default_name
 
@@ -436,10 +451,15 @@ class RuleTarget(Base):
     def update(self, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """Validate data_category on object update."""
         updated_data_category = data.get("data_category")
-        if data.get("name") is None:
-            # Don't pass explcit `None` through for `name` because the field
-            # is non-nullable
-            del data["name"]
+        try:
+            name = data["name"]
+        except KeyError:
+            pass
+        else:
+            if name is None:
+                # Don't pass explcit `None` through for `name` because
+                # the field is non-nullable
+                del data["name"]
 
         if (
             updated_data_category is not None

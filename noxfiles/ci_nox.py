@@ -10,6 +10,7 @@ from constants_nox import (
     RUN,
     RUN_NO_DEPS,
     START_APP,
+    START_APP_WITH_EXTERNAL_POSTGRES,
     WITH_TEST_CONFIG,
 )
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
@@ -38,6 +39,7 @@ def black(session: nox.Session) -> None:
         "src",
         "tests",
         "noxfiles",
+        "scripts",
     )
     session.run(*command)
 
@@ -46,7 +48,7 @@ def black(session: nox.Session) -> None:
 def isort(session: nox.Session) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
     session.run(*command)
 
 
@@ -75,6 +77,7 @@ def xenon(session: nox.Session) -> None:
         "noxfiles",
         "src",
         "tests",
+        "scripts",
         "--max-absolute B",
         "--max-modules B",
         "--max-average A",
@@ -242,7 +245,15 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
-        session.run(*START_APP, external=True)
+        # This test runs an additional integration Postgres database.
+        # Some connectors cannot be traversed with the standard email
+        # identity and require another dataset to provide a starting value.
+        #
+        #         ┌────────┐                 ┌────────┐
+        # email──►│postgres├──►delivery_id──►│doordash│
+        #         └────────┘                 └────────┘
+        #
+        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
             "docker-compose",
             "run",
