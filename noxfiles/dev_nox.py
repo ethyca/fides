@@ -65,12 +65,6 @@ def test_env(session: nox.Session) -> None:
     check_for_env_file(session)
     check_docker_version(session)
 
-    secrets_file_path = "./scripts/setup/load_example_secrets.py"
-    if not isfile(secrets_file_path):
-        session.error(
-            f"No secrets file found at {secrets_file_path}! The generic secrets file is available in 1Password by searching 'load_example_secrets.py'"
-        )
-
     session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
