@@ -16,6 +16,8 @@ services:
       - 6432
     ports:
       - "0.0.0.0:6432:5432"
+    volumes:
+      - ./docker/sample_data/postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql:ro
 
   mysql-test:
     image: mysql:8

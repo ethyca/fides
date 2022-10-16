@@ -13,16 +13,16 @@ STORAGE_KEY = "s3_storage"
 ACCESS_RULE_KEY = "access_rule_key"
 ERASURE_RULE_KEY = "erasure_rule_key"
 
-MONGO_SERVER = "mongodb_example"
+MONGO_SERVER = "mongodb-test"
 MONGO_USER = "mongo_user"
 MONGO_PASSWORD = "mongo_pass"
 MONGO_PORT = 27017
 MONGO_DB = "mongo_test"
 
-POSTGRES_SERVER = "postgres_example"
+POSTGRES_SERVER = "postgres-test"
 POSTGRES_USER = "postgres"
 POSTGRES_PASSWORD = "postgres"
-POSTGRES_PORT = 6432
+POSTGRES_PORT = 5432
 POSTGRES_DB_NAME = "postgres_example"
 
 ROOT_CLIENT_ID = "fidesadmin"

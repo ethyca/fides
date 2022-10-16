@@ -67,14 +67,10 @@ def test_env(session: nox.Session) -> None:
     build(session, "privacy_center")
 
     session.log("Starting the application with additional datastores...")
-    # External Datastores must exist in docker-compose.integration-tests.yml
-    # session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
-    # Run the webserver with additional datastores
-    run_infrastructure(
-        datastores=["postgres", "mongodb"]
-    )
+    # NOTE: External databases must exist in docker-compose.integration-tests.yml
+    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
 
-    session.log("Seeding data for DSR automation...")
+    session.log("Seeding data for DSR Automation tests...")
     session.run(
         *RUN_NO_DEPS,
         "python",
@@ -82,10 +78,20 @@ def test_env(session: nox.Session) -> None:
         external=True,
     )
 
-    session.log("Seeding data for Data Mapping...")
+    session.log("Seeding data for Data Mapping tests...")
     session.run(*RUN_NO_DEPS, "fides", "push", "demo_resources/", external=True)
 
-    session.log("Starting Shell...")
+    session.log("****************************************")
+    session.log("*                                      *")
+    session.log("*        FIDES TEST ENVIRONMENT        *")
+    session.log("*                                      *")
+    session.log("****************************************")
+    session.log("")
+    session.log("Fides Admin UI running at http://localhost:3000")
+    session.log("Fides Privacy Center running at http://localhost:3001")
+    session.log("Example Postgres Database running at postgres://localhost:6432")
+    session.log("Example Mongo Database running at postgres://localhost:27017")
+    session.log("Opening Fides CLI shell...")
     session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
 
