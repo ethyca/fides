@@ -18,7 +18,7 @@ CONFIG = get_config()
 @pytest.mark.skip(reason="Pending development of OAuth2 JWT Bearer authentication")
 @pytest.mark.integration_saas
 @pytest.mark.integration_auth0
-def test_auth0_campaign_connection_test(auth0_connection_config) -> None:
+def test_auth0_connection_test(auth0_connection_config) -> None:
     get_connector(auth0_connection_config).test_connection()
 
 

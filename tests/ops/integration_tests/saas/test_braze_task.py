@@ -1,5 +1,5 @@
 import random
-import time
+from time import sleep
 
 import pytest
 import requests
@@ -171,7 +171,7 @@ async def test_braze_erasure_request_task(
         f"{dataset_name}:subscription_groups_email": 0,
     }
 
-    time.sleep(30)
+    sleep(30)
 
     # Verifying field is masked
     braze_secrets = braze_connection_config.secrets
