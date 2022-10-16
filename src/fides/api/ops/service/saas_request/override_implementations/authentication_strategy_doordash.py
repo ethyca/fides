@@ -43,7 +43,7 @@ class DoordashAuthenticationStrategy(AuthenticationStrategy):
         Generate a Doordash JWT and add it as bearer auth
         """
 
-        secrets: Dict[str, Any] = connection_config.secrets
+        secrets: Dict[str, Any] = connection_config.secrets  # type: ignore
 
         token = jwt.encode(
             {
