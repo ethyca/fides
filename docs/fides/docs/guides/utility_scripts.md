@@ -28,16 +28,20 @@ Each script uses the Fides API to create its corresponding primitive object in F
 Some third party integrations require secrets to grant access. Custom scripts are configured to read these secrets as constant variables from a `scripts/setup/secrets.py` file. Due to its sensitive nature, this file is not supplied in the repository, and should instead be stored somewhere more secure such as a password manager. It must be a valid Python file and the format of the secrets should be:
 
 ```python
-AWS_ACCESS_KEY_ID = ""
-AWS_ACCESS_SECRET_ID = ""
-
-MAILCHIMP_SECRETS = {
-    "domain": "",
-    "username": "",
-    "api_key": "",
+AWS_SECRETS = {
+    "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
+    "access_secret_id": os.getenv("AWS_ACCESS_SECRET_ID"),
 }
 
-MAILGUN_API_KEY = ""
+MAILCHIMP_SECRETS = {
+    "domain": os.getenv("MAILCHIMP_DOMAIN"),
+    "username": os.getenv("MAILCHIMP_USERNAME"),
+    "api_key": os.getenv("MAILCHIMP_API_KEY"),
+}
+
+MAILGUN_SECRETS = {
+    "api_key": os.getenv("MAILGUN_API_KEY"),
+}
 ```
 
 ## Writing custom scripts

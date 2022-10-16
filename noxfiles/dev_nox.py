@@ -91,6 +91,7 @@ def test_env(session: nox.Session) -> None:
     session.log("Fides Privacy Center running at http://localhost:3001")
     session.log("Example Postgres Database running at postgres://localhost:6432")
     session.log("Example Mongo Database running at postgres://localhost:27017")
+    session.log("Username: 'fidestest', Password: 'Apassword1!")
     session.log("Opening Fides CLI shell...")
     session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
