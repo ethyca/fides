@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def create_policy(
+def create_dsr_policy(
     auth_header: Dict[str, str],
     key: str = constants.ACCESS_POLICY_KEY,
     execution_timeframe: int = 45,

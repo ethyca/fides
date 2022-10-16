@@ -12,7 +12,7 @@ from setup.email import create_email_integration
 from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector
 from setup.mongodb_connector import create_mongodb_connector
-from setup.policy import create_policy
+from setup.policy import create_dsr_policy
 from setup.postgres_connector import create_postgres_connector
 from setup.privacy_request import create_privacy_request
 from setup.rule import create_rule
@@ -21,7 +21,7 @@ from setup.s3_storage import create_s3_storage
 from setup.stripe_connector import create_stripe_connector
 from setup.user import create_user
 
-print("Running an example Fides configuration script...")
+print("Generating example data for local Fides test environment...")
 
 try:
     check_health()
@@ -31,12 +31,13 @@ except RuntimeError:
     )
     raise
 
+# Start by generating an OAuth client to make API requests
 auth_header = get_auth_header()
 create_user(
     auth_header=auth_header,
 )
-create_policy(auth_header=auth_header)
-create_policy(auth_header=auth_header, key=constants.ERASURE_POLICY_KEY)
+create_dsr_policy(auth_header=auth_header)
+create_dsr_policy(auth_header=auth_header, key=constants.ERASURE_POLICY_KEY)
 create_s3_storage(auth_header=auth_header)
 create_rule(auth_header=auth_header)
 create_rule(

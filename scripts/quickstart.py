@@ -304,7 +304,7 @@ def create_local_storage(key: str, file_format: str):
     )
 
 
-def create_policy(key: str):
+def create_dsr_policy(key: str):
     """
     Create a request policy in fidesops with the given key.
     Returns the response JSON if successful, or throws an error otherwise.
@@ -345,7 +345,7 @@ def delete_policy_rule(policy_key: str, key: str):
     return requests.delete(f"{FIDESOPS_V1_API_URL}{rule_path}", headers=oauth_header)
 
 
-def create_policy_rule(
+def create_dsr_policy_rule(
     policy_key: str,
     key: str,
     action_type: ActionType,
@@ -391,7 +391,7 @@ def create_policy_rule(
     )
 
 
-def create_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
+def create_dsr_policy_rule_target(policy_key: str, rule_key: str, data_cat: str):
     """
     Create a policy rule target that matches the given data_category.
     Returns the response JSON if successful, or throws an error otherwise.
@@ -669,7 +669,7 @@ if __name__ == "__main__":
     )
     input()
 
-    create_policy(
+    create_dsr_policy(
         key="example_request_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
@@ -677,13 +677,13 @@ if __name__ == "__main__":
         policy_key="example_request_policy",
         key="access_user_data",
     )
-    create_policy_rule(
+    create_dsr_policy_rule(
         policy_key="example_request_policy",
         key="access_user_data",
         action_type=ActionType.access,
         storage_destination_key="example_storage",
     )
-    create_policy_rule_target(
+    create_dsr_policy_rule_target(
         policy_key="example_request_policy",
         rule_key="access_user_data",
         data_cat=data_category,
@@ -739,7 +739,7 @@ if __name__ == "__main__":
     )
     input()
 
-    create_policy(
+    create_dsr_policy(
         key="example_erasure_policy",
     )
     # Delete any existing policy rule so we can reconfigure it based on input
@@ -747,12 +747,12 @@ if __name__ == "__main__":
         policy_key="example_erasure_policy",
         key="erase_user_data",
     )
-    create_policy_rule(
+    create_dsr_policy_rule(
         policy_key="example_erasure_policy",
         key="erase_user_data",
         action_type=ActionType.erasure,
     )
-    create_policy_rule_target(
+    create_dsr_policy_rule_target(
         policy_key="example_erasure_policy",
         rule_key="erase_user_data",
         data_cat=data_category,

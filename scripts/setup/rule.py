@@ -18,7 +18,7 @@ def create_rule(
     storage_key: str = constants.STORAGE_KEY,
     action_type: str = "access",
 ):
-    policy_rules = [
+    rules = [
         {
             "storage_destination_key": storage_key,
             "name": f"My User Data {action_type}",
@@ -28,8 +28,8 @@ def create_rule(
     ]
 
     if action_type == "erasure":
-        policy_rules[0]["masking_strategy"] = {
-            "strategy": "null_rewrite",
+        rules[0]["masking_strategy"] = {
+            "strategy": "hmac",
             "configuration": {},
         }
 
@@ -37,12 +37,12 @@ def create_rule(
     response = requests.patch(
         f"{constants.BASE_URL}{url}",
         headers=auth_header,
-        json=policy_rules,
+        json=rules,
     )
 
     if response.ok:
-        policies = (response.json())["succeeded"]
-        if len(policies) > 0:
+        rules = (response.json())["succeeded"]
+        if len(rules) > 0:
             logger.info(
                 "Created or updated fides rule with key=%s via %s", rule_key, url
             )
