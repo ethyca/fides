@@ -1,5 +1,6 @@
 import math
 import time
+from typing import Any, Dict
 
 import jwt.utils
 from requests import PreparedRequest
@@ -42,7 +43,7 @@ class DoordashAuthenticationStrategy(AuthenticationStrategy):
         Generate a Doordash JWT and add it as bearer auth
         """
 
-        secrets = connection_config.secrets
+        secrets: Dict[str, Any] = connection_config.secrets
 
         token = jwt.encode(
             {
