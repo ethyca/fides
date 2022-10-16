@@ -20,24 +20,24 @@ const ConfigWizard: NextPage = () => {
 
   return !configWizardStep ? (
     <Flags
-    authorizedFlags={["configWizardFlag"]}
-    renderOn={() => (
-    <Layout title="Config Wizard" noPadding>
-      <Setup wizardStep={handleWizardStep} />
-    </Layout>
-    )}
-    renderOff={() => <Custom404 />}
+      authorizedFlags={["configWizardFlag"]}
+      renderOn={() => (
+        <Layout title="Config Wizard" noPadding>
+          <Setup wizardStep={handleWizardStep} />
+        </Layout>
+      )}
+      renderOff={() => <Custom404 />}
     />
   ) : (
     <Flags
-    authorizedFlags={["configWizardFlag"]}
-    renderOn={() => (
-      <>
-        <Header />
-        <ConfigWizardWalkthrough />
-      </>
+      authorizedFlags={["configWizardFlag"]}
+      renderOn={() => (
+        <>
+          <Header />
+          <ConfigWizardWalkthrough />
+        </>
       )}
-    renderOff={() => <Custom404 />}
+      renderOff={() => <Custom404 />}
     />
   );
 };
