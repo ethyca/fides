@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Accordion,
   AccordionButton,
@@ -18,6 +19,7 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
+import { GreenCheckCircleIcon, WarningIcon } from "common/Icon";
 import { Form, Formik } from "formik";
 import { useRef, useState } from "react";
 import * as Yup from "yup";
@@ -38,8 +40,6 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
-import { ChevronRightIcon } from "@chakra-ui/icons";
-import { GreenCheckCircleIcon, WarningIcon } from "common/Icon";
 import DocsLink from "../common/DocsLink";
 import {
   changeStep,
@@ -171,8 +171,7 @@ const AuthenticateAwsForm = () => {
           <Form data-testid="authenticate-aws-form">
             <Stack spacing={10}>
               {isSubmitting ? (
-                <>
-                  <Text
+                <Text
                     alignItems="center"
                     as="b"
                     color="gray.900"
@@ -182,7 +181,6 @@ const AuthenticateAwsForm = () => {
                     System scanning in progress{" "}
                     <CloseButton display="inline-block" onClick={onOpen} />
                   </Text>
-                </>
               ) : null}
 
               {!systemResultsNumber && isSubmitting ? (
