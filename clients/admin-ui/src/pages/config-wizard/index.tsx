@@ -4,13 +4,12 @@ import { useState } from "react";
 // @ts-ignore
 import { Flags } from "react-feature-flags";
 
-import Custom404 from "../404";
-
 import Header from "~/features/common/Header";
 import Layout from "~/features/common/Layout";
 import ConfigWizardWalkthrough from "~/features/config-wizard/ConfigWizardWalkthrough";
 
 import Setup from "../../features/config-wizard/setup";
+import Custom404 from "../404";
 
 const ConfigWizard: NextPage = () => {
   const [configWizardStep, setConfigWizardStep] = useState(false);
