@@ -1,6 +1,7 @@
 """Contains the nox sessions for running development environments."""
 import nox
 from os.path import isfile
+from pathlib import Path
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
@@ -9,15 +10,23 @@ from constants_nox import (
     START_APP_EXTERNAL,
     RUN_NO_DEPS,
 )
-from utils_nox import teardown
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import check_docker_compose_version, check_docker_version
 
 
+def check_for_env_file(session: nox.Session) -> None:
+    """Create a .env file is none exists."""
+    env_file = ".env"
+    if not isfile(env_file):
+        session.log(f"Creating env file: {env_file}")
+        Path(env_file).touch()
+
+
 @nox.session()
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
+    check_for_env_file(session)
     check_docker_compose_version(session)
     check_docker_version(session)
 
@@ -53,6 +62,9 @@ def dev(session: nox.Session) -> None:
 @nox.session()
 def test_env(session: nox.Session) -> None:
     """Spins up a comprehensive test environment seeded with data."""
+    check_for_env_file(session)
+    check_docker_version(session)
+
     secrets_file_path = "./scripts/setup/load_example_secrets.py"
     if not isfile(secrets_file_path):
         session.error(
@@ -71,7 +83,9 @@ def test_env(session: nox.Session) -> None:
     session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
 
     session.log("Seeding example data for DSR Automation tests...")
-    session.warn("WARNING: Stripe connector is disabled due to errors... (see load_examples.py)")
+    session.warn(
+        "WARNING: Stripe connector is disabled due to errors... (see load_examples.py)"
+    )
     session.run(
         *RUN_NO_DEPS,
         "python",

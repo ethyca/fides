@@ -16,6 +16,8 @@ services:
         condition: service_started
     expose:
       - 8080
+    env_file:
+      - .env
     environment:
       FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
       FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
