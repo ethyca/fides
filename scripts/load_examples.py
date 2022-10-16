@@ -62,9 +62,10 @@ create_postgres_connector(
 create_mailchimp_connector(
     auth_header=auth_header,
 )
-create_stripe_connector(
-    auth_header=auth_header,
-)
+# TODO: re-enable Stripe connector when working
+# create_stripe_connector(
+#     auth_header=auth_header,
+# )
 create_mongodb_connector(auth_header=auth_header)
 create_privacy_request(user_email="an_example_user")
 

@@ -66,11 +66,12 @@ def test_env(session: nox.Session) -> None:
     build(session, "admin_ui")
     build(session, "privacy_center")
 
-    session.log("Starting the application with additional datastores...")
-    # NOTE: External databases must exist in docker-compose.integration-tests.yml
+    session.log("Starting the application with example databases...")
+    # NOTE: Example databases must exist in docker-compose.integration-tests.yml
     session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
 
-    session.log("Seeding data for DSR Automation tests...")
+    session.log("Seeding example data for DSR Automation tests...")
+    session.warn("WARNING: Stripe connector is disabled due to errors... (see load_examples.py)")
     session.run(
         *RUN_NO_DEPS,
         "python",
@@ -78,7 +79,7 @@ def test_env(session: nox.Session) -> None:
         external=True,
     )
 
-    session.log("Seeding data for Data Mapping tests...")
+    session.log("Seeding example data for Data Mapping tests...")
     session.run(*RUN_NO_DEPS, "fides", "push", "demo_resources/", external=True)
 
     session.log("****************************************")
