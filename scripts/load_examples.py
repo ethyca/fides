@@ -12,7 +12,7 @@ from setup.email import create_email_integration
 from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector
 from setup.mongodb_connector import create_mongodb_connector
-from setup.policy import create_dsr_policy
+from setup.dsr_policy import create_dsr_policy
 from setup.postgres_connector import create_postgres_connector
 from setup.privacy_request import create_privacy_request
 from setup.rule import create_rule
