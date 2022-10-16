@@ -1,7 +1,4 @@
 """Contains the nox sessions for running development environments."""
-from os.path import isfile
-from pathlib import Path
-
 import nox
 
 from constants_nox import (
@@ -74,7 +71,7 @@ def test_env(session: nox.Session) -> None:
     session.run(
         *RUN_NO_DEPS,
         "python",
-        f"/fides/scripts/load_examples.py",
+        "/fides/scripts/load_examples.py",
         external=True,
     )
 
