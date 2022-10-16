@@ -10,8 +10,9 @@ FROM node:16 as frontend
 
 # Build the admin-io frontend
 WORKDIR /fides/clients/admin-ui
-COPY clients/admin-ui/ .
+COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
+COPY clients/admin-ui/ .
 RUN npm run export
 
 #########################
