@@ -1,3 +1,7 @@
+"""
+Default constants to use when generating example data via load_examples.py
+"""
+
 from fides.api.ops.api.v1 import urn_registry as urls
 
 FIDES_USERNAME = "fidestest"
@@ -10,6 +14,7 @@ ACCESS_POLICY_KEY = "access"
 ERASURE_POLICY_KEY = "erasure"
 
 STORAGE_KEY = "s3_storage"
+STORAGE_BUCKET = "fides-test-privacy-requests"
 ACCESS_RULE_KEY = "access_rule_key"
 ERASURE_RULE_KEY = "erasure_rule_key"
 
