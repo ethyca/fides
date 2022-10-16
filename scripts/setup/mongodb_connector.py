@@ -1,13 +1,12 @@
 import logging
 from typing import Dict
 
+from . import constants
 from .database_connector import (
     create_database_connector,
     update_database_connector_secrets,
 )
 from .dataset import create_dataset
-
-from . import constants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
