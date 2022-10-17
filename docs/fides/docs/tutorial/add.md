@@ -64,7 +64,7 @@ fidesctl:
     FIDESCTL__DATABASE__USER: "postgres"
 ```
 
-> See [the fidesctl installation guide](../installation/overview.md) for a more detailed fidesctl server setup walkthrough, and [the `docker-compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
+> See [the fidesctl installation guide](../installation/overview.md) for a more detailed fidesctl server setup walkthrough, and [the `docker compose` documentation](https://docs.docker.com/compose/compose-file/) for an explanation of the above configuration options.
 
 ## Check Your Progress
 
