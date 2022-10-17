@@ -14,7 +14,7 @@ Running `nox -s test_env` will spin up a comprehensive testing environment that 
 1. Downloads all required images.
 1. Spins up the entire application, including external Docker-based datastores.
 1. Runs various commands and scripts to seed the application with example data, create a user, etc.
-1. Opens a shell within the webserver container, with the CLI available for use.
+1. Opens a shell with the CLI loaded and available for use.
 
 Just before the shell is opened, a `Fides Test Environment` banner will be displayed along with various information about the testing environment and how to access various parts of the application.
 
