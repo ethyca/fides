@@ -5,6 +5,7 @@ import {
   BreadcrumbLink,
 } from "@fidesui/react";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import NextLink from "next/link";
 import React, { useCallback } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -44,7 +45,9 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ steps }) => {
         {steps.map((s) => (
           <BreadcrumbItem key={s.stepId}>
             {s !== step && (
-              <BreadcrumbLink href={s.href}>{getLabel(s)}</BreadcrumbLink>
+              <BreadcrumbLink as={NextLink} href={s.href}>
+                {getLabel(s)}
+              </BreadcrumbLink>
             )}
             {s === step && (
               <BreadcrumbLink

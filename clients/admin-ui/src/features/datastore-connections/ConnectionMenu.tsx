@@ -1,8 +1,19 @@
-import { Button, Menu, MenuButton, MenuList, Portal } from "@fidesui/react";
+import {
+  Button,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Portal,
+} from "@fidesui/react";
 import { MoreIcon } from "common/Icon";
+import NextLink from "next/link";
 import React from "react";
 
-import { AccessLevel, ConnectionType } from "./constants";
+import { DATASTORE_CONNECTION_ROUTE } from "~/constants";
+import { ConnectionType } from "~/types/api";
+
+import { AccessLevel } from "./constants";
 import DeleteConnectionModal from "./DeleteConnectionModal";
 import DisableConnectionModal from "./DisableConnectionModal";
 
@@ -26,7 +37,16 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
       <MoreIcon color="gray.700" w={18} h={18} />
     </MenuButton>
     <Portal>
-      <MenuList shadow="xl">
+      <MenuList fontSize="sm" shadow="xl">
+        <NextLink
+          href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
+            connection_key
+          )}`}
+        >
+          <MenuItem _focus={{ color: "complimentary.500", bg: "gray.100" }}>
+            Configure
+          </MenuItem>
+        </NextLink>
         <DisableConnectionModal
           connection_key={connection_key}
           disabled={disabled}

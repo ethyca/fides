@@ -18,6 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
 
 ### Added
+
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 * Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
     * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
@@ -30,6 +31,7 @@ The types of changes are:
 ### Developer Experience
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
+* Only the `docs-authors` team members are specified as `CODEOWNERS` [#1446](https://github.com/ethyca/fides/pull/1446)
 
 ### Docs
 
@@ -45,6 +47,9 @@ The types of changes are:
 
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
+
+* Fides Admin UI:
+  * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
 * Privacy Center:
