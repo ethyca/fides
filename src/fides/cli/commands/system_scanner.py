@@ -1,7 +1,7 @@
 """Defines the CLI commands for the System Scanner"""
 
 from os import path
-from subprocess import CalledProcessError, run
+from subprocess import DEVNULL, CalledProcessError, run
 from typing import Any, Callable, Tuple
 
 from click import Context, echo, group, option, pass_context
@@ -168,7 +168,7 @@ def system_scanner_deploy(
         ]
         deploy_cmd = ["px deploy"] + [arg for arg in args if arg]
 
-        run(deploy_cmd, check=True)
+        run(deploy_cmd, check=True, shell=True, stderr=DEVNULL)
     except (CalledProcessError, FileNotFoundError, ValueError):
         echo_red("Pod deployment failed")
         raise SystemExit(1)
