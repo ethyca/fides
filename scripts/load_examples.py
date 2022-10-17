@@ -35,30 +35,30 @@ create_user(
 )
 
 # Create an S3 storage config to store DSR results
-storage_key = constants.LOCAL_STORAGE_KEY
+storage_key = constants.DEFAULT_STORAGE_KEY
 if (get_secret("AWS_SECRETS")["access_key_id"]):
     print("AWS secrets provided, attempting to configure S3 storage...")
     create_s3_storage(auth_header=auth_header, key=constants.S3_STORAGE_KEY)
     storage_key = constants.S3_STORAGE_KEY
 
-# Create new DSR policies to use for testing privacy requests
+# Edit the default DSR policies to use for testing privacy requests
+# NOTE: We use the default policies to test the default privacy center
 # TODO: change this to edit the default policies instead, so the default privacy center can be used
-create_dsr_policy(auth_header=auth_header, key=constants.ACCESS_POLICY_KEY)
-create_dsr_policy(auth_header=auth_header, key=constants.ERASURE_POLICY_KEY)
-create_rule(auth_header=auth_header, storage_key=storage_key)
+create_dsr_policy(auth_header=auth_header, key=constants.DEFAULT_ACCESS_POLICY)
+create_dsr_policy(auth_header=auth_header, key=constants.DEFAULT_ERASURE_POLICY)
 create_rule(
     auth_header=auth_header,
-    policy_key=constants.ERASURE_POLICY_KEY,
-    rule_key=constants.ERASURE_RULE_KEY,
+    policy_key=constants.DEFAULT_ACCESS_POLICY,
+    rule_key=constants.DEFAULT_ACCESS_POLICY_RULE,
+    storage_key=storage_key,
+    action_type="access",
+)
+create_rule(
+    auth_header=auth_header,
+    policy_key=constants.DEFAULT_ERASURE_POLICY,
+    rule_key=constants.DEFAULT_ERASURE_POLICY_RULE,
     storage_key=storage_key,
     action_type="erasure",
-)
-create_rule_target(auth_header=auth_header, target_key="access_user_data")
-create_rule_target(
-    auth_header=auth_header,
-    policy_key=constants.ERASURE_POLICY_KEY,
-    rule_key=constants.ERASURE_RULE_KEY,
-    target_key="erasure_user_data",
 )
 
 # Configure the email integration to use for identity verification and notifications

@@ -55,7 +55,7 @@ def create_s3_storage(
         headers=auth_header,
         json={
             "aws_access_key_id": get_secret("AWS_SECRETS")["access_key_id"],
-            "aws_access_secret_id": get_secret("AWS_SECRETS")["access_secret_id"],
+            "aws_secret_access_key": get_secret("AWS_SECRETS")["secret_access_key"],
         },
     )
     if not response.ok:

@@ -3,6 +3,13 @@ Default constants to use when generating example data via load_examples.py
 """
 
 from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ctl.database.seed import (
+    DEFAULT_STORAGE_KEY,
+    DEFAULT_ACCESS_POLICY,
+    DEFAULT_ACCESS_POLICY_RULE,
+    DEFAULT_ERASURE_POLICY,
+    DEFAULT_ERASURE_POLICY_RULE,
+)
 
 FIDES_USERNAME = "fidestest"
 FIDES_PASSWORD = "Apassword1!"
@@ -10,12 +17,7 @@ FIDES_PASSWORD = "Apassword1!"
 FIDES_URL = "http://fides:8080"
 BASE_URL = FIDES_URL + urls.V1_URL_PREFIX
 
-ACCESS_POLICY_KEY = "example_access"
-ERASURE_POLICY_KEY = "example_erasure"
-ACCESS_RULE_KEY = "access_rule_key"
-ERASURE_RULE_KEY = "erasure_rule_key"
-
-LOCAL_STORAGE_KEY = "default_local_storage"
+LOCAL_STORAGE_KEY = DEFAULT_STORAGE_KEY
 S3_STORAGE_KEY = "s3_storage"
 S3_STORAGE_BUCKET = "fides-test-privacy-requests"
 

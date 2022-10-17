@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 def create_dsr_policy(
     auth_header: Dict[str, str],
-    key: str = constants.ACCESS_POLICY_KEY,
+    key: str = constants.DEFAULT_ACCESS_POLICY,
     execution_timeframe: int = 45,
 ):
     policy_create_data = [
@@ -44,15 +44,15 @@ def create_dsr_policy(
 
 def create_rule(
     auth_header: Dict[str, str],
-    policy_key: str = constants.ACCESS_POLICY_KEY,
-    rule_key: str = constants.ACCESS_RULE_KEY,
-    storage_key: str = constants.LOCAL_STORAGE_KEY,
+    policy_key: str = constants.DEFAULT_ACCESS_POLICY,
+    rule_key: str = constants.DEFAULT_ACCESS_POLICY_RULE,
+    storage_key: str = constants.DEFAULT_STORAGE_KEY,
     action_type: str = "access",
 ):
     rules = [
         {
             "storage_destination_key": storage_key,
-            "name": f"My User Data {action_type}",
+            "name": f"Example {action_type} Rule",
             "action_type": action_type,
             "key": rule_key,
         },
@@ -60,7 +60,7 @@ def create_rule(
 
     if action_type == "erasure":
         rules[0]["masking_strategy"] = {
-            "strategy": "hmac",
+            "strategy": "null_rewrite",
             "configuration": {},
         }
 
@@ -86,8 +86,8 @@ def create_rule(
 
 def create_rule_target(
     auth_header: Dict[str, str],
-    policy_key: str = constants.ACCESS_POLICY_KEY,
-    rule_key: str = constants.ACCESS_RULE_KEY,
+    policy_key: str = constants.DEFAULT_ACCESS_POLICY,
+    rule_key: str = constants.DEFAULT_ACCESS_POLICY_RULE,
     target_key: str = "target",
     data_category: str = "user",
 ):
