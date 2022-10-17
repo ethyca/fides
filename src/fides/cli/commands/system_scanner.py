@@ -1,5 +1,6 @@
 """Defines the CLI commands for the System Scanner"""
 
+from os import path
 from subprocess import CalledProcessError, run
 from typing import Any, Callable, Tuple
 
@@ -95,7 +96,11 @@ def system_scanner(ctx: Context) -> None:
     "--kubeconfig",
     "-k",
     "kubeconfig_path",
-    help="Absolute path to the kubeconfig file. [default: /root/.kube/config]",
+    help=(
+        "Absolute path to the kubeconfig file. "
+        # Intentionally not a `click` default value, to prevent populating it when left unset by the user.
+        + f"[default: {path.expanduser('~')}/.kube/config]"
+    ),
     show_default=True,
     type=str,
 )
