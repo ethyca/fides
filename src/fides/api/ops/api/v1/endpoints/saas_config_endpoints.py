@@ -316,7 +316,7 @@ def instantiate_connection_from_template(
         )
 
     connection_config.secrets = validate_secrets(
-        template_values.secrets, connection_config
+        db, template_values.secrets, connection_config
     ).dict()
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 

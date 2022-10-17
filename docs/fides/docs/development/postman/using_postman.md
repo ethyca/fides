@@ -18,7 +18,7 @@ A minimal Postman collection is included to assist in setting up your privacy re
       ![Open Fides Variables](../../img/postman_images/open_fidesops_variables.png)
 
 5. Add your `oauth_root_client_id` and `oauth_root_client_secret` under `CURRENT VALUE`.  
-      - `fidesopsadmin` and `fidesopsadminsecret` are default configurations for testing, found in your `fides.toml`. Add the appropriate values for your instance if they differ.
+      - `fidesadmin` and `fidesadminsecret` are default configurations for testing, found in your `fides.toml`. Add the appropriate values for your instance if they differ.
       - **Important:** Click `Save`!
 
       ![Add root client id and secret](../../img/postman_images/add_root_client_id_and_secret.png)

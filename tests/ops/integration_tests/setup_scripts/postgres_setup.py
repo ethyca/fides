@@ -1,10 +1,8 @@
 from uuid import uuid4
 
 import pydash
-import sqlalchemy
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_engine, get_db_session
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -13,6 +11,7 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.service.connectors.sql_connector import PostgreSQLConnector
 from fides.ctl.core.config import get_config
+from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 CONFIG = get_config()
 integration_config = load_toml(["tests/ops/integration_test_config.toml"])
@@ -53,21 +52,7 @@ def setup():
     )
     session = SessionLocal()
 
-    if database_exists(session.bind.url):
-        # Postgres cannot drop databases from within a transaction block, so
-        # we should drop the DB this way instead
-        drop_database(session.bind.url)
-    create_database(session.bind.url)
-
-    with open("./docker/sample_data/postgres_example.sql", "r") as query_file:
-        lines = query_file.read().splitlines()
-        filtered = [line for line in lines if not line.startswith("--")]
-        queries = " ".join(filtered).split(";")
-        [
-            session.execute(f"{sqlalchemy.text(query.strip())};")
-            for query in queries
-            if query
-        ]
+    seed_postgres_data(session.bind.url, "./docker/sample_data/postgres_example.sql")
 
 
 if __name__ == "__main__":

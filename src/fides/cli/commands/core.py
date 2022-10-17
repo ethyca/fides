@@ -9,13 +9,13 @@ from fides.cli.options import (
     manifests_dir_argument,
     verbose_flag,
 )
-from fides.cli.utils import echo_red, pretty_echo, print_divider, with_analytics
+from fides.cli.utils import pretty_echo, print_divider, with_analytics
 from fides.ctl.core import audit as _audit
 from fides.ctl.core import evaluate as _evaluate
 from fides.ctl.core import parse as _parse
 from fides.ctl.core import pull as _pull
 from fides.ctl.core import push as _push
-from fides.ctl.core.utils import git_is_dirty
+from fides.ctl.core.utils import echo_red, git_is_dirty
 
 
 @click.command()

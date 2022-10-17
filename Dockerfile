@@ -1,6 +1,5 @@
-# Pin to 3.10.6 to avoid a mypy error in 3.10.7
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.6"
+ARG PYTHON_VERSION="3.10.7"
 
 
 

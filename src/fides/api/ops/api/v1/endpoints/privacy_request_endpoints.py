@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-locals,too-many-lines, too-many-statements
+# pylint: disable=too-many-branches,too-many-lines, too-many-statements
 
 import csv
 import io
@@ -81,6 +81,7 @@ from fides.api.ops.models.policy import (
     PolicyPreWebhook,
 )
 from fides.api.ops.models.privacy_request import (
+    CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
     PrivacyRequestStatus,
@@ -101,7 +102,6 @@ from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
-    CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     ManualWebhookData,
