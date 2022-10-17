@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import { Headers } from "headers-polyfill";
 import ConsentItemCard from "../components/ConsentItemCard";
 
-import config from "../config/config.json";
+import consentConfig from "../config/config.json";
 import { hostUrl } from "../constants";
 import { addCommonHeaders } from "../common/CommonHeaders";
 import { VerificationType } from "../components/modals/types";
@@ -43,14 +43,20 @@ const Consent: NextPage = () => {
       const headers: Headers = new Headers();
       addCommonHeaders(headers, null);
 
-      const response = await fetch(
-        `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/verify`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ code: verificationCode }),
-        }
-      );
+      const configResponse = await fetch(`${hostUrl}/id-verification/config`, {
+        headers,
+      });
+      const config = await configResponse.json();
+      const verifyUrl =
+        config.identity_verification_required
+          ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
+          : `${VerificationType.ConsentRequest}/verify`;
+
+      const response = await fetch(`${hostUrl}/${verifyUrl}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ code: verificationCode }),
+      });
       const data = (await response.json()) as ApiUserConcents;
       if (!response.ok) {
         router.push("/");
@@ -62,7 +68,7 @@ const Consent: NextPage = () => {
           const key = option.data_use as string;
           userConsentMap[key] = option;
         });
-        config.consent.consentOptions.forEach((d) => {
+        consentConfig.consent.consentOptions.forEach((d) => {
           if (d.fidesDataUseKey in userConsentMap) {
             const currentConsent = userConsentMap[d.fidesDataUseKey];
 
@@ -91,7 +97,7 @@ const Consent: NextPage = () => {
 
         setConsentItems(newConsentItems);
       } else {
-        const temp = config.consent.consentOptions.map((option) => ({
+        const temp = consentConfig.consent.consentOptions.map((option) => ({
           fidesDataUseKey: option.fidesDataUseKey,
           name: option.name,
           description: option.description,
@@ -169,7 +175,7 @@ const Consent: NextPage = () => {
           alignItems="center"
         >
           <Image
-            src={config.logo_path}
+            src={consentConfig.logo_path}
             height="56px"
             width="304px"
             alt="Logo"

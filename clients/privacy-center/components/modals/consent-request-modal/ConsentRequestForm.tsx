@@ -27,12 +27,14 @@ const useConsentRequestForm = ({
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
+  successHandler,
 }: {
   onClose: () => void;
   setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const formik = useFormik({
@@ -74,12 +76,12 @@ const useConsentRequestForm = ({
         const data = await response.json();
 
         if (!isVerificationRequired && data.consent_request_id) {
-          setAlert({
-            status: "success",
-            description:
-              "Your request was successful, please await further instructions.",
-          });
-        } else if (isVerificationRequired && data.consent_request_id) {
+          setConsentRequestId(data.consent_request_id);
+          successHandler();
+          return;
+        }
+
+        if (isVerificationRequired && data.consent_request_id) {
           setConsentRequestId(data.consent_request_id);
           setCurrentView(ModalViews.IdentityVerification);
         } else {
@@ -118,6 +120,7 @@ type ConsentRequestFormProps = {
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  successHandler: () => void;
 };
 
 const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
@@ -127,6 +130,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
+  successHandler,
 }) => {
   const {
     errors,
@@ -144,6 +148,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     setCurrentView,
     setConsentRequestId,
     isVerificationRequired,
+    successHandler,
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);

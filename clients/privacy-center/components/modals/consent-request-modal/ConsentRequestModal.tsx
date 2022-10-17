@@ -21,9 +21,8 @@ export const useConsentRequestModal = () => {
   );
 
   const successHandler = useCallback(() => {
-    setConsentRequestId(consentRequestId);
     router.push("consent");
-  }, [router, setConsentRequestId, consentRequestId]);
+  }, [router, consentRequestId]);
 
   const onOpen = () => {
     setCurrentView(ModalViews.ConsentRequest);
@@ -82,6 +81,7 @@ export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
         setCurrentView={setCurrentView}
         setConsentRequestId={setConsentRequestId}
         isVerificationRequired={isVerificationRequired}
+        successHandler={successHandler}
       />
     );
   }
