@@ -32,7 +32,7 @@ class ParamValue(BaseModel):
     @validator("references")
     def check_reference_direction(
         cls, references: Optional[List[Union[FidesopsDatasetReference, str]]]
-    ) -> Optional[List[FidesopsDatasetReference]]:
+    ) -> Optional[List[Union[FidesopsDatasetReference, str]]]:
         """Validates the request_param only contains inbound references"""
         for reference in references or {}:
             if isinstance(reference, FidesopsDatasetReference):

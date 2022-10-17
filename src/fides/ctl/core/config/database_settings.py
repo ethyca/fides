@@ -25,8 +25,11 @@ class DatabaseSettings(FideslibDatabaseSettings):
     db: str = "default_db"
     test_db: str = "default_test_db"
 
-    async_database_uri: Optional[PostgresDsn]
-    sync_database_uri: Optional[PostgresDsn]
+    # These values are set by validators, and are never empty strings within the
+    # application. The default values here are required in order to prevent the
+    # types being set to "Optional[str]", as they are not functionally optional.
+    async_database_uri: str = ""
+    sync_database_uri: str = ""
 
     @validator("sync_database_uri", pre=True)
     @classmethod
@@ -34,17 +37,20 @@ class DatabaseSettings(FideslibDatabaseSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(value, str):
-            return value
+        if isinstance(value, str) and value != "":
+            # This validates that the string is a valid PostgresDns.
+            return str(PostgresDsn(value))
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
-        return PostgresDsn.build(
-            scheme="postgresql+psycopg2",
-            user=values["user"],
-            password=values["password"],
-            host=values["server"],
-            port=values.get("port"),
-            path=f"/{db_name or ''}",
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+psycopg2",
+                user=values["user"],
+                password=values["password"],
+                host=values["server"],
+                port=values.get("port"),
+                path=f"/{db_name or ''}",
+            )
         )
 
     @validator("async_database_uri", pre=True)
@@ -53,17 +59,20 @@ class DatabaseSettings(FideslibDatabaseSettings):
         cls, value: Optional[str], values: Dict[str, str]
     ) -> str:
         """Join DB connection credentials into a connection string"""
-        if isinstance(value, str):
-            return value
+        if isinstance(value, str) and value != "":
+            # This validates that the string is a valid PostgresDns.
+            return str(PostgresDsn(value))
 
         db_name = values["test_db"] if get_test_mode() else values["db"]
-        return PostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            user=values["user"],
-            password=values["password"],
-            host=values["server"],
-            port=values.get("port"),
-            path=f"/{db_name or ''}",
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                user=values["user"],
+                password=values["password"],
+                host=values["server"],
+                port=values.get("port"),
+                path=f"/{db_name or ''}",
+            )
         )
 
     class Config:

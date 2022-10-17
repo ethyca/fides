@@ -23,7 +23,6 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.deps import get_db as get_ctl_db
 from fides.api.ctl.routes import (
     admin,
     crud,
@@ -41,6 +40,7 @@ from fides.api.ctl.ui import (
     get_path_to_admin_ui_file,
     match_route,
 )
+from fides.api.ctl.utils.errors import FidesError
 from fides.api.ctl.utils.logger import setup as setup_logging
 from fides.api.ops.analytics import (
     accessed_through_local_host,
@@ -48,6 +48,7 @@ from fides.api.ops.analytics import (
     send_analytics_event,
 )
 from fides.api.ops.api.deps import get_api_session
+from fides.api.ops.api.deps import get_db as get_ctl_db
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
@@ -76,7 +77,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
 ROUTERS = (
-    crud.routers
+    crud.routers  # type: ignore[attr-defined]
     + visualize.routers
     + [
         admin.router,
@@ -206,14 +207,21 @@ async def setup_server() -> None:
         )
         CONFIG.log_all_config_values()
 
+    if not CONFIG.database.sync_database_uri:
+        raise FidesError("No database uri provided")
+
     await configure_db(CONFIG.database.sync_database_uri)
 
     logger.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
-    with get_api_session() as db:
+    try:
+        db = get_api_session()
         update_saas_configs(registry, db)
+    finally:
+        db.close()
 
     logger.info("Running Redis connection test...")
+
     try:
         get_cache()
     except (RedisConnectionError, ResponseError) as e:
