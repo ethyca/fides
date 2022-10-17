@@ -2,14 +2,14 @@
 Default constants to use when generating example data via load_examples.py
 """
 
-from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ctl.database.seed import (
-    DEFAULT_STORAGE_KEY,
     DEFAULT_ACCESS_POLICY,
     DEFAULT_ACCESS_POLICY_RULE,
     DEFAULT_ERASURE_POLICY,
     DEFAULT_ERASURE_POLICY_RULE,
+    DEFAULT_STORAGE_KEY,
 )
+from fides.api.ops.api.v1 import urn_registry as urls
 
 FIDES_USERNAME = "fidestest"
 FIDES_PASSWORD = "Apassword1!"

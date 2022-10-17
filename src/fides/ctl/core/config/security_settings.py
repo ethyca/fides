@@ -21,7 +21,7 @@ class SecuritySettings(FideslibSecuritySettings):
     oauth_root_client_id: str = "testrootclientid"
     encoding: str = "UTF-8"
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
-    subject_request_download_link_ttl_seconds: int = 432000 # 5 days
+    subject_request_download_link_ttl_seconds: int = 432000  # 5 days
 
     @root_validator(pre=True)
     @classmethod

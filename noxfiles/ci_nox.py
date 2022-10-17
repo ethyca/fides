@@ -30,25 +30,42 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
-def black(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
+    ],
+)
+def black(session: nox.Session, mode: str) -> None:
     """Run the 'black' style linter."""
     install_requirements(session)
     command = (
         "black",
-        "--check",
         "src",
         "tests",
         "noxfiles",
         "scripts",
     )
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
 @nox.session()
-def isort(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
+    ],
+)
+def isort(session: nox.Session, mode: str) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
