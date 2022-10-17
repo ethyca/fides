@@ -1,7 +1,7 @@
 """Defines the CLI commands for the System Scanner"""
 
 from subprocess import CalledProcessError, run
-from typing import Tuple
+from typing import Any, Callable, Tuple
 
 from click import Context, echo, group, option, pass_context
 
@@ -15,6 +15,34 @@ RESERVED_LABELS = [
     "vizier-bootstrap",
     "vizier-updater-dep",
 ]
+
+
+def with_px_auth(func: Callable) -> Callable:
+    def wrapper(ctx: Context, *args, **kwargs) -> Any:  # type: ignore
+        if "system_scanner" not in ctx.obj["CONFIG"]:
+            echo_red("System scanner configuration not found")
+            raise SystemExit(1)
+
+        if "pixie_api_key" not in ctx.obj["CONFIG"].system_scanner:
+            echo_red("System scanner API key not found")
+            raise SystemExit(1)
+
+        try:
+            run(
+                [
+                    "px auth login",
+                    f"--api_key={ctx.obj['CONFIG'].system_scanner.pixie_api_key}",
+                    "--quiet",
+                ],
+                check=True,
+            )
+        except (CalledProcessError, FileNotFoundError):
+            echo_red("Authentication failed")
+            raise SystemExit(1)
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def validate_labels(labels: Tuple) -> None:
@@ -92,6 +120,7 @@ def system_scanner(ctx: Context) -> None:
 )
 @verbose_flag
 @yes_flag
+@with_px_auth
 @with_analytics
 def system_scanner_deploy(
     ctx: Context,
