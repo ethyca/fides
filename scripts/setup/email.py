@@ -21,13 +21,12 @@ def create_email_integration(
         headers=auth_header,
         json={
             "name": "fides Emails",
-            "key": key,  # TODO: Randomise this
+            "key": key,
             "service_type": "mailgun",
             "details": {
                 "is_eu_domain": False,
                 "api_version": "v3",
-                # TODO: Where do we find this value? Can we be more specific in the docs?
-                "domain": "testmail.ethyca.com",
+                "domain": get_secret("MAILGUN_SECRETS")["domain"],
             },
         },
     )

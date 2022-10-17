@@ -46,7 +46,7 @@ def create_rule(
     auth_header: Dict[str, str],
     policy_key: str = constants.ACCESS_POLICY_KEY,
     rule_key: str = constants.ACCESS_RULE_KEY,
-    storage_key: str = constants.STORAGE_KEY,
+    storage_key: str = constants.LOCAL_STORAGE_KEY,
     action_type: str = "access",
 ):
     rules = [

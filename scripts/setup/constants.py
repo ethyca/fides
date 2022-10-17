@@ -10,13 +10,14 @@ FIDES_PASSWORD = "Apassword1!"
 FIDES_URL = "http://fides:8080"
 BASE_URL = FIDES_URL + urls.V1_URL_PREFIX
 
-ACCESS_POLICY_KEY = "access"
-ERASURE_POLICY_KEY = "erasure"
-
-STORAGE_KEY = "s3_storage"
-STORAGE_BUCKET = "fides-test-privacy-requests"
+ACCESS_POLICY_KEY = "example_access"
+ERASURE_POLICY_KEY = "example_erasure"
 ACCESS_RULE_KEY = "access_rule_key"
 ERASURE_RULE_KEY = "erasure_rule_key"
+
+LOCAL_STORAGE_KEY = "default_local_storage"
+S3_STORAGE_KEY = "s3_storage"
+S3_STORAGE_BUCKET = "fides-test-privacy-requests"
 
 MONGO_SERVER = "mongodb-test"
 MONGO_USER = "mongo_user"
