@@ -2,7 +2,7 @@ import os
 
 AWS_SECRETS = {
     "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
-    "access_secret_id": os.getenv("AWS_ACCESS_SECRET_ID"),
+    "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
 }
 
 MAILCHIMP_SECRETS = {
@@ -11,7 +11,10 @@ MAILCHIMP_SECRETS = {
     "api_key": os.getenv("MAILCHIMP_API_KEY"),
 }
 
-MAILGUN_SECRETS = {"api_key": os.getenv("MAILGUN_API_KEY")}
+MAILGUN_SECRETS = {
+    "domain": os.getenv("MAILGUN_DOMAIN"),
+    "api_key": os.getenv("MAILGUN_API_KEY"),
+}
 
 STRIPE_SECRETS = {
     "domain": os.getenv("STRIPE_DOMAIN"),

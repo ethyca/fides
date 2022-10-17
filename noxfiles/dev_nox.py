@@ -65,9 +65,6 @@ def test_env(session: nox.Session) -> None:
     session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
 
     session.log("Seeding example data for DSR Automation tests...")
-    session.warn(
-        "WARNING: Stripe connector is disabled due to errors... (see load_examples.py)"
-    )
     session.run(
         *RUN_NO_DEPS,
         "python",

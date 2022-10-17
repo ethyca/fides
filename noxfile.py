@@ -2,8 +2,8 @@
 This file aggregates nox commands for various development tasks.
 """
 import sys
+import shutil
 from os.path import isfile
-from pathlib import Path
 
 import nox
 
@@ -20,11 +20,12 @@ nox.options.reuse_existing_virtualenvs = True
 
 
 def check_for_env_file() -> None:
-    """Create a .env file is none exists."""
-    env_file = ".env.example"
+    """Create a .env file if none exists."""
+    env_file_example = "example.env"
+    env_file = ".env"
     if not isfile(env_file):
-        print(f"Creating env file: {env_file}")
-        Path(env_file).touch()
+        print(f"Creating env file for local testing & development from {env_file_example}: {env_file}")
+        shutil.copy(env_file_example, env_file)
 
 
 check_for_env_file()

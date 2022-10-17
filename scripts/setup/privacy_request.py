@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 def create_privacy_request(
     user_email: str,
-    policy_key: str = constants.ACCESS_POLICY_KEY,
+    policy_key: str = constants.DEFAULT_ACCESS_POLICY,
 ):
     response = requests.post(
         f"{constants.BASE_URL}{urls.PRIVACY_REQUESTS}",
