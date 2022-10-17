@@ -134,6 +134,27 @@ def consent_request_verify(
     return _prepare_consent_preferences(db, provided_identity)
 
 
+@router.get(
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
+    status_code=HTTP_200_OK,
+    response_model=ConsentPreferences,
+)
+def get_consent_preferences_no_id(
+    *, db: Session = Depends(get_db), consent_request_id
+) -> ConsentPreferences:
+    """Returns the current consent preferences if successful."""
+    provided_identity = _get_consent_request_and_provided_identity(
+        db=db, consent_request_id=consent_request_id, verification_code=""
+    )
+
+    if not provided_identity.hashed_value:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+        )
+
+    return _prepare_consent_preferences(db, provided_identity)
+
+
 @router.post(
     CONSENT_REQUEST_PREFERENCES,
     dependencies=[Security(verify_oauth_client, scopes=[CONSENT_READ])],

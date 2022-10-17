@@ -47,16 +47,19 @@ const Consent: NextPage = () => {
         headers,
       });
       const config = await configResponse.json();
-      const verifyUrl =
-        config.identity_verification_required
-          ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
-          : `${VerificationType.ConsentRequest}/verify`;
+      const verifyUrl = config.identity_verification_required
+        ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
+        : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
 
-      const response = await fetch(`${hostUrl}/${verifyUrl}`, {
-        method: "POST",
+      const requestOptions: RequestInit = {
+        method: config.identity_verification_required ? "POST" : "GET",
         headers,
-        body: JSON.stringify({ code: verificationCode }),
-      });
+      };
+      if (config.identity_verification_required) {
+        requestOptions.body = JSON.stringify({ code: verificationCode });
+      }
+
+      const response = await fetch(`${hostUrl}/${verifyUrl}`, requestOptions);
       const data = (await response.json()) as ApiUserConcents;
       if (!response.ok) {
         router.push("/");
