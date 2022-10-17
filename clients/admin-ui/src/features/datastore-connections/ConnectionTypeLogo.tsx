@@ -1,9 +1,10 @@
 import { Image } from "@fidesui/react";
 import React from "react";
 
+import { ConnectionType } from "~/types/api";
+
 import {
   CONNECTION_TYPE_LOGO_MAP,
-  ConnectionType,
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";

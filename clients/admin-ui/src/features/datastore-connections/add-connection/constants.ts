@@ -1,5 +1,6 @@
 import { ItemOption } from "common/dropdown/types";
-import { SystemType } from "datastore-connections/constants";
+
+import { SystemType } from "~/types/api";
 
 import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
 import { AddConnectionStep, ConnectorParameterOption } from "./types";

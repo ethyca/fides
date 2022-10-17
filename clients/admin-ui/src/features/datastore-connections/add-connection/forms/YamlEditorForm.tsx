@@ -118,7 +118,7 @@ const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
           <Button
             bg="primary.800"
             color="white"
-            isDisabled={isEmptyState || !!yamlError}
+            isDisabled={isEmptyState || !!yamlError || isSubmitting}
             isLoading={isSubmitting}
             loadingText="Saving Yaml system"
             onClick={handleSubmit}

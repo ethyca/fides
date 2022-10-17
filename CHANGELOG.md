@@ -48,6 +48,9 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
 
+* Fides Admin UI:
+  * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
+
 ### Fixed
 * Privacy Center:
   * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
@@ -245,6 +248,7 @@ The types of changes are:
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 * Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
+* Added configWizardFlag to ui to hide the config wizard when false [[#1453](https://github.com/ethyca/fides/issues/1453)
 
 ### Changed
 

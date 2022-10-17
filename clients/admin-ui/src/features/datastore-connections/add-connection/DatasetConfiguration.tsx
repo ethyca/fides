@@ -7,21 +7,19 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsRequest } from "datastore-connections/types";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { DATASTORE_CONNECTION_ROUTE } from "src/constants";
 
 import { useAppSelector } from "~/app/hooks";
 
 import YamlEditorForm from "./forms/YamlEditorForm";
-import { replaceURL } from "./helpers";
 
 const DatasetConfiguration: React.FC = () => {
-  const mounted = useRef(false);
   const router = useRouter();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { connection, step } = useAppSelector(selectConnectionTypeState);
+  const { connection } = useAppSelector(selectConnectionTypeState);
   const { data, isFetching, isLoading, isSuccess } = useGetDatasetsQuery(
     connection!.key
   );
@@ -47,16 +45,6 @@ const DatasetConfiguration: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    mounted.current = true;
-    if (connection?.key) {
-      replaceURL(connection.key, step.href);
-    }
-    return () => {
-      mounted.current = false;
-    };
-  }, [connection?.key, step.href]);
 
   return (
     <VStack align="stretch" flex="1">

@@ -20,6 +20,7 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
     <ChakraButton
       bg="primary.800"
       color="white"
+      isDisabled={isSubmitting}
       isLoading={isSubmitting}
       loadingText="Submitting"
       size="sm"

@@ -1,17 +1,20 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/dist/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { STEPS } from "datastore-connections/add-connection/constants";
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import { SystemType } from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
+
+import {
+  ConnectionSystemTypeMap,
+  Page_ConnectionSystemTypeMap_,
+  SystemType,
+} from "~/types/api";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_TYPE_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
 import {
-  AllConnectionTypesResponse,
-  ConnectionOption,
   ConnectionTypeParams,
   ConnectionTypeSecretSchemaReponse,
   ConnectionTypeState,
@@ -37,6 +40,7 @@ const mapFiltersToSearchParams = ({
 const initialState: ConnectionTypeState = {
   connection: undefined,
   connectionOption: undefined,
+  connectionOptions: [],
   search: "",
   step: STEPS.find((step) => step.stepId === 1)!,
   system_type: undefined,
@@ -46,6 +50,7 @@ export const connectionTypeSlice = createSlice({
   name: "connectionType",
   initialState,
   reducers: {
+    reset: () => initialState,
     setConnection: (
       state,
       action: PayloadAction<DatastoreConnection | undefined>
@@ -55,10 +60,17 @@ export const connectionTypeSlice = createSlice({
     }),
     setConnectionOption: (
       state,
-      action: PayloadAction<ConnectionOption | undefined>
+      action: PayloadAction<ConnectionSystemTypeMap | undefined>
     ) => ({
       ...state,
       connectionOption: action.payload,
+    }),
+    setConnectionOptions: (
+      state,
+      action: PayloadAction<ConnectionSystemTypeMap[]>
+    ) => ({
+      ...state,
+      connectionOptions: action.payload,
     }),
     setSearch: (state, action: PayloadAction<string>) => ({
       ...state,
@@ -76,8 +88,10 @@ export const connectionTypeSlice = createSlice({
 });
 
 export const {
+  reset,
   setConnection,
   setConnectionOption,
+  setConnectionOptions,
   setSearch,
   setStep,
   setSystemType,
@@ -107,7 +121,7 @@ export const connectionTypeApi = createApi({
   tagTypes: ["ConnectionType"],
   endpoints: (build) => ({
     getAllConnectionTypes: build.query<
-      AllConnectionTypesResponse,
+      Page_ConnectionSystemTypeMap_,
       Partial<ConnectionTypeParams>
     >({
       query: (filters) => ({
@@ -131,3 +145,10 @@ export const {
   useGetAllConnectionTypesQuery,
   useGetConnectionTypeSecretSchemaQuery,
 } = connectionTypeApi;
+
+export const selectConnectionTypes = createSelector(
+  connectionTypeApi.endpoints.getAllConnectionTypes.select({
+    search: "",
+  }),
+  ({ data }) => data?.items ?? []
+);

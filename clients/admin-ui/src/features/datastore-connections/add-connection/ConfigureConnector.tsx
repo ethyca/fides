@@ -1,14 +1,14 @@
 import { Flex } from "@fidesui/react";
 import {
+  reset,
   selectConnectionTypeState,
-  setConnection,
   setStep,
 } from "connection-type/connection-type.slice";
-import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { SystemType } from "~/types/api";
 
 import Breadcrumb from "./Breadcrumb";
 import ConfigurationSettingsNav from "./ConfigurationSettingsNav";
@@ -62,8 +62,8 @@ const ConfigureConnector: React.FC = () => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      // Reset the connection state when the component is unmounted
-      dispatch(setConnection(undefined));
+      // Reset the connection type slice to its initial state
+      dispatch(reset());
     };
   }, [dispatch]);
 
@@ -75,13 +75,15 @@ const ConfigureConnector: React.FC = () => {
     }
 
     // If a connection has been initially created, then auto redirect the user accordingly.
-    if (connection?.key && canRedirect) {
+    if (connection?.key) {
       handleNavChange(
         connectionOption?.type !== SystemType.MANUAL
           ? ConfigurationSettings.DATASET_CONFIGURATION
           : ConfigurationSettings.DSR_CUSTOMIZATION
       );
-      setCanRedirect(false);
+      if (canRedirect) {
+        setCanRedirect(false);
+      }
     }
   }, [
     canRedirect,

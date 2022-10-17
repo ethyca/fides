@@ -23,12 +23,12 @@ import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaReponse,
 } from "connection-type/types";
-import { ConnectionType } from "datastore-connections/constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import { Field, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { ConnectionType } from "~/types/api";
 
 import {
   DatabaseConnectorParametersFormFields,
@@ -250,6 +250,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   return (
     <Formik
+      enableReinitialize
       initialValues={getInitialValues()}
       onSubmit={handleSubmit}
       validateOnBlur={false}
@@ -370,6 +371,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               <Button
                 bg="primary.800"
                 color="white"
+                isDisabled={isSubmitting}
                 isLoading={isSubmitting}
                 loadingText="Submitting"
                 size="sm"

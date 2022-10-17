@@ -1,3 +1,5 @@
+import { ConnectionType } from "~/types/api";
+
 /**
  * Enums
  */
@@ -10,20 +12,6 @@ export enum ConnectionTestStatus {
   SUCCEEDED = "succeeded",
   FAILED = "failed",
   SKIPPED = "skipped",
-}
-
-export enum ConnectionType {
-  POSTGRES = "postgres",
-  MONGODB = "mongodb",
-  MYSQL = "mysql",
-  HTTPS = "https",
-  SAAS = "saas",
-  REDSHIFT = "redshift",
-  SNOWFLAKE = "snowflake",
-  MSSQL = "mssql",
-  MARIADB = "mariadb",
-  BIGQUERY = "bigquery",
-  MANUAL_WEBHOOK = "manual_webhook",
 }
 
 export enum DisabledStatus {
@@ -41,12 +29,6 @@ export enum SaasType {
   STRIPE = "stripe",
   ZENDESK = "zendesk",
   CUSTOM = "custom",
-}
-
-export enum SystemType {
-  SAAS = "saas",
-  DATABASE = "database",
-  MANUAL = "manual",
 }
 
 export enum TestingStatus {

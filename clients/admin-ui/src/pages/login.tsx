@@ -164,6 +164,7 @@ const Login: NextPage = () => {
                             Username
                           </FormLabel>
                           <Input
+                            autoFocus
                             id="email"
                             name="email"
                             aria-label="email"
@@ -186,6 +187,7 @@ const Login: NextPage = () => {
                             Password
                           </FormLabel>
                           <Input
+                            autoComplete="off"
                             id="password"
                             name="password"
                             focusBorderColor="primary.500"
