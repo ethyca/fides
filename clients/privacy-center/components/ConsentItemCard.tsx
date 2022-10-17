@@ -10,7 +10,7 @@ import {
   HStack,
 } from "@fidesui/react";
 import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { ConsentItem } from "../types";
+import { ConsentItem } from "~/features/consent/types";
 
 type SetConsentValueProp = {
   setConsentValue: (x: boolean) => void;

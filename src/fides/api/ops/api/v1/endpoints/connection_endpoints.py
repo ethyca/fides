@@ -39,7 +39,11 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
 )
 from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.connectionconfig import (
+    ConnectionConfig,
+    ConnectionTestStatus,
+    ConnectionType,
+)
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.api import BulkUpdateFailed
@@ -56,7 +60,6 @@ from fides.api.ops.schemas.connection_configuration.connection_config import (
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
-    ConnectionTestStatus,
     TestStatusMessage,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
@@ -137,8 +140,8 @@ def get_connections(
         for ct in connection_type:
             ct = ct.lower()
             try:
-                ct = ConnectionType(ct)
-                connection_types.append(ct)
+                conn_type = ConnectionType(ct)
+                connection_types.append(conn_type)
             except ValueError:
                 # if not a ConnectionType enum, assume it's
                 # a SaaS type, since those are dynamic

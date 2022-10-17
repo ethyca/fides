@@ -304,12 +304,12 @@ class Traversal:
                     completed_edges = Edge.delete_edges(
                         remaining_edges,
                         finished_node_address,
-                        cast(TraversalNode, n).address,
+                        cast(TraversalNode, n).address,  # type: ignore[redundant-cast]
                     )
                     # append edges that end in this traversal_node
                     for edge in filter(
                         lambda _edge: _edge.ends_with_collection(
-                            cast(TraversalNode, n).address
+                            cast(TraversalNode, n).address  # type: ignore[redundant-cast]
                         ),
                         completed_edges,
                     ):
@@ -320,7 +320,7 @@ class Traversal:
 
                 edges_to_children = pydash.collections.filter_(
                     [
-                        e.split_by_address(cast(TraversalNode, n).address)
+                        e.split_by_address(cast(TraversalNode, n).address)  # type: ignore[redundant-cast]
                         for e in remaining_edges
                         if e.contains(n.address)
                     ]

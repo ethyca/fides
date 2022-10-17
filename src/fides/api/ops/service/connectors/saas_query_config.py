@@ -165,20 +165,21 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # add external references used in the request, as their values
         # are stored in secrets
-        param_names.extend(
-            [
-                external_reference
-                for reference_list in [
-                    param_value.references
-                    for param_value in current_request.param_values
-                    if param_value.references
+        if current_request.param_values:
+            param_names.extend(
+                [
+                    external_reference
+                    for reference_list in [
+                        param_value.references
+                        for param_value in current_request.param_values
+                        if param_value.references
+                    ]
+                    for external_reference in reference_list
+                    if isinstance(
+                        external_reference, str
+                    )  # str references are external references
                 ]
-                for external_reference in reference_list
-                if isinstance(
-                    external_reference, str
-                )  # str references are external references
-            ]
-        )
+            )
         return {
             name: value for name, value in self.secrets.items() if name in param_names
         }

@@ -112,7 +112,7 @@ def get_skipped_added_edges(
     return added_upstream_edges
 
 
-def _find_graph_differences(  # pylint: disable=too-many-locals
+def _find_graph_differences(
     previous_graph: Optional[GraphRepr],
     current_graph: GraphRepr,
     previous_results: Dict[str, Optional[List[Row]]],
