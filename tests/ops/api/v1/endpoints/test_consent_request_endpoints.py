@@ -98,11 +98,14 @@ class TestConsentRequest:
         "email_connection_config",
         "email_dataset_config",
     )
-    def test_consent_request_subject_verification_disabled(self, api_client):
+    @patch("fides.api.ops.service._verification.dispatch_email")
+    def test_consent_request_subject_verification_disabled_no_email(
+        self, mock_dispatch_email, api_client
+    ):
         data = {"email": "test@example.com"}
         response = api_client.post(f"{V1_URL_PREFIX}{CONSENT_REQUEST}", json=data)
-        assert response.status_code == 500
-        assert "identity verification" in response.json()["message"]
+        assert response.status_code == 200
+        assert not mock_dispatch_email.called
 
     @pytest.mark.usefixtures(
         "email_config",
@@ -131,6 +134,9 @@ class TestConsentVerify:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"]
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     def test_consent_verify_no_consent_code(
         self, provided_identity_and_consent_request, api_client
     ):
@@ -144,6 +150,9 @@ class TestConsentVerify:
         assert response.status_code == 400
         assert "code expired" in response.json()["detail"]
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     def test_consent_verify_invalid_code(
         self, provided_identity_and_consent_request, api_client
     ):
@@ -242,6 +251,9 @@ class TestSaveConsent:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"]
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     def test_set_consent_preferences_no_consent_code(
         self, provided_identity_and_consent_request, api_client
     ):
@@ -260,6 +272,9 @@ class TestSaveConsent:
         assert response.status_code == 400
         assert "code expired" in response.json()["detail"]
 
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     def test_set_consent_preferences_invalid_code(
         self, provided_identity_and_consent_request, api_client
     ):
