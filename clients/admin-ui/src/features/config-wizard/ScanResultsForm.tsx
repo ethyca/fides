@@ -52,6 +52,10 @@ const ScanResultsForm = () => {
 
   const handleSubmit = (values: FormValues) => {
     dispatch(chooseSystemsForReview(values.selectedKeys));
+    // if (systems.length > values.selectedKeys.length) {
+    //   // Warn the user with a modal if they attempt to finish the registration process without
+    //   // registering all of the system's that the scanners have discovered.
+    // }
     dispatch(changeStep());
   };
 

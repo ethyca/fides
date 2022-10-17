@@ -128,35 +128,41 @@ const AuthenticateAwsForm = () => {
 
   return (
     <>
+      <CloseButton display="inline-block" onClick={onOpen} />
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
       >
         <AlertDialogOverlay>
-          <AlertDialogContent>
-            <WarningIcon />
+          <AlertDialogContent alignItems="center" textAlign="center">
+            <WarningIcon marginTop={3} />
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Cancel Scan!
             </AlertDialogHeader>
 
-            <AlertDialogBody>
-              <Text color="gray.500">
+            <AlertDialogBody pt={0}>
+              <Text color="gray.500" mb={3}>
                 Warning, you are about to cancel the scan!
               </Text>
-              <Text color="gray.500">
+              <Text color="gray.500" mb={3}>
                 If you cancel scanning, the scanner will stop and no systems
                 will be returned.
               </Text>
-              <Text color="gray.500">Are you sure you want to cancel?</Text>
+              <Text color="gray.500" mb={3}>
+                Are you sure you want to cancel?
+              </Text>
             </AlertDialogBody>
 
             <AlertDialogFooter>
-              <Button colorScheme="gray.200" ref={cancelRef} onClick={onClose}>
+              <Button variant="outline">Yes, Cancel</Button>
+              <Button
+                colorScheme="primary"
+                ref={cancelRef}
+                onClick={onClose}
+                ml={3}
+              >
                 No, Continue Scanning
-              </Button>
-              <Button colorScheme="primary" onClick={onClose} ml={3}>
-                Yes, Cancel
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -172,17 +178,16 @@ const AuthenticateAwsForm = () => {
             <Stack spacing={10}>
               {isSubmitting ? (
                 <Text
-                    alignItems="center"
-                    as="b"
-                    color="gray.900"
-                    display="flex"
-                    fontSize="xl"
-                  >
-                    System scanning in progress{" "}
-                    <CloseButton display="inline-block" onClick={onOpen} />
-                  </Text>
+                  alignItems="center"
+                  as="b"
+                  color="gray.900"
+                  display="flex"
+                  fontSize="xl"
+                >
+                  System scanning in progress{" "}
+                  <CloseButton display="inline-block" onClick={onOpen} />
+                </Text>
               ) : null}
-
               {!systemResultsNumber && isSubmitting ? (
                 <Stack alignItems="center">
                   <Spinner
@@ -200,13 +205,15 @@ const AuthenticateAwsForm = () => {
                     <GreenCheckCircleIcon />
                     {systemResultsNumber} systems identified
                   </Text>
-                  <Text
+                  <Button
+                    backgroundColor="transparent"
                     color="purple.500"
-                    data-testid="view-scan-results-text"
+                    fontWeight="400"
+                    data-testid="view-scan-results-button"
                     onClick={() => dispatch(changeStep())}
                   >
                     View results <ChevronRightIcon color="purple.500" />
-                  </Text>
+                  </Button>
                 </Stack>
               ) : null}
 
@@ -278,9 +285,12 @@ const AuthenticateAwsForm = () => {
                   </Stack>
                 </>
               ) : null}
-              {!systemResultsNumber || !isSubmitting ? (
+              {!systemResultsNumber ? (
                 <HStack>
-                  <Button variant="outline" onClick={handleCancel}>
+                  <Button
+                    variant="outline"
+                    onClick={!isSubmitting ? handleCancel : onOpen}
+                  >
                     Cancel
                   </Button>
                   <Button

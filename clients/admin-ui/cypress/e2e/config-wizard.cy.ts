@@ -55,7 +55,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate");
 
-      cy.getByTestId("view-scan-results-text");
+      cy.getByTestId("view-scan-results-button");
     });
 
     it("Displays API errors and allows resubmission", () => {

@@ -3,6 +3,10 @@ import { createIcon } from "@fidesui/react";
 export default createIcon({
   displayName: "WarningIcon",
   viewBox: "0 0 48 48",
+  defaultProps: {
+    width: "50px",
+    height: "50px",
+  },
   path: (
     <svg
       width="48"
