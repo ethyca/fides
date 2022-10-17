@@ -66,7 +66,10 @@ def check_docker_version() -> bool:
     """Verify the Docker version."""
     raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_version = parsed.split("version ")[-1].split(",")[0]
+    # We need to handle multiple possible version formats here
+    # Docker version 20.10.17, build 100c701
+    # Docker version 20.10.18+azure-1, build b40c2f6
+    docker_version = parsed.split("version ")[-1].split(",")[0].split("+")[0]
     print(parsed)
 
     split_docker_version = convert_semver_to_list(docker_version)
