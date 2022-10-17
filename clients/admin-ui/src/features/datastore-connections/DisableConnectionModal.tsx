@@ -14,7 +14,9 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
-import { AccessLevel, ConnectionType } from "./constants";
+import { ConnectionType } from "~/types/api";
+
+import { AccessLevel } from "./constants";
 import { usePatchDatastoreConnectionsMutation } from "./datastore-connection.slice";
 
 type DataConnectionProps = {

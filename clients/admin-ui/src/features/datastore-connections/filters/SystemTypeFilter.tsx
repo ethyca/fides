@@ -1,10 +1,10 @@
 import SelectDropdown from "common/dropdown/SelectDropdown";
-import { ItemOption } from "common/dropdown/types";
-import { capitalize } from "common/utils";
-import React, { useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React from "react";
+import { useSelector } from "react-redux";
 
-import { SystemType } from "../constants";
+import { useAppDispatch } from "~/app/hooks";
+
+import { CONNECTION_TYPE_FILTER_MAP } from "../add-connection/constants";
 import {
   selectDatastoreConnectionFilters,
   setSystemType,
@@ -18,19 +18,11 @@ const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { system_type } = useSelector(selectDatastoreConnectionFilters);
 
-  const loadList = (): Map<string, ItemOption> => {
-    const list = new Map<string, ItemOption>();
-    const valuesList = Object.values(SystemType).sort();
-    valuesList.forEach((value) => {
-      list.set(capitalize(value), { value });
-    });
-    return list;
-  };
-
-  const list = useMemo(() => loadList(), []);
+  const list = new Map(CONNECTION_TYPE_FILTER_MAP);
+  list.delete("Show all");
 
   // Hooks
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   // Listeners
   const handleChange = (value?: string) => {
@@ -39,6 +31,7 @@ const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
 
   return (
     <SelectDropdown
+      enableSorting={false}
       label="System Type"
       list={list}
       onChange={handleChange}
