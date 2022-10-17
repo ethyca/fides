@@ -156,7 +156,7 @@ def system_scanner_deploy(
         args = [
             annotations,
             "--check_only" if dry else "",
-            f'--cluster_name="{cluster_name or "test-cluster"}"',  # TODO: Use kubecontext cluster name
+            f'--cluster_name="{cluster_name}"' if cluster_name else "",
             "--deploy_olm" if deploy_olm else "",
             f'--kubeconfig="{kubeconfig_path}"' if kubeconfig_path else "",
             labels,
