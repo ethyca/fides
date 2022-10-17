@@ -248,6 +248,7 @@ The types of changes are:
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 * Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
+* Added configWizardFlag to ui to hide the config wizard when false [[#1453](https://github.com/ethyca/fides/issues/1453)
 
 ### Changed
 
