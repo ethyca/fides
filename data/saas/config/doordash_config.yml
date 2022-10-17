@@ -1,0 +1,44 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Doordash SaaS Config
+  type: doordash
+  description: A sample schema representing the Doordash connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: openapi.doordash.com
+    - name: developer_id
+      label: Developer ID
+    - name: key_id
+      label: Key ID
+    - name: signing_secret
+
+  external_references:
+    - name: doordash_delivery_id
+      label: Doordash Delivery ID
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: doordash
+      configuration:
+        developer_id: <developer_id>
+        key_id: <key_id>
+        signing_secret: <signing_secret>
+
+  test_request:
+    method: GET
+    path: /developer/v1/businesses
+
+  endpoints:
+    - name: deliveries
+      requests:
+        read:
+          method: GET
+          path: /drive/v2/deliveries/<delivery_id>
+          param_values:
+            - name: delivery_id
+              references:
+                - doordash_delivery_id

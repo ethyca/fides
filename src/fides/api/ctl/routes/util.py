@@ -6,7 +6,9 @@ from fideslang import FidesModelType
 from fideslib.db.base import Base
 
 from fides.api.ctl.database.crud import get_resource, list_resource
-from fides.api.ctl.sql_models import models_with_default_field
+from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
+    models_with_default_field,
+)
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
 

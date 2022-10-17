@@ -5,8 +5,7 @@ from uuid import uuid4
 import pytest
 from fideslib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
-from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from sqlalchemy_utils.functions import drop_database
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -22,6 +21,7 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.service.connectors import PostgreSQLConnector
 from fides.ctl.core.config import get_config
+from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
 
@@ -235,19 +235,8 @@ def postgres_integration_session(postgres_integration_session_cls):
 
 @pytest.fixture(scope="function")
 def postgres_integration_db(postgres_integration_session):
-    if database_exists(postgres_integration_session.bind.url):
-        # Postgres cannot drop databases from within a transaction block, so
-        # we should drop the DB this way instead
-        drop_database(postgres_integration_session.bind.url)
-    create_database(postgres_integration_session.bind.url)
-    with open("./docker/sample_data/postgres_example.sql", "r") as query_file:
-        lines = query_file.read().splitlines()
-        filtered = [line for line in lines if not line.startswith("--")]
-        queries = " ".join(filtered).split(";")
-        [
-            postgres_integration_session.execute(f"{text(query.strip())};")
-            for query in queries
-            if query
-        ]
+    postgres_integration_session = seed_postgres_data(
+        postgres_integration_session, "./docker/sample_data/postgres_example.sql"
+    )
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)
