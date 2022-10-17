@@ -23,10 +23,14 @@ This checklist can be copy/pasted into the final pre-release PR.
 ## Admin UI
 
 - [ ] Every navigation button works
+- [ ] DSR approval succeeds
+- [ ] DSR execution succeeds
 
 ## Privacy Center
 
 - [ ] Every navigation button works
+- [ ] DSR submission succeeds
+- [ ] Consent request submission succeeds
 
 ## Documentation
 
