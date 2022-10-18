@@ -1,12 +1,14 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 
-interface Props {
-  wizardStep: Function;
-}
+import { useAppDispatch } from "~/app/hooks";
 
-const Setup = ({ wizardStep }: Props) => {
+import { changeStep } from "./config-wizard.slice";
+
+const Setup = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   return (
     <Stack>
       <Container
@@ -48,7 +50,7 @@ const Setup = ({ wizardStep }: Props) => {
           <Stack direction={["column", "row"]} spacing="24px">
             <Button
               variant="primary"
-              onClick={() => wizardStep(true)}
+              onClick={() => dispatch(changeStep())}
               data-testid="guided-setup-btn"
             >
               Guided Setup (Recommended)
@@ -57,7 +59,7 @@ const Setup = ({ wizardStep }: Props) => {
               variant="ghost"
               mr={4}
               colorScheme="complimentary"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/system")}
             >
               Skip (Power User)
             </Button>
