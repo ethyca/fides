@@ -23,7 +23,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -52,6 +52,7 @@ const ScanResultsForm = () => {
   const dispatch = useAppDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef(null);
+  const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
 
   const initialValues: FormValues = useMemo(
     () => ({
@@ -61,11 +62,17 @@ const ScanResultsForm = () => {
   );
 
   const handleSubmit = (values: FormValues) => {
-    dispatch(chooseSystemsForReview(values.selectedKeys));
-    // if (systems.length > values.selectedKeys.length) {
-    //   // Warn the user with a modal if they attempt to finish the registration process without
-    //   // registering all of the system's that the scanners have discovered.
-    // }
+    if (systems.length > values.selectedKeys.length) {
+      setSelectedKeyValues(values.selectedKeys);
+      onOpen();
+    } else {
+      dispatch(chooseSystemsForReview(values.selectedKeys));
+      dispatch(changeStep());
+    }
+  };
+
+  const confirmRegisterSelectedSystems = () => {
+    dispatch(chooseSystemsForReview(selectedKeyValues));
     dispatch(changeStep());
   };
 
@@ -78,48 +85,46 @@ const ScanResultsForm = () => {
 
   return (
     <Box maxW="full">
-      <>
-        <AlertDialog
-          isOpen={isOpen}
-          leastDestructiveRef={cancelRef}
-          onClose={onClose}
-        >
-          <AlertDialogOverlay>
-            <AlertDialogContent alignItems="center" textAlign="center">
-              <WarningIcon marginTop={3} />
-              <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                Warning
-              </AlertDialogHeader>
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent alignItems="center" textAlign="center">
+            <WarningIcon marginTop={3} />
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Warning
+            </AlertDialogHeader>
 
-              <AlertDialogBody pt={0}>
-                <Text color="gray.500" mb={3}>
-                  You’re registering NUMBER of {systems.length} systems
-                  available. Do you want to continue with registration or cancel
-                  and register all systems now?
-                </Text>
-              </AlertDialogBody>
+            <AlertDialogBody pt={0}>
+              <Text color="gray.500" mb={3}>
+                You’re registering {selectedKeyValues.length} of{" "}
+                {systems.length} systems available. Do you want to continue with
+                registration or cancel and register all systems now?
+              </Text>
+            </AlertDialogBody>
 
-              <AlertDialogFooter>
-                <Button
-                  ref={cancelRef}
-                  onClick={onClose}
-                  ml={3}
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  colorScheme="primary"
-                  onClick={() => console.log("test")}
-                  variant="outline"
-                >
-                  Continue
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
-        </AlertDialog>
-      </>
+            <AlertDialogFooter>
+              <Button
+                ref={cancelRef}
+                onClick={onClose}
+                ml={3}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="primary"
+                onClick={() => confirmRegisterSelectedSystems()}
+                variant="outline"
+              >
+                Continue
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
       <Formik
         initialValues={initialValues}
         validationSchema={ValidationSchema}

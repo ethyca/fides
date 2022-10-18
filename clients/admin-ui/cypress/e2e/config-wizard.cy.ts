@@ -47,7 +47,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("input-region_name").type("us-east-1{Enter}");
     });
 
-    it("Allows submitting the form and viewing the results", () => {
+    it.only("Allows submitting the form and viewing the results", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/system.json",
       }).as("postGenerate");
