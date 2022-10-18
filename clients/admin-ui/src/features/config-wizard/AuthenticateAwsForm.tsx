@@ -102,6 +102,7 @@ const AuthenticateAwsForm = () => {
     setScannerError(parsedError);
   };
   const handleCancel = () => {
+    onClose();
     dispatch(changeStep(2));
   };
 
@@ -128,7 +129,6 @@ const AuthenticateAwsForm = () => {
 
   return (
     <>
-      <CloseButton display="inline-block" onClick={onOpen} />
       <AlertDialog
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
@@ -155,7 +155,9 @@ const AuthenticateAwsForm = () => {
             </AlertDialogBody>
 
             <AlertDialogFooter>
-              <Button variant="outline">Yes, Cancel</Button>
+              <Button onClick={() => handleCancel()} variant="outline">
+                Yes, Cancel
+              </Button>
               <Button
                 colorScheme="primary"
                 ref={cancelRef}
