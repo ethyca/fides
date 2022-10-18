@@ -99,3 +99,9 @@ config = "data/saas/config/braze_config.yml"
 dataset = "data/saas/dataset/braze_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Braze"
+
+[domo]
+config = "data/saas/config/domo_config.yml"
+dataset = "data/saas/dataset/domo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Domo"

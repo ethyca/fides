@@ -1,0 +1,7 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Domo Example Dataset
+    description: A sample dataset representing the Domo connector for Fidesops
+    collections:
+      - name: user
+        fields: []
