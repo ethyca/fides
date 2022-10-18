@@ -4,7 +4,7 @@ This file aggregates nox commands for various development tasks.
 To learn more about nox, visit https://nox.thea.codes/en/stable/index.html
 """
 import sys
-from subprocess import PIPE, run
+from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
 import nox
@@ -64,7 +64,11 @@ def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
 
 def check_docker_version() -> bool:
     """Verify the Docker version."""
-    raw = run("docker --version", stdout=PIPE, check=True, shell=True)
+    try:
+        raw = run("docker --version", stdout=PIPE, check=True, shell=True)
+    except CalledProcessError:
+        raise SystemExit("Error: Command 'docker' is not available.")
+
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
     # We need to handle multiple possible version formats here
     # Docker version 20.10.17, build 100c701
