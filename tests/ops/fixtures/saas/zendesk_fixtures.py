@@ -1,4 +1,4 @@
-import time
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -110,7 +110,7 @@ def zendesk_create_erasure_data(
     zendesk_connection_config: ConnectionConfig, zendesk_erasure_identity_email: str
 ) -> None:
 
-    time.sleep(60)
+    sleep(60)
 
     zendesk_secrets = zendesk_connection_config.secrets
     auth = zendesk_secrets["username"], zendesk_secrets["api_key"]

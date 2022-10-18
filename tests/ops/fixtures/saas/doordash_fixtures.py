@@ -17,6 +17,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 
 from ..application_fixtures import load_dataset

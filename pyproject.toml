@@ -194,8 +194,8 @@ markers = [
     "integration_square",
     "integration_outreach",
     "integration_salesforce",
-    "integration_logi_id",
     "integration_adobe_campaign",
+    "integration_firebase_auth",
     "unit_saas"
 ]
 asyncio_mode = "auto"
