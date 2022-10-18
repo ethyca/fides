@@ -4,7 +4,11 @@ To facilitate thorough manual testing of the application, there is a comprehensi
 
 ## Secrets Management
 
-Before being able to spin up the environment, you'll need to grab the `.env` file from 1Password, called `Fides .env`. Download that file and place it in your root directory. This file is ignored by git and therefore safe to keep in your local repo during development.
+The environment will work "out of the box", but can also be configured with secrets needed to configure other features like S3 storage, Mailgun notifications, etc. To configure this, you'll need to create the `.env` file, place it at the root of the repository directory, and provide some secrets. There is an `example.env` file you can reference to see what secrets are supported.
+
+This `.env` file is ignored by git and therefore safe to keep in your local repo during development.
+
+For Ethyca-internal engineers, you can also grab a fully populated `.env` file from 1Password (called `Fides .env`). 
 
 ## Spinning up the Environment
 
