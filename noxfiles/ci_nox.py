@@ -16,6 +16,7 @@ from constants_nox import (
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
 from utils_nox import install_requirements
 
+
 # Static Checks
 @nox.session()
 def static_checks(session: nox.Session) -> None:
