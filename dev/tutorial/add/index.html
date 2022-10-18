@@ -2087,7 +2087,7 @@ Fidesctl initialization complete.
 <h2 id="configuring-fidesctl">Configuring Fidesctl</h2>
 <p>See our <a href="../../installation/configuration/">Configuration</a> guide for more information on how to configure fidesctl.</p>
 <h2 id="run-fidesctl-via-docker">Run Fidesctl via Docker</h2>
-<p>Now that the dependency is included in the project and the configuration is in place, the fidesctl server needs to be told to run. The app uses <code>docker-compose</code> to orchestrate resources, so include <code>fidesctl</code> as a service by adding the following configuration after the database service:</p>
+<p>Now that the dependency is included in the project and the configuration is in place, the fides server needs to be told to run. The app uses <code>docker compose</code> to orchestrate resources, so include <code>fides</code> as a service by adding the following configuration after the database service:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2119,7 +2119,7 @@ Fidesctl initialization complete.
 <span class="w">    </span><span class="nt">FIDESCTL__DATABASE__USER</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <blockquote>
-<p>See <a href="../../installation/overview/">the fidesctl installation guide</a> for a more detailed fidesctl server setup walkthrough, and <a href="https://docs.docker.com/compose/compose-file/">the <code>docker-compose</code> documentation</a> for an explanation of the above configuration options.</p>
+<p>See <a href="../../installation/overview/">the fidesctl installation guide</a> for a more detailed fidesctl server setup walkthrough, and <a href="https://docs.docker.com/compose/compose-file/">the <code>docker compose</code> documentation</a> for an explanation of the above configuration options.</p>
 </blockquote>
 <h2 id="check-your-progress">Check Your Progress</h2>
 <p>After making the above changes, your app should resemble the state of the <a href="https://github.com/ethyca/fidesdemo"><code>ethyca/fidesdemo</code> repository</a> at the <a href="https://github.com/ethyca/fidesdemo/releases/tag/fidesops-start"><code>fidesops-start</code></a> tag.</p>

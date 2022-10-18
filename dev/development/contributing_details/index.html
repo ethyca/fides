@@ -2270,7 +2270,7 @@ def some_method():
 <h2 id="docker">Docker</h2>
 <p>Occasionally when developing you'll run into issues where it's beneficial to remove all existing Docker instances in order to recreate them based on some updated spec. Some commands to do this are below:</p>
 <ul>
-<li>Stop all running containers: <code>docker-compose down</code></li>
+<li>Stop all running containers: <code>docker compose down</code></li>
 <li>Delete all local containers: <code>docker rm -f $(docker ps -a -q)</code></li>
 <li>Delete all local Docker volumes: <code>docker volume rm $(docker volume ls -q)</code></li>
 <li>Remove temp. files, installed dependencies, all local Docker containers and all local Docker volumes: <code>nox -s clean</code></li>
