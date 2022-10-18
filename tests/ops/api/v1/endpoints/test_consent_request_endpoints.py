@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -268,6 +268,106 @@ class TestConsentVerify:
         )
         assert response.status_code == 200
         mock_verify_identity.assert_called_with(verification_code)
+        assert response.json()["consent"] == consent_data
+
+
+class TestGetConsentUnverified:
+    def test_consent_unverified_no_consent_request_id(self, api_client):
+        data = {"code": "12345"}
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='non_existent_consent_id')}",
+            json=data,
+        )
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_consent_unverified_verification_error(self, api_client):
+        data = {"code": "12345"}
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id='non_existent_consent_id')}",
+            json=data,
+        )
+        assert response.status_code == 400
+        assert "turned off" in response.json()["detail"]
+
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    def test_consent_unverified_no_email_provided(
+        self, mock_verify_identity: MagicMock, db, api_client
+    ):
+        provided_identity_data = {
+            "privacy_request_id": None,
+            "field_name": "email",
+            "hashed_value": None,
+            "encrypted_value": None,
+        }
+        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+        consent_request_data = {
+            "provided_identity_id": provided_identity.id,
+        }
+        consent_request = ConsentRequest.create(db, data=consent_request_data)
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+        )
+
+        assert response.status_code == 404
+        assert not mock_verify_identity.called
+        assert "missing email" in response.json()["detail"]
+
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    def test_consent_unverified_no_consent_present(
+        self,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        api_client,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}"
+        )
+        assert response.status_code == 200
+        assert not mock_verify_identity.called
+        assert response.json()["consent"] is None
+
+    @patch("fides.api.ops.models.privacy_request.ConsentRequest.verify_identity")
+    def test_consent_unverified_consent_preferences(
+        self,
+        mock_verify_identity: MagicMock,
+        provided_identity_and_consent_request,
+        db,
+        api_client,
+    ):
+        provided_identity, consent_request = provided_identity_and_consent_request
+
+        consent_data: list[dict[str, Any]] = [
+            {
+                "data_use": "email",
+                "data_use_description": None,
+                "opt_in": True,
+            },
+            {
+                "data_use": "location",
+                "data_use_description": "Location data",
+                "opt_in": False,
+            },
+        ]
+
+        for data in deepcopy(consent_data):
+            data["provided_identity_id"] = provided_identity.id
+            Consent.create(db, data=data)
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}"
+        )
+        assert response.status_code == 200
+        assert not mock_verify_identity.called
         assert response.json()["consent"] == consent_data
 
 
