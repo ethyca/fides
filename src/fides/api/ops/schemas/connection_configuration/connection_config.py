@@ -34,6 +34,16 @@ class CreateConnectionConfiguration(BaseModel):
         extra = Extra.forbid
 
 
+class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
+    """Schema for creatnig a connection configuration including secrets."""
+
+    secrets: Optional[connection_secrets_schemas] = None
+
+    class Config:
+        orm_mode = True
+        extra = Extra.forbid
+
+
 class TestStatus(Enum):
     passed = "passed"
     failed = "failed"
@@ -97,10 +107,31 @@ class ConnectionConfigurationResponse(BaseModel):
         orm_mode = True
 
 
+class ConnectionConfigurationWithSecretsResponse(ConnectionConfigurationResponse):
+    """Describes the returned schema for a ConnectionConfiguration.
+
+    Secrets are included.
+    """
+
+    secrets: Optional[connection_secrets_schemas] = None
+
+    class Config:
+        """Set orm_mode to support mapping to ConnectionConfig"""
+
+        orm_mode = True
+
+
 class BulkPutConnectionConfiguration(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfiguration responses."""
 
     succeeded: List[ConnectionConfigurationResponse]
+    failed: List[BulkUpdateFailed]
+
+
+class BulkPatchConnectionConfigurationWithSecrets(BulkResponse):
+    """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfigurationWithSecrets responses."""
+
+    succeeded: List[ConnectionConfigurationWithSecretsResponse]
     failed: List[BulkUpdateFailed]
 
 

@@ -95,6 +95,7 @@ CONNECTIONS = "/connection"
 CONNECTION_BY_KEY = "/connection/{connection_key}"
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_TEST = "/connection/{connection_key}/test"
+CONNECTIONS_WITH_SECRETS = "/connection-with-secret"
 AUTHORIZE = "/connection/{connection_key}/authorize"
 
 # Manual Webhooks

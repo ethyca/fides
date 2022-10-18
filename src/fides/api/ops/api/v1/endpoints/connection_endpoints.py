@@ -31,6 +31,7 @@ from fides.api.ops.api.v1.urn_registry import (
     CONNECTION_SECRETS,
     CONNECTION_TEST,
     CONNECTIONS,
+    CONNECTIONS_WITH_SECRETS,
     SAAS_CONFIG,
     V1_URL_PREFIX,
 )
@@ -52,9 +53,12 @@ from fides.api.ops.schemas.connection_configuration import (
     get_connection_secrets_schema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_config import (
+    BulkPatchConnectionConfigurationWithSecrets,
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
+    ConnectionConfigurationWithSecretsResponse,
     CreateConnectionConfiguration,
+    CreateConnectionConfigurationWithSecrets,
     SystemType,
     TestStatus,
 )
@@ -193,6 +197,67 @@ def get_connection_detail(
 ) -> ConnectionConfig:
     """Returns connection configuration with matching key."""
     return get_connection_config_or_error(db, connection_key)
+
+
+@router.patch(
+    CONNECTIONS_WITH_SECRETS,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPatchConnectionConfigurationWithSecrets,
+)
+def patch_connections_with_secrets(
+    *,
+    db: Session = Depends(deps.get_db),
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+) -> BulkPatchConnectionConfigurationWithSecrets:
+    """
+    Given a list of connection config data elements containing the secrets, create or
+    update corresponding ConnectionConfig objects or report failure
+
+    If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
+    Otherwise, a new ConnectionConfiguration will be created for you.
+    """
+    created_or_updated: List[ConnectionConfigurationWithSecretsResponse] = []
+    failed: List[BulkUpdateFailed] = []
+    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
+
+    for config in configs:
+        orig_data = config.dict().copy()
+        try:
+            connection_config = ConnectionConfig.create_or_update(
+                db, data=config.dict()
+            )
+            created_or_updated.append(connection_config)
+        except KeyOrNameAlreadyExists as exc:
+            logger.warning(
+                "Create/update failed for connection config with key '%s': %s",
+                config.key,
+                exc,
+            )
+            failed.append(
+                BulkUpdateFailed(
+                    message=exc.args[0],
+                    data=orig_data,
+                )
+            )
+        except Exception:
+            logger.warning(
+                "Create/update failed for connection config with key '%s'.", config.key
+            )
+            failed.append(
+                BulkUpdateFailed(
+                    message="This connection configuration could not be added.",
+                    data=orig_data,
+                )
+            )
+
+    # Check if possibly disabling a manual webhook here causes us to need to queue affected privacy requests
+    requeue_requires_input_requests(db)
+
+    return BulkPatchConnectionConfigurationWithSecrets(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
 
 
 @router.patch(
