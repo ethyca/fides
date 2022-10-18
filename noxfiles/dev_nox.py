@@ -48,8 +48,6 @@ def dev(session: nox.Session) -> None:
 @nox.session()
 def test_env(session: nox.Session) -> None:
     """Spins up a comprehensive test environment seeded with data."""
-    check_docker_version(session)
-
     session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
