@@ -9,21 +9,21 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
-![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
+![Fides banner](docs/fides/docs/img/fides-logo.svg "Fides banner")
 
 ## :zap: Overview
 
 Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
 
-![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
+![Fides overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fides overview")
 
 ## :rocket: Quick Start
 
 ### System Requirements
 
 * **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
-* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
-* [Python](https://www.python.org/downloads/) (3.9+)
+* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
+* [Python](https://www.python.org/downloads/) (3.8+)
 * [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
@@ -36,7 +36,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
 2. From the root fides directory, run the following commands:
 
-    ```
+    ```sh
     nox -s dev -- shell
     ```
 
@@ -44,7 +44,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
-    ```
+    ```sh
     fides init
     ```
 
