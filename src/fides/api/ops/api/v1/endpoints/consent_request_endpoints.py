@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
 from sqlalchemy.exc import IntegrityError
@@ -140,7 +141,7 @@ def consent_request_verify(
     response_model=ConsentPreferences,
 )
 def get_consent_preferences_no_id(
-    *, db: Session = Depends(get_db), consent_request_id
+    *, db: Session = Depends(get_db), consent_request_id: str
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
@@ -245,7 +246,7 @@ def set_consent_preferences(
 def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
-    verification_code: str,
+    verification_code: Optional[str],
 ) -> ProvidedIdentity:
     """Verifies the consent request and verification code, then return the ProvidedIdentity if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(
