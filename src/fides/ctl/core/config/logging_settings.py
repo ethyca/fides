@@ -3,7 +3,6 @@
 # pylint: disable=C0115,C0116, E0213
 import os
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
-from typing import Union
 
 from pydantic import validator
 
@@ -18,7 +17,7 @@ class LoggingSettings(FidesSettings):
 
     # Logging
     destination: str = ""
-    level: Union[int, str] = "INFO"
+    level: str = "INFO"
     serialization: str = ""
 
     @validator("destination", pre=True)

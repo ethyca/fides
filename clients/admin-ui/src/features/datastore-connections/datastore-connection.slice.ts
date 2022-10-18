@@ -2,15 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
+import { SystemType } from "~/types/api";
+
 import type { RootState } from "../../app/store";
 import { BASE_URL, CONNECTION_ROUTE } from "../../constants";
 import { selectToken } from "../auth";
-import {
-  ConnectionType,
-  DisabledStatus,
-  SystemType,
-  TestingStatus,
-} from "./constants";
+import { DisabledStatus, TestingStatus } from "./constants";
 import {
   CreateAccessManualWebhookRequest,
   CreateAccessManualWebhookResponse,
@@ -91,7 +88,7 @@ export const datastoreConnectionSlice = createSlice({
       page: initialState.page,
       search: action.payload,
     }),
-    setConnectionType: (state, action: PayloadAction<ConnectionType[]>) => ({
+    setConnectionType: (state, action: PayloadAction<string[]>) => ({
       ...state,
       page: initialState.page,
       connection_type: action.payload,
@@ -222,7 +219,7 @@ export const datastoreConnectionApi = createApi({
         url: `${CONNECTION_ROUTE}/${key}`,
       }),
       providesTags: (result) => [
-        { type: "DatastoreConnection", id: result!.key },
+        { type: "DatastoreConnection", id: result?.key },
       ],
       keepUnusedDataFor: 1,
     }),

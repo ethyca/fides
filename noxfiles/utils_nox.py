@@ -1,6 +1,4 @@
 """Contains various utility-related nox sessions."""
-from subprocess import PIPE, run
-
 import nox
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
@@ -27,8 +25,6 @@ COMPOSE_DOWN = (
     "--remove-orphans",
 )
 COMPOSE_DOWN_VOLUMES = COMPOSE_DOWN + ("--volumes",)
-REQUIRED_DOCKER_VERSION = "20.10.17"
-REQUIRED_DOCKER_COMPOSE_VERSION = "2.10.2"
 
 
 @nox.session()
@@ -57,40 +53,6 @@ def teardown(session: nox.Session) -> None:
     else:
         session.run(*COMPOSE_DOWN, external=True)
     print("Teardown complete")
-
-
-@nox.session()
-def check_docker_compose_version(session: nox.Session) -> bool:
-    """Verify the Docker Compose version."""
-    raw = run("docker-compose --version", stdout=PIPE, check=True, shell=True)
-    parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_compose_version = parsed.split("v")[-1]
-    print(parsed)
-    version_is_valid = int(docker_compose_version.replace(".", "")) >= int(
-        REQUIRED_DOCKER_COMPOSE_VERSION.replace(".", "")
-    )
-    if not version_is_valid:
-        session.error(
-            f"Your Docker Compose version (v{docker_compose_version})is not compatible, please update to at least version {REQUIRED_DOCKER_COMPOSE_VERSION}!"
-        )
-    return version_is_valid
-
-
-@nox.session()
-def check_docker_version(session: nox.Session) -> bool:
-    """Verify the Docker version."""
-    raw = run("docker --version", stdout=PIPE, check=True, shell=True)
-    parsed = raw.stdout.decode("utf-8").rstrip("\n")
-    docker_version = parsed.split("version ")[-1].split(",")[0]
-    print(parsed)
-    version_is_valid = int(docker_version.replace(".", "")) >= int(
-        REQUIRED_DOCKER_VERSION.replace(".", "")
-    )
-    if not version_is_valid:
-        session.error(
-            f"Your Docker version (v{docker_version}) is not compatible, please update to at least version {REQUIRED_DOCKER_VERSION}!"
-        )
-    return version_is_valid
 
 
 def install_requirements(session: nox.Session) -> None:

@@ -1,17 +1,20 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
+from constants_nox import (
+    COMPOSE_SERVICE_NAME,
+    RUN,
+    RUN_NO_DEPS,
+    START_APP,
+    START_APP_EXTERNAL,
+)
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
-from utils_nox import check_docker_compose_version, check_docker_version
 
 
 @nox.session()
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
-    check_docker_compose_version(session)
-    check_docker_version(session)
 
     build(session, "dev")
     session.notify("teardown")
@@ -21,11 +24,11 @@ def dev(session: nox.Session) -> None:
     ] or None
 
     if "ui" in session.posargs:
-        build(session, "ui")
+        build(session, "admin_ui")
         session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
 
     if "pc" in session.posargs:
-        build(session, "pc")
+        build(session, "privacy_center")
         session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
 
     open_shell = "shell" in session.posargs
@@ -40,6 +43,46 @@ def dev(session: nox.Session) -> None:
         run_infrastructure(
             open_shell=open_shell, run_application=True, datastores=datastores
         )
+
+
+@nox.session()
+def test_env(session: nox.Session) -> None:
+    """Spins up a comprehensive test environment seeded with data."""
+    session.notify("teardown", posargs=["volumes"])
+
+    session.log("Building images...")
+    build(session, "dev")
+    build(session, "admin_ui")
+    build(session, "privacy_center")
+
+    session.log("Starting the application with example databases...")
+    # NOTE: Example databases must exist in docker-compose.integration-tests.yml
+    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+
+    session.log("Seeding example data for DSR Automation tests...")
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "/fides/scripts/load_examples.py",
+        external=True,
+    )
+
+    session.log("Seeding example data for Data Mapping tests...")
+    session.run(*RUN_NO_DEPS, "fides", "push", "demo_resources/", external=True)
+
+    session.log("****************************************")
+    session.log("*                                      *")
+    session.log("*        FIDES TEST ENVIRONMENT        *")
+    session.log("*                                      *")
+    session.log("****************************************")
+    session.log("")
+    session.log("Fides Admin UI running at http://localhost:3000")
+    session.log("Fides Privacy Center running at http://localhost:3001")
+    session.log("Example Postgres Database running at postgres://localhost:6432")
+    session.log("Example Mongo Database running at postgres://localhost:27017")
+    session.log("Username: 'fidestest', Password: 'Apassword1!")
+    session.log("Opening Fides CLI shell...")
+    session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
 
 @nox.session()

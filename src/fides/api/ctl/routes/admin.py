@@ -21,6 +21,7 @@ async def db_action(action: DBActions) -> Dict:
     """
     Initiate one of the enumerated DBActions.
     """
+
     action_text = "initialized"
     if action == DBActions.reset:
         database.reset_db(CONFIG.database.sync_database_uri)
