@@ -2,10 +2,11 @@ import logging
 from typing import Dict
 
 import requests
-import setup.constants as constants
 from setup import get_secret
 
 from fides.api.ops.api.v1 import urn_registry as urls
+
+from . import constants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -20,13 +21,12 @@ def create_email_integration(
         headers=auth_header,
         json={
             "name": "fides Emails",
-            "key": key,  # TODO: Randomise this
+            "key": key,
             "service_type": "mailgun",
             "details": {
                 "is_eu_domain": False,
                 "api_version": "v3",
-                # TODO: Where do we find this value? Can we be more specific in the docs?
-                "domain": "testmail.ethyca.com",
+                "domain": get_secret("MAILGUN_SECRETS")["domain"],
             },
         },
     )
@@ -50,7 +50,7 @@ def create_email_integration(
         f"{constants.BASE_URL}{email_secrets_path}",
         headers=auth_header,
         json={
-            "mailgun_api_key": get_secret("MAILGUN_API_KEY"),
+            "mailgun_api_key": get_secret("MAILGUN_SECRETS")["api_key"],
         },
     )
 
