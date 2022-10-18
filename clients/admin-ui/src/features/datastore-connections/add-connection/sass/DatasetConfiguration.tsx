@@ -1,13 +1,14 @@
 import { Box, VStack } from "@fidesui/react";
 import { capitalize } from "common/utils";
-import { ConnectionOption } from "connection-type/types";
 import React from "react";
+
+import { ConnectionSystemTypeMap } from "~/types/api";
 
 import { STEPS } from "../constants";
 import { AddConnectionStep } from "../types";
 
 type DatasetConfigurationProps = {
-  connectionOption: ConnectionOption;
+  connectionOption: ConnectionSystemTypeMap;
   currentStep: AddConnectionStep;
 };
 

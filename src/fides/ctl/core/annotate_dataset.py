@@ -1,16 +1,15 @@
 """
 This script is a utility for interactively annotating data categories in the dataset manifest
 """
-
 from typing import List, Union
 
 import click
-from fideslang import manifests
+from fideslang import FidesModel, manifests
+from fideslang.manifests import ingest_manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
 
 from fides.ctl.core import api_helpers
-from fides.ctl.core import parse as core_parse
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.utils import echo_green, get_all_level_fields
 
@@ -112,16 +111,26 @@ def annotate_dataset(
         f"For reference, you can use the Taxonomy explorer at the '{visualization_endpoint}' endpoint on a running fides webserver."
     )
 
-    datasets = core_parse.ingest_manifests(dataset_file)["dataset"]
+    datasets = ingest_manifests(dataset_file)["dataset"]
+    resources = api_helpers.list_server_resources(
+        url=str(config.cli.server_url),
+        resource_type=resource_type,
+        headers=config.user.request_headers,
+        exclude_keys=[],
+    )
+
+    if not resources:
+        click.secho(
+            "No server resources were found.",
+            fg="red",
+        )
+        return
 
     existing_categories: List[str] = [
         resource.fides_key
-        for resource in api_helpers.list_server_resources(
-            url=config.cli.server_url,
-            resource_type=resource_type,
-            headers=config.user.request_headers,
-            exclude_keys=[],
-        )
+        if isinstance(resource, FidesModel)
+        else resource["fides_key"]
+        for resource in resources
     ]
 
     for dataset in datasets:

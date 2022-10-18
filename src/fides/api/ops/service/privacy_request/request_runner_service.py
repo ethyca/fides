@@ -259,7 +259,7 @@ async def run_privacy_request(
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
 ) -> None:
-    # pylint: disable=too-many-locals, too-many-statements, too-many-return-statements, too-many-branches
+    # pylint: disable=too-many-statements, too-many-return-statements, too-many-branches
     """
     Dispatch a privacy_request into the execution layer by:
         1. Generate a graph from all the currently configured datasets

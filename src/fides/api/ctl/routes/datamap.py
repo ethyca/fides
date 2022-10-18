@@ -8,9 +8,9 @@ from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
 
-from fides.api.ctl.routes.crud import get_resource, list_resource
+from fides.api.ctl.database.crud import get_resource, list_resource
 from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.api.ctl.utils.errors import DatabaseUnavailableError, NotFoundError
 from fides.ctl.core.export import build_joined_dataframe
@@ -104,9 +104,13 @@ async def export_datamap(
                 sql_model_map["organization"], organization_fides_key
             )
         except NotFoundError:
-            error = NotFoundError("organization", organization_fides_key)
-            log.bind(error=error.detail["error"]).error("Resource not found.")
-            raise error
+            not_found_error = NotFoundError(
+                "organization", organization_fides_key, "Resource not found."
+            )
+            log.bind(error=not_found_error.detail["error"]).error(  # type: ignore[index]
+                "No organizations found"
+            )
+            raise not_found_error
         server_resource_dict = {"organization": [organization]}
 
         for resource_type in ["system", "dataset", "data_subject", "data_use"]:
@@ -118,9 +122,13 @@ async def export_datamap(
             ]
             server_resource_dict[resource_type] = filtered_server_resources
     except DatabaseUnavailableError:
-        error = DatabaseUnavailableError()
-        log.bind(error=error.detail["error"]).error("Database unavailable")
-        raise error
+        database_unavailable_error = DatabaseUnavailableError(
+            error_message="Database unavailable"
+        )
+        log.bind(error=not_found_error.detail["error"]).error(  # type: ignore[index]
+            "Database unavailable"
+        )
+        raise database_unavailable_error
 
     joined_system_dataset_df = build_joined_dataframe(server_resource_dict)
 

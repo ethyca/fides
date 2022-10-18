@@ -69,7 +69,7 @@ export const makeCookieKeyConsent = (
     const consent =
       item.consentValue === undefined ? item.defaultValue : item.consentValue;
 
-    item.cookieKeys.forEach((cookieKey) => {
+    item.cookieKeys?.forEach((cookieKey) => {
       const previousConsent = cookieKeyConsent[cookieKey];
       cookieKeyConsent[cookieKey] =
         previousConsent === undefined ? consent : previousConsent && consent;

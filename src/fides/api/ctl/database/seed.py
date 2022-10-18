@@ -10,7 +10,7 @@ from fideslib.utils.text import to_snake_case
 from loguru import logger as log
 
 from fides.api.ctl.database.session import sync_session
-from fides.api.ctl.sql_models import sql_model_map
+from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
