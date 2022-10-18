@@ -143,6 +143,12 @@ def get_consent_preferences_no_id(
     *, db: Session = Depends(get_db), consent_request_id
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
+
+    if CONFIG.execution.subject_identity_verification_required:
+        raise HTTPException(status_code=400, detail="Retrieving consent preferences without identity verification is "
+                                                    "only supported with subject_identity_verification_required "
+                                                    "turned off.")
+
     provided_identity = _get_consent_request_and_provided_identity(
         db=db, consent_request_id=consent_request_id, verification_code=""
     )
