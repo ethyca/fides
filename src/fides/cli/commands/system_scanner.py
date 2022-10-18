@@ -2,7 +2,7 @@
 
 from os import path
 from subprocess import DEVNULL, CalledProcessError, run
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, List, Tuple
 
 from click import Context, echo, group, option, pass_context
 
@@ -18,6 +18,11 @@ RESERVED_LABELS = [
 ]
 
 
+def run_px(command: List[str]) -> None:
+    px_command = " ".join(["px"] + command)
+    run(px_command, check=True, shell=True, stderr=DEVNULL)
+
+
 def with_px_auth(func: Callable) -> Callable:
     def wrapper(ctx: Context, *args, **kwargs) -> Any:  # type: ignore
         if "system_scanner" not in ctx.obj["CONFIG"]:
@@ -29,13 +34,12 @@ def with_px_auth(func: Callable) -> Callable:
             raise SystemExit(1)
 
         try:
-            run(
+            run_px(
                 [
-                    "px auth login",
-                    f"--api_key={ctx.obj['CONFIG'].system_scanner.pixie_api_key}",
+                    "auth login",
+                    f"--api_key {ctx.obj['CONFIG'].system_scanner.pixie_api_key}",
                     "--quiet",
-                ],
-                check=True,
+                ]
             )
         except (CalledProcessError, FileNotFoundError):
             echo_red("Authentication failed")
@@ -166,9 +170,9 @@ def system_scanner_deploy(
             "--use_etcd_operator" if use_etcd_operator else "",
             "-y" if yes else "",
         ]
-        deploy_cmd = ["px deploy"] + [arg for arg in args if arg]
+        deploy_cmd = ["deploy"] + [arg for arg in args if arg]
 
-        run(deploy_cmd, check=True, shell=True, stderr=DEVNULL)
+        run_px(deploy_cmd)
     except (CalledProcessError, FileNotFoundError, ValueError):
         echo_red("Pod deployment failed")
         raise SystemExit(1)
