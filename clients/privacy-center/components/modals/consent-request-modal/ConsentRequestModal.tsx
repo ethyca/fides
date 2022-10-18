@@ -22,7 +22,7 @@ export const useConsentRequestModal = () => {
 
   const successHandler = useCallback(() => {
     router.push("consent");
-  }, [router, consentRequestId]);
+  }, [router]);
 
   const onOpen = () => {
     setCurrentView(ModalViews.ConsentRequest);

@@ -10,7 +10,11 @@ import {
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
 import { setConsentCookie } from "~/features/consent/cookie";
-import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
+import {
+  ApiUserConsents,
+  ConsentItem,
+  ApiUserConsent,
+} from "~/features/consent/types";
 import ConsentItemCard from "../components/ConsentItemCard";
 
 import consentConfig from "../config/config.json";
@@ -55,7 +59,7 @@ const Consent: NextPage = () => {
       }
 
       const response = await fetch(`${hostUrl}/${verifyUrl}`, requestOptions);
-      const data = (await response.json()) as ApiUserConcents;
+      const data = (await response.json()) as ApiUserConsents;
       if (!response.ok) {
         router.push("/");
       }
@@ -77,7 +81,7 @@ const Consent: NextPage = () => {
                 ? currentConsent.data_use_description
                 : "",
               fidesDataUseKey: currentConsent.data_use,
-              highlight: d.highlight,
+              highlight: d.highlight !== undefined ? d.highlight : false,
               name: d.name,
               url: d.url,
             });
@@ -86,7 +90,7 @@ const Consent: NextPage = () => {
               fidesDataUseKey: d.fidesDataUseKey,
               name: d.name,
               description: d.description,
-              highlight: d.highlight,
+              highlight: d.highlight !== undefined ? d.highlight : false,
               url: d.url,
               defaultValue: d.default ? d.default : false,
             });
@@ -102,7 +106,7 @@ const Consent: NextPage = () => {
           highlight: option.highlight,
           url: option.url,
           defaultValue: option.default ? option.default : false,
-        }));
+        })) as ConsentItem[];
         setConsentItems(temp);
       }
     };
@@ -154,7 +158,7 @@ const Consent: NextPage = () => {
     const data = (await response.json()) as ApiUserConsents;
     const updatedConsentItems = makeConsentItems(
       data,
-      config.consent.consentOptions
+      consentConfig.consent.consentOptions
     );
     setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
 
