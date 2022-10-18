@@ -6,7 +6,7 @@ from typing import Any, Callable, List, Tuple
 
 from click import Context, echo, group, option, pass_context
 
-from ...ctl.core.utils import echo_red
+from ...ctl.core.utils import echo_green, echo_red
 from ..options import dry_flag, verbose_flag, yes_flag
 from ..utils import with_analytics
 
@@ -45,7 +45,10 @@ def with_px_auth(func: Callable) -> Callable:
             echo_red("Authentication failed")
             raise SystemExit(1)
 
-        return func(*args, **kwargs)
+        if kwargs["verbose"]:
+            echo_green("CLI authentication successful")
+
+        return func(ctx, *args, **kwargs)
 
     return wrapper
 
