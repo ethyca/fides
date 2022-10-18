@@ -1,11 +1,10 @@
 import { Box, Button, Flex, Spacer, Text } from "@fidesui/react";
-import { capitalize, formatDate } from "common/utils";
+import { formatDate } from "common/utils";
 import React from "react";
 
 import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
-import { ConnectionType } from "./constants";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
 import { DatastoreConnection } from "./types";
 
@@ -46,36 +45,6 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
   );
 };
 
-const useConnectionGridItem = () => {
-  const getConnectorDisplayName = (connectionType: ConnectionType): string => {
-    if (Object.values(ConnectionType).includes(connectionType)) {
-      return `${capitalize(connectionType)} Database Connector`;
-    }
-
-    let value: string;
-    switch (connectionType) {
-      case ConnectionType.HTTPS:
-        value = "HTTPS Connector";
-        break;
-      case ConnectionType.MANUAL_WEBHOOK:
-        value = "Manual Connector";
-        break;
-      case ConnectionType.SAAS:
-        value = "Saas Connector";
-        break;
-      default:
-        value = "Unknown Connector";
-        break;
-    }
-
-    return value;
-  };
-
-  return {
-    getConnectorDisplayName,
-  };
-};
-
 type ConnectionGridItemProps = {
   connectionData: DatastoreConnection;
 };
@@ -84,7 +53,6 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
   connectionData,
 }) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
-  const { getConnectorDisplayName } = useConnectionGridItem();
 
   return (
     <Box width="100%" height={136} p="18px 16px 16px 16px">
@@ -112,9 +80,8 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         />
       </Flex>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
-        {getConnectorDisplayName(
-          connectionData.connection_type as ConnectionType
-        )}
+        {/* If description is empty display empty placeholder */}
+        {connectionData.description ? connectionData.description : <br />}
       </Text>
       <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         Edited on {formatDate(connectionData.updated_at!)}

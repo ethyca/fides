@@ -2,7 +2,12 @@ import { Center, Spinner } from "@fidesui/react";
 import { debounce } from "common/utils";
 import React, { useEffect, useRef, useState } from "react";
 
-import { useAppSelector } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import {
+  selectConnectionTypeState,
+  setConnectionOptions,
+  useGetAllConnectionTypesQuery,
+} from "../connection-type";
 import ConnectionFilters from "./ConnectionFilters";
 import ConnectionGrid from "./ConnectionGrid";
 import ConnectionsEmptyState from "./ConnectionsEmptyState";
@@ -14,9 +19,11 @@ import {
 import { DatastoreConnectionParams } from "./types";
 
 const ConnectionsContainer: React.FC = () => {
+  const mounted = useRef(false);
+  const dispatch = useAppDispatch();
+  const { connectionOptions } = useAppSelector(selectConnectionTypeState);
   const filters = useAppSelector(selectDatastoreConnectionFilters);
   const [cachedFilters, setCachedFilters] = useState(filters);
-  const mounted = useRef(false);
   const updateCachedFilters = useRef(
     debounce(
       (updatedFilters: React.SetStateAction<DatastoreConnectionParams>) =>
@@ -25,18 +32,32 @@ const ConnectionsContainer: React.FC = () => {
     )
   );
 
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery(
+    {
+      search: "",
+    },
+    { skip: connectionOptions.length > 0 }
+  );
+
+  const {
+    data: datastoreConnectionsData,
+    isFetching,
+    isLoading,
+    isSuccess,
+  } = useGetAllDatastoreConnectionsQuery(cachedFilters);
+
+  const hasData = datastoreConnectionsData!?.items?.length > 0;
+
   useEffect(() => {
     mounted.current = true;
+    if (connectionOptions.length === 0 && connectionTypesData?.items) {
+      dispatch(setConnectionOptions(connectionTypesData.items));
+    }
     updateCachedFilters.current(filters);
     return () => {
       mounted.current = false;
     };
-  }, [setCachedFilters, filters]);
-
-  const { data, isFetching, isLoading, isSuccess } =
-    useGetAllDatastoreConnectionsQuery(cachedFilters);
-
-  const hasData = data!?.items?.length > 0;
+  }, [connectionOptions.length, connectionTypesData?.items, dispatch, filters]);
 
   return (
     <>
@@ -50,7 +71,10 @@ const ConnectionsContainer: React.FC = () => {
       {mounted.current &&
         isSuccess &&
         (hasData ? (
-          <ConnectionGrid items={data!?.items} total={data!?.total} />
+          <ConnectionGrid
+            items={datastoreConnectionsData!?.items}
+            total={datastoreConnectionsData!?.total}
+          />
         ) : (
           <ConnectionsEmptyState />
         ))}

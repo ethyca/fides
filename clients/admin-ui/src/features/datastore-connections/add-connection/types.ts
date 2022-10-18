@@ -1,4 +1,4 @@
-import { SystemType } from "datastore-connections/constants";
+import { SystemType } from "~/types/api";
 
 export type AddConnectionStep = {
   stepId: number;

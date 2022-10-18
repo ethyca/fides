@@ -3,19 +3,18 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
-import { SystemType } from "datastore-connections/constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
-import { replaceURL } from "./helpers";
 import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
 import TestConnection from "./TestConnection";
 
 type ConnectorParametersProp = {
-  onConnectionCreated: () => void;
+  onConnectionCreated?: () => void;
 };
 
 export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
@@ -23,9 +22,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
 }) => {
   const mounted = useRef(false);
   const [skip, setSkip] = useState(true);
-  const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState
-  );
+  const { connectionOption } = useAppSelector(selectConnectionTypeState);
 
   const { data, isFetching, isLoading, isSuccess } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption!.identifier, {
@@ -75,16 +72,13 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
 
   useEffect(() => {
     mounted.current = true;
-    if (connection?.key) {
-      replaceURL(connection.key, step.href);
-    }
     if (connectionOption?.type !== SystemType.MANUAL) {
       setSkip(false);
     }
     return () => {
       mounted.current = false;
     };
-  }, [connection?.key, connectionOption?.type, step.href]);
+  }, [connectionOption?.type]);
 
   return (
     <Flex gap="97px">

@@ -63,7 +63,7 @@ def run_infrastructure(
         if datastore in DOCKERFILE_DATASTORES
     ]
 
-    # Configure docker-compose path
+    # Configure docker compose path
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(
@@ -122,7 +122,7 @@ def seed_initial_data(
 
 def get_path_for_datastores(datastores: List[str]) -> str:
     """
-    Returns the docker-compose file paths for the specified datastores
+    Returns the docker compose file paths for the specified datastores
     """
     path: str = "-f docker-compose.yml"
     for datastore in datastores:

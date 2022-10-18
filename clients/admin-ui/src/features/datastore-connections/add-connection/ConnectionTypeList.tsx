@@ -1,11 +1,12 @@
 import { Box, Center, SimpleGrid, Text } from "@fidesui/react";
-import { ConnectionOption } from "connection-type/types";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import Link from "next/link";
 import React from "react";
 
+import { ConnectionSystemTypeMap } from "~/types/api";
+
 type ConnectionTypeListProps = {
-  items: ConnectionOption[];
+  items: ConnectionSystemTypeMap[];
 };
 
 const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (

@@ -117,7 +117,9 @@ const usePrivacyRequestForm = ({
       }
     },
     validate: (values) => {
-      if (!action) return {};
+      if (!action) {
+        return {};
+      }
       const errors: {
         name?: string;
         email?: string;
@@ -187,7 +189,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
-  if (!action) return null;
+  if (!action) {
+    return null;
+  }
 
   return (
     <>
