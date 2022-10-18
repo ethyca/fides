@@ -186,6 +186,7 @@ markers = [
     "integration_stripe",
     "integration_hubspot",
     "integration_datadog",
+    "integration_domo",
     "integration_doordash",
     "integration_segment",
     "integration_sendgrid",

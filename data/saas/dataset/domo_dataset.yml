@@ -1,0 +1,48 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Domo Example Dataset
+    description: A sample dataset representing the Domo connector for Fidesops
+    collections:
+      - name: users
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+              primary_key: True
+          - name: title
+            data_categories: [ user.name ]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [ user.name ]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [ user.contact.email ]
+            fidesops_meta:
+              data_type: string
+          - name: createdAt
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: updatedAt
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: roleId
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: department
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: timezone
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
+          - name: role
+            data_categories: [ system.operations ]
+            fidesops_meta:
+              data_type: string
