@@ -47,7 +47,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("input-region_name").type("us-east-1{Enter}");
     });
 
-    it.only("Allows submitting the form and viewing the results", () => {
+    it("Allows submitting the form and viewing the results", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/system.json",
       }).as("postGenerate");
@@ -85,6 +85,16 @@ describe("Config Wizard", () => {
     });
 
     it("Allows stepping back to the previous step during an in-progress scan", () => {
+      cy.intercept(
+        "POST",
+        "/api/v1/generate",
+
+        (req) => {
+          req.continue((res) => {
+            res.setDelay(10000);
+          });
+        }
+      ).as("postGenerate");
       cy.getByTestId("submit-btn")
         .click()
         .then(() => {
