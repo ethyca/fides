@@ -55,7 +55,8 @@ describe("Config Wizard", () => {
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate");
 
-      cy.getByTestId("view-scan-results-button");
+      cy.getByTestId("view-scan-results-button").click();
+      cy.getByTestId("scan-results-form");
     });
 
     it("Displays API errors and allows resubmission", () => {
@@ -81,6 +82,17 @@ describe("Config Wizard", () => {
       cy.getByTestId("scanner-error");
       cy.getByTestId("generic-msg");
       cy.getByTestId("error-log").contains("Internal Server Error");
+    });
+
+    it("Allows stepping back to the previous step during an in-progress scan", () => {
+      cy.getByTestId("submit-btn")
+        .click()
+        .then(() => {
+          cy.getByTestId("close-scan-in-progress").click();
+          cy.contains("Cancel Scan!");
+          cy.contains("Yes, Cancel").click();
+          cy.contains("Add a system");
+        });
     });
   });
 });

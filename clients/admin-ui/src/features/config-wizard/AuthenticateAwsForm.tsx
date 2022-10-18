@@ -187,7 +187,11 @@ const AuthenticateAwsForm = () => {
                   fontSize="xl"
                 >
                   System scanning in progress{" "}
-                  <CloseButton display="inline-block" onClick={onOpen} />
+                  <CloseButton
+                    data-testid="close-scan-in-progress"
+                    display="inline-block"
+                    onClick={onOpen}
+                  />
                 </Text>
               ) : null}
               {!systemResultsNumber && isSubmitting ? (
