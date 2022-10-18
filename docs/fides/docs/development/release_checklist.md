@@ -16,9 +16,12 @@ This checklist can be copy/pasted into the final pre-release PR.
 
 ## CLI
 
+- [ ] do a push
+- [ ] do a pull
 - [ ] Run a local evaluation
-- [ ] Run a standard evaluation
-- [ ] Scan the database
+- [ ] Run an evaluation
+- [ ] Scan a database
+- [ ] generate a database
 
 ## Admin UI
 
@@ -34,4 +37,5 @@ This checklist can be copy/pasted into the final pre-release PR.
 
 ## Documentation
 
-- [ ] Verify that the changelog
+- [ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed
+- [ ] Verify that the CHANGELOG is representative of the actual changes
