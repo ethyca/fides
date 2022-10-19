@@ -63,52 +63,13 @@ const Consent: NextPage = () => {
       if (!response.ok) {
         router.push("/");
       }
-      if (data.consent) {
-        const newConsentItems: ConsentItem[] = [];
-        const userConsentMap: { [key: string]: ApiUserConsent } = {};
-        data.consent.forEach((option) => {
-          const key = option.data_use as string;
-          userConsentMap[key] = option;
-        });
-        consentConfig.consent.consentOptions.forEach((d) => {
-          if (d.fidesDataUseKey in userConsentMap) {
-            const currentConsent = userConsentMap[d.fidesDataUseKey];
 
-            newConsentItems.push({
-              consentValue: currentConsent.opt_in,
-              defaultValue: d.default ? d.default : false,
-              description: currentConsent.data_use_description
-                ? currentConsent.data_use_description
-                : "",
-              fidesDataUseKey: currentConsent.data_use,
-              highlight: d.highlight !== undefined ? d.highlight : false,
-              name: d.name,
-              url: d.url,
-            });
-          } else {
-            newConsentItems.push({
-              fidesDataUseKey: d.fidesDataUseKey,
-              name: d.name,
-              description: d.description,
-              highlight: d.highlight !== undefined ? d.highlight : false,
-              url: d.url,
-              defaultValue: d.default ? d.default : false,
-            });
-          }
-        });
-
-        setConsentItems(newConsentItems);
-      } else {
-        const temp = consentConfig.consent.consentOptions.map((option) => ({
-          fidesDataUseKey: option.fidesDataUseKey,
-          name: option.name,
-          description: option.description,
-          highlight: option.highlight,
-          url: option.url,
-          defaultValue: option.default ? option.default : false,
-        })) as ConsentItem[];
-        setConsentItems(temp);
-      }
+      const updatedConsentItems = makeConsentItems(
+        data,
+        config.consent.consentOptions
+      );
+      setConsentItems(updatedConsentItems);
+      setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     };
     getUserConsents();
   }, [router, consentRequestId, verificationCode]);
