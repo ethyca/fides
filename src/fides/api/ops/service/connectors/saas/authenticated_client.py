@@ -180,7 +180,7 @@ class AuthenticatedClient:
     def send(
         self,
         request_params: SaaSRequestParams,
-        saas_request: Optional[SaaSRequest],
+        saas_request: Optional[SaaSRequest] = None,
         ignore_errors: Optional[bool] = False,
     ) -> Response:
         """
