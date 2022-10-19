@@ -20,6 +20,6 @@ class RateLimitConfig(BaseModel):
     A config object which allows configuring rate limits for connectors
     """
 
-    rate: str
+    rate: int
     period: RateLimitPeriod
     custom_key: Optional[str]

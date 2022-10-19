@@ -170,7 +170,7 @@ class AuthenticatedClient:
             RateLimiterRequest(
                 key=rate_limit_config.custom_key or self.saas_config.fides_key,
                 rate_limit=rate_limit_config.rate,
-                period=RateLimiterPeriod[rate_limit_config.period.name.capitalize()],
+                period=RateLimiterPeriod[rate_limit_config.period.name.upper()],
             )
             for rate_limit_config in connector_limit_configs + request_limit_configs
         ]
