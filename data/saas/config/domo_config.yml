@@ -64,3 +64,16 @@ saas_config:
                 field: email
                 value:
                   identity: email
+        update:
+          method: PUT
+          path: /v1/users/<user_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+          body: |
+            {
+              <masked_object_fields>
+            }

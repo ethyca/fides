@@ -107,9 +107,7 @@ async def test_domo_erasure_request_task(
         identity_kwargs,
         db,
     )
-    import pdb
 
-    pdb.set_trace()
     assert_rows_match(
         v[f"{dataset_name}:users"],
         min_size=1,
@@ -119,13 +117,12 @@ async def test_domo_erasure_request_task(
             "email",
             "role",
             "name",
-            "timezone",
+            "department",
             "roleId",
             "createdAt",
             "updatedAt",
         ],
     )
-
     # verify we only returned data for our identity
     assert v[f"{dataset_name}:users"][0]["email"] == domo_erasure_identity_email
     masking_strict = CONFIG.execution.masking_strict

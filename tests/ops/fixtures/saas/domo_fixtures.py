@@ -65,13 +65,24 @@ def domo_dataset() -> Dict[str, Any]:
     )[0]
 
 
+@pytest.fixture(scope="session")
+def domo_token(domo_secrets) -> str:
+    body = {"grant_type": "client_credentials"}
+    basic_auth = HTTPBasicAuth(domo_secrets["client_id"], domo_secrets["client_secret"])
+    url = f"https://{domo_secrets['domain']}/oauth/token"
+    response = requests.post(url, body, auth=basic_auth)
+    return response.json()["access_token"]
+
+
 @pytest.fixture(scope="function")
 def domo_connection_config(
     db: session,
     domo_config,
     domo_secrets,
+    domo_token,
 ) -> Generator:
     fides_key = domo_config["fides_key"]
+    domo_secrets["access_token"] = domo_token
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -132,7 +143,10 @@ class DomoTestClient:
             "title": "Software Engineer",
             "role": "Participant",  # (available roles are: 'Admin', 'Privileged', 'Participant')
         }
-        url = f"{self.base_url}/users/sendInvite=false"
+        url = f"{self.base_url}/users?sendInvite=false"
+        import pdb
+
+        pdb.set_trace()
         user_response: requests.Response = requests.post(
             url=url, json=body, headers=self.headers
         )
@@ -182,15 +196,12 @@ def domo_create_erasure_data(
     # 1) create a new user
     user_response = domo_test_client.create_user(domo_erasure_identity_email)
     user = user_response.json()
-    import pdb
-
-    pdb.set_trace()
     user_id = user["id"]
 
     error_message = f"user with user id [{user_id}] could not be added to domo"
     poll_for_existence(
         _user_exists,
-        (domo_erasure_identity_email, domo_test_client),
+        (user_id, domo_test_client),
         error_message=error_message,
     )
     yield user_id
