@@ -45,16 +45,16 @@ const Consent: NextPage = () => {
       const configResponse = await fetch(`${hostUrl}/id-verification/config`, {
         headers,
       });
-      const config = await configResponse.json();
-      const verifyUrl = config.identity_verification_required
+      const privacyCenterConfig = await configResponse.json();
+      const verifyUrl = privacyCenterConfig.identity_verification_required
         ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
 
       const requestOptions: RequestInit = {
-        method: config.identity_verification_required ? "POST" : "GET",
+        method: privacyCenterConfig.identity_verification_required ? "POST" : "GET",
         headers,
       };
-      if (config.identity_verification_required) {
+      if (privacyCenterConfig.identity_verification_required) {
         requestOptions.body = JSON.stringify({ code: verificationCode });
       }
 
@@ -66,7 +66,7 @@ const Consent: NextPage = () => {
 
       const updatedConsentItems = makeConsentItems(
         data,
-        config.consent.consentOptions
+        consentConfig.consent.consentOptions
       );
       setConsentItems(updatedConsentItems);
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
