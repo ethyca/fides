@@ -26,10 +26,10 @@ const Consent: NextPage = () => {
   const router = useRouter();
 
   useEffect(() => {
-    if (!consentRequestId || !verificationCode) {
+    if (!consentRequestId) {
       router.push("/");
     }
-  }, [consentRequestId, verificationCode, router]);
+  }, [consentRequestId, router]);
 
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
 
@@ -42,6 +42,14 @@ const Consent: NextPage = () => {
         headers,
       });
       const privacyCenterConfig = await configResponse.json();
+
+      if (
+        privacyCenterConfig.identity_verification_required &&
+        !verificationCode
+      ) {
+        router.push("/");
+      }
+
       const verifyUrl = privacyCenterConfig.identity_verification_required
         ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
