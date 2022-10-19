@@ -135,3 +135,5 @@ def worker(ctx: click.Context) -> None:
     from fides.api.ops.tasks import start_worker
 
     start_worker()
+
+# Add a deploy command here
