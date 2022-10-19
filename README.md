@@ -9,7 +9,7 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
-![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
+![Fidesctl banner](docs/fides/docs/img/fides-logo.svg "Fidesctl banner")
 
 ## :zap: Overview
 

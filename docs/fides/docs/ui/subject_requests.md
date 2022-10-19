@@ -37,3 +37,18 @@ Requests with a status of **Error** can also be retried from this panel by selec
 The bottom of the Request Details panel displays the selected request's full event history. Selecting **View Details** on any event displays a summary of the event. **View Log** displays a detailed event log, which includes Fides' traversal through third-party connections and collections.
 
 ![subject request log](../img/admin_ui/subject_request_log.png)
+
+## Respond to manual requests
+When [manual connections](./datastores.md#manual-connections) are configured, Fides will pause processing a privacy request until the required information has been retrieved.
+
+Manual requests will be displayed in your Subject Request panel with a type of **Manual**.
+
+![manual request](../img/admin_ui/manual_request.png)
+
+To respond to a manual request, double-click the request row to review additional details. In the Subject Request Details panel, manual connections will have an additional **Begin manual input** button.
+
+![manual input](../img/admin_ui/manual_request.png)
+
+From here, you may add the data required by the fields specified during connection creation. Once finished, select **Save**, and Fides will continue processing the request.
+
+![manual requirements](../img/admin_ui/manual_requirements.png)
