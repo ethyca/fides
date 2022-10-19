@@ -1,15 +1,8 @@
-import { ChevronRightIcon } from "@chakra-ui/icons";
 import {
   Accordion,
   AccordionButton,
   AccordionItem,
   AccordionPanel,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Button,
   CloseButton,
   Heading,
@@ -19,9 +12,8 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import { GreenCheckCircleIcon, WarningIcon } from "common/Icon";
 import { Form, Formik } from "formik";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -41,6 +33,7 @@ import {
 import { RTKErrorResult } from "~/types/errors";
 
 import DocsLink from "../common/DocsLink";
+import WarningModal from "../common/WarningModal";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -82,17 +75,13 @@ const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = useRef(null);
 
   const [scannerError, setScannerError] = useState<ParsedError>();
-  const [systemResultsNumber, setSystemResultsNumber] = useState<number | null>(
-    null
-  );
 
   const handleResults = (results: GenerateResponse["generate_results"]) => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
-    setSystemResultsNumber(systems.length);
+    dispatch(changeStep());
   };
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -127,49 +116,23 @@ const AuthenticateAwsForm = () => {
     }
   };
 
+  const warningModalMessage = (
+    <>
+      <Text color="gray.500" mb={3}>
+        Warning, you are about to cancel the scan!
+      </Text>
+      <Text color="gray.500" mb={3}>
+        If you cancel scanning, the scanner will stop and no systems will be
+        returned.
+      </Text>
+      <Text color="gray.500" mb={3}>
+        Are you sure you want to cancel?
+      </Text>
+    </>
+  );
+
   return (
     <>
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent alignItems="center" textAlign="center">
-            <WarningIcon marginTop={3} />
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Cancel Scan!
-            </AlertDialogHeader>
-
-            <AlertDialogBody pt={0}>
-              <Text color="gray.500" mb={3}>
-                Warning, you are about to cancel the scan!
-              </Text>
-              <Text color="gray.500" mb={3}>
-                If you cancel scanning, the scanner will stop and no systems
-                will be returned.
-              </Text>
-              <Text color="gray.500" mb={3}>
-                Are you sure you want to cancel?
-              </Text>
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button onClick={() => handleCancel()} variant="outline">
-                Yes, Cancel
-              </Button>
-              <Button
-                colorScheme="primary"
-                ref={cancelRef}
-                onClick={onClose}
-                ml={3}
-              >
-                No, Continue Scanning
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
       <Formik
         initialValues={initialValues}
         validationSchema={ValidationSchema}
@@ -194,7 +157,7 @@ const AuthenticateAwsForm = () => {
                   />
                 </Text>
               ) : null}
-              {!systemResultsNumber && isSubmitting ? (
+              {isSubmitting ? (
                 <Stack alignItems="center">
                   <Spinner
                     thickness="4px"
@@ -205,26 +168,8 @@ const AuthenticateAwsForm = () => {
                   />
                 </Stack>
               ) : null}
-              {systemResultsNumber && !isSubmitting ? (
-                <Stack alignItems="baseline">
-                  <Text as="b">
-                    <GreenCheckCircleIcon />
-                    {systemResultsNumber} systems identified
-                  </Text>
-                  <Button
-                    backgroundColor="transparent"
-                    color="purple.500"
-                    fontWeight="400"
-                    data-testid="view-scan-results-button"
-                    onClick={() => dispatch(changeStep())}
-                  >
-                    View results <ChevronRightIcon color="purple.500" />
-                  </Button>
-                </Stack>
-              ) : null}
-
               {scannerError ? <ScannerError error={scannerError} /> : null}
-              {!isSubmitting && !scannerError && !systemResultsNumber ? (
+              {!isSubmitting && !scannerError ? (
                 <>
                   <Heading size="lg">Add a system</Heading>
                   <Accordion allowToggle border="transparent">
@@ -291,29 +236,36 @@ const AuthenticateAwsForm = () => {
                   </Stack>
                 </>
               ) : null}
-              {!systemResultsNumber ? (
-                <HStack>
-                  <Button
-                    variant="outline"
-                    onClick={!isSubmitting ? handleCancel : onOpen}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    isDisabled={!dirty || !isValid}
-                    isLoading={isLoading}
-                    data-testid="submit-btn"
-                  >
-                    Save and Continue
-                  </Button>
-                </HStack>
-              ) : null}
+              <HStack>
+                <Button
+                  variant="outline"
+                  onClick={!isSubmitting ? handleCancel : onOpen}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isDisabled={!dirty || !isValid}
+                  isLoading={isLoading}
+                  data-testid="submit-btn"
+                >
+                  Save and Continue
+                </Button>
+              </HStack>
             </Stack>
           </Form>
         )}
       </Formik>
+      <WarningModal
+        isOpen={isOpen}
+        onClose={onClose}
+        handleConfirm={handleCancel}
+        title="Cancel Scan!"
+        message={warningModalMessage}
+        confirmButtonText="Yes, Cancel"
+        cancelButtonText="No, Continue Scanning"
+      />
     </>
   );
 };

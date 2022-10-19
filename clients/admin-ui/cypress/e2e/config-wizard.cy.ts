@@ -91,7 +91,7 @@ describe("Config Wizard", () => {
 
         (req) => {
           req.continue((res) => {
-            res.setDelay(10000);
+            res.setDelay(1000);
           });
         }
       ).as("postGenerate");

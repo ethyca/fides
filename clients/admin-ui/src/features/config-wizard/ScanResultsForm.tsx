@@ -1,11 +1,4 @@
-import { WarningIcon } from "@chakra-ui/icons";
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
   Checkbox,
@@ -23,11 +16,12 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
+import WarningModal from "../common/WarningModal";
 import {
   changeStep,
   chooseSystemsForReview,
@@ -51,7 +45,6 @@ const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = useRef(null);
   const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
 
   const initialValues: FormValues = useMemo(
@@ -83,48 +76,16 @@ const ScanResultsForm = () => {
   // TODO: Store the region the user submitted through the form.
   const region = "the specified region";
 
+  const warningMessage = (
+    <Text color="gray.500" mb={3}>
+      You’re registering {selectedKeyValues.length} of {systems.length} systems
+      available. Do you want to continue with registration or cancel and
+      register all systems now?
+    </Text>
+  );
+
   return (
     <Box maxW="full">
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent alignItems="center" textAlign="center">
-            <WarningIcon marginTop={3} />
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Warning
-            </AlertDialogHeader>
-
-            <AlertDialogBody pt={0}>
-              <Text color="gray.500" mb={3}>
-                You’re registering {selectedKeyValues.length} of{" "}
-                {systems.length} systems available. Do you want to continue with
-                registration or cancel and register all systems now?
-              </Text>
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button
-                ref={cancelRef}
-                onClick={onClose}
-                ml={3}
-                variant="outline"
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="primary"
-                onClick={() => confirmRegisterSelectedSystems()}
-                variant="outline"
-              >
-                Continue
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
       <Formik
         initialValues={initialValues}
         validationSchema={ValidationSchema}
@@ -240,6 +201,13 @@ const ScanResultsForm = () => {
           );
         }}
       </Formik>
+      <WarningModal
+        title="Warning"
+        message={warningMessage}
+        handleConfirm={confirmRegisterSelectedSystems}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </Box>
   );
 };
