@@ -13,7 +13,7 @@ This strategy can be used to iterate through pages, or to define the offset for 
 #### Configuration details
 - `incremental_param` (_str_): The query param to increment the value for.
 - `increment_by` (_int_): The value to increment the `incremental_param` after each set of results.
-- `limit` (_str_): The max value the `incremental_param` can reach.
+- `limit` (optional _str_): The max value the `incremental_param` can reach.
 
 #### Example
 This example would take the `page` query param and increment it by 1 until the limit of 10 is reached or no more results are returned (whichever comes first).
