@@ -158,7 +158,7 @@ class AuthenticatedClient:
         If both are found, limits from both are respected.
         """
         connector_limit_configs: List[RateLimitConfig] = (
-            self.configuration.saas_config.rate_limits or []
+            self.configuration.saas_config.rate_limits or []  # type: ignore
         )
         request_limit_configs: List[RateLimitConfig] = (
             saas_request.rate_limits
