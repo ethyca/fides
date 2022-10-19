@@ -13,6 +13,7 @@ DOCKER_COMPOSE_FILE = join(
     "../../data",
     "fides-application.docker-compose.yml",
 )
+DOCKER_COMPOSE_COMMAND = f"docker compose -f {DOCKER_COMPOSE_FILE} "
 
 
 def check_for_env_file() -> None:
@@ -97,10 +98,21 @@ def check_docker_version() -> bool:
     return version_is_valid
 
 
+def teardown_application() -> None:
+    """Teardown all of the application containers for fides."""
+    run(DOCKER_COMPOSE_COMMAND + "down --remove-orphans")
+
+
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
-    run(
-        f"docker compose -f {DOCKER_COMPOSE_FILE} up",
-        shell=True,
-        check=True,
-    )
+    # TODO: Teardown everything after the run
+    try:
+        run(
+            DOCKER_COMPOSE_COMMAND + "up",
+            shell=True,
+            check=True,
+        )
+    except:
+        pass
+    finally:
+        teardown_application()
