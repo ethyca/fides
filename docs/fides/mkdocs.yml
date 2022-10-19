@@ -24,6 +24,7 @@ nav:
           - Create Execution Policies: getting-started/execution_policies.md
           - Execute Privacy Requests: getting-started/privacy_requests.md
       - How-To Guides:
+          - Privacy Request Workflows: guides/request_execution.md
           - Authenticate with OAuth: guides/oauth.md
           - Create Policies: guides/policies.md
           - Extend the Taxonomy: guides/extend_taxonomy.md
@@ -38,7 +39,6 @@ nav:
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
-          - Understanding Privacy Request Execution: guides/fidesops_workflow.md
       - Tutorial:
           - Overview: tutorial/index.md
           - Add Fides to the App: tutorial/add.md
