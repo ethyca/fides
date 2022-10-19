@@ -38,6 +38,8 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 
+* Add datastore UI and manual connection fulfillment docs [#1501](https://github.com/ethyca/fides/pull/1501)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
