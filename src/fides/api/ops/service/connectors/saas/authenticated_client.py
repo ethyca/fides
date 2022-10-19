@@ -158,7 +158,7 @@ class AuthenticatedClient:
         If both are found, limits from both are respected.
         """
         connector_limit_configs: List[RateLimitConfig] = (
-            self.configuration.saas_config.rate_limits or []  # type: ignore
+            self.configuration.get_saas_config().rate_limits or []
         )
         request_limit_configs: List[RateLimitConfig] = (
             saas_request.rate_limits
@@ -168,7 +168,8 @@ class AuthenticatedClient:
 
         rate_limit_requests = [
             RateLimiterRequest(
-                key=rate_limit_config.custom_key or self.configuration.saas_config.fides_key,  # type: ignore
+                key=rate_limit_config.custom_key
+                or self.configuration.get_saas_config().fides_key,
                 rate_limit=rate_limit_config.rate,
                 period=RateLimiterPeriod[rate_limit_config.period.name.upper()],
             )
