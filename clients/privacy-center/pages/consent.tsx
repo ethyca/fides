@@ -10,11 +10,7 @@ import {
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
 import { setConsentCookie } from "~/features/consent/cookie";
-import {
-  ApiUserConsents,
-  ConsentItem,
-  ApiUserConsent,
-} from "~/features/consent/types";
+import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 import ConsentItemCard from "../components/ConsentItemCard";
 
 import consentConfig from "../config/config.json";
@@ -51,7 +47,9 @@ const Consent: NextPage = () => {
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
 
       const requestOptions: RequestInit = {
-        method: privacyCenterConfig.identity_verification_required ? "POST" : "GET",
+        method: privacyCenterConfig.identity_verification_required
+          ? "POST"
+          : "GET",
         headers,
       };
       if (privacyCenterConfig.identity_verification_required) {
