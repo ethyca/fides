@@ -55,7 +55,7 @@ def test_env(session: nox.Session) -> None:
     )
     try:
         session.run(*COMPOSE_DOWN_VOLUMES, external=True)
-    except:
+    except nox.command.CommandFailed:
         session.error(
             "Failed to cleanly teardown existing containers & volumes. Please exit out of all other nox sessions and try again"
         )
