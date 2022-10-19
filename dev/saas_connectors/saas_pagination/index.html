@@ -2192,7 +2192,7 @@ You're not viewing the latest version.
 <ul>
 <li><code>incremental_param</code> (<em>str</em>): The query param to increment the value for.</li>
 <li><code>increment_by</code> (<em>int</em>): The value to increment the <code>incremental_param</code> after each set of results.</li>
-<li><code>limit</code> (<em>str</em>): The max value the <code>incremental_param</code> can reach.</li>
+<li><code>limit</code> (optional <em>str</em>): The max value the <code>incremental_param</code> can reach.</li>
 </ul>
 <h4 id="example">Example</h4>
 <p>This example would take the <code>page</code> query param and increment it by 1 until the limit of 10 is reached or no more results are returned (whichever comes first).
