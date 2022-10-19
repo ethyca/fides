@@ -32,16 +32,11 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /v1/Users
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: sid
-                value:
-                  references:
-                    - user_id
-          data_path: users
-
+          path: /v1/Users/<sid>
+          param_values:
+            - name: sid
+              references:
+                - user_id
 
   # endpoints:
   #   - name: users

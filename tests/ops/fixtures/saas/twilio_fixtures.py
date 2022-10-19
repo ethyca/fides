@@ -2,12 +2,10 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-import requests
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import drop_database
-from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -19,7 +17,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("twilio")
@@ -29,8 +27,8 @@ secrets = get_secrets("twilio")
 def twilio_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "twilio.domain") or secrets["domain"],
-        # "user_id": pydash.get(saas_config, "twilio.user_id") or secrets["user_id"],
-        "account_id": pydash.get(saas_config, "twilio.account_id") or secrets["account_id"],
+        "account_id": pydash.get(saas_config, "twilio.account_id")
+        or secrets["account_id"],
         "password": pydash.get(saas_config, "twilio.password") or secrets["password"],
         "user_id": {
             "dataset": "twilio_postgres",
@@ -62,7 +60,7 @@ def twilio_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
         "data/saas/dataset/twilio_dataset.yml",
         "<instance_fides_key>",
-        "twilio_instance"
+        "twilio_instance",
     )[0]
 
 
@@ -155,8 +153,6 @@ def twilio_postgres_dataset_config(
 
 @pytest.fixture(scope="function")
 def twilio_postgres_db(postgres_integration_session):
-    # import pdb;
-    # pdb.set_trace()
     postgres_integration_session = seed_postgres_data(
         postgres_integration_session,
         "./tests/ops/fixtures/saas/external_datasets/twilio.sql",
