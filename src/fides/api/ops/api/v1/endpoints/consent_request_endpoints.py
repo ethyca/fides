@@ -154,7 +154,7 @@ def get_consent_preferences_no_id(
         )
 
     provided_identity = _get_consent_request_and_provided_identity(
-        db=db, consent_request_id=consent_request_id, verification_code=""
+        db=db, consent_request_id=consent_request_id, verification_code=None
     )
 
     if not provided_identity.hashed_value:

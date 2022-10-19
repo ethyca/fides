@@ -24,17 +24,14 @@ const Consent: NextPage = () => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
-
-  useEffect(() => {
-    if (!consentRequestId) {
-      router.push("/");
-    }
-  }, [consentRequestId, router]);
-
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
 
   useEffect(() => {
     const getUserConsents = async () => {
+      if (!consentRequestId) {
+        router.push("/");
+      }
+
       const headers: Headers = new Headers();
       addCommonHeaders(headers, null);
 
@@ -128,7 +125,6 @@ const Consent: NextPage = () => {
       consentConfig.consent.consentOptions
     );
     setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
-
     router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch
