@@ -23,11 +23,11 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.storage.storage import ResponseFormat
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
+    ResponseFormat,
     StorageDetails,
     StorageType,
 )
@@ -37,7 +37,7 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 
-def _create_policy(
+def _create_dsr_policy(
     db: orm.Session,
     action_type: str,
     client_id: str,
@@ -166,7 +166,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
     policies = []
     policies.append(
-        _create_policy(
+        _create_dsr_policy(
             db=db,
             action_type=ActionType.erasure.value,
             client_id=client.id,
@@ -174,7 +174,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
         )
     )
     policies.append(
-        _create_policy(
+        _create_dsr_policy(
             db=db,
             action_type=ActionType.access.value,
             client_id=client.id,

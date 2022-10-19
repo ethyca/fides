@@ -16,8 +16,8 @@ saas_config:
       strategy: api_key
       configuration:
         headers:
-        - name: X-Shopify-Access-Token
-          value: <access_token>
+          - name: X-Shopify-Access-Token
+            value: <access_token>
 
   test_request:
     method: GET

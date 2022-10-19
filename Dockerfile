@@ -1,19 +1,17 @@
-# Pin to 3.10.6 to avoid a mypy error in 3.10.7
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.6"
+ARG PYTHON_VERSION="3.10.7"
 
 
-
-##############
-## Frontend ##
-##############
+###################
+## Frontend Base ##
+###################
 FROM node:16 as frontend
 
-# Build the admin-io frontend
+# Build the admin-ui frontend
 WORKDIR /fides/clients/admin-ui
-COPY clients/admin-ui/ .
+COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
-RUN npm run export
+COPY clients/admin-ui/ .
 
 #########################
 ## Compile Python Deps ##
@@ -104,6 +102,13 @@ FROM backend as dev
 
 RUN pip install -e . --no-deps
 
+#########################
+## Production Frontend ##
+#########################
+FROM frontend as frontend_prod
+
+RUN npm run export
+
 #############################
 ## Production Application ##
 #############################
@@ -114,4 +119,4 @@ RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
 
 # Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+COPY --from=frontend_prod /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin

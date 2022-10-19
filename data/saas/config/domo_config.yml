@@ -1,0 +1,66 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Domo SaaS Config
+  type: domo
+  description: A sample schema representing the Domo connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: client_id
+    - name: client_secret
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: oauth2_client_credentials
+      configuration:
+        token_request:
+          method: POST
+          path: /oauth/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          client_config:
+            protocol: https
+            host: <domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <client_id>
+                password: <client_secret>
+          body: |
+            {
+              "grant_type": "client_credentials"
+            }
+
+  test_request:
+    method: GET
+    path: /v1/datasets
+
+  endpoints:
+    - name: users
+      requests:
+        read:
+          method: GET
+          path: /v1/users
+          query_params:
+            - name: limit
+              value: 500
+            - name: offset
+              value: 0
+          param_values:
+            - name: placeholder
+              identity: email
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 500
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email

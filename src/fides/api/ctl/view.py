@@ -3,8 +3,8 @@ Contains api endpoints for fides web pages
 """
 from fastapi.responses import HTMLResponse
 
-from fides.api.ctl.routes.crud import list_resource
-from fides.api.ctl.sql_models import Evaluation
+from fides.api.ctl.routes.crud import list_resource  # type: ignore[attr-defined]
+from fides.api.ctl.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 
 router = APIRouter(

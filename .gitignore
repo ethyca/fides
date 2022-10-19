@@ -206,6 +206,7 @@ __pypackages__/
 
 # Environments
 .env
+.env*
 .venv
 .env.local
 env/
@@ -253,5 +254,6 @@ fides_uploads
 # Prevent SaaS configs from being committed
 saas_config.toml
 
-# Script secrets
-scripts/secrets.py
+# Frontend files
+clients/privacy-center/node_modules
+clients/privacy-center/.next

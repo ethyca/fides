@@ -14,6 +14,7 @@ COMPOSE_SERVICE_NAME = "fides"
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+INTEGRATION_POSTGRES_COMPOSE_FILE = "docker/docker-compose.integration-postgres.yml"
 
 # Image Names & Tags
 REGISTRY = "ethyca"
@@ -38,6 +39,12 @@ RUN = (
     "docker",
     "compose",
     "run",
+    "-e",
+    "VAULT_ADDR",
+    "-e",
+    "VAULT_NAMESPACE",
+    "-e",
+    "VAULT_TOKEN",
     "--rm",
     *ANALYTICS_ID_OVERRIDE,
     *ANALYTICS_OPT_OUT,
@@ -55,7 +62,6 @@ RUN_NO_DEPS = (
     IMAGE_NAME,
 )
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
-START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker",
     "compose",
@@ -64,7 +70,18 @@ START_APP_EXTERNAL = (
     "-f",
     INTEGRATION_COMPOSE_FILE,
     "up",
-    "-d",
-    IMAGE_NAME,
+    "--wait",
     COMPOSE_SERVICE_NAME,
+)
+START_APP_WITH_EXTERNAL_POSTGRES = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    INTEGRATION_POSTGRES_COMPOSE_FILE,
+    "up",
+    "--wait",
+    "fides",
+    "postgres_example",
 )

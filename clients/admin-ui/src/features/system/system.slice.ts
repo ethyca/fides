@@ -91,17 +91,18 @@ export const {
 } = systemApi;
 
 export interface State {
-  activeSystem: System | null;
+  activeSystem?: System;
 }
-const initialState: State = {
-  activeSystem: null,
-};
+const initialState: State = {};
 
 export const systemSlice = createSlice({
   name: "system",
   initialState,
   reducers: {
-    setActiveSystem: (draftState, action: PayloadAction<System | null>) => {
+    setActiveSystem: (
+      draftState,
+      action: PayloadAction<System | undefined>
+    ) => {
       draftState.activeSystem = action.payload;
     },
   },

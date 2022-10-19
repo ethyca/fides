@@ -16,6 +16,12 @@ dataset = "data/saas/dataset/datadog_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Datadog"
 
+[doordash]
+config = "data/saas/config/doordash_config.yml"
+dataset = "data/saas/dataset/doordash_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Doordash"
+
 [firebase_auth]
 config = "data/saas/config/firebase_auth_config.yml"
 dataset = "data/saas/dataset/firebase_auth_dataset.yml"
@@ -99,3 +105,9 @@ config = "data/saas/config/braze_config.yml"
 dataset = "data/saas/dataset/braze_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Braze"
+
+[domo]
+config = "data/saas/config/domo_config.yml"
+dataset = "data/saas/dataset/domo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Domo"
