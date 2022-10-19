@@ -81,11 +81,6 @@ def test_limiter_times_out_when_bucket_full() -> None:
             limiter.limit(
                 requests=[
                     RateLimiterRequest(
-                        key="my_test_key_1",
-                        rate_limit=100,
-                        period=RateLimiterPeriod.SECOND,
-                    ),
-                    RateLimiterRequest(
                         key="my_test_key_2",
                         rate_limit=100,
                         period=RateLimiterPeriod.HOUR,

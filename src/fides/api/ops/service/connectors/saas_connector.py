@@ -68,7 +68,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             self.configuration.secrets,  # type: ignore
         )
         client: AuthenticatedClient = self.create_client_from_request(test_request)
-        client.send(prepared_request)
+        client.send(prepared_request, test_request, test_request.ignore_errors)
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
@@ -177,7 +177,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
 
         client: AuthenticatedClient = self.create_client_from_request(saas_request)
-        response: Response = client.send(prepared_request)
+        response: Response = client.send(
+            prepared_request, saas_request, saas_request.ignore_errors
+        )
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
 
@@ -315,7 +317,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows_updated = 0
         client = self.create_client_from_request(masking_request)
         for prepared_request in prepared_requests:
-            client.send(prepared_request)
+            client.send(
+                prepared_request, masking_request, masking_request.ignore_errors
+            )
             rows_updated += 1
         return rows_updated
 

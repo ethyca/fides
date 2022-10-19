@@ -168,7 +168,7 @@ class AuthenticatedClient:
 
         rate_limit_requests = [
             RateLimiterRequest(
-                key=rate_limit_config.custom_key or self.saas_config.fides_key,  # type: ignore
+                key=rate_limit_config.custom_key or self.configuration.saas_config.fides_key,  # type: ignore
                 rate_limit=rate_limit_config.rate,
                 period=RateLimiterPeriod[rate_limit_config.period.name.upper()],
             )
@@ -178,13 +178,16 @@ class AuthenticatedClient:
 
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
-        self, request_params: SaaSRequestParams, saas_request: Optional[SaaSRequest]
+        self,
+        request_params: SaaSRequestParams,
+        saas_request: Optional[SaaSRequest],
+        ignore_errors: Optional[bool] = False,
     ) -> Response:
         """
         Builds and executes an authenticated request.
         Optionally ignores non-200 responses if ignore_errors is set to True
         """
-        rate_limit_requests = self.build_rate_limit_requests()
+        rate_limit_requests = self.build_rate_limit_requests(saas_request)
         RateLimiter().limit(rate_limit_requests)
 
         prepared_request: PreparedRequest = self.get_authenticated_request(
@@ -197,7 +200,7 @@ class AuthenticatedClient:
         )  # Dev mode only
 
         if not response.ok:
-            if saas_request and saas_request.ignore_errors:
+            if ignore_errors:
                 logger.info(
                     "Ignoring errors on response with status code %s as configured.",
                     response.status_code,

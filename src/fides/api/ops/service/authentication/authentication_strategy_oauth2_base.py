@@ -93,7 +93,9 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
                 connection_config.secrets,  # type: ignore
             )
             # ignore errors so we can return the error message in the response
-            response = client.send(prepared_request, ignore_errors=True)
+            response = client.send(
+                prepared_request, saas_request=None, ignore_errors=True
+            )
             json_response = response.json()
         except Exception as exc:
             logger.error(
