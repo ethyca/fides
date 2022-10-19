@@ -5,8 +5,9 @@ import { useAppSelector } from "~/app/hooks";
 
 import { useAlert, useAPIHelper } from "../../common/hooks";
 import {
-  selectRetryRequests, useBulkRetryMutation,
-  useRetryMutation
+  selectRetryRequests,
+  useBulkRetryMutation,
+  useRetryMutation,
 } from "../privacy-requests.slice";
 import { PrivacyRequest } from "../types";
 

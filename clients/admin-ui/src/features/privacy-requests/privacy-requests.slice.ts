@@ -2,6 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
+import { BulkPostPrivacyRequests } from "~/types/api";
+
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
@@ -193,7 +195,7 @@ export const subjectRequestsSlice = createSlice({
     setRetryRequests: (state, action: PayloadAction<RetryRequests>) => ({
       ...state,
       checkAll: action.payload.checkAll,
-      errorRequests: action.payload.errorRequests
+      errorRequests: action.payload.errorRequests,
     }),
     setRevealPII: (state, action: PayloadAction<boolean>) => ({
       ...state,
@@ -262,7 +264,7 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
-    bulkRetry: build.mutation<any, string[]>({
+    bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
       query: (values) => ({
         url: `privacy-request/bulk/retry`,
         method: "POST",
