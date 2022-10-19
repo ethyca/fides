@@ -45,6 +45,15 @@ def domo_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
+@pytest.fixture(scope="session")
+def domo_token(domo_secrets) -> str:
+    body = {"grant_type": "client_credentials"}
+    basic_auth = HTTPBasicAuth(domo_secrets["client_id"], domo_secrets["client_secret"])
+    url = f"https://{domo_secrets['domain']}/oauth/token"
+    response = requests.post(url, body, auth=basic_auth)
+    return response.json()["access_token"]
+
+
 @pytest.fixture
 def domo_config() -> Dict[str, Any]:
     return load_config_with_replacement(
@@ -68,8 +77,10 @@ def domo_connection_config(
     db: session,
     domo_config,
     domo_secrets,
+    domo_token,
 ) -> Generator:
     fides_key = domo_config["fides_key"]
+    domo_secrets["access_token"] = domo_token
     connection_config = ConnectionConfig.create(
         db=db,
         data={
