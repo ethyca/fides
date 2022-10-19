@@ -10,7 +10,7 @@ from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.saas.authenticated_client import (
@@ -67,7 +67,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             test_request,
             self.configuration.secrets,  # type: ignore
         )
-        client: AuthenticatedClient = self.create_client_with_request(test_request)
+        client: AuthenticatedClient = self.create_client_from_request(test_request)
         client.send(prepared_request)
         return ConnectionTestStatus.succeeded
 
@@ -82,18 +82,27 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         logger.info("Creating client to %s", uri)
         return AuthenticatedClient(uri, self.configuration)
 
-    def create_client_with_request(
+    def _build_client_with_config(
+        self, client_config: ClientConfig
+    ) -> AuthenticatedClient:
+        """Sets the client_config on the SaasConnector, and also sets it on the created AuthenticatedClient"""
+        self.client_config = client_config
+        client: AuthenticatedClient = self.create_client()
+        client.client_config = client_config
+        return client
+
+    def create_client_from_request(
         self, saas_request: SaaSRequest
     ) -> AuthenticatedClient:
         """
-        Permits configuration at the request-level for the connector and client
-        Overrides client_config in the current connector if set in request
+        Permits authentication to be overridden at the request-level.
+        Use authentication on the request if specified, otherwise, just use
+        the authentication configured for the overall SaaS connector.
         """
         if saas_request.client_config:
-            self.client_config = saas_request.client_config
-        client: AuthenticatedClient = self.create_client()
-        client.saas_request = saas_request
-        return client
+            return self._build_client_with_config(saas_request.client_config)
+
+        return self._build_client_with_config(self.saas_config.client_config)  # type: ignore
 
     def retrieve_data(
         self,
@@ -167,7 +176,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
 
-        client: AuthenticatedClient = self.create_client_with_request(saas_request)
+        client: AuthenticatedClient = self.create_client_from_request(saas_request)
         response: Response = client.send(prepared_request)
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
@@ -304,7 +313,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             for row in rows
         ]
         rows_updated = 0
-        client = self.create_client_with_request(masking_request)
+        client = self.create_client_from_request(masking_request)
         for prepared_request in prepared_requests:
             client.send(prepared_request)
             rows_updated += 1

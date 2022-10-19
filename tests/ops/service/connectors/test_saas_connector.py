@@ -148,7 +148,7 @@ class TestSaasConnector:
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 class TestSaaSConnectorMethods:
-    def test_create_client_with_request(
+    def test_create_client_from_request(
         self, db: Session, segment_connection_config, segment_dataset_config
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
@@ -160,13 +160,13 @@ class TestSaaSConnectorMethods:
         )
         saas_request: SaaSRequest = segment_user_endpoint.requests["read"]
 
-        client = connector.create_client_with_request(saas_request)
+        client = connector.create_client_from_request(saas_request)
         # ClientConfig on read segment user request uses basic auth, and we've overridden client config to match
         assert connector.client_config.authentication.strategy == "basic"
         assert client.client_config.authentication.strategy == "basic"
 
         # Test request users bearer auth - creating the client from the request also updates the connector's auth.
         test_request: SaaSRequest = connector.saas_config.test_request
-        client = connector.create_client_with_request(test_request)
+        client = connector.create_client_from_request(test_request)
         assert connector.client_config.authentication.strategy == "bearer"
         assert client.client_config.authentication.strategy == "bearer"

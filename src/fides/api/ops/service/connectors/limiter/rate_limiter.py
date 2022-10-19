@@ -117,8 +117,12 @@ class RateLimiter:
         """
         Increments call count for the current time bucket and verifies that it is within the
         rate limit provided. If limit is breached it will decrement the count and try again
-        until it can successfully reserve a call, or timeout.
+        until it can successfully reserve a call, or timeout. Because we rely on optimistic
+        locking for many keys at a time, it is possible that concurrent rate limiters could
+        make the wrong decision in between increment to decrement operations.
+
         If connection to the redis cluster fails then rate limiter will be skipped.
+
         Expiration is set on any keys which are stored in the cluster
         """
         try:

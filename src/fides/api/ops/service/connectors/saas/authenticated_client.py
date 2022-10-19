@@ -25,7 +25,7 @@ from fides.ctl.core.config import get_config
 if TYPE_CHECKING:
     from fides.api.ops.models.connectionconfig import ConnectionConfig
     from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
-    from fides.api.ops.schemas.saas.saas_config import SaaSRequest
+    from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
     from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
 logger = logging.getLogger(__name__)
@@ -43,14 +43,18 @@ class AuthenticatedClient:
         self,
         uri: str,
         configuration: ConnectionConfig,
-        saas_request: Optional[SaaSRequest] = None,
+        request_client_config: Optional[ClientConfig] = None,
     ):
-        self.saas_config = configuration.get_saas_config()
+        saas_config = configuration.get_saas_config()
         self.configuration = configuration
-        self.saas_request = saas_request
         self.session = Session()
         self.uri = uri
         self.key = configuration.key
+        self.client_config = (
+            request_client_config
+            if request_client_config
+            else saas_config.client_config  # type: ignore
+        )
         self.secrets = configuration.secrets
 
     def get_authenticated_request(
@@ -74,16 +78,10 @@ class AuthenticatedClient:
         ).prepare()
 
         # add authentication if provided
-        request_client_config = (
-            self.saas_request.client_config
-            if self.saas_request and self.saas_request.client_config
-            else None
-        )
-        client_config = request_client_config or self.saas_config.client_config  # type: ignore
-        if client_config.authentication:
+        if self.client_config.authentication:
             auth_strategy = AuthenticationStrategy.get_strategy(
-                client_config.authentication.strategy,
-                client_config.authentication.configuration,
+                self.client_config.authentication.strategy,
+                self.client_config.authentication.configuration,
             )
             return auth_strategy.add_authentication(req, self.configuration)
 
@@ -152,17 +150,19 @@ class AuthenticatedClient:
 
         return decorator
 
-    def build_rate_limit_requests(self) -> List[RateLimiterRequest]:
+    def build_rate_limit_requests(
+        self, saas_request: Optional[SaaSRequest]
+    ) -> List[RateLimiterRequest]:
         """
         Builds rate limit requests from saas config and saas request.
         If both are found, limits from both are respected.
         """
         connector_limit_configs: List[RateLimitConfig] = (
-            self.saas_config.rate_limits or []  # type: ignore
+            self.configuration.saas_config.rate_limits or []
         )
         request_limit_configs: List[RateLimitConfig] = (
-            self.saas_request.rate_limits
-            if self.saas_request and self.saas_request.rate_limits
+            saas_request.rate_limits
+            if saas_request and saas_request.rate_limits
             else []
         )
 
@@ -177,7 +177,9 @@ class AuthenticatedClient:
         return rate_limit_requests
 
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
-    def send(self, request_params: SaaSRequestParams) -> Response:
+    def send(
+        self, request_params: SaaSRequestParams, saas_request: Optional[SaaSRequest]
+    ) -> Response:
         """
         Builds and executes an authenticated request.
         Optionally ignores non-200 responses if ignore_errors is set to True
@@ -195,7 +197,7 @@ class AuthenticatedClient:
         )  # Dev mode only
 
         if not response.ok:
-            if self.saas_request and self.saas_request.ignore_errors:
+            if saas_request and saas_request.ignore_errors:
                 logger.info(
                     "Ignoring errors on response with status code %s as configured.",
                     response.status_code,
