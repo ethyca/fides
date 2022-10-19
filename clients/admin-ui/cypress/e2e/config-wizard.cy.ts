@@ -55,7 +55,6 @@ describe("Config Wizard", () => {
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate");
 
-      cy.getByTestId("view-scan-results-button").click();
       cy.getByTestId("scan-results-form");
     });
 
