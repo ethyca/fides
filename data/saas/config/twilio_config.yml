@@ -1,0 +1,97 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Twilio SaaS Config
+  type: twilio
+  description: A sample schema representing the Twilio connector for Fidesops
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: account_id
+    - name: password
+
+  external_references:
+    - name: user_id
+      label: User ID
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <account_id>
+        password: <password>
+
+  test_request:
+    method: GET
+    path: /v1/Users
+
+  endpoints:
+    - name: users
+      requests:
+        read:
+          method: GET
+          path: /v1/Users
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: sid
+                value:
+                  references:
+                    - user_id
+          data_path: users
+
+
+  # endpoints:
+  #   - name: users
+  #     requests:
+  #       read:
+  #         method: GET
+  #         path: /v1/users
+  #         postprocessors:
+  #           - strategy: filter
+  #             configuration:
+  #               field: email
+  #               value:
+  #                 identity: email
+
+
+
+
+    #       query_params:
+    #         - name: friendly_name
+    #           connector_param: friendly_name
+    # - name: user_conversations
+    #   requests:
+    #     read:
+    #       method: GET
+    #       path: /v1/Users/<user_id>/Conversations?PageSize=20
+    #       param_values:
+    #         - name: user_id
+    #           references:
+    #             - dataset: <instance_fides_key>
+    #               field: users.user_id
+    #               direction: from
+    # - name: conversation_messages
+    #   requests:
+    #     read:
+    #       method: GET
+    #       path: /v1/Conversations/{conversation_id}/Messages?PageSize=20
+    #       param_values:
+    #         - name: user_id
+    #           references:
+    #             - dataset: <instance_fides_key>
+    #               field: user_conversations.conversation_id
+    #               direction: from
+    # - name: conversation_participants
+    #   requests:
+    #     read:
+    #       method: GET
+    #       path: /v1/Conversations/{conversation_id}/Participants?PageSize=20
+    #       param_values:
+    #         - name: user_id
+    #           references:
+    #             - dataset: <instance_fides_key>
+    #               field: user_conversations.conversation_id
+    #               direction: from

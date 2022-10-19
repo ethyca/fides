@@ -194,6 +194,7 @@ markers = [
     "integration_square",
     "integration_outreach",
     "integration_salesforce",
+    "integration_twilio",
     "integration_logi_id",
     "integration_adobe_campaign",
     "unit_saas"
