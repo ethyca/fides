@@ -1,14 +1,12 @@
 import { Button, ButtonProps, forwardRef } from "@fidesui/react";
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 
 import { useAlert, useAPIHelper } from "../../common/hooks";
 import {
-  selectErrorRequests,
-  setErrorRequests,
-  useBulkRetryMutation,
-  useRetryMutation,
+  selectRetryRequests, useBulkRetryMutation,
+  useRetryMutation
 } from "../privacy-requests.slice";
 import { PrivacyRequest } from "../types";
 
@@ -19,12 +17,11 @@ type ReprocessButtonProps = {
 
 const ReprocessButton = forwardRef(
   ({ buttonProps, subjectRequest }: ReprocessButtonProps, ref) => {
-    const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const { handleError } = useAPIHelper();
     const { successAlert } = useAlert();
 
-    const errorRequests = useAppSelector(selectErrorRequests);
+    const { errorRequests } = useAppSelector(selectRetryRequests);
     const [bulkRetry] = useBulkRetryMutation();
     const [retry] = useRetryMutation();
 
@@ -39,7 +36,6 @@ const ReprocessButton = forwardRef(
           handleError(error);
         })
         .finally(() => {
-          dispatch(setErrorRequests([]));
           setIsReprocessing(false);
         });
     };
@@ -62,6 +58,7 @@ const ReprocessButton = forwardRef(
     return (
       <Button
         {...buttonProps}
+        isDisabled={isReprocessing}
         isLoading={isReprocessing}
         loadingText="Reprocessing"
         onClick={

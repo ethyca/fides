@@ -6,10 +6,10 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
 import PaginationFooter from "../common/PaginationFooter";
 import {
-  selectErrorRequests,
   selectPrivacyRequestFilters,
-  setErrorRequests,
+  selectRetryRequests,
   setPage,
+  setRetryRequests,
   useGetAllPrivacyRequestsQuery,
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
@@ -24,7 +24,6 @@ const useRequestTable = () => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectPrivacyRequestFilters);
   const [cachedFilters, setCachedFilters] = useState(filters);
-  const [isSelectAll, setIsSelectAll] = useState(false);
   const updateCachedFilters = useRef(
     debounce(
       (updatedFilters: React.SetStateAction<PrivacyRequestParams>) =>
@@ -33,7 +32,7 @@ const useRequestTable = () => {
     )
   );
 
-  const errorRequests = useAppSelector(selectErrorRequests);
+  const { checkAll, errorRequests } = useAppSelector(selectRetryRequests);
   const { data, isFetching } = useGetAllPrivacyRequestsQuery(cachedFilters);
   const { items: requests, total } = data || { items: [], total: 0 };
 
@@ -43,9 +42,6 @@ const useRequestTable = () => {
   );
 
   const handleCheckChange = (id: string, checked: boolean) => {
-    if (!checked && isSelectAll) {
-      setIsSelectAll(false);
-    }
     let list: string[];
     if (checked) {
       list = [...errorRequests, id];
@@ -54,7 +50,12 @@ const useRequestTable = () => {
       const index = list.findIndex((value) => value === id);
       list.splice(index, 1);
     }
-    dispatch(setErrorRequests(list));
+    dispatch(
+      setRetryRequests({
+        checkAll: !(!checked && checkAll),
+        errorRequests: list,
+      })
+    );
   };
 
   const handlePreviousPage = () => {
@@ -65,25 +66,32 @@ const useRequestTable = () => {
     dispatch(setPage(filters.page + 1));
   };
 
-  const handleSelectAll = () => {
-    const value = !isSelectAll;
-    setIsSelectAll(value);
-    dispatch(setErrorRequests(value ? getErrorRequests() : []));
+  const handleCheckAll = () => {
+    const value = !checkAll;
+    dispatch(
+      setRetryRequests({
+        checkAll: value,
+        errorRequests: value ? getErrorRequests() : [],
+      })
+    );
   };
 
   useEffect(() => {
     updateCachedFilters.current(filters);
-  }, [filters]);
+    if (isFetching && filters.status?.includes("error")) {
+      dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+    }
+  }, [dispatch, filters, isFetching]);
 
   return {
     ...filters,
+    checkAll,
     errorRequests,
     handleCheckChange,
     handleNextPage,
     handlePreviousPage,
-    handleSelectAll,
+    handleCheckAll,
     isFetching,
-    isSelectAll,
     requests,
     total,
   };
@@ -91,13 +99,13 @@ const useRequestTable = () => {
 
 const RequestTable: React.FC<RequestTableProps> = () => {
   const {
+    checkAll,
     errorRequests,
     handleCheckChange,
     handleNextPage,
     handlePreviousPage,
-    handleSelectAll,
+    handleCheckAll,
     isFetching,
-    isSelectAll,
     page,
     requests,
     size,
@@ -112,8 +120,8 @@ const RequestTable: React.FC<RequestTableProps> = () => {
             <Th px={0}>
               <Checkbox
                 aria-label="Select all"
-                isChecked={isSelectAll}
-                onChange={handleSelectAll}
+                isChecked={checkAll}
+                onChange={handleCheckAll}
                 pointerEvents={
                   requests.findIndex((r) => r.status === "error") !== -1
                     ? "auto"

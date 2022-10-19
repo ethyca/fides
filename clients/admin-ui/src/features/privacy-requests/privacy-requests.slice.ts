@@ -13,6 +13,7 @@ import {
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
+  RetryRequests,
 } from "./types";
 
 // Helpers
@@ -52,6 +53,188 @@ export function mapFiltersToSearchParams({
     ...(sort_field ? { sort_field } : {}),
   };
 }
+
+export const requestCSVDownload = async ({
+  id,
+  from,
+  to,
+  status,
+  token,
+}: PrivacyRequestParams & { token: string | null }) => {
+  if (!token) {
+    return null;
+  }
+
+  return fetch(
+    `${BASE_URL}/privacy-request?${new URLSearchParams({
+      ...mapFiltersToSearchParams({
+        id,
+        from,
+        to,
+        status,
+      }),
+      download_csv: "true",
+    })}`,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${token}`,
+        "X-Fides-Source": "fidesops-admin-ui",
+      },
+    }
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Got a bad response from the server");
+      }
+      return response.blob();
+    })
+    .then((data) => {
+      const a = document.createElement("a");
+      a.href = window.URL.createObjectURL(data);
+      a.download = "privacy-requests.csv";
+      a.click();
+    })
+    .catch((error) => Promise.reject(error));
+};
+
+export const selectPrivacyRequestFilters = (
+  state: RootState
+): PrivacyRequestParams => ({
+  from: state.subjectRequests.from,
+  id: state.subjectRequests.id,
+  page: state.subjectRequests.page,
+  size: state.subjectRequests.size,
+  sort_direction: state.subjectRequests.sort_direction,
+  sort_field: state.subjectRequests.sort_field,
+  status: state.subjectRequests.status,
+  to: state.subjectRequests.to,
+  verbose: state.subjectRequests.verbose,
+});
+
+export const selectRequestStatus = (state: RootState) =>
+  state.subjectRequests.status;
+
+export const selectRetryRequests = (state: RootState): RetryRequests => ({
+  checkAll: state.subjectRequests.checkAll,
+  errorRequests: state.subjectRequests.errorRequests,
+});
+
+export const selectRevealPII = (state: RootState) =>
+  state.subjectRequests.revealPII;
+
+// Subject requests state (filters, etc.)
+type SubjectRequestsState = {
+  checkAll: boolean;
+  errorRequests: string[];
+  from: string;
+  id: string;
+  page: number;
+  revealPII: boolean;
+  size: number;
+  sort_direction?: string;
+  sort_field?: string;
+  status?: PrivacyRequestStatus[];
+  to: string;
+  verbose?: boolean;
+};
+
+const initialState: SubjectRequestsState = {
+  checkAll: false,
+  errorRequests: [],
+  from: "",
+  id: "",
+  page: 1,
+  revealPII: false,
+  size: 25,
+  to: "",
+};
+
+export const subjectRequestsSlice = createSlice({
+  name: "subjectRequests",
+  initialState,
+  reducers: {
+    clearAllFilters: ({ revealPII }) => ({
+      ...initialState,
+      revealPII,
+    }),
+    clearSortFields: (state) => ({
+      ...state,
+      sort_direction: undefined,
+      sort_field: undefined,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setRequestFrom: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      from: action.payload,
+    }),
+    setRequestId: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      id: action.payload,
+    }),
+    setRequestStatus: (
+      state,
+      action: PayloadAction<PrivacyRequestStatus[]>
+    ) => ({
+      ...state,
+      page: initialState.page,
+      status: action.payload,
+    }),
+    setRequestTo: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      to: action.payload,
+    }),
+    setRetryRequests: (state, action: PayloadAction<RetryRequests>) => ({
+      ...state,
+      checkAll: action.payload.checkAll,
+      errorRequests: action.payload.errorRequests
+    }),
+    setRevealPII: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      revealPII: action.payload,
+    }),
+    setSortDirection: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_direction: action.payload,
+    }),
+    setSortField: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_field: action.payload,
+    }),
+    setSize: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: initialState.page,
+      size: action.payload,
+    }),
+    setVerbose: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      verbose: action.payload,
+    }),
+  },
+});
+
+export const {
+  clearAllFilters,
+  clearSortFields,
+  setPage,
+  setRequestFrom,
+  setRequestId,
+  setRequestStatus,
+  setRequestTo,
+  setRetryRequests,
+  setRevealPII,
+  setSortDirection,
+  setSortField,
+  setVerbose,
+} = subjectRequestsSlice.actions;
+
+export const { reducer } = subjectRequestsSlice;
 
 // Subject requests API
 export const privacyRequestApi = createApi({
@@ -108,6 +291,14 @@ export const privacyRequestApi = createApi({
         )}`,
       }),
       providesTags: () => ["Request"],
+      async onQueryStarted(_key, { dispatch, queryFulfilled, getState }) {
+        await queryFulfilled;
+        const state = getState() as RootState;
+        const { errorRequests } = selectRetryRequests(state);
+        if (errorRequests.length > 0) {
+          dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+        }
+      },
     }),
     getUploadedManualWebhookData: build.query<
       any,
@@ -154,177 +345,3 @@ export const {
   useRetryMutation,
   useUploadManualWebhookDataMutation,
 } = privacyRequestApi;
-
-export const requestCSVDownload = async ({
-  id,
-  from,
-  to,
-  status,
-  token,
-}: PrivacyRequestParams & { token: string | null }) => {
-  if (!token) {
-    return null;
-  }
-
-  return fetch(
-    `${BASE_URL}/privacy-request?${new URLSearchParams({
-      ...mapFiltersToSearchParams({
-        id,
-        from,
-        to,
-        status,
-      }),
-      download_csv: "true",
-    })}`,
-    {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}`,
-        "X-Fides-Source": "fidesops-admin-ui",
-      },
-    }
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Got a bad response from the server");
-      }
-      return response.blob();
-    })
-    .then((data) => {
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "privacy-requests.csv";
-      a.click();
-    })
-    .catch((error) => Promise.reject(error));
-};
-
-// Subject requests state (filters, etc.)
-type SubjectRequestsState = {
-  errorRequests: string[];
-  from: string;
-  id: string;
-  page: number;
-  revealPII: boolean;
-  size: number;
-  sort_direction?: string;
-  sort_field?: string;
-  status?: PrivacyRequestStatus[];
-  to: string;
-  verbose?: boolean;
-};
-
-const initialState: SubjectRequestsState = {
-  errorRequests: [],
-  from: "",
-  id: "",
-  page: 1,
-  revealPII: false,
-  size: 25,
-  to: "",
-};
-
-export const subjectRequestsSlice = createSlice({
-  name: "subjectRequests",
-  initialState,
-  reducers: {
-    clearAllFilters: ({ revealPII }) => ({
-      ...initialState,
-      revealPII,
-    }),
-    clearSortFields: (state) => ({
-      ...state,
-      sort_direction: undefined,
-      sort_field: undefined,
-    }),
-    setErrorRequests: (state, action: PayloadAction<string[]>) => ({
-      ...state,
-      errorRequests: action.payload,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: action.payload,
-    }),
-    setRequestFrom: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      from: action.payload,
-    }),
-    setRequestId: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      id: action.payload,
-    }),
-    setRequestStatus: (
-      state,
-      action: PayloadAction<PrivacyRequestStatus[]>
-    ) => ({
-      ...state,
-      page: initialState.page,
-      status: action.payload,
-    }),
-    setRequestTo: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      to: action.payload,
-    }),
-    setRevealPII: (state, action: PayloadAction<boolean>) => ({
-      ...state,
-      revealPII: action.payload,
-    }),
-    setSortDirection: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_direction: action.payload,
-    }),
-    setSortField: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_field: action.payload,
-    }),
-    setSize: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: initialState.page,
-      size: action.payload,
-    }),
-    setVerbose: (state, action: PayloadAction<boolean>) => ({
-      ...state,
-      verbose: action.payload,
-    }),
-  },
-});
-
-export const {
-  clearAllFilters,
-  clearSortFields,
-  setErrorRequests,
-  setPage,
-  setRequestFrom,
-  setRequestId,
-  setRequestStatus,
-  setRequestTo,
-  setRevealPII,
-  setSortDirection,
-  setSortField,
-  setVerbose,
-} = subjectRequestsSlice.actions;
-
-export const selectErrorRequests = (state: RootState) =>
-  state.subjectRequests.errorRequests;
-export const selectPrivacyRequestFilters = (
-  state: RootState
-): PrivacyRequestParams => ({
-  from: state.subjectRequests.from,
-  id: state.subjectRequests.id,
-  page: state.subjectRequests.page,
-  size: state.subjectRequests.size,
-  sort_direction: state.subjectRequests.sort_direction,
-  sort_field: state.subjectRequests.sort_field,
-  status: state.subjectRequests.status,
-  to: state.subjectRequests.to,
-  verbose: state.subjectRequests.verbose,
-});
-export const selectRequestStatus = (state: RootState) =>
-  state.subjectRequests.status;
-export const selectRevealPII = (state: RootState) =>
-  state.subjectRequests.revealPII;
-
-export const { reducer } = subjectRequestsSlice;
