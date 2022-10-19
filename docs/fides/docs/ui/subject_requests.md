@@ -15,6 +15,17 @@ The Fides Admin UI is designed to provide at-a-glance access to submitted subjec
 | Download | Download a `.csv` of the shown requests. |
 | Clear | Remove all search options and filters. |
 
+### Request information
+| Option | Description |
+|----|----|
+| Status | The request's current status. |
+| Days Left | The number of days remaining to fullfil the subject request, according to compliance policies and regulations. |
+| Policy Name | The name of the [execution policy](../getting-started/execution_policies.md) used for this request. |
+| Subject Identity | Subject information. Hidden if **Reveal PII** is not selected. |
+| Time Received | The time the request was first received. |
+| Reviewed By | The system user that reviewed the request. |
+| Options [...] | Approve and Deny options for the request. |
+
 ## Approve or deny requests
 
 ![approve or deny requests](../img/admin_ui/approve_deny.png)
