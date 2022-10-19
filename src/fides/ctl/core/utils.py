@@ -5,6 +5,7 @@ import re
 from functools import partial
 from json.decoder import JSONDecodeError
 from typing import Dict, Iterator, List
+from os.path import isfile
 
 import click
 import jwt
@@ -103,8 +104,11 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
     """Get a list of manifest files from the manifest directory."""
-
     yml_endings = ["yml", "yaml"]
+
+    if isfile(manifests_dir) and manifests_dir.split(".")[-1] in yml_endings:
+        return [manifests_dir]
+
     manifest_list = []
     for yml_ending in yml_endings:
         manifest_list += glob.glob(f"{manifests_dir}/**/*.{yml_ending}", recursive=True)
