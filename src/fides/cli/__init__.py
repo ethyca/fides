@@ -17,11 +17,11 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
-from .commands.util import init, status, webserver, worker
+from .commands.util import init, status, webserver, worker, deploy
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }

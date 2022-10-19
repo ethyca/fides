@@ -13,6 +13,7 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
+from fides.ctl.core.deploy import check_docker_version
 from fides.ctl.core.utils import echo_green
 
 
@@ -136,4 +137,12 @@ def worker(ctx: click.Context) -> None:
 
     start_worker()
 
-# Add a deploy command here
+
+@click.command()
+@click.pass_context
+@with_analytics
+def deploy(ctx: click.Context) -> None:
+    """
+    Starts the application via docker compose.
+    """
+    check_docker_version()

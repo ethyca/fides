@@ -1,0 +1,138 @@
+services:
+  fides:
+    image: ethyca/fides:local
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload fides.api.main:app
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8080:8080"
+    depends_on:
+      fides-db:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    expose:
+      - 8080
+    env_file:
+      - .env
+    environment:
+      FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
+      FIDES__CLI__SERVER_HOST: "fides"
+      FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DEV_MODE: "True"
+      FIDES__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__REDIS__ENABLED: "True"
+      FIDES__TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      VAULT_ADDR: ${VAULT_ADDR:-}
+      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
+      VAULT_TOKEN: ${VAULT_TOKEN:-}
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
+
+  fides-ui:
+    image: ethyca/fides:local-ui
+    command: npm run dev
+    expose:
+      - 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
+      # do not volume mount over the node_modules
+      - /fides/clients/admin-ui/node_modules
+    environment:
+      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
+
+  fides-pc:
+    image: ethyca/fides-privacy-center:local
+    expose:
+      - 3000
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./clients/privacy-center/config
+        target: /app/config
+        read_only: False
+
+  fides-db:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "fides"
+      POSTGRES_DB: "fides"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.fides.app-db-data == true
+
+  docs:
+    build:
+      context: .
+      dockerfile: docs/fides/Dockerfile
+    volumes:
+      - ./docs/fides:/docs
+      - ./:/fides
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - FIDES__DEV_MODE=True
+      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID:-}
+
+  redis:
+    image: "redis:6.2.5-alpine"
+    command: redis-server --requirepass testpassword
+    environment:
+      - REDIS_PASSWORD=testpassword
+    expose:
+      - 6379
+    ports:
+      - "0.0.0.0:6379:6379"
+
+  worker:
+    image: ethyca/fides:local
+    command: fides worker
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    environment:
+      FIDES__TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
+volumes:
+  postgres: null
+
+networks:
+  fides_network:
