@@ -1,4 +1,5 @@
 import random
+from time import sleep
 
 import pytest
 import requests
@@ -11,6 +12,8 @@ from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
 
 
 @pytest.mark.integration_saas
@@ -483,8 +486,8 @@ async def test_shopify_erasure_request_task(
         ],
     )
 
-    temp_masking = config.execution.masking_strict
-    config.execution.masking_strict = True
+    temp_masking = CONFIG.execution.masking_strict
+    CONFIG.execution.masking_strict = True
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -505,6 +508,8 @@ async def test_shopify_erasure_request_task(
         f"{dataset_name}:blog_article_comments": 1,
         f"{dataset_name}:customer_order_transactions": 0,
     }
+
+    sleep(30)  # wait for the data to settle on Shopify's side
 
     # Verifying data is actually updated
     shopify_secrets = shopify_connection_config.secrets
@@ -553,4 +558,4 @@ async def test_shopify_erasure_request_task(
     comment = blog_article_comment_response.json()["comment"]
     assert comment["author"] == "MASKED"
 
-    config.execution.masking_strict = temp_masking
+    CONFIG.execution.masking_strict = temp_masking

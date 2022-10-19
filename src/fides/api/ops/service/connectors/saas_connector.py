@@ -6,7 +6,7 @@ import pydash
 from requests import Response
 
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
-from fides.api.ops.graph.traversal import Row, TraversalNode
+from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -25,6 +25,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 
 logger = logging.getLogger(__name__)
@@ -107,7 +108,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
+        delete_request: Optional[SaaSRequest] = query_config.get_request_by_action(
+            "delete"
+        )
+
         if not read_request:
+            # if a delete request is specified for this endpoint without a read request
+            # then we return a single empty row to still trigger the mask_data method
+            if delete_request:
+                logger.info(
+                    "Skipping read for the '%s' collection, it is delete-only",
+                    self.collection_name,
+                )
+                return [{}]
+
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
                 f"endpoint in {self.saas_config.fides_key}"

@@ -16,6 +16,10 @@ saas_config:
       options: [checking, savings, investment]
       multiselect: True
 
+  external_references:
+    - name: customer_id
+      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset 
+
   client_config:
     protocol: https
     host: <domain>
@@ -164,13 +168,20 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /v1/customers/1
+          path: /v1/customers/<customer_id>
           param_values:
-            - name: placeholder
-              identity: email
+            - name: customer_id
+              references: 
+              - customer_id
         update:
           method: POST
-          path: /v1/customers/1
+          path: /v1/customers/<customer_id>
+          param_values:
+            - name: customer_id
+              references: 
+              - dataset: saas_connector_example
+                field: customer.id
+                direction: from
           headers:
             - name: Content-Type
               value: application/x-www-form-urlencoded
@@ -232,3 +243,14 @@ saas_config:
                   field: users.list_ids
                   direction: from
               unpack: True
+    - name: people
+      requests:
+        delete:
+          method: POST
+          path: /api/1/people/delete_jobs
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email

@@ -1,5 +1,5 @@
 """Script to create test data for the Admin UI"""
-
+import asyncio
 import string
 from datetime import datetime, timedelta
 from uuid import uuid4
@@ -10,8 +10,7 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
-from fides.ctl.core.config import get_config
-from fides.api.ops.db.database import init_db
+from fides.api.ctl.database.database import init_db
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -24,17 +23,21 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.models.storage import ResponseFormat, StorageConfig
+from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
     FileNaming,
+    ResponseFormat,
     StorageDetails,
     StorageType,
 )
 from fides.api.ops.util.data_category import DataCategory
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 
-def _create_policy(
+def _create_dsr_policy(
     db: orm.Session,
     action_type: str,
     client_id: str,
@@ -43,19 +46,15 @@ def _create_policy(
     """
     Util method to create policies
     """
-    created, policy = Policy.get_or_create(
-        db=db,
-        data={
-            "key": policy_key,
-        },
-    )
+    policy = Policy.get_by(db=db, field="key", value=policy_key)
 
-    if not created:
+    if policy:
         # If the Policy is already created, don't create it again
         return policy
     else:
-        policy.client_id = client_id
-        policy.name = policy_key
+        policy = Policy.create(
+            db=db, data={"client_id": client_id, "name": policy_key, "key": policy_key}
+        )
         policy.save(db=db)
 
     rand = string.ascii_lowercase[:5]
@@ -167,7 +166,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
     policies = []
     policies.append(
-        _create_policy(
+        _create_dsr_policy(
             db=db,
             action_type=ActionType.erasure.value,
             client_id=client.id,
@@ -175,7 +174,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
         )
     )
     policies.append(
-        _create_policy(
+        _create_dsr_policy(
             db=db,
             action_type=ActionType.access.value,
             client_id=client.id,
@@ -268,7 +267,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    init_db(CONFIG.database.sqlalchemy_database_uri)
+    asyncio.run(init_db(CONFIG.database.sqlalchemy_database_uri))
     session_local = get_db_session(CONFIG)
     with session_local() as session:
         create_test_data(session)

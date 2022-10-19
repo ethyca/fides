@@ -1,5 +1,5 @@
 import random
-import time
+from time import sleep
 
 import pytest
 import requests
@@ -25,7 +25,7 @@ def test_braze_connection_test(braze_connection_config) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_braze
 @pytest.mark.asyncio
-async def test_saas_access_request_task(
+async def test_braze_access_request_task(
     db,
     policy,
     braze_connection_config,
@@ -55,7 +55,9 @@ async def test_saas_access_request_task(
         {identity_attribute: braze_identity_email},
         db,
     )
+
     key_users = f"{dataset_name}:users"
+
     assert_rows_match(
         v[key_users],
         min_size=1,
@@ -79,6 +81,7 @@ async def test_saas_access_request_task(
         assert identity_value == entry.get(identity_attribute)
 
     key_subscription_groups = f"{dataset_name}:subscription_groups_email"
+
     assert_rows_match(
         v[key_subscription_groups],
         min_size=1,
@@ -97,7 +100,7 @@ async def test_saas_access_request_task(
 @pytest.mark.integration_saas
 @pytest.mark.integration_braze
 @pytest.mark.asyncio
-async def test_saas_erasure_task(
+async def test_braze_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -106,6 +109,8 @@ async def test_saas_erasure_task(
     braze_erasure_identity_email,
     braze_erasure_data,
 ) -> None:
+    """Full erasure request based on the Braze SaaS config"""
+
     privacy_request = PrivacyRequest(
         id=f"test_braze_erasure_request_task_{random.randint(0, 1000)}"
     )
@@ -166,7 +171,7 @@ async def test_saas_erasure_task(
         f"{dataset_name}:subscription_groups_email": 0,
     }
 
-    time.sleep(10)
+    sleep(30)
 
     # Verifying field is masked
     braze_secrets = braze_connection_config.secrets

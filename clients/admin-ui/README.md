@@ -4,9 +4,8 @@ Admin UI for managing Fides privacy requests. A web application built in Next.js
 
 ## Running Locally
 
-1. Run `nox -s create_user` and follow prompts to create a user. Note that password requires 8 or more characters, upper and lowercase chars, a number, and a symbol.
-2. In a new shell, `cd` into `clients/ops/admin-ui`, then run `npm run dev`.
-3. Nav to `http://localhost:3000/` and logged in using created user. The `email` field is simply the `user` that was created, not a valid email address.
+1. In a new shell, `cd` into `clients/admin-ui`, then run `npm run dev`.
+1. Nav to `http://localhost:3000/` and log in using the created user. The `email` field is simply the `user` that was created, not a valid email address.
 
 ## Testing Entire Request Flow
 
@@ -24,24 +23,10 @@ Unless otherwise specified below, all unit tests should be colocated in the dire
 The sole exception to this is the `pages` directory. Tests for Next.js pages live in the root `__tests__/pages` directory. Otherwise, Next.js attempts to include them in final build output, which breaks the build.
 
 ## Feature flags
+
 During the software development process, one or more features may not be visible at runtime. To toggle a given feature, find the given feature flag `name` key located in the [flags.json](/clients/admin-ui/srcgs.json) file. Update the `isActive` key value to `true/false`. If `true`, feature will be visible at runtime. Otherwise, feature will not be visible at runtime.
 
 For techinical reference implementation, please reference [react-feature-flags](https://github.com/romaindso/react-feature-flags).
-
-
-
-
-
-
-# FidesCtl Readme
-# Admin UI
-
-Admin UI for managing Fidesctl.
-
-## Running Locally
-
-1. Run `nox -s dev` in top-level `fides` directory
-1. Navigate to `http://localhost:3000/`.
 
 ## Preparing for production
 

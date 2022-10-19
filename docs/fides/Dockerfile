@@ -1,21 +1,34 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.10.7-slim-bullseye as build
 
-# Install auxiliary software
-RUN apt-get update
-RUN apt-get install -y \
-    git \
-    vim \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     g++ \
-    gcc
+    gnupg \
+    gcc \
+    python3-wheel \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Update pip and install requirements
-RUN pip install -U pip
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy in the required files
-COPY . /docs
+COPY . .
+RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
+
+
+FROM python:3.10.7-slim-bullseye as docs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /docs
+
+COPY --from=build /opt/venv /opt/venv
+COPY --from=build /docs/fides .
+
+ENV PATH="/opt/venv/bin:$PATH"
 
 EXPOSE 8000
 CMD ["mkdocs", "serve", "--dev-addr=0.0.0.0:8000"]

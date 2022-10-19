@@ -1,10 +1,10 @@
 dataset:
-    - fides_key: <instance_fides_key>
-      name: Auth0 Dataset
-      description: A sample dataset representing the Auth0 connector for Fidesops
-      collections:
-        - name: users
-          fields:
+  - fides_key: <instance_fides_key>
+    name: Auth0 Dataset
+    description: A sample dataset representing the Auth0 connector for Fidesops
+    collections:
+      - name: users
+        fields:
           - name: created_at
             data_categories: [system.operations]
             fidesops_meta:
@@ -21,22 +21,22 @@ dataset:
             fidesops_meta:
               data_type: object[]
             fields:
-            - name: connection
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: provider
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: user_id
-              data_categories: [user.unique_id]
-              fidesops_meta:
-                data_type: string
-            - name: isSocial
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: boolean
+              - name: connection
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: provider
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: user_id
+                data_categories: [user.unique_id]
+                fidesops_meta:
+                  data_type: string
+              - name: isSocial
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
           - name: name
             data_categories: [user.name]
             fidesops_meta:
@@ -70,8 +70,8 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-        - name: user_logs
-          fields:
+      - name: user_logs
+        fields:
           - name: date
             data_categories: [system.operations]
             fidesops_meta:
@@ -108,10 +108,10 @@ dataset:
             fidesops_meta:
               data_type: object
             fields:
-            - name: code
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
+              - name: code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
           - name: hostname
             data_categories: [system.operations]
             fidesops_meta:
@@ -140,35 +140,35 @@ dataset:
             fidesops_meta:
               data_type: object
             fields:
-            - name: country_code
-              data_categories: [user.contact.address.country]
-              fidesops_meta:
-                data_type: string
-            - name: country_code3
-              data_categories: [user.contact.address.country]
-              fidesops_meta:
-                data_type: string
-            - name: country_name
-              data_categories: [user.contact.address.country]
-              fidesops_meta:
-                data_type: string
-            - name: city_name
-              data_categories: [user.contact.address.city]
-              fidesops_meta:
-                data_type: string
-            - name: latitude
-              data_categories: [user.location]
-              fidesops_meta:
-                data_type: float
-            - name: longitude
-              data_categories: [user.location]
-              fidesops_meta:
-                data_type: float
-            - name: time_zone
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
-            - name: continent_code
-              data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
+              - name: country_code
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: country_code3
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: country_name
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: city_name
+                data_categories: [user.contact.address.city]
+                fidesops_meta:
+                  data_type: string
+              - name: latitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: float
+              - name: longitude
+                data_categories: [user.location]
+                fidesops_meta:
+                  data_type: float
+              - name: time_zone
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: continent_code
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string

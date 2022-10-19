@@ -2,10 +2,12 @@ from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
 
+from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
+    Field,
     FieldAddress,
     ScalarField,
 )
@@ -24,20 +26,21 @@ class ParamValue(BaseModel):
 
     name: str
     identity: Optional[str]
-    references: Optional[List[FidesopsDatasetReference]]
+    references: Optional[List[Union[FidesopsDatasetReference, str]]]
     connector_param: Optional[str]
     unpack: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(
-        cls, references: Optional[List[FidesopsDatasetReference]]
-    ) -> Optional[List[FidesopsDatasetReference]]:
+        cls, references: Optional[List[Union[FidesopsDatasetReference, str]]]
+    ) -> Optional[List[Union[FidesopsDatasetReference, str]]]:
         """Validates the request_param only contains inbound references"""
         for reference in references or {}:
-            if reference.direction == "to":
-                raise ValueError(
-                    "References can only have a direction of 'from', found 'to'"
-                )
+            if isinstance(reference, FidesopsDatasetReference):
+                if reference.direction == "to":
+                    raise ValueError(
+                        "References can only have a direction of 'from', found 'to'"
+                    )
         return references
 
     @root_validator
@@ -152,8 +155,17 @@ class SaaSRequest(BaseModel):
                             "Grouped input fields must either be reference fields or identity fields."
                         )
                     if param.references:
-                        collect = param.references[0].field.split(".")[0]
-                        referenced_collections.append(collect)
+                        # reference may be a str, in which case it's an external reference.
+                        # since external references are parameterized via secrets,
+                        # they cannot be resolved and checked at this point in the validation.
+                        # so here we only perform the check if the reference is a FidesopsDatasetReference
+                        if isinstance(param.references[0], FidesopsDatasetReference):
+                            collect = param.references[0].field.split(".")[0]
+                            referenced_collections.append(collect)
+                        else:
+                            raise ValueError(
+                                "Grouped inputs do not currently support external dataset references"
+                            )
 
             if len(set(referenced_collections)) != 1:
                 raise ValueError(
@@ -203,6 +215,7 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
+    label: Optional[str]
     options: Optional[List[str]]  # list of possible values for the connector param
     default_value: Optional[Union[str, List[str]]]
     multiselect: Optional[bool] = False
@@ -242,6 +255,12 @@ class ConnectorParam(BaseModel):
             )
 
         return values
+
+
+class ExternalDatasetReference(BaseModel):
+    name: str
+    label: Optional[str]
+    description: Optional[str]
 
 
 class SaaSConfigBase(BaseModel):
@@ -286,6 +305,7 @@ class SaaSConfig(SaaSConfigBase):
     description: str
     version: str
     connector_params: List[ConnectorParam]
+    external_references: Optional[List[ExternalDatasetReference]]
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest
@@ -297,25 +317,24 @@ class SaaSConfig(SaaSConfigBase):
         """Returns a map of endpoint names mapped to Endpoints"""
         return {endpoint.name: endpoint for endpoint in self.endpoints}
 
-    def get_graph(self) -> Dataset:
+    def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
         for endpoint in self.endpoints:
-            fields = []
-            for param in endpoint.requests["read"].param_values or []:
-                if param.references:
-                    references = []
-                    for reference in param.references:
-                        first, *rest = reference.field.split(".")
-                        references.append(
-                            (
-                                FieldAddress(reference.dataset, first, *rest),
-                                reference.direction,
-                            )
-                        )
-                    fields.append(ScalarField(name=param.name, references=references))
-                if param.identity:
-                    fields.append(ScalarField(name=param.name, identity=param.identity))
+            fields: List[Field] = []
+            read_request = endpoint.requests.get("read")
+            delete_request = endpoint.requests.get("delete")
+            if read_request:
+                self._process_param_values(fields, read_request.param_values, secrets)
+            elif delete_request:
+                # If the endpoint only specifies a delete request without a read,
+                # then we must use the delete request's param_values instead.
+                # One of the fields must automatically be flagged as a primary key
+                # in order for the deletion to execute. See fides#1199
+                self._process_param_values(fields, delete_request.param_values, secrets)
+                if fields:
+                    fields[0].primary_key = True
+
             if fields:
                 grouped_inputs: Optional[Set[str]] = set()
                 if endpoint.requests.get("read"):
@@ -336,6 +355,55 @@ class SaaSConfig(SaaSConfigBase):
             collections=collections,
             connection_key=super().fides_key_prop,
         )
+
+    def _process_param_values(
+        self,
+        fields: List[Field],
+        param_values: Optional[List[ParamValue]],
+        secrets: Dict[str, Any],
+    ) -> None:
+        """
+        Converts param values to dataset fields with identity and dataset references
+        """
+        for param in param_values or []:
+            if param.references:
+                references = []
+                for reference in param.references:
+                    resolved_reference = self.resolve_param_reference(
+                        reference, secrets
+                    )
+                    first, *rest = resolved_reference.field.split(".")
+                    references.append(
+                        (
+                            FieldAddress(resolved_reference.dataset, first, *rest),
+                            resolved_reference.direction,
+                        )
+                    )
+                fields.append(ScalarField(name=param.name, references=references))
+            if param.identity:
+                fields.append(ScalarField(name=param.name, identity=param.identity))
+
+    @staticmethod
+    def resolve_param_reference(
+        reference: Union[str, FidesopsDatasetReference], secrets: Dict[str, Any]
+    ) -> FidesopsDatasetReference:
+        """
+        If needed, resolves the given `reference` using the provided `secrets` `dict`.
+        For ease of use, the given `reference` can either be a `str` or `FidesopsDatasetReference`,
+        since a `ParamValue`'s `reference` may be of either type.
+
+        If the `reference` is a `str`, then it's used as a key look up a value in the provided secrets dict,
+        and a `FidesopsDatasetReference` is created and returned from the retrieved secrets object.
+
+        If the `reference` is a `FidesopsDatasetReference`, then it's just returned as-is.
+        """
+        if isinstance(reference, str):
+            if reference not in secrets.keys():
+                raise ValidationError(
+                    f"External dataset reference with provided name {reference} not found in connector's secrets."
+                )
+            reference = FidesopsDatasetReference.parse_obj(secrets[reference])
+        return reference
 
 
 class SaaSConfigValidationDetails(BaseSchema):

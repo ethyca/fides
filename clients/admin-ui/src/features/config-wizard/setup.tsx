@@ -1,13 +1,14 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
-import React from "react";
 
-interface Props {
-  wizardStep: Function;
-}
+import { useAppDispatch } from "~/app/hooks";
 
-const Setup = ({ wizardStep }: Props) => {
+import { changeStep } from "./config-wizard.slice";
+
+const Setup = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   return (
     <Stack>
       <Container
@@ -19,15 +20,21 @@ const Setup = ({ wizardStep }: Props) => {
       >
         <Image
           boxSize="100%"
-          // fallback={}
-          objectFit="fill"
-          // src=""
+          objectFit="cover"
+          src="/images/config_splash.svg"
           alt="Data Map"
         />
       </Container>
 
       <main>
-        <Stack px={9} py={10} spacing={6}>
+        <Stack
+          px={9}
+          py={10}
+          spacing={6}
+          position="absolute"
+          top="10%"
+          width="50%"
+        >
           <Heading as="h3" size="lg">
             Get Started
           </Heading>
@@ -43,7 +50,7 @@ const Setup = ({ wizardStep }: Props) => {
           <Stack direction={["column", "row"]} spacing="24px">
             <Button
               variant="primary"
-              onClick={() => wizardStep(true)}
+              onClick={() => dispatch(changeStep())}
               data-testid="guided-setup-btn"
             >
               Guided Setup (Recommended)
@@ -52,7 +59,7 @@ const Setup = ({ wizardStep }: Props) => {
               variant="ghost"
               mr={4}
               colorScheme="complimentary"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/system")}
             >
               Skip (Power User)
             </Button>

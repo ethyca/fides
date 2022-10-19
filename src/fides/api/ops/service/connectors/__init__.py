@@ -1,25 +1,58 @@
+# pylint: disable=useless-import-alias
+
+# Because these modules are imported into the __init__.py and used elsewhere they need
+# to be explicitly exported in order to prevent implicit reexport errors in mypy.
+# This is done by importing "as": `from fides.module import MyClass as MyClass`.
+
 from typing import Any, Dict
 
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.service.connectors.base_connector import BaseConnector
-from fides.api.ops.service.connectors.email_connector import EmailConnector
-from fides.api.ops.service.connectors.http_connector import HTTPSConnector
-from fides.api.ops.service.connectors.manual_connector import ManualConnector
+from fides.api.ops.models.connectionconfig import ConnectionConfig as ConnectionConfig
+from fides.api.ops.models.connectionconfig import ConnectionType as ConnectionType
+from fides.api.ops.service.connectors.base_connector import (
+    BaseConnector as BaseConnector,
+)
+from fides.api.ops.service.connectors.email_connector import (
+    EmailConnector as EmailConnector,
+)
+from fides.api.ops.service.connectors.http_connector import (
+    HTTPSConnector as HTTPSConnector,
+)
+from fides.api.ops.service.connectors.manual_connector import (
+    ManualConnector as ManualConnector,
+)
 from fides.api.ops.service.connectors.manual_webhook_connector import (
-    ManualWebhookConnector,
+    ManualWebhookConnector as ManualWebhookConnector,
 )
-from fides.api.ops.service.connectors.mongodb_connector import MongoDBConnector
-from fides.api.ops.service.connectors.saas_connector import SaaSConnector
+from fides.api.ops.service.connectors.mongodb_connector import (
+    MongoDBConnector as MongoDBConnector,
+)
+from fides.api.ops.service.connectors.saas_connector import (
+    SaaSConnector as SaaSConnector,
+)
 from fides.api.ops.service.connectors.sql_connector import (
-    BigQueryConnector,
-    MariaDBConnector,
-    MicrosoftSQLServerConnector,
-    MySQLConnector,
-    PostgreSQLConnector,
-    RedshiftConnector,
-    SnowflakeConnector,
+    BigQueryConnector as BigQueryConnector,
 )
-from fides.api.ops.service.connectors.timescale_connector import TimescaleConnector
+from fides.api.ops.service.connectors.sql_connector import (
+    MariaDBConnector as MariaDBConnector,
+)
+from fides.api.ops.service.connectors.sql_connector import (
+    MicrosoftSQLServerConnector as MicrosoftSQLServerConnector,
+)
+from fides.api.ops.service.connectors.sql_connector import (
+    MySQLConnector as MySQLConnector,
+)
+from fides.api.ops.service.connectors.sql_connector import (
+    PostgreSQLConnector as PostgreSQLConnector,
+)
+from fides.api.ops.service.connectors.sql_connector import (
+    RedshiftConnector as RedshiftConnector,
+)
+from fides.api.ops.service.connectors.sql_connector import (
+    SnowflakeConnector as SnowflakeConnector,
+)
+from fides.api.ops.service.connectors.timescale_connector import (
+    TimescaleConnector as TimescaleConnector,
+)
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLConnector,

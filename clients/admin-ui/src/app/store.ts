@@ -58,7 +58,6 @@ import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 import { reducer as userReducer } from "~/features/user";
 
-// import { createWrapper } from "next-redux-wrapper";
 import { authApi, AuthState, reducer as authReducer } from "../features/auth";
 
 /**
@@ -84,36 +83,36 @@ const storage =
     : createNoopStorage();
 
 const reducer = {
-  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
-  subjectRequests: privacyRequestsReducer,
-  [userApi.reducerPath]: userApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
-  userManagement: userManagementReducer,
-  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
-  datastoreConnections: datastoreConnectionReducer,
-  auth: authReducer,
   [connectionTypeApi.reducerPath]: connectionTypeApi.reducer,
-  connectionType: connectionTypeReducer,
-  configWizard: configWizardReducer,
-  user: userReducer,
-  dataset: datasetReducer,
-  taxonomy: taxonomyReducer,
-  dataQualifier: dataQualifierReducer,
-  dataSubjects: dataSubjectsReducer,
-  dataUse: dataUseReducer,
-  organization: organizationReducer,
-  system: systemReducer,
-  [datasetApi.reducerPath]: datasetApi.reducer,
-  [organizationApi.reducerPath]: organizationApi.reducer,
-  [scannerApi.reducerPath]: scannerApi.reducer,
-  [systemApi.reducerPath]: systemApi.reducer,
-  [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   [dataQualifierApi.reducerPath]: dataQualifierApi.reducer,
   [dataSubjectsApi.reducerPath]: dataSubjectsApi.reducer,
   [dataUseApi.reducerPath]: dataUseApi.reducer,
-  [plusApi.reducerPath]: plusApi.reducer,
+  [datasetApi.reducerPath]: datasetApi.reducer,
   [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
+  [organizationApi.reducerPath]: organizationApi.reducer,
+  [plusApi.reducerPath]: plusApi.reducer,
+  [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
+  [scannerApi.reducerPath]: scannerApi.reducer,
+  [systemApi.reducerPath]: systemApi.reducer,
+  [taxonomyApi.reducerPath]: taxonomyApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
+  [userApi.reducerPath]: userApi.reducer,
+  auth: authReducer,
+  configWizard: configWizardReducer,
+  connectionType: connectionTypeReducer,
+  dataQualifier: dataQualifierReducer,
+  dataSubjects: dataSubjectsReducer,
+  dataUse: dataUseReducer,
+  dataset: datasetReducer,
+  datastoreConnections: datastoreConnectionReducer,
+  organization: organizationReducer,
+  subjectRequests: privacyRequestsReducer,
+  system: systemReducer,
+  taxonomy: taxonomyReducer,
+  user: userReducer,
+  userManagement: userManagementReducer,
 };
 
 const allReducers = combineReducers(reducer);
@@ -139,8 +138,17 @@ const persistConfig = {
   blacklist: [
     authApi.reducerPath,
     connectionTypeApi.reducerPath,
+    dataQualifierApi.reducerPath,
+    dataSubjectsApi.reducerPath,
+    dataUseApi.reducerPath,
+    datasetApi.reducerPath,
     datastoreConnectionApi.reducerPath,
+    organizationApi.reducerPath,
+    plusApi.reducerPath,
     privacyRequestApi.reducerPath,
+    scannerApi.reducerPath,
+    systemApi.reducerPath,
+    taxonomyApi.reducerPath,
     userApi.reducerPath,
   ],
 };
@@ -158,20 +166,20 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       }).concat(
-        privacyRequestApi.middleware,
-        userApi.middleware,
         authApi.middleware,
-        datastoreConnectionApi.middleware,
         connectionTypeApi.middleware,
-        datasetApi.middleware,
-        organizationApi.middleware,
-        scannerApi.middleware,
-        systemApi.middleware,
-        taxonomyApi.middleware,
         dataQualifierApi.middleware,
         dataSubjectsApi.middleware,
         dataUseApi.middleware,
-        plusApi.middleware
+        datasetApi.middleware,
+        datastoreConnectionApi.middleware,
+        organizationApi.middleware,
+        plusApi.middleware,
+        privacyRequestApi.middleware,
+        scannerApi.middleware,
+        systemApi.middleware,
+        taxonomyApi.middleware,
+        userApi.middleware
       ),
     devTools: true,
     preloadedState,
@@ -203,4 +211,3 @@ export const persistor = persistStore(store);
 setupListeners(store.dispatch);
 
 export default store;
-// export const wrapper = createWrapper<AppStore>(makeStore);

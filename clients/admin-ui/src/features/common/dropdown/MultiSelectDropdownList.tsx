@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   CheckboxGroup,
@@ -76,34 +77,36 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
         </Button>
       </Flex>
       {/* MenuItems are not rendered unless Menu is open */}
-      <CheckboxGroup
-        colorScheme="purple"
-        defaultValue={defaultValues}
-        onChange={handleChange}
-      >
-        {[...items].sort().map(([key]) => (
-          <MenuItem
-            key={key}
-            paddingTop="10px"
-            paddingRight="8.5px"
-            paddingBottom="10px"
-            paddingLeft="8.5px"
-            _focus={{
-              bg: "gray.100",
-            }}
-          >
-            <Checkbox
-              aria-label={key}
-              isChecked={items.get(key)}
-              spacing=".5rem"
-              value={key}
-              width="100%"
+      <Box maxH="360px" overflow="auto">
+        <CheckboxGroup
+          colorScheme="purple"
+          defaultValue={defaultValues}
+          onChange={handleChange}
+        >
+          {[...items].sort().map(([key]) => (
+            <MenuItem
+              key={key}
+              paddingTop="10px"
+              paddingRight="8.5px"
+              paddingBottom="10px"
+              paddingLeft="8.5px"
+              _focus={{
+                bg: "gray.100",
+              }}
             >
-              <Text fontSize="0.75rem">{key}</Text>
-            </Checkbox>
-          </MenuItem>
-        ))}
-      </CheckboxGroup>
+              <Checkbox
+                aria-label={key}
+                isChecked={items.get(key)}
+                spacing=".5rem"
+                value={key}
+                width="100%"
+              >
+                <Text fontSize="0.75rem">{key}</Text>
+              </Checkbox>
+            </MenuItem>
+          ))}
+        </CheckboxGroup>
+      </Box>
     </MenuList>
   );
 };

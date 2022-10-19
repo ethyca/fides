@@ -1,39 +1,27 @@
 import { AddConnectionStep } from "datastore-connections/add-connection/types";
-import {
-  ConnectionType,
-  SaasType,
-  SystemType,
-} from "datastore-connections/constants";
 import { DatastoreConnection } from "datastore-connections/types";
 
-export type AllConnectionTypesResponse = {
-  items: ConnectionOption[];
-  total: number;
-  page: number;
-  size: number;
-};
-
-export type ConnectionOption = {
-  identifier: ConnectionType | SaasType;
-  human_readable: string;
-  type: SystemType;
-};
+import { ConnectionSystemTypeMap, SystemType } from "~/types/api";
 
 export type ConnectionTypeParams = {
   search: string;
   system_type?: SystemType;
 };
 
+export type ConnectionTypeSecretSchemaProperty = {
+  default?: string;
+  title: string;
+  type: string;
+  description?: string;
+  allOf?: {
+    $ref: string;
+  }[];
+};
+
 export type ConnectionTypeSecretSchemaReponse = {
   additionalProperties: boolean;
   description: string;
-  properties: {
-    [key: string]: {
-      default?: string;
-      title: string;
-      type: string;
-    };
-  };
+  properties: { [key: string]: ConnectionTypeSecretSchemaProperty };
   required: string[];
   title: string;
   type: string;
@@ -41,6 +29,7 @@ export type ConnectionTypeSecretSchemaReponse = {
 
 export type ConnectionTypeState = ConnectionTypeParams & {
   connection?: DatastoreConnection;
-  connectionOption?: ConnectionOption;
+  connectionOption?: ConnectionSystemTypeMap;
+  connectionOptions: ConnectionSystemTypeMap[];
   step: AddConnectionStep;
 };

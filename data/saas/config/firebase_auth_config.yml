@@ -23,7 +23,6 @@ saas_config:
       default_value: https://www.googleapis.com/oauth2/v1/certs
     - name: client_x509_cert_url
 
-
   client_config:
     protocol: NOT_USED
     host: NOT_USED
@@ -31,7 +30,6 @@ saas_config:
   test_request:
     method: POST
     path: /v1/accounts:createAuthUri
-
 
   endpoints:
     - name: user

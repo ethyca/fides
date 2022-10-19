@@ -123,7 +123,10 @@ const ScanResultsForm = () => {
                     </Thead>
                     <Tbody>
                       {systems.map((system) => (
-                        <Tr key={system.fides_key}>
+                        <Tr
+                          key={system.fides_key}
+                          data-testid={`scan-result-row-${system.fides_key}`}
+                        >
                           <Td>
                             <Field
                               type="checkbox"
@@ -134,6 +137,7 @@ const ScanResultsForm = () => {
                                 <Checkbox
                                   {...field}
                                   isChecked={field.checked}
+                                  data-testid="checkbox"
                                 />
                               )}
                             </Field>
@@ -170,7 +174,12 @@ const ScanResultsForm = () => {
                   <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={!isValid}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isDisabled={!isValid}
+                    data-testid="register-btn"
+                  >
                     Register selected systems
                   </Button>
                 </HStack>
