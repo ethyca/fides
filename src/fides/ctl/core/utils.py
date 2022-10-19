@@ -13,8 +13,6 @@ import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
 from fideslang.validation import FidesValidationError
-from git.repo import Repo
-from git.repo.fun import is_git_dir
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -143,11 +141,18 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
     Checks to see if the local repo has unstaged changes.
     Can also specify a directory to check.
     """
-    if not is_git_dir(".git"):
-        echo_red(
-            "This command must be run at the top-level of a git repo. Please try again."
-        )
-        raise SystemExit(1)
+
+    try:
+        from git.repo import Repo
+        from git.repo.fun import is_git_dir
+    except ImportError:
+        print("Git executable not detected, skipping git checks...")
+        return False
+
+    git_dir_path = ".git/"
+    if not is_git_dir(git_dir_path):
+        print(f"No git repo detected at '{git_dir_path}', skipping checks...")
+        return False
 
     repo = Repo()
     git_session = repo.git()
