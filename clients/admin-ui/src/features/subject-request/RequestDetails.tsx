@@ -5,7 +5,7 @@ import { PrivacyRequest } from "privacy-requests/types";
 import ClipboardButton from "../common/ClipboardButton";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import RequestType from "../common/RequestType";
-import ReprocessButton from "../privacy-requests/ReprocessButton";
+import ReprocessButton from "../privacy-requests/buttons/ReprocessButton";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequest;
@@ -50,7 +50,10 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <HStack spacing="16px">
           <RequestStatusBadge status={status} />
           {status === "error" && (
-            <ReprocessButton subjectRequest={subjectRequest} />
+            <ReprocessButton
+              buttonProps={{ size: "xs" }}
+              subjectRequest={subjectRequest}
+            />
           )}
 
           <DaysLeftTag daysLeft={subjectRequest.days_left} includeText />

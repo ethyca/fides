@@ -3,6 +3,7 @@ import {
   AlertTitle,
   Button,
   ButtonGroup,
+  Checkbox,
   Menu,
   MenuButton,
   MenuItem,
@@ -13,7 +14,7 @@ import {
   Text,
   Tr,
   useClipboard,
-  useToast
+  useToast,
 } from "@fidesui/react";
 import DaysLeftTag from "common/DaysLeftTag";
 import { formatDate } from "common/utils";
@@ -23,12 +24,12 @@ import React, { useRef, useState } from "react";
 import { MoreIcon } from "../common/Icon";
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
+import ReprocessButton from "./buttons/ReprocessButton";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import {
   useApproveRequestMutation,
-  useDenyRequestMutation
+  useDenyRequestMutation,
 } from "./privacy-requests.slice";
-import ReprocessButton from "./ReprocessButton";
 import { PrivacyRequest } from "./types";
 
 const useRequestRow = (request: PrivacyRequest) => {
@@ -114,7 +115,11 @@ const useRequestRow = (request: PrivacyRequest) => {
   };
 };
 
-const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
+const RequestRow: React.FC<{
+  isChecked: boolean;
+  onCheckChange: (id: string, checked: boolean) => void;
+  request: PrivacyRequest;
+}> = ({ isChecked, onCheckChange, request }) => {
   const {
     hovered,
     handleMenuOpen,
@@ -150,6 +155,14 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       onMouseLeave={handleMouseLeave}
       height="36px"
     >
+      <Td px={0}>
+        <Checkbox
+          aria-label="Select request"
+          isChecked={!!isChecked}
+          pointerEvents={request.status === "error" ? "auto" : "none"}
+          onChange={(e) => onCheckChange(request.id, e.target.checked)}
+        />
+      </Td>
       <Td pl={0} py={1}>
         <RequestStatusBadge status={request.status} />
       </Td>
@@ -221,8 +234,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
               case "error":
                 return (
                   <ReprocessButton
-                    buttonProps={{ mr: "-px" }}
-                    ref={hoverButtonRef}
+                    buttonProps={{ mr: "-px", size: "xs" }}
                     subjectRequest={request}
                   />
                 );

@@ -79,6 +79,14 @@ export const privacyRequestApi = createApi({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkRetry: build.mutation<any, string[]>({
+      query: (values) => ({
+        url: `privacy-request/bulk/retry`,
+        method: "POST",
+        body: values,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
       query: ({ id, reason }) => ({
         url: "privacy-request/administrate/deny",
@@ -138,6 +146,7 @@ export const privacyRequestApi = createApi({
 
 export const {
   useApproveRequestMutation,
+  useBulkRetryMutation,
   useDenyRequestMutation,
   useGetAllPrivacyRequestsQuery,
   useGetUploadedManualWebhookDataQuery,
@@ -191,35 +200,60 @@ export const requestCSVDownload = async ({
 };
 
 // Subject requests state (filters, etc.)
-interface SubjectRequestsState {
-  revealPII: boolean;
-  status?: PrivacyRequestStatus[];
-  id: string;
+type SubjectRequestsState = {
+  errorRequests: string[];
   from: string;
-  to: string;
+  id: string;
   page: number;
+  revealPII: boolean;
   size: number;
-  verbose?: boolean;
-  sort_field?: string;
   sort_direction?: string;
-}
+  sort_field?: string;
+  status?: PrivacyRequestStatus[];
+  to: string;
+  verbose?: boolean;
+};
 
 const initialState: SubjectRequestsState = {
-  revealPII: false,
-  id: "",
+  errorRequests: [],
   from: "",
-  to: "",
+  id: "",
   page: 1,
+  revealPII: false,
   size: 25,
+  to: "",
 };
 
 export const subjectRequestsSlice = createSlice({
   name: "subjectRequests",
   initialState,
   reducers: {
-    setRevealPII: (state, action: PayloadAction<boolean>) => ({
+    clearAllFilters: ({ revealPII }) => ({
+      ...initialState,
+      revealPII,
+    }),
+    clearSortFields: (state) => ({
       ...state,
-      revealPII: action.payload,
+      sort_direction: undefined,
+      sort_field: undefined,
+    }),
+    setErrorRequests: (state, action: PayloadAction<string[]>) => ({
+      ...state,
+      errorRequests: action.payload,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setRequestFrom: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      from: action.payload,
+    }),
+    setRequestId: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      id: action.payload,
     }),
     setRequestStatus: (
       state,
@@ -229,28 +263,22 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       status: action.payload,
     }),
-    setRequestId: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      id: action.payload,
-    }),
-    setRequestFrom: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      from: action.payload,
-    }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
       to: action.payload,
     }),
-    clearAllFilters: ({ revealPII }) => ({
-      ...initialState,
-      revealPII,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
+    setRevealPII: (state, action: PayloadAction<boolean>) => ({
       ...state,
-      page: action.payload,
+      revealPII: action.payload,
+    }),
+    setSortDirection: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_direction: action.payload,
+    }),
+    setSortField: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_field: action.payload,
     }),
     setSize: (state, action: PayloadAction<number>) => ({
       ...state,
@@ -261,53 +289,42 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       verbose: action.payload,
     }),
-    setSortField: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_field: action.payload,
-    }),
-    setSortDirection: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_direction: action.payload,
-    }),
-    clearSortFields: (state) => ({
-      ...state,
-      sort_direction: undefined,
-      sort_field: undefined,
-    }),
   },
 });
 
 export const {
-  setRevealPII,
-  setRequestId,
-  setRequestStatus,
-  setRequestFrom,
-  setRequestTo,
-  setPage,
-  setVerbose,
-  setSortField,
-  setSortDirection,
   clearAllFilters,
   clearSortFields,
+  setErrorRequests,
+  setPage,
+  setRequestFrom,
+  setRequestId,
+  setRequestStatus,
+  setRequestTo,
+  setRevealPII,
+  setSortDirection,
+  setSortField,
+  setVerbose,
 } = subjectRequestsSlice.actions;
 
-export const selectRevealPII = (state: RootState) =>
-  state.subjectRequests.revealPII;
-export const selectRequestStatus = (state: RootState) =>
-  state.subjectRequests.status;
-
+export const selectErrorRequests = (state: RootState) =>
+  state.subjectRequests.errorRequests;
 export const selectPrivacyRequestFilters = (
   state: RootState
 ): PrivacyRequestParams => ({
-  status: state.subjectRequests.status,
-  id: state.subjectRequests.id,
   from: state.subjectRequests.from,
-  to: state.subjectRequests.to,
+  id: state.subjectRequests.id,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
-  verbose: state.subjectRequests.verbose,
   sort_direction: state.subjectRequests.sort_direction,
   sort_field: state.subjectRequests.sort_field,
+  status: state.subjectRequests.status,
+  to: state.subjectRequests.to,
+  verbose: state.subjectRequests.verbose,
 });
+export const selectRequestStatus = (state: RootState) =>
+  state.subjectRequests.status;
+export const selectRevealPII = (state: RootState) =>
+  state.subjectRequests.revealPII;
 
 export const { reducer } = subjectRequestsSlice;
