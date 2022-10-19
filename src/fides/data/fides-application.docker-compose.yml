@@ -1,7 +1,6 @@
 services:
   fides:
-    image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload fides.api.main:app
+    image: ethyca/fides:dev
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -16,56 +15,36 @@ services:
         condition: service_started
     expose:
       - 8080
-    env_file:
-      - .env
+    working_dir: /app
     environment:
       FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
-      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__USERNAME: "postgres"
+      FIDES__DATABASE__PASSWORD: "fides"
+      FIDES__DATABASE__DB: "fides"
       FIDES__DATABASE__SERVER: "fides-db"
-      FIDES__DEV_MODE: "True"
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       FIDES__REDIS__ENABLED: "True"
-      FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-      VAULT_ADDR: ${VAULT_ADDR:-}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
-      VAULT_TOKEN: ${VAULT_TOKEN:-}
     volumes:
       - type: bind
-        source: .
-        target: /fides
+        source: ./fides
+        target: /app/.fides
         read_only: False
 
-  fides-ui:
-    image: ethyca/fides:local-ui
-    command: npm run dev
-    expose:
-      - 3000
-    ports:
-      - "3000:3000"
-    volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
-      # do not volume mount over the node_modules
-      - /fides/clients/admin-ui/node_modules
-    environment:
-      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
-
-  fides-pc:
-    image: ethyca/fides-privacy-center:local
-    expose:
-      - 3000
-    ports:
-      - "3001:3000"
-    volumes:
-      - type: bind
-        source: ./clients/privacy-center/config
-        target: /app/config
-        read_only: False
+  # TODO: Do we have an image for this?
+  # fides-pc:
+  #   image: ethyca/fides-privacy-center:local
+  #   expose:
+  #     - 3000
+  #   ports:
+  #     - "3001:3000"
+  #   volumes:
+  #     - type: bind
+  #       source: ./clients/privacy-center/config
+  #       target: /app/config
+  #       read_only: False
 
   fides-db:
     image: postgres:12
@@ -89,21 +68,6 @@ services:
         constraints:
           - node.labels.fides.app-db-data == true
 
-  docs:
-    build:
-      context: .
-      dockerfile: docs/fides/Dockerfile
-    volumes:
-      - ./docs/fides:/docs
-      - ./:/fides
-    expose:
-      - 8000
-    ports:
-      - "8000:8000"
-    environment:
-      - FIDES__DEV_MODE=True
-      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID:-}
-
   redis:
     image: "redis:6.2.5-alpine"
     command: redis-server --requirepass testpassword
@@ -126,13 +90,10 @@ services:
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
-        source: ./
-        target: /fides
+        source: ./.fides
+        target: /app/.fides
         read_only: False
       - /fides/src/fides.egg-info
 
 volumes:
   postgres: null
-
-networks:
-  fides_network:
