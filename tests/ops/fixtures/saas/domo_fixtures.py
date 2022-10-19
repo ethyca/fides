@@ -8,6 +8,7 @@ from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from requests.auth import HTTPBasicAuth
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -19,6 +20,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("domo")
@@ -105,3 +107,94 @@ def domo_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+class DomoTestClient:
+    headers: object = {}
+    base_url: str = ""
+    domo_secrets: object = {}
+
+    def __init__(self, domo_connection_config: ConnectionConfig):
+        self.domo_secrets = domo_connection_config.secrets
+        self.headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.domo_secrets['access_token']}",
+        }
+        self.base_url = f"https://{self.domo_secrets['domain']}/v1"
+
+    def create_user(self, email_address: str) -> requests.Response:
+        # create a new user in Domo
+        body = {
+            "email": email_address,
+            "alternateEmail": email_address,
+            "name": f"test_connector_ethyca",
+            "phone": faker.phone_number(),
+            "title": "Software Engineer",
+            "role": "Participant",  # (available roles are: 'Admin', 'Privileged', 'Participant')
+        }
+        url = f"{self.base_url}/users/sendInvite=false"
+        user_response: requests.Response = requests.post(
+            url=url, json=body, headers=self.headers
+        )
+        return user_response
+
+    def get_user(self, user_id: str) -> requests.Response:
+        # get user created for erasure purposes
+        url = f"{self.base_url}/users/{user_id}"
+        user_response: requests.Response = requests.get(url=url, headers=self.headers)
+        return user_response
+
+    def delete_user(self, user_id) -> requests.Response:
+        # delete user created for erasure purposes
+        url = f"{self.base_url}/users/{user_id}"
+        user_response: requests.Response = requests.delete(
+            url=url, headers=self.headers
+        )
+        return user_response
+
+
+@pytest.fixture(scope="function")
+def domo_test_client(
+    domo_connection_config: DomoTestClient,
+) -> Generator:
+    test_client = DomoTestClient(domo_connection_config=domo_connection_config)
+    yield test_client
+
+
+def _user_exists(user_id: str, domo_test_client: DomoTestClient) -> Any:
+    """check if the user exists in the domo"""
+    user_response = domo_test_client.get_user(user_id)
+    user = user_response.json()
+    # it return status 200 if user exists with given id otherwise 400
+    if user_response.ok and user:
+        return user
+
+
+@pytest.fixture(scope="function")
+def domo_create_erasure_data(
+    domo_test_client: DomoTestClient,
+    domo_erasure_identity_email: str,
+) -> Generator:
+    """
+    Creates a dynamic test data record for erasure tests.
+        1) create a new user
+    """
+    # 1) create a new user
+    user_response = domo_test_client.create_user(domo_erasure_identity_email)
+    user = user_response.json()
+    import pdb
+
+    pdb.set_trace()
+    user_id = user["id"]
+
+    error_message = f"user with user id [{user_id}] could not be added to domo"
+    poll_for_existence(
+        _user_exists,
+        (domo_erasure_identity_email, domo_test_client),
+        error_message=error_message,
+    )
+    yield user_id
+    # delete the user
+    user_response = domo_test_client.delete_user(user_id)
+    # Returns a 204 response code when successful or error based on whether the user ID being valid.
+    assert user_response.status_code == HTTP_204_NO_CONTENT
