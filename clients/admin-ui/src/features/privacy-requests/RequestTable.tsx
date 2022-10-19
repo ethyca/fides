@@ -52,7 +52,7 @@ const useRequestTable = () => {
     }
     dispatch(
       setRetryRequests({
-        checkAll: !(!checked && checkAll),
+        checkAll: !!(checked && checkAll),
         errorRequests: list,
       })
     );
