@@ -37,6 +37,7 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy request execution overview docs [#1258](https://github.com/ethyca/fides/pull/1490)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
