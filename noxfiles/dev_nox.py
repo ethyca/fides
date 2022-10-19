@@ -50,18 +50,15 @@ def dev(session: nox.Session) -> None:
 def test_env(session: nox.Session) -> None:
     """Spins up a comprehensive test environment seeded with data."""
 
-    session.warn(
+    session.log(
         "Tearing down existing containers & volumes to prepare test environment..."
     )
     try:
         session.run(*COMPOSE_DOWN_VOLUMES, external=True)
     except:
-        # Often, you'll unexpectedly be running a separate session (like `nox -s dev`) which has it's own teardown
-        session.warn(
-            "Failed to cleanly teardown existing containers & volumes. Were you running a separate nox session?"
+        session.error(
+            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other nox sessions and try again"
         )
-        session.warn("Please try again!")
-        raise
     session.notify("teardown", posargs=["volumes"])
 
     session.log("Building images...")
