@@ -1,7 +1,6 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import { useRouter } from "next/router";
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -9,7 +8,6 @@ import { CloseSolidIcon } from "~/features/common/Icon";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
-import SystemRegisterSuccess from "~/features/system/SystemRegisterSuccess";
 import { System } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
@@ -17,30 +15,34 @@ import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
   changeStep,
+  continueReview,
+  reset,
+  reviewManualSystem,
   selectReviewStep,
   selectStep,
-  selectSystemToCreate,
-  setSystemToCreate,
+  selectSystemInReview,
+  selectSystemsForReview,
+  setSystemInReview,
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResultsForm from "./ScanResultsForm";
+import SuccessPage from "./SuccessPage";
 import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
-  const router = useRouter();
-
   const step = useAppSelector(selectStep);
   const reviewStep = useAppSelector(selectReviewStep);
   const dispatch = useAppDispatch();
-  const system = useAppSelector(selectSystemToCreate);
+  const system = useAppSelector(selectSystemInReview);
+  const systemsForReview = useAppSelector(selectSystemsForReview);
 
   const handleCancelSetup = () => {
-    router.push("/");
+    dispatch(reset());
   };
 
   const handleSuccess = (values: System) => {
-    dispatch(setSystemToCreate(values));
+    dispatch(setSystemInReview(values));
     dispatch(changeReviewStep());
   };
 
@@ -82,6 +84,7 @@ const ConfigWizardWalkthrough = () => {
                 ) : null}
                 {reviewStep === 1 && (
                   <DescribeSystemStep
+                    system={system}
                     onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
@@ -104,13 +107,15 @@ const ConfigWizardWalkthrough = () => {
                   />
                 )}
                 {reviewStep === 4 && system && (
-                  <SystemRegisterSuccess
-                    system={system}
+                  <SuccessPage
+                    systemInReview={system}
+                    systemsForReview={systemsForReview}
                     onAddNextSystem={() => {
-                      dispatch(changeStep(5));
-                      dispatch(changeReviewStep(1));
+                      dispatch(reviewManualSystem());
                     }}
-                    onContinue={() => dispatch(changeStep())}
+                    onContinue={() => {
+                      dispatch(continueReview());
+                    }}
                   />
                 )}
               </Stack>

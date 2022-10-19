@@ -2,9 +2,10 @@ import logging
 from datetime import datetime
 
 import requests
-import setup.constants as constants
 
 from fides.api.ops.api.v1 import urn_registry as urls
+
+from . import constants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 def create_privacy_request(
     user_email: str,
-    policy_key: str = constants.ACCESS_POLICY_KEY,
+    policy_key: str = constants.DEFAULT_ACCESS_POLICY,
 ):
     response = requests.post(
         f"{constants.BASE_URL}{urls.PRIVACY_REQUESTS}",

@@ -39,7 +39,6 @@ nav:
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
           - Understanding Privacy Request Execution: guides/fidesops_workflow.md
-          - Configuring Fides with Scripts: guides/utility_scripts.md
       - Tutorial:
           - Overview: tutorial/index.md
           - Add Fides to the App: tutorial/add.md
@@ -88,7 +87,8 @@ nav:
       - Fideslog Analytics: development/fideslog.md
       - Database Migration: development/database_migration.md
       - Documentation: development/documentation.md
-      - Testing: development/testing.md
+      - Writing Tests: development/testing.md
+      - Testing Environment: development/testing_environment.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
       - Jetbrains Debugging: development/jetbrains_debugging.md

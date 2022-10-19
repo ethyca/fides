@@ -3,10 +3,10 @@ import uuid
 from typing import Dict
 
 import requests
-import setup.constants as constants
-from setup import get_secret
 
 from fides.api.ops.api.v1 import urn_registry as urls
+
+from . import constants, get_secret
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -35,9 +35,9 @@ def create_mailchimp_connector(
         json={
             "instance_key": f"mailchimp_instance_{key}",
             "secrets": {
-                "domain": get_secret("MAILCHIMP_DOMAIN"),
-                "username": get_secret("MAILCHIMP_USERNAME"),
-                "api_key": get_secret("MAILCHIMP_API_KEY"),
+                "domain": get_secret("MAILCHIMP_SECRETS")["domain"],
+                "username": get_secret("MAILCHIMP_SECRETS")["username"],
+                "api_key": get_secret("MAILCHIMP_SECRETS")["api_key"],
             },
             "name": f"Mailchimp Connector {key}",
             "description": "Mailchimp ConnectionConfig description",

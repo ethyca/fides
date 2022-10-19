@@ -29,25 +29,36 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
-def black(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def black(session: nox.Session, mode: str) -> None:
     """Run the 'black' style linter."""
     install_requirements(session)
-    command = (
-        "black",
-        "--check",
-        "src",
-        "tests",
-        "noxfiles",
-        "scripts",
-    )
+    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
 @nox.session()
-def isort(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def isort(session: nox.Session, mode: str) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
@@ -63,7 +74,7 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles")
+    command = ("pylint", "src", "noxfiles", "noxfile.py")
     session.run(*command)
 
 

@@ -1,3 +1,5 @@
+import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
+
 describe("Config Wizard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -34,6 +36,9 @@ describe("Config Wizard", () => {
 
   describe("AWS scan steps", () => {
     beforeEach(() => {
+      stubSystemCrud();
+      stubTaxonomyEntities();
+
       // Move past organization step.
       cy.getByTestId("organization-info-form");
       cy.getByTestId("submit-btn").click();
@@ -47,7 +52,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("input-region_name").type("us-east-1{Enter}");
     });
 
-    it("Allows submitting the form and viewing the results", () => {
+    it("Allows submitting the form and reviewing the results", () => {
       cy.intercept("POST", "/api/v1/generate", {
         fixture: "generate/system.json",
       }).as("postGenerate");
@@ -56,6 +61,36 @@ describe("Config Wizard", () => {
       cy.wait("@postGenerate");
 
       cy.getByTestId("scan-results-form");
+      cy.getByTestId(`scan-result-row-example-system-1`).within(() => {
+        cy.getByTestId("checkbox").click();
+      });
+      cy.getByTestId("register-btn").click();
+
+      // The request while editing the form should match the generated system's body.
+      cy.intercept("POST", "/api/v1/system", {
+        fixture: "generate/system_to_review.json",
+      }).as("postSystem");
+      cy.intercept("PUT", "/api/v1/system*", {
+        fixture: "generate/system_to_review.json",
+      }).as("putSystem");
+
+      // The form interactions are covered by the system forms tests.
+      cy.getByTestId("confirm-btn").click();
+      cy.getByTestId("privacy-declaration-form");
+      cy.getByTestId("input-name").type("declaration");
+      cy.getByTestId("input-data_categories").click().type(`user{enter}`);
+      cy.getByTestId("input-data_use")
+        .click()
+        .contains("advertising.first_party")
+        .click();
+      cy.getByTestId("input-data_subjects").type(`user{enter}`);
+      cy.getByTestId("add-btn").click();
+      cy.getByTestId("next-btn").click();
+      cy.getByTestId("confirm-btn").click();
+
+      // Just the first system is reviewed.
+      cy.get(`[data-testid="system-reviewed"]`).should("have.length", 1);
+      cy.get(`[data-testid="system-needs-review"]`).should("have.length", 2);
     });
 
     it("Displays API errors and allows resubmission", () => {

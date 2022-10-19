@@ -17,7 +17,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_saas_override
+@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_access_request(
     db,
@@ -94,7 +94,7 @@ async def test_firebase_auth_access_request(
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_saas_override
+@pytest.mark.integration_firebase_auth
 @pytest.mark.asyncio
 async def test_firebase_auth_update_request(
     db,
