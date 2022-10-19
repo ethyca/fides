@@ -75,6 +75,7 @@ describe("Config Wizard", () => {
       }).as("putSystem");
 
       // The form interactions are covered by the system forms tests.
+      cy.contains("Continue").click();
       cy.getByTestId("confirm-btn").click();
       cy.getByTestId("privacy-declaration-form");
       cy.getByTestId("input-name").type("declaration");
