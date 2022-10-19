@@ -146,12 +146,12 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
         from git.repo import Repo
         from git.repo.fun import is_git_dir
     except ImportError:
-        print("Git executable not detected, skipping git checks...")
+        print("Git executable not detected, skipping git check...")
         return False
 
     git_dir_path = ".git/"
     if not is_git_dir(git_dir_path):
-        print(f"No git repo detected at '{git_dir_path}', skipping checks...")
+        print(f"No git repo detected at '{git_dir_path}', skipping git check...")
         return False
 
     repo = Repo()
