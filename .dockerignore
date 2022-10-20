@@ -47,5 +47,5 @@ venv/
 .DS_Store
 
 # Dev files
-.pre-commit-config
+.pre-commit-config.yaml
 .fides/fides.toml
