@@ -40,7 +40,7 @@ async def test_mailchimp_override_access_request_task(
     """Full access request based on the Mailchimp SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_mailchimp_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
@@ -104,40 +104,6 @@ async def test_mailchimp_override_access_request_task(
     # links
     assert v[f"{dataset_name}:member"][0]["email_address"] == mailchimp_identity_email
 
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="member"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="conversations",
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=dataset_name, collection_name="messages"
-            )
-        )
-        > 0
-    )
-
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
@@ -154,7 +120,7 @@ async def test_mailchimp_erasure_request_task(
     """Full erasure request based on the Mailchimp SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
+        id=f"test_mailchimp_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
@@ -172,7 +138,7 @@ async def test_mailchimp_erasure_request_task(
         db,
     )
 
-    v = await graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -182,35 +148,7 @@ async def test_mailchimp_erasure_request_task(
         db,
     )
 
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="conversations",
-                message="No values were erased since no primary key was defined for this collection",
-            )
-        )
-        == 1
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=dataset_name,
-                collection_name="messages",
-                message="No values were erased since no primary key was defined for this collection",
-            )
-        )
-        == 1
-    )
-    assert v == {
+    assert x == {
         f"{dataset_name}:member": 1,
         f"{dataset_name}:conversations": 0,
         f"{dataset_name}:messages": 0,

@@ -8,17 +8,23 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
+from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
     Dataset,
     Field,
     FieldAddress,
+    FieldPath,
     generate_field,
 )
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetField
+from fides.api.ops.schemas.dataset import (
+    FidesopsDataset,
+    FidesopsDatasetField,
+    FidesopsDatasetReference,
+)
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
 
@@ -86,7 +92,7 @@ class DatasetConfig(Base):
 
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(),  # type: ignore
+                self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore
             )
         else:
             logger.debug(
@@ -220,3 +226,47 @@ def convert_dataset_to_graph(
         connection_key=connection_key,
         after=after,
     )
+
+
+def validate_dataset_reference(
+    db: Session, dataset_reference: FidesopsDatasetReference
+) -> None:
+    """
+    Validates that the provided FidesopsDatasetReference refers
+    to a `Dataset`, `Collection` and `Field` that actually exist in the DB.
+    Raises a `ValidationError` if not.
+    """
+    dataset_config: DatasetConfig = (
+        db.query(DatasetConfig)
+        .filter(DatasetConfig.fides_key == dataset_reference.dataset)
+        .first()
+    )
+    if dataset_config is None:
+        raise ValidationError(
+            f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
+        )
+    dataset: Dataset = convert_dataset_to_graph(
+        FidesopsDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
+    )
+    collection_name, *field_name = dataset_reference.field.split(".")
+    if not field_name or not collection_name or not field_name[0]:
+        raise ValidationError(
+            "Dataset reference field specifications must include at least two dot-separated components"
+        )
+    collection = next(
+        (
+            collection
+            for collection in dataset.collections
+            if collection.name == collection_name
+        ),
+        None,
+    )
+    if collection is None:
+        raise ValidationError(
+            f"Unknown collection '{collection_name}' in dataset '{dataset_config.fides_key}' referenced by external reference"
+        )
+    field = collection.field(FieldPath.parse(*field_name))
+    if field is None:
+        raise ValidationError(
+            f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
+        )

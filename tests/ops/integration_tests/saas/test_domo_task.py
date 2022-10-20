@@ -1,7 +1,6 @@
 import random
 
 import pytest
-import requests
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
@@ -15,14 +14,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 
 
-@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 def test_domo_connection_test(domo_connection_config) -> None:
     get_connector(domo_connection_config).test_connection()
 
 
-# @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
@@ -55,15 +52,6 @@ async def test_domo_access_request_task(
         db,
     )
 
-    from tests.ops.test_helpers.dataset_utils import update_dataset
-
-    update_dataset(
-        domo_connection_config, domo_dataset_config, v, "generated_dataset_domo.yml"
-    )
-
-    import pdb
-
-    pdb.set_trace()
     assert_rows_match(
         v[f"{dataset_name}:user"],
         min_size=1,
@@ -73,7 +61,6 @@ async def test_domo_access_request_task(
             "email",
             "role",
             "name",
-            "timezone",
             "department",
             "roleId",
             "createdAt",
@@ -85,8 +72,6 @@ async def test_domo_access_request_task(
     assert v[f"{dataset_name}:users"][0]["email"] == domo_identity_email
 
 
-#
-# @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
@@ -121,9 +106,7 @@ async def test_domo_access_request_task(
         identity_kwargs,
         db,
     )
-    import pdb
 
-    pdb.set_trace()
     assert_rows_match(
         v[f"{dataset_name}:users"],
         min_size=1,
@@ -142,6 +125,7 @@ async def test_domo_access_request_task(
 
     # verify we only returned data for our identity
     assert v[f"{dataset_name}:users"][0]["email"] == domo_erasure_identity_email
+
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 

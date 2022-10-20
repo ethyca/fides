@@ -6,7 +6,6 @@ import requests
 from faker import Faker
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
-from requests.auth import HTTPBasicAuth
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -29,9 +28,6 @@ faker = Faker()
 
 @pytest.fixture(scope="session")
 def domo_secrets(saas_config):
-    import pdb
-
-    pdb.set_trace()
     return {
         "domain": pydash.get(saas_config, "domo.domain") or secrets["domain"],
         "client_id": pydash.get(saas_config, "domo.client_id") or secrets["client_id"],
@@ -50,15 +46,6 @@ def domo_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
-@pytest.fixture(scope="session")
-def domo_token(domo_secrets) -> str:
-    body = {"grant_type": "client_credentials"}
-    basic_auth = HTTPBasicAuth(domo_secrets["client_id"], domo_secrets["client_secret"])
-    url = f"https://{domo_secrets['domain']}/oauth/token"
-    response = requests.post(url, body, auth=basic_auth)
-    return response.json()["access_token"]
-
-
 @pytest.fixture
 def domo_config() -> Dict[str, Any]:
     return load_config_with_replacement(
@@ -73,7 +60,7 @@ def domo_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
         "data/saas/dataset/domo_dataset.yml",
         "<instance_fides_key>",
-        "domo_dataset",
+        "domo_instance",
     )[0]
 
 
@@ -82,10 +69,8 @@ def domo_connection_config(
     db: session,
     domo_config,
     domo_secrets,
-    # domo_token,
 ) -> Generator:
     fides_key = domo_config["fides_key"]
-    # domo_secrets["access_token"] = domo_token
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -124,10 +109,6 @@ def domo_dataset_config(
 
 
 class DomoTestClient:
-    headers: object = {}
-    base_url: str = ""
-    domo_secrets: object = {}
-
     def __init__(self, domo_connection_config: ConnectionConfig):
         self.domo_secrets = domo_connection_config.secrets
         self.headers = {
@@ -196,9 +177,6 @@ def domo_create_erasure_data(
     # 1) create a new user
     user_response = domo_test_client.create_user(domo_erasure_identity_email)
     user = user_response.json()
-    import pdb
-
-    pdb.set_trace()
     user_id = user["id"]
 
     error_message = f"user with user id [{user_id}] could not be added to domo"

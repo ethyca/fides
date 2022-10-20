@@ -22,7 +22,7 @@ def test_datadog_connection_test(datadog_connection_config) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_datadog
 @pytest.mark.asyncio
-async def test_saas_access_request_task(
+async def test_datadog_access_request_task(
     db,
     policy,
     datadog_connection_config,

@@ -1,6 +1,9 @@
 import { Flex } from "@fidesui/react";
 import dynamic from "next/dynamic";
 import React from "react";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Flags } from "react-feature-flags";
 
 import {
   DATASTORE_CONNECTION_ROUTE,
@@ -39,7 +42,12 @@ const NavBar = () => {
 
         <NavLink title="Taxonomy" href="/taxonomy" />
         {/* This is a temporary link to the config wizard while it's still in progress */}
-        <NavLink title="Config Wizard" href="/config-wizard" />
+        <Flags
+          authorizedFlags={["configWizardFlag"]}
+          renderOn={() => (
+            <NavLink title="Config Wizard" href="/config-wizard" />
+          )}
+        />
       </nav>
     </Flex>
   );

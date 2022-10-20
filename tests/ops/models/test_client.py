@@ -38,7 +38,7 @@ class TestClientModel:
             client.salt.encode(CONFIG.security.encoding),
         )
 
-        assert "fidesopsadmin" == client.id
+        assert "fidesadmin" == client.id
         assert client.scopes == SCOPE_REGISTRY
         assert client.hashed_secret == hashed_access_key
 

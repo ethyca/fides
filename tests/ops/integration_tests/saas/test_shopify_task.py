@@ -1,4 +1,5 @@
 import random
+from time import sleep
 
 import pytest
 import requests
@@ -507,6 +508,8 @@ async def test_shopify_erasure_request_task(
         f"{dataset_name}:blog_article_comments": 1,
         f"{dataset_name}:customer_order_transactions": 0,
     }
+
+    sleep(30)  # wait for the data to settle on Shopify's side
 
     # Verifying data is actually updated
     shopify_secrets = shopify_connection_config.secrets

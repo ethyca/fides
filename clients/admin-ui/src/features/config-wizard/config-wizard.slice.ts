@@ -11,20 +11,21 @@ export interface State {
   reviewStep: number;
   organization?: Organization;
   /**
-   * The system that the user is currently manually creating.
-   */
-  systemToCreate: System | null;
-  /**
    * The systems that were returned by a system scan, some of which the user will select for review.
    * These are persisted to the backend after the "Describe" step.
    */
   systemsForReview?: System[];
+  /**
+   * The system that is currently being put through the review steps. It is persisted
+   * on the "Describe" step and then updated with additional info. Once it's registered,
+   * the next `systemForReview` is swapped in, if any.
+   */
+  systemInReview?: System;
 }
 
 const initialState: State = {
-  step: 1,
+  step: 0,
   reviewStep: 1,
-  systemToCreate: null,
 };
 
 export const slice = createSlice({
@@ -74,11 +75,61 @@ export const slice = createSlice({
         draftState.reviewStep = REVIEW_STEPS - 1;
       }
     },
+    reviewManualSystem: (draftState) => {
+      draftState.systemInReview = undefined;
+      draftState.reviewStep = 1;
+    },
+    /**
+     * Move to the next system that needs review, if any.
+     */
+    continueReview: (draftState) => {
+      const { systemInReview, systemsForReview } = draftState;
+      if (!(systemInReview && systemsForReview)) {
+        throw new Error(
+          "Can't finish system review when there is no review in progress."
+        );
+      }
+
+      const reviewIndex = systemsForReview.findIndex(
+        (s) => s.fides_key === systemInReview.fides_key
+      );
+      if (reviewIndex < 0) {
+        throw new Error("The system in review couldn't be found by fides key.");
+      }
+
+      const nextIndex = reviewIndex + 1;
+      if (nextIndex < systemsForReview.length) {
+        // If there is another system to review, swap it in.
+        draftState.systemInReview = systemsForReview[nextIndex];
+      } else {
+        // Otherwise move to the next wizard step.
+        draftState.systemInReview = undefined;
+        draftState.step += 1;
+      }
+
+      // Always reset the review step
+      draftState.reviewStep = 1;
+    },
     setOrganization: (draftState, action: PayloadAction<Organization>) => {
       draftState.organization = action.payload;
     },
-    setSystemToCreate: (draftState, action: PayloadAction<System>) => {
-      draftState.systemToCreate = action.payload;
+    setSystemInReview: (draftState, action: PayloadAction<System>) => {
+      const systemInReview = action.payload;
+      const { systemsForReview = [] } = draftState;
+
+      // Whenever the in-progress system is updated, ensure the object in the array
+      // is updated in tandem.
+      const reviewIndex = systemsForReview.findIndex(
+        (s) => s.fides_key === systemInReview.fides_key
+      );
+      if (reviewIndex < 0) {
+        systemsForReview.push(systemInReview);
+      } else {
+        systemsForReview[reviewIndex] = systemInReview;
+      }
+
+      draftState.systemInReview = systemInReview;
+      draftState.systemsForReview = systemsForReview;
     },
     setSystemsForReview: (draftState, action: PayloadAction<System[]>) => {
       draftState.systemsForReview = action.payload;
@@ -88,14 +139,28 @@ export const slice = createSlice({
       draftState.systemsForReview = (draftState.systemsForReview ?? []).filter(
         (system) => fidesKeySet.has(system.fides_key)
       );
+      // Start reviewing the first system. (ESLint false positive.)
+      // eslint-disable-next-line prefer-destructuring
+      draftState.systemInReview = draftState.systemsForReview[0];
     },
+    /**
+     * Reset the wizard to its initial state, except for the organization which will probably
+     * be the same if the user comes back.
+     */
+    reset: (draftState) => ({
+      ...initialState,
+      organization: draftState.organization,
+    }),
   },
 });
 
 export const {
   changeStep,
   changeReviewStep,
-  setSystemToCreate,
+  continueReview,
+  reset,
+  reviewManualSystem,
+  setSystemInReview,
   setOrganization,
   setSystemsForReview,
   chooseSystemsForReview,
@@ -120,9 +185,9 @@ export const selectOrganizationFidesKey = createSelector(
   (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY
 );
 
-export const selectSystemToCreate = createSelector(
+export const selectSystemInReview = createSelector(
   selectConfigWizard,
-  (state) => state.systemToCreate
+  (state) => state.systemInReview
 );
 
 export const selectSystemsForReview = createSelector(

@@ -1,11 +1,14 @@
+import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.models.datasetconfig import (
     DatasetConfig,
     FieldAddress,
     convert_dataset_to_graph,
+    validate_dataset_reference,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
+from fides.api.ops.schemas.dataset import FidesopsDataset, FidesopsDatasetReference
 
 from ..graph.graph_test_util import field
 
@@ -147,3 +150,91 @@ def test_convert_dataset_to_graph_array_fields(example_datasets):
     )[0]
     assert not points_field.is_array
     assert points_field.return_all_elements is None
+
+
+def test_validate_dataset_reference(db: Session, dataset_config: DatasetConfig):
+    """
+    Happy path, test valid reference to existing dataset
+    """
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    dsr = FidesopsDatasetReference(
+        dataset=dataset_key, field=f"{collection_name}.{field_name}"
+    )
+    validate_dataset_reference(db, dsr)
+
+
+def test_validate_dataset_reference_invalid(db: Session, dataset_config: DatasetConfig):
+    """
+    Test that various types of invalid references to datasets raise expected errors
+    """
+    dataset_key = "fake_dataset"
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    dsr = FidesopsDatasetReference(
+        dataset=dataset_key, field=f"{collection_name}.{field_name}"
+    )
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "Unknown dataset" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = "fake_collection"
+    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    dsr = FidesopsDatasetReference(
+        dataset=dataset_key, field=f"{collection_name}.{field_name}"
+    )
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "Unknown collection" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(
+        dataset=dataset_key, field=f"{collection_name}.{field_name}"
+    )
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "Unknown field" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(dataset=dataset_key, field=f"{collection_name}.")
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "must include at least two dot-separated components" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(dataset=dataset_key, field=f".{field_name}")
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "must include at least two dot-separated components" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(dataset=dataset_key, field=f"{collection_name}")
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "must include at least two dot-separated components" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(dataset=dataset_key, field=f".")
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "must include at least two dot-separated components" in e.value.message
+
+    dataset_key = dataset_config.fides_key
+    collection_name = dataset_config.dataset["collections"][0]["name"]
+    field_name = "fake_field"
+    dsr = FidesopsDatasetReference(dataset=dataset_key, field="")
+    with pytest.raises(ValidationError) as e:
+        validate_dataset_reference(db, dsr)
+    assert "must include at least two dot-separated components" in e.value.message

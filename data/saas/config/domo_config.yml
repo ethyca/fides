@@ -34,23 +34,30 @@ saas_config:
             {
               "grant_type": "client_credentials"
             }
+
   test_request:
     method: GET
     path: /v1/datasets
+
   endpoints:
-    - name: user
+    - name: users
       requests:
         read:
           method: GET
           path: /v1/users
           query_params:
             - name: limit
-              value: '10'
+              value: 500
             - name: offset
-              value: '0'
+              value: 0
           param_values:
             - name: placeholder
               identity: email
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: offset
+              increment_by: 500
           postprocessors:
             - strategy: filter
               configuration:

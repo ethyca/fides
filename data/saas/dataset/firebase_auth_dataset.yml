@@ -54,4 +54,3 @@ dataset:
                 data_categories: [user]
                 fidesops_meta:
                   data_type: string
-
