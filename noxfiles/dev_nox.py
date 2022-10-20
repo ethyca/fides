@@ -92,12 +92,21 @@ def test_env(session: nox.Session) -> None:
     session.log("*                                      *")
     session.log("****************************************")
     session.log("")
-    session.log("Fides Admin UI running at http://localhost:3000")
-    session.log("Fides Privacy Center running at http://localhost:3001")
-    session.log("Example Postgres Database running at localhost:6432")
-    session.log("Example Mongo Database running at localhost:27017")
-    session.log("Username: 'fidestest', Password: 'Apassword1!")
-    session.log("Opening Fides CLI shell...")
+    # Print out some helpful tips for using the test_env!
+    # NOTE: These constants are defined in scripts/setup/constants.py, docker-compose.yml, and docker-compose.integration-tests.yml
+    session.log(
+        "Fides Admin UI running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+    )
+    session.log(
+        "Fides Privacy Center running at http://localhost:3001 (user: 'jane@example.com')"
+    )
+    session.log(
+        "Example Postgres Database running at localhost:6432 (user: 'postgres', pass: 'postgres', db: 'postgres_example')"
+    )
+    session.log(
+        "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
+    )
+    session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
     session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
 
 
