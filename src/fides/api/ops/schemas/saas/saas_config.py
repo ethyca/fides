@@ -28,6 +28,7 @@ class ParamValue(BaseModel):
     references: Optional[List[Union[FidesopsDatasetReference, str]]]
     connector_param: Optional[str]
     unpack: Optional[bool] = False
+    optional: Optional[bool] = False
 
     @validator("references")
     def check_reference_direction(

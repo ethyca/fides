@@ -144,6 +144,58 @@ class TestSaasConnector:
             traversal_node, Policy(), PrivacyRequest(id="123"), {}
         ) == [{}]
 
+    def test_missing_input_values(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies that an empty list of rows is returned if the request
+        isn't provided all the required data in the input_data parameter
+        """
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "messages"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert (
+            connector.retrieve_data(
+                traversal_node, Policy(), PrivacyRequest(id="123"), {}
+            )
+            == []
+        )
+
+    def test_missing_grouped_inputs_input_values(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies that an empty list of rows is returned if the request
+        isn't provided all the required grouped_input data in the input_data parameter
+        """
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "users"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert (
+            connector.retrieve_data(
+                traversal_node, Policy(), PrivacyRequest(id="123"), {}
+            )
+            == []
+        )
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
