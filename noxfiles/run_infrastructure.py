@@ -33,7 +33,7 @@ def run_infrastructure(
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
     open_shell: bool = False,  # Should we open a bash shell?
     pytest_path: str = "",  # Which subset of tests should we run?
-    run_application: bool = False,  # Should we run the Fidesops webserver?
+    run_application: bool = False,  # Should we run the Fides webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
@@ -63,7 +63,7 @@ def run_infrastructure(
         if datastore in DOCKERFILE_DATASTORES
     ]
 
-    # Configure docker-compose path
+    # Configure docker compose path
     path: str = get_path_for_datastores(datastores)
 
     _run_cmd_or_err(
@@ -122,7 +122,7 @@ def seed_initial_data(
 
 def get_path_for_datastores(datastores: List[str]) -> str:
     """
-    Returns the docker-compose file paths for the specified datastores
+    Returns the docker compose file paths for the specified datastores
     """
     path: str = "-f docker-compose.yml"
     for datastore in datastores:

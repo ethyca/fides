@@ -26,6 +26,7 @@ The types of changes are:
     * Each consent option can provide an array of `cookieKeys`.
 * Individually select and reprocess DSRs that have errored [#1203](https://github.com/ethyca/fides/pull/1489)
 * Bulk select and reprocess DSRs that have errored [#1205](https://github.com/ethyca/fides/pull/1489)
+* Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
@@ -250,6 +251,7 @@ The types of changes are:
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 * Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
+* Added configWizardFlag to ui to hide the config wizard when false [[#1453](https://github.com/ethyca/fides/issues/1453)
 
 ### Changed
 

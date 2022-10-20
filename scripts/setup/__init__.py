@@ -1,32 +1,22 @@
-import os
+from typing import Dict
+
+from . import load_example_secrets
 
 
 class SecretMissing(Exception):
     """An exception to denote the omission of a required secret."""
 
 
-def get_secret(name: str) -> str:
+def get_secret(name: str) -> Dict[str, str]:
     """
     Checks to see if a secret is set at environment level
     before returning the value pre-programmed in the
     secrets file
     """
-    # First try to get the secret from the environment
-    secret = os.getenv(name)
-    if secret:
-        return secret
-
-    # Otherwise get the secret from the secrets file
-    try:
-        import setup.secrets as secrets
-    except ModuleNotFoundError:
-        raise SecretMissing(
-            f"secret {name} not present in os env and secrets.py file not found"
-        )
 
     try:
-        secret = getattr(secrets, name)
+        secret = getattr(load_example_secrets, name)
     except AttributeError:
-        raise SecretMissing(f"secret {name} not present in os env or secrets.py")
+        raise SystemExit(f"Secret {name} not found!")
     else:
         return secret

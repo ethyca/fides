@@ -5,6 +5,7 @@ import pytest
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
@@ -13,6 +14,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_sendgrid
+def test_sendgrid_connection_test(sendgrid_connection_config) -> None:
+    get_connector(sendgrid_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
@@ -26,8 +33,9 @@ async def test_sendgrid_access_request_task(
     sendgrid_identity_email,
 ) -> None:
     """Full access request based on the Sendgrid SaaS config"""
+
     privacy_request = PrivacyRequest(
-        id=f"test_saas_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_sendgrid_access_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": sendgrid_identity_email})
     privacy_request.cache_identity(identity)
@@ -83,9 +91,10 @@ async def test_sendgrid_erasure_request_task(
     sendgrid_erasure_identity_email,
     sendgrid_erasure_data,
 ) -> None:
-    """Full erasure request based on the sendgrid SaaS config"""
+    """Full erasure request based on the Sendgrid SaaS config"""
+
     privacy_request = PrivacyRequest(
-        id=f"test_saas_erasure_request_task_{random.randint(0, 1000)}"
+        id=f"test_sendgrid_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity = Identity(**{"email": sendgrid_erasure_identity_email})
     privacy_request.cache_identity(identity)

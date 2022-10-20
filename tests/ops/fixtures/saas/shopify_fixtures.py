@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -143,6 +144,9 @@ def shopify_erasure_data(
     )
     customer = customers_response.json()
     assert customers_response.ok
+
+    sleep(30)
+
     error_message = f"customer with email {shopify_erasure_identity_email} could not be added to Shopify"
     poll_for_existence(
         customer_exists,

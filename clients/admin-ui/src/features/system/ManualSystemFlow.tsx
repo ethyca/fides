@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
 import DescribeSystemStep from "./DescribeSystemStep";
-import { transformSystemToFormValues } from "./form";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
@@ -52,7 +51,7 @@ const ManualSystemFlow = () => {
 
   const goBack = () => {
     router.back();
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   };
 
   const handleSuccess = (system: System) => {
@@ -62,7 +61,7 @@ const ManualSystemFlow = () => {
 
   const goToIndex = () => {
     router.push("/system");
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   };
 
   return (
@@ -82,11 +81,7 @@ const ManualSystemFlow = () => {
           <DescribeSystemStep
             onSuccess={handleSuccess}
             onCancel={goBack}
-            initialValues={
-              activeSystem
-                ? transformSystemToFormValues(activeSystem)
-                : undefined
-            }
+            system={activeSystem}
           />
         ) : null}
         {currentStepIndex === 1 && activeSystem ? (

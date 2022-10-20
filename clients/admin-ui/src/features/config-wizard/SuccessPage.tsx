@@ -16,28 +16,31 @@ import {
 } from "@fidesui/react";
 import React from "react";
 
-import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import {
+  StepperCircleCheckmarkIcon,
+  StepperCircleIcon,
+} from "~/features/common/Icon";
 import { System } from "~/types/api";
 
 interface Props {
-  system: System;
+  systemInReview: System;
+  systemsForReview: System[];
   onContinue: () => void;
   onAddNextSystem: () => void;
 }
-const SystemRegisterSuccess = ({
-  system,
+const SuccessPage = ({
+  systemInReview,
+  systemsForReview,
   onAddNextSystem,
   onContinue,
 }: Props) => {
-  const { data: allRegisteredSystems } = useGetAllSystemsQuery();
-  const otherSystems = allRegisteredSystems
-    ? allRegisteredSystems.filter(
-        (registeredSystem) => registeredSystem.name !== system.name
-      )
-    : [];
+  const systemName = systemInReview.name ?? systemInReview.fides_key;
 
-  const systemName = system.name ?? system.fides_key;
+  // Systems are reviewed in order, so a lower index means that system has been reviewed
+  // and a higher index means they'll reviewed after hitting "next".
+  const systemInReviewIndex = systemsForReview.findIndex(
+    (s) => s.fides_key === systemInReview.fides_key
+  );
 
   return (
     <chakra.form w="100%">
@@ -68,23 +71,32 @@ const SystemRegisterSuccess = ({
               </Tr>
             </Thead>
             <Tbody>
-              <Tr>
-                <Td color="green.500">{systemName}</Td>
-                <Td>
-                  <StepperCircleCheckmarkIcon boxSize={5} />
-                </Td>
-              </Tr>
-              {otherSystems.map((s) => (
+              {systemsForReview.map((s, i) => (
                 <Tr key={`${s.fides_key}-tr`}>
-                  <Td>{s.name}</Td>
+                  <Td
+                    color={i === systemInReviewIndex ? "green.500" : undefined}
+                  >
+                    {s.name}
+                  </Td>
                   <Td>
-                    <StepperCircleCheckmarkIcon boxSize={5} />
+                    {i <= systemInReviewIndex ? (
+                      <StepperCircleCheckmarkIcon
+                        boxSize={5}
+                        data-testid="system-reviewed"
+                      />
+                    ) : (
+                      <StepperCircleIcon
+                        boxSize={5}
+                        data-testid="system-needs-review"
+                      />
+                    )}
                   </Td>
                 </Tr>
               ))}
             </Tbody>
           </Table>
         </TableContainer>
+
         <Text>You can continue to add more systems now or finish.</Text>
 
         <Box>
@@ -95,8 +107,9 @@ const SystemRegisterSuccess = ({
             variant="outline"
             data-testid="add-next-system-btn"
           >
-            Add next system
+            Add system manually
           </Button>
+
           <Button
             onClick={onContinue}
             colorScheme="primary"
@@ -110,4 +123,4 @@ const SystemRegisterSuccess = ({
     </chakra.form>
   );
 };
-export default SystemRegisterSuccess;
+export default SuccessPage;

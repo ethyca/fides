@@ -51,6 +51,6 @@ task_retry_delay = 1
 enabled = true
 
 [notifications]
-send_request_completion_notification = true
-send_request_receipt_notification = true
-send_request_review_notification = true
+send_request_completion_notification = false
+send_request_receipt_notification = false
+send_request_review_notification = false
