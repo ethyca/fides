@@ -178,12 +178,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         # get the list of param_value references
         required_param_value_references = [
-            param_value.name for param_value in param_values if param_value.references
+            param_value.name
+            for param_value in param_values or []
+            if param_value.references
         ]
 
         # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
         provided_input_keys = (
-            list(input_data.get("fidesops_grouped_inputs")[0].keys())
+            list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
             if input_data.get("fidesops_grouped_inputs")
             else []
         ) + list(input_data.keys())
@@ -197,7 +199,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             logger.info(
                 "The '%s' request of %s missing the following dataset reference values [%s], skipping traversal",
                 self.collection_name,
-                self.saas_config.fides_key,
+                self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
             )
         return missing_dataset_reference_values
