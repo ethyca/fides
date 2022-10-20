@@ -64,3 +64,11 @@ saas_config:
                 field: email
                 value:
                   identity: email
+        update:
+          request_override: domo_user_update
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from

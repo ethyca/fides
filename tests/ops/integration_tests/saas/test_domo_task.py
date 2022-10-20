@@ -78,7 +78,7 @@ async def test_domo_access_request_task(
 async def test_domo_erasure_request_task(
     db,
     policy,
-    erasure_policy_string_rewrite,
+    erasure_policy_string_rewrite_name_and_email,
     domo_erasure_identity_email,
     domo_create_erasure_data,
     domo_test_client,
@@ -107,10 +107,6 @@ async def test_domo_erasure_request_task(
         db,
     )
 
-    import pdb
-
-    pdb.set_trace()
-
     assert_rows_match(
         v[f"{dataset_name}:user"],
         min_size=1,
@@ -136,7 +132,7 @@ async def test_domo_erasure_request_task(
 
     x = await graph_task.run_erasure(
         privacy_request,
-        erasure_policy_string_rewrite,
+        erasure_policy_string_rewrite_name_and_email,
         graph,
         [domo_connection_config],
         identity_kwargs,
@@ -148,8 +144,8 @@ async def test_domo_erasure_request_task(
     user = user_response.json()
     assert user["title"] == "MASKED"
     assert user["name"] == "MASKED"
-    assert user["email"] == "MASKED"
-    assert user["alternate_email"] == "MASKED"
+    assert user["email"] == f"{privacy_request.id}@company.com"
+    assert user["alternateEmail"] == f"{privacy_request.id}@company.com"
 
     # reset
     CONFIG.execution.masking_strict = masking_strict
