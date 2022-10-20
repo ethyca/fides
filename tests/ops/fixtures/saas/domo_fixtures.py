@@ -143,9 +143,6 @@ class DomoTestClient:
             "role": "Participant",  # (available roles are: 'Admin', 'Privileged', 'Participant')
         }
         url = f"{self.base_url}/users?sendInvite=false"
-        import pdb
-
-        pdb.set_trace()
         user_response: requests.Response = requests.post(
             url=url, json=body, headers=self.headers
         )
