@@ -156,9 +156,11 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit}>
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            We will email you a report of the data from your account.
-          </Text>
+          {isVerificationRequired ? (
+            <Text fontSize="sm" color="gray.500" mb={4}>
+              We will email you a report of the data from your account.
+            </Text>
+          ) : null}
           <Stack spacing={3}>
             <FormControl
               id="email"
