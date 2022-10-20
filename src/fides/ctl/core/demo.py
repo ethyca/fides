@@ -102,7 +102,7 @@ def teardown_application() -> None:
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
     run(
-        DOCKER_COMPOSE_COMMAND + "up",
+        DOCKER_COMPOSE_COMMAND + "up --wait",
         shell=True,
         check=True,
     )
