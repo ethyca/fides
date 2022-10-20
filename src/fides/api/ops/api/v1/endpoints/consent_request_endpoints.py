@@ -139,6 +139,27 @@ def consent_request_verify(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
+    responses={
+        HTTP_200_OK: {
+            "consent": [
+                {
+                    "data_use": "advertising",
+                    "data_use_description": "We may use some of your personal information for advertising performance "
+                    "analysis and audience modeling for ongoing advertising which may be "
+                    "interpreted as 'Data Sharing' under some regulations.",
+                    "opt_in": True,
+                    "highlight": False,
+                },
+                {
+                    "data_use": "improve",
+                    "data_use_description": "We may use some of your personal information to collect analytics about "
+                    "how you use our products & services, in order to improve our service.",
+                    "opt_in": False,
+                },
+            ]
+        },
+        HTTP_404_NOT_FOUND: {"detail": "Consent request not found"},
+    },
 )
 def get_consent_preferences_no_id(
     *, db: Session = Depends(get_db), consent_request_id: str
