@@ -83,7 +83,6 @@ const useConsentRequestForm = ({
         if (!isVerificationRequired) {
           setConsentRequestId(data.consent_request_id);
           successHandler();
-          onClose();
         } else {
           setConsentRequestId(data.consent_request_id);
           setCurrentView(ModalViews.IdentityVerification);

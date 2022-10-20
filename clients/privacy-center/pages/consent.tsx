@@ -46,7 +46,6 @@ const Consent: NextPage = () => {
       ) {
         router.push("/");
       }
-
       const verifyUrl = privacyCenterConfig.identity_verification_required
         ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
