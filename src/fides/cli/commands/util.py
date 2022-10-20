@@ -13,7 +13,13 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
+from fides.ctl.core.demo import check_docker_version
 from fides.ctl.core.utils import echo_green
+from fides.ctl.core.demo import (
+    start_application,
+    teardown_application,
+    seed_example_data,
+)
 
 
 @click.command()
@@ -135,3 +141,22 @@ def worker(ctx: click.Context) -> None:
     from fides.api.ops.tasks import start_worker
 
     start_worker()
+
+
+@click.command()
+@click.pass_context
+@with_analytics
+def demo(ctx: click.Context) -> None:
+    """
+    Starts the application via docker compose.
+    """
+    # TODO: make sure that `init` gets run before the demo command spins up
+
+    try:
+        check_docker_version()
+        start_application()
+        seed_example_data()
+    except:
+        pass
+    finally:
+        teardown_application()
