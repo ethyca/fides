@@ -69,16 +69,15 @@ def test_env(session: nox.Session) -> None:
     session.log(
         "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
     )
-    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
 
     session.log(
-        "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
+        "Running example setup scripts for DSR Automation tests... (scripts/load_examples/load_examples.py)"
     )
     session.run(
         *RUN_NO_DEPS,
-        "fides",
-        "demo",
-        "--load-only",
+        "python",
+        "scripts/load_examples/load_examples.py",
         external=True,
     )
 

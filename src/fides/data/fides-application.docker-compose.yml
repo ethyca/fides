@@ -27,11 +27,6 @@ services:
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       FIDES__REDIS__ENABLED: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-    volumes:
-      - type: bind
-        source: ./fides
-        target: /app/.fides
-        read_only: False
 
   # TODO: Do we have an image for this?
   # fides-pc:

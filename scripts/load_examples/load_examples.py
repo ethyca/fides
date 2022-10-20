@@ -99,3 +99,7 @@ def initiate_example_data_loading() -> None:
     create_privacy_request(user_email="jane@example.com")
 
     print("Examples loaded successfully!")
+
+
+if __name__ == "__main__":
+    initiate_example_data_loading()
