@@ -158,7 +158,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
         <ModalBody>
           {isVerificationRequired ? (
             <Text fontSize="sm" color="gray.500" mb={4}>
-              We will email you a report of the data from your account.
+              We will email you a verification code.
             </Text>
           ) : null}
           <Stack spacing={3}>
