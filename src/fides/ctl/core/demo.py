@@ -10,7 +10,7 @@ REQUIRED_DOCKER_VERSION = "20.10.17"
 DOCKER_COMPOSE_FILE = join(
     dirname(__file__),
     "../../data",
-    "fides-application.docker-compose.yml",
+    "fides-demo.docker-compose.yml",
 )
 DOCKER_COMPOSE_COMMAND = f"docker compose -f {DOCKER_COMPOSE_FILE} "
 
@@ -90,7 +90,7 @@ def seed_example_data() -> None:
     run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/")
     run(
         DOCKER_COMPOSE_COMMAND
-        + "run --no-deps --rm fides python scripts/examples/load_examples.py"
+        + "run --no-deps --rm fides python scripts/load_examples.py"
     )
 
 
