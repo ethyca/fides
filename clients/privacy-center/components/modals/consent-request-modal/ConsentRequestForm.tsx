@@ -75,25 +75,21 @@ const useConsentRequestForm = ({
 
         const data = await response.json();
 
-        if (!isVerificationRequired && data.consent_request_id) {
-          setConsentRequestId(data.consent_request_id);
-          successHandler();
+        if (!data.consent_request_id) {
+          handleError();
           return;
         }
 
-        if (isVerificationRequired && data.consent_request_id) {
+        if (!isVerificationRequired) {
+          setConsentRequestId(data.consent_request_id);
+          successHandler();
+          onClose();
+        } else {
           setConsentRequestId(data.consent_request_id);
           setCurrentView(ModalViews.IdentityVerification);
-        } else {
-          handleError();
         }
       } catch (error) {
         handleError();
-        return;
-      }
-
-      if (!isVerificationRequired) {
-        onClose();
       }
     },
     validate: (values) => {
