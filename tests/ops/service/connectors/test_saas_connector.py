@@ -1,4 +1,6 @@
 import json
+from unittest import mock
+from unittest.mock import Mock
 
 import pytest
 from requests import Response
@@ -9,6 +11,7 @@ from fides.api.ops.graph.graph import Node
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.service.connectors import get_connector
@@ -144,6 +147,46 @@ class TestSaasConnector:
             traversal_node, Policy(), PrivacyRequest(id="123"), {}
         ) == [{}]
 
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+    )
+    def test_input_values(
+        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies that a row is returned if the request is provided
+        all the required data in the input_data parameter
+        """
+
+        # mock the json response from calling the messages request
+        mock_send().json.return_value = {
+            "conversation_messages": [{"id": "123", "from_email": "test@example.com"}]
+        }
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "messages"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        # this request requires the email identity in the filter postprocessor so we include it here
+        privacy_request = PrivacyRequest(id="123")
+        privacy_request.cache_identity(Identity(email="test@example.com"))
+
+        assert connector.retrieve_data(
+            traversal_node,
+            Policy(),
+            privacy_request,
+            {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
+        ) == [{"id": "123", "from_email": "test@example.com"}]
+
     def test_missing_input_values(
         self, saas_example_config, saas_example_connection_config
     ):
@@ -151,6 +194,7 @@ class TestSaasConnector:
         Verifies that an empty list of rows is returned if the request
         isn't provided all the required data in the input_data parameter
         """
+
         saas_config = SaaSConfig(**saas_example_config)
         graph = saas_config.get_graph(saas_example_connection_config.secrets)
         node = Node(
@@ -169,6 +213,47 @@ class TestSaasConnector:
             )
             == []
         )
+
+    @mock.patch(
+        "fides.api.ops.service.connectors.saas_connector.AuthenticatedClient.send"
+    )
+    def test_grouped_input_values(
+        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+    ):
+        """
+        Verifies that a row is returned if the request is provided
+        all the required grouped_input data in the input_data parameter
+        """
+
+        # mock the json response from calling the users request
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "users"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            traversal_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            {
+                "fidesops_grouped_inputs": [
+                    {
+                        "organization_slug": "abc",
+                        "project_slug": "123",
+                        "query": "test@example.com",
+                    }
+                ]
+            },
+        ) == [{"id": "123"}]
 
     def test_missing_grouped_inputs_input_values(
         self, saas_example_config, saas_example_connection_config

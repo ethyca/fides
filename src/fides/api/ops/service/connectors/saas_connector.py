@@ -174,13 +174,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     def _missing_dataset_reference_values(
         self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
     ) -> List[str]:
-        """Return a list of required dataset reference values that are not found in the input_data map"""
+        """Return a list of dataset reference values that are not found in the input_data map"""
 
-        # get the list of required param_value references
+        # get the list of param_value references
         required_param_value_references = [
-            param_value.name
-            for param_value in param_values
-            if not param_value.optional and param_value.references
+            param_value.name for param_value in param_values if param_value.references
         ]
 
         # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
@@ -197,7 +195,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if missing_dataset_reference_values:
             logger.info(
-                "The '%s' request of %s missing the following required dataset reference values [%s], skipping traversal",
+                "The '%s' request of %s missing the following dataset reference values [%s], skipping traversal",
                 self.collection_name,
                 self.saas_config.fides_key,
                 ", ".join(missing_dataset_reference_values),
