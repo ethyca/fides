@@ -77,6 +77,7 @@ def test_env(session: nox.Session) -> None:
     session.run(
         *RUN_NO_DEPS,
         "fides",
+        "demo",
         "--load-only",
         external=True,
     )
