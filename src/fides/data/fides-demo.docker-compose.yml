@@ -1,0 +1,82 @@
+services:
+  fides:
+    image: ethyca/fides:local
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8080:8080"
+    depends_on:
+      fides-db:
+        condition: service_healthy
+      worker:
+        condition: service_started
+    expose:
+      - 8080
+    environment:
+      FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
+      FIDES__CLI__SERVER_HOST: "fides"
+      FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__USERNAME: "postgres"
+      FIDES__DATABASE__PASSWORD: "fides"
+      FIDES__DATABASE__DB: "fides"
+      FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__EXECUTION__WORKER_ENABLED: "True"
+      FIDES__REDIS__ENABLED: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+
+  # TODO: Do we have an image for this?
+  # fides-pc:
+  #   image: ethyca/fides-privacy-center:local
+  #   expose:
+  #     - 3000
+  #   ports:
+  #     - "3001:3000"
+  #   volumes:
+  #     - type: bind
+  #       source: ./clients/privacy-center/config
+  #       target: /app/config
+  #       read_only: False
+
+  fides-db:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "fides"
+      POSTGRES_DB: "fides"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.fides.app-db-data == true
+
+  redis:
+    image: "redis:6.2.5-alpine"
+    command: redis-server --requirepass testpassword
+    environment:
+      - REDIS_PASSWORD=testpassword
+    expose:
+      - 6379
+    ports:
+      - "0.0.0.0:6379:6379"
+
+  worker:
+    image: ethyca/fides:local
+    command: fides worker
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    environment:
+      FIDES__TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
