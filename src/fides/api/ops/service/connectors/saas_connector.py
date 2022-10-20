@@ -197,7 +197,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if missing_dataset_reference_values:
             logger.info(
-                "The '%s' request of %s missing the following dataset reference values [%s], skipping traversal",
+                "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
                 self.collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
