@@ -3,7 +3,7 @@ dataset:
     name: Domo Dataset
     description: A sample dataset representing the Domo connector for Fidesops
     collections:
-      - name: users
+      - name: user
         fields:
           - name: id
             data_categories: [user.unique_id]

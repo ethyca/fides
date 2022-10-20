@@ -69,13 +69,13 @@ async def test_domo_access_request_task(
     )
 
     # verify we only returned data for our identity
-    assert v[f"{dataset_name}:users"][0]["email"] == domo_identity_email
+    assert v[f"{dataset_name}:user"][0]["email"] == domo_identity_email
 
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_domo
 @pytest.mark.asyncio
-async def test_domo_access_request_task(
+async def test_domo_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -88,7 +88,7 @@ async def test_domo_access_request_task(
     """Full access request based on the Domo SaaS config"""
     user_id = domo_create_erasure_data
     privacy_request = PrivacyRequest(
-        id=f"test_domo_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_domo_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity_kwargs = {"email": domo_erasure_identity_email}
     identity = Identity(**identity_kwargs)
@@ -107,16 +107,21 @@ async def test_domo_access_request_task(
         db,
     )
 
+    import pdb
+
+    pdb.set_trace()
+
     assert_rows_match(
-        v[f"{dataset_name}:users"],
+        v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
             "id",
             "title",
             "email",
+            "alternateEmail",
             "role",
+            "phone",
             "name",
-            "timezone",
             "roleId",
             "createdAt",
             "updatedAt",
@@ -124,7 +129,7 @@ async def test_domo_access_request_task(
     )
 
     # verify we only returned data for our identity
-    assert v[f"{dataset_name}:users"][0]["email"] == domo_erasure_identity_email
+    assert v[f"{dataset_name}:user"][0]["email"] == domo_erasure_identity_email
 
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
@@ -138,12 +143,13 @@ async def test_domo_access_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    assert x == {f"{dataset_name}:users": 1}
+    assert x == {f"{dataset_name}:user": 1}
     user_response = domo_test_client.get_user(user_id)
     user = user_response.json()
     assert user["title"] == "MASKED"
     assert user["name"] == "MASKED"
-    # assert user["email"] == "MASKED" email and alternate email
+    assert user["email"] == "MASKED"
+    assert user["alternate_email"] == "MASKED"
 
     # reset
     CONFIG.execution.masking_strict = masking_strict

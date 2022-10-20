@@ -6,6 +6,7 @@ import requests
 from faker import Faker
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
+from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
@@ -44,6 +45,16 @@ def domo_identity_email(saas_config):
 @pytest.fixture(scope="session")
 def domo_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
+@pytest.fixture(scope="session")
+def domo_token(domo_secrets) -> str:
+    body = {"grant_type": "client_credentials"}
+    url = f"https://{domo_secrets['domain']}/oauth/token"
+    response = requests.post(
+        url, body, auth=(domo_secrets["client_id"], domo_secrets["client_secret"])
+    )
+    return response.json()["access_token"]
 
 
 @pytest.fixture
@@ -109,15 +120,15 @@ def domo_dataset_config(
 
 
 class DomoTestClient:
-    def __init__(self, domo_connection_config: ConnectionConfig):
+    def __init__(self, domo_token, domo_connection_config: ConnectionConfig):
         self.domo_secrets = domo_connection_config.secrets
         self.headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.domo_secrets['access_token']}",
+            "Authorization": f"Bearer {domo_token}",
         }
         self.base_url = f"https://{self.domo_secrets['domain']}/v1"
 
-    def create_user(self, email_address: str) -> requests.Response:
+    def create_user(self, email_address: str) -> Response:
         # create a new user in Domo
         body = {
             "email": email_address,
@@ -127,32 +138,30 @@ class DomoTestClient:
             "title": "Software Engineer",
             "role": "Participant",  # (available roles are: 'Admin', 'Privileged', 'Participant')
         }
-        url = f"{self.base_url}/users/sendInvite=false"
-        user_response: requests.Response = requests.post(
+        url = f"{self.base_url}/users?sendInvite=false"
+        user_response: Response = requests.post(
             url=url, json=body, headers=self.headers
         )
         return user_response
 
-    def get_user(self, user_id: str) -> requests.Response:
+    def get_user(self, user_id: str) -> Response:
         # get user created for erasure purposes
         url = f"{self.base_url}/users/{user_id}"
-        user_response: requests.Response = requests.get(url=url, headers=self.headers)
+        user_response: Response = requests.get(url=url, headers=self.headers)
         return user_response
 
-    def delete_user(self, user_id) -> requests.Response:
+    def delete_user(self, user_id) -> Response:
         # delete user created for erasure purposes
         url = f"{self.base_url}/users/{user_id}"
-        user_response: requests.Response = requests.delete(
-            url=url, headers=self.headers
-        )
+        user_response: Response = requests.delete(url=url, headers=self.headers)
         return user_response
 
 
 @pytest.fixture(scope="function")
-def domo_test_client(
-    domo_connection_config: DomoTestClient,
-) -> Generator:
-    test_client = DomoTestClient(domo_connection_config=domo_connection_config)
+def domo_test_client(domo_connection_config: DomoTestClient, domo_token) -> Generator:
+    test_client = DomoTestClient(
+        domo_token, domo_connection_config=domo_connection_config
+    )
     yield test_client
 
 
@@ -179,10 +188,10 @@ def domo_create_erasure_data(
     user = user_response.json()
     user_id = user["id"]
 
-    error_message = f"user with user id [{user_id}] could not be added to domo"
+    error_message = f"user with user id [{user_id}] could not be added to Domo"
     poll_for_existence(
         _user_exists,
-        (domo_erasure_identity_email, domo_test_client),
+        (user_id, domo_test_client),
         error_message=error_message,
     )
     yield user_id
