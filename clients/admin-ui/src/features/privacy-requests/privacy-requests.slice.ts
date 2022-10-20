@@ -294,11 +294,16 @@ export const privacyRequestApi = createApi({
       }),
       providesTags: () => ["Request"],
       async onQueryStarted(_key, { dispatch, queryFulfilled, getState }) {
-        await queryFulfilled;
-        const state = getState() as RootState;
-        const { errorRequests } = selectRetryRequests(state);
-        if (errorRequests.length > 0) {
-          dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          throw new Error("An error occurred while loading Subject Requests");
+        } finally {
+          const state = getState() as RootState;
+          const { errorRequests } = selectRetryRequests(state);
+          if (errorRequests.length > 0) {
+            dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+          }
         }
       },
     }),

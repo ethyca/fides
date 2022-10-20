@@ -2,9 +2,13 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
+  AlertTitle,
   Box,
+  CloseButton,
   useToast,
 } from "@fidesui/react";
+import { CSSProperties } from "react";
+import { v4 as uuid } from "uuid";
 
 /**
  * Custom hook for toast notifications
@@ -18,16 +22,38 @@ export const useAlert = () => {
    * Display custom error toast notification
    * @param description
    */
-  const errorAlert = (description: string | JSX.Element) => {
+  const errorAlert = (
+    description: string | JSX.Element,
+    id: string = uuid(),
+    title?: string,
+    duration?: number | null | undefined,
+    containerStyle?: CSSProperties
+  ) => {
+    if (toast.isActive(id)) {
+      return;
+    }
     toast({
-      isClosable: true,
+      id,
+      containerStyle,
+      duration,
       position: DEFAULT_POSITION,
       render: () => (
         <Alert status="error">
           <AlertIcon />
           <Box>
+            {title && <AlertTitle>{title}</AlertTitle>}
             <AlertDescription>{description}</AlertDescription>
           </Box>
+          <CloseButton
+            alignSelf="flex-start"
+            size="sm"
+            position="relative"
+            right={-1}
+            top={-1}
+            onClick={() => {
+              toast.close(id);
+            }}
+          />
         </Alert>
       ),
     });
@@ -37,14 +63,38 @@ export const useAlert = () => {
    * Display custom success toast notification
    * @param description
    */
-  const successAlert = (description: string) => {
+  const successAlert = (
+    description: string,
+    id: string = uuid(),
+    title?: string,
+    duration?: number | null | undefined,
+    containerStyle?: CSSProperties
+  ) => {
+    if (toast.isActive(id)) {
+      return;
+    }
     toast({
-      isClosable: true,
+      id,
+      containerStyle,
+      duration,
       position: DEFAULT_POSITION,
       render: () => (
         <Alert status="success" variant="subtle">
           <AlertIcon />
-          {description}
+          <Box>
+            {title && <AlertTitle>{title}</AlertTitle>}
+            <AlertDescription>{description}</AlertDescription>
+          </Box>
+          <CloseButton
+            alignSelf="flex-start"
+            size="sm"
+            position="relative"
+            right={-1}
+            top={-1}
+            onClick={() => {
+              toast.close(id);
+            }}
+          />
         </Alert>
       ),
     });
