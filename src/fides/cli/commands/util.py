@@ -14,9 +14,14 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.ctl.core.deploy import check_docker_version
+from fides.ctl.core.demo import check_docker_version
 from fides.ctl.core.utils import echo_green
-from fides.ctl.core.deploy import start_application
+from fides.ctl.core.demo import (
+    start_application,
+    load_demo_resource,
+    teardown_application,
+    seed_example_data,
+)
 
 
 @click.command()
@@ -154,8 +159,16 @@ def demo(ctx: click.Context, load_only: bool) -> None:
     """
     # TODO: make sure that `init` gets run before the demo command spins up
 
-    initiate_example_data_loading()
+    if load_only:
+        initiate_example_data_loading()
+        load_demo_resource()
+        return
 
-    if not load_only:
+    try:
         check_docker_version()
         start_application()
+        seed_example_data()
+    except:
+        pass
+    finally:
+        teardown_application()

@@ -6,14 +6,22 @@ import shutil
 from os.path import dirname, join
 from typing import List
 
-REQUIRED_DOCKER_VERSION = "20.10.17"
+from fides.ctl.core.config import get_config
+from fides.ctl.core.push import push
+from fides.ctl.core.parse import parse
 
+CONFIG = get_config()
+REQUIRED_DOCKER_VERSION = "20.10.17"
 DOCKER_COMPOSE_FILE = join(
     dirname(__file__),
     "../../data",
     "fides-application.docker-compose.yml",
 )
 DOCKER_COMPOSE_COMMAND = f"docker compose -f {DOCKER_COMPOSE_FILE} "
+DEMO_RESOURCES_DIR = join(
+    dirname(__file__),
+    "../../data/demo_resources",
+)
 
 
 def check_for_env_file() -> None:
@@ -98,21 +106,29 @@ def check_docker_version() -> bool:
     return version_is_valid
 
 
+def load_demo_resource() -> None:
+    """Load ctl-related demo resources."""
+    taxonomy = parse(DEMO_RESOURCES_DIR)
+    push(
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.request_headers,
+    )
+
+
+def seed_example_data() -> None:
+    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides demo --load-only")
+
+
 def teardown_application() -> None:
     """Teardown all of the application containers for fides."""
-    run(DOCKER_COMPOSE_COMMAND + "down --remove-orphans")
+    run(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
-    # TODO: Teardown everything after the run
-    try:
-        run(
-            DOCKER_COMPOSE_COMMAND + "up",
-            shell=True,
-            check=True,
-        )
-    except:
-        pass
-    finally:
-        teardown_application()
+    run(
+        DOCKER_COMPOSE_COMMAND + "up",
+        shell=True,
+        check=True,
+    )

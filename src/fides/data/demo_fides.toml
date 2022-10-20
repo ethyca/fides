@@ -1,0 +1,33 @@
+[database]
+server = "fides-db"
+user = "postgres"
+password = "fides"
+port = "5432"
+db = "fides"
+test_db = "fides_test"
+
+[credentials]
+app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"}
+
+[logging]
+level = "INFO"
+
+[cli]
+server_host = "localhost"
+server_port = 8080
+
+[user]
+analytics_opt_out = false
+
+[redis]
+host = "redis"
+password = "testpassword"
+port = 6379
+charset = "utf8"
+default_ttl_seconds = 604800
+db_index = 0
+ssl = false
+ssl_cert_reqs = "required"
+
+[admin_ui]
+enabled = true
