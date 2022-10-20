@@ -1,11 +1,11 @@
 import logging
 from typing import Dict
 
-from setup.database_connector import (
+from .database_connector import (
     create_database_connector,
     update_database_connector_secrets,
 )
-from setup.dataset import create_dataset
+from .dataset import create_dataset
 
 from . import constants
 

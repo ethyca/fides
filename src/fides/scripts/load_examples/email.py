@@ -2,7 +2,7 @@ import logging
 from typing import Dict
 
 import requests
-from setup import get_secret
+from . import get_secret
 
 from fides.api.ops.api.v1 import urn_registry as urls
 
