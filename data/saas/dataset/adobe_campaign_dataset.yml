@@ -131,8 +131,7 @@ dataset:
               - name: stateCode
                 data_categories: [user.contact.address.state]
               - name: zipCode
-                data_categories:
-                  [user.contact.address.postal_code]
+                data_categories: [user.contact.address.postal_code]
           - name: middleName
             data_categories: [user.name]
           - name: mobilePhone
@@ -342,8 +341,7 @@ dataset:
               - name: stateCode
                 data_categories: [user.contact.address.state]
               - name: zipCode
-                data_categories:
-                  [user.contact.address.postal_code]
+                data_categories: [user.contact.address.postal_code]
           - name: middleName
             data_categories: [user.name]
           - name: minBroadLogEvents

@@ -45,6 +45,24 @@ def test_offset(response_with_body):
     )
 
 
+def test_offset_with_no_limit(response_with_body):
+    config = OffsetPaginationConfiguration(incremental_param="page", increment_by=1)
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"page": 1},
+    )
+    paginator = OffsetPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_body, "conversations"
+    )
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/conversations",
+        query_params={"page": 2},
+    )
+
+
 def test_offset_with_connector_param_reference(response_with_body):
     config = OffsetPaginationConfiguration(
         incremental_param="page",

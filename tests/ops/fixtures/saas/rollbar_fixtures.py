@@ -291,6 +291,7 @@ def rollbar_erasure_data(
         _item_exists,
         (project_tokens, rollbar_test_client),
         error_message=error_message,
+        interval=30,
     )
     yield item, project
 
