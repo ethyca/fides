@@ -3,10 +3,6 @@ from typing import Dict
 from . import load_example_secrets
 
 
-class SecretMissing(Exception):
-    """An exception to denote the omission of a required secret."""
-
-
 def get_secret(name: str) -> Dict[str, str]:
     """
     Checks to see if a secret is set at environment level

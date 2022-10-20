@@ -7,7 +7,6 @@ import toml
 from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fides
-from fides.scripts.load_examples.load_examples import initiate_example_data_loading
 from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_server,
@@ -18,7 +17,6 @@ from fides.ctl.core.demo import check_docker_version
 from fides.ctl.core.utils import echo_green
 from fides.ctl.core.demo import (
     start_application,
-    load_demo_resource,
     teardown_application,
     seed_example_data,
 )
@@ -148,21 +146,11 @@ def worker(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-@click.option(
-    "--load-only",
-    is_flag=True,
-    help="Loads example data without starting the application.",
-)
-def demo(ctx: click.Context, load_only: bool) -> None:
+def demo(ctx: click.Context) -> None:
     """
     Starts the application via docker compose.
     """
     # TODO: make sure that `init` gets run before the demo command spins up
-
-    if load_only:
-        initiate_example_data_loading()
-        load_demo_resource()
-        return
 
     try:
         check_docker_version()

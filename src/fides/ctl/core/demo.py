@@ -1,14 +1,9 @@
-import shutil
-from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
-import shutil
 from os.path import dirname, join
 from typing import List
 
 from fides.ctl.core.config import get_config
-from fides.ctl.core.push import push
-from fides.ctl.core.parse import parse
 
 CONFIG = get_config()
 REQUIRED_DOCKER_VERSION = "20.10.17"
@@ -18,21 +13,6 @@ DOCKER_COMPOSE_FILE = join(
     "fides-application.docker-compose.yml",
 )
 DOCKER_COMPOSE_COMMAND = f"docker compose -f {DOCKER_COMPOSE_FILE} "
-DEMO_RESOURCES_DIR = join(
-    dirname(__file__),
-    "../../data/demo_resources",
-)
-
-
-def check_for_env_file() -> None:
-    """Create a .env file if none exists."""
-    env_file_example = "example.env"
-    env_file = ".env"
-    if not isfile(env_file):
-        print(
-            f"Creating env file for local testing & development from {env_file_example}: {env_file}"
-        )
-        shutil.copy(env_file_example, env_file)
 
 
 def convert_semver_to_list(semver: str) -> List[int]:
@@ -106,18 +86,12 @@ def check_docker_version() -> bool:
     return version_is_valid
 
 
-def load_demo_resource() -> None:
-    """Load ctl-related demo resources."""
-    taxonomy = parse(DEMO_RESOURCES_DIR)
-    push(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.request_headers,
-    )
-
-
 def seed_example_data() -> None:
-    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides demo --load-only")
+    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/")
+    run(
+        DOCKER_COMPOSE_COMMAND
+        + "run --no-deps --rm fides python scripts/examples/load_examples.py"
+    )
 
 
 def teardown_application() -> None:

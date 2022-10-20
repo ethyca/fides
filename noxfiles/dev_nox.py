@@ -72,12 +72,12 @@ def test_env(session: nox.Session) -> None:
     session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
 
     session.log(
-        "Running example setup scripts for DSR Automation tests... (scripts/load_examples/load_examples.py)"
+        "Running example setup scripts for DSR Automation tests... (scripts/examples/load_examples.py)"
     )
     session.run(
         *RUN_NO_DEPS,
         "python",
-        "scripts/load_examples/load_examples.py",
+        "scripts/examples/load_examples.py",
         external=True,
     )
 

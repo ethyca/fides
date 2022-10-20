@@ -1,6 +1,6 @@
 services:
   fides:
-    image: ethyca/fides:dev
+    image: ethyca/fides:local
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -15,7 +15,6 @@ services:
         condition: service_started
     expose:
       - 8080
-    working_dir: /app
     environment:
       FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
       FIDES__CLI__SERVER_HOST: "fides"
@@ -48,8 +47,6 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    volumes:
-      - postgres:/var/lib/postgresql/data
     expose:
       - 5432
     ports:
@@ -83,12 +80,3 @@ services:
     environment:
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-    volumes:
-      - type: bind
-        source: ./.fides
-        target: /app/.fides
-        read_only: False
-      - /fides/src/fides.egg-info
-
-volumes:
-  postgres: null

@@ -5,7 +5,8 @@ data for DSR processing.
 This script is only designed to be run from the Nox session 'nox -s test_env'.
 """
 
-from . import constants, get_secret
+import constants
+from .get_secret import get_secret
 from .authentication import get_auth_header
 from .dsr_policy import create_dsr_policy, create_rule, create_rule_target
 from .email import create_email_integration
