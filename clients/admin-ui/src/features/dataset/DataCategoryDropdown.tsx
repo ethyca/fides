@@ -4,7 +4,6 @@ import {
   ButtonProps,
   Menu,
   MenuButton,
-  MenuButtonProps,
   MenuDivider,
   MenuItem,
   MenuList,
@@ -54,9 +53,13 @@ const DataCategoryDropdown = ({
 
   return (
     <Menu closeOnSelect>
+      {/* This ts-ignore is needed because the compiler doesn't recognize that under the hood the */}
+      {/* MenuButton component has been converted to a Button and is now using ButtonProps */}
+      {/* instead of MenuButtonProps. */}
+      {/* @ts-ignore */}
       <MenuButton
         as={Button}
-        {...(menuButtonProps as MenuButtonProps)}
+        {...menuButtonProps}
         data-testid="data-category-dropdown"
       >
         {label}
