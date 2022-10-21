@@ -9,6 +9,7 @@ saas_config:
     - name: domain
     - name: account_id
     - name: password
+    - name: page_size
 
   external_references:
     - name: user_id
@@ -37,56 +38,48 @@ saas_config:
             - name: sid
               references:
                 - user_id
-
-  # endpoints:
-  #   - name: users
-  #     requests:
-  #       read:
-  #         method: GET
-  #         path: /v1/users
-  #         postprocessors:
-  #           - strategy: filter
-  #             configuration:
-  #               field: email
-  #               value:
-  #                 identity: email
-
-
-
-
-    #       query_params:
-    #         - name: friendly_name
-    #           connector_param: friendly_name
-    # - name: user_conversations
-    #   requests:
-    #     read:
-    #       method: GET
-    #       path: /v1/Users/<user_id>/Conversations?PageSize=20
-    #       param_values:
-    #         - name: user_id
-    #           references:
-    #             - dataset: <instance_fides_key>
-    #               field: users.user_id
-    #               direction: from
-    # - name: conversation_messages
-    #   requests:
-    #     read:
-    #       method: GET
-    #       path: /v1/Conversations/{conversation_id}/Messages?PageSize=20
-    #       param_values:
-    #         - name: user_id
-    #           references:
-    #             - dataset: <instance_fides_key>
-    #               field: user_conversations.conversation_id
-    #               direction: from
-    # - name: conversation_participants
-    #   requests:
-    #     read:
-    #       method: GET
-    #       path: /v1/Conversations/{conversation_id}/Participants?PageSize=20
-    #       param_values:
-    #         - name: user_id
-    #           references:
-    #             - dataset: <instance_fides_key>
-    #               field: user_conversations.conversation_id
-    #               direction: from
+    - name: user_conversations
+      requests:
+        read:
+          method: GET
+          path: /v1/Users/<user_id>/Conversations
+          query_params:
+            - name: PageSize
+              value: <page_size>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: users.sid
+                  direction: from
+          data_path: conversations
+    - name: conversation_messages
+      requests:
+        read:
+          method: GET
+          path: /v1/Conversations/<conversation_id>/Messages
+          query_params:
+            - name: PageSize
+              value: <page_size>
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user_conversations.conversation_sid
+                  direction: from
+          data_path: messages
+    - name: conversation_participants
+      requests:
+        read:
+          method: GET
+          path: /v1/Conversations/<conversation_id>/Participants
+          query_params:
+            - name: PageSize
+              value: <page_size>
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user_conversations.conversation_sid
+                  direction: from
+          data_path: participants

@@ -25,11 +25,11 @@ def test_twilio_connection_test(twilio_connection_config) -> None:
 async def test_twilio_access_request_task(
     db,
     policy,
-    twilio_connection_config,	
-    twilio_dataset_config,	
-    twilio_identity_email,	
-    connection_config,	
-    twilio_postgres_dataset_config,	
+    twilio_connection_config,
+    twilio_dataset_config,
+    twilio_identity_email,
+    connection_config,
+    twilio_postgres_dataset_config,
     twilio_postgres_db,
 ) -> None:
     """Full access request based on the Twilio SaaS config"""
@@ -53,4 +53,85 @@ async def test_twilio_access_request_task(
         [twilio_connection_config, connection_config],
         {"email": twilio_identity_email},
         db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:users"],
+        min_size=1,
+        keys=[
+            "is_notifiable",
+            "date_updated",
+            "is_online",
+            "friendly_name",
+            "account_sid",
+            "url",
+            "date_created",
+            "role_sid",
+            "sid",
+            "identity",
+            "chat_service_sid",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user_conversations"],
+        min_size=1,
+        keys=[
+            "notification_level",
+            "unique_name",
+            "user_sid",
+            "friendly_name",
+            "conversation_sid",
+            "unread_messages_count",
+            "created_by",
+            "account_sid",
+            "last_read_message_index",
+            "date_created",
+            "timers",
+            "url",
+            "date_updated",
+            "attributes",
+            "participant_sid",
+            "conversation_state",
+            "chat_service_sid",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:conversation_messages"],
+        min_size=1,
+        keys=[
+            "body",
+            "index",
+            "author",
+            "date_updated",
+            "media",
+            "participant_sid",
+            "conversation_sid",
+            "account_sid",
+            "delivery",
+            "url",
+            "date_created",
+            "sid",
+            "attributes",
+        ],
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:conversation_participants"],
+        min_size=1,
+        keys=[
+            "last_read_message_index",
+            "date_updated",
+            "last_read_timestamp",
+            "conversation_sid",
+            "account_sid",
+            "url",
+            "date_created",
+            "role_sid",
+            "sid",
+            "attributes",
+            "identity",
+            "messaging_binding",
+        ],
     )

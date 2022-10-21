@@ -4,4 +4,4 @@ CREATE TABLE public.twilio_users (
 );
 
 INSERT INTO public.twilio_users VALUES
-('test@example.com', 'USa71692845d04414f84ace6687c39e507')
+('test@example.com', 'US6f651b2beabf49c88ff68b32b98958f1')
