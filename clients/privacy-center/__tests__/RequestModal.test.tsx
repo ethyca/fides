@@ -157,11 +157,6 @@ describe("RequestModal", () => {
     });
 
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request was successful, please await further instructions."
-    );
-    expect(notification).toBeInTheDocument();
   });
 
   it("handles form submission failure with an appropriate alert", async () => {
@@ -200,10 +195,5 @@ describe("RequestModal", () => {
     });
 
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request has failed. Please try again."
-    );
-    expect(notification).toBeInTheDocument();
   });
 });
