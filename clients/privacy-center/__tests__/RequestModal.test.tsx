@@ -193,7 +193,5 @@ describe("RequestModal", () => {
     act(() => {
       userEvent.click(screen.getByText("Continue"));
     });
-
-    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
   });
 });
