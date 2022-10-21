@@ -15,6 +15,12 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.4...main)
+
+### Fixed
+
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...main)
 
 ### Deprecated
