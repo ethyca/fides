@@ -37,10 +37,6 @@ export const userManagementSlice = createSlice({
   name: "userManagement",
   initialState,
   reducers: {
-    assignToken: (state, action: PayloadAction<string>) => ({
-      ...state,
-      token: action.payload,
-    }),
     setUsernameSearch: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
