@@ -12,21 +12,21 @@ import {
   Stack,
   Text,
   VStack,
+  useToast,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
+import { ErrorToastOptions } from "~/common/toast-options";
 
 import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../types/AlertState";
-import { ModalViews, VerificationType } from "./types";
-import { addCommonHeaders } from "../../common/CommonHeaders";
-import { useLocalStorage } from "../../common/hooks";
+import { addCommonHeaders } from "~/common/CommonHeaders";
+import { useLocalStorage } from "~/common/hooks";
 
-import { hostUrl } from "../../constants";
+import { hostUrl } from "~/constants";
+import { ModalViews, VerificationType } from "./types";
 
 const useVerificationForm = ({
   onClose,
-  setAlert,
   requestId,
   setCurrentView,
   resetView,
@@ -34,7 +34,6 @@ const useVerificationForm = ({
   successHandler,
 }: {
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   requestId: string;
   setCurrentView: (view: ModalViews) => void;
   resetView: ModalViews;
@@ -42,6 +41,7 @@ const useVerificationForm = ({
   successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
     "verificationCode",
@@ -62,12 +62,17 @@ const useVerificationForm = ({
         code: values.code,
       };
 
-      const handleError = (detail: string | undefined) => {
-        const fallbackMessage =
-          "An error occured while verifying your request.";
-        setAlert({
-          status: "error",
-          description: detail || fallbackMessage,
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: any;
+      }) => {
+        toast({
+          title,
+          description: error.detail,
+          ...ErrorToastOptions,
         });
         onClose();
       };
@@ -86,13 +91,19 @@ const useVerificationForm = ({
         const data = await response.json();
 
         if (!response.ok) {
-          handleError(data?.detail);
+          handleError({
+            title: "An error occurred while verifying your identity",
+            error: data,
+          });
           return;
         }
         setVerificationCode(values.code);
         successHandler();
       } catch (error) {
-        handleError("");
+        handleError({
+          title:
+            "An unhandled exception occurred while verifying your identity",
+        });
       }
     },
     validate: (values) => {
@@ -118,7 +129,6 @@ const useVerificationForm = ({
 type VerificationFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   requestId: string;
   setCurrentView: (view: ModalViews) => void;
   resetView: ModalViews;
@@ -129,7 +139,6 @@ type VerificationFormProps = {
 const VerificationForm: React.FC<VerificationFormProps> = ({
   isOpen,
   onClose,
-  setAlert,
   requestId,
   setCurrentView,
   resetView,
@@ -149,7 +158,6 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
     resetVerificationProcess,
   } = useVerificationForm({
     onClose,
-    setAlert,
     requestId,
     setCurrentView,
     resetView,
