@@ -69,7 +69,23 @@ services:
     ports:
       - "0.0.0.0:6379:6379"
 
-  mongodb:
+  postgres-test:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres_example"
+
+  mongodb-test:
     image: mongo:5.0.3
     environment:
       - MONGO_INITDB_DATABASE=mongo_test

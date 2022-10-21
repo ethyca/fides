@@ -2,7 +2,6 @@
 Default constants to use when generating example data via load_examples.py
 """
 
-from unittest.mock import DEFAULT
 from fides.api.ctl.database.seed import (
     DEFAULT_ACCESS_POLICY,
     DEFAULT_ACCESS_POLICY_RULE,
@@ -28,17 +27,17 @@ LOCAL_STORAGE_KEY = DEFAULT_STORAGE_KEY
 S3_STORAGE_KEY = "s3_storage"
 S3_STORAGE_BUCKET = "fides-test-privacy-requests"
 
-MONGO_SERVER = "mongodb"
+MONGO_SERVER = "mongodb-test"
 MONGO_USER = "mongo_user"
 MONGO_PASSWORD = "mongo_pass"
 MONGO_PORT = 27017
 MONGO_DB = "mongo_test"
 
-POSTGRES_SERVER = "fides-db"
+POSTGRES_SERVER = "postgres-test"
 POSTGRES_USER = "postgres"
-POSTGRES_PASSWORD = "fides"
+POSTGRES_PASSWORD = "postgres"
 POSTGRES_PORT = 5432
-POSTGRES_DB_NAME = "fides"
+POSTGRES_DB_NAME = "postgres_example"
 
 ROOT_CLIENT_ID = "fidesadmin"
 ROOT_CLIENT_SECRET = "fidesadminsecret"
