@@ -37,10 +37,9 @@ export const useAlert = () => {
             <AlertDescription>{description}</AlertDescription>
           </Box>
           <CloseButton
-            alignSelf="flex-start"
             onClick={onClose}
             position="relative"
-            right={-1}
+            right={0}
             size="sm"
             top={-1}
           />
@@ -69,10 +68,9 @@ export const useAlert = () => {
             <AlertDescription>{description}</AlertDescription>
           </Box>
           <CloseButton
-            alignSelf="flex-start"
             onClick={onClose}
             position="relative"
-            right={-1}
+            right={0}
             size="sm"
             top={-1}
           />
