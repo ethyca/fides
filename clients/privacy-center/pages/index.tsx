@@ -11,27 +11,30 @@ import {
   AlertDescription,
   CloseButton,
   Image,
+  useToast,
 } from "@fidesui/react";
+import { UseToastOptions } from "@chakra-ui/react";
 
 import {
   usePrivactRequestModal,
   PrivacyRequestModal,
-} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import {
   useConsentRequestModal,
   ConsentRequestModal,
-} from "../components/modals/consent-request-modal/ConsentRequestModal";
+} from "~/components/modals/consent-request-modal/ConsentRequestModal";
+import type { AlertState } from "~/types/AlertState";
+import { hostUrl } from "~/constants";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
-import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
-import { hostUrl } from "../constants";
 
 const Home: NextPage = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
+  const toast = useToast();
   const {
     isOpen: isPrivacyModalOpen,
     onClose: onPrivacyModalClose,
@@ -64,22 +67,34 @@ const Home: NextPage = () => {
   }, [alert]);
 
   useEffect(() => {
+    const toastOptions: UseToastOptions = {
+      title: "An error occurred while retrieving the Privacy Center Config",
+      status: "error",
+      duration: 5000,
+    };
     const getConfig = async () => {
       try {
-        const response = await fetch(`${hostUrl}/id-verification/config`, {
+        const response = await fetch(`${hostUrl}/id-verification/config/`, {
           headers: {
             "X-Fides-Source": "fidesops-privacy-center",
           },
         });
         const data = await response.json();
+        if (!response.ok) {
+          if (data.detail) {
+            toastOptions.description = data.detail;
+          }
+          toast(toastOptions);
+        }
         setIsVerificationRequired(data.identity_verification_required);
       } catch (e) {
+        toast(toastOptions);
         // eslint-disable-next-line no-console
         console.error(e);
       }
     };
     getConfig();
-  }, [setIsVerificationRequired]);
+  }, [setIsVerificationRequired, toast]);
 
   const content: any = [];
 
