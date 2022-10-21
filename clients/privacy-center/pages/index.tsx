@@ -13,7 +13,7 @@ import {
   Image,
   useToast,
 } from "@fidesui/react";
-import { UseToastOptions } from "@chakra-ui/react";
+import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
   usePrivactRequestModal,
@@ -67,11 +67,6 @@ const Home: NextPage = () => {
   }, [alert]);
 
   useEffect(() => {
-    const toastOptions: UseToastOptions = {
-      title: "An error occurred while retrieving the Privacy Center Config",
-      status: "error",
-      duration: 5000,
-    };
     const getConfig = async () => {
       try {
         const response = await fetch(`${hostUrl}/id-verification/config/`, {
@@ -81,14 +76,14 @@ const Home: NextPage = () => {
         });
         const data = await response.json();
         if (!response.ok) {
-          if (data.detail) {
-            toastOptions.description = data.detail;
-          }
-          toast(toastOptions);
+          toast({
+            description: data.detail,
+            ...ConfigErrorToastOptions,
+          });
         }
         setIsVerificationRequired(data.identity_verification_required);
       } catch (e) {
-        toast(toastOptions);
+        toast(ConfigErrorToastOptions);
         // eslint-disable-next-line no-console
         console.error(e);
       }
