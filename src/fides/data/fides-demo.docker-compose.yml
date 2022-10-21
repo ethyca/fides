@@ -77,9 +77,9 @@ services:
       timeout: 5s
       retries: 5
     expose:
-      - 5432
+      - 6432
     ports:
-      - "5432:5432"
+      - "0.0.0.0:6432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
