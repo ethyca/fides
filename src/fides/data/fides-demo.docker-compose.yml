@@ -14,9 +14,9 @@ services:
       worker:
         condition: service_started
       postgres-test:
-        condition: healthy
+        condition: service_healthy
       mongodb-test:
-        condition: healthy
+        condition: service_started
     expose:
       - 8080
     environment:
