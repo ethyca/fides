@@ -8,8 +8,8 @@ import {
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 
-import { useAlert, useAPIHelper } from "../../common/hooks";
 import {
   selectRetryRequests,
   setRetryRequests,
