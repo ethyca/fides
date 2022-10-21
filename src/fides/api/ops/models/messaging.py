@@ -14,12 +14,14 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.ops.common_exceptions import EmailDispatchException
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.schemas.email.email import (
-    SUPPORTED_EMAIL_SERVICE_SECRETS,
+from fides.api.ops.schemas.messaging.messaging import (
+    SUPPORTED_MESSAGING_SERVICE_SECRETS,
     EmailServiceSecretsMailgun,
-    EmailServiceType,
+    MessagingServiceType,
 )
-from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
+    possible_email_secrets,
+)
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
 
@@ -28,16 +30,16 @@ logger = logging.getLogger(__name__)
 
 
 def get_schema_for_secrets(
-    service_type: EmailServiceType,
+    service_type: MessagingServiceType,
     secrets: possible_email_secrets,
-) -> SUPPORTED_EMAIL_SERVICE_SECRETS:
+) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
     for validation purposes.
     """
     try:
         schema = {
-            EmailServiceType.MAILGUN: EmailServiceSecretsMailgun,
+            MessagingServiceType.MAILGUN: EmailServiceSecretsMailgun,
         }[service_type]
     except KeyError:
         raise ValueError(
@@ -53,12 +55,14 @@ def get_schema_for_secrets(
         raise ValueError(errors)
 
 
-class EmailConfig(Base):
-    """The DB ORM model for EmailConfig"""
+class MessagingConfig(Base):
+    """The DB ORM model for MessagingConfig"""
 
     key = Column(String, index=True, unique=True, nullable=False)
     name = Column(String, unique=True, index=True)
-    service_type = Column(Enum(EmailServiceType), index=True, nullable=False)
+    service_type = Column(
+        Enum(MessagingServiceType), index=True, unique=True, nullable=False
+    )
     details = Column(MutableDict.as_mutable(JSONB), nullable=False)
     secrets = Column(
         MutableDict.as_mutable(

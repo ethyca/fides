@@ -42,9 +42,9 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.email.email import (
+from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    EmailActionType,
+    MessagingActionType,
 )
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
@@ -448,7 +448,7 @@ def initiate_privacy_request_completion_email(
         # synchronous for now since failure to send complete emails is fatal to request
         dispatch_email(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_email=identity_data.get(ProvidedIdentityType.email.value),
             email_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
@@ -457,7 +457,7 @@ def initiate_privacy_request_completion_email(
     if policy.get_rules_for_action(action_type=ActionType.erasure):
         dispatch_email(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_email=identity_data.get(ProvidedIdentityType.email.value),
             email_body_params=None,
         )

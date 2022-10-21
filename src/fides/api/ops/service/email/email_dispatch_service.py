@@ -8,16 +8,16 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import EmailDispatchException
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
-from fides.api.ops.schemas.email.email import (
+from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    EmailActionType,
-    EmailForActionType,
-    EmailServiceDetails,
-    EmailServiceSecrets,
-    EmailServiceType,
-    FidesopsEmail,
+    FidesopsMessaging,
+    MessagingActionType,
+    MessagingForActionType,
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
@@ -37,7 +37,7 @@ def dispatch_email_task(
     """
     A wrapper function to dispatch an email task into the Celery queues
     """
-    schema = FidesopsEmail.parse_obj(email_meta)
+    schema = FidesopsMessaging.parse_obj(email_meta)
     with self.session as db:
         dispatch_email(
             db,
@@ -49,7 +49,7 @@ def dispatch_email_task(
 
 def dispatch_email(
     db: Session,
-    action_type: EmailActionType,
+    action_type: MessagingActionType,
     to_email: Optional[str],
     email_body_params: Optional[
         Union[
@@ -69,13 +69,13 @@ def dispatch_email(
         raise EmailDispatchException("No email supplied.")
 
     logger.info("Retrieving email config")
-    email_config: EmailConfig = EmailConfig.get_configuration(db=db)
+    email_config: MessagingConfig = MessagingConfig.get_configuration(db=db)
     logger.info("Building appropriate email template for action type: %s", action_type)
-    email: EmailForActionType = _build_email(
+    email: MessagingForActionType = _build_email(
         action_type=action_type,
         body_params=email_body_params,
     )
-    email_service: EmailServiceType = email_config.service_type  # type: ignore
+    email_service: MessagingServiceType = email_config.service_type  # type: ignore
     logger.info(
         "Retrieving appropriate dispatcher for email service: %s", email_service
     )
@@ -91,12 +91,12 @@ def dispatch_email(
 
 
 def _build_email(  # pylint: disable=too-many-return-statements
-    action_type: EmailActionType,
+    action_type: MessagingActionType,
     body_params: Any,
-) -> EmailForActionType:
-    if action_type == EmailActionType.CONSENT_REQUEST:
+) -> MessagingForActionType:
+    if action_type == MessagingActionType.CONSENT_REQUEST:
         template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your one-time code",
             body=template.render(
                 {
@@ -105,9 +105,9 @@ def _build_email(  # pylint: disable=too-many-return-statements
                 }
             ),
         )
-    if action_type == EmailActionType.SUBJECT_IDENTITY_VERIFICATION:
+    if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your one-time code",
             body=template.render(
                 {
@@ -116,23 +116,23 @@ def _build_email(  # pylint: disable=too-many-return-statements
                 }
             ),
         )
-    if action_type == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT:
+    if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Data erasure request",
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
             ),
         )
-    if action_type == EmailActionType.PRIVACY_REQUEST_RECEIPT:
+    if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your request has been received",
             body=base_template.render({"request_types": body_params.request_types}),
         )
-    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your data is ready to be downloaded",
             body=base_template.render(
                 {
@@ -140,21 +140,21 @@ def _build_email(  # pylint: disable=too-many-return-statements
                 }
             ),
         )
-    if action_type == EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your data has been deleted",
             body=base_template.render(),
         )
-    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your request has been approved",
             body=base_template.render(),
         )
-    if action_type == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY:
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
         base_template = get_email_template(action_type)
-        return EmailForActionType(
+        return MessagingForActionType(
             subject="Your request has been denied",
             body=base_template.render(
                 {"rejection_reason": body_params.rejection_reason}
@@ -164,23 +164,23 @@ def _build_email(  # pylint: disable=too-many-return-statements
     raise EmailDispatchException(f"Email action type {action_type} is not implemented")
 
 
-def _get_dispatcher_from_config_type(email_service_type: EmailServiceType) -> Any:
+def _get_dispatcher_from_config_type(email_service_type: MessagingServiceType) -> Any:
     """Determines which dispatcher to use based on email service type"""
     return {
-        EmailServiceType.MAILGUN.value: _mailgun_dispatcher,
+        MessagingServiceType.MAILGUN.value: _mailgun_dispatcher,
     }[email_service_type.value]
 
 
 def _mailgun_dispatcher(
-    email_config: EmailConfig, email: EmailForActionType, to_email: str
+    email_config: MessagingConfig, email: MessagingForActionType, to_email: str
 ) -> None:
     """Dispatches email using mailgun"""
     base_url = (
         "https://api.mailgun.net"
-        if email_config.details[EmailServiceDetails.IS_EU_DOMAIN.value] is False
+        if email_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
         else "https://api.eu.mailgun.net"
     )
-    domain = email_config.details[EmailServiceDetails.DOMAIN.value]
+    domain = email_config.details[MessagingServiceDetails.DOMAIN.value]
     data = {
         "from": f"<mailgun@{domain}>",
         "to": [to_email],
@@ -189,10 +189,10 @@ def _mailgun_dispatcher(
     }
     try:
         response: requests.Response = requests.post(
-            f"{base_url}/{email_config.details[EmailServiceDetails.API_VERSION.value]}/{domain}/messages",
+            f"{base_url}/{email_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
             auth=(
                 "api",
-                email_config.secrets[EmailServiceSecrets.MAILGUN_API_KEY.value],  # type: ignore
+                email_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],  # type: ignore
             ),
             data=data,
         )

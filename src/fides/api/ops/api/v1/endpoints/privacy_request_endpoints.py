@@ -92,13 +92,13 @@ from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fides.api.ops.schemas.email.email import (
-    EmailActionType,
-    FidesopsEmail,
+from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.ops.schemas.messaging.messaging import (
+    FidesopsMessaging,
+    MessagingActionType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
 )
-from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -314,8 +314,8 @@ def _send_privacy_request_receipt_email_to_user(
     dispatch_email_task.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+            "email_meta": FidesopsMessaging(
+                action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
             "to_email": email,
@@ -1098,7 +1098,7 @@ def review_privacy_request(
 
 
 def _send_privacy_request_review_email_to_user(
-    action_type: EmailActionType,
+    action_type: MessagingActionType,
     email: Optional[str],
     rejection_reason: Optional[str],
 ) -> None:
@@ -1112,12 +1112,12 @@ def _send_privacy_request_review_email_to_user(
     dispatch_email_task.apply_async(
         queue=EMAIL_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
+            "email_meta": FidesopsMessaging(
                 action_type=action_type,
                 body_params=RequestReviewDenyBodyParams(
                     rejection_reason=rejection_reason
                 )
-                if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
             "to_email": email,
@@ -1211,7 +1211,7 @@ def approve_privacy_request(
         )
         if CONFIG.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                 email=privacy_request.get_cached_identity_data().get(
                     ProvidedIdentityType.email.value
                 ),
@@ -1263,7 +1263,7 @@ def deny_privacy_request(
         )
         if CONFIG.notifications.send_request_review_notification:
             _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 email=privacy_request.get_cached_identity_data().get(
                     ProvidedIdentityType.email.value
                 ),

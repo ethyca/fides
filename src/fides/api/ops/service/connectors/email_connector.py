@@ -23,7 +23,7 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
 )
 from fides.api.ops.schemas.connection_configuration import EmailSchema
-from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
 from fides.api.ops.service.email.email_dispatch_service import dispatch_email
@@ -58,7 +58,7 @@ class EmailConnector(BaseConnector[None]):
             # synchronous for now since failure to send is considered a connection test failure
             dispatch_email(
                 db=db,
-                action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+                action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 to_email=config.test_email,
                 email_body_params=[
                     CheckpointActionRequired(
@@ -196,7 +196,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
 
         dispatch_email(
             db,
-            action_type=EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT,
+            action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
             to_email=cc.secrets.get("to_email"),
             email_body_params=template_values,
         )

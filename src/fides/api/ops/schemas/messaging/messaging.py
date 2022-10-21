@@ -8,20 +8,22 @@ from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
-class EmailServiceType(Enum):
-    """Enum for email service type"""
+class MessagingServiceType(Enum):
+    """Enum for message service type"""
 
     # may support twilio or google in the future
     MAILGUN = "mailgun"
+    TWILIO_TEXT = "twilio_text"
+    TWILIO_EMAIL = "twilio_email"
 
 
-class EmailActionType(str, Enum):
-    """Enum for email action type"""
+class MessagingActionType(str, Enum):
+    """Enum for message action type"""
 
     # verify email upon acct creation
     CONSENT_REQUEST = "consent_request"
     SUBJECT_IDENTITY_VERIFICATION = "subject_identity_verification"
-    EMAIL_ERASURE_REQUEST_FULFILLMENT = "email_erasure_fulfillment"
+    MESSAGE_ERASURE_REQUEST_FULFILLMENT = "message_fulfillment"
     PRIVACY_REQUEST_RECEIPT = "privacy_request_receipt"
     PRIVACY_REQUEST_COMPLETE_ACCESS = "privacy_request_complete_access"
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
@@ -29,14 +31,14 @@ class EmailActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
 
 
-class EmailTemplateBodyParams(Enum):
-    """Enum for all possible email template body params"""
+class MessagingTemplateBodyParams(Enum):
+    """Enum for all possible message template body params"""
 
     VERIFICATION_CODE = "verification_code"
 
 
 class SubjectIdentityVerificationBodyParams(BaseModel):
-    """Body params required for subject identity verification email template"""
+    """Body params required for subject identity verification message template"""
 
     verification_code: str
     verification_code_ttl_seconds: int
@@ -49,31 +51,31 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 
 
 class RequestReceiptBodyParams(BaseModel):
-    """Body params required for privacy request receipt email template"""
+    """Body params required for privacy request receipt message template"""
 
     request_types: List[str]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
-    """Body params required for privacy request completion access email template"""
+    """Body params required for privacy request completion access message template"""
 
     download_links: List[str]
 
 
 class RequestReviewDenyBodyParams(BaseModel):
-    """Body params required for privacy request review deny email template"""
+    """Body params required for privacy request review deny message template"""
 
     rejection_reason: Optional[str]
 
 
-class FidesopsEmail(
+class FidesopsMessaging(
     BaseModel,
     smart_union=True,
     arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
 
-    action_type: EmailActionType
+    action_type: MessagingActionType
     body_params: Optional[
         Union[
             SubjectIdentityVerificationBodyParams,
@@ -85,14 +87,14 @@ class FidesopsEmail(
     ]
 
 
-class EmailForActionType(BaseModel):
+class MessagingForActionType(BaseModel):
     """Email details that depend on action type"""
 
     subject: str
     body: str
 
 
-class EmailServiceDetails(Enum):
+class MessagingServiceDetails(Enum):
     """Enum for email service details"""
 
     # mailgun-specific
@@ -114,11 +116,16 @@ class EmailServiceDetailsMailgun(BaseModel):
         extra = Extra.forbid
 
 
-class EmailServiceSecrets(Enum):
-    """Enum for email service secrets"""
+class MessagingServiceSecrets(Enum):
+    """Enum for message service secrets"""
 
     # mailgun-specific
     MAILGUN_API_KEY = "mailgun_api_key"
+
+    # twilio
+    TWILIO_ACCOUNT_SID = "twilio_account_sid"
+    TWILIO_AUTH_TOKEN = "twilio_auth_token"
+    TWILIO_MESSAGING_SERVICE_ID = "twilio_messaging_service_id"
 
 
 class EmailServiceSecretsMailgun(BaseModel):
@@ -132,47 +139,60 @@ class EmailServiceSecretsMailgun(BaseModel):
         extra = Extra.forbid
 
 
-class EmailConfigRequest(BaseModel):
-    """Email Config Request Schema"""
+class MessagingServiceSecretsTwilio(BaseModel):
+    """The secrets requred to connect to twilio email."""
+
+    account_sid: str
+    auth_token: str
+    messaging_service_id: str
+
+    class Config:
+        """Restrict adding other fields trhough this schema."""
+
+        extra = Extra.forbid
+
+
+class MessagingConfigRequest(BaseModel):
+    """Messaging Config Request Schema"""
 
     name: str
     key: Optional[FidesOpsKey]
-    service_type: EmailServiceType
-    details: Union[
-        EmailServiceDetailsMailgun,
-    ]
+    service_type: MessagingServiceType
+    details: Union[EmailServiceDetailsMailgun]
 
     class Config:
         use_enum_values = False
         orm_mode = True
 
 
-class EmailConfigResponse(BaseModel):
-    """Email Config Response Schema"""
+class MessagingConfigResponse(BaseModel):
+    """Messaging Config Response Schema"""
 
     name: str
     key: FidesOpsKey
-    service_type: EmailServiceType
-    details: Dict[EmailServiceDetails, Any]
+    service_type: MessagingServiceType
+    details: Dict[MessagingServiceDetails, Any]
 
     class Config:
         orm_mode = True
         use_enum_values = True
 
 
-SUPPORTED_EMAIL_SERVICE_SECRETS = Union[EmailServiceSecretsMailgun]
+SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
+    EmailServiceSecretsMailgun, MessagingServiceSecretsTwilio
+]
 
 
-class EmailConnectionTestStatus(Enum):
-    """Enum for supplying statuses of validating credentials for an Email Config"""
+class MessagingConnectionTestStatus(Enum):
+    """Enum for supplying statuses of validating credentials for an Messaging Config"""
 
     succeeded = "succeeded"
     failed = "failed"
     skipped = "skipped"
 
 
-class TestEmailStatusMessage(Msg):
-    """A schema for checking status of email config."""
+class TestMessagingStatusMessage(Msg):
+    """A schema for checking status of message config."""
 
-    test_status: Optional[EmailConnectionTestStatus] = None
+    test_status: Optional[MessagingConnectionTestStatus] = None
     failure_reason: Optional[str] = None

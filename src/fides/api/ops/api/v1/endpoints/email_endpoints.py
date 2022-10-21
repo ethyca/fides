@@ -32,13 +32,15 @@ from fides.api.ops.common_exceptions import (
     EmailConfigAlreadyExistsException,
     EmailConfigNotFoundException,
 )
-from fides.api.ops.models.email import EmailConfig, get_schema_for_secrets
-from fides.api.ops.schemas.email.email import (
-    EmailConfigRequest,
-    EmailConfigResponse,
-    TestEmailStatusMessage,
+from fides.api.ops.models.messaging import MessagingConfig, get_schema_for_secrets
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingConfigRequest,
+    MessagingConfigResponse,
+    TestMessagingStatusMessage,
 )
-from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
+    possible_email_secrets,
+)
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.email.email_crud_service import (
     create_email_config,
@@ -58,15 +60,15 @@ logger = logging.getLogger(__name__)
     EMAIL_CONFIG,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_CREATE_OR_UPDATE])],
-    response_model=EmailConfigResponse,
+    response_model=MessagingConfigResponse,
 )
 def post_config(
     *,
     db: Session = Depends(deps.get_db),
-    email_config: EmailConfigRequest,
-) -> EmailConfigResponse:
+    email_config: MessagingConfigRequest,
+) -> MessagingConfigResponse:
     """
-    Given an email config, create corresponding EmailConfig object, provided no config already exists
+    Given an email config, create corresponding MessagingConfig object, provided no config already exists
     """
 
     try:
@@ -88,14 +90,14 @@ def post_config(
 @router.patch(
     EMAIL_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_CREATE_OR_UPDATE])],
-    response_model=EmailConfigResponse,
+    response_model=MessagingConfigResponse,
 )
 def patch_config_by_key(
     config_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
-    email_config: EmailConfigRequest,
-) -> Optional[EmailConfigResponse]:
+    email_config: MessagingConfigRequest,
+) -> Optional[MessagingConfigResponse]:
     """
     Updates config for email by key, provided config with key can be found.
     """
@@ -122,19 +124,19 @@ def patch_config_by_key(
     EMAIL_SECRETS,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_CREATE_OR_UPDATE])],
-    response_model=TestEmailStatusMessage,
+    response_model=TestMessagingStatusMessage,
 )
 def put_config_secrets(
     config_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_email_secrets: possible_email_secrets,
-) -> TestEmailStatusMessage:
+) -> TestMessagingStatusMessage:
     """
     Add or update secrets for email config.
     """
     logger.info("Finding email config with key '%s'", config_key)
-    email_config = EmailConfig.get_by(db=db, field="key", value=config_key)
+    email_config = MessagingConfig.get_by(db=db, field="key", value=config_key)
     if not email_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -166,36 +168,37 @@ def put_config_secrets(
             detail=exc.args[0],
         )
 
-    msg = f"Secrets updated for EmailConfig with key: {config_key}."
+    msg = f"Secrets updated for MessagingConfig with key: {config_key}."
     # todo- implement test status for email service
-    return TestEmailStatusMessage(msg=msg, test_status=None)
+    return TestMessagingStatusMessage(msg=msg, test_status=None)
 
 
 @router.get(
     EMAIL_CONFIG,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_READ])],
-    response_model=Page[EmailConfigResponse],
+    response_model=Page[MessagingConfigResponse],
 )
 def get_configs(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
-) -> AbstractPage[EmailConfig]:
+) -> AbstractPage[MessagingConfig]:
     """
     Retrieves configs for email.
     """
     logger.info("Finding all email configurations with pagination params %s", params)
     return paginate(
-        EmailConfig.query(db=db).order_by(EmailConfig.created_at.desc()), params=params
+        MessagingConfig.query(db=db).order_by(MessagingConfig.created_at.desc()),
+        params=params,
     )
 
 
 @router.get(
     EMAIL_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[EMAIL_READ])],
-    response_model=EmailConfigResponse,
+    response_model=MessagingConfigResponse,
 )
 def get_config_by_key(
     config_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
-) -> EmailConfigResponse:
+) -> MessagingConfigResponse:
     """
     Retrieves configs for email by key.
     """

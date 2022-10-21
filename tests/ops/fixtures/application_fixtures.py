@@ -23,7 +23,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import (
     ActionType,
     Policy,
@@ -34,7 +34,7 @@ from fides.api.ops.models.policy import (
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.models.storage import ResponseFormat, StorageConfig
-from fides.api.ops.schemas.email.email import (
+from fides.api.ops.schemas.messaging.messaging import (
     EmailServiceDetails,
     EmailServiceSecrets,
     EmailServiceType,
@@ -185,7 +185,7 @@ def storage_config_onetrust(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def email_config(db: Session) -> Generator:
     name = str(uuid4())
-    email_config = EmailConfig.create(
+    email_config = MessagingConfig.create(
         db=db,
         data={
             "name": name,
