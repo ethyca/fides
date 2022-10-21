@@ -1,13 +1,11 @@
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/router";
+import { useLocalStorage } from "~/common/hooks";
 import RequestModal from "../RequestModal";
-
-import type { AlertState } from "../../../types/AlertState";
 
 import { ModalViews, VerificationType } from "../types";
 import ConsentRequestForm from "./ConsentRequestForm";
 import VerificationForm from "../VerificationForm";
-import { useLocalStorage } from "../../../common/hooks";
 
 export const useConsentRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,7 +48,6 @@ export const useConsentRequestModal = () => {
 export type ConsentRequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   currentView: ModalViews;
   setCurrentView: (view: ModalViews) => void;
   consentRequestId: string;
@@ -62,7 +59,6 @@ export type ConsentRequestModalProps = {
 export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
   isOpen,
   onClose,
-  setAlert,
   currentView,
   setCurrentView,
   consentRequestId,
@@ -77,7 +73,6 @@ export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
       <ConsentRequestForm
         isOpen={isOpen}
         onClose={onClose}
-        setAlert={setAlert}
         setCurrentView={setCurrentView}
         setConsentRequestId={setConsentRequestId}
         isVerificationRequired={isVerificationRequired}
@@ -91,7 +86,6 @@ export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
       <VerificationForm
         isOpen={isOpen}
         onClose={onClose}
-        setAlert={setAlert}
         requestId={consentRequestId}
         setCurrentView={setCurrentView}
         resetView={ModalViews.ConsentRequest}

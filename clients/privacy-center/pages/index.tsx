@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import {
-  Flex,
-  Heading,
-  Text,
-  Stack,
-  Alert,
-  AlertIcon,
-  AlertDescription,
-  CloseButton,
-  Image,
-  useToast,
-} from "@fidesui/react";
+import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
@@ -23,7 +12,6 @@ import {
   useConsentRequestModal,
   ConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import type { AlertState } from "~/types/AlertState";
 import { hostUrl } from "~/constants";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
@@ -31,7 +19,6 @@ import ConsentCard from "../components/ConsentCard";
 import config from "../config/config.json";
 
 const Home: NextPage = () => {
-  const [alert, setAlert] = useState<AlertState | null>(null);
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const toast = useToast();
@@ -57,14 +44,6 @@ const Home: NextPage = () => {
     setConsentRequestId,
     successHandler: consentModalSuccessHandler,
   } = useConsentRequestModal();
-
-  useEffect(() => {
-    if (alert?.status) {
-      const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
-      return () => clearTimeout(closeAlertTimer);
-    }
-    return () => false;
-  }, [alert]);
 
   useEffect(() => {
     const getConfig = async () => {
@@ -127,23 +106,6 @@ const Home: NextPage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          {alert ? (
-            <Alert
-              status={alert.status}
-              minHeight={14}
-              maxWidth="5xl"
-              zIndex={1}
-              position="absolute"
-            >
-              <AlertIcon />
-              <AlertDescription>{alert.description}</AlertDescription>
-              <CloseButton
-                position="absolute"
-                right="8px"
-                onClick={() => setAlert(null)}
-              />
-            </Alert>
-          ) : null}
           <Image
             src={config.logo_path}
             height="56px"
@@ -182,7 +144,6 @@ const Home: NextPage = () => {
           isOpen={isPrivacyModalOpen}
           onClose={onPrivacyModalClose}
           openAction={openAction}
-          setAlert={setAlert}
           currentView={currentPrivacyModalView}
           setCurrentView={setCurrentPrivacyModalView}
           privacyRequestId={privacyRequestId}
@@ -194,7 +155,6 @@ const Home: NextPage = () => {
         <ConsentRequestModal
           isOpen={isConsentModalOpen}
           onClose={onConsentModalClose}
-          setAlert={setAlert}
           currentView={currentConsentModalView}
           setCurrentView={setCurrentConsentModalView}
           consentRequestId={consentRequestId}
