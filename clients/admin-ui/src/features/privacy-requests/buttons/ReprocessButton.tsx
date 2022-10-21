@@ -1,10 +1,4 @@
-import {
-  Button,
-  ButtonProps,
-  forwardRef,
-  ListItem,
-  UnorderedList,
-} from "@fidesui/react";
+import { Box, Button, ButtonProps, forwardRef, Text } from "@fidesui/react";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -34,63 +28,60 @@ const ReprocessButton = forwardRef(
     const [bulkRetry] = useBulkRetryMutation();
     const [retry] = useRetryMutation();
 
-    const handleBulkReprocessClick = () => {
+    const handleBulkReprocessClick = async () => {
       setIsReprocessing(true);
-      bulkRetry(errorRequests!)
-        .unwrap()
-        .then((response) => {
-          if (response.failed.length > 0) {
-            errorAlert(
-              <UnorderedList fontSize="sm" mt="8px">
-                {response.failed.map((f, index) => (
-                  <ListItem
-                    key={f.data.privacy_request_id}
-                    mt={index === 0 ? 0 : "8px"}
-                  >
-                    <b>Request Id:</b> {f.data.privacy_request_id}
-                    <br />
-                    <b>Message:</b> {f.message}
-                  </ListItem>
-                ))}
-              </UnorderedList>,
-              undefined,
-              `DSR automation has failed for the following request(s):`,
-              null,
-              {
-                maxWidth: "max-content",
-              }
-            );
-          }
-          if (response.succeeded.length > 0) {
-            successAlert(`Data subject request(s) are now being reprocessed.`);
-          }
-        })
-        .catch((error) => {
-          dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+      try {
+        const payload = await bulkRetry(errorRequests).unwrap();
+        if (payload.failed.length > 0) {
           errorAlert(
-            error,
+            <Box>
+              DSR automation has failed for{" "}
+              <Text as="span" fontWeight="semibold">
+                {payload.failed.length}
+              </Text>{" "}
+              subject request(s). Please review the event log for further
+              details.
+            </Box>,
             undefined,
-            `DSR batch automation has failed due to the following:`
+            { containerStyle: { maxWidth: "max-content" }, duration: null }
           );
-        })
-        .finally(() => {
-          setIsReprocessing(false);
-        });
+        }
+        if (payload.succeeded.length > 0) {
+          successAlert(`Data subject request(s) are now being reprocessed.`);
+        }
+      } catch (error) {
+        dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+        errorAlert(
+          error as string,
+          `DSR batch automation has failed due to the following:`,
+          { duration: null }
+        );
+      } finally {
+        setIsReprocessing(false);
+      }
     };
 
-    const handleSingleReprocessClick = () => {
+    const handleSingleReprocessClick = async () => {
+      if (!subjectRequest) {
+        return;
+      }
       setIsReprocessing(true);
-      retry(subjectRequest!)
-        .unwrap()
-        .then(() => {
-          successAlert(`Data subject request is now being reprocessed.`);
-        })
-        .catch((error) => {
-          handleError(error);
-        })
-        .finally(() => {
-          setIsReprocessing(false);
-        });
+      try {
+        await retry(subjectRequest).unwrap();
+        successAlert(`Data subject request is now being reprocessed.`);
+      } catch (error) {
+        errorAlert(
+          <Box>
+            DSR automation has failed for this subject request. Please review
+            the event log for further details.
+          </Box>,
+          undefined,
+          { containerStyle: { maxWidth: "max-content" }, duration: null }
+        );
+        handleError(error);
+      } finally {
+        setIsReprocessing(false);
+      }
     };
 
     return (

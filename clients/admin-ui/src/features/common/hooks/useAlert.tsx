@@ -6,9 +6,8 @@ import {
   Box,
   CloseButton,
   useToast,
+  UseToastOptions,
 } from "@fidesui/react";
-import { CSSProperties } from "react";
-import { v4 as uuid } from "uuid";
 
 /**
  * Custom hook for toast notifications
@@ -24,20 +23,13 @@ export const useAlert = () => {
    */
   const errorAlert = (
     description: string | JSX.Element,
-    id: string = uuid(),
     title?: string,
-    duration?: number | null | undefined,
-    containerStyle?: CSSProperties
+    options?: UseToastOptions
   ) => {
-    if (toast.isActive(id)) {
-      return;
-    }
     toast({
-      id,
-      containerStyle,
-      duration,
-      position: DEFAULT_POSITION,
-      render: () => (
+      ...options,
+      position: options?.position || DEFAULT_POSITION,
+      render: ({ onClose }) => (
         <Alert status="error">
           <AlertIcon />
           <Box>
@@ -46,13 +38,11 @@ export const useAlert = () => {
           </Box>
           <CloseButton
             alignSelf="flex-start"
-            size="sm"
+            onClick={onClose}
             position="relative"
             right={-1}
+            size="sm"
             top={-1}
-            onClick={() => {
-              toast.close(id);
-            }}
           />
         </Alert>
       ),
@@ -65,20 +55,13 @@ export const useAlert = () => {
    */
   const successAlert = (
     description: string,
-    id: string = uuid(),
     title?: string,
-    duration?: number | null | undefined,
-    containerStyle?: CSSProperties
+    options?: UseToastOptions
   ) => {
-    if (toast.isActive(id)) {
-      return;
-    }
     toast({
-      id,
-      containerStyle,
-      duration,
-      position: DEFAULT_POSITION,
-      render: () => (
+      ...options,
+      position: options?.position || DEFAULT_POSITION,
+      render: ({ onClose }) => (
         <Alert status="success" variant="subtle">
           <AlertIcon />
           <Box>
@@ -87,13 +70,11 @@ export const useAlert = () => {
           </Box>
           <CloseButton
             alignSelf="flex-start"
-            size="sm"
+            onClick={onClose}
             position="relative"
             right={-1}
+            size="sm"
             top={-1}
-            onClick={() => {
-              toast.close(id);
-            }}
           />
         </Alert>
       ),

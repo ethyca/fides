@@ -159,7 +159,7 @@ const RequestRow: React.FC<{
         <Checkbox
           aria-label="Select request"
           isChecked={!!isChecked}
-          pointerEvents={request.status === "error" ? "auto" : "none"}
+          isDisabled={request.status !== "error"}
           onChange={(e) => onCheckChange(request.id, e.target.checked)}
         />
       </Td>
