@@ -46,9 +46,8 @@ const useRequestTable = () => {
     if (checked) {
       list = [...errorRequests, id];
     } else {
-      list = [...errorRequests];
-      const index = list.findIndex((value) => value === id);
-      list.splice(index, 1);
+      errorRequests.filter(value => value !== id)
+      list = [...errorRequests.filter((value) => value !== id)];
     }
     dispatch(
       setRetryRequests({

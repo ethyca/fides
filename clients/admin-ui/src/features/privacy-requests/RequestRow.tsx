@@ -229,67 +229,58 @@ const RequestRow: React.FC<{
           shadow="base"
           borderRadius="md"
         >
-          {(() => {
-            switch (request.status) {
-              case "error":
-                return (
-                  <ReprocessButton
-                    buttonProps={{ mr: "-px", size: "xs" }}
-                    subjectRequest={request}
-                  />
-                );
-              case "pending":
-                return (
-                  <>
-                    <Button
-                      size="xs"
-                      mr="-px"
-                      bg="white"
-                      onClick={handleApproveRequest}
-                      isLoading={approveRequestResult.isLoading}
-                      _loading={{
-                        opacity: 1,
-                        div: { opacity: 0.4 },
-                      }}
-                      _hover={{
-                        bg: "gray.100",
-                      }}
-                      ref={hoverButtonRef}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="xs"
-                      mr="-px"
-                      bg="white"
-                      onClick={handleModalOpen}
-                      _loading={{
-                        opacity: 1,
-                        div: { opacity: 0.4 },
-                      }}
-                      _hover={{
-                        bg: "gray.100",
-                      }}
-                    >
-                      Deny
-                    </Button>
-                    <DenyPrivacyRequestModal
-                      isOpen={modalOpen}
-                      isLoading={denyRequestResult.isLoading}
-                      handleMenuClose={handleModalClose}
-                      handleDenyRequest={handleDenyRequest}
-                      denialReason={denialReason}
-                      onChange={(e) => {
-                        setDenialReason(e.target.value);
-                      }}
-                    />
-                  </>
-                );
-              default:
-                return null;
-            }
-          })()}
-          {/* Hamburger menu */}
+          {request.status === "error" && (
+            <ReprocessButton
+              buttonProps={{ mr: "-px", size: "xs" }}
+              subjectRequest={request}
+            />
+          )}
+          {request.status === "pending" && (
+            <>
+              <Button
+                size="xs"
+                mr="-px"
+                bg="white"
+                onClick={handleApproveRequest}
+                isLoading={approveRequestResult.isLoading}
+                _loading={{
+                  opacity: 1,
+                  div: { opacity: 0.4 },
+                }}
+                _hover={{
+                  bg: "gray.100",
+                }}
+                ref={hoverButtonRef}
+              >
+                Approve
+              </Button>
+              <Button
+                size="xs"
+                mr="-px"
+                bg="white"
+                onClick={handleModalOpen}
+                _loading={{
+                  opacity: 1,
+                  div: { opacity: 0.4 },
+                }}
+                _hover={{
+                  bg: "gray.100",
+                }}
+              >
+                Deny
+              </Button>
+              <DenyPrivacyRequestModal
+                isOpen={modalOpen}
+                isLoading={denyRequestResult.isLoading}
+                handleMenuClose={handleModalClose}
+                handleDenyRequest={handleDenyRequest}
+                denialReason={denialReason}
+                onChange={(e) => {
+                  setDenialReason(e.target.value);
+                }}
+              />
+            </>
+          )}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}
