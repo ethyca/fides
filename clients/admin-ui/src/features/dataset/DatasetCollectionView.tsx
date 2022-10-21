@@ -71,7 +71,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   useEffect(() => {
     if (dataset) {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
-      dispatch(setActiveCollectionIndex(0));
     }
   }, [dispatch, dataset]);
 
