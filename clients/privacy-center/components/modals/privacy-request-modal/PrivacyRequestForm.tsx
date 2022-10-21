@@ -75,7 +75,7 @@ const usePrivacyRequestForm = ({
       }) => {
         toast({
           title,
-          description: error.detail,
+          description: error,
           ...ErrorToastOptions,
         });
         onClose();
@@ -94,7 +94,7 @@ const usePrivacyRequestForm = ({
         if (!response.ok) {
           handleError({
             title: "An error occurred while creating your privacy request",
-            error: data,
+            error: data?.detail,
           });
           return;
         }

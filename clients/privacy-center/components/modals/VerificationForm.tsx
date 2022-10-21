@@ -71,7 +71,7 @@ const useVerificationForm = ({
       }) => {
         toast({
           title,
-          description: error.detail,
+          description: error,
           ...ErrorToastOptions,
         });
         onClose();
@@ -93,7 +93,7 @@ const useVerificationForm = ({
         if (!response.ok) {
           handleError({
             title: "An error occurred while verifying your identity",
-            error: data,
+            error: data?.detail,
           });
           return;
         }

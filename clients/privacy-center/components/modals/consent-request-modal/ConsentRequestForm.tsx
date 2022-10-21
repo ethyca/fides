@@ -57,7 +57,7 @@ const useConsentRequestForm = ({
       }) => {
         toast({
           title,
-          description: error.detail,
+          description: error,
           ...ErrorToastOptions,
         });
         onClose();
@@ -79,7 +79,7 @@ const useConsentRequestForm = ({
         if (!response.ok) {
           handleError({
             title: "An error occurred while creating your consent request",
-            error: data.detail,
+            error: data?.detail,
           });
           return;
         }
