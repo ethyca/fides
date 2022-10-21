@@ -25,6 +25,6 @@ def test_celery_default_config() -> None:
 
 
 def test_celery_config_override() -> None:
-    celery_app = _create_celery(config_path="data/config/celery.toml")
+    celery_app = _create_celery(config_path="data/config/celery.override.toml")
     assert celery_app.conf["event_queue_prefix"] == "overridden_fidesops_worker"
     assert celery_app.conf["task_default_queue"] == "overridden_fidesops"
