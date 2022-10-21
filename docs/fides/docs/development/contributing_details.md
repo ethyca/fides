@@ -125,7 +125,7 @@ The project uses `pdb` for debugging as a `dev-requirement`. You can set breakpo
 
 Occasionally when developing you'll run into issues where it's beneficial to remove all existing Docker instances in order to recreate them based on some updated spec. Some commands to do this are below:
 
-- Stop all running containers: `docker-compose down`
+- Stop all running containers: `docker compose down`
 - Delete all local containers: `docker rm -f $(docker ps -a -q)`
 - Delete all local Docker volumes: `docker volume rm $(docker volume ls -q)`
 - Remove temp. files, installed dependencies, all local Docker containers and all local Docker volumes: `nox -s clean`

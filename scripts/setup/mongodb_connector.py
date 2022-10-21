@@ -1,13 +1,12 @@
 import logging
 from typing import Dict
 
-import requests
-import setup.constants as constants
-from setup.database_connector import (
+from . import constants
+from .database_connector import (
     create_database_connector,
     update_database_connector_secrets,
 )
-from setup.dataset import create_dataset
+from .dataset import create_dataset
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +27,7 @@ def create_mongodb_connector(
         key=key,
         secrets={
             "host": constants.MONGO_SERVER,
-            "port": constants.MONGO_PORT,
+            "port": str(constants.MONGO_PORT),
             "defaultauthdb": constants.MONGO_DB,
             "username": constants.MONGO_USER,
             "password": constants.MONGO_PASSWORD,

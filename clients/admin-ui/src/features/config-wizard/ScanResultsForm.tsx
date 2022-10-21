@@ -13,13 +13,15 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
 } from "@fidesui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
+import WarningModal from "../common/WarningModal";
 import {
   changeStep,
   chooseSystemsForReview,
@@ -42,6 +44,8 @@ const ValidationSchema = Yup.object().shape({
 const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
 
   const initialValues: FormValues = useMemo(
     () => ({
@@ -51,7 +55,17 @@ const ScanResultsForm = () => {
   );
 
   const handleSubmit = (values: FormValues) => {
-    dispatch(chooseSystemsForReview(values.selectedKeys));
+    if (systems.length > values.selectedKeys.length) {
+      setSelectedKeyValues(values.selectedKeys);
+      onOpen();
+    } else {
+      dispatch(chooseSystemsForReview(values.selectedKeys));
+      dispatch(changeStep());
+    }
+  };
+
+  const confirmRegisterSelectedSystems = () => {
+    dispatch(chooseSystemsForReview(selectedKeyValues));
     dispatch(changeStep());
   };
 
@@ -61,6 +75,14 @@ const ScanResultsForm = () => {
 
   // TODO: Store the region the user submitted through the form.
   const region = "the specified region";
+
+  const warningMessage = (
+    <Text color="gray.500" mb={3}>
+      You’re registering {selectedKeyValues.length} of {systems.length} systems
+      available. Do you want to continue with registration or cancel and
+      register all systems now?
+    </Text>
+  );
 
   return (
     <Box maxW="full">
@@ -123,7 +145,10 @@ const ScanResultsForm = () => {
                     </Thead>
                     <Tbody>
                       {systems.map((system) => (
-                        <Tr key={system.fides_key}>
+                        <Tr
+                          key={system.fides_key}
+                          data-testid={`scan-result-row-${system.fides_key}`}
+                        >
                           <Td>
                             <Field
                               type="checkbox"
@@ -134,6 +159,7 @@ const ScanResultsForm = () => {
                                 <Checkbox
                                   {...field}
                                   isChecked={field.checked}
+                                  data-testid="checkbox"
                                 />
                               )}
                             </Field>
@@ -170,7 +196,12 @@ const ScanResultsForm = () => {
                   <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={!isValid}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isDisabled={!isValid}
+                    data-testid="register-btn"
+                  >
                     Register selected systems
                   </Button>
                 </HStack>
@@ -179,6 +210,13 @@ const ScanResultsForm = () => {
           );
         }}
       </Formik>
+      <WarningModal
+        title="Warning"
+        message={warningMessage}
+        handleConfirm={confirmRegisterSelectedSystems}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </Box>
   );
 };

@@ -186,6 +186,7 @@ markers = [
     "integration_stripe",
     "integration_hubspot",
     "integration_datadog",
+    "integration_domo",
     "integration_doordash",
     "integration_segment",
     "integration_sendgrid",
@@ -195,8 +196,8 @@ markers = [
     "integration_outreach",
     "integration_salesforce",
     "integration_twilio",
-    "integration_logi_id",
     "integration_adobe_campaign",
+    "integration_firebase_auth",
     "unit_saas"
 ]
 asyncio_mode = "auto"

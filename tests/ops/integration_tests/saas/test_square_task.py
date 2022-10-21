@@ -1,5 +1,6 @@
 import logging
 import random
+from time import sleep
 
 import pytest
 
@@ -208,6 +209,9 @@ async def test_square_erasure_request_task(
         f"{dataset_name}:orders": 0,
         f"{dataset_name}:locations": 0,
     }
+
+    sleep(30)  # wait for update to propagate on Square's side
+
     customer_response = square_test_client.get_customer(square_erasure_identity_email)
     customer = customer_response.json()
     customer = customer["customers"][0]

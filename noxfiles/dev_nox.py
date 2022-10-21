@@ -1,17 +1,21 @@
 """Contains the nox sessions for running development environments."""
 import nox
 
-from constants_nox import COMPOSE_SERVICE_NAME, RUN, START_APP
+from constants_nox import (
+    COMPOSE_SERVICE_NAME,
+    RUN,
+    RUN_NO_DEPS,
+    START_APP,
+    START_APP_EXTERNAL,
+)
 from docker_nox import build
+from utils_nox import COMPOSE_DOWN_VOLUMES
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
-from utils_nox import check_docker_compose_version, check_docker_version
 
 
 @nox.session()
 def dev(session: nox.Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
-    check_docker_compose_version(session)
-    check_docker_version(session)
 
     build(session, "dev")
     session.notify("teardown")
@@ -21,11 +25,11 @@ def dev(session: nox.Session) -> None:
     ] or None
 
     if "ui" in session.posargs:
-        build(session, "ui")
+        build(session, "admin_ui")
         session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
 
     if "pc" in session.posargs:
-        build(session, "pc")
+        build(session, "privacy_center")
         session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
 
     open_shell = "shell" in session.posargs
@@ -43,35 +47,90 @@ def dev(session: nox.Session) -> None:
 
 
 @nox.session()
+def test_env(session: nox.Session) -> None:
+    """Spins up a comprehensive test environment seeded with data."""
+
+    # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
+    test_env_vars = {
+        "FIDES__CONFIG_PATH": "/fides/data/config/fides.test_env.toml",
+    }
+
+    session.log(
+        "Tearing down existing containers & volumes to prepare test environment..."
+    )
+    try:
+        session.run(*COMPOSE_DOWN_VOLUMES, external=True, env=test_env_vars)
+    except nox.command.CommandFailed:
+        session.error(
+            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other nox sessions and try again"
+        )
+    session.notify("teardown", posargs=["volumes"])
+
+    session.log("Building images...")
+    build(session, "dev")
+    build(session, "admin_ui")
+    build(session, "privacy_center")
+
+    session.log(
+        "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
+    )
+    session.run(
+        *START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True, env=test_env_vars
+    )
+
+    session.log(
+        "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
+    )
+    session.run(
+        *RUN_NO_DEPS,
+        "python",
+        "/fides/scripts/load_examples.py",
+        external=True,
+        env=test_env_vars,
+    )
+
+    session.log(
+        "Pushing example resources for Data Mapping tests... (demo_resources/*)"
+    )
+    session.run(
+        *RUN_NO_DEPS,
+        "fides",
+        "push",
+        "demo_resources/",
+        external=True,
+        env=test_env_vars,
+    )
+
+    session.log("****************************************")
+    session.log("*                                      *")
+    session.log("*        FIDES TEST ENVIRONMENT        *")
+    session.log("*                                      *")
+    session.log("****************************************")
+    session.log("")
+    # Print out some helpful tips for using the test_env!
+    # NOTE: These constants are defined in scripts/setup/constants.py, docker-compose.yml, and docker-compose.integration-tests.yml
+    session.log(
+        "Using secrets set in '.env' for example setup scripts (see 'example.env' for options)"
+    )
+    session.log(
+        "Fides Admin UI running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+    )
+    session.log(
+        "Fides Privacy Center running at http://localhost:3001 (user: 'jane@example.com')"
+    )
+    session.log(
+        "Example Postgres Database running at localhost:6432 (user: 'postgres', pass: 'postgres', db: 'postgres_example')"
+    )
+    session.log(
+        "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
+    )
+    session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
+    session.run(*RUN_NO_DEPS, "/bin/bash", external=True, env=test_env_vars)
+
+
+@nox.session()
 def quickstart(session: nox.Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
-
-
-@nox.session()
-@nox.parametrize(
-    "script_name",
-    [
-        nox.param("load_examples", id="load_examples"),
-    ],
-)
-def run_script(session: nox.Session, script_name: str) -> None:
-    """
-    Run a script from the scripts/ directory. This command will not run
-    the server automatically.
-    """
-    posargs = session.posargs
-    if script_name in posargs:
-        posargs.remove(script_name)
-    session.run(
-        "docker",
-        "compose",
-        "run",
-        *posargs,
-        COMPOSE_SERVICE_NAME,
-        "python",
-        f"/fides/scripts/{script_name}.py",
-        external=True,
-    )

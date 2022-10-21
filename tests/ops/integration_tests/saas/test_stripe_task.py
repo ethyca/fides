@@ -1085,6 +1085,7 @@ async def test_stripe_erasure_request_task(
     )
 
     # Run erasure with masking_strict = False so both update and delete actions can be used
+    masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False
 
     x = await graph_task.run_erasure(
@@ -1184,4 +1185,4 @@ async def test_stripe_erasure_request_task(
     assert subscriptions == []
 
     # reset
-    CONFIG.execution.masking_strict = True
+    CONFIG.execution.masking_strict = masking_strict
