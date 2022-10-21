@@ -6,21 +6,21 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
-    EMAIL_CREATE_OR_UPDATE,
-    EMAIL_DELETE,
-    EMAIL_READ,
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
 )
 from fides.api.ops.api.v1.urn_registry import (
-    EMAIL_BY_KEY,
-    EMAIL_CONFIG,
-    EMAIL_SECRETS,
+    MESSAGING_BY_KEY,
+    MESSAGING_CONFIG,
+    MESSAGING_SECRETS,
     V1_URL_PREFIX,
 )
-from fides.api.ops.models.email import EmailConfig
-from fides.api.ops.schemas.email.email import (
-    EmailServiceDetails,
-    EmailServiceSecrets,
-    EmailServiceType,
+from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
 )
 
 PAGE_SIZE = Params().size
@@ -29,14 +29,14 @@ PAGE_SIZE = Params().size
 class TestPostEmailConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + EMAIL_CONFIG
+        return V1_URL_PREFIX + MESSAGING_CONFIG
 
     @pytest.fixture(scope="function")
     def payload(self):
         return {
             "name": "mailgun",
-            "service_type": EmailServiceType.MAILGUN.value,
-            "details": {EmailServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
     def test_post_email_config_not_authenticated(
@@ -52,7 +52,7 @@ class TestPostEmailConfig:
         url,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
@@ -66,7 +66,7 @@ class TestPostEmailConfig:
     ):
         payload["details"] = {"invalid": "invalid"}
 
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert json.loads(response.text)["detail"][0]["msg"] == "field required"
@@ -85,7 +85,7 @@ class TestPostEmailConfig:
     ):
         payload["service_type"] = "twilio"
 
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -101,14 +101,14 @@ class TestPostEmailConfig:
         url,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
         response_body = json.loads(response.text)
 
         assert response_body["key"] == "mailgun"
-        email_config = db.query(EmailConfig).filter_by(key="mailgun")[0]
+        email_config = db.query(MessagingConfig).filter_by(key="mailgun")[0]
         email_config.delete(db)
 
     def test_post_email_config_with_invalid_key(
@@ -120,7 +120,7 @@ class TestPostEmailConfig:
         generate_auth_header,
     ):
         payload["key"] = "*invalid-key"
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
@@ -136,23 +136,23 @@ class TestPostEmailConfig:
         url,
         generate_auth_header,
     ):
-        payload["key"] = "my_email_config"
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        payload["key"] = "my_mailgun_messaging_config"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(EmailConfig).filter_by(key="my_email_config")[0]
+        email_config = db.query(MessagingConfig).filter_by(key="my_mailgun_messaging_config")[0]
 
         expected_response = {
-            "key": "my_email_config",
+            "key": "my_mailgun_messaging_config",
             "name": "mailgun",
-            "service_type": EmailServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.MAILGUN.value,
             "details": {
-                EmailServiceDetails.API_VERSION.value: "v3",
-                EmailServiceDetails.DOMAIN.value: "my.mailgun.domain",
-                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         }
         assert expected_response == response_body
@@ -164,14 +164,14 @@ class TestPostEmailConfig:
         url,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(
             url,
             headers=auth_header,
             json={
-                "key": "my_email_config",
+                "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
-                "service_type": EmailServiceType.MAILGUN.value,
+                "service_type": MessagingServiceType.MAILGUN.value,
                 "details": {
                     # "domain": "my.mailgun.domain"
                 },
@@ -186,38 +186,40 @@ class TestPostEmailConfig:
         self,
         api_client: TestClient,
         url,
-        email_config,
+        messaging_config,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(
             url,
             headers=auth_header,
             json={
-                "key": "my_email_config",
+                "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
-                "service_type": EmailServiceType.MAILGUN.value,
-                "details": {EmailServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+                "service_type": MessagingServiceType.MAILGUN.value,
+                "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
             },
         )
         assert response.status_code == 400
         assert response.json() == {
-            "detail": "Only one email config is supported at a time. Config with key my_email_config is already configured."
-        }
+            "detail": "Only one messaging config is supported at a time. Config with key my_mailgun_messaging_config is already configured."
+        }  # fixme- what's the error here?
 
 
 class TestPatchEmailConfig:
     @pytest.fixture(scope="function")
-    def url(self, email_config) -> str:
-        return (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key=email_config.key)
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
+            config_key=messaging_config.key
+        )
 
     @pytest.fixture(scope="function")
     def payload(self):
         return {
-            "key": "my_email_config",
+            "key": "my_mailgun_messaging_config",
             "name": "mailgun new name",
-            "service_type": EmailServiceType.MAILGUN.value,
-            "details": {EmailServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+            "service_type": MessagingServiceType.MAILGUN.value,
+            "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
     def test_patch_email_config_not_authenticated(
@@ -233,7 +235,7 @@ class TestPatchEmailConfig:
         url,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
@@ -242,16 +244,16 @@ class TestPatchEmailConfig:
         db: Session,
         api_client: TestClient,
         payload,
-        email_config,
+        messaging_config,
         generate_auth_header,
     ):
-        url = (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key="nonexistent_key")
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="nonexistent_key")
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 404
         assert response.json() == {
-            "detail": "No email config found with key nonexistent_key"
+            "detail": "No messaging config found with key nonexistent_key"
         }
 
     def test_patch_email_config_with_key(
@@ -262,22 +264,22 @@ class TestPatchEmailConfig:
         url,
         generate_auth_header,
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(EmailConfig).filter_by(key="my_email_config")[0]
+        email_config = db.query(MessagingConfig).filter_by(key="my_mailgun_messaging_config")[0]
 
         expected_response = {
-            "key": "my_email_config",
+            "key": "my_mailgun_messaging_config",
             "name": "mailgun new name",
-            "service_type": EmailServiceType.MAILGUN.value,
+            "service_type": MessagingServiceType.MAILGUN.value,
             "details": {
-                EmailServiceDetails.API_VERSION.value: "v3",
-                EmailServiceDetails.DOMAIN.value: "my.mailgun.domain",
-                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         }
         assert expected_response == response_body
@@ -286,13 +288,15 @@ class TestPatchEmailConfig:
 
 class TestPutEmailConfigSecretsMailgun:
     @pytest.fixture(scope="function")
-    def url(self, email_config) -> str:
-        return (V1_URL_PREFIX + EMAIL_SECRETS).format(config_key=email_config.key)
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config.key
+        )
 
     @pytest.fixture(scope="function")
     def payload(self):
         return {
-            EmailServiceSecrets.MAILGUN_API_KEY.value: "1345234524",
+            MessagingServiceSecrets.MAILGUN_API_KEY.value: "1345234524",
         }
 
     def test_put_config_secrets_unauthenticated(
@@ -304,22 +308,22 @@ class TestPutEmailConfigSecretsMailgun:
     def test_put_config_secrets_wrong_scope(
         self, api_client: TestClient, payload, url, generate_auth_header
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
     def test_put_config_secret_invalid_config(
         self, api_client: TestClient, payload, generate_auth_header
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
-        url = (V1_URL_PREFIX + EMAIL_SECRETS).format(config_key="invalid_key")
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_SECRETS).format(config_key="invalid_key")
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
     def test_update_with_invalid_secrets_key(
         self, api_client: TestClient, generate_auth_header, url
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
         assert response.status_code == 400
@@ -337,21 +341,21 @@ class TestPutEmailConfigSecretsMailgun:
         payload,
         url,
         generate_auth_header,
-        email_config,
+        messaging_config,
     ):
-        auth_header = generate_auth_header([EMAIL_CREATE_OR_UPDATE])
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
 
-        db.refresh(email_config)
+        db.refresh(messaging_config)
 
         assert json.loads(response.text) == {
-            "msg": "Secrets updated for EmailConfig with key: my_email_config.",
+            "msg": "Secrets updated for MessagingConfig with key: my_mailgun_messaging_config.",
             "test_status": None,
             "failure_reason": None,
         }
         assert (
-            email_config.secrets[EmailServiceSecrets.MAILGUN_API_KEY.value]
+            messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value]
             == "1345234524"
         )
 
@@ -359,7 +363,7 @@ class TestPutEmailConfigSecretsMailgun:
 class TestGetEmailConfigs:
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + EMAIL_CONFIG
+        return V1_URL_PREFIX + MESSAGING_CONFIG
 
     def test_get_configs_not_authenticated(self, api_client: TestClient, url) -> None:
         response = api_client.get(url)
@@ -368,27 +372,27 @@ class TestGetEmailConfigs:
     def test_get_configs_wrong_scope(
         self, api_client: TestClient, url, generate_auth_header
     ) -> None:
-        auth_header = generate_auth_header([EMAIL_DELETE])
+        auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
     def test_get_configs(
-        self, db, api_client: TestClient, url, generate_auth_header, email_config
+        self, db, api_client: TestClient, url, generate_auth_header, messaging_config
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
 
         expected_response = {
             "items": [
                 {
-                    "key": "my_email_config",
-                    "name": email_config.name,
-                    "service_type": EmailServiceType.MAILGUN.value,
+                    "key": "my_mailgun_messaging_config",
+                    "name": messaging_config.name,
+                    "service_type": MessagingServiceType.MAILGUN.value,
                     "details": {
-                        EmailServiceDetails.API_VERSION.value: "v3",
-                        EmailServiceDetails.DOMAIN.value: "some.domain",
-                        EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                        MessagingServiceDetails.API_VERSION.value: "v3",
+                        MessagingServiceDetails.DOMAIN.value: "some.domain",
+                        MessagingServiceDetails.IS_EU_DOMAIN.value: False,
                     },
                 }
             ],
@@ -402,8 +406,10 @@ class TestGetEmailConfigs:
 
 class TestGetEmailConfig:
     @pytest.fixture(scope="function")
-    def url(self, email_config) -> str:
-        return (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key=email_config.key)
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
+            config_key=messaging_config.key
+        )
 
     def test_get_config_not_authenticated(self, url, api_client: TestClient):
         response = api_client.get(url)
@@ -412,45 +418,47 @@ class TestGetEmailConfig:
     def test_get_config_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header
     ):
-        auth_header = generate_auth_header([EMAIL_DELETE])
+        auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.get(url, headers=auth_header)
         assert 403 == response.status_code
 
     def test_get_config_invalid(
-        self, api_client: TestClient, generate_auth_header, email_config
+        self, api_client: TestClient, generate_auth_header, messaging_config
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(
-            (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key="invalid"),
+            (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
 
     def test_get_config(
-        self, url, api_client: TestClient, generate_auth_header, email_config
+        self, url, api_client: TestClient, generate_auth_header, messaging_config
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
         response_body = json.loads(response.text)
 
         assert response_body == {
-            "key": "my_email_config",
-            "name": email_config.name,
-            "service_type": EmailServiceType.MAILGUN.value,
+            "key": "my_mailgun_messaging_config",
+            "name": messaging_config.name,
+            "service_type": MessagingServiceType.MAILGUN.value,
             "details": {
-                EmailServiceDetails.API_VERSION.value: "v3",
-                EmailServiceDetails.DOMAIN.value: "some.domain",
-                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         }
 
 
 class TestDeleteConfig:
     @pytest.fixture(scope="function")
-    def url(self, email_config) -> str:
-        return (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key=email_config.key)
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
+            config_key=messaging_config.key
+        )
 
     def test_delete_config_not_authenticated(self, url, api_client: TestClient):
         response = api_client.delete(url)
@@ -459,14 +467,14 @@ class TestDeleteConfig:
     def test_delete_config_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header
     ):
-        auth_header = generate_auth_header([EMAIL_READ])
+        auth_header = generate_auth_header([MESSAGING_READ])
         response = api_client.delete(url, headers=auth_header)
         assert 403 == response.status_code
 
     def test_delete_config_invalid(self, api_client: TestClient, generate_auth_header):
-        auth_header = generate_auth_header([EMAIL_DELETE])
+        auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.delete(
-            (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key="invalid"),
+            (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key="invalid"),
             headers=auth_header,
         )
         assert 404 == response.status_code
@@ -479,20 +487,20 @@ class TestDeleteConfig:
         generate_auth_header,
     ):
         # Creating new config, so we don't run into issues trying to clean up a deleted fixture
-        email_config = EmailConfig.create(
+        email_config = MessagingConfig.create(
             db=db,
             data={
                 "key": "my_different_email_config",
                 "name": "mailgun",
-                "service_type": EmailServiceType.MAILGUN,
-                "details": {EmailServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+                "service_type": MessagingServiceType.MAILGUN,
+                "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
             },
         )
-        url = (V1_URL_PREFIX + EMAIL_BY_KEY).format(config_key=email_config.key)
-        auth_header = generate_auth_header([EMAIL_DELETE])
+        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key=email_config.key)
+        auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 204
 
         db.expunge_all()
-        config = db.query(EmailConfig).filter_by(key=email_config.key).first()
+        config = db.query(MessagingConfig).filter_by(key=email_config.key).first()
         assert config is None

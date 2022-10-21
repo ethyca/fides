@@ -59,11 +59,11 @@ from fides.api.ops.api.v1.urn_registry import (
     REQUEST_PREVIEW,
 )
 from fides.api.ops.common_exceptions import (
-    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityNotFoundException,
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
+    MessageDispatchException,
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
     TraversalError,
@@ -93,13 +93,13 @@ from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fides.api.ops.schemas.email.email import (
-    EmailActionType,
-    FidesopsEmail,
+from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.ops.schemas.messaging.messaging import (
+    FidesopsMessage,
+    MessagingActionType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
 )
-from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -113,8 +113,11 @@ from fides.api.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
-from fides.api.ops.service.email.email_dispatch_service import dispatch_email_task
+from fides.api.ops.service.messaging.message_dispatch_service import (
+    dispatch_message_task,
+)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
@@ -124,7 +127,7 @@ from fides.api.ops.service.privacy_request.request_service import (
 )
 from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.ops.task.task_resources import TaskResources
-from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.collection_util import Row
@@ -240,13 +243,13 @@ async def create_privacy_request(
 
             if CONFIG.execution.subject_identity_verification_required:
                 send_verification_code_to_user(
-                    db, privacy_request, privacy_request_data.identity.email
+                    db, privacy_request, privacy_request_data.identity
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
             if CONFIG.notifications.send_request_receipt_notification:
-                _send_privacy_request_receipt_email_to_user(
-                    policy, privacy_request_data.identity.email
+                _send_privacy_request_receipt_message_to_user(
+                    policy, privacy_request_data.identity
                 )
             if not CONFIG.execution.require_manual_request_approval:
                 AuditLog.create(
@@ -259,7 +262,7 @@ async def create_privacy_request(
                     },
                 )
                 queue_privacy_request(privacy_request.id)
-        except EmailDispatchException as exc:
+        except MessageDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
             logger.error("EmailDispatchException: %s", exc)
             failure = {
@@ -290,14 +293,14 @@ async def create_privacy_request(
     )
 
 
-def _send_privacy_request_receipt_email_to_user(
-    policy: Optional[Policy], email: Optional[str]
+def _send_privacy_request_receipt_message_to_user(
+    policy: Optional[Policy], to_identity: Optional[Identity]
 ) -> None:
     """Helper function to send request receipt email to the user"""
-    if not email:
+    if not to_identity:
         logger.error(
             IdentityNotFoundException(
-                "Identity email was not found, so request receipt email could not be sent."
+                "Identity was not found, so request receipt email could not be sent."
             )
         )
         return
@@ -312,14 +315,15 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+            "message_meta": FidesopsMessage(
+                action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "to_email": email,
+            "messaging_method": CONFIG.notifications.get_messaging_method(),
+            "to_identity": to_identity,
         },
     )
 
@@ -1143,30 +1147,35 @@ def review_privacy_request(
     )
 
 
-def _send_privacy_request_review_email_to_user(
-    action_type: EmailActionType,
-    email: Optional[str],
+def _send_privacy_request_review_message_to_user(
+    action_type: MessagingActionType,
+    identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
 ) -> None:
-    """Helper method to send review notification email to user, shared between approve and deny"""
-    if not email:
+    """Helper method to send review notification message to user, shared between approve and deny"""
+    if not identity_data:
         logger.error(
             IdentityNotFoundException(
-                "Identity email was not found, so request review email could not be sent."
+                "Identity was not found, so request review email could not be sent."
             )
         )
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
+    to_identity: Identity = Identity(
+        email=identity_data.get(ProvidedIdentityType.email.value),
+        phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
+    )
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
+            "message_meta": FidesopsMessage(
                 action_type=action_type,
                 body_params=RequestReviewDenyBodyParams(
                     rejection_reason=rejection_reason
                 )
-                if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "to_email": email,
+            "messaging_method": CONFIG.notifications.get_messaging_method(),
+            "to_identity": to_identity,
         },
     )
 
@@ -1197,8 +1206,8 @@ async def verify_identification_code(
             db=db, object_id=privacy_request.policy_id
         )
         if CONFIG.notifications.send_request_receipt_notification:
-            _send_privacy_request_receipt_email_to_user(
-                policy, privacy_request.get_persisted_identity().email
+            _send_privacy_request_receipt_message_to_user(
+                policy, privacy_request.get_persisted_identity()
             )
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
@@ -1256,11 +1265,9 @@ def approve_privacy_request(
             },
         )
         if CONFIG.notifications.send_request_review_notification:
-            _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                email=privacy_request.get_cached_identity_data().get(
-                    ProvidedIdentityType.email.value
-                ),
+            _send_privacy_request_review_message_to_user(
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+                identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=None,
             )
 
@@ -1308,11 +1315,9 @@ def deny_privacy_request(
             },
         )
         if CONFIG.notifications.send_request_review_notification:
-            _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                email=privacy_request.get_cached_identity_data().get(
-                    ProvidedIdentityType.email.value
-                ),
+            _send_privacy_request_review_message_to_user(
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+                identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
             )
 

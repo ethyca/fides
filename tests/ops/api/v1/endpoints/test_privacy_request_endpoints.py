@@ -62,16 +62,16 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.dataset import DryRunDatasetResponse
-from fides.api.ops.schemas.email.email import (
-    EmailActionType,
+from fides.api.ops.schemas.masking.masking_secrets import SecretType
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingActionType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
@@ -96,7 +96,7 @@ class TestCreatePrivacyRequest:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request(
         self,
@@ -1801,7 +1801,7 @@ class TestApprovePrivacyRequest:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_approve_privacy_request(
         self,
@@ -1849,7 +1849,7 @@ class TestApprovePrivacyRequest:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_approve_privacy_request_creates_audit_log_and_sends_email(
         self,
@@ -1893,13 +1893,14 @@ class TestApprovePrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
+        message_meta = task_kwargs["message_meta"]
         assert (
-            email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE
+            message_meta["action_type"]
+            == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE
         )
-        assert email_meta["body_params"] is None
+        assert message_meta["body_params"] is None
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
 
 class TestDenyPrivacyRequest:
@@ -1972,7 +1973,7 @@ class TestDenyPrivacyRequest:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_deny_privacy_request_without_denial_reason(
         self,
@@ -2021,13 +2022,16 @@ class TestDenyPrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
-        assert email_meta["body_params"] == RequestReviewDenyBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"]
+            == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
+        )
+        assert message_meta["body_params"] == RequestReviewDenyBodyParams(
             rejection_reason=None
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
         assert denial_audit_log.message is None
 
@@ -2039,7 +2043,7 @@ class TestDenyPrivacyRequest:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_deny_privacy_request_with_denial_reason(
         self,
@@ -2088,13 +2092,16 @@ class TestDenyPrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
-        assert email_meta["body_params"] == RequestReviewDenyBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"]
+            == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
+        )
+        assert message_meta["body_params"] == RequestReviewDenyBodyParams(
             rejection_reason=denial_reason
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
         assert denial_audit_log.message == denial_reason
 
@@ -2866,7 +2873,7 @@ class TestVerifyIdentity:
         )
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_verification_code_expired(
         self,
@@ -2890,7 +2897,7 @@ class TestVerifyIdentity:
         assert not mock_dispatch_email.called
 
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_invalid_code(
         self,
@@ -2918,7 +2925,7 @@ class TestVerifyIdentity:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed(
         self,
@@ -2964,19 +2971,21 @@ class TestVerifyIdentity:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
-        assert email_meta["body_params"] == RequestReceiptBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
+        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed_email_disabled(
         self,
@@ -3021,7 +3030,7 @@ class TestVerifyIdentity:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_verify_identity_admin_approval_needed(
         self,
@@ -3067,13 +3076,15 @@ class TestVerifyIdentity:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
-        assert email_meta["body_params"] == RequestReceiptBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
+        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
 
 class TestCreatePrivacyRequestEmailVerificationRequired:
@@ -3130,7 +3141,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         db,
         api_client: TestClient,
         policy,
-        email_config,
+        messaging_config,
         subject_identity_verification_required,
     ):
         data = [
@@ -3159,9 +3170,11 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
 
         assert mock_dispatch_email.called
         kwargs = mock_dispatch_email.call_args.kwargs
-        assert kwargs["action_type"] == EmailActionType.SUBJECT_IDENTITY_VERIFICATION
+        assert (
+            kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
+        )
         assert kwargs["to_email"] == "test@example.com"
-        assert kwargs["email_body_params"] == SubjectIdentityVerificationBodyParams(
+        assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         )
@@ -3644,7 +3657,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request_no_email_config(
         self,
@@ -3678,13 +3691,15 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
-        assert email_meta["body_params"] == RequestReceiptBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
+        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
         pr.delete(db=db)
 
@@ -3692,7 +3707,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
-        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_email_task.apply_async"
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -3702,7 +3717,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         db,
         api_client: TestClient,
         policy,
-        email_config,
+        messaging_config,
         privacy_request_receipt_email_notification_enabled,
     ):
         data = [
@@ -3726,12 +3741,14 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
-        email_meta = task_kwargs["email_meta"]
-        assert email_meta["action_type"] == EmailActionType.PRIVACY_REQUEST_RECEIPT
-        assert email_meta["body_params"] == RequestReceiptBodyParams(
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
+        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
         )
         queue = call_args["queue"]
-        assert queue == EMAIL_QUEUE_NAME
+        assert queue == MESSAGING_QUEUE_NAME
 
         pr.delete(db=db)

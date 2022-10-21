@@ -5,7 +5,7 @@ from fides.api.ops.api.v1.endpoints import (
     consent_request_endpoints,
     dataset_endpoints,
     drp_endpoints,
-    email_endpoints,
+    messaging_endpoints,
     encryption_endpoints,
     identity_verification_endpoints,
     manual_webhook_endpoints,

@@ -12,14 +12,16 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.ops.common_exceptions import EmailDispatchException
+from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.db.base_class import JSONTypeOverride
-from fides.api.ops.schemas.email.email import (
-    SUPPORTED_EMAIL_SERVICE_SECRETS,
-    EmailServiceSecretsMailgun,
-    EmailServiceType,
+from fides.api.ops.schemas.messaging.messaging import (
+    SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingServiceSecretsMailgun,
+    MessagingServiceType,
 )
-from fides.api.ops.schemas.email.email_secrets_docs_only import possible_email_secrets
+from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
+    possible_messaging_secrets,
+)
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
 
@@ -28,16 +30,16 @@ logger = logging.getLogger(__name__)
 
 
 def get_schema_for_secrets(
-    service_type: EmailServiceType,
-    secrets: possible_email_secrets,
-) -> SUPPORTED_EMAIL_SERVICE_SECRETS:
+    service_type: MessagingServiceType,
+    secrets: possible_messaging_secrets,
+) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
     for validation purposes.
     """
     try:
         schema = {
-            EmailServiceType.MAILGUN: EmailServiceSecretsMailgun,
+            MessagingServiceType.MAILGUN: MessagingServiceSecretsMailgun,
         }[service_type]
     except KeyError:
         raise ValueError(
@@ -53,12 +55,14 @@ def get_schema_for_secrets(
         raise ValueError(errors)
 
 
-class EmailConfig(Base):
-    """The DB ORM model for EmailConfig"""
+class MessagingConfig(Base):
+    """The DB ORM model for MessagingConfig"""
 
     key = Column(String, index=True, unique=True, nullable=False)
     name = Column(String, unique=True, index=True)
-    service_type = Column(Enum(EmailServiceType), index=True, nullable=False)
+    service_type = Column(
+        Enum(MessagingServiceType), index=True, unique=True, nullable=False
+    )
     details = Column(MutableDict.as_mutable(JSONB), nullable=False)
     secrets = Column(
         MutableDict.as_mutable(
@@ -75,19 +79,18 @@ class EmailConfig(Base):
     @classmethod
     def get_configuration(cls, db: Session) -> Base:
         """
-        Fetches the first configured EmailConfig record. As of v1.7.3 Fidesops does not support
-        multiple configured email connectors. Once fetched this function validates that
-        the EmailConfig is configured with secrets.
+        Fetches the first configured MessagingConfig record. Once fetched this function validates that
+        the MessagingConfig is configured with secrets.
         """
         instance: Optional[Base] = cls.query(db=db).first()
         if not instance:
-            raise EmailDispatchException("No email config found.")
+            raise MessageDispatchException("No messaging config found.")
         if not instance.secrets:
             logger.warning(
-                "Email secrets not found for config with key: %s", instance.key
+                "Messaging secrets not found for config with key: %s", instance.key
             )
-            raise EmailDispatchException(
-                f"Email secrets not found for config with key: {instance.key}"
+            raise MessageDispatchException(
+                f"Messaging secrets not found for config with key: {instance.key}"
             )
         return instance
 
@@ -95,7 +98,7 @@ class EmailConfig(Base):
         self,
         *,
         db: Session,
-        email_secrets: possible_email_secrets,
+        messaging_secrets: possible_messaging_secrets,
     ) -> None:
         """Creates or updates secrets associated with a config id"""
 
@@ -108,7 +111,7 @@ class EmailConfig(Base):
         try:
             get_schema_for_secrets(
                 service_type=service_type,  # type: ignore
-                secrets=email_secrets,
+                secrets=messaging_secrets,
             )
         except (
             KeyError,
@@ -118,5 +121,5 @@ class EmailConfig(Base):
             # We don't want to handle these explicitly here, only in the API view
             raise
 
-        self.secrets = email_secrets
+        self.secrets = messaging_secrets
         self.save(db=db)

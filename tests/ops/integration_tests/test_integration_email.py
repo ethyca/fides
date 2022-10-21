@@ -14,7 +14,7 @@ from fides.api.ops.models.privacy_request import (
     ManualAction,
 )
 from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -34,7 +34,7 @@ async def test_email_connector_cache_and_delayed_send(
     privacy_request,
     example_datasets,
     email_dataset_config,
-    email_config,
+    messaging_config,
 ) -> None:
     """Run an erasure privacy request with a postgres dataset and an email dataset.
     The email dataset has three separate collections.
@@ -178,9 +178,12 @@ async def test_email_connector_cache_and_delayed_send(
     email_connector_erasure_send(db, privacy_request)
     assert mock_email_dispatch.called
     call_args = mock_email_dispatch.call_args[1]
-    assert call_args["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+    assert (
+        call_args["action_type"]
+        == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
+    )
     assert call_args["to_email"] == "test@example.com"
-    assert call_args["email_body_params"] == raw_email_template_values
+    assert call_args["message_body_params"] == raw_email_template_values
 
     created_email_audit_log = (
         db.query(AuditLog)

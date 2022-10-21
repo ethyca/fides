@@ -11,7 +11,7 @@ from fides.ctl.core.config import get_config
 logger = get_task_logger(__name__)
 
 CONFIG = get_config()
-EMAIL_QUEUE_NAME = "fidesops.email"
+MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
@@ -87,7 +87,7 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"--queues={default_queue_name},{EMAIL_QUEUE_NAME}",
+            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
         ]
     )
 

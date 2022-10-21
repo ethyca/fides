@@ -23,7 +23,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import (
     ActionType,
     Policy,
@@ -35,10 +35,10 @@ from fides.api.ops.models.policy import (
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import ResponseFormat, StorageConfig
-from fides.api.ops.schemas.email.email import (
-    EmailServiceDetails,
-    EmailServiceSecrets,
-    EmailServiceType,
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
@@ -153,26 +153,29 @@ def storage_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def email_config(db: Session) -> Generator:
+def messaging_config(db: Session) -> Generator:
     name = str(uuid4())
-    email_config = EmailConfig.create(
+    messaging_config = MessagingConfig.create(
         db=db,
         data={
             "name": name,
-            "key": "my_email_config",
-            "service_type": EmailServiceType.MAILGUN,
+            "key": "my_mailgun_messaging_config",
+            "service_type": MessagingServiceType.MAILGUN,
             "details": {
-                EmailServiceDetails.API_VERSION.value: "v3",
-                EmailServiceDetails.DOMAIN.value: "some.domain",
-                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         },
     )
-    email_config.set_secrets(
-        db=db, email_secrets={EmailServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"}
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"
+        },
     )
-    yield email_config
-    email_config.delete(db)
+    yield messaging_config
+    messaging_config.delete(db)
 
 
 @pytest.fixture(scope="function")

@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 from fides.api.ops import common_exceptions
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    EmailDispatchException,
     IdentityNotFoundException,
     ManualWebhookFieldsUnset,
+    MessageDispatchException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -42,14 +42,15 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.email.email import (
+from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    EmailActionType,
+    MessagingActionType,
 )
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
-from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.service.storage.storage_uploader_service import upload
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import (
@@ -380,7 +381,7 @@ async def run_privacy_request(
                 email_connector_erasure_send(
                     db=session, privacy_request=privacy_request
                 )
-            except EmailDispatchException as exc:
+            except MessageDispatchException as exc:
                 privacy_request.cache_failed_checkpoint_details(
                     step=CurrentStep.erasure_email_post_send, collection=None
                 )
@@ -405,7 +406,7 @@ async def run_privacy_request(
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
                 )
-            except (IdentityNotFoundException, EmailDispatchException) as e:
+            except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 await fideslog_graph_failure(
@@ -444,22 +445,28 @@ def initiate_privacy_request_completion_email(
         raise IdentityNotFoundException(
             "Identity email was not found, so request completion email could not be sent."
         )
+    to_identity: Identity = Identity(
+        email=identity_data.get(ProvidedIdentityType.email.value),
+        phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
+    )
     if policy.get_rules_for_action(action_type=ActionType.access):
         # synchronous for now since failure to send complete emails is fatal to request
-        dispatch_email(
+        dispatch_message(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=AccessRequestCompleteBodyParams(
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            to_identity=to_identity,
+            messaging_method=CONFIG.notifications.get_messaging_method(),
+            message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
-        dispatch_email(
+        dispatch_message(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=None,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+            to_identity=to_identity,
+            messaging_method=CONFIG.notifications.get_messaging_method(),
+            message_body_params=None,
         )
 
 

@@ -27,8 +27,8 @@ from fides.api.ops.models.privacy_request import (
     ManualAction,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.email.email import EmailActionType
-from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 
 page_size = Params().size
 
@@ -1464,10 +1464,11 @@ class TestPutConnectionConfigSecrets:
         assert mock_dispatch_email.called
         kwargs = mock_dispatch_email.call_args.kwargs
         assert (
-            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+            kwargs["action_type"]
+            == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
         )
         assert kwargs["to_email"] == "test@example.com"
-        assert kwargs["email_body_params"] == [
+        assert kwargs["message_body_params"] == [
             CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),

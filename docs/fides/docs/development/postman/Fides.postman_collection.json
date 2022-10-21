@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "002813f4-12b7-4467-9377-a57706b6dbc8",
+		"_postman_id": "652de86a-b40e-4711-b488-4b26252683ab",
 		"name": "Fidesops",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13396647"
 	},
 	"item": [
 		{
@@ -4104,10 +4105,10 @@
 			]
 		},
 		{
-			"name": "Primary Email Config",
+			"name": "Primary Messaging Config",
 			"item": [
 				{
-					"name": "Post Email Config",
+					"name": "Post Messaging Config",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4123,7 +4124,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"key\": \"{{email_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
+							"raw": "{\n    \"key\": \"{{mailgun_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4131,12 +4132,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/email/config/",
+							"raw": "{{host}}/messaging/config/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
 								""
 							]
@@ -4145,7 +4146,7 @@
 					"response": []
 				},
 				{
-					"name": "Patch Email Config By Key",
+					"name": "Patch Messaging Config By Key",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4161,7 +4162,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"key\": \"{{email_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
+							"raw": "{\n    \"key\": \"{{mailgun_config_key}}\",\n    \"name\": \"mailgun\",\n    \"service_type\": \"mailgun\",\n    \"details\": {\n    \"domain\": \"{{mailgun_domain}}\"\n    }\n}\n\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4169,21 +4170,21 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"raw": "{{host}}/messaging/config/{{mailgun_config_key}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
-								"{{email_config_key}}"
+								"{{mailgun_config_key}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Email Configs",
+					"name": "Get Messaging Configs",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4198,12 +4199,12 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/email/config/",
+							"raw": "{{host}}/messaging/config/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
 								""
 							]
@@ -4212,7 +4213,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Email Config By Key",
+					"name": "Get Messaging Config By Key",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4227,21 +4228,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"raw": "{{host}}/messaging/config/{{mailgun_config_key}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
-								"{{email_config_key}}"
+								"{{mailgun_config_key}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Delete Email Config By Key",
+					"name": "Delete Messaging Config By Key",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -4257,7 +4258,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n      \"key\": \"{{email_config_key}}\",\n      \"name\": \"mailgun\",\n      \"service_type\": \"mailgun\",\n      \"details\": {\n        \"domain\": \"{{mailgun_domain}}\"\n      }\n    }\n]\n",
+							"raw": "[\n    {\n      \"key\": \"{{mailgun_config_key}}\",\n      \"name\": \"mailgun\",\n      \"service_type\": \"mailgun\",\n      \"details\": {\n        \"domain\": \"{{mailgun_domain}}\"\n      }\n    }\n]\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4265,14 +4266,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/email/config/{{email_config_key}}",
+							"raw": "{{host}}/messaging/config/{{mailgun_config_key}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
-								"{{email_config_key}}"
+								"{{mailgun_config_key}}"
 							]
 						}
 					},
@@ -4303,14 +4304,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/email/config/{{email_config_key}}/secret",
+							"raw": "{{host}}/messaging/config/{{mailgun_config_key}}/secret",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
-								"email",
+								"messaging",
 								"config",
-								"{{email_config_key}}",
+								"{{mailgun_config_key}}",
 								"secret"
 							]
 						}
@@ -4732,8 +4733,8 @@
 			"value": "manual_key"
 		},
 		{
-			"key": "email_config_key",
-			"value": "my_email_config",
+			"key": "mailgun_config_key",
+			"value": "my_mailgun_config",
 			"type": "string"
 		},
 		{
