@@ -46,10 +46,10 @@ def get_platform(posargs: List[str]) -> str:
     "image",
     [
         nox.param("dev", id="dev"),
-        nox.param("pc", id="pc"),
         nox.param("prod", id="prod"),
         nox.param("test", id="test"),
-        nox.param("ui", id="ui"),
+        nox.param("admin_ui", id="admin-ui"),
+        nox.param("privacy_center", id="privacy-center"),
     ],
 )
 def build(session: nox.Session, image: str, machine_type: str = "") -> None:
@@ -71,9 +71,9 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
-        "ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
+        "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
-    if image == "pc":
+    if image == "privacy_center":
         session.run(
             "docker",
             "build",

@@ -18,11 +18,13 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
 
 ### Added
+
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 * Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
     * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
     * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
     * Each consent option can provide an array of `cookieKeys`.
+* Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
@@ -30,10 +32,15 @@ The types of changes are:
 ### Developer Experience
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
+* Only the `docs-authors` team members are specified as `CODEOWNERS` [#1446](https://github.com/ethyca/fides/pull/1446)
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+
+### Fixed
+
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
@@ -45,6 +52,9 @@ The types of changes are:
 
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
+
+* Fides Admin UI:
+  * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
 * Privacy Center:
@@ -243,6 +253,7 @@ The types of changes are:
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 * Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
+* Added configWizardFlag to ui to hide the config wizard when false [[#1453](https://github.com/ethyca/fides/issues/1453)
 
 ### Changed
 

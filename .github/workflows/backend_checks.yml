@@ -187,7 +187,7 @@ jobs:
         run: nox -s check_install
 
       - name: Run fides evaluation
-        run: nox -s check_fides_annotations -- docker
+        run: nox -s check_fides_annotations
 
       - name: Scan fides db
         run: nox -s fides_db_scan

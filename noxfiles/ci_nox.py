@@ -16,7 +16,6 @@ from constants_nox import (
 from run_infrastructure import OPS_TEST_DIR, run_infrastructure
 from utils_nox import install_requirements
 
-RUN_STATIC_ANALYSIS = (*RUN_NO_DEPS, "nox", "-s")
 
 # Static Checks
 @nox.session()
@@ -30,25 +29,36 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
-def black(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def black(session: nox.Session, mode: str) -> None:
     """Run the 'black' style linter."""
     install_requirements(session)
-    command = (
-        "black",
-        "--check",
-        "src",
-        "tests",
-        "noxfiles",
-        "scripts",
-    )
+    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
 @nox.session()
-def isort(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def isort(session: nox.Session, mode: str) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
@@ -64,7 +74,7 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles")
+    command = ("pylint", "src", "noxfiles", "noxfile.py")
     session.run(*command)
 
 
@@ -99,10 +109,7 @@ def check_install(session: nox.Session) -> None:
 @nox.session()
 def check_fides_annotations(session: nox.Session) -> None:
     """Run a fidesctl evaluation."""
-    if session.posargs == ["docker"]:
-        run_command = (*RUN_STATIC_ANALYSIS, "check_fides_annotations")
-    else:
-        run_command = ("fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
+    run_command = (*RUN_NO_DEPS, "fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
@@ -139,7 +146,8 @@ def pytest_ctl(session: nox.Session, mark: str) -> None:
     session.notify("teardown")
     if mark == "external":
         start_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "-f",
             COMPOSE_FILE,
             "-f",
@@ -150,7 +158,8 @@ def pytest_ctl(session: nox.Session, mark: str) -> None:
         )
         session.run(*start_command, external=True)
         run_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "run",
             "-e",
             "SNOWFLAKE_FIDESCTL_PASSWORD",
@@ -255,7 +264,8 @@ def pytest_ops(session: nox.Session, mark: str) -> None:
         #
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
         run_command = (
-            "docker-compose",
+            "docker",
+            "compose",
             "run",
             "-e",
             "ANALYTICS_OPT_OUT",

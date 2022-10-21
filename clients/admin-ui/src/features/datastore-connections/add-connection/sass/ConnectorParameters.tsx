@@ -23,7 +23,7 @@ import { useDispatch } from "react-redux";
 import { useAppSelector } from "~/app/hooks";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
-import { formatKey, replaceURL } from "../helpers";
+import { formatKey } from "../helpers";
 import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
@@ -31,7 +31,7 @@ type ConnectorParametersProps = {
   /**
    * Parent callback invoked when a connection is initially created
    */
-  onConnectionCreated: () => void;
+  onConnectionCreated?: () => void;
   /**
    * Parent callback when Test Connection is clicked
    */
@@ -53,7 +53,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   } as SaasConnectorParametersFormFields;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { connection, connectionOption, step } = useAppSelector(
+  const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState
   );
 
@@ -117,10 +117,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
         });
         const payload = await createSassConnectionConfig(params).unwrap();
         dispatch(setConnection(payload.connection));
-        // Update the current browser url with the new key created
-        replaceURL(payload.connection.key, step.href);
         successAlert(`Connector successfully added!`);
-        onConnectionCreated();
+        onConnectionCreated?.();
       }
     } catch (error) {
       handleError(error);

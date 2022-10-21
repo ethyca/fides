@@ -23,9 +23,10 @@ def docs_serve(session: nox.Session) -> None:
     """Serve the docs."""
     docs_build(session, "local")
     session.notify("teardown")
-    session.run("docker-compose", "build", "docs", external=True)
+    session.run("docker", "compose", "build", "docs", external=True)
     run_shell = (
-        "docker-compose",
+        "docker",
+        "compose",
         "run",
         "--rm",
         "--service-ports",
@@ -43,9 +44,10 @@ def docs_check(session: nox.Session) -> None:
     """Check that the docs can build."""
     docs_build(session, "ci")
     session.notify("teardown")
-    session.run("docker-compose", "build", "docs", external=True)
+    session.run("docker", "compose", "build", "docs", external=True)
     run_shell = (
-        "docker-compose",
+        "docker",
+        "compose",
         "run",
         "--rm",
         "--service-ports",

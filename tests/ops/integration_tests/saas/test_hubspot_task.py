@@ -26,7 +26,7 @@ def test_hubspot_connection_test(connection_config_hubspot) -> None:
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
 @pytest.mark.asyncio
-async def test_saas_access_request_task(
+async def test_hubspot_access_request_task(
     db,
     policy,
     connection_config_hubspot,
@@ -132,7 +132,7 @@ async def test_saas_access_request_task(
 @pytest.mark.integration_saas
 @pytest.mark.integration_hubspot
 @pytest.mark.asyncio
-async def test_saas_erasure_request_task(
+async def test_hubspot_erasure_request_task(
     db,
     policy,
     erasure_policy_string_rewrite,
@@ -173,7 +173,7 @@ async def test_saas_erasure_request_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow delete
-    erasure = await graph_task.run_erasure(
+    x = await graph_task.run_erasure(
         privacy_request,
         erasure_policy_string_rewrite,
         graph,
@@ -185,7 +185,7 @@ async def test_saas_erasure_request_task(
     CONFIG.execution.masking_strict = temp_masking
 
     # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
-    assert erasure == {
+    assert x == {
         "hubspot_instance:contacts": 1,
         "hubspot_instance:owners": 0,
         "hubspot_instance:subscription_preferences": 1,

@@ -3,10 +3,11 @@ import uuid
 from typing import Dict
 
 import requests
-import setup.constants as constants
 
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+
+from . import constants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -14,13 +15,10 @@ logging.basicConfig(level=logging.INFO)
 
 def create_user(
     auth_header: Dict[str, str],
-    username: str = None,
-    password: str = "Atestpassword1!",
+    username=constants.FIDES_USERNAME,
+    password=constants.FIDES_PASSWORD,
 ):
     """Adds a user with full permissions"""
-    if not username:
-        username = str(uuid.uuid4())
-
     login_response = requests.post(
         f"{constants.BASE_URL}{urls.LOGIN}",
         headers=auth_header,
