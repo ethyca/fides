@@ -46,7 +46,7 @@ const useRequestTable = () => {
     if (checked) {
       list = [...errorRequests, id];
     } else {
-      errorRequests.filter(value => value !== id)
+      errorRequests.filter((value) => value !== id);
       list = [...errorRequests.filter((value) => value !== id)];
     }
     dispatch(
