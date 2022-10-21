@@ -10,33 +10,34 @@ import {
   ModalHeader,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
 
-import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../../types/AlertState";
-import { addCommonHeaders } from "../../../common/CommonHeaders";
+import { ErrorToastOptions } from "~/common/toast-options";
 
+import { Headers } from "headers-polyfill";
+import { addCommonHeaders } from "~/common/CommonHeaders";
+
+import { hostUrl } from "~/constants";
 import { ModalViews, VerificationType } from "../types";
-import { hostUrl } from "../../../constants";
 
 const useConsentRequestForm = ({
   onClose,
-  setAlert,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
   successHandler,
 }: {
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
   successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -47,10 +48,17 @@ const useConsentRequestForm = ({
       const body = {
         email: values.email,
       };
-      const handleError = () => {
-        setAlert({
-          status: "error",
-          description: "Your request has failed. Please try again.",
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: any;
+      }) => {
+        toast({
+          title,
+          description: error.detail,
+          ...ErrorToastOptions,
         });
         onClose();
       };
@@ -67,16 +75,17 @@ const useConsentRequestForm = ({
             body: JSON.stringify(body),
           }
         );
-
+        const data = await response.json();
         if (!response.ok) {
-          handleError();
+          handleError({
+            title: "An error occurred while creating your consent request",
+            error: data.detail,
+          });
           return;
         }
 
-        const data = await response.json();
-
         if (!data.consent_request_id) {
-          handleError();
+          handleError({ title: "No consent request id found" });
           return;
         }
 
@@ -88,7 +97,9 @@ const useConsentRequestForm = ({
           setCurrentView(ModalViews.IdentityVerification);
         }
       } catch (error) {
-        handleError();
+        // eslint-disable-next-line no-console
+        console.error(error);
+        handleError({ title: "An unhandled exception occurred." });
       }
     },
     validate: (values) => {
@@ -111,7 +122,6 @@ const useConsentRequestForm = ({
 type ConsentRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -121,7 +131,6 @@ type ConsentRequestFormProps = {
 const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   isOpen,
   onClose,
-  setAlert,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
@@ -139,7 +148,6 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     resetForm,
   } = useConsentRequestForm({
     onClose,
-    setAlert,
     setCurrentView,
     setConsentRequestId,
     isVerificationRequired,
