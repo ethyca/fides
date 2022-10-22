@@ -12,7 +12,6 @@ import {
   Text,
   Tooltip,
 } from "@fidesui/react";
-import React from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
@@ -32,7 +31,7 @@ const AddSystemForm = () => {
     <chakra.form w="100%" data-testid="add-system-form">
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Add a system
+          Scan for Systems
         </Heading>
         <Accordion allowToggle border="transparent">
           <AccordionItem>
