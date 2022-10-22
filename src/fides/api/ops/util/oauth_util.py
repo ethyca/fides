@@ -27,6 +27,8 @@ CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
+# TODO: include list of all scopes in the docs via the scopes={} dict
+# (see https://fastapi.tiangolo.com/advanced/security/oauth2-scopes/)
 oauth2_scheme = OAuth2ClientCredentialsBearer(
     tokenUrl=(V1_URL_PREFIX + TOKEN),
 )
@@ -104,7 +106,8 @@ async def verify_oauth_client(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> ClientDetail:
-    """Calls fideslib oauth_util.verify_oauth_client.
+    """Calls fideslib oauth_util.verify_oauth_client. Verifies that the access token
+    provided in the authorization header contains the necessary scopes specified by the caller.
 
     This override is needed because we have to pass in the config.
     """
