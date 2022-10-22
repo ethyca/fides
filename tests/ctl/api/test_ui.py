@@ -55,7 +55,7 @@ def test_generate_route_file_map(route_file_map: Dict[re.Pattern, Path]) -> None
         ("nested/the_devil/makes/3/", "nested/[...slug].html"),
     ],
 )
-@pytest.mark.xfail(strict=True)
+@pytest.mark.xfail()  # TODO: see https://github.com/ethyca/fides/issues/1525
 def test_match_route(
     tmp_static: Path, route_file_map: Dict[re.Pattern, Path], route: str, expected: str
 ) -> None:
