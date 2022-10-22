@@ -99,7 +99,7 @@ def verify_callback_oauth(
     return webhook
 
 
-def verify_oauth_client(
+async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
