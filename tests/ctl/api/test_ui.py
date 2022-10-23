@@ -58,6 +58,7 @@ def test_generate_route_file_map(route_file_map: Dict[re.Pattern, Path]) -> None
         ("multimatch/one", "multimatch/[first].html"),
     ],
 )
+@pytest.mark.xfail()  # TODO: see https://github.com/ethyca/fides/issues/1525
 def test_match_route(
     tmp_static: Path, route_file_map: Dict[re.Pattern, Path], route: str, expected: str
 ) -> None:

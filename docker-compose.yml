@@ -19,7 +19,7 @@ services:
     env_file:
       - .env
     environment:
-      FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
@@ -122,6 +122,7 @@ services:
         condition: service_started
     restart: always
     environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
