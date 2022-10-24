@@ -2,7 +2,6 @@
 Contains the code that sets up the API.
 """
 import logging
-import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
 from os import getenv
