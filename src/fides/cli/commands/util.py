@@ -146,7 +146,13 @@ def worker(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-def demo(ctx: click.Context) -> None:
+@click.option(
+    "-d",
+    "--detached",
+    is_flag=True,
+    help="Runs the application in the background after setup.",
+)
+def demo(ctx: click.Context, detached: bool = False) -> None:
     """
     Starts the application via docker compose.
     """
