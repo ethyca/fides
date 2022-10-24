@@ -13,14 +13,14 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.ctl.core.demo import check_docker_version
-from fides.ctl.core.utils import echo_green
 from fides.ctl.core.demo import (
+    check_docker_version,
+    open_demo_shell,
+    seed_example_data,
     start_application,
     teardown_application,
-    seed_example_data,
-    open_demo_shell,
 )
+from fides.ctl.core.utils import echo_green
 
 
 @click.command()
@@ -147,13 +147,7 @@ def worker(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-@click.option(
-    "-d",
-    "--detached",
-    is_flag=True,
-    help="Runs the application in the background after setup.",
-)
-def demo(ctx: click.Context, detached: bool = False) -> None:
+def demo(ctx: click.Context) -> None:
     """
     Starts the application via docker compose.
     """
