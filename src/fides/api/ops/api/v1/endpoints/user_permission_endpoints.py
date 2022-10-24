@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import Depends, HTTPException, Security
+from fastapi.security import SecurityScopes
 from fideslib.models.fides_user import FidesUser
 from fideslib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
@@ -20,7 +21,12 @@ from fides.api.ops.schemas.user_permission import (
     UserPermissionsResponse,
 )
 from fides.api.ops.util.api_router import APIRouter
-from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.api.ops.util.oauth_util import (
+    get_current_user,
+    oauth2_scheme,
+    verify_oauth_client,
+)
+from fideslib.models.client import ClientDetail
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
@@ -83,12 +89,24 @@ def update_user_permissions(
 
 @router.get(
     urls.USER_PERMISSIONS,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_PERMISSION_READ])],
     response_model=UserPermissionsResponse,
 )
-def get_user_permissions(
-    *, db: Session = Depends(deps.get_db), user_id: str
+async def get_user_permissions(
+    *,
+    db: Session = Depends(deps.get_db),
+    authorization: str = Security(oauth2_scheme),
+    current_user: FidesUser = Depends(get_current_user),
+    user_id: str,
 ) -> FidesUserPermissions:
     validate_user_id(db, user_id)
-    logger.info("Retrieved FidesUserPermission record")
+    if current_user.id == user_id:
+        logger.info("Retrieved FidesUserPermission record for current user")
+    else:
+        await verify_oauth_client(
+            security_scopes=SecurityScopes([USER_PERMISSION_READ]),
+            authorization=authorization,
+            db=db,
+        )
+        logger.info("Retrieved FidesUserPermission record")
+
     return FidesUserPermissions.get_by(db, field="user_id", value=user_id)
