@@ -48,7 +48,6 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
-    PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
@@ -998,68 +997,6 @@ async def resume_with_erasure_confirmation(
 
 
 @router.post(
-    PRIVACY_REQUEST_BULK_RETRY,
-    status_code=HTTP_200_OK,
-    response_model=BulkPostPrivacyRequests,
-    dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-    ],
-)
-async def bulk_restart_privacy_request_from_failure(
-    privacy_request_ids: List[str],
-    *,
-    db: Session = Depends(deps.get_db),
-) -> BulkPostPrivacyRequests:
-    """Bulk restart a of privacy request from failure."""
-
-    succeeded: List[PrivacyRequestResponse] = []
-    failed: List[Dict[str, Any]] = []
-
-    #    privacy_request = PrivacyRequest.get(db, object_id=request_id)
-
-    for privacy_request_id in privacy_request_ids:
-        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
-
-        if not privacy_request:
-            failed.append(
-                {
-                    "message": f"No privacy request found with id '{privacy_request_id}'",
-                    "data": {"privacy_request_id": privacy_request_id},
-                }
-            )
-            continue
-
-        if privacy_request.status != PrivacyRequestStatus.error:
-            failed.append(
-                {
-                    "message": f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
-                    "data": {"privacy_request_id": privacy_request_id},
-                }
-            )
-            continue
-
-        failed_details: Optional[
-            CheckpointActionRequired
-        ] = privacy_request.get_failed_checkpoint_details()
-        if not failed_details:
-            failed.append(
-                {
-                    "message": f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
-                    "data": {"privacy_request_id": privacy_request_id},
-                }
-            )
-            continue
-
-        succeeded.append(
-            _process_privacy_request_restart(
-                privacy_request, failed_details.step, failed_details.collection, db
-            )
-        )
-
-    return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
-
-
-@router.post(
     PRIVACY_REQUEST_RETRY,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
@@ -1092,9 +1029,26 @@ async def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
 
-    return _process_privacy_request_restart(
-        privacy_request, failed_details.step, failed_details.collection, db
+    failed_step: CurrentStep = failed_details.step
+    failed_collection: Optional[CollectionAddress] = failed_details.collection
+
+    logger.info(
+        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
+        privacy_request_id,
+        failed_step,
+        failed_collection,
     )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step.value,
+    )
+
+    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
+
+    return privacy_request
 
 
 def review_privacy_request(
@@ -1478,31 +1432,5 @@ async def resume_privacy_request_from_requires_input(
     queue_privacy_request(
         privacy_request_id=privacy_request.id,
     )
-
-    return privacy_request
-
-
-def _process_privacy_request_restart(
-    privacy_request: PrivacyRequest,
-    failed_step: CurrentStep,
-    failed_collection: Optional[CollectionAddress],
-    db: Session,
-) -> PrivacyRequestResponse:
-
-    logger.info(
-        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
-        privacy_request.id,
-        failed_step,
-        failed_collection,
-    )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value,
-    )
-
-    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
     return privacy_request
