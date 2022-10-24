@@ -243,10 +243,6 @@ async def setup_server() -> None:
         )
     )
 
-    if not CONFIG.execution.worker_enabled:
-        logger.info("Starting worker...")
-        subprocess.Popen(["fides", "worker"])  # pylint: disable=consider-using-with
-
     setup_logging(
         CONFIG.logging.level,
         serialize=CONFIG.logging.serialization,
