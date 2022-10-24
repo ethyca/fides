@@ -159,6 +159,11 @@ def consent_request_verify(
             ]
         },
         HTTP_404_NOT_FOUND: {"detail": "Consent request not found"},
+        HTTP_400_BAD_REQUEST: {
+            "detail": "Retrieving consent preferences without identity verification is "
+            "only supported with subject_identity_verification_required "
+            "turned off."
+        },
     },
 )
 def get_consent_preferences_no_id(
@@ -168,7 +173,7 @@ def get_consent_preferences_no_id(
 
     if CONFIG.execution.subject_identity_verification_required:
         raise HTTPException(
-            status_code=400,
+            status_code=HTTP_400_BAD_REQUEST,
             detail="Retrieving consent preferences without identity verification is "
             "only supported with subject_identity_verification_required "
             "turned off.",
