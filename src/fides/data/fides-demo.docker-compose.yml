@@ -88,6 +88,8 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "postgres_example"
+    volumes:
+      - ./postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql:ro
 
   mongodb-test:
     image: mongo:5.0.3
