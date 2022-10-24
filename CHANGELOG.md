@@ -37,6 +37,7 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
 
 ### Fixed
 
