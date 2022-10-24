@@ -9,8 +9,8 @@ include src/fides/api/ctl/alembic.ini
 include src/fides/_version.py
 include src/fides/py.typed
 include src/fides/templates/fides_datamap_template.xlsx
-include src/fides/data/fides-demo.docker-compose.yml
 
+recursive-include src/fides/data/ *
 recursive-include src/fides/ui-build *
 
 graft src/fides/api/ops/email_templates/templates
