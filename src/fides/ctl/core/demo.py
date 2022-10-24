@@ -7,12 +7,14 @@ from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 REQUIRED_DOCKER_VERSION = "20.10.17"
-DOCKER_COMPOSE_FILE = join(
+DOCKER_COMPOSE_DIR = join(
     dirname(__file__),
     "../../data",
-    "fides-demo.docker-compose.yml",
 )
-DOCKER_COMPOSE_COMMAND = f"docker compose -f {DOCKER_COMPOSE_FILE} "
+DOCKER_COMPOSE_FILE = join(DOCKER_COMPOSE_DIR, "fides-demo.docker-compose.yml")
+DOCKER_COMPOSE_COMMAND = (
+    f"docker compose --project-directory {DOCKER_COMPOSE_DIR} -f {DOCKER_COMPOSE_FILE} "
+)
 
 
 def convert_semver_to_list(semver: str) -> List[int]:
