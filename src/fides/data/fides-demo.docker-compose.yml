@@ -24,11 +24,11 @@ services:
       FIDES__CLI__SERVER_HOST: "fides"
       FIDES__CLI__SERVER_PORT: "8080"
 
-      FIDES__DATABASE__USERNAME: "postgres"
+      FIDES__DATABASE__USER: "postgres"
       FIDES__DATABASE__PASSWORD: "fides"
-      FIDES__DATABASE__PORT: "5432"
       FIDES__DATABASE__DB: "fides"
       FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DATABASE__PORT: "5432"
 
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       FIDES__REDIS__ENABLED: "True"
@@ -62,6 +62,8 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "fides"
       POSTGRES_DB: "fides"
+    volumes:
+      - postgres:/var/lib/postgresql/data
 
   redis:
     image: "redis:6.2.5-alpine"
@@ -112,5 +114,7 @@ services:
         condition: service_started
     restart: always
     environment:
-      FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+
+volumes:
+  postgres: null
