@@ -1,6 +1,6 @@
 import math
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import jwt.utils
 from requests import PreparedRequest
@@ -43,13 +43,15 @@ class DoordashAuthenticationStrategy(AuthenticationStrategy):
         Generate a Doordash JWT and add it as bearer auth
         """
 
-        secrets: Dict[str, Any] = connection_config.secrets  # type: ignore
+        secrets: Optional[Dict[str, Any]] = connection_config.secrets
 
         token = jwt.encode(
             {
                 "aud": "doordash",
-                "iss": assign_placeholders(self.developer_id, secrets),
-                "kid": assign_placeholders(self.key_id, secrets),
+                "iss": assign_placeholders(self.developer_id, secrets)
+                if secrets
+                else None,
+                "kid": assign_placeholders(self.key_id, secrets) if secrets else None,
                 "exp": str(math.floor(time.time() + 60)),
                 "iat": str(math.floor(time.time())),
             },
