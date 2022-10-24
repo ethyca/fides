@@ -31,7 +31,6 @@ def create_dsr_policy(
 
     if response.ok:
         policies = (response.json())["succeeded"]
-        logger.info(policies)
         if len(policies) > 0:
             logger.info(
                 "Created or updated fides policy with key=%s via /api/v1/policy", key

@@ -19,6 +19,7 @@ from fides.ctl.core.demo import (
     start_application,
     teardown_application,
     seed_example_data,
+    open_demo_shell,
 )
 
 
@@ -162,6 +163,7 @@ def demo(ctx: click.Context, detached: bool = False) -> None:
         check_docker_version()
         start_application()
         seed_example_data()
+        open_demo_shell()
     except:
         pass
     finally:

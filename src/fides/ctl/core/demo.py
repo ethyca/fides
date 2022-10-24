@@ -101,6 +101,11 @@ def teardown_application() -> None:
     run(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
+def open_demo_shell() -> None:
+    """Opens a shell inside of the demo fides container."""
+    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides /bin/bash")
+
+
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
     run(
