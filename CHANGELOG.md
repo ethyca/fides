@@ -37,7 +37,7 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
-
+* Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
