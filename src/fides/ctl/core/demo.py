@@ -1,7 +1,7 @@
+from os.path import dirname, join
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
-from os.path import dirname, join
-from typing import List
+from functools import partial
 
 from fides.ctl.core.config import get_config
 
@@ -15,6 +15,7 @@ DOCKER_COMPOSE_FILE = join(DOCKER_COMPOSE_DIR, "fides-demo.docker-compose.yml")
 DOCKER_COMPOSE_COMMAND = (
     f"docker compose --project-directory {DOCKER_COMPOSE_DIR} -f {DOCKER_COMPOSE_FILE} "
 )
+run_shell = partial(run, shell=True, check=True)
 
 
 def convert_semver_to_list(semver: str) -> List[int]:
@@ -89,8 +90,10 @@ def check_docker_version() -> bool:
 
 
 def seed_example_data() -> None:
-    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/")
-    run(
+    run_shell(
+        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/"
+    )
+    run_shell(
         DOCKER_COMPOSE_COMMAND
         + "run --no-deps --rm fides python scripts/load_examples.py"
     )
@@ -98,18 +101,18 @@ def seed_example_data() -> None:
 
 def teardown_application() -> None:
     """Teardown all of the application containers for fides."""
-    run(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
+    run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
 def open_demo_shell() -> None:
     """Opens a shell inside of the demo fides container."""
-    run(DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides /bin/bash")
+    run_shell(
+        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides /bin/bash",
+    )
 
 
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
-    run(
+    run_shell(
         DOCKER_COMPOSE_COMMAND + "up --wait",
-        shell=True,
-        check=True,
     )
