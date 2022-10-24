@@ -23,3 +23,4 @@ export { default as StepperCircleCheckmarkIcon } from "./StepperCircleCheckmark"
 export { default as TrashCanSolidIcon } from "./TrashCanSolid";
 export { default as UserIcon } from "./User";
 export { default as VerticalLineIcon } from "./VerticalLine";
+export { default as WarningIcon } from "./Warning";
