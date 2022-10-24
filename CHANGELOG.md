@@ -25,6 +25,8 @@ The types of changes are:
     * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
     * Each consent option can provide an array of `cookieKeys`.
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
+* Access support for Twilio [#1520](https://github.com/ethyca/fides/pull/1520)
+
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
