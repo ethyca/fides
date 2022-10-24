@@ -36,7 +36,7 @@ The types of changes are:
 
 ### Fixed
 
-* Fix incorrect verify_oauth_client overrides [#1523](https://github.com/ethyca/fides/pull/1523)
+* Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
 
 ### Docs
 
