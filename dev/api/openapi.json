@@ -8090,6 +8090,59 @@
         ]
       }
     },
+    "/api/v1/privacy-request/bulk/retry": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Bulk Restart Privacy Request From Failure",
+        "description": "Bulk restart a of privacy request from failure.",
+        "operationId": "bulk_restart_privacy_request_from_failure_api_v1_privacy_request_bulk_retry_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Privacy Request Ids",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPostPrivacyRequests"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:resume"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/retry": {
       "post": {
         "tags": [
