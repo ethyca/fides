@@ -16,7 +16,6 @@ STATIC_FILES = (
     "dataset/[id].html",
     "nested/[...slug].html",
     "multimatch/[first].html",
-    "multimatch/[second].html",
 )
 
 
