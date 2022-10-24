@@ -5,19 +5,24 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fideslib.cryptography.schemas.jwt import JWE_PAYLOAD_SCOPES
+from fideslib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
 from fideslib.exceptions import AuthenticationError, AuthorizationError
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.oauth_util import extract_payload
-from fideslib.oauth.oauth_util import verify_oauth_client as verify
+from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
+from jose import exceptions
 from jose.constants import ALGORITHMS
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.ops.api.deps import get_db
+from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
@@ -106,9 +111,49 @@ async def verify_oauth_client(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> ClientDetail:
-    """Calls fideslib oauth_util.verify_oauth_client. Verifies that the access token
-    provided in the authorization header contains the necessary scopes specified by the caller.
-
-    This override is needed because we have to pass in the config.
     """
-    return verify(security_scopes, authorization, db=db, config=CONFIG)
+    Verifies that the access token provided in the authorization header contains
+    the necessary scopes specified by the caller. Yields a 403 forbidden error
+    if not
+    """
+    if authorization is None:
+        raise AuthenticationError(detail="Authentication Failure")
+
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEParseError as exc:
+        raise AuthorizationError(detail="Not Authorized for this action") from exc
+
+    issued_at = token_data.get(JWE_ISSUED_AT, None)
+    if not issued_at:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    if is_token_expired(
+        datetime.fromisoformat(issued_at),
+        CONFIG.security.oauth_access_token_expire_minutes,
+    ):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
+    if not set(security_scopes.scopes).issubset(assigned_scopes):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
+    if not client_id:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # scopes param is only used if client is root client, otherwise we use the client's associated scopes
+    client = ClientDetail.get(
+        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+    )
+
+    if not client:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    if not set(assigned_scopes).issubset(set(client.scopes)):
+        # If the scopes on the token are not a subset of the scopes available
+        # to the associated oauth client, this token is not valid
+        raise AuthorizationError(detail="Not Authorized for this action")
+    return client
