@@ -147,17 +147,21 @@ def worker(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-def demo(ctx: click.Context) -> None:
+@click.option("--command", "-c", type=str, default="")
+def demo(ctx: click.Context, command: str = "") -> None:
     """
     Starts the application via docker compose.
 
     Uses the fides.toml that exists within the container.
+
+    Use the --command flag to pass in a custom command for
+    the container shell to run.
     """
 
     try:
         check_docker_version()
         start_application()
         seed_example_data()
-        open_demo_shell()
+        open_demo_shell(command)
     finally:
         teardown_application()
