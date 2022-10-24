@@ -1,7 +1,7 @@
+from functools import partial
 from os.path import dirname, join
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
-from functools import partial
 
 from fides.ctl.core.config import get_config
 

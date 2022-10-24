@@ -150,15 +150,14 @@ def worker(ctx: click.Context) -> None:
 def demo(ctx: click.Context) -> None:
     """
     Starts the application via docker compose.
+
+    Uses the fides.toml that exists within the container.
     """
-    # TODO: make sure that `init` gets run before the demo command spins up
 
     try:
         check_docker_version()
         start_application()
         seed_example_data()
         open_demo_shell()
-    except:
-        pass
     finally:
         teardown_application()
