@@ -1,5 +1,6 @@
 """Contains the nox sessions for running development environments."""
-import nox
+from nox import session, Session
+from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
@@ -13,8 +14,8 @@ from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
-@nox.session()
-def dev(session: nox.Session) -> None:
+@session()
+def dev(session: Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
 
     build(session, "dev")
@@ -46,18 +47,24 @@ def dev(session: nox.Session) -> None:
         )
 
 
-@nox.session()
-def test_env(session: nox.Session) -> None:
-    """Spins up a comprehensive test environment seeded with data."""
+@session()
+def test_env(session: Session) -> None:
+    """
+    Spins up a comprehensive test environment seeded with data.
 
+    Posargs:
+    test: instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+    """
+
+    shell_command = "fides" if "test" in session.posargs else "/bin/bash"
     session.log(
         "Tearing down existing containers & volumes to prepare test environment..."
     )
     try:
         session.run(*COMPOSE_DOWN_VOLUMES, external=True)
-    except nox.command.CommandFailed:
+    except CommandFailed:
         session.error(
-            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other nox sessions and try again"
+            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
         )
     session.notify("teardown", posargs=["volumes"])
 
@@ -69,7 +76,7 @@ def test_env(session: nox.Session) -> None:
     session.log(
         "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
     )
-    session.run(*START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True)
+    session.run(*START_APP_EXTERNAL, "fides-ui", external=True)
 
     session.log(
         "Running example setup scripts for DSR Automation tests... (scripts/load_examples.py)"
@@ -98,11 +105,11 @@ def test_env(session: nox.Session) -> None:
     session.log("Example Mongo Database running at localhost:27017")
     session.log("Username: 'fidestest', Password: 'Apassword1!")
     session.log("Opening Fides CLI shell...")
-    session.run(*RUN_NO_DEPS, "/bin/bash", external=True)
+    session.run(*RUN_NO_DEPS, shell_command, external=True)
 
 
-@nox.session()
-def quickstart(session: nox.Session) -> None:
+@session()
+def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
     session.notify("teardown")
