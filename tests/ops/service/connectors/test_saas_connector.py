@@ -148,25 +148,27 @@ class TestSaasConnector:
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 class TestSaaSConnectorMethods:
-    def test_create_client_from_request(
+    def test_set_saas_request_state_sets_expected_state(
         self, db: Session, segment_connection_config, segment_dataset_config
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
         # Base ClientConfig uses bearer auth
-        assert connector.client_config.authentication.strategy == "bearer"
+        assert connector.get_client_config().authentication.strategy == "bearer"
 
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
         )
         saas_request: SaaSRequest = segment_user_endpoint.requests["read"]
+        connector.set_saas_request_state(saas_request)
 
-        client = connector.create_client_from_request(saas_request)
-        # ClientConfig on read segment user request uses basic auth, and we've overridden client config to match
-        assert connector.client_config.authentication.strategy == "basic"
+        client = connector.create_client()
+        # ClientConfig on read segment user request uses basic auth, updating the state should result in the new stategy for client
         assert client.client_config.authentication.strategy == "basic"
+        assert connector.get_client_config().authentication.strategy == "basic"
 
-        # Test request users bearer auth - creating the client from the request also updates the connector's auth.
+        # Test request users bearer auth - creating the client after setting state also updates the connector's auth.
         test_request: SaaSRequest = connector.saas_config.test_request
-        client = connector.create_client_from_request(test_request)
-        assert connector.client_config.authentication.strategy == "bearer"
+        connector.set_saas_request_state(test_request)
+        client = connector.create_client()
         assert client.client_config.authentication.strategy == "bearer"
+        assert connector.get_client_config().authentication.strategy == "bearer"

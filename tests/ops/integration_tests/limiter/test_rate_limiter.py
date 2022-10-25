@@ -152,8 +152,8 @@ async def test_rate_limiter_full_integration(
 ) -> None:
     """Test rate limiter by creating privacy request to Zendesk and setting a rate limit"""
     rate_limit = 1
-    rate_limit_config = [{"rate": rate_limit, "period": "second"}]
-    zendesk_connection_config.saas_config["rate_limits"] = rate_limit_config
+    rate_limit_config = {"limits": [{"rate": rate_limit, "period": "second"}]}
+    zendesk_connection_config.saas_config["rate_limit_config"] = rate_limit_config
 
     # set up privacy requer to Zendesk
     privacy_request = PrivacyRequest(

@@ -103,7 +103,7 @@ class SaaSRequest(BaseModel):
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
-    rate_limits: Optional[List[RateLimitConfig]]
+    rate_limit_config: Optional[RateLimitConfig]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -310,7 +310,7 @@ class SaaSConfig(SaaSConfigBase):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
-    rate_limits: Optional[List[RateLimitConfig]]
+    rate_limit_config: Optional[RateLimitConfig]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

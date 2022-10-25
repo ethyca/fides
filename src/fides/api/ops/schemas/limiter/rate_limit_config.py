@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -15,7 +15,7 @@ class RateLimitPeriod(str, Enum):
     day = "day"
 
 
-class RateLimitConfig(BaseModel):
+class RateLimit(BaseModel):
     """
     A config object which allows configuring rate limits for connectors
     """
@@ -23,3 +23,12 @@ class RateLimitConfig(BaseModel):
     rate: int
     period: RateLimitPeriod
     custom_key: Optional[str]
+
+
+class RateLimitConfig(BaseModel):
+    """
+    A config object which allows configuring rate limits for connectors
+    """
+
+    limits: Optional[List[RateLimit]]
+    enabled: Optional[bool] = True
