@@ -160,15 +160,31 @@ describe("Dataset", () => {
     it("Can edit dataset fields", () => {
       const newDescription = "new description";
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("field-row-uuid").click();
+      cy.getByTestId("collection-select").select("products");
+      cy.getByTestId("field-row-name").click();
       cy.getByTestId("input-description").clear().type(newDescription);
+
+      // Updating the dataset will trigger a refresh of the GET request.
+      cy.fixture("dataset.json").then((draftDataset) => {
+        draftDataset.collections[1].fields[1].description = newDescription;
+        cy.intercept("GET", "/api/v1/dataset/*", {
+          body: { ...draftDataset },
+        }).as("getDataset");
+      });
+
       cy.getByTestId("save-btn").click({ force: true });
+
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
-        expect(body.collections[0].fields[5].description).to.eql(
+        expect(body.collections[1].fields[1].description).to.eql(
           newDescription
         );
       });
+      cy.wait("@getDataset");
+
+      // The same dataset that was being edited should be shown in the table, updated.
+      cy.getByTestId("edit-drawer-content").should("not.exist");
+      cy.getByTestId("field-row-name").should("contain", newDescription);
     });
 
     it("Can edit dataset collections", () => {
