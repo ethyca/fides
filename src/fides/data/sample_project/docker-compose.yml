@@ -22,9 +22,8 @@ services:
     environment:
       # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-    volumes:
-      # We use a demo toml file for all configuration
-      - ./.fides:/fides/.fides
+      # Hardcode the path to the sample config file
+      FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
 
   # TODO: Do we have an image for this?
   # fides-pc:
