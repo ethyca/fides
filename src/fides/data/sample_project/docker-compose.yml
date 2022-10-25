@@ -25,18 +25,17 @@ services:
       # Hardcode the path to the sample config file
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
 
-  # TODO: Do we have an image for this?
-  # fides-pc:
-  #   image: ethyca/fides-privacy-center:local
-  #   expose:
-  #     - 3000
-  #   ports:
-  #     - "3001:3000"
-  #   volumes:
-  #     - type: bind
-  #       source: ./clients/privacy-center/config
-  #       target: /app/config
-  #       read_only: False
+  fides-pc:
+    image: ethyca/fides-privacy-center:local
+    expose:
+      - 3000
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./clients/privacy-center/config
+        target: /app/config
+        read_only: False
 
   fides-db:
     image: postgres:12
