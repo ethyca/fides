@@ -13,7 +13,9 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  Input,
   MenuItem,
+  Stack,
   Switch,
   Text,
   useDisclosure,
@@ -22,6 +24,7 @@ import {
 import { Form, Formik, FormikProps } from "formik";
 import { ChangeEvent, useRef } from "react";
 import * as Yup from "yup";
+import { CustomSwitch } from "~/features/common/form/inputs";
 
 type ConfigureAlertsProps = {};
 
@@ -84,7 +87,25 @@ const ConfigureAlerts: React.FC<ConfigureAlertsProps> = ({}) => {
               <DrawerBody mt="20px">
                 <Form id="configure-alerts-form" noValidate>
                   <Text fontSize="md">Contact details</Text>
-                  <VStack align="stretch" gap="16px">
+                  <VStack align="stretch" gap="29px" mt="14px">
+                    <HStack>
+                      <FormControl alignItems="baseline" display="inline-flex">
+                        <FormLabel
+                          fontSize="md"
+                          htmlFor="email"
+                          w="30%"
+                        >
+                          Email
+                        </FormLabel>
+                        <Input
+                          autoComplete="off"
+                          name="email"
+                          placeholder="Please enter email"
+                          ref={firstField}
+                          size="sm"
+                        />
+                      </FormControl>
+                    </HStack>
                     <HStack>
                       <FormControl display="flex" alignItems="center" mt="45px">
                         <FormLabel fontSize="md" mb="0">
