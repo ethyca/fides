@@ -4,8 +4,8 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
-import { useAppDispatch } from "~/app/hooks";
 
+import { useAppDispatch } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
@@ -25,6 +25,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
+
 import { changeStep } from "../config-wizard/config-wizard.slice";
 
 const ValidationSchema = Yup.object().shape({
@@ -82,7 +83,7 @@ const DescribeSystemStep = ({
 
   const toast = useToast();
 
-  const handleCancel = () => {
+  const handleBack = () => {
     dispatch(changeStep(2));
   };
 
@@ -192,7 +193,7 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={() => handleCancel()}
+                onClick={handleBack}
                 mr={2}
                 size="sm"
                 variant="outline"

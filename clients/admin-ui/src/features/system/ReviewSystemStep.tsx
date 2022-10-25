@@ -10,21 +10,28 @@ import {
 import { Form, Formik } from "formik";
 import { Fragment } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
 
+import { changeReviewStep } from "../config-wizard/config-wizard.slice";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import { ReviewItem } from "./form-layout";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 
 interface Props {
   system: System;
-  onCancel: () => void;
   onSuccess: () => void;
   abridged?: boolean;
 }
 
-const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
+const ReviewSystemStep = ({ system, onSuccess, abridged }: Props) => {
+  const dispatch = useAppDispatch();
+
+  const handleBack = () => {
+    dispatch(changeReviewStep(2));
+  };
+
   const handleSubmit = () => {
     onSuccess();
   };
@@ -78,7 +85,7 @@ const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
           </Stack>
           <Box>
             <Button
-              onClick={() => onCancel()}
+              onClick={handleBack}
               mr={2}
               size="sm"
               variant="outline"

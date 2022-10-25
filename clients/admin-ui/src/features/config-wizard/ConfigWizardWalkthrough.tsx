@@ -91,7 +91,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 2 && system && (
                   <PrivacyDeclarationStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
@@ -99,7 +98,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 3 && system && (
                   <ReviewSystemStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
                     abridged
                   />
