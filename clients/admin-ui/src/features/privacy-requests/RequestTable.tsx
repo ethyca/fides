@@ -46,12 +46,11 @@ const useRequestTable = () => {
     if (checked) {
       list = [...errorRequests, id];
     } else {
-      errorRequests.filter((value) => value !== id);
-      list = [...errorRequests.filter((value) => value !== id)];
+      list = errorRequests.filter((value) => value !== id);
     }
     dispatch(
       setRetryRequests({
-        checkAll: !!(checked && checkAll),
+        checkAll: checked && checkAll,
         errorRequests: list,
       })
     );
@@ -120,12 +119,8 @@ const RequestTable: React.FC<RequestTableProps> = () => {
               <Checkbox
                 aria-label="Select all"
                 isChecked={checkAll}
+                isDisabled={!requests.some((r) => r.status === "error")}
                 onChange={handleCheckAll}
-                pointerEvents={
-                  requests.findIndex((r) => r.status === "error") !== -1
-                    ? "auto"
-                    : "none"
-                }
               />
             </Th>
             <Th pl={0}>Status</Th>
