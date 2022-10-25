@@ -78,7 +78,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     build_matrix = {
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
-        "sample": {"tag": lambda: IMAGE_SAMPLE, "target": "dev"},
+        "sample": {"tag": lambda: IMAGE_SAMPLE, "target": "prod"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }

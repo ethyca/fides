@@ -1,6 +1,5 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
-from os import getenv
 from platform import system
 
 import click
