@@ -3,6 +3,7 @@ from os.path import dirname, join
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
+import fides
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -109,3 +110,22 @@ def start_application() -> None:
     run_shell(
         DOCKER_COMPOSE_COMMAND + "up --wait",
     )
+
+
+def pull_specific_docker_image() -> None:
+    """
+    Pulls a specific docker image version, based on the
+    current version of the application.
+
+    If no matching version is found, pull the most recent versions instead.
+    """
+
+    current_fides_version = fides.__version__
+    print(f"Local fides version: {current_fides_version}")
+
+    try:
+        run_shell(f"docker pull ethyca/fides:{current_fides_version}")
+        run_shell(f"docker pull ethyca/fides-privacy-center:{current_fides_version}")
+    except CalledProcessError:
+        run_shell("docker pull ethyca/fides:dev")
+        run_shell("docker pull ethyca/fides-privacy-center:latest")

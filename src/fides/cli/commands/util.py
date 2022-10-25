@@ -19,6 +19,7 @@ from fides.ctl.core.deploy import (
     seed_example_data,
     start_application,
     teardown_application,
+    pull_specific_docker_image,
 )
 from fides.ctl.core.utils import echo_green
 
@@ -156,7 +157,8 @@ def deploy(ctx: click.Context) -> None:
 @click.pass_context
 @with_analytics
 @click.option("--command", "-c", type=str, default="")
-def up(ctx: click.Context, command: str = "") -> None:
+@click.option("--no-pull", is_flag=True, help="Use a local image instead of trying to pull from Dockerhub.")
+def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
     """
     Starts the demo fides application via docker compose.
 
@@ -169,6 +171,9 @@ def up(ctx: click.Context, command: str = "") -> None:
     check_docker_version()
     echo_green("Docker version is compatible, starting fides...")
 
+    if not no_pull:
+        pull_specific_docker_image()
+
     try:
         start_application()
         seed_example_data()
@@ -180,6 +185,7 @@ def up(ctx: click.Context, command: str = "") -> None:
         echo_green("- Run `fides deploy down` to stop the application.")
     except CalledProcessError:
         teardown_application()
+        raise SystemExit(1)
 
 
 @deploy.command()
