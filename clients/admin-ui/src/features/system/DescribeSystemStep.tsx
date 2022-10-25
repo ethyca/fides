@@ -2,7 +2,7 @@ import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import {
@@ -191,9 +191,9 @@ const DescribeSystemStep = ({
                 mr={2}
                 size="sm"
                 variant="outline"
-                data-testid="cancel-btn"
+                data-testid="back-btn"
               >
-                Cancel
+                Back
               </Button>
               <Button
                 type="submit"

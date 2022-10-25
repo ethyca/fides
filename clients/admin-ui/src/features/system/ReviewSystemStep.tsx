@@ -8,7 +8,7 @@ import {
   Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 
 import ReviewSystemFormExtension from "~/features/system/ReviewSystemFormExtension";
 import { System } from "~/types/api";
@@ -82,9 +82,9 @@ const ReviewSystemStep = ({ system, onCancel, onSuccess, abridged }: Props) => {
               mr={2}
               size="sm"
               variant="outline"
-              data-testid="cancel-btn"
+              data-testid="back-btn"
             >
-              Cancel
+              Back
             </Button>
             {/* TODO FUTURE: This button doesn't do any registering yet until data maps are added */}
             <Button

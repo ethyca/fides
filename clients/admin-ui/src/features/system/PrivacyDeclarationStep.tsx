@@ -2,7 +2,7 @@ import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { FormikHelpers } from "formik";
-import React, { Fragment, useState } from "react";
+import { Fragment, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PrivacyDeclaration, System } from "~/types/api";
@@ -149,9 +149,9 @@ const PrivacyDeclarationStep = ({
           mr={2}
           size="sm"
           variant="outline"
-          data-testid="cancel-btn"
+          data-testid="back-btn"
         >
-          Cancel
+          Back
         </Button>
         <Button
           colorScheme="primary"

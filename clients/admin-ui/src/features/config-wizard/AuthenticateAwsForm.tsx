@@ -241,7 +241,7 @@ const AuthenticateAwsForm = () => {
                   variant="outline"
                   onClick={!isSubmitting ? handleCancel : onOpen}
                 >
-                  Cancel
+                  Back
                 </Button>
                 <Button
                   type="submit"
