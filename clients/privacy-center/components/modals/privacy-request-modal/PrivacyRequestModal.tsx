@@ -1,8 +1,6 @@
 import React, { useCallback, useState } from "react";
 import RequestModal from "../RequestModal";
 
-import type { AlertState } from "../../../types/AlertState";
-
 import config from "../../../config/config.json";
 
 import PrivacyRequestForm from "./PrivacyRequestForm";
@@ -52,7 +50,6 @@ export type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
-  setAlert: (state: AlertState) => void;
   currentView: ModalViews;
   setCurrentView: (view: ModalViews) => void;
   privacyRequestId: string;
@@ -65,7 +62,6 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   isOpen,
   onClose,
   openAction,
-  setAlert,
   currentView,
   setCurrentView,
   privacyRequestId,
@@ -89,7 +85,6 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         openAction={openAction}
-        setAlert={setAlert}
         setCurrentView={setCurrentView}
         setPrivacyRequestId={setPrivacyRequestId}
         isVerificationRequired={isVerificationRequired}
@@ -102,7 +97,6 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
       <VerificationForm
         isOpen={isOpen}
         onClose={onClose}
-        setAlert={setAlert}
         requestId={privacyRequestId}
         setCurrentView={setCurrentView}
         resetView={ModalViews.PrivacyRequest}
