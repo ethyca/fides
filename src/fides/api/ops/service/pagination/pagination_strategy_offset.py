@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, Optional, Union
 
 import pydash
@@ -12,6 +13,8 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     OffsetPaginationConfiguration,
 )
 from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class OffsetPaginationStrategy(PaginationStrategy):
@@ -62,7 +65,8 @@ class OffsetPaginationStrategy(PaginationStrategy):
                     f"The value '{limit}' of the '{self.limit.connector_param}' connector_param could not be cast to an int"
                 )
         param_value += self.increment_by
-        if param_value > limit:
+        if limit and param_value > limit:
+            logger.info("Pagination limit has been reached")
             return None
 
         # update query param and return updated request_param tuple
