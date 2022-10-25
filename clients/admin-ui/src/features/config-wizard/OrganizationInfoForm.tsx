@@ -135,8 +135,7 @@ const OrganizationInfoForm = () => {
         </Heading>
         <div>
           Provide your organization information. This information is used to
-          configure your organization in Fidesctl for data map reporting
-          purposes.
+          configure your organization in Fides for data map reporting purposes.
         </div>
         <Stack>
           <FormControl>
