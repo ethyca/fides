@@ -11,7 +11,7 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
 jobs:
-  Docs:
+  Nox-Test-Env:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
