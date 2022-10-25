@@ -172,6 +172,7 @@ def up(ctx: click.Context, command: str = "") -> None:
     try:
         start_application()
         seed_example_data()
+        echo_green(FIDES_ASCII_ART)
         echo_green("Fides successfully deployed and running in the background!")
         echo_green("Next steps:")
         echo_green("- Visit localhost:8080 in your browser to get started.")
