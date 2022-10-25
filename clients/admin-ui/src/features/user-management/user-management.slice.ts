@@ -3,18 +3,21 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 
-import type { RootState } from "../../app/store";
-import { BASE_URL } from "../../constants";
+import type { RootState } from "~/app/store";
+import { BASE_URL } from "~/constants";
+
 import { selectToken } from "../auth";
 import {
   User,
-  UserPasswordUpdate,
+  UserCreate,
+  UserCreateResponse,
+  UserPasswordResetParams,
   UserPermissions,
-  UserPermissionsResponse,
-  UserPermissionsUpdate,
+  UserPermissionsEditParams,
   UserResponse,
   UsersListParams,
   UsersResponse,
+  UserUpdateParams,
 } from "./types";
 
 export interface UserManagementState {
@@ -102,7 +105,7 @@ export const userApi = createApi({
       query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ["User"],
     }),
-    createUser: build.mutation<UserResponse, Partial<User>>({
+    createUser: build.mutation<UserCreateResponse, UserCreate>({
       query: (user) => ({
         url: "user",
         method: "POST",
@@ -110,18 +113,7 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
-    createUserPermissions: build.mutation<
-      UserPermissionsResponse,
-      Partial<UserPermissionsResponse>
-    >({
-      query: (user) => ({
-        url: `user/${user?.data?.id}/permission`,
-        method: "POST",
-        body: { scopes: user.scope },
-      }),
-      invalidatesTags: ["User"],
-    }),
-    editUser: build.mutation<User, Partial<User> & Pick<User, "id">>({
+    editUser: build.mutation<User, UserUpdateParams>({
       query: ({ id, ...patch }) => ({
         url: `user/${id}`,
         method: "PUT",
@@ -148,10 +140,7 @@ export const userApi = createApi({
         }
       },
     }),
-    updateUserPassword: build.mutation<
-      UserPasswordUpdate,
-      Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, "id">
-    >({
+    updateUserPassword: build.mutation<UserResponse, UserPasswordResetParams>({
       query: ({ id, old_password, new_password }) => ({
         url: `user/${id}/reset-password`,
         method: "POST",
@@ -163,13 +152,13 @@ export const userApi = createApi({
       invalidatesTags: ["User"],
     }),
     updateUserPermissions: build.mutation<
-      UserPermissionsUpdate,
-      Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, "id">
+      UserPermissions,
+      UserPermissionsEditParams
     >({
-      query: ({ id, scopes }) => ({
-        url: `user/${id}/permission`,
+      query: ({ user_id, scopes }) => ({
+        url: `user/${user_id}/permission`,
         method: "PUT",
-        body: { id, scopes },
+        body: { id: user_id, scopes },
       }),
       invalidatesTags: ["User"],
     }),
@@ -192,6 +181,5 @@ export const {
   useDeleteUserMutation,
   useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
-  useCreateUserPermissionsMutation,
   useGetUserPermissionsQuery,
 } = userApi;
