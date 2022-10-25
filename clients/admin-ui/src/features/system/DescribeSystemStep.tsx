@@ -4,6 +4,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
+import { useAppDispatch } from "~/app/hooks";
 
 import {
   CustomCreatableMultiSelect,
@@ -24,6 +25,7 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
+import { changeStep } from "../config-wizard/config-wizard.slice";
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),
@@ -44,14 +46,12 @@ const SystemHeading = ({ system }: { system?: System }) => {
 };
 
 interface Props {
-  onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
   system?: System;
 }
 
 const DescribeSystemStep = ({
-  onCancel,
   onSuccess,
   abridged,
   system: passedInSystem,
@@ -66,6 +66,7 @@ const DescribeSystemStep = ({
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const { data: systems } = useGetAllSystemsQuery();
   const systemOptions = systems
     ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
@@ -80,6 +81,10 @@ const DescribeSystemStep = ({
   );
 
   const toast = useToast();
+
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = transformFormValuesToSystem(values);
@@ -187,7 +192,7 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={() => onCancel()}
+                onClick={() => handleCancel()}
                 mr={2}
                 size="sm"
                 variant="outline"

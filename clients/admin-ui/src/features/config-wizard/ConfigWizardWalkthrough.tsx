@@ -1,7 +1,6 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
@@ -85,7 +84,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 1 && (
                   <DescribeSystemStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
