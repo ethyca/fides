@@ -1,7 +1,7 @@
 services:
   fides:
     image: ethyca/fides:local
-    command: fides webserver
+    command: fides webserver # TODO: remove, redundant? or keep, illustrative?
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
