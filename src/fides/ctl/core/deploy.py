@@ -104,7 +104,7 @@ def teardown_application() -> None:
     run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
-def open_demo_shell(command: str = "") -> None:
+def run_container_command(command: str = "") -> None:
     """
     Opens a shell inside of the demo fides container.
 

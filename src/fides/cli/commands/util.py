@@ -13,9 +13,9 @@ from fides.cli.utils import (
     send_init_analytics,
     with_analytics,
 )
-from fides.ctl.core.demo import (
+from fides.ctl.core.deploy import (
     check_docker_version,
-    open_demo_shell,
+    run_container_command,
     seed_example_data,
     start_application,
     teardown_application,
@@ -148,7 +148,7 @@ def worker(ctx: click.Context) -> None:
 @click.pass_context
 @with_analytics
 @click.option("--command", "-c", type=str, default="")
-def demo(ctx: click.Context, command: str = "") -> None:
+def deploy(ctx: click.Context, command: str = "") -> None:
     """
     Starts the application via docker compose.
 
@@ -162,6 +162,6 @@ def demo(ctx: click.Context, command: str = "") -> None:
         check_docker_version()
         start_application()
         seed_example_data()
-        open_demo_shell(command)
+        run_container_command(command)
     finally:
         teardown_application()
