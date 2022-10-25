@@ -18,7 +18,7 @@ class CLISettings(FidesSettings):
 
     server_protocol: str = "http"
     server_host: str = "localhost"
-    server_port: Optional[int]
+    server_port: str = "8080"
     server_url: Optional[AnyHttpUrl]
 
     @validator("server_url", always=True)
@@ -26,7 +26,7 @@ class CLISettings(FidesSettings):
     def get_server_url(cls, value: str, values: Dict) -> str:
         "Create the server_url."
         host = values["server_host"]
-        port = values["server_port"]
+        port = int(values["server_port"])
         protocol = values["server_protocol"]
 
         server_url = "{}://{}{}".format(
