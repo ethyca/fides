@@ -16,6 +16,8 @@ class CLISettings(FidesSettings):
     local_mode: bool = False
     analytics_id: str = generate_client_id(FIDESCTL_CLI)
 
+    # These defaults are required to make connecting to
+    # docker instances possible by default
     server_protocol: str = "http"
     server_host: str = "localhost"
     server_port: str = "8080"
