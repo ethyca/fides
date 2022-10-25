@@ -4,7 +4,14 @@ from typing import List
 
 import nox
 
-from constants_nox import IMAGE, IMAGE_DEV, IMAGE_LATEST, IMAGE_LOCAL, IMAGE_LOCAL_UI
+from constants_nox import (
+    IMAGE,
+    IMAGE_DEV,
+    IMAGE_LATEST,
+    IMAGE_LOCAL,
+    IMAGE_LOCAL_UI,
+    IMAGE_SAMPLE,
+)
 
 
 def get_current_tag() -> str:
@@ -47,6 +54,7 @@ def get_platform(posargs: List[str]) -> str:
     [
         nox.param("dev", id="dev"),
         nox.param("prod", id="prod"),
+        nox.param("sample", id="sample"),
         nox.param("test", id="test"),
         nox.param("admin_ui", id="admin-ui"),
         nox.param("privacy_center", id="privacy-center"),
@@ -66,10 +74,11 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             )
 
     # The lambdas are a workaround to lazily evaluate get_current_image
-    # This allows the dev deployment to run without needing other dev requirements
+    # This allows the dev deployment to run without requirements
     build_matrix = {
         "prod": {"tag": get_current_image, "target": "prod"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
+        "sample": {"tag": lambda: IMAGE_SAMPLE, "target": "dev"},
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }

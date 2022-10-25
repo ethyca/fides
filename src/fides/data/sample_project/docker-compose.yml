@@ -1,6 +1,6 @@
 services:
   fides:
-    image: ethyca/fides:local
+    image: ethyca/fides:sample
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -99,7 +99,7 @@ services:
 
   # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
   worker:
-    image: ethyca/fides:local
+    image: ethyca/fides:sample
     command: fides worker
     depends_on:
       redis:
