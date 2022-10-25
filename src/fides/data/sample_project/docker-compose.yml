@@ -1,7 +1,6 @@
 services:
   fides:
     image: ethyca/fides:local
-    command: fides webserver # TODO: remove, redundant? or keep, illustrative?
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -23,20 +22,9 @@ services:
     environment:
       # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-      # FIDES__CLI__SERVER_HOST: "fides"
-      # FIDES__CLI__SERVER_PORT: "8080"
-
-      # FIDES__DATABASE__USER: "postgres"
-      # FIDES__DATABASE__PASSWORD: "fides"
-      # FIDES__DATABASE__DB: "fides"
-      # FIDES__DATABASE__SERVER: "fides-db"
-      # FIDES__DATABASE__PORT: "5432"
-
-      # FIDES__REDIS__ENABLED: "True"
-      # FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
+      # We use a demo toml file for all configuration
       - ./.fides:/fides/.fides
-
 
   # TODO: Do we have an image for this?
   # fides-pc:

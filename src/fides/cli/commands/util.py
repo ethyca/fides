@@ -144,13 +144,21 @@ def worker(ctx: click.Context) -> None:
     start_worker()
 
 
-@click.command()
+@click.group(name="deploy")
+@click.pass_context
+def deploy(ctx: click.Context) -> None:
+    """
+    Deploy a demo fides application.
+    """
+
+
+@deploy.command()
 @click.pass_context
 @with_analytics
 @click.option("--command", "-c", type=str, default="")
-def deploy(ctx: click.Context, command: str = "") -> None:
+def up(ctx: click.Context, command: str = "") -> None:
     """
-    Starts the application via docker compose.
+    Starts the demo fides application via docker compose.
 
     Uses the fides.toml that exists within the container.
 
@@ -165,3 +173,15 @@ def deploy(ctx: click.Context, command: str = "") -> None:
         run_container_command(command)
     finally:
         teardown_application()
+
+
+@deploy.command()
+@click.pass_context
+@with_analytics
+def down(ctx: click.Context) -> None:
+    """
+    Stops the demo fides application.
+    """
+
+    check_docker_version()
+    teardown_application()
