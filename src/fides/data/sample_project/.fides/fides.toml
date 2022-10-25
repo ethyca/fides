@@ -1,0 +1,36 @@
+[database]
+server = "fides-db" # TODO: localhost?
+user = "postgres"
+password = "postgres"
+port = "5432"
+db = "fides"
+
+[redis]
+enabled = true
+host = "redis" # TODO: localhost?
+password = "redispass"
+port = 6379
+db_index = 0
+
+[security]
+app_encryption_key = "atestencryptionkeythatisvalidlen" # TODO: autogenerate?
+cors_origins = [ "http://localhost:8080", "http://localhost:8081", ]
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+root_username = "fidesuser" # TODO: remove, use the setup script only?
+root_password = "PrivacyAsC0de!" # TODO: autogenerate?
+
+[execution]
+require_manual_request_approval = true
+
+# TODO: remove, use a separate file?
+[cli]
+server_host = "fides"
+server_port = 8080
+
+# TODO: remove these, keep analytics on
+[root_user]
+analytics_opt_out = true
+
+[user]
+analytics_opt_out = true

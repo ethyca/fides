@@ -1,6 +1,7 @@
 services:
   fides:
     image: ethyca/fides:local
+    command: fides webserver
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
       interval: 20s
@@ -20,20 +21,22 @@ services:
     expose:
       - 8080
     environment:
-      FIDES__CONFIG_PATH: "/fides/.fides/fides.toml"
-
-      FIDES__CLI__SERVER_HOST: "fides"
-      FIDES__CLI__SERVER_PORT: "8080"
-
-      FIDES__DATABASE__USER: "postgres"
-      FIDES__DATABASE__PASSWORD: "fides"
-      FIDES__DATABASE__DB: "fides"
-      FIDES__DATABASE__SERVER: "fides-db"
-      FIDES__DATABASE__PORT: "5432"
-
+      # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-      FIDES__REDIS__ENABLED: "True"
-      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      # FIDES__CLI__SERVER_HOST: "fides"
+      # FIDES__CLI__SERVER_PORT: "8080"
+
+      # FIDES__DATABASE__USER: "postgres"
+      # FIDES__DATABASE__PASSWORD: "fides"
+      # FIDES__DATABASE__DB: "fides"
+      # FIDES__DATABASE__SERVER: "fides-db"
+      # FIDES__DATABASE__PORT: "5432"
+
+      # FIDES__REDIS__ENABLED: "True"
+      # FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - ./.fides:/fides/.fides
+
 
   # TODO: Do we have an image for this?
   # fides-pc:
@@ -61,16 +64,16 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "fides"
+      POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "fides"
     volumes:
       - postgres:/var/lib/postgresql/data
 
   redis:
     image: "redis:6.2.5-alpine"
-    command: redis-server --requirepass testpassword
+    command: redis-server --requirepass redispass
     environment:
-      - REDIS_PASSWORD=testpassword
+      - REDIS_PASSWORD=redispass
     expose:
       - 6379
     ports:
@@ -92,7 +95,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "postgres_example"
     volumes:
-      - ./postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql:ro
+      - ./postgres_sample.sql:/docker-entrypoint-initdb.d/postgres_sample.sql:ro
 
   mongodb-test:
     image: mongo:5.0.3
@@ -105,8 +108,9 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongo_sample.js:/docker-entrypoint-initdb.d/mongo_sample.js:ro
 
+  # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
   worker:
     image: ethyca/fides:local
     command: fides worker
@@ -116,6 +120,8 @@ services:
     restart: always
     environment:
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - ./.fides:/fides/.fides
 
 volumes:
   postgres: null
