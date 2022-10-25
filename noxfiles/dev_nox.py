@@ -1,5 +1,6 @@
 """Contains the nox sessions for running development environments."""
-from nox import session, Session
+from nox import Session
+from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
@@ -14,7 +15,7 @@ from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
-@session()
+@nox_session()
 def dev(session: Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
 
@@ -47,7 +48,7 @@ def dev(session: Session) -> None:
         )
 
 
-@session()
+@nox_session()
 def test_env(session: Session) -> None:
     """
     Spins up a comprehensive test environment seeded with data.
@@ -136,7 +137,7 @@ def test_env(session: Session) -> None:
     session.run(*RUN_NO_DEPS, shell_command, external=True, env=test_env_vars)
 
 
-@session()
+@nox_session()
 def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
