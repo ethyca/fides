@@ -28,10 +28,19 @@
       }
     }
   ],
-  "includeConsent": false,
+  "includeConsent": true,
   "consent": {
     "cookieName": "fides_consent",
     "consentOptions": [
+      {
+        "fidesDataUseKey": "provide.service",
+        "name": "Provide our Service",
+        "default": true,
+        "url": "https://example.com/privacy#essential",
+        "highlight": true,
+        "description": "We may collect some of your personal information, such as contact data, to manage your account and provide our services to you.",
+        "cookieKeys": ["essential"]
+      },
       {
         "fidesDataUseKey": "advertising",
         "name": "Advertising / Data Sharing",
@@ -39,7 +48,7 @@
         "url": "https://example.com/privacy#advertising",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["data_sales"]
+        "cookieKeys": ["data_sales", "data_sharing"]
       },
       {
         "fidesDataUseKey": "improve",
@@ -48,31 +57,7 @@
         "url": "https://example.com/privacy#data-sales",
         "default": true,
         "highlight": false,
-        "cookieKeys": ["data_sales"]
-      },
-      {
-        "name": "Analytics",
-        "fidesDataUseKey": "third_party_sharing",
-        "description": "...",
-        "url": "https://example.com/privacy#analytics",
-        "cookieKeys": ["data_sharing"]
-      },
-      {
-        "name": "Personalize",
-        "fidesDataUseKey": "personalize",
-        "default": true,
-        "url": "https://example.com/privacy#personalize",
-        "description": "...",
-        "cookieKeys": ["functional"]
-      },
-      {
-        "name": "Essential",
-        "fidesDataUseKey": "provide.service",
-        "default": true,
-        "url": "https://example.com/privacy#essential",
-        "highlight": true,
-        "description": "...",
-        "cookieKeys": ["essential"]
+        "cookieKeys": []
       }
     ]
   }
