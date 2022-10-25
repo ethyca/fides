@@ -129,3 +129,6 @@ def pull_specific_docker_image() -> None:
     except CalledProcessError:
         run_shell("docker pull ethyca/fides:dev")
         run_shell("docker pull ethyca/fides-privacy-center:latest")
+    else:
+        run_shell("docker tag ethyca/fides:dev ethyca/fides:sample")
+        run_shell("docker tag ethyca/fides-privacy-center:sample")

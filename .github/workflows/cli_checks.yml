@@ -46,7 +46,7 @@ jobs:
         run: pip install .
 
       - name: Start the sample application
-        run: fides deploy up
+        run: fides deploy up --no-pull
       
       - name: Stop the sample application
         run: fides deploy down
