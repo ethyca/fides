@@ -104,18 +104,6 @@ def teardown_application() -> None:
     run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
-def run_container_command(command: str = "") -> None:
-    """
-    Opens a shell inside of the demo fides container.
-
-    If "test" is set to True, prints out the fides CLI help command and exits.
-    """
-    shell_command = command or "/bin/bash"
-    run_shell(
-        DOCKER_COMPOSE_COMMAND + f"run --no-deps --rm fides {shell_command}",
-    )
-
-
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
     run_shell(

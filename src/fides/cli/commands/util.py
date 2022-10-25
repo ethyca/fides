@@ -1,6 +1,7 @@
 """Contains all of the Utility-type CLI commands for fides."""
 import os
 from datetime import datetime, timezone
+from subprocess import CalledProcessError
 
 import click
 import toml
@@ -15,7 +16,6 @@ from fides.cli.utils import (
 )
 from fides.ctl.core.deploy import (
     check_docker_version,
-    run_container_command,
     seed_example_data,
     start_application,
     teardown_application,
@@ -166,12 +166,18 @@ def up(ctx: click.Context, command: str = "") -> None:
     the container shell to run.
     """
 
+    check_docker_version()
+    echo_green("Docker version is compatible, starting fides...")
+
     try:
-        check_docker_version()
         start_application()
         seed_example_data()
-        run_container_command(command)
-    finally:
+        echo_green("Fides successfully deployed and running in the background!")
+        echo_green("Next steps:")
+        echo_green("- Visit localhost:8080 in your browser to get started.")
+        echo_green("- Visit ethyca.github.io/fides for documentation.")
+        echo_green("- Run `fides deploy down` to stop the application.")
+    except CalledProcessError:
         teardown_application()
 
 
