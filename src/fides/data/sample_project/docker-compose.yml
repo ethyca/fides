@@ -26,7 +26,7 @@ services:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
 
   fides-pc:
-    image: ethyca/fides-privacy-center:local
+    image: ethyca/fides-privacy-center:sample
     expose:
       - 3000
     ports:

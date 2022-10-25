@@ -82,6 +82,18 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
+
+    if image == "sample":
+        # Build the privacy center here, but let the webserver image build later
+        session.run(
+            "docker",
+            "build",
+            "clients/privacy-center",
+            "--tag",
+            "ethyca/fides-privacy-center:sample",
+            external=True,
+        )
+
     if image == "privacy_center":
         session.run(
             "docker",
