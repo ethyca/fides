@@ -32,7 +32,7 @@ async def test_saas_access_request_task(
     """Full access request based on the slack SaaS config"""
 
     privacy_request = PrivacyRequest(
-        id=f"test_slack_access_request_task_{random.randint(0, 250)}"
+        id=f"test_slack_access_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
     identity_value = slack_identity_email
@@ -51,7 +51,7 @@ async def test_saas_access_request_task(
         {identity_attribute: slack_identity_email},
         db,
     )
-    key_user = f"{dataset_name}:users_lookup_By_Email"
+    key_user = f"{dataset_name}:user"
     assert_rows_match(
         v[key_user],
         min_size=1,
@@ -66,5 +66,5 @@ async def test_saas_access_request_task(
         ],
     )
 
-    profile = v[key_user]["profile"]
+    profile = v[key_user][0]["profile"]
     assert profile["email"] == slack_identity_email

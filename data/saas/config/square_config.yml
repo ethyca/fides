@@ -54,7 +54,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-
     - name: locations
       requests:
         read:
@@ -67,7 +66,6 @@ saas_config:
             - name: email
               identity: email
           data_path: locations
-
     - name: orders
       requests:
         read:

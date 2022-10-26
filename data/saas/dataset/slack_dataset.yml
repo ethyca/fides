@@ -3,12 +3,13 @@ dataset:
     name: Slack Dataset
     description: A sample dataset representing the Slack Connector for Fidesops
     collections:
-      - name: users_lookup_By_Email
+      - name: user
         fields:
           - name: id
             data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
+              primary_key: True
           - name: team_id
             data_categories: [system.operations]
             fidesops_meta:

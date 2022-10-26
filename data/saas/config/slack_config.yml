@@ -19,18 +19,23 @@ saas_config:
 
   test_request:
     method: GET
-    path: /api/users.lookupByEmail
+    path: /api/api.test
     query_params:
       - name: email
-        identity: email
+        value: test@test.com
+
 
   endpoints:
-    - name: users_lookup_By_Email
+    - name: user
       requests:
         read:
           method: GET
           path: /api/users.lookupByEmail
           query_params:
             - name: email
+              value: <email>
+          param_values:
+            - name: email
               identity: email
+
           data_path: user

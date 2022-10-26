@@ -36,7 +36,6 @@ saas_config:
             - name: placeholder
               identity: email
           data_path: result
-
     - name: project_access_tokens
       requests:
         read:
@@ -59,7 +58,6 @@ saas_config:
                 field: name
                 value: read
           data_path: result
-
     - name: instances
       requests:
         read:
