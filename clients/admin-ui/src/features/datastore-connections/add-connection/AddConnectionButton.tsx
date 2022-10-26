@@ -15,7 +15,7 @@ const AddConnectionButton: React.FC = () => (
       _hover={{ bg: "primary.400" }}
       _active={{ bg: "primary.500" }}
     >
-      Create New Connection
+      Create new connection
     </Button>
   </NextLink>
 );

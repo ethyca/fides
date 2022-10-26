@@ -95,7 +95,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-              Delete Connection
+              Delete connection
             </Button>
           </ModalFooter>
         </ModalContent>
