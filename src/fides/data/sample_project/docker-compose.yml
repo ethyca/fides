@@ -22,7 +22,7 @@ services:
     environment:
       # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
       FIDES__EXECUTION__WORKER_ENABLED: "True"
-      # Hardcode the path to the sample config file
+      # The sample fides config already exists in the container, so no need to mount it
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
     volumes:
       # Mount a dir for privacy request files
@@ -34,6 +34,11 @@ services:
       - 3000
     ports:
       - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./privacy_center_config/
+        target: /app/config
+        read_only: False
 
   fides-db:
     image: postgres:12
