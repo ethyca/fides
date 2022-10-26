@@ -153,6 +153,29 @@ class TestCreateClient:
         assert 422 == response.status_code
         assert response.json()["detail"].startswith("Invalid Scope.")
 
+    def test_create_client_with_root_client(self, url, api_client):
+        data = {
+            "client_id": CONFIG.security.oauth_root_client_id,
+            "client_secret": CONFIG.security.oauth_root_client_secret,
+        }
+
+        # creates a token with all the scopes
+        token_url = V1_URL_PREFIX + TOKEN
+
+        response = api_client.post(token_url, data=data)
+        jwt = json.loads(response.text).get("access_token")
+
+        auth_header = {"Authorization": "Bearer " + jwt}
+
+        # Tries to create a separate client with token that has all the scopes
+        response = api_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        assert "client_id" in response.json()
+        assert "client_secret" in response.json()
+
 
 class TestGetClientScopes:
     @pytest.fixture(scope="function")
