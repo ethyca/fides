@@ -26,6 +26,12 @@ root_password = "PrivacyAsC0de!" # TODO: autogenerate?
 [execution]
 require_manual_request_approval = true
 
+# TODO: remove
+[notifications]
+send_request_completion_notification = false
+send_request_receipt_notification = false
+send_request_review_notification = false
+
 # TODO: remove, use a separate file?
 [cli]
 server_host = "fides"

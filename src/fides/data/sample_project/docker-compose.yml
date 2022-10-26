@@ -24,9 +24,8 @@ services:
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       # The sample fides config already exists in the container, so no need to mount it
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-    volumes:
-      # Mount a dir for privacy request files
-      - ./fides_tmp:/fides/fides_uploads
+      # TODO: remove
+      FIDES__DEV_MODE: "True"
 
   fides-pc:
     image: ethyca/fides-privacy-center:sample
@@ -109,8 +108,10 @@ services:
     restart: always
     environment:
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-    volumes:
-      - ./.fides:/fides/.fides
+      # The sample fides config already exists in the container, so no need to mount it
+      FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
+      # TODO: remove
+      FIDES__DEV_MODE: "True"
 
 volumes:
   postgres: null
