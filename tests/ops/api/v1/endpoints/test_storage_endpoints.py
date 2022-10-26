@@ -147,34 +147,6 @@ class TestPatchStorageConfig:
         assert 403 == response.status_code
         mock_scheduled_task.assert_not_called()
 
-    def test_patch_storage_config_with_onetrust_format_conflict(
-        self,
-        db: Session,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-    ):
-        payload = [
-            {
-                "name": "my test destination",
-                "type": "onetrust",
-                "details": {
-                    "service_name": "a-service",
-                    "onetrust_polling_hr": 1,
-                    "onetrust_polling_day_of_week": 1,
-                },
-                "format": "csv",
-            }
-        ]
-
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 422 == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "Only JSON upload format is supported for OneTrust and local storage destinations."
-        )
-
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
     )
@@ -213,44 +185,6 @@ class TestPatchStorageConfig:
         assert (
             json.loads(response.text)["detail"][0]["msg"]
             == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
-        )
-
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
-    def test_patch_storage_configs_limits_exceeded(
-        self,
-        _,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-    ):
-
-        payload = []
-        for i in range(0, 51):
-            payload.append(
-                {
-                    "name": f"my test destination {i}",
-                    "type": "onetrust",
-                    "details": {
-                        "bucket": "some-bucket",
-                        "object_name": "requests",
-                        "naming": "some-filename-convention-enum",
-                        "max_retries": 10,
-                    },
-                    "format": "csv",
-                }
-            )
-
-        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-
-        assert 422 == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
         )
 
     @mock.patch(
@@ -415,20 +349,6 @@ class TestPutStorageConfigSecretsS3:
             StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
         }
 
-    @pytest.fixture(scope="function")
-    def onetrust_url(self, storage_config_onetrust) -> str:
-        return (V1_URL_PREFIX + STORAGE_SECRETS).format(
-            config_key=storage_config_onetrust.key
-        )
-
-    @pytest.fixture(scope="function")
-    def onetrust_payload(self):
-        return {
-            StorageSecrets.ONETRUST_CLIENT_ID.value: "1345234524",
-            StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23451345834789",
-            StorageSecrets.ONETRUST_HOSTNAME.value: "a-hostname",
-        }
-
     def test_put_config_secrets_unauthenticated(
         self, api_client: TestClient, payload, url
     ):
@@ -560,166 +480,6 @@ class TestPutStorageConfigSecretsS3:
                 "aws_secret_access_key": payload["aws_secret_access_key"],
             },
         )
-
-    @mock.patch(
-        "fides.api.ops.service.storage.storage_authenticator_service.get_onetrust_access_token"
-    )
-    def test_put_onetrust_config_secrets_and_verify(
-        self,
-        get_onetrust_access_token_mock: Mock,
-        api_client: TestClient,
-        onetrust_payload,
-        onetrust_url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        response = api_client.put(
-            onetrust_url, headers=auth_header, json=onetrust_payload
-        )
-        assert 200 == response.status_code
-        get_onetrust_access_token_mock.assert_called_once_with(
-            client_id=onetrust_payload[StorageSecrets.ONETRUST_CLIENT_ID.value],
-            client_secret=onetrust_payload[StorageSecrets.ONETRUST_CLIENT_SECRET.value],
-            hostname=onetrust_payload[StorageSecrets.ONETRUST_HOSTNAME.value],
-        )
-
-
-class TestPutStorageConfigSecretsOneTrust:
-    @pytest.fixture(scope="function")
-    def url(self, storage_config_onetrust) -> str:
-        return (V1_URL_PREFIX + STORAGE_SECRETS).format(
-            config_key=storage_config_onetrust.key
-        )
-
-    @pytest.fixture(scope="function")
-    def payload(self):
-        return {
-            StorageSecrets.ONETRUST_CLIENT_ID.value: "23iutby1oiur",
-            StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23i4bty1i3urhnlw",
-            StorageSecrets.ONETRUST_HOSTNAME.value: "peanutbutter.onetrust",
-        }
-
-    def test_put_config_secrets_unauthenticated(
-        self, api_client: TestClient, payload, url
-    ):
-        response = api_client.put(url, headers={}, json=payload)
-        assert 401 == response.status_code
-
-    def test_put_config_secrets_wrong_scope(
-        self, api_client: TestClient, payload, url, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_READ])
-        response = api_client.put(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
-
-    def test_put_config_secret_invalid_config(
-        self, api_client: TestClient, payload, generate_auth_header
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        url = (V1_URL_PREFIX + STORAGE_SECRETS).format(config_key="invalid_key")
-        response = api_client.put(url, headers=auth_header, json=payload)
-        assert 404 == response.status_code
-
-    def test_put_config_secrets_without_verifying(
-        self,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-        storage_config_onetrust,
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        response = api_client.put(
-            url + "?verify=False", headers=auth_header, json=payload
-        )
-        assert 200 == response.status_code
-
-        db.refresh(storage_config_onetrust)
-
-        assert json.loads(response.text) == {
-            "msg": f"Secrets updated for StorageConfig with key: {storage_config_onetrust.key}.",
-            "test_status": None,
-            "failure_reason": None,
-        }
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_CLIENT_ID.value]
-            == "23iutby1oiur"
-        )
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_CLIENT_SECRET.value]
-            == "23i4bty1i3urhnlw"
-        )
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_HOSTNAME.value]
-            == "peanutbutter.onetrust"
-        )
-
-    @mock.patch("fides.api.ops.api.v1.endpoints.storage_endpoints.secrets_are_valid")
-    def test_put_config_secrets_and_verify(
-        self,
-        mock_valid: Mock,
-        db: Session,
-        api_client: TestClient,
-        payload,
-        url,
-        generate_auth_header,
-        storage_config_onetrust,
-    ):
-        mock_valid.return_value = True
-
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        response = api_client.put(url, headers=auth_header, json=payload)
-        assert 200 == response.status_code
-
-        db.refresh(storage_config_onetrust)
-
-        assert json.loads(response.text) == {
-            "msg": f"Secrets updated for StorageConfig with key: {storage_config_onetrust.key}.",
-            "test_status": "succeeded",
-            "failure_reason": None,
-        }
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_CLIENT_ID.value]
-            == "23iutby1oiur"
-        )
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_CLIENT_SECRET.value]
-            == "23i4bty1i3urhnlw"
-        )
-        assert (
-            storage_config_onetrust.secrets[StorageSecrets.ONETRUST_HOSTNAME.value]
-            == "peanutbutter.onetrust"
-        )
-
-        mock_valid.reset_mock()
-        mock_valid.return_value = False
-        response = api_client.put(url, headers=auth_header, json=payload)
-        assert json.loads(response.text) == {
-            "msg": f"Secrets updated for StorageConfig with key: {storage_config_onetrust.key}.",
-            "test_status": "failed",
-            "failure_reason": None,
-        }
-
-    def test_put_storage_secrets_invalid_keys(
-        self,
-        api_client: TestClient,
-        url,
-        generate_auth_header,
-    ):
-        auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        response = api_client.put(
-            url,
-            headers=auth_header,
-            json={
-                # StorageSecrets.ONETRUST_CLIENT_ID.value: "removed-from-payload",
-                StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23i4bty1i3urhnlw",
-                StorageSecrets.ONETRUST_HOSTNAME.value: "peanutbutter.onetrust",
-            },
-        )
-
-        assert 400 == response.status_code
-        assert response.json()["detail"] == ["field required ('onetrust_client_id',)"]
 
 
 class TestGetStorageConfigs:
