@@ -24,6 +24,9 @@ services:
       FIDES__EXECUTION__WORKER_ENABLED: "True"
       # Hardcode the path to the sample config file
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
+    volumes:
+      # Mount a dir for privacy request files
+      - ./fides_tmp:/fides/fides_uploads
 
   fides-pc:
     image: ethyca/fides-privacy-center:sample
@@ -31,11 +34,6 @@ services:
       - 3000
     ports:
       - "3001:3000"
-    volumes:
-      - type: bind
-        source: ./clients/privacy-center/config
-        target: /app/config
-        read_only: False
 
   fides-db:
     image: postgres:12
