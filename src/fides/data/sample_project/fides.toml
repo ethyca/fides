@@ -17,7 +17,7 @@ db_index = 0
 
 [security]
 app_encryption_key = "atestencryptionkeythatisvalidlen" # TODO: autogenerate?
-cors_origins = [ "http://localhost:8080", "http://localhost:8081", ]
+cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 root_username = "fidesuser" # TODO: remove, use the setup script only?
