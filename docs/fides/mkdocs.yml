@@ -17,7 +17,7 @@ nav:
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
       - Working with Fides:
-          - Deploying a Demo Application: getting-started/demo_project.md
+          - Deploying a Fides Sample Application: getting-started/sample_project.md
           - Connect to Databases: getting-started/database_connectors.md
           - Generate Resources: getting-started/generate_resources.md
           - Create Datasets: getting-started/datasets.md
