@@ -24,7 +24,8 @@ secrets = get_secrets("slack")
 def slack_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "slack.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "slack.api_key") or secrets["api_key"],
+        "access_token": pydash.get(saas_config, "slack.access_token")
+        or secrets["access_token"],
     }
 
 

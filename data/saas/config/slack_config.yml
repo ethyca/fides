@@ -3,7 +3,7 @@ saas_config:
   name: Slack SaaS Config
   type: slack
   description: A sample schema representing the Slack connector for Fidesops
-  version: 0.1.0
+  version: 0.0.1
 
   connector_params:
     - name: domain
@@ -19,7 +19,7 @@ saas_config:
 
   test_request:
     method: GET
-    path: /users.lookupByEmail
+    path: /api/users.lookupByEmail
     query_params:
       - name: email
         identity: email
@@ -29,47 +29,8 @@ saas_config:
       requests:
         read:
           method: GET
-          path: /users.lookupByEmail
+          path: /api/users.lookupByEmail
           query_params:
             - name: email
               identity: email
           data_path: user
-
-    - name: users_conversations
-      requests:
-        read:
-          method: GET
-          path: /users.conversations
-          query_params:
-            - name: user
-              value: user
-          param_values:
-            - name: user
-              references:
-                - dataset: <instance_fides_key>
-                  field: users_lookup_By_Email.id
-                  direction: from
-
-    - name: conversations_history
-      requests:
-        read:
-          method: GET
-          path: /conversations.history
-          query_params:
-            - name: channel
-              value: channel
-          param_values:
-            - name: channel
-              references:
-                - dataset: <instance_fides_key>
-                  field: users_conversations.id
-                  direction: from
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: messages.text
-                value:
-                  references:
-                    - dataset: <instance_fides_key>
-                      field: user.id
-                      direction: from
