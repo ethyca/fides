@@ -328,7 +328,7 @@ async def test_zendesk_erasure_request_task(
 
     # user
     response = requests.get(
-        url=f"{base_url}/v2/users",
+        url=f"{base_url}/v1/Users",
         auth=auth,
         params={"email": zendesk_erasure_identity_email},
     )

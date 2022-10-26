@@ -2,6 +2,7 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
 from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from tests.ops.test_helpers.db_utils import seed_postgres_data
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("twilio")
@@ -159,3 +161,45 @@ def twilio_postgres_db(postgres_integration_session):
     )
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)
+
+@pytest.fixture(scope="function")
+def twilio_erasure_data(
+    twilio_connection_config, twilio_erasure_identity_email, twilio_secrets
+) -> Generator:
+    """
+    Creates a dynamic test data record for erasure tests.
+    Yields user ID as this may be useful to have in test scenarios
+    """
+
+    base_url = f"https://{twilio_secrets['domain']}"
+    auth = twilio_secrets["account_id"], twilio_secrets["password"]
+    # Create user
+    body = {
+        "Identity": (None,"test3"),
+        "friendly_name" : (None,"Test User")
+    }
+    users_response = requests.post(
+        url=f"{base_url}/v1/Users", files=body, auth=auth
+    )
+    import pdb;
+    pdb.set_trace()
+    user = users_response.json()
+    assert users_response.ok
+    error_message = (
+        f"User with email {twilio_erasure_identity_email} could not be added to twilio"
+    )
+    # poll_for_existence(
+    #     _user_exists,
+    #     (twilio_erasure_identity_email, twilio_secrets),
+    #     error_message=error_message,
+    # )
+    yield user
+
+    # user_id = user["user_id"]
+    # # Deleting user after verifying update request
+    # user_delete_response = requests.delete(
+    #     url=f"{base_url}/api/v2/users/{user_id}",
+    #     headers=headers,
+    # )
+    # # we expect 204 if user doesn't exist
+    # assert user_delete_response.status_code == HTTP_204_NO_CONTENT
