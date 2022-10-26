@@ -65,7 +65,7 @@ class FidesConfig(BaseModel):
         ]:
             for key, value in settings.dict().items():  # type: ignore
                 log.debug(
-                    f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",
+                    f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",  # type: ignore
                 )
 
 
