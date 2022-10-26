@@ -100,11 +100,6 @@ class StorageSecretsS3(BaseModel):
 
         extra = Extra.forbid
 
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
-
 
 class StorageType(Enum):
     """Enum for storage destination types"""
