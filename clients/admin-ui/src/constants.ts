@@ -106,6 +106,13 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
 ];
 
+/**
+ * Interval between re-fetching a logged-in user's permission to validate their auth token.
+ * Only applies to an active page -- token will always revalidate on page refresh.
+ * Ten minutes in milliseconds.
+ */
+export const VERIFY_AUTH_INTERVAL = 10 * 60 * 1000;
+
 // API ROUTES
 export const INDEX_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
