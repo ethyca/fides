@@ -12,6 +12,8 @@ services:
     depends_on:
       fides-db:
         condition: service_healthy
+      redis:
+        condition: service_started
     expose:
       - 8080
     env_file:
