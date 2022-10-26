@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict
 
 from botocore.exceptions import ClientError
-from requests import RequestException
 
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,

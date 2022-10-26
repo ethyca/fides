@@ -120,23 +120,17 @@ class TestPatchStorageConfig:
             }
         ]
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_storage_config_not_authenticated(
-        self, mock_scheduled_task, api_client: TestClient, payload, url
+        self,
+        api_client: TestClient,
+        payload,
+        url,
     ):
-        mock_scheduled_task.return_value = None
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
-        mock_scheduled_task.assert_not_called()
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_storage_config_incorrect_scope(
         self,
-        mock_scheduled_task,
         api_client: TestClient,
         payload,
         url,
@@ -145,14 +139,9 @@ class TestPatchStorageConfig:
         auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
-        mock_scheduled_task.assert_not_called()
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_storage_config_with_no_key(
         self,
-        mock_scheduled_task,
         db: Session,
         api_client: TestClient,
         payload,
@@ -163,7 +152,6 @@ class TestPatchStorageConfig:
         response = api_client.patch(url, headers=auth_header, json=payload)
 
         assert 200 == response.status_code
-        mock_scheduled_task.assert_called()
         response_body = json.loads(response.text)
 
         assert response_body["succeeded"][0]["key"] == "test_destination"
@@ -187,12 +175,8 @@ class TestPatchStorageConfig:
             == "FidesKey must only contain alphanumeric characters, '.', '_' or '-'."
         )
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_storage_config_with_key(
         self,
-        mock_scheduled_task,
         db: Session,
         api_client: TestClient,
         payload,
@@ -204,10 +188,8 @@ class TestPatchStorageConfig:
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
-        mock_scheduled_task.assert_called()
 
         response_body = json.loads(response.text)
-        mock_scheduled_task.assert_called()
         storage_config = db.query(StorageConfig).filter_by(key="my_s3_bucket")[0]
 
         expected_response = {
@@ -234,9 +216,6 @@ class TestPatchStorageConfig:
     @pytest.mark.parametrize(
         "auth_method", [S3AuthMethod.SECRET_KEYS.value, S3AuthMethod.AUTOMATIC.value]
     )
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_storage_config_with_different_auth_methods(
         self,
         db: Session,
@@ -257,12 +236,8 @@ class TestPatchStorageConfig:
         assert auth_method == response_body["succeeded"][0]["details"]["auth_method"]
         storage_config.delete(db)
 
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.storage_endpoints.initiate_scheduled_request_intake"
-    )
     def test_patch_config_response_format_not_specified(
         self,
-        mock_scheduled_task: Mock,
         url,
         db: Session,
         api_client: TestClient,
@@ -284,7 +259,6 @@ class TestPatchStorageConfig:
             }
         ]
         auth_header = generate_auth_header([STORAGE_CREATE_OR_UPDATE])
-        mock_scheduled_task.return_value = None
 
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200

@@ -54,7 +54,6 @@ from fides.api.ops.service.storage.storage_authenticator_service import (
     secrets_are_valid,
 )
 from fides.api.ops.service.storage.storage_uploader_service import upload
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -153,9 +152,6 @@ def patch_config(
             )
         else:
             created_or_updated.append(storage_config)
-
-    if created_or_updated:
-        initiate_scheduled_request_intake()
 
     return BulkPutStorageConfigResponse(succeeded=created_or_updated, failed=failed)
 

@@ -1,5 +1,3 @@
-from typing import Union
-
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.storage.storage import (
     StorageSecretsS3,

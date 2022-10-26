@@ -10,7 +10,6 @@ from io import BytesIO
 from typing import Any, Dict, Union
 
 import pandas as pd
-import requests
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str

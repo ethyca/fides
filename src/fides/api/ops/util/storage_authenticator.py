@@ -2,9 +2,7 @@ import logging
 from typing import Any, Dict
 
 import boto3
-import requests
 from boto3 import Session
-from requests import Response
 
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
