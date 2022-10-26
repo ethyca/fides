@@ -1,3 +1,6 @@
+[logging]
+level = "DEBUG" # TODO: remove
+
 [database]
 server = "fides-db" # TODO: localhost?
 user = "postgres"
