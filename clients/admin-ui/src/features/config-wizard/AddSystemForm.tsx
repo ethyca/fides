@@ -12,13 +12,11 @@ import {
   Text,
   Tooltip,
 } from "@fidesui/react";
-import React from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
-  OktaLogoIcon,
   QuestionIcon,
 } from "~/features/common/Icon";
 
@@ -32,7 +30,7 @@ const AddSystemForm = () => {
     <chakra.form w="100%" data-testid="add-system-form">
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Add a system
+          Scan for Systems
         </Heading>
         <Accordion allowToggle border="transparent">
           <AccordionItem>
@@ -79,25 +77,6 @@ const AddSystemForm = () => {
               <Tooltip
                 fontSize="md"
                 label="Infrastructure scanning allows you to connect to your cloud infrastructure and automatically identify systems that should be on your data map."
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
-            </Stack>
-            <Stack direction="row" display="flex" alignItems="center" mb={5}>
-              <IconButton
-                aria-label="Okta"
-                boxSize={iconButtonSize}
-                minW={iconButtonSize}
-                boxShadow="base"
-                variant="ghost"
-                icon={<OktaLogoIcon boxSize="full" />}
-                onClick={() => dispatch(changeStep())}
-              />
-              <Text>System Scan (Okta)</Text>
-              <Tooltip
-                fontSize="md"
-                label="System scanning allows you to connect to your sign-on platform and automatically identify systems that should be on your data map."
                 placement="right"
               >
                 <QuestionIcon boxSize={5} color="gray.400" />

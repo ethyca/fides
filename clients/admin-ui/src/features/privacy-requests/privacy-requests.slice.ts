@@ -2,6 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
+import { BulkPostPrivacyRequests } from "~/types/api";
+
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
@@ -13,6 +15,7 @@ import {
   PrivacyRequestParams,
   PrivacyRequestResponse,
   PrivacyRequestStatus,
+  RetryRequests,
 } from "./types";
 
 // Helpers
@@ -52,99 +55,6 @@ export function mapFiltersToSearchParams({
     ...(sort_field ? { sort_field } : {}),
   };
 }
-
-// Subject requests API
-export const privacyRequestApi = createApi({
-  reducerPath: "privacyRequestApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const token: string | null = selectToken(getState() as RootState);
-      addCommonHeaders(headers, token);
-      return headers;
-    },
-  }),
-  tagTypes: ["Request"],
-  endpoints: (build) => ({
-    approveRequest: build.mutation<
-      PrivacyRequest,
-      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
-    >({
-      query: ({ id }) => ({
-        url: "privacy-request/administrate/approve",
-        method: "PATCH",
-        body: {
-          request_ids: [id],
-        },
-      }),
-      invalidatesTags: ["Request"],
-    }),
-    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
-      query: ({ id, reason }) => ({
-        url: "privacy-request/administrate/deny",
-        method: "PATCH",
-        body: {
-          request_ids: [id],
-          reason,
-        },
-      }),
-      invalidatesTags: ["Request"],
-    }),
-    getAllPrivacyRequests: build.query<
-      PrivacyRequestResponse,
-      Partial<PrivacyRequestParams>
-    >({
-      query: (filters) => ({
-        url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
-        )}`,
-      }),
-      providesTags: () => ["Request"],
-    }),
-    getUploadedManualWebhookData: build.query<
-      any,
-      GetUpdloadedManualWebhookDataRequest
-    >({
-      query: (params) => ({
-        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
-      }),
-    }),
-    resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
-      query: (privacy_request_id) => ({
-        url: `privacy-request/${privacy_request_id}/resume_from_requires_input`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Request"],
-    }),
-    retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
-      query: ({ id }) => ({
-        url: `privacy-request/${id}/retry`,
-        method: "POST",
-      }),
-      invalidatesTags: ["Request"],
-    }),
-    uploadManualWebhookData: build.mutation<
-      any,
-      PatchUploadManualWebhookDataRequest
-    >({
-      query: (params) => ({
-        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
-        method: "PATCH",
-        body: params.body,
-      }),
-    }),
-  }),
-});
-
-export const {
-  useApproveRequestMutation,
-  useDenyRequestMutation,
-  useGetAllPrivacyRequestsQuery,
-  useGetUploadedManualWebhookDataQuery,
-  useResumePrivacyRequestFromRequiresInputMutation,
-  useRetryMutation,
-  useUploadManualWebhookDataMutation,
-} = privacyRequestApi;
 
 export const requestCSVDownload = async ({
   id,
@@ -190,36 +100,84 @@ export const requestCSVDownload = async ({
     .catch((error) => Promise.reject(error));
 };
 
+export const selectPrivacyRequestFilters = (
+  state: RootState
+): PrivacyRequestParams => ({
+  from: state.subjectRequests.from,
+  id: state.subjectRequests.id,
+  page: state.subjectRequests.page,
+  size: state.subjectRequests.size,
+  sort_direction: state.subjectRequests.sort_direction,
+  sort_field: state.subjectRequests.sort_field,
+  status: state.subjectRequests.status,
+  to: state.subjectRequests.to,
+  verbose: state.subjectRequests.verbose,
+});
+
+export const selectRequestStatus = (state: RootState) =>
+  state.subjectRequests.status;
+
+export const selectRetryRequests = (state: RootState): RetryRequests => ({
+  checkAll: state.subjectRequests.checkAll,
+  errorRequests: state.subjectRequests.errorRequests,
+});
+
+export const selectRevealPII = (state: RootState) =>
+  state.subjectRequests.revealPII;
+
 // Subject requests state (filters, etc.)
-interface SubjectRequestsState {
-  revealPII: boolean;
-  status?: PrivacyRequestStatus[];
-  id: string;
+type SubjectRequestsState = {
+  checkAll: boolean;
+  errorRequests: string[];
   from: string;
-  to: string;
+  id: string;
   page: number;
+  revealPII: boolean;
   size: number;
-  verbose?: boolean;
-  sort_field?: string;
   sort_direction?: string;
-}
+  sort_field?: string;
+  status?: PrivacyRequestStatus[];
+  to: string;
+  verbose?: boolean;
+};
 
 const initialState: SubjectRequestsState = {
-  revealPII: false,
-  id: "",
+  checkAll: false,
+  errorRequests: [],
   from: "",
-  to: "",
+  id: "",
   page: 1,
+  revealPII: false,
   size: 25,
+  to: "",
 };
 
 export const subjectRequestsSlice = createSlice({
   name: "subjectRequests",
   initialState,
   reducers: {
-    setRevealPII: (state, action: PayloadAction<boolean>) => ({
+    clearAllFilters: ({ revealPII }) => ({
+      ...initialState,
+      revealPII,
+    }),
+    clearSortFields: (state) => ({
       ...state,
-      revealPII: action.payload,
+      sort_direction: undefined,
+      sort_field: undefined,
+    }),
+    setPage: (state, action: PayloadAction<number>) => ({
+      ...state,
+      page: action.payload,
+    }),
+    setRequestFrom: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      from: action.payload,
+    }),
+    setRequestId: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      id: action.payload,
     }),
     setRequestStatus: (
       state,
@@ -229,28 +187,27 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       status: action.payload,
     }),
-    setRequestId: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      id: action.payload,
-    }),
-    setRequestFrom: (state, action: PayloadAction<string>) => ({
-      ...state,
-      page: initialState.page,
-      from: action.payload,
-    }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
       to: action.payload,
     }),
-    clearAllFilters: ({ revealPII }) => ({
-      ...initialState,
-      revealPII,
-    }),
-    setPage: (state, action: PayloadAction<number>) => ({
+    setRetryRequests: (state, action: PayloadAction<RetryRequests>) => ({
       ...state,
-      page: action.payload,
+      checkAll: action.payload.checkAll,
+      errorRequests: action.payload.errorRequests,
+    }),
+    setRevealPII: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      revealPII: action.payload,
+    }),
+    setSortDirection: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_direction: action.payload,
+    }),
+    setSortField: (state, action: PayloadAction<string>) => ({
+      ...state,
+      sort_field: action.payload,
     }),
     setSize: (state, action: PayloadAction<number>) => ({
       ...state,
@@ -261,53 +218,137 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       verbose: action.payload,
     }),
-    setSortField: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_field: action.payload,
-    }),
-    setSortDirection: (state, action: PayloadAction<string>) => ({
-      ...state,
-      sort_direction: action.payload,
-    }),
-    clearSortFields: (state) => ({
-      ...state,
-      sort_direction: undefined,
-      sort_field: undefined,
-    }),
   },
 });
 
 export const {
-  setRevealPII,
-  setRequestId,
-  setRequestStatus,
-  setRequestFrom,
-  setRequestTo,
-  setPage,
-  setVerbose,
-  setSortField,
-  setSortDirection,
   clearAllFilters,
   clearSortFields,
+  setPage,
+  setRequestFrom,
+  setRequestId,
+  setRequestStatus,
+  setRequestTo,
+  setRetryRequests,
+  setRevealPII,
+  setSortDirection,
+  setSortField,
+  setVerbose,
 } = subjectRequestsSlice.actions;
 
-export const selectRevealPII = (state: RootState) =>
-  state.subjectRequests.revealPII;
-export const selectRequestStatus = (state: RootState) =>
-  state.subjectRequests.status;
+export const { reducer } = subjectRequestsSlice;
 
-export const selectPrivacyRequestFilters = (
-  state: RootState
-): PrivacyRequestParams => ({
-  status: state.subjectRequests.status,
-  id: state.subjectRequests.id,
-  from: state.subjectRequests.from,
-  to: state.subjectRequests.to,
-  page: state.subjectRequests.page,
-  size: state.subjectRequests.size,
-  verbose: state.subjectRequests.verbose,
-  sort_direction: state.subjectRequests.sort_direction,
-  sort_field: state.subjectRequests.sort_field,
+// Subject requests API
+export const privacyRequestApi = createApi({
+  reducerPath: "privacyRequestApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: BASE_URL,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
+  }),
+  tagTypes: ["Request"],
+  endpoints: (build) => ({
+    approveRequest: build.mutation<
+      PrivacyRequest,
+      Partial<PrivacyRequest> & Pick<PrivacyRequest, "id">
+    >({
+      query: ({ id }) => ({
+        url: "privacy-request/administrate/approve",
+        method: "PATCH",
+        body: {
+          request_ids: [id],
+        },
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    bulkRetry: build.mutation<BulkPostPrivacyRequests, string[]>({
+      query: (values) => ({
+        url: `privacy-request/bulk/retry`,
+        method: "POST",
+        body: values,
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    denyRequest: build.mutation<PrivacyRequest, DenyPrivacyRequest>({
+      query: ({ id, reason }) => ({
+        url: "privacy-request/administrate/deny",
+        method: "PATCH",
+        body: {
+          request_ids: [id],
+          reason,
+        },
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    getAllPrivacyRequests: build.query<
+      PrivacyRequestResponse,
+      Partial<PrivacyRequestParams>
+    >({
+      query: (filters) => ({
+        url: `privacy-request?${decodeURIComponent(
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+        )}`,
+      }),
+      providesTags: () => ["Request"],
+      async onQueryStarted(_key, { dispatch, queryFulfilled, getState }) {
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          throw new Error("An error occurred while loading Subject Requests");
+        } finally {
+          const state = getState() as RootState;
+          const { errorRequests } = selectRetryRequests(state);
+          if (errorRequests?.length > 0) {
+            dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+          }
+        }
+      },
+    }),
+    getUploadedManualWebhookData: build.query<
+      any,
+      GetUpdloadedManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+      }),
+    }),
+    resumePrivacyRequestFromRequiresInput: build.mutation<any, string>({
+      query: (privacy_request_id) => ({
+        url: `privacy-request/${privacy_request_id}/resume_from_requires_input`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    retry: build.mutation<PrivacyRequest, Pick<PrivacyRequest, "id">>({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/retry`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
+    uploadManualWebhookData: build.mutation<
+      any,
+      PatchUploadManualWebhookDataRequest
+    >({
+      query: (params) => ({
+        url: `privacy-request/${params.privacy_request_id}/access_manual_webhook/${params.connection_key}`,
+        method: "PATCH",
+        body: params.body,
+      }),
+    }),
+  }),
 });
 
-export const { reducer } = subjectRequestsSlice;
+export const {
+  useApproveRequestMutation,
+  useBulkRetryMutation,
+  useDenyRequestMutation,
+  useGetAllPrivacyRequestsQuery,
+  useGetUploadedManualWebhookDataQuery,
+  useResumePrivacyRequestFromRequiresInputMutation,
+  useRetryMutation,
+  useUploadManualWebhookDataMutation,
+} = privacyRequestApi;
