@@ -171,7 +171,7 @@ const AuthenticateAwsForm = () => {
               {scannerError ? <ScannerError error={scannerError} /> : null}
               {!isSubmitting && !scannerError ? (
                 <>
-                  <Heading size="lg">Add a system</Heading>
+                  <Heading size="lg">Authenticate Scanner</Heading>
                   <Accordion allowToggle border="transparent">
                     <AccordionItem>
                       {({ isExpanded }) => (

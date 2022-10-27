@@ -15,7 +15,6 @@ To configure a Storage destination, first choose a method to store your results.
 
 - **local** - This saves upload packages locally, generating a `fides_uploads` directory at the root of your project. This destination type should only be used for testing purposes, and not to process real-world access requests.
 - **S3** - Files are uploaded to an S3 bucket of your choosing upon completion of an access request. Use S3 if you need a place to store those files.
-- **OneTrust** - A OneTrust storage destination should be configured for Fides to process requests from an existing OneTrust integration. Read more about how the OneTrust integration [here](../guides/onetrust.md).
 
 
 ### Create your storage destination
@@ -34,10 +33,6 @@ Storage destinations are created and managed via the API. To create a new Storag
           "auth_method": str,
           "bucket": str,
           "naming": str,
-          # onetrust
-          "service_name": str,
-          "onetrust_polling_hr": int,
-          "onetrust_polling_day_of_week": int
         }
       }
     ]
@@ -50,8 +45,8 @@ Storage destinations are created and managed via the API. To create a new Storag
 |---|---|
 | `name` | A unique user-friendly name for your storage destination. |
 | `key` | A unique key used to manage your storage destination. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`. |
-| `type` | Type of storage destination. Supported types include `s3`, `onetrust`, and `local`. You may configure multiple destinations of the same type. |
-| `format` | The format of uploaded data. Supported formats include `json` and `csv`. For OneTrust and local destination types, use `json`. |
+| `type` | Type of storage destination. Supported types include `s3`, and `local`. You may configure multiple destinations of the same type. |
+| `format` | The format of uploaded data. Supported formats include `json` and `csv`. |
 
 #### Additional attributes for s3 buckets
 | Attribute | Description |
@@ -59,14 +54,6 @@ Storage destinations are created and managed via the API. To create a new Storag
 | `auth_method` | The [authentication method](#authentication) for creating a session with S3. Either `automatic` or `secret_keys`. |
 | `bucket` | The name of the bucket in S3. |
 | `naming` | This defines how the uploaded files will be named. Currently, Fides only supports upload file naming by `request_id`. Use this value for all your storage destinations. |
-
-#### Additional attributes for OneTrust
-| Attribute | Description |
-|---|---|
-| `service_name` | The name of your service or company. This informs OneTrust from where the data obtained from a given access request originated. |
-| `onetrust_polling_hr` | The hour, in UTC timezone, at which to poll OneTrust for new requests. Accepts an integer from 0-23, where 0 is midnight. E.g. `7` is 7am UTC. |
-| `onetrust_polling_day_of_week` | The day on which to poll OneTrust for new requests. Accepts an int from 0-6 where 0 is Sunday. E.g. `1` is Monday. |
-
 
 #### Additional attributes for local storage
 | Attribute | Description |
@@ -107,10 +94,6 @@ Use `storage_key` returned during your storage creation to provide access creden
     # s3
     "aws_access_key_id": str,
     "aws_secret_access_key": str
-    # onetrust
-    "onetrust_hostname": str
-    "onetrust_client_id": str
-    "onetrust_client_secret": str
   }
 
 ```
@@ -123,17 +106,9 @@ Use `storage_key` returned during your storage creation to provide access creden
 | `aws_access_key_id` | AWS access key id, obtained from AWS console. |
 | `aws_secret_access_key` | AWS secret access key, obtained from AWS console. |
 
-#### Additional attributes for OneTrust
-| Attribute | Description |
-|---|---|
-| `onetrust_hostname` | Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. `my-company.onetrust`. |
-| `onetrust_client_id` | OneTrust client ID, obtained from your OneTrust portal. |
-| `onetrust_client_secret` | OneTrust client UD, obtained from your OneTrust portal. |
-
 Secrets are not saved if credentials fail authentication with the given storage destination.
 
 ## Test your storage connection
-!!! Tip "OneTrust destinations need to be tested end-to-end. Use the OneTrust interface to approve a test privacy request."
 
 To test that your storage destination works correctly, you can call the `upload` endpoint directly. Specify a `request_id` in the path with an arbitrary string:
 

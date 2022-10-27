@@ -18,7 +18,7 @@ saas_config:
 
   external_references:
     - name: customer_id
-      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset 
+      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset
 
   client_config:
     protocol: https
@@ -171,17 +171,17 @@ saas_config:
           path: /v1/customers/<customer_id>
           param_values:
             - name: customer_id
-              references: 
-              - customer_id
+              references:
+                - customer_id
         update:
           method: POST
           path: /v1/customers/<customer_id>
           param_values:
             - name: customer_id
-              references: 
-              - dataset: saas_connector_example
-                field: customer.id
-                direction: from
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
           headers:
             - name: Content-Type
               value: application/x-www-form-urlencoded

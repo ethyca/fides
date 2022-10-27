@@ -10,36 +10,36 @@ import {
   ModalHeader,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../../types/AlertState";
-import { PrivacyRequestStatus } from "../../../types";
-import { addCommonHeaders } from "../../../common/CommonHeaders";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { PrivacyRequestStatus } from "~/types";
+import { addCommonHeaders } from "~/common/CommonHeaders";
 
+import { hostUrl } from "~/constants";
 import config from "../../../config/config.json";
 
 import { ModalViews } from "../types";
-import { hostUrl } from "../../../constants";
 
 const usePrivacyRequestForm = ({
   onClose,
   action,
-  setAlert,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
 }: {
   onClose: () => void;
   action: typeof config.actions[0] | null;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -66,10 +66,17 @@ const usePrivacyRequestForm = ({
         },
       ];
 
-      const handleError = () => {
-        setAlert({
-          status: "error",
-          description: "Your request has failed. Please try again.",
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: any;
+      }) => {
+        toast({
+          title,
+          description: error,
+          ...ErrorToastOptions,
         });
         onClose();
       };
@@ -83,19 +90,20 @@ const usePrivacyRequestForm = ({
           headers,
           body: JSON.stringify(body),
         });
-
+        const data = await response.json();
         if (!response.ok) {
-          handleError();
+          handleError({
+            title: "An error occurred while creating your privacy request",
+            error: data?.detail,
+          });
           return;
         }
 
-        const data = await response.json();
-
         if (!isVerificationRequired && data.succeeded.length) {
-          setAlert({
-            status: "success",
-            description:
+          toast({
+            title:
               "Your request was successful, please await further instructions.",
+            ...SuccessToastOptions,
           });
         } else if (
           isVerificationRequired &&
@@ -105,10 +113,16 @@ const usePrivacyRequestForm = ({
           setPrivacyRequestId(data.succeeded[0].id);
           setCurrentView(ModalViews.IdentityVerification);
         } else {
-          handleError();
+          handleError({
+            title:
+              "An unhandled error occurred while processing your privacy request",
+          });
         }
       } catch (error) {
-        handleError();
+        handleError({
+          title:
+            "An unhandled error occurred while creating your privacy request",
+        });
         return;
       }
 
@@ -149,7 +163,6 @@ type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -159,7 +172,6 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   isOpen,
   onClose,
   openAction,
-  setAlert,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
@@ -181,7 +193,6 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   } = usePrivacyRequestForm({
     onClose,
     action,
-    setAlert,
     setCurrentView,
     setPrivacyRequestId,
     isVerificationRequired,

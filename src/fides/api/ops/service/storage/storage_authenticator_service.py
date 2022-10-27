@@ -2,17 +2,14 @@ import logging
 from typing import Any, Dict
 
 from botocore.exceptions import ClientError
-from requests import RequestException
 
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     S3AuthMethod,
     StorageSecrets,
-    StorageSecretsOnetrust,
     StorageType,
 )
 from fides.api.ops.util.storage_authenticator import (
-    get_onetrust_access_token,
     get_s3_session,
 )
 
@@ -37,22 +34,8 @@ def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
         return False
 
 
-def _onetrust_authenticator(secrets: StorageSecretsOnetrust) -> bool:
-    """Authenticates secrets for OneTrust, returns true if secrets are valid"""
-    try:
-        access_token = get_onetrust_access_token(
-            client_id=secrets.onetrust_client_id,
-            client_secret=secrets.onetrust_client_secret,
-            hostname=secrets.onetrust_hostname,
-        )
-        return bool(access_token)
-    except RequestException:
-        return False
-
-
 def _get_authenticator_from_config(storage_type: StorageType) -> Any:
     """Determines which uploader method to use based on storage type"""
     return {
         StorageType.s3.value: _s3_authenticator,
-        StorageType.onetrust.value: _onetrust_authenticator,
     }[storage_type.value]

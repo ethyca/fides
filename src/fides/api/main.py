@@ -29,7 +29,6 @@ from fides.api.ctl.routes import (
     generate,
     health,
     validate,
-    visualize,
 )
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
@@ -74,18 +73,14 @@ logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
-ROUTERS = (
-    crud.routers  # type: ignore[attr-defined]
-    + visualize.routers
-    + [
-        admin.router,
-        datamap.router,
-        generate.router,
-        health.router,
-        validate.router,
-        view.router,
-    ]
-)
+ROUTERS = crud.routers + [  # type: ignore[attr-defined]
+    admin.router,
+    datamap.router,
+    generate.router,
+    health.router,
+    validate.router,
+    view.router,
+]
 
 
 @app.middleware("http")
