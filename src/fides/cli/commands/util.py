@@ -16,6 +16,7 @@ from fides.cli.utils import (
 )
 from fides.ctl.core.deploy import (
     check_docker_version,
+    check_fides_uploads_dir,
     print_deploy_success,
     pull_specific_docker_image,
     seed_example_data,
@@ -180,6 +181,7 @@ def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
         pull_specific_docker_image()
 
     try:
+        check_fides_uploads_dir()
         start_application()
         seed_example_data()
         click.clear()

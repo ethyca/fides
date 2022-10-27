@@ -1,6 +1,6 @@
 from functools import partial
-from os import environ, getcwd
-from os.path import dirname, join
+from os import environ, getcwd, makedirs
+from os.path import dirname, exists, join
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
@@ -100,6 +100,17 @@ def seed_example_data() -> None:
         DOCKER_COMPOSE_COMMAND
         + "run --no-deps --rm fides python scripts/load_examples.py"
     )
+
+
+def check_fides_uploads_dir() -> None:
+    """
+    Create the './fides_uploads/ dir if it doesn't already exist
+
+    This fixes an error that was happening in CI checks related to
+    binding a file that doesn't exist.
+    """
+    if not exists(FIDES_UPLOADS_DIR):
+        makedirs(FIDES_UPLOADS_DIR)
 
 
 def teardown_application() -> None:
