@@ -17,19 +17,19 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
 
-## [1.9.5](https://github.com/ethyca/fides/compare/1.9.5...1.9.4)
+## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
 ### Added
 
 * The database includes a `plus_system_scans` relation, to track the status and results of System Scanner executions in fidesctl-plus [#1554](https://github.com/ethyca/fides/pull/1554)
 
-## [1.9.4](https://github.com/ethyca/fides/compare/1.9.4...1.9.2)
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
 
-## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...1.9.1)
+## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
 
@@ -247,7 +247,7 @@ The types of changes are:
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/ctl/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
 
