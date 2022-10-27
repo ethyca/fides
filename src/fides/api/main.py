@@ -2,7 +2,6 @@
 Contains the code that sets up the API.
 """
 import logging
-import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
 from os import getenv
@@ -184,18 +183,16 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-    logger.warning(
-        "Startup configuration: reloading = %s, dev_mode = %s",
-        CONFIG.hot_reloading,
-        CONFIG.dev_mode,
+    log.warning(
+        f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
-    logger.warning(
-        "Startup configuration: pii logging = %s",
-        getenv("FIDES__LOG_PII", "").lower() == "true",
+    log_pii = getenv("FIDES__LOG_PII", "").lower() == "true"
+    log.warning(
+        f"Startup configuration: pii logging = {log_pii}",
     )
 
     if logger.getEffectiveLevel() == logging.DEBUG:
-        logger.warning(
+        log.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
             "Set FIDES__LOGGING__LEVEL to INFO or higher in production."
         )
@@ -206,7 +203,7 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    logger.info("Validating SaaS connector templates...")
+    log.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
     try:
         db = get_api_session()
@@ -214,18 +211,18 @@ async def setup_server() -> None:
     finally:
         db.close()
 
-    logger.info("Running Redis connection test...")
+    log.info("Running Redis connection test...")
 
     try:
         get_cache()
     except (RedisConnectionError, ResponseError) as e:
-        logger.error("Connection to cache failed: %s", Pii(str(e)))
+        log.error("Connection to cache failed: %s", Pii(str(e)))
         return
 
     if not scheduler.running:
         scheduler.start()
 
-    logging.debug("Sending startup analytics events...")
+    log.debug("Sending startup analytics events...")
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
@@ -233,10 +230,6 @@ async def setup_server() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
-
-    if not CONFIG.execution.worker_enabled:
-        logger.info("Starting worker...")
-        subprocess.Popen(["fides", "worker"])  # pylint: disable=consider-using-with
 
     setup_logging(
         CONFIG.logging.level,
