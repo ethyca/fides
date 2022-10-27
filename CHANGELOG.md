@@ -15,13 +15,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
 
 ### Added
 
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 * Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
-    * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
+    * The format is generic. A reasonable set of defaults will be added later: [#1444](https://github.com/ethyca/fides/issues/1444)
     * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
     * Each consent option can provide an array of `cookieKeys`.
 * Individually select and reprocess DSRs that have errored [#1203](https://github.com/ethyca/fides/pull/1489)
@@ -45,6 +45,18 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+
+### Fixed
+
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+
+## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
+
+### Added
+
+* The database includes a `plus_system_scans` relation, to track the status and results of System Scanner executions in fidesctl-plus [#1554](https://github.com/ethyca/fides/pull/1554)
+
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
 ### Fixed
 
