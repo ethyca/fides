@@ -112,6 +112,12 @@ services:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
       # TODO: remove
       FIDES__DEV_MODE: "True"
+      # Mount a local volume so the user can see their privacy requests
+    volumes:
+      - type: bind
+        source: ${FIDES_UPLOADS_DIR}
+        target: /fides/fides_uploads
+        read_only: False
 
 volumes:
   postgres: null

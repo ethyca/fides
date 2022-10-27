@@ -1,5 +1,6 @@
 from functools import partial
 from os.path import dirname, join
+from os import getcwd, environ
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
@@ -9,6 +10,7 @@ from fides.ctl.core.utils import echo_green
 from fides.cli.utils import FIDES_ASCII_ART
 
 CONFIG = get_config()
+FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads"
 REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
     dirname(__file__),
@@ -104,11 +106,15 @@ def seed_example_data() -> None:
 
 def teardown_application() -> None:
     """Teardown all of the application containers for fides."""
+
+    # This needs to get set, or else it throws an error
+    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
     run_shell(DOCKER_COMPOSE_COMMAND + "down --remove-orphans --volumes")
 
 
 def start_application() -> None:
     """Spin up the application via a docker compose file."""
+    environ["FIDES_UPLOADS_DIR"] = FIDES_UPLOADS_DIR
     run_shell(
         DOCKER_COMPOSE_COMMAND + "up --wait",
     )
