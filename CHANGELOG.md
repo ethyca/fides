@@ -36,6 +36,10 @@ The types of changes are:
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
 * Only the `docs-authors` team members are specified as `CODEOWNERS` [#1446](https://github.com/ethyca/fides/pull/1446)
 
+### Fixed
+
+* Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)

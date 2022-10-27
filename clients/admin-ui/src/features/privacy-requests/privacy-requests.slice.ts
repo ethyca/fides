@@ -301,7 +301,7 @@ export const privacyRequestApi = createApi({
         } finally {
           const state = getState() as RootState;
           const { errorRequests } = selectRetryRequests(state);
-          if (errorRequests.length > 0) {
+          if (errorRequests?.length > 0) {
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
         }

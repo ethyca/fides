@@ -30,7 +30,7 @@ export const useAlert = () => {
       ...options,
       position: options?.position || DEFAULT_POSITION,
       render: ({ onClose }) => (
-        <Alert status="error">
+        <Alert alignItems="normal" status="error">
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}
@@ -61,7 +61,7 @@ export const useAlert = () => {
       ...options,
       position: options?.position || DEFAULT_POSITION,
       render: ({ onClose }) => (
-        <Alert status="success" variant="subtle">
+        <Alert alignItems="normal" status="success" variant="subtle">
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}

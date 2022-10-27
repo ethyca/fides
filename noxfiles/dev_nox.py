@@ -9,8 +9,8 @@ from constants_nox import (
     START_APP_EXTERNAL,
 )
 from docker_nox import build
-from utils_nox import COMPOSE_DOWN_VOLUMES
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
+from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
 @nox.session()

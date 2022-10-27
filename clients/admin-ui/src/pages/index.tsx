@@ -7,6 +7,7 @@ import RequestTable from "privacy-requests/RequestTable";
 import { LOGIN_ROUTE } from "~/constants";
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import Layout from "~/features/common/Layout";
+import ActionButtons from "~/features/privacy-requests/buttons/ActionButtons";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),

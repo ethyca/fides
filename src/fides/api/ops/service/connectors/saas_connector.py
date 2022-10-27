@@ -10,7 +10,7 @@ from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.saas.saas_config import ClientConfig, SaaSRequest
+from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.saas.authenticated_client import (
@@ -136,6 +136,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"endpoint in {self.saas_config.fides_key}"
             )
 
+        # check all the values specified by param_values are provided in input_data
+        if self._missing_dataset_reference_values(
+            input_data, read_request.param_values
+        ):
+            return []
+
         # hook for user-provided request override functions
         if read_request.request_override:
             return self._invoke_read_request_override(
@@ -164,6 +170,39 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 )
                 rows.extend(processed_rows)
         return rows
+
+    def _missing_dataset_reference_values(
+        self, input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
+    ) -> List[str]:
+        """Return a list of dataset reference values that are not found in the input_data map"""
+
+        # get the list of param_value references
+        required_param_value_references = [
+            param_value.name
+            for param_value in param_values or []
+            if param_value.references
+        ]
+
+        # extract the keys from inside the fides_grouped_inputs and append them the other input_data keys
+        provided_input_keys = (
+            list(input_data.get("fidesops_grouped_inputs")[0].keys())  # type: ignore
+            if input_data.get("fidesops_grouped_inputs")
+            else []
+        ) + list(input_data.keys())
+
+        # find the missing values
+        missing_dataset_reference_values = list(
+            set(required_param_value_references) - set(provided_input_keys)
+        )
+
+        if missing_dataset_reference_values:
+            logger.info(
+                "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
+                self.collection_name,
+                self.saas_config.fides_key,  # type: ignore
+                ", ".join(missing_dataset_reference_values),
+            )
+        return missing_dataset_reference_values
 
     def execute_prepared_request(
         self,
