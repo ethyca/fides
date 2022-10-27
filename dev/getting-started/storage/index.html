@@ -676,13 +676,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#additional-attributes-for-onetrust" class="md-nav__link">
-    Additional attributes for OneTrust
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#additional-attributes-for-local-storage" class="md-nav__link">
     Additional attributes for local storage
   </a>
@@ -705,13 +698,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#additional-attributes-for-s3-buckets_1" class="md-nav__link">
     Additional attributes for S3 buckets
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-attributes-for-onetrust_1" class="md-nav__link">
-    Additional attributes for OneTrust
   </a>
   
 </li>
@@ -944,20 +930,6 @@ You're not viewing the latest version.
     <li class="md-nav__item">
       <a href="../../guides/reporting/" class="md-nav__link">
         Report on Privacy Requests
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/onetrust/" class="md-nav__link">
-        Integrate with OneTrust
       </a>
     </li>
   
@@ -2126,13 +2098,6 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#additional-attributes-for-onetrust" class="md-nav__link">
-    Additional attributes for OneTrust
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#additional-attributes-for-local-storage" class="md-nav__link">
     Additional attributes for local storage
   </a>
@@ -2155,13 +2120,6 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#additional-attributes-for-s3-buckets_1" class="md-nav__link">
     Additional attributes for S3 buckets
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#additional-attributes-for-onetrust_1" class="md-nav__link">
-    Additional attributes for OneTrust
   </a>
   
 </li>
@@ -2222,7 +2180,6 @@ You're not viewing the latest version.
 <ul>
 <li><strong>local</strong> - This saves upload packages locally, generating a <code>fides_uploads</code> directory at the root of your project. This destination type should only be used for testing purposes, and not to process real-world access requests.</li>
 <li><strong>S3</strong> - Files are uploaded to an S3 bucket of your choosing upon completion of an access request. Use S3 if you need a place to store those files.</li>
-<li><strong>OneTrust</strong> - A OneTrust storage destination should be configured for Fides to process requests from an existing OneTrust integration. Read more about how the OneTrust integration <a href="../../guides/onetrust/">here</a>.</li>
 </ul>
 <h3 id="create-your-storage-destination">Create your storage destination</h3>
 <p>Storage destinations are created and managed via the API. To create a new Storage destination, use the following endpoint:</p>
@@ -2241,11 +2198,7 @@ You're not viewing the latest version.
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="p">{</span><span class="w"></span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;destinations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">      </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
@@ -2257,10 +2210,6 @@ You're not viewing the latest version.
 <span class="w">          </span><span class="nt">&quot;auth_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
 <span class="w">          </span><span class="nt">&quot;bucket&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
 <span class="w">          </span><span class="nt">&quot;naming&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="err">#</span><span class="w"> </span><span class="err">o</span><span class="kc">netrust</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;service_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;onetrust_polling_hr&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">i</span><span class="kc">nt</span><span class="p">,</span><span class="w"></span>
-<span class="w">          </span><span class="nt">&quot;onetrust_polling_day_of_week&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">i</span><span class="kc">nt</span><span class="w"></span>
 <span class="w">        </span><span class="p">}</span><span class="w"></span>
 <span class="w">      </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">]</span><span class="w"></span>
@@ -2285,11 +2234,11 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><code>type</code></td>
-<td>Type of storage destination. Supported types include <code>s3</code>, <code>onetrust</code>, and <code>local</code>. You may configure multiple destinations of the same type.</td>
+<td>Type of storage destination. Supported types include <code>s3</code>, and <code>local</code>. You may configure multiple destinations of the same type.</td>
 </tr>
 <tr>
 <td><code>format</code></td>
-<td>The format of uploaded data. Supported formats include <code>json</code> and <code>csv</code>. For OneTrust and local destination types, use <code>json</code>.</td>
+<td>The format of uploaded data. Supported formats include <code>json</code> and <code>csv</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -2313,29 +2262,6 @@ You're not viewing the latest version.
 <tr>
 <td><code>naming</code></td>
 <td>This defines how the uploaded files will be named. Currently, Fides only supports upload file naming by <code>request_id</code>. Use this value for all your storage destinations.</td>
-</tr>
-</tbody>
-</table>
-<h4 id="additional-attributes-for-onetrust">Additional attributes for OneTrust</h4>
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>service_name</code></td>
-<td>The name of your service or company. This informs OneTrust from where the data obtained from a given access request originated.</td>
-</tr>
-<tr>
-<td><code>onetrust_polling_hr</code></td>
-<td>The hour, in UTC timezone, at which to poll OneTrust for new requests. Accepts an integer from 0-23, where 0 is midnight. E.g. <code>7</code> is 7am UTC.</td>
-</tr>
-<tr>
-<td><code>onetrust_polling_day_of_week</code></td>
-<td>The day on which to poll OneTrust for new requests. Accepts an int from 0-6 where 0 is Sunday. E.g. <code>1</code> is Monday.</td>
 </tr>
 </tbody>
 </table>
@@ -2400,18 +2326,10 @@ You're not viewing the latest version.
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="p">{</span><span class="w"></span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">s</span><span class="mi">3</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;aws_access_key_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;aws_secret_access_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"></span>
-<span class="w">    </span><span class="err">#</span><span class="w"> </span><span class="err">o</span><span class="kc">netrust</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;onetrust_hostname&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;onetrust_client_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;onetrust_client_secret&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">s</span><span class="kc">tr</span><span class="w"></span>
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h4 id="additional-attributes-for-s3-buckets_1">Additional attributes for S3 buckets</h4>
@@ -2436,34 +2354,8 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<h4 id="additional-attributes-for-onetrust_1">Additional attributes for OneTrust</h4>
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>onetrust_hostname</code></td>
-<td>Your unique OneTrust hostname, used to call OneTrust REST APIs, e.g. <code>my-company.onetrust</code>.</td>
-</tr>
-<tr>
-<td><code>onetrust_client_id</code></td>
-<td>OneTrust client ID, obtained from your OneTrust portal.</td>
-</tr>
-<tr>
-<td><code>onetrust_client_secret</code></td>
-<td>OneTrust client UD, obtained from your OneTrust portal.</td>
-</tr>
-</tbody>
-</table>
 <p>Secrets are not saved if credentials fail authentication with the given storage destination.</p>
 <h2 id="test-your-storage-connection">Test your storage connection</h2>
-<div class="admonition tip">
-<p class="admonition-title">OneTrust destinations need to be tested end-to-end. Use the OneTrust interface to approve a test privacy request.</p>
-</div>
 <p>To test that your storage destination works correctly, you can call the <code>upload</code> endpoint directly. Specify a <code>request_id</code> in the path with an arbitrary string:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT {host}/api/v1/storage/{request_id}</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>

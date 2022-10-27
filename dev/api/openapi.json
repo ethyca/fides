@@ -8662,15 +8662,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "title": "Unvalidated Storage Secrets",
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
-                  },
-                  {
-                    "$ref": "#/components/schemas/StorageSecretsOnetrustDocs"
-                  }
-                ]
+                "$ref": "#/components/schemas/StorageSecretsS3Docs"
               }
             }
           },
@@ -14721,9 +14713,6 @@
                 "$ref": "#/components/schemas/StorageDetailsS3"
               },
               {
-                "$ref": "#/components/schemas/StorageDetailsOneTrust"
-              },
-              {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
               }
             ]
@@ -14790,31 +14779,6 @@
         "additionalProperties": false,
         "description": "The details required to configurate local storage configuration"
       },
-      "StorageDetailsOneTrust": {
-        "title": "StorageDetailsOneTrust",
-        "required": [
-          "service_name",
-          "onetrust_polling_hr",
-          "onetrust_polling_day_of_week"
-        ],
-        "type": "object",
-        "properties": {
-          "service_name": {
-            "title": "Service Name",
-            "type": "string"
-          },
-          "onetrust_polling_hr": {
-            "title": "Onetrust Polling Hr",
-            "type": "integer"
-          },
-          "onetrust_polling_day_of_week": {
-            "title": "Onetrust Polling Day Of Week",
-            "type": "integer"
-          }
-        },
-        "additionalProperties": false,
-        "description": "The details required to represent a OneTrust storage configuration."
-      },
       "StorageDetailsS3": {
         "title": "StorageDetailsS3",
         "required": [
@@ -14849,31 +14813,6 @@
         "additionalProperties": false,
         "description": "The details required to represent an AWS S3 storage bucket."
       },
-      "StorageSecretsOnetrustDocs": {
-        "title": "StorageSecretsOnetrustDocs",
-        "required": [
-          "onetrust_hostname",
-          "onetrust_client_id",
-          "onetrust_client_secret"
-        ],
-        "type": "object",
-        "properties": {
-          "onetrust_hostname": {
-            "title": "Onetrust Hostname",
-            "type": "string"
-          },
-          "onetrust_client_id": {
-            "title": "Onetrust Client Id",
-            "type": "string"
-          },
-          "onetrust_client_secret": {
-            "title": "Onetrust Client Secret",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "description": "The secrets required to send results to Onetrust, for documentation"
-      },
       "StorageSecretsS3Docs": {
         "title": "StorageSecretsS3Docs",
         "required": [
@@ -14900,7 +14839,6 @@
           "s3",
           "gcs",
           "transcend",
-          "onetrust",
           "ethyca",
           "local"
         ],
