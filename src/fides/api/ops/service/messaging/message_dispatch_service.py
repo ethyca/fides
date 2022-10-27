@@ -106,6 +106,13 @@ def dispatch_message(
     dispatcher: Any = _get_dispatcher_from_config_type(
         message_service_type=messaging_service
     )
+    if not dispatcher:
+        logger.error(
+            "Dispatcher has not been implemented for message service type: %s", messaging_service
+        )
+        raise MessageDispatchException(
+            f"Dispatcher has not been implemented for message service type: {messaging_service}"
+        )
     logger.info(
         "Starting email dispatch for messaging service with action type: %s",
         action_type,

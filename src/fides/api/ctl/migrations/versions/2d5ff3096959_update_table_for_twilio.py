@@ -23,7 +23,7 @@ def upgrade():
                     sa.Column('key', sa.String(), nullable=False),
                     sa.Column('name', sa.String(), nullable=True),
                     sa.Column('service_type', sa.Enum('MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL', name='messagingservicetype'), nullable=False),
-                    sa.Column('details', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+                    sa.Column('details', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
                     sa.Column('secrets', sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(), nullable=True),
                     sa.PrimaryKeyConstraint('id')
                     )

@@ -23,6 +23,14 @@ class MessagingServiceType(Enum):
     TWILIO_TEXT = "twilio_text"
     TWILIO_EMAIL = "twilio_email"
 
+    def get_messaging_method(self) -> Optional[MessagingMethod]:
+        """returns messaging method based on configured service type"""
+        if self in EMAIL_MESSAGING_SERVICES:
+            return MessagingMethod.EMAIL
+        if self in SMS_MESSAGING_SERVICES:
+            return MessagingMethod.SMS
+        return None
+
 
 EMAIL_MESSAGING_SERVICES = [
     MessagingServiceType.MAILGUN,
@@ -109,11 +117,6 @@ class MessagingServiceDetails(Enum):
     IS_EU_DOMAIN = "is_eu_domain"
     API_VERSION = "api_version"
     DOMAIN = "domain"
-
-    # twilio
-    TWILIO_ACCOUNT_SID = "twilio_account_sid"
-    TWILIO_AUTH_TOKEN = "twilio_auth_token"
-    TWILIO_MESSAGING_SERVICE_ID = "twilio_messaging_service_id"
 
 
 class MessagingServiceDetailsMailgun(BaseModel):

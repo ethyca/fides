@@ -37,7 +37,7 @@ def test_email_dispatch_mailgun_success(
         db=db,
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_identity=Identity(**{"email": "test@email.com"}),
-        messaging_method=CONFIG.notifications.get_messaging_method(),
+        messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
         ),
@@ -65,7 +65,7 @@ def test_email_dispatch_mailgun_config_not_found(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=CONFIG.notifications.get_messaging_method(),
+            messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -99,7 +99,7 @@ def test_email_dispatch_mailgun_config_no_secrets(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=CONFIG.notifications.get_messaging_method(),
+            messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -129,7 +129,7 @@ def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> N
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
-                messaging_method=CONFIG.notifications.get_messaging_method(),
+                messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),

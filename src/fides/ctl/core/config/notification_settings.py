@@ -1,11 +1,7 @@
 import logging
 from typing import Optional
 
-from fides.api.ops.schemas.messaging.messaging import (
-    EMAIL_MESSAGING_SERVICES,
-    SMS_MESSAGING_SERVICES,
-    MessagingMethod,
-)
+from pydantic import validator
 
 from .fides_settings import FidesSettings
 
@@ -22,13 +18,25 @@ class NotificationSettings(FidesSettings):
     send_request_review_notification: bool = False
     notification_service_type: Optional[str] = None
 
-    def get_messaging_method(self) -> Optional[MessagingMethod]:
-        """returns messaging method based on configured notification service type"""
-        if self in EMAIL_MESSAGING_SERVICES:
-            return MessagingMethod.EMAIL
-        if self in SMS_MESSAGING_SERVICES:
-            return MessagingMethod.SMS
-        return None
+    @validator("notification_service_type", pre=True)
+    @classmethod
+    def validate_notification_service_type(cls, value: Optional[str]) -> str:
+        """Ensure the provided type is a valid value."""
+        if value:
+
+            valid_values = [
+                "mailgun",
+                "twilio_text",
+                "twilio_email"
+            ]
+            value = value.lower()  # force lowercase for safety
+
+            if value not in valid_values:
+                raise ValueError(
+                    f"Invalid NOTIFICATION_SERVICE_TYPE provided '{value}', must be one of: {', '.join([level for level in valid_values])}"
+                )
+
+        return value
 
     class Config:
         env_prefix = ENV_PREFIX

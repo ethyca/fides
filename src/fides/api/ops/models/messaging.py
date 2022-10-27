@@ -63,7 +63,7 @@ class MessagingConfig(Base):
     service_type = Column(
         Enum(MessagingServiceType), index=True, unique=True, nullable=False
     )
-    details = Column(MutableDict.as_mutable(JSONB), nullable=False)
+    details = Column(MutableDict.as_mutable(JSONB), nullable=True)
     secrets = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
