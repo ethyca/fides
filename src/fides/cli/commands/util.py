@@ -16,11 +16,11 @@ from fides.cli.utils import (
 )
 from fides.ctl.core.deploy import (
     check_docker_version,
+    print_deploy_success,
+    pull_specific_docker_image,
     seed_example_data,
     start_application,
     teardown_application,
-    pull_specific_docker_image,
-    print_deploy_success,
 )
 from fides.ctl.core.utils import echo_green
 

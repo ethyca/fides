@@ -302,18 +302,24 @@ def read_other_paths(request: Request) -> Response:
 
     # If any of those worked, serve the file.
     if ui_file and ui_file.is_file():
-        log.debug(f"catchall request path '{path}' matched static admin UI file: {ui_file}")
+        log.debug(
+            f"catchall request path '{path}' matched static admin UI file: {ui_file}"
+        )
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
-        log.debug(f"catchall request path '{path}' matched an invalid API route, return 404")
+        log.debug(
+            f"catchall request path '{path}' matched an invalid API route, return 404"
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
 
     # otherwise return the index
-    log.debug(f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index")
+    log.debug(
+        f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index"
+    )
     return get_admin_index_as_response()
 
 

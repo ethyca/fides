@@ -1,13 +1,13 @@
 from functools import partial
+from os import environ, getcwd
 from os.path import dirname, join
-from os import getcwd, environ
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
 import fides
+from fides.cli.utils import FIDES_ASCII_ART
 from fides.ctl.core.config import get_config
 from fides.ctl.core.utils import echo_green
-from fides.cli.utils import FIDES_ASCII_ART
 
 CONFIG = get_config()
 FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads"
