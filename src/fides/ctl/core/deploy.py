@@ -8,7 +8,7 @@ import fides
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.ctl.core.utils import echo_green
 
-FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads"
+FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
     dirname(__file__),
