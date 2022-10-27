@@ -15,19 +15,21 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
+
+## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
 ### Added
 
 * The database includes a `plus_system_scans` relation, to track the status and results of System Scanner executions in fidesctl-plus [#1554](https://github.com/ethyca/fides/pull/1554)
 
-## [1.9.4](https://github.com/ethyca/fides/compare/1.9.4...1.9.2)
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
 
-## [1.9.2](https://github.com/ethyca/fides/compare/1.9.2...1.9.1)
+## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
 
