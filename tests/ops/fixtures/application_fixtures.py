@@ -152,37 +152,6 @@ def storage_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def storage_config_onetrust(db: Session) -> Generator:
-    """
-    This fixture adds onetrust config data to the database.
-    """
-    name = "onetrust config"
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.onetrust,
-            "details": {
-                StorageDetails.SERVICE_NAME.value: "Meow Services",
-                StorageDetails.ONETRUST_POLLING_DAY_OF_WEEK.value: 1,
-                StorageDetails.ONETRUST_POLLING_HR.value: 8,
-            },
-            "key": "my_onetrust_config",
-        },
-    )
-    storage_config.set_secrets(
-        db=db,
-        storage_secrets={
-            StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23tcrcrewg",
-            StorageSecrets.ONETRUST_CLIENT_ID.value: "9upqn3ufqnff",
-            StorageSecrets.ONETRUST_HOSTNAME.value: "meow-services.onetrust",
-        },
-    )
-    yield storage_config
-    storage_config.delete(db)
-
-
-@pytest.fixture(scope="function")
 def email_config(db: Session) -> Generator:
     name = str(uuid4())
     email_config = EmailConfig.create(

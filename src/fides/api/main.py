@@ -61,7 +61,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -225,9 +224,6 @@ async def setup_server() -> None:
 
     if not scheduler.running:
         scheduler.start()
-
-    logger.info("Starting scheduled request intake...")
-    initiate_scheduled_request_intake()
 
     logging.debug("Sending startup analytics events...")
     await send_analytics_event(

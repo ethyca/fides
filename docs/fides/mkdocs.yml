@@ -34,7 +34,6 @@ nav:
           - Configure Data Masking: guides/masking_strategies.md
           - Execution Policy Webhooks: guides/policy_webhooks.md
           - Report on Privacy Requests: guides/reporting.md
-          - Integrate with OneTrust: guides/onetrust.md
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
