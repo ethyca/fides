@@ -42,9 +42,9 @@ saas_config:
           method: POST
           path: /v1/Users/<sid>
           body: |
-          {
-            <masked_object_fields>
-          }
+            {
+              <masked_object_fields>
+            }
           param_values:
             - name: sid
               references:
