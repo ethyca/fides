@@ -148,10 +148,13 @@ class TestSaasConnector:
 @pytest.mark.integration_saas
 @pytest.mark.integration_segment
 class TestSaaSConnectorMethods:
-    def test_set_saas_request_state_sets_expected_state(
+    def test_client_config_set_depending_on_state(
         self, db: Session, segment_connection_config, segment_dataset_config
     ):
         connector: SaaSConnector = get_connector(segment_connection_config)
+        connector.set_saas_request_state(
+            SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        )
         # Base ClientConfig uses bearer auth
         assert connector.get_client_config().authentication.strategy == "bearer"
 
@@ -166,9 +169,23 @@ class TestSaaSConnectorMethods:
         assert client.client_config.authentication.strategy == "basic"
         assert connector.get_client_config().authentication.strategy == "basic"
 
-        # Test request users bearer auth - creating the client after setting state also updates the connector's auth.
-        test_request: SaaSRequest = connector.saas_config.test_request
-        connector.set_saas_request_state(test_request)
+    def test_rate_limit_config_set_depending_on_state(
+        self, db: Session, segment_connection_config, segment_dataset_config
+    ):
+        rate_limit_config = {"limits": [{"rate": 1, "period": "second"}]}
+        segment_connection_config.saas_config["rate_limit_config"] = rate_limit_config
+        connector: SaaSConnector = get_connector(segment_connection_config)
+        connector.set_saas_request_state(
+            SaaSRequest(path="test_path", method=HTTPMethod.GET)
+        )
+        assert connector.get_rate_limit_config().enabled is True
+
+        request_with_rate_limits = SaaSRequest(
+            path="test_path",
+            method=HTTPMethod.GET,
+            rate_limit_config={"enabled": False},
+        )
+        connector.set_saas_request_state(request_with_rate_limits)
         client = connector.create_client()
-        assert client.client_config.authentication.strategy == "bearer"
-        assert connector.get_client_config().authentication.strategy == "bearer"
+        assert client.rate_limit_config.enabled is False
+        assert connector.get_rate_limit_config().enabled is False
