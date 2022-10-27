@@ -12,6 +12,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.util.saas_util import (
@@ -109,6 +110,9 @@ def reset_mailchimp_data(
     Used for erasure tests.
     """
     connector = SaaSConnector(mailchimp_connection_config)
+    connector.set_saas_request_state(
+        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+    )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/3.0/search-members",

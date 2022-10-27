@@ -1,6 +1,6 @@
 import logging
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
 from requests import Response
@@ -10,6 +10,7 @@ from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.saas_config import ClientConfig, ParamValue, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.base_connector import BaseConnector
@@ -36,73 +37,108 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
-        self.secrets = configuration.secrets
-        self.saas_config = configuration.get_saas_config()
-        self.client_config = self.saas_config.client_config  # type: ignore
-        self.endpoints = self.saas_config.top_level_endpoint_dict  # type: ignore
-        self.collection_name: Optional[str] = None
-        self.privacy_request: Optional[PrivacyRequest] = None
+        required_saas_config = configuration.get_saas_config()
+        assert required_saas_config is not None
+        self.saas_config = required_saas_config
+        self.endpoints = self.saas_config.top_level_endpoint_dict
+        self.secrets = cast(Dict, configuration.secrets)
+        self.current_collection_name: Optional[str] = None
+        self.current_privacy_request: Optional[PrivacyRequest] = None
+        self.current_saas_request: Optional[SaaSRequest] = None
 
     def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
         """
-        # store collection_name for logging purposes
-        self.collection_name = node.address.collection
+        privacy_request = self.current_privacy_request
+        assert privacy_request is not None
         return SaaSQueryConfig(
             node,
             self.endpoints,
-            self.secrets,  # type: ignore
-            self.saas_config.data_protection_request,  # type: ignore
-            self.privacy_request,  # type: ignore
+            self.secrets,
+            self.saas_config.data_protection_request,
+            privacy_request,
         )
+
+    def get_client_config(self) -> ClientConfig:
+        """Utility method for getting client config according to the current class state"""
+        saas_config_client_config = self.saas_config.client_config
+
+        required_current_saas_request = self.current_saas_request
+        assert required_current_saas_request is not None
+        current_request_client_config = required_current_saas_request.client_config
+
+        return current_request_client_config or saas_config_client_config
+
+    def get_rate_limit_config(self) -> Optional[RateLimitConfig]:
+        """Utility method for getting rate limit config according to the current class state"""
+        saas_config_rate_limit_config = self.saas_config.rate_limit_config
+
+        required_current_saas_request = self.current_saas_request
+        assert required_current_saas_request is not None
+        current_request_rate_limit_config = (
+            required_current_saas_request.rate_limit_config
+        )
+
+        return (
+            current_request_rate_limit_config or saas_config_rate_limit_config or None
+        )
+
+    def set_privacy_request_state(
+        self, privacy_request: PrivacyRequest, node: TraversalNode
+    ) -> None:
+        """
+        Sets the class state for the current privacy request
+        """
+        self.current_collection_name = node.address.collection
+        self.current_privacy_request = privacy_request
+
+    def set_saas_request_state(self, current_saas_request: SaaSRequest) -> None:
+        """
+        Sets the class state for the current saas request
+        """
+        self.current_saas_request = current_saas_request
+
+    def unset_connector_state(self) -> None:
+        """
+        Unsets the class state. Called when privacy request execution is complete
+        """
+        self.current_collection_name = None
+        self.current_privacy_request = None
+        self.current_saas_request = None
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Generates and executes a test connection based on the SaaS config"""
-        test_request: SaaSRequest = self.saas_config.test_request  # type: ignore
+        test_request: SaaSRequest = self.saas_config.test_request
+        self.set_saas_request_state(test_request)
         prepared_request = map_param_values(
             "test",
             f"{self.configuration.name}",
             test_request,
-            self.configuration.secrets,  # type: ignore
+            self.secrets,
         )
-        client: AuthenticatedClient = self.create_client_from_request(test_request)
-        client.send(prepared_request)
+        client: AuthenticatedClient = self.create_client()
+        client.send(prepared_request, test_request.ignore_errors)
+        self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
     def build_uri(self) -> str:
         """Build base URI for the given connector"""
-        host = self.client_config.host
-        return f"{self.client_config.protocol}://{assign_placeholders(host, self.secrets)}"  # type: ignore
+        client_config = self.get_client_config()
+        host = client_config.host
+        return f"{client_config.protocol}://{assign_placeholders(host, self.secrets)}"
 
     def create_client(self) -> AuthenticatedClient:
         """Creates an authenticated request builder"""
         uri = self.build_uri()
+        client_config = self.get_client_config()
+        rate_limit_config = self.get_rate_limit_config()
+
         logger.info("Creating client to %s", uri)
-        return AuthenticatedClient(uri, self.configuration)
-
-    def _build_client_with_config(
-        self, client_config: ClientConfig
-    ) -> AuthenticatedClient:
-        """Sets the client_config on the SaasConnector, and also sets it on the created AuthenticatedClient"""
-        self.client_config = client_config
-        client: AuthenticatedClient = self.create_client()
-        client.client_config = client_config
-        return client
-
-    def create_client_from_request(
-        self, saas_request: SaaSRequest
-    ) -> AuthenticatedClient:
-        """
-        Permits authentication to be overridden at the request-level.
-        Use authentication on the request if specified, otherwise, just use
-        the authentication configured for the overall SaaS connector.
-        """
-        if saas_request.client_config:
-            return self._build_client_with_config(saas_request.client_config)
-
-        return self._build_client_with_config(self.saas_config.client_config)  # type: ignore
+        return AuthenticatedClient(
+            uri, self.configuration, client_config, rate_limit_config
+        )
 
     def retrieve_data(
         self,
@@ -113,7 +149,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
         # generate initial set of requests if read request is defined, otherwise raise an exception
-        self.privacy_request = privacy_request
+        self.set_privacy_request_state(privacy_request, node)
 
         query_config: SaaSQueryConfig = self.query_config(node)
         read_request: Optional[SaaSRequest] = query_config.get_request_by_action("read")
@@ -127,14 +163,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             if delete_request:
                 logger.info(
                     "Skipping read for the '%s' collection, it is delete-only",
-                    self.collection_name,
+                    self.current_collection_name,
                 )
                 return [{}]
 
             raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}' "  # type: ignore
+                f"The 'read' action is not defined for the '{self.current_collection_name}' "
                 f"endpoint in {self.saas_config.fides_key}"
             )
+        self.set_saas_request_state(read_request)
 
         # check all the values specified by param_values are provided in input_data
         if self._missing_dataset_reference_values(
@@ -169,6 +206,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                     read_request,
                 )
                 rows.extend(processed_rows)
+        self.unset_connector_state()
         return rows
 
     def _missing_dataset_reference_values(
@@ -198,7 +236,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         if missing_dataset_reference_values:
             logger.info(
                 "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
-                self.collection_name,
+                self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
             )
@@ -215,7 +253,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         Returns processed data and request_params for next page of data if available.
         """
 
-        client: AuthenticatedClient = self.create_client_from_request(saas_request)
+        client: AuthenticatedClient = self.create_client()
         response: Response = client.send(prepared_request, saas_request.ignore_errors)
         response = self._handle_errored_response(saas_request, response)
         response_data = self._unwrap_response_data(saas_request, response)
@@ -224,13 +262,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             response_data,
             identity_data,
-            saas_request.postprocessors,  # type: ignore
+            cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
         )
 
         logger.info(
             "%s row(s) returned after postprocessing '%s' collection.",
             len(rows),
-            self.collection_name,
+            self.current_collection_name,
         )
 
         # use the pagination strategy (if available) to get the next request
@@ -241,14 +279,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 saas_request.pagination.configuration,
             )
             next_request = strategy.get_next_request(
-                prepared_request, self.secrets, response, saas_request.data_path  # type: ignore
+                prepared_request, self.secrets, response, saas_request.data_path
             )
 
         if next_request:
             logger.info(
                 "Using '%s' pagination strategy to get next page for '%s'.",
                 saas_request.pagination.strategy,  # type: ignore
-                self.collection_name,
+                self.current_collection_name,
             )
 
         return rows, next_request
@@ -274,7 +312,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )
             logger.info(
                 "Starting postprocessing of '%s' collection with '%s' strategy.",
-                self.collection_name,
+                self.current_collection_name,
                 postprocessor.strategy,  # type: ignore
             )
             try:
@@ -282,7 +320,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
-                    f"on the '{self.collection_name}' collection: {exc}"
+                    f"on the '{self.current_collection_name}' collection: {exc}"
                 )
         if not processed_data:
             return rows
@@ -311,8 +349,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
-
-        self.privacy_request = privacy_request
+        self.set_privacy_request_state(privacy_request, node)
         query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:
@@ -320,6 +357,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "
                 f"Check that MASKING_STRICT env var is appropriately set"
             )
+
+        self.set_saas_request_state(masking_request)
 
         # hook for user-provided request override functions
         if masking_request.request_override:
@@ -344,7 +383,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         rows = self.process_response_data(
             rows,
             privacy_request.get_cached_identity_data(),
-            masking_request.postprocessors,  # type: ignore
+            cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
         prepared_requests = [
@@ -352,10 +391,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             for row in rows
         ]
         rows_updated = 0
-        client = self.create_client_from_request(masking_request)
+        client = self.create_client()
         for prepared_request in prepared_requests:
             client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+        self.unset_connector_state()
         return rows_updated
 
     def close(self) -> None:

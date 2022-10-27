@@ -52,6 +52,7 @@ nav:
           - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
           - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
           - SaaS Pagination: saas_connectors/saas_pagination.md
+          - SaaS Rate Limiting: saas_connectors/rate_limiting.md
           - Connection Examples:
               - Adobe Campaign: saas_connectors/example_configs/adobe.md
               - Hubspot: saas_connectors/example_configs/hubspot.md
