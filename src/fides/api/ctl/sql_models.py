@@ -13,6 +13,7 @@ from sqlalchemy import (
     BOOLEAN,
     JSON,
     Column,
+    Integer,
     String,
     Text,
     TypeDecorator,
@@ -267,6 +268,23 @@ class System(Base, FidesBase):
     data_protection_impact_assessment = Column(JSON)
     egress = Column(JSON)
     ingress = Column(JSON)
+
+
+class SystemScans(Base):
+    """
+    The SQL model for System Scan instances.
+    """
+
+    __tablename__ = "plus_system_scans"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    error = Column(String, nullable=True)
+    is_classified = Column(BOOLEAN, default=False, nullable=False)
+    result = Column(JSON, nullable=True)
+    status = Column(String, nullable=False)
+    system_count = Column(Integer, autoincrement=False, nullable=True)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 sql_model_map: Dict = {
