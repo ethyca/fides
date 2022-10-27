@@ -3,8 +3,10 @@
 -- requirements in the context of DROP DATABASE statements
 
 CREATE TABLE public.product (
-    id INT PRIMARY KEY,
-    name CHARACTER VARYING(100),
+    id int primary key,
+    name character varying(100),
+    description character varying(200),
+    url character varying(200),
     price MONEY
 );
 
@@ -107,9 +109,12 @@ INSERT INTO public.composite_pk_test VALUES
 
 -- Populate tables with some public data
 INSERT INTO public.product VALUES
-(1, 'Example Product 1', '$10.00'),
-(2, 'Example Product 2', '$20.00'),
-(3, 'Example Product 3', '$50.00');
+(1, 'The Choco Chip', 'Crisp & chewy cookie with milk chocolate chunks', 'https://harpocrates.ethyca.com/assets/cookie_1.png', '$20.00'),
+(2, 'The Almond Butter', 'Cream butter cookie with a soft almond filling', 'https://harpocrates.ethyca.com/assets/cookie_2.png', '$20.00'),
+(3, 'The Dubbo Choco', 'Crisp & chewy cookie with dark chocolate chunks', 'https://harpocrates.ethyca.com/assets/cookie_3.png', '$20.00'),
+(4, 'The Oatmeal', 'Oatmeal cookie with raisins and a hint of cinnamon', 'https://harpocrates.ethyca.com/assets/cookie_4.png', '$20.00'),
+(5, 'The Raisin Trippo Pack', 'Plant based raisin cookie with Belgian chocolate chunks x3 ', 'https://harpocrates.ethyca.com/assets/cookie_5.png', '$50.00'),
+(6, 'The Choco Trippo Pack', 'Crisp & chewy cookie with milk chocolate chunks x3', 'https://harpocrates.ethyca.com/assets/cookie_6.png', '$50.00');
 
 INSERT INTO public.address VALUES
 (1, '123', 'Example Street', 'Exampletown', 'NY', '12345'),
@@ -120,7 +125,9 @@ INSERT INTO public.address VALUES
 INSERT INTO public.customer VALUES
 (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
 (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2),
-(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4);
+(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4),
+(4, 'jose@example.com', 'Jose Customer', '2020-04-01 11:47:42', 3),
+(5, 'jack@example.com', 'Jack Customer', '2020-04-01 11:47:42', 3);
 
 INSERT INTO public.employee VALUES
 (1, 'employee-1@example.com', 'Jack Employee', 3),
@@ -129,14 +136,18 @@ INSERT INTO public.employee VALUES
 INSERT INTO public.payment_card VALUES
 ('pay_aaa-aaa', 'Example Card 1', 123456789, 321, true, 1, 1),
 ('pay_bbb-bbb', 'Example Card 2', 987654321, 123, false, 2, 1),
-('pay_ccc-ccc', 'Example Card 3', 373719391, 222, false, 3, 4);
+('pay_ccc-ccc', 'Example Card 3', 373719391, 222, false, 3, 4),
+('pay_ddd-ddd', 'Example Card 4', 373719391, 222, false, 4, 3),
+('pay_eee-eee', 'Example Card 5', 373719391, 222, false, 5, 3);
 
 INSERT INTO public.orders VALUES
 ('ord_aaa-aaa', 1, 2, 'pay_aaa-aaa'),
 ('ord_bbb-bbb', 2, 1, 'pay_bbb-bbb'),
 ('ord_ccc-ccc', 1, 1, 'pay_aaa-aaa'),
 ('ord_ddd-ddd', 1, 1, 'pay_bbb-bbb'),
-('ord_ddd-eee', 3, 4, 'pay-ccc-ccc');
+('ord_ddd-eee', 3, 4, 'pay_ccc-ccc'),
+('ord_fff-fff', 4, 3, 'pay-ddd-ddd'),
+('ord_ggg-ggg', 4, 3, 'pay-ddd-ddd');
 
 INSERT INTO public.order_item VALUES
 ('ord_aaa-aaa', 1, 1, 1),
@@ -144,7 +155,10 @@ INSERT INTO public.order_item VALUES
 ('ord_ccc-ccc', 1, 1, 1),
 ('ord_ccc-ccc', 2, 2, 1),
 ('ord_ddd-ddd', 1, 1, 1),
-('ord_eee-eee', 3, 4, 3);
+('ord_eee-eee', 3, 4, 3),
+('ord_fff-fff', 1, 2, 2),
+('ord_fff-fff', 2, 1, 2),
+('ord_ggg-ggg', 1, 5, 1);
 
 INSERT INTO public.visit VALUES
 ('customer-1@example.com', '2021-01-06 01:00:00'),
