@@ -6,10 +6,8 @@ from typing import List
 
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
-from fides.ctl.core.config import get_config
 from fides.ctl.core.utils import echo_green
 
-CONFIG = get_config()
 FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads"
 REQUIRED_DOCKER_VERSION = "20.10.17"
 SAMPLE_PROJECT_DIR = join(
@@ -150,6 +148,8 @@ def print_deploy_success() -> None:
     echo_green(FIDES_ASCII_ART)
     echo_green("Fides successfully deployed and running in the background!")
     echo_green("Next steps:")
+
+    echo_green("\n- Run 'fides init' to set up your local command-line!")
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
