@@ -20,6 +20,7 @@ from fides.ctl.core.deploy import (
     start_application,
     teardown_application,
     pull_specific_docker_image,
+    print_deploy_success
 )
 from fides.ctl.core.utils import echo_green
 
@@ -157,7 +158,11 @@ def deploy(ctx: click.Context) -> None:
 @click.pass_context
 @with_analytics
 @click.option("--command", "-c", type=str, default="")
-@click.option("--no-pull", is_flag=True, help="Use a local image instead of trying to pull from Dockerhub.")
+@click.option(
+    "--no-pull",
+    is_flag=True,
+    help="Use a local image instead of trying to pull from Dockerhub.",
+)
 def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
     """
     Starts the demo fides application via docker compose.
@@ -177,12 +182,7 @@ def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
     try:
         start_application()
         seed_example_data()
-        echo_green(FIDES_ASCII_ART)
-        echo_green("Fides successfully deployed and running in the background!")
-        echo_green("Next steps:")
-        echo_green("- Visit localhost:8080 in your browser to get started.")
-        echo_green("- Visit ethyca.github.io/fides for documentation.")
-        echo_green("- Run `fides deploy down` to stop the application.")
+        print_deploy_success()
     except CalledProcessError:
         teardown_application()
         raise SystemExit(1)

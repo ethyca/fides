@@ -5,6 +5,8 @@ from typing import List
 
 import fides
 from fides.ctl.core.config import get_config
+from fides.ctl.core.utils import echo_green
+from fides.cli.utils import FIDES_ASCII_ART
 
 CONFIG = get_config()
 REQUIRED_DOCKER_VERSION = "20.10.17"
@@ -132,3 +134,33 @@ def pull_specific_docker_image() -> None:
     else:
         run_shell("docker tag ethyca/fides:dev ethyca/fides:sample")
         run_shell("docker tag ethyca/fides-privacy-center:sample")
+
+
+def print_deploy_success() -> None:
+    """
+    Pretty prints an in-depth success message for successful deployment.
+    """
+
+    echo_green(FIDES_ASCII_ART)
+    echo_green("Fides successfully deployed and running in the background!")
+    echo_green("Next steps:")
+
+    # Admin UI
+    echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
+    echo_green("    (user=fidestest, password=Apassword1!)")
+
+    # Privacy Center
+    echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3001")
+    echo_green("    (user=jane@example.com)")
+
+    # Example Datastores
+    echo_green("\n- Example Postgres Database running at localhost:6432")
+    echo_green("    (user=postgres, password=postgres, db=postgres_example)")
+    echo_green("\n- Example Mongo Database running at localhost:27017")
+    echo_green("    (user=mongo_test, password=mongo_pass, db=mongo_test)")
+
+    # Documentation
+    # TODO: We should point to a tutorial page of some kind to actually use this deployed app
+    echo_green("\n- Visit ethyca.github.io/fides for documentation.")
+
+    echo_green("\nRun `fides deploy down` to stop the application.")
