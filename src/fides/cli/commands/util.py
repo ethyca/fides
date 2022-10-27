@@ -20,7 +20,7 @@ from fides.ctl.core.deploy import (
     start_application,
     teardown_application,
     pull_specific_docker_image,
-    print_deploy_success
+    print_deploy_success,
 )
 from fides.ctl.core.utils import echo_green
 
@@ -182,6 +182,7 @@ def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
     try:
         start_application()
         seed_example_data()
+        click.clear()
         print_deploy_success()
     except CalledProcessError:
         teardown_application()
