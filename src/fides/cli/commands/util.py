@@ -147,6 +147,7 @@ def worker(ctx: click.Context) -> None:
     start_worker()
 
 
+# TODO: add analytics back into this group
 @click.group(name="deploy")
 @click.pass_context
 def deploy(ctx: click.Context) -> None:
@@ -157,7 +158,6 @@ def deploy(ctx: click.Context) -> None:
 
 @deploy.command()
 @click.pass_context
-@with_analytics
 @click.option("--command", "-c", type=str, default="")
 @click.option(
     "--no-pull",
@@ -193,7 +193,6 @@ def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
 
 @deploy.command()
 @click.pass_context
-@with_analytics
 def down(ctx: click.Context) -> None:
     """
     Stops the demo fides application.
