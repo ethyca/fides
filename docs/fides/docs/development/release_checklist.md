@@ -9,7 +9,7 @@ This checklist can be copy/pasted into the final pre-release PR.
 - [ ] Quickstart verified working and up-to-date
 - [ ] New tables/columns added to database diagram
 - [ ] `nox -s test_env` works (verify the admin UI, privacy center, CLI and webserver)
-- [ ] `fides demo` works (verify the admin UI, privacy center, CLI and webserver)
+- [ ] `fides deploy` works (verify the admin UI, privacy center, CLI and webserver)
 
 ## API
 

@@ -147,7 +147,19 @@ def worker(ctx: click.Context) -> None:
     start_worker()
 
 
-# TODO: add analytics back into this group
+# TODO: see comment
+"""
+Analytics had to be removed for this command group (deploy) to work.
+
+It behaves similarly to 'init' in that it is excluded from analytics in
+the main CLI logic. This allows us to run `fides init` _after_
+this command runs. However, it also means we aren't collecting analytics
+events specifically for people running `fides deploy`.
+
+There is probably a smarter check we could be doing here...
+"""
+
+
 @click.group(name="deploy")
 @click.pass_context
 def deploy(ctx: click.Context) -> None:
