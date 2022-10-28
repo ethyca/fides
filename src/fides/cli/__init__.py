@@ -1,6 +1,5 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
-from os import getenv
 from platform import system
 
 import click
@@ -17,11 +16,11 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
-from .commands.util import init, status, webserver, worker
+from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
@@ -94,7 +93,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     ctx.obj["CONFIG"] = config
 
     # init also handles this workflow
-    if ctx.invoked_subcommand != "init":
+    if ctx.invoked_subcommand not in ["init", "deploy"]:
         check_and_update_analytics_config(ctx, config_path)
 
         # Analytics requires explicit opt-in
