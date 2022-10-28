@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
-from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.privacy_request import ConsentRequest, PrivacyRequest
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
@@ -36,7 +36,7 @@ def send_verification_code_to_user(
         db,
         action_type=messaging_action_type,
         to_identity=to_identity,
-        messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
+        messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code=verification_code,
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,

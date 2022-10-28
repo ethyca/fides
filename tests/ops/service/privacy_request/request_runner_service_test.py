@@ -34,7 +34,7 @@ from fides.api.ops.schemas.masking.masking_configuration import (
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    MessageForActionType,
+    EmailForActionType,
     MessagingActionType,
 )
 from fides.api.ops.schemas.policy import Rule
@@ -1677,7 +1677,7 @@ class TestPrivacyRequestsEmailConnector:
         assert mailgun_send.called
         kwargs = mailgun_send.call_args.kwargs
         assert type(kwargs["messaging_config"]) == MessagingConfig
-        assert type(kwargs["email"]) == MessageForActionType
+        assert type(kwargs["email"]) == EmailForActionType
 
     @mock.patch(
         "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"

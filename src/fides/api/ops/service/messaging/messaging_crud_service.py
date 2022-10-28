@@ -29,14 +29,16 @@ def update_messaging_config(
 def create_or_update_messaging_config(
     db: Session, config: MessagingConfigRequest
 ) -> MessagingConfigResponse:
+    data = {
+        "key": config.key,
+        "name": config.name,
+        "service_type": config.service_type,
+    }
+    if config.details:
+        data["details"] = config.details.__dict__
     messaging_config: MessagingConfig = MessagingConfig.create_or_update(
         db=db,
-        data={
-            "key": config.key,
-            "name": config.name,
-            "service_type": config.service_type,
-            "details": config.details.__dict__,
-        },
+        data=data,
     )
     return MessagingConfigResponse(
         name=messaging_config.name,

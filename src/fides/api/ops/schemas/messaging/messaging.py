@@ -23,14 +23,6 @@ class MessagingServiceType(Enum):
     TWILIO_TEXT = "twilio_text"
     TWILIO_EMAIL = "twilio_email"
 
-    def get_messaging_method(self) -> Optional[MessagingMethod]:
-        """returns messaging method based on configured service type"""
-        if self in EMAIL_MESSAGING_SERVICES:
-            return MessagingMethod.EMAIL
-        if self in SMS_MESSAGING_SERVICES:
-            return MessagingMethod.SMS
-        return None
-
 
 EMAIL_MESSAGING_SERVICES = [
     MessagingServiceType.MAILGUN,
@@ -103,8 +95,8 @@ class FidesopsMessage(
     ]
 
 
-class MessageForActionType(BaseModel):
-    """Message details that depend on action type"""
+class EmailForActionType(BaseModel):
+    """Email details that depend on action type"""
 
     subject: str
     body: str
@@ -113,7 +105,7 @@ class MessageForActionType(BaseModel):
 class MessagingServiceDetails(Enum):
     """Enum for messaging service details"""
 
-    # mailgun-specific
+    # Mailgun
     IS_EU_DOMAIN = "is_eu_domain"
     API_VERSION = "api_version"
     DOMAIN = "domain"
@@ -135,13 +127,17 @@ class MessagingServiceDetailsMailgun(BaseModel):
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
-    # mailgun-specific
+    # Mailgun
     MAILGUN_API_KEY = "mailgun_api_key"
 
-    # twilio
+    # Twilio SMS
     TWILIO_ACCOUNT_SID = "twilio_account_sid"
     TWILIO_AUTH_TOKEN = "twilio_auth_token"
-    TWILIO_MESSAGING_SERVICE_ID = "twilio_messaging_service_id"
+    TWILIO_MESSAGING_SERVICE_SID = "twilio_messaging_service_sid"
+    TWILIO_SENDER_PHONE_NUMBER = "twilio_sender_phone_number"  # formatted like +15558675309
+
+    # Twilio Sendgrid/Email
+    TWILIO_API_KEY = "twilio_api_key"
 
 
 class MessagingServiceSecretsMailgun(BaseModel):
@@ -155,12 +151,24 @@ class MessagingServiceSecretsMailgun(BaseModel):
         extra = Extra.forbid
 
 
-class MessagingServiceSecretsTwilio(BaseModel):
+class MessagingServiceSecretsTwilioSMS(BaseModel):
+    """The secrets required to connect to twilio SMS."""
+
+    twilio_account_sid: str
+    twilio_auth_token: str
+    twilio_messaging_service_sid: Optional[str]
+    twilio_sender_phone_number: Optional[str]  # Either the twilio_messaging_service_id *OR* the twilio_sender_phone_number should be supplied.
+
+    class Config:
+        """Restrict adding other fields through this schema."""
+
+        extra = Extra.forbid
+
+
+class MessagingServiceSecretsTwilioEmail(BaseModel):
     """The secrets required to connect to twilio email."""
 
-    account_sid: str
-    auth_token: str
-    messaging_service_id: str
+    twilio_api_key: str
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -174,7 +182,7 @@ class MessagingConfigRequest(BaseModel):
     name: str
     key: Optional[FidesOpsKey]
     service_type: MessagingServiceType
-    details: Union[MessagingServiceDetailsMailgun]
+    details: Optional[Union[MessagingServiceDetailsMailgun]]
 
     class Config:
         use_enum_values = False
@@ -187,7 +195,7 @@ class MessagingConfigResponse(BaseModel):
     name: str
     key: FidesOpsKey
     service_type: MessagingServiceType
-    details: Dict[MessagingServiceDetails, Any]
+    details: Optional[Dict[MessagingServiceDetails, Any]]
 
     class Config:
         orm_mode = True
@@ -195,12 +203,12 @@ class MessagingConfigResponse(BaseModel):
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
-    MessagingServiceSecretsMailgun, MessagingServiceSecretsTwilio
+    MessagingServiceSecretsMailgun, MessagingServiceSecretsTwilioSMS, MessagingServiceSecretsTwilioEmail
 ]
 
 
 class MessagingConnectionTestStatus(Enum):
-    """Enum for supplying statuses of validating credentials for an Messaging Config"""
+    """Enum for supplying statuses of validating credentials for a messaging Config"""
 
     succeeded = "succeeded"
     failed = "failed"

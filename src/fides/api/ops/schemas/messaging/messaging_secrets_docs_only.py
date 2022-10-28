@@ -3,7 +3,7 @@ from typing import Union
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingServiceSecretsMailgun,
-    MessagingServiceSecretsTwilio,
+    MessagingServiceSecretsTwilioSMS,
 )
 
 
@@ -11,7 +11,7 @@ class MessagingSecretsMailgunDocs(MessagingServiceSecretsMailgun, NoValidationSc
     """The secrets required to connect to Mailgun, for documentation"""
 
 
-class MessagingSecretsTwilioDocs(MessagingServiceSecretsTwilio, NoValidationSchema):
+class MessagingSecretsTwilioDocs(MessagingServiceSecretsTwilioSMS, NoValidationSchema):
     """The secrets required to connect to Twilio, for documentation"""
 
 

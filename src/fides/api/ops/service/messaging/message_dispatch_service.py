@@ -5,6 +5,9 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
+from twilio.base.exceptions import TwilioRestException
+
+from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
@@ -13,7 +16,7 @@ from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     FidesopsMessage,
-    MessageForActionType,
+    EmailForActionType,
     MessagingActionType,
     MessagingMethod,
     MessagingServiceDetails,
@@ -27,6 +30,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
+from loguru import logger as log
 
 CONFIG = get_config()
 
@@ -81,7 +85,7 @@ def dispatch_message(
     logger.info(
         "Building appropriate message template for action type: %s", action_type
     )
-    message: Optional[MessageForActionType] = None  # fixme- huh??
+    message: Optional[Union[EmailForActionType, str]] = None  # fixme- huh??
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
@@ -128,13 +132,10 @@ def dispatch_message(
 
 def _build_sms(
     action_type: MessagingActionType,
-    body_params: Any,  # fixme- create message body based on params
-) -> MessageForActionType:
+    body_params: Any,
+) -> str:
     if action_type == MessagingActionType.CONSENT_REQUEST:
-        return MessageForActionType(
-            subject="Your one-time code",
-            body="body",
-        )
+        return "Hello, this message was sent from Fides!"
     logger.error("Message action type %s is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
@@ -144,10 +145,10 @@ def _build_sms(
 def _build_email(  # pylint: disable=too-many-return-statements
     action_type: MessagingActionType,
     body_params: Any,
-) -> MessageForActionType:
+) -> EmailForActionType:
     if action_type == MessagingActionType.CONSENT_REQUEST:
         template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your one-time code",
             body=template.render(
                 {
@@ -158,7 +159,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
         template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your one-time code",
             body=template.render(
                 {
@@ -169,7 +170,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Data erasure request",
             body=base_template.render(
                 {"dataset_collection_action_required": body_params}
@@ -177,13 +178,13 @@ def _build_email(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your request has been received",
             body=base_template.render({"request_types": body_params.request_types}),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your data is ready to be downloaded",
             body=base_template.render(
                 {
@@ -193,19 +194,19 @@ def _build_email(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your data has been deleted",
             body=base_template.render(),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your request has been approved",
             body=base_template.render(),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
         base_template = get_email_template(action_type)
-        return MessageForActionType(
+        return EmailForActionType(
             subject="Your request has been denied",
             body=base_template.render(
                 {"rejection_reason": body_params.rejection_reason}
@@ -221,16 +222,17 @@ def _get_dispatcher_from_config_type(message_service_type: MessagingServiceType)
     """Determines which dispatcher to use based on message service type"""
     return {
         MessagingServiceType.MAILGUN.value: _mailgun_dispatcher,
+        MessagingServiceType.TWILIO_TEXT.value: _twilio_sms_dispatcher,
     }[message_service_type.value]
 
 
 def _mailgun_dispatcher(
     messaging_config: MessagingConfig,
-    message: MessageForActionType,
-    to_email: Optional[str],
+    message: EmailForActionType,
+    to: Optional[str],
 ) -> None:
     """Dispatches email using mailgun"""
-    if not to_email:
+    if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
     base_url = (
@@ -241,7 +243,7 @@ def _mailgun_dispatcher(
     domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
     data = {
         "from": f"<mailgun@{domain}>",
-        "to": [to_email],
+        "to": [to],
         "subject": message.subject,
         "html": message.body,
     }
@@ -264,3 +266,40 @@ def _mailgun_dispatcher(
     except Exception as e:
         logger.error("Email failed to send: %s", Pii(str(e)))
         raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+
+
+def _twilio_sms_dispatcher(
+        messaging_config: MessagingConfig,
+        message: str,
+        to: Optional[str],
+) -> None:
+    """Dispatches SMS using Twilio"""
+    if not to:
+        logger.error("Message failed to send. No phone identity supplied.")
+        raise MessageDispatchException("No phone identity supplied.")
+
+    account_sid = messaging_config.secrets[MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value]  # type: ignore
+    auth_token = messaging_config.secrets[MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value]  # type: ignore
+    messaging_service_id = messaging_config.secrets[MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value]  # type:ignore
+    sender_phone_number = messaging_config.secrets[MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value]  # type:ignore
+
+    client = Client(account_sid, auth_token)
+    try:
+        if messaging_service_id:
+            client.messages.create(
+                to=to,
+                messaging_service_sid=messaging_service_id,
+                body=message
+            )
+        elif sender_phone_number:
+            client.messages.create(
+                to=to,
+                from_=sender_phone_number,
+                body=message
+            )
+        else:
+            logger.error("Message failed to send. Either sender phone number or messaging service sid must be provided.")
+            raise MessageDispatchException("Message failed to send. Either sender phone number or messaging service sid must be provided.")
+    except TwilioRestException as e:
+        logger.error("Twilio SMS failed to send: %s", Pii(str(e)))
+        raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")

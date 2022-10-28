@@ -2,18 +2,17 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-import requests.exceptions
 import requests_mock
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fides.api.ops.schemas.messaging.messaging import (
     FidesopsMessage,
-    MessageForActionType,
+    EmailForActionType,
     MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceType,
@@ -37,7 +36,7 @@ def test_email_dispatch_mailgun_success(
         db=db,
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_identity=Identity(**{"email": "test@email.com"}),
-        messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
+        messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
         ),
@@ -45,11 +44,11 @@ def test_email_dispatch_mailgun_success(
     body = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>ID Code</title>\n</head>\n<body>\n<main>\n    <p>\n        Your privacy request verification code is 2348.\n        Please return to the Privacy Center and enter the code to\n        continue. This code will expire in 10 minutes\n    </p>\n</main>\n</body>\n</html>'
     mock_mailgun_dispatcher.assert_called_with(
         messaging_config=messaging_config,
-        message=MessageForActionType(
+        message=EmailForActionType(
             subject="Your one-time code",
             body=body,
         ),
-        to_email="test@email.com",
+        to="test@email.com",
     )
 
 
@@ -65,7 +64,7 @@ def test_email_dispatch_mailgun_config_not_found(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
+            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -99,7 +98,7 @@ def test_email_dispatch_mailgun_config_no_secrets(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
+            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -129,7 +128,7 @@ def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> N
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
-                messaging_method=MessagingServiceType[CONFIG.notifications.notification_service_type].get_messaging_method(),
+                messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),

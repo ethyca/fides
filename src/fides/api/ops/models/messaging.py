@@ -17,7 +17,8 @@ from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.messaging.messaging import (
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingServiceSecretsMailgun,
-    MessagingServiceType,
+    MessagingServiceType, MessagingServiceSecretsTwilioSMS, MessagingServiceSecretsTwilioEmail, MessagingMethod,
+    EMAIL_MESSAGING_SERVICES, SMS_MESSAGING_SERVICES,
 )
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -27,6 +28,15 @@ from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 logger = logging.getLogger(__name__)
+
+
+def get_messaging_method(service_type: Optional[MessagingServiceType]) -> Optional[MessagingMethod]:
+    """returns messaging method based on configured service type"""
+    if service_type in EMAIL_MESSAGING_SERVICES:
+        return MessagingMethod.EMAIL
+    if service_type in SMS_MESSAGING_SERVICES:
+        return MessagingMethod.SMS
+    return None
 
 
 def get_schema_for_secrets(
@@ -40,6 +50,8 @@ def get_schema_for_secrets(
     try:
         schema = {
             MessagingServiceType.MAILGUN: MessagingServiceSecretsMailgun,
+            MessagingServiceType.TWILIO_TEXT: MessagingServiceSecretsTwilioSMS,
+            MessagingServiceType.TWILIO_EMAIL: MessagingServiceSecretsTwilioEmail,
         }[service_type]
     except KeyError:
         raise ValueError(

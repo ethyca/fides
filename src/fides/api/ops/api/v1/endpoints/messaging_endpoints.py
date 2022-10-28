@@ -76,7 +76,7 @@ def post_config(
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Config with key {messaging_config.key} failed to be added",
+            detail=f"Config with key {messaging_config.key} failed to be added: {exc}",
         )
 
 
@@ -160,7 +160,6 @@ def put_config_secrets(
             status_code=HTTP_400_BAD_REQUEST,
             detail=exc.args[0],
         )
-
     msg = f"Secrets updated for MessagingConfig with key: {config_key}."
     # todo- implement test status for messaging service
     return TestMessagingStatusMessage(msg=msg, test_status=None)
