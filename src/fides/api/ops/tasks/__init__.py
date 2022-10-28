@@ -65,7 +65,7 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 celery_app = _create_celery()
 
 
-def get_workers_health() -> Dict[str, Dict[str, str]]:
+def get_workers_health() -> Dict[str, Any]:
     health = {"workers_connected": False}
     connected_workers = celery_app.control.inspect().ping()
     if not connected_workers:
