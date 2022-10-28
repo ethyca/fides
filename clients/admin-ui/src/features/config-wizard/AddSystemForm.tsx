@@ -19,6 +19,7 @@ import {
   AWSLogoIcon,
   ManualSetupIcon,
   QuestionIcon,
+  RuntimeScannerLogo,
 } from "~/features/common/Icon";
 
 import { changeStep } from "./config-wizard.slice";
@@ -62,9 +63,9 @@ const AddSystemForm = () => {
             )}
           </AccordionItem>
         </Accordion>
-        <Stack>
-          <FormControl>
-            <Stack direction="row" display="flex" alignItems="center" mb={5}>
+        <FormControl>
+          <Stack spacing={5}>
+            <Stack direction="row" display="flex" alignItems="center">
               <IconButton
                 aria-label="AWS"
                 boxSize={iconButtonSize}
@@ -93,7 +94,7 @@ const AddSystemForm = () => {
                     minW={iconButtonSize}
                     boxShadow="base"
                     variant="ghost"
-                    icon={<ManualSetupIcon boxSize="full" />}
+                    icon={<RuntimeScannerLogo boxSize="10" />}
                     onClick={() => dispatch(changeStep(5))}
                   />
                 </HStack>
@@ -128,8 +129,8 @@ const AddSystemForm = () => {
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
-          </FormControl>
-        </Stack>
+          </Stack>
+        </FormControl>
       </Stack>
     </chakra.form>
   );
