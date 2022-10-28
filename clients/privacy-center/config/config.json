@@ -35,7 +35,7 @@
       {
         "fidesDataUseKey": "advertising",
         "name": "Data Sales or Sharing",
-        "description": "We may use some of your personal information for behavioral advertising purposeswhich may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
+        "description": "We may use some of your personal information for behavioral advertising purposes, which may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
         "url": "https://example.com/privacy#data-sales",
         "default": true,
         "highlight": false,
