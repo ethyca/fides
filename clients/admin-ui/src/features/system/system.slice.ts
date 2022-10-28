@@ -9,6 +9,12 @@ interface SystemDeleteResponse {
   resource: System;
 }
 
+interface UpsertResponse {
+  message: string;
+  inserted: number;
+  updated: number;
+}
+
 export const systemApi = createApi({
   reducerPath: "systemApi",
   baseQuery: fetchBaseQuery({
@@ -39,6 +45,14 @@ export const systemApi = createApi({
         url: `system/${key}`,
         params: { resource_type: "system" },
         method: "DELETE",
+      }),
+      invalidatesTags: ["System"],
+    }),
+    upsertSystems: build.mutation<UpsertResponse, System[]>({
+      query: (systems) => ({
+        url: `/system/upsert`,
+        method: "POST",
+        body: systems,
       }),
       invalidatesTags: ["System"],
     }),
@@ -88,6 +102,7 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useDeleteSystemMutation,
+  useUpsertSystemsMutation,
 } = systemApi;
 
 export interface State {
