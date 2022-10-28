@@ -76,7 +76,7 @@ async def health(
     """Confirm that the API is running and healthy."""
     database_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
     cache_health = get_cache_health()
-    response = {
+    response: Dict[str, Any] = {
         "webserver": "healthy",
         "version": str(fides.__version__),
         "database": database_health,
