@@ -32,7 +32,7 @@ Search for and select your desired connector. The Datastores UI will assist in a
 
 ### Automated connections
 
-Fides automatically includes your third-party connections when processing [privacy requests](../getting-started/privacy_requests.md). Once you have selected a connection type, the UI allows you to describe your connection's configuration information, which includes any necessary fields for accessing and updating third-party data.
+Fides automatically includes your SaaS connectors when processing [privacy requests](../getting-started/privacy_requests.md). Once you have selected a connection type, the UI allows you to describe your connection's configuration information, which includes any necessary fields for accessing and updating third-party data.
 
 ![configure connection](../img/admin_ui/configure_connection.png)
 
@@ -46,7 +46,7 @@ To add a manual connection, select **Manual connection** in the "Show all connec
 
 ![manual connection](../img/admin_ui/manual_connection.png)
 
-One selected, Fides allows you to name and describe your manual connection, as well as provide a list of connection owners. These owners will be contacted by email when needed to respond to a privacy request with a manual component.
+Once selected, Fides allows you to name and describe your manual connection, as well as provide a list of connection owners. These owners will be contacted by email when needed to respond to a privacy request with a manual component.
 
 To continue, select **Save**.
 
