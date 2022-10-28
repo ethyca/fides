@@ -20,6 +20,9 @@ def dev(session: nox.Session) -> None:
     build(session, "dev")
     session.notify("teardown")
 
+    if "worker" in session.posargs:
+        session.run("docker", "compose", "up", "--wait", "worker", external=True)
+
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
