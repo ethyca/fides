@@ -14,6 +14,7 @@ import {
 } from "@fidesui/react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
@@ -25,6 +26,7 @@ import { iconButtonSize } from "./constants";
 
 const AddSystemForm = () => {
   const dispatch = useAppDispatch();
+  const { plus } = useFeatures();
 
   return (
     <chakra.form w="100%" data-testid="add-system-form">
@@ -82,6 +84,29 @@ const AddSystemForm = () => {
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
+            {plus ? (
+              <Stack direction="row" display="flex" alignItems="center">
+                <HStack>
+                  <IconButton
+                    aria-label="Data flow scan"
+                    boxSize={iconButtonSize}
+                    minW={iconButtonSize}
+                    boxShadow="base"
+                    variant="ghost"
+                    icon={<ManualSetupIcon boxSize="full" />}
+                    onClick={() => dispatch(changeStep(5))}
+                  />
+                </HStack>
+                <Text>Data Flow Scan</Text>
+                <Tooltip
+                  fontSize="md"
+                  label="The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
+            ) : null}
             <Stack direction="row" display="flex" alignItems="center">
               <HStack>
                 <IconButton
