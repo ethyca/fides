@@ -203,7 +203,7 @@ def print_deploy_success() -> None:
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
-    echo_green("    (user=fidesuser, password=Apassword1!)")
+    echo_green("    (user=fidestest, password=Apassword1!)")
 
     # Privacy Center
     echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3000")
