@@ -19,6 +19,12 @@ services:
       - 8080
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
+    # Mount a local volume so the user can see their privacy requests
+    volumes:
+      - type: bind
+        source: ${FIDES_UPLOADS_DIR}
+        target: /fides/fides_uploads
+        read_only: False
 
   fides-pc:
     image: ethyca/fides-privacy-center:sample
