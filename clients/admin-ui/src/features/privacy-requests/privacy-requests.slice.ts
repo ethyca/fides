@@ -295,7 +295,7 @@ export const privacyRequestApi = createApi({
       providesTags: () => ["Request"],
       async onQueryStarted(_key, { dispatch, queryFulfilled }) {
         queryFulfilled.then(({ data }) => {
-          const hasError = data.items.some((item) => item.status === "error")
+          const hasError = data.items.some((item) => item.status === "error");
           if (hasError) {
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
