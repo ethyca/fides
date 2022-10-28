@@ -3,21 +3,18 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 import { utf8ToB64 } from "common/utils";
 
-import type { RootState } from "~/app/store";
-import { BASE_URL } from "~/constants";
-
+import type { RootState } from "../../app/store";
+import { BASE_URL } from "../../constants";
 import { selectToken } from "../auth";
 import {
   User,
-  UserCreate,
-  UserCreateResponse,
-  UserPasswordResetParams,
+  UserPasswordUpdate,
   UserPermissions,
-  UserPermissionsEditParams,
+  UserPermissionsResponse,
+  UserPermissionsUpdate,
   UserResponse,
   UsersListParams,
   UsersResponse,
-  UserUpdateParams,
 } from "./types";
 
 export interface UserManagementState {
@@ -40,6 +37,10 @@ export const userManagementSlice = createSlice({
   name: "userManagement",
   initialState,
   reducers: {
+    assignToken: (state, action: PayloadAction<string>) => ({
+      ...state,
+      token: action.payload,
+    }),
     setUsernameSearch: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
@@ -105,7 +106,7 @@ export const userApi = createApi({
       query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ["User"],
     }),
-    createUser: build.mutation<UserCreateResponse, UserCreate>({
+    createUser: build.mutation<UserResponse, Partial<User>>({
       query: (user) => ({
         url: "user",
         method: "POST",
@@ -113,7 +114,18 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
-    editUser: build.mutation<User, UserUpdateParams>({
+    createUserPermissions: build.mutation<
+      UserPermissionsResponse,
+      Partial<UserPermissionsResponse>
+    >({
+      query: (user) => ({
+        url: `user/${user?.data?.id}/permission`,
+        method: "POST",
+        body: { scopes: user.scope },
+      }),
+      invalidatesTags: ["User"],
+    }),
+    editUser: build.mutation<User, Partial<User> & Pick<User, "id">>({
       query: ({ id, ...patch }) => ({
         url: `user/${id}`,
         method: "PUT",
@@ -140,7 +152,10 @@ export const userApi = createApi({
         }
       },
     }),
-    updateUserPassword: build.mutation<UserResponse, UserPasswordResetParams>({
+    updateUserPassword: build.mutation<
+      UserPasswordUpdate,
+      Partial<UserPasswordUpdate> & Pick<UserPasswordUpdate, "id">
+    >({
       query: ({ id, old_password, new_password }) => ({
         url: `user/${id}/reset-password`,
         method: "POST",
@@ -152,13 +167,13 @@ export const userApi = createApi({
       invalidatesTags: ["User"],
     }),
     updateUserPermissions: build.mutation<
-      UserPermissions,
-      UserPermissionsEditParams
+      UserPermissionsUpdate,
+      Partial<UserPermissionsUpdate> & Pick<UserPermissionsUpdate, "id">
     >({
-      query: ({ user_id, scopes }) => ({
-        url: `user/${user_id}/permission`,
+      query: ({ id, scopes }) => ({
+        url: `user/${id}/permission`,
         method: "PUT",
-        body: { id: user_id, scopes },
+        body: { id, scopes },
       }),
       invalidatesTags: ["User"],
     }),
@@ -181,5 +196,6 @@ export const {
   useDeleteUserMutation,
   useUpdateUserPasswordMutation,
   useUpdateUserPermissionsMutation,
+  useCreateUserPermissionsMutation,
   useGetUserPermissionsQuery,
 } = userApi;

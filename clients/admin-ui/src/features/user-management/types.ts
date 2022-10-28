@@ -1,33 +1,19 @@
-import {
-  Page_UserResponse_,
-  UserCreate,
-  UserCreateResponse,
-  UserPasswordReset,
-  UserPermissionsCreate,
-  UserPermissionsEdit,
-  UserPermissionsResponse,
-  UserResponse,
-  UserUpdate,
-} from "~/types/api";
-
-// Now that we have generated API types, this file can mostly re-export those interfaces.
-export type {
-  UserCreate,
-  UserCreateResponse,
-  UserPermissionsCreate,
-  UserPermissionsResponse,
-  UserResponse,
-  UserUpdate,
-};
-
-export interface UsersResponse extends Page_UserResponse_ {}
-
-export interface User extends UserResponse {}
-
-export interface UserPermissions extends UserPermissionsResponse {}
-
-export interface UserUpdateParams extends UserUpdate {
+export interface User {
   id: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  password?: string;
+  created_at?: string;
+}
+
+export interface UserResponse {
+  id: string;
+}
+
+export interface UsersResponse {
+  items: User[];
+  total: number;
 }
 
 export interface UsersListParams {
@@ -36,17 +22,37 @@ export interface UsersListParams {
   username: string;
 }
 
-export interface UserPasswordResetParams extends UserPasswordReset {
+export interface UserPasswordUpdate {
   id: string;
+  old_password: string;
+  new_password: string;
 }
 
-export interface UserPermissionsEditParams {
-  // This is the Id of the User, not the the Id field of the UserPermissions model.
-  user_id: string;
-  scopes: UserPermissionsEdit["scopes"];
+export interface UserPermissionsUpdate {
+  id: string | null;
+  scopes: string[];
+}
+
+export interface UserPermissionsResponse {
+  data: {
+    id: string;
+  };
+  scope: string[];
 }
 
 export interface UserPrivileges {
   privilege: string;
   scope: string;
 }
+
+export type CreateUserError = {
+  detail: {
+    msg: string;
+  }[];
+};
+
+export type UserPermissions = {
+  id: string;
+  scopes: string[];
+  user_id: string;
+};

@@ -18,7 +18,7 @@ const useUserForm = (profile: User, permissions: UserPermissions) => {
     username: profile.username ?? "",
     first_name: profile.first_name ?? "",
     last_name: profile.last_name ?? "",
-    password: "",
+    password: profile.password ?? "",
     scopes: permissions.scopes ?? [],
     id: profile.id,
   };
