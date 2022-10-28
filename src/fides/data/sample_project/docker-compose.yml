@@ -15,8 +15,6 @@ services:
         condition: service_healthy
       mongodb-test:
         condition: service_started
-    expose:
-      - 8080
     environment:
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
     # Mount a local volume so the user can see their privacy requests
@@ -28,10 +26,8 @@ services:
 
   fides-pc:
     image: ethyca/fides-privacy-center:sample
-    expose:
-      - 3000
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
       - type: bind
         source: ./privacy_center_config/
@@ -45,10 +41,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    expose:
-      - 5432
     ports:
-      - "5432:5432"
+      - "7432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
@@ -57,14 +51,12 @@ services:
       - postgres:/var/lib/postgresql/data
 
   redis:
-    image: "redis:6.2.5-alpine"
+    image: redis:6.2.5-alpine
     command: redis-server --requirepass redispass
     environment:
       - REDIS_PASSWORD=redispass
-    expose:
-      - 6379
     ports:
-      - "0.0.0.0:6379:6379"
+      - "7379:6379"
 
   postgres-test:
     image: postgres:12
@@ -73,10 +65,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    expose:
-      - 6432
     ports:
-      - "0.0.0.0:6432:5432"
+      - "6432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
@@ -90,10 +80,8 @@ services:
       - MONGO_INITDB_DATABASE=mongo_test
       - MONGO_INITDB_ROOT_USERNAME=mongo_user
       - MONGO_INITDB_ROOT_PASSWORD=mongo_pass
-    expose:
-      - 27017
     ports:
-      - "27017:27017"
+      - "37017:27017"
     volumes:
       - ./mongo_sample.js:/docker-entrypoint-initdb.d/mongo_sample.js:ro
 

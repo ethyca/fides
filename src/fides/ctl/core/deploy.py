@@ -4,6 +4,8 @@ from os.path import dirname, exists, join
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
+from click import echo
+
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.ctl.core.utils import echo_green, echo_red
@@ -72,7 +74,6 @@ def check_docker_version() -> bool:
     # Docker version 20.10.17, build 100c701
     # Docker version 20.10.18+azure-1, build b40c2f6
     docker_version = parsed.split("version ")[-1].split(",")[0].split("+")[0]
-    print(parsed)
 
     split_docker_version = convert_semver_to_list(docker_version)
     split_required_docker_version = convert_semver_to_list(REQUIRED_DOCKER_VERSION)
@@ -138,7 +139,7 @@ def pull_specific_docker_image() -> None:
     """
 
     current_fides_version = fides.__version__
-    print(f"Local fides version: {current_fides_version}")
+    echo(f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}")
 
     fides_image_stub = "ethyca/fides:{}"
     privacy_center_image_stub = "ethyca/fides-privacy-center:{}"
@@ -152,9 +153,9 @@ def pull_specific_docker_image() -> None:
     dev_privacy_center_image = privacy_center_image_stub.format("dev")
 
     try:
-        print("Attempting to pull:")
-        print(f"- {current_fides_image}")
-        print(f"- {current_privacy_center_image}")
+        echo("Attempting to pull:")
+        echo(f"- {current_fides_image}")
+        echo(f"- {current_privacy_center_image}")
 
         run_shell(f"docker pull {current_fides_image}")
         run_shell(f"docker pull {current_privacy_center_image}")
@@ -165,22 +166,22 @@ def pull_specific_docker_image() -> None:
             f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('sample')}"
         )
     except CalledProcessError:
-        print("Unable to fetch current version, defaulting to 'dev' versions...")
+        echo_red("Unable to fetch matching version, defaulting to 'dev' versions...")
 
-    try:
-        print("Attempting to pull:")
-        print(f"- {dev_fides_image}")
-        print(f"- {dev_privacy_center_image}")
+        try:
+            echo("Attempting to pull:")
+            echo(f"- {dev_fides_image}")
+            echo(f"- {dev_privacy_center_image}")
 
-        run_shell(f"docker pull {dev_fides_image}")
-        run_shell(f"docker pull {dev_privacy_center_image}")
-        run_shell(f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}")
-        run_shell(
-            f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
-        )
-    except CalledProcessError:
-        echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
-        raise SystemExit(1)
+            run_shell(f"docker pull {dev_fides_image}")
+            run_shell(f"docker pull {dev_privacy_center_image}")
+            run_shell(f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}")
+            run_shell(
+                f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+            )
+        except CalledProcessError:
+            echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
+            raise SystemExit(1)
 
 
 def print_deploy_success() -> None:
@@ -189,27 +190,25 @@ def print_deploy_success() -> None:
     """
 
     echo_green(FIDES_ASCII_ART)
-    echo_green("Fides successfully deployed and running in the background!")
+    echo_green("Sample Fides project successfully deployed and running in the background!")
     echo_green("Next steps:")
 
     echo_green("\n- Run 'fides init' to set up your local command-line!")
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
-    echo_green("    (user=fidestest, password=Apassword1!)")
+    echo_green("    (user=fidesuser, password=Apassword1!)")
 
     # Privacy Center
-    echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3001")
+    echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3000")
     echo_green("    (user=jane@example.com)")
 
     # Example Datastores
     echo_green("\n- Example Postgres Database running at localhost:6432")
     echo_green("    (user=postgres, password=postgres, db=postgres_example)")
-    echo_green("\n- Example Mongo Database running at localhost:27017")
+    echo_green("\n- Example Mongo Database running at localhost:37017")
     echo_green("    (user=mongo_test, password=mongo_pass, db=mongo_test)")
 
     # Documentation
-    # TODO: We should point to a tutorial page of some kind to actually use this deployed app
     echo_green("\n- Visit ethyca.github.io/fides for documentation.")
-
     echo_green("\nRun `fides deploy down` to stop the application.")

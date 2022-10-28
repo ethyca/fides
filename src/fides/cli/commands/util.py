@@ -162,7 +162,7 @@ def worker(ctx: click.Context) -> None:
 @click.pass_context
 def deploy(ctx: click.Context) -> None:
     """
-    Deploy a sample project locally to try out fides.
+    Deploy a sample project locally to try out Fides.
     """
 
 
@@ -171,15 +171,15 @@ def deploy(ctx: click.Context) -> None:
 @click.option(
     "--no-pull",
     is_flag=True,
-    help="Use a local image instead of trying to pull from Dockerhub.",
+    help="Use a local image instead of trying to pull from DockerHub.",
 )
 def up(ctx: click.Context, no_pull: bool = False) -> None:
     """
-    Starts the sample project fides demo via docker compose.
+    Starts the sample project via docker compose.
     """
 
     check_docker_version()
-    echo_green("Docker version is compatible, starting fides...")
+    echo_green("Docker version is compatible, starting deploy...")
 
     if not no_pull:
         pull_specific_docker_image()
@@ -199,7 +199,7 @@ def up(ctx: click.Context, no_pull: bool = False) -> None:
 @click.pass_context
 def down(ctx: click.Context) -> None:
     """
-    Stops the sample project fides demo and removes all volumes.
+    Stops the sample project and removes all volumes.
     """
 
     check_docker_version()

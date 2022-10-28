@@ -122,7 +122,7 @@ def test_env(session: Session) -> None:
         "Using secrets set in '.env' for example setup scripts (see 'example.env' for options)"
     )
     session.log(
-        "Fides Admin UI running at http://localhost:3000 (user: 'fidestest', pass: 'Apassword1!')"
+        "Fides Admin UI running at http://localhost:3000 (user: 'fidesuser', pass: 'Apassword1!')"
     )
     session.log(
         "Fides Privacy Center running at http://localhost:3001 (user: 'jane@example.com')"
