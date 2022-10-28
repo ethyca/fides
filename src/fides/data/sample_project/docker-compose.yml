@@ -11,8 +11,6 @@ services:
     depends_on:
       fides-db:
         condition: service_healthy
-      worker:
-        condition: service_started
       postgres-test:
         condition: service_healthy
       mongodb-test:
@@ -20,12 +18,7 @@ services:
     expose:
       - 8080
     environment:
-      # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
-      FIDES__EXECUTION__WORKER_ENABLED: "True"
-      # The sample fides config already exists in the container, so no need to mount it
       FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-      # TODO: remove
-      FIDES__DEV_MODE: "True"
 
   fides-pc:
     image: ethyca/fides-privacy-center:sample
@@ -97,27 +90,6 @@ services:
       - "27017:27017"
     volumes:
       - ./mongo_sample.js:/docker-entrypoint-initdb.d/mongo_sample.js:ro
-
-  # TODO: remove once merged: https://github.com/ethyca/fides/pull/1552
-  worker:
-    image: ethyca/fides:sample
-    command: fides worker
-    depends_on:
-      redis:
-        condition: service_started
-    restart: always
-    environment:
-      FIDES__USER__ANALYTICS_OPT_OUT: "True"
-      # The sample fides config already exists in the container, so no need to mount it
-      FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
-      # TODO: remove
-      FIDES__DEV_MODE: "True"
-      # Mount a local volume so the user can see their privacy requests
-    volumes:
-      - type: bind
-        source: ${FIDES_UPLOADS_DIR}
-        target: /fides/fides_uploads
-        read_only: False
 
 volumes:
   postgres: null
