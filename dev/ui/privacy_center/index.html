@@ -1504,6 +1504,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#consent" class="md-nav__link">
+    Consent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#styling" class="md-nav__link">
     Styling
   </a>
@@ -2013,6 +2020,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#consent" class="md-nav__link">
+    Consent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#styling" class="md-nav__link">
     Styling
   </a>
@@ -2043,10 +2057,10 @@ You're not viewing the latest version.
 
 
 <h1 id="privacy-center">Privacy Center</h1>
-<p>The fidesops <a href="./">Privacy Center</a> is a configurable webpage where users can request to download or delete their data.</p>
+<p>The Fides <a href="./">Privacy Center</a> is a configurable webpage where users can request to download or delete their data. The Privacy Center also provides configurable consent settings for regulatory compliance, allowing users to access and edit their data use preferences.</p>
 <p><img alt="privacy center" src="../../img/admin_ui/privacy_center.png" /></p>
 <h2 id="configuration">Configuration</h2>
-<p>The fidesops Privacy Center's text and actions are managed by a <code>config.json</code> file in the fidesops <code>/privacy-center/config</code> directory.</p>
+<p>The Fides Privacy Center's text and actions are managed by a <code>config.json</code> file in the Fides <code>/privacy-center/config</code> directory.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>config.json</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2077,7 +2091,55 @@ You're not viewing the latest version.
 <span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
-<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Take control of your data&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;server_url_development&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://localhost:8080/api/v1&quot;</span><span class="p">,</span><span class="w"></span>
@@ -2085,9 +2147,9 @@ You're not viewing the latest version.
 <span class="w">  </span><span class="nt">&quot;logo_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/logo.svg&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;actions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;download&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_access_policy&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;icon_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/download.svg&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Download your data&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Access your data&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;We will email you a report of the data related to your account.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;identity_inputs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;optional&quot;</span><span class="p">,</span><span class="w"></span>
@@ -2096,9 +2158,9 @@ You're not viewing the latest version.
 <span class="w">      </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">},</span><span class="w"></span>
 <span class="w">    </span><span class="p">{</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;policy_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default_erasure_policy&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;icon_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/delete.svg&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Delete your data&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Erase your data&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;We will delete all of your account data. This action cannot be undone.&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">      </span><span class="nt">&quot;identity_inputs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;optional&quot;</span><span class="p">,</span><span class="w"></span>
@@ -2106,7 +2168,55 @@ You're not viewing the latest version.
 <span class="w">        </span><span class="nt">&quot;phone&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;optional&quot;</span><span class="w"></span>
 <span class="w">      </span><span class="p">}</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
-<span class="w">  </span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">],</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;includeConsent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="nt">&quot;consent&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;cookieName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fides_consent&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;consentOptions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"></span>
+<span class="w">      </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;fidesDataUseKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;advertising&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Advertising / Data Sharing&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;We may use some of your personal information for advertising performance analysis and audience modeling for ongoing advertising which may be interpreted as &#39;Data Sharing&#39; under some regulations.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy#advertising&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;highlight&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;cookieKeys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;data_sales&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">      </span><span class="p">},</span><span class="w"></span>
+<span class="w">      </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;fidesDataUseKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;improve&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Product Analytics&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;We may use some of your personal information to collect analytics about how you use our products &amp; services, in order to improve our service.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy#data-sales&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;highlight&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;cookieKeys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;data_sales&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">      </span><span class="p">},</span><span class="w"></span>
+<span class="w">      </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Analytics&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;fidesDataUseKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;third_party_sharing&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy#analytics&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;cookieKeys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;data_sharing&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">      </span><span class="p">},</span><span class="w"></span>
+<span class="w">      </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Personalize&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;fidesDataUseKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;personalize&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy#personalize&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;cookieKeys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;functional&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">      </span><span class="p">},</span><span class="w"></span>
+<span class="w">      </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Essential&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;fidesDataUseKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;provide.service&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/privacy#essential&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;highlight&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="nt">&quot;cookieKeys&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;essential&quot;</span><span class="p">]</span><span class="w"></span>
+<span class="w">      </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">]</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <table>
@@ -2118,7 +2228,7 @@ You're not viewing the latest version.
 </thead>
 <tbody>
 <tr>
-<td><code>title</code> and <code>dscription</code></td>
+<td><code>title</code> and <code>description</code></td>
 <td>Text fields to override the default text of either the main portal, or the associated action.</td>
 </tr>
 <tr>
@@ -2135,7 +2245,7 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><code>actions</code></td>
-<td>A list of <a href="#actions">action objects</a>, each of which represent a new tile available in the portal, and are associated to a single fidesops policy.</td>
+<td>A list of <a href="#actions">action objects</a>, each of which represent a new tile available in the portal, and are associated to a single Fides policy.</td>
 </tr>
 <tr>
 <td><code>policy_key</code></td>
@@ -2152,8 +2262,49 @@ You're not viewing the latest version.
 </tbody>
 </table>
 <h3 id="actions">Actions</h3>
-<p>Actions represent available privacy rights executable from the Privacy Center. The provided <code>config.json</code> includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a fidesops <a href="../../guides/policy_webhooks/">policy key</a>, which defines the policy executed when the DSR is approved.</p>
+<p>Actions represent available privacy rights executable from the Privacy Center. The provided <code>config.json</code> includes Download and Delete default, representing common requests to access or remove data under most privacy regulations. Each action is associated with a Fides <a href="../../guides/policy_webhooks/">policy key</a>, which defines the policy executed when the DSR is approved.</p>
 <p>Additional actions can be added to this list, and removed at any time.</p>
+<h3 id="consent">Consent</h3>
+<p>To provide compliancy with local and internal regulations, you may define a series of <a href="https://ethyca.github.io/fideslang/taxonomy/data_uses/">data uses</a> in your Privacy Center configuration. This list of data uses will allow users to configure their personal privacy preferences, which will be stored as a cookie.</p>
+<p><img alt="manage consent" src="../../img/admin_ui/manage_consent.png" /></p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>includeConsent</code></td>
+<td>Where or not the consent options are enabled.</td>
+</tr>
+<tr>
+<td><code>cookieName</code></td>
+<td>The name of the stored cookie.</td>
+</tr>
+<tr>
+<td><code>title</code> and <code>description</code></td>
+<td>Text fields to override the default text of the associated consent option.</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td>The URL where a user can find additional information about this data use.</td>
+</tr>
+<tr>
+<td><code>default</code></td>
+<td>If this consent preference is enabled (true) or disabled (false) by default.</td>
+</tr>
+<tr>
+<td><code>highlight</code></td>
+<td>Whether or not this consent preference is highlighted.</td>
+</tr>
+<tr>
+<td><code>cookieKeys</code></td>
+<td>The data use represented within your stored cookie.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="styling">Styling</h3>
 <p>Any overrides for CSS styling can be included in a <code>config.css</code> file in the <code>/privacy-center/config</code> directory.</p>
 
