@@ -41,6 +41,8 @@ The types of changes are:
 ### Fixed
 
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+* Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+
 
 ### Docs
 
