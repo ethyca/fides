@@ -5,7 +5,7 @@ Fides provides several user interfaces to assist in receiving and reviewing priv
 ## Admin UI
 The Admin UI organizes processes like fulfilling [data subject requests](subject_requests.md), creating Fides resources, and [managing user access](user_management.md) into a single control panel. Once configured, the Admin UI allows authorized users to manage policies, [update datasets](datasets.md), and customize your Fides [taxonomy](https://ethyca.github.io/fideslang/taxonomy/overview/).
 
-![admin ui](../img/admin_ui/admin_ui.png)
+![admin ui](../img/admin_ui/sr_overview.png)
 
 ## Privacy Center 
 The Fides [Privacy Center](privacy_center.md) is a configurable webpage that allows your users to submit data access or deletion requests. Requests submitted through the Privacy Center are available for review in the Admin UI, and are processed according to your policy execution rules.

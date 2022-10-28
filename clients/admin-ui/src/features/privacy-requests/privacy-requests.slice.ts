@@ -293,18 +293,13 @@ export const privacyRequestApi = createApi({
         )}`,
       }),
       providesTags: () => ["Request"],
-      async onQueryStarted(_key, { dispatch, queryFulfilled, getState }) {
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          throw new Error("An error occurred while loading Subject Requests");
-        } finally {
-          const state = getState() as RootState;
-          const { errorRequests } = selectRetryRequests(state);
-          if (errorRequests?.length > 0) {
+      async onQueryStarted(_key, { dispatch, queryFulfilled }) {
+        queryFulfilled.then(({ data }) => {
+          const hasError = data.items.some((item) => item.status === "error");
+          if (hasError) {
             dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
           }
-        }
+        });
       },
     }),
     getUploadedManualWebhookData: build.query<
