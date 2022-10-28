@@ -139,7 +139,9 @@ def pull_specific_docker_image() -> None:
     """
 
     current_fides_version = fides.__version__
-    echo(f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}")
+    echo(
+        f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}"
+    )
 
     fides_image_stub = "ethyca/fides:{}"
     privacy_center_image_stub = "ethyca/fides-privacy-center:{}"
@@ -175,7 +177,9 @@ def pull_specific_docker_image() -> None:
 
             run_shell(f"docker pull {dev_fides_image}")
             run_shell(f"docker pull {dev_privacy_center_image}")
-            run_shell(f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}")
+            run_shell(
+                f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}"
+            )
             run_shell(
                 f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
             )
@@ -190,7 +194,9 @@ def print_deploy_success() -> None:
     """
 
     echo_green(FIDES_ASCII_ART)
-    echo_green("Sample Fides project successfully deployed and running in the background!")
+    echo_green(
+        "Sample Fides project successfully deployed and running in the background!"
+    )
     echo_green("Next steps:")
 
     echo_green("\n- Run 'fides init' to set up your local command-line!")
