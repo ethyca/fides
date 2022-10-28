@@ -152,6 +152,10 @@ def pull_specific_docker_image() -> None:
     dev_privacy_center_image = privacy_center_image_stub.format("dev")
 
     try:
+        print("Attempting to pull:")
+        print(f"- {current_fides_image}")
+        print(f"- {current_privacy_center_image}")
+
         run_shell(f"docker pull {current_fides_image}")
         run_shell(f"docker pull {current_privacy_center_image}")
         run_shell(
@@ -164,6 +168,10 @@ def pull_specific_docker_image() -> None:
         print("Unable to fetch current version, defaulting to 'dev' versions...")
 
     try:
+        print("Attempting to pull:")
+        print(f"- {dev_fides_image}")
+        print(f"- {dev_privacy_center_image}")
+
         run_shell(f"docker pull {dev_fides_image}")
         run_shell(f"docker pull {dev_privacy_center_image}")
         run_shell(f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}")
