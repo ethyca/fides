@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Dict, MutableMapping
+from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
 from celery.utils.log import get_task_logger
@@ -63,6 +63,10 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 
 
 celery_app = _create_celery()
+
+
+def get_workers_health() -> Dict[str, Dict[str, str]]:
+    return celery_app.control.inspect().ping()
 
 
 def start_worker() -> None:
