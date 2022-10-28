@@ -6,7 +6,7 @@ from typing import List
 
 import fides
 from fides.cli.utils import FIDES_ASCII_ART
-from fides.ctl.core.utils import echo_green
+from fides.ctl.core.utils import echo_green, echo_red
 
 FIDES_UPLOADS_DIR = getcwd() + "/fides_uploads/"
 REQUIRED_DOCKER_VERSION = "20.10.17"
@@ -140,15 +140,39 @@ def pull_specific_docker_image() -> None:
     current_fides_version = fides.__version__
     print(f"Local fides version: {current_fides_version}")
 
+    fides_image_stub = "ethyca/fides:{}"
+    privacy_center_image_stub = "ethyca/fides-privacy-center:{}"
+
+    current_fides_image = fides_image_stub.format(current_fides_version)
+    current_privacy_center_image = privacy_center_image_stub.format(
+        current_fides_version
+    )
+
+    dev_fides_image = fides_image_stub.format("dev")
+    dev_privacy_center_image = privacy_center_image_stub.format("dev")
+
     try:
-        run_shell(f"docker pull ethyca/fides:{current_fides_version}")
-        run_shell(f"docker pull ethyca/fides-privacy-center:{current_fides_version}")
+        run_shell(f"docker pull {current_fides_image}")
+        run_shell(f"docker pull {current_privacy_center_image}")
+        run_shell(
+            f"docker tag {current_fides_image} {fides_image_stub.format('sample')}"
+        )
+        run_shell(
+            f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+        )
     except CalledProcessError:
-        run_shell("docker pull ethyca/fides:dev")
-        run_shell("docker pull ethyca/fides-privacy-center:latest")
-    else:
-        run_shell("docker tag ethyca/fides:dev ethyca/fides:sample")
-        run_shell("docker tag ethyca/fides-privacy-center:sample")
+        print("Unable to fetch current version, defaulting to 'dev' versions...")
+
+    try:
+        run_shell(f"docker pull {dev_fides_image}")
+        run_shell(f"docker pull {dev_privacy_center_image}")
+        run_shell(f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}")
+        run_shell(
+            f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+        )
+    except CalledProcessError:
+        echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
+        raise SystemExit(1)
 
 
 def print_deploy_success() -> None:
