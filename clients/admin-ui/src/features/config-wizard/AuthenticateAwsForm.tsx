@@ -4,16 +4,19 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
+  CloseButton,
   Heading,
   HStack,
+  Spinner,
   Stack,
+  Text,
+  useDisclosure,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DocsLink from "~/features/common/DocsLink";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -29,6 +32,8 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import DocsLink from "../common/DocsLink";
+import WarningModal from "../common/WarningModal";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -69,6 +74,7 @@ const ValidationSchema = Yup.object().shape({
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
@@ -85,6 +91,7 @@ const AuthenticateAwsForm = () => {
     setScannerError(parsedError);
   };
   const handleCancel = () => {
+    onClose();
     dispatch(changeStep(2));
   };
 
@@ -109,102 +116,157 @@ const AuthenticateAwsForm = () => {
     }
   };
 
-  return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={ValidationSchema}
-      onSubmit={handleSubmit}
-    >
-      {({ isValid, dirty }) => (
-        <Form data-testid="authenticate-aws-form">
-          <Stack spacing={10}>
-            {!scannerError ? (
-              <>
-                <Heading size="lg">Add a system</Heading>
-                <Accordion allowToggle border="transparent">
-                  <AccordionItem>
-                    {({ isExpanded }) => (
-                      <>
-                        <h2>
-                          The scanner can be connected to your cloud
-                          infrastructure provider to automatically scan and
-                          create a list of all systems that may contain personal
-                          data.
-                          <AccordionButton
-                            display="inline"
-                            padding="0px"
-                            ml="5px"
-                            width="auto"
-                            color="complimentary.500"
-                          >
-                            {isExpanded ? `(show less)` : `(show more)`}
-                          </AccordionButton>
-                        </h2>
-                        <AccordionPanel padding="0px" mt="20px">
-                          In order to run the scanner, please provide
-                          credentials for authenticating to AWS. Please note,
-                          the credentials must have the{" "}
-                          <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
-                            minimum permissions listed in the support
-                            documentation here
-                          </DocsLink>
-                          . You can{" "}
-                          <DocsLink href={DOCS_URL_IAM_POLICY}>
-                            copy the sample IAM policy here
-                          </DocsLink>
-                          .
-                        </AccordionPanel>
-                      </>
-                    )}
-                  </AccordionItem>
-                </Accordion>
-              </>
-            ) : (
-              <ScannerError error={scannerError} />
-            )}
+  const warningModalMessage = (
+    <>
+      <Text color="gray.500" mb={3}>
+        Warning, you are about to cancel the scan!
+      </Text>
+      <Text color="gray.500" mb={3}>
+        If you cancel scanning, the scanner will stop and no systems will be
+        returned.
+      </Text>
+      <Text color="gray.500" mb={3}>
+        Are you sure you want to cancel?
+      </Text>
+    </>
+  );
 
-            <Stack>
-              <CustomTextInput
-                name="aws_access_key_id"
-                label="Access Key ID"
-                // TODO(#724): These fields should link to the AWS docs, but that requires HTML
-                // content instead of just a string label. The message would be:
-                // "You can find more information about creating access keys and secrets on AWS docs here."
-                tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
-              />
-              <CustomTextInput
-                type="password"
-                name="aws_secret_access_key"
-                label="Secret"
-                // "You can find more about creating access keys and secrets on AWS docs here."
-                tooltip="The secret access key is generated when you create your new access key ID."
-              />
-              <CustomSelect
-                name="region_name"
-                label="Default Region"
-                // "You can learn more about regions in AWS docs here."
-                tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
-                options={AWS_REGION_OPTIONS}
-              />
+  return (
+    <>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={ValidationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isValid, isSubmitting, dirty }) => (
+          <Form data-testid="authenticate-aws-form">
+            <Stack spacing={10}>
+              {isSubmitting ? (
+                <Text
+                  alignItems="center"
+                  as="b"
+                  color="gray.900"
+                  display="flex"
+                  fontSize="xl"
+                >
+                  System scanning in progress{" "}
+                  <CloseButton
+                    data-testid="close-scan-in-progress"
+                    display="inline-block"
+                    onClick={onOpen}
+                  />
+                </Text>
+              ) : null}
+              {isSubmitting ? (
+                <Stack alignItems="center">
+                  <Spinner
+                    thickness="4px"
+                    speed="0.65s"
+                    emptyColor="gray.200"
+                    color="gray.500"
+                    size="md"
+                  />
+                </Stack>
+              ) : null}
+              {scannerError ? <ScannerError error={scannerError} /> : null}
+              {!isSubmitting && !scannerError ? (
+                <>
+                  <Heading size="lg">Authenticate Scanner</Heading>
+                  <Accordion allowToggle border="transparent">
+                    <AccordionItem>
+                      {({ isExpanded }) => (
+                        <>
+                          <h2>
+                            The scanner can be connected to your cloud
+                            infrastructure provider to automatically scan and
+                            create a list of all systems that may contain
+                            personal data.
+                            <AccordionButton
+                              display="inline"
+                              padding="0px"
+                              ml="5px"
+                              width="auto"
+                              color="complimentary.500"
+                            >
+                              {isExpanded ? `(show less)` : `(show more)`}
+                            </AccordionButton>
+                          </h2>
+                          <AccordionPanel padding="0px" mt="20px">
+                            In order to run the scanner, please provide
+                            credentials for authenticating to AWS. Please note,
+                            the credentials must have the{" "}
+                            <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
+                              minimum permissions listed in the support
+                              documentation here
+                            </DocsLink>
+                            . You can{" "}
+                            <DocsLink href={DOCS_URL_IAM_POLICY}>
+                              copy the sample IAM policy here
+                            </DocsLink>
+                            .
+                          </AccordionPanel>
+                        </>
+                      )}
+                    </AccordionItem>
+                  </Accordion>
+
+                  <Stack>
+                    <CustomTextInput
+                      name="aws_access_key_id"
+                      label="Access Key ID"
+                      // TODO(#724): These fields should link to the AWS docs, but that requires HTML
+                      // content instead of just a string label. The message would be:
+                      // "You can find more information about creating access keys and secrets on AWS docs here."
+                      tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
+                    />
+                    <CustomTextInput
+                      type="password"
+                      name="aws_secret_access_key"
+                      label="Secret"
+                      // "You can find more about creating access keys and secrets on AWS docs here."
+                      tooltip="The secret access key is generated when you create your new access key ID."
+                    />
+                    <CustomSelect
+                      name="region_name"
+                      label="Default Region"
+                      // "You can learn more about regions in AWS docs here."
+                      tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
+                      options={AWS_REGION_OPTIONS}
+                    />
+                  </Stack>
+                </>
+              ) : null}
+              <HStack>
+                <Button
+                  variant="outline"
+                  onClick={!isSubmitting ? handleCancel : onOpen}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isDisabled={!dirty || !isValid}
+                  isLoading={isLoading}
+                  data-testid="submit-btn"
+                >
+                  Save and Continue
+                </Button>
+              </HStack>
             </Stack>
-            <HStack>
-              <Button variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                isDisabled={!dirty || !isValid}
-                isLoading={isLoading}
-                data-testid="submit-btn"
-              >
-                Save and Continue
-              </Button>
-            </HStack>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+      <WarningModal
+        isOpen={isOpen}
+        onClose={onClose}
+        handleConfirm={handleCancel}
+        title="Cancel Scan!"
+        message={warningModalMessage}
+        confirmButtonText="Yes, Cancel"
+        cancelButtonText="No, Continue Scanning"
+      />
+    </>
   );
 };
 

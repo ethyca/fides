@@ -63,7 +63,6 @@ task_retry_backoff = 1
 subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
-worker_enabled = false
 
 [admin_ui]
 enabled = true
@@ -142,7 +141,6 @@ The `fides.toml` file should specify the following variables:
 |`require_manual_request_approval` | bool | `False` | Whether privacy requests require explicit approval to execute. |
 |`masking_strict` | bool | `True` | If set to `True`, only use UPDATE requests to mask data. If `False`, Fides will use any defined DELETE or GDPR DELETE endpoints to remove PII, which may extend beyond the specific data categories that configured in your execution policy. |
 |`celery_config_path` | string | N/A | An optional override for the [Celery](#celery-configuration) configuration file path. |
-|`worker_enabled` | bool | `True` | By default, Fides uses a dedicated [Celery worker](#celery-configuration) to process privacy requests asynchronously. Setting `worker_enabled` to `False` will run the worker on the same node as the webserver. |
 
 #### User 
 

@@ -102,3 +102,8 @@ export interface PrivacyRequestParams {
   sort_field?: string;
   sort_direction?: string;
 }
+
+export type RetryRequests = {
+  checkAll: boolean;
+  errorRequests: string[];
+};

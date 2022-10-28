@@ -1436,8 +1436,7 @@ class TestSaasConnectorIntegration:
         connector = get_connector(mailchimp_connection_config)
         assert connector.__class__ == SaaSConnector
 
-        client = connector.client()
-        assert client.__class__ == AuthenticatedClient
+        # We can't create a saas connector client outside the context of a request
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
         mailchimp_connection_config.secrets = {"domain": "bad_host"}
