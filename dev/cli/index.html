@@ -552,6 +552,20 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
+      <a href="../getting-started/sample_project/" class="md-nav__link">
+        Deploying a Sample Fides Application
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../getting-started/database_connectors/" class="md-nav__link">
         Connect to Databases
       </a>
@@ -1615,6 +1629,33 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+    <nav class="md-nav" aria-label="deploy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-deploy-down" class="md-nav__link">
+    down
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-deploy-up" class="md-nav__link">
+    up
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-evaluate" class="md-nav__link">
     evaluate
   </a>
@@ -2058,6 +2099,20 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
+      <a href="../development/dev_deployment/" class="md-nav__link">
+        Local Fides Deploy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../development/pull_requests/" class="md-nav__link">
         Pull Requests
       </a>
@@ -2365,6 +2420,33 @@ You're not viewing the latest version.
   <a href="#fides-delete" class="md-nav__link">
     delete
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-deploy" class="md-nav__link">
+    deploy
+  </a>
+  
+    <nav class="md-nav" aria-label="deploy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-deploy-down" class="md-nav__link">
+    down
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-deploy-up" class="md-nav__link">
+    up
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2749,6 +2831,35 @@ You're not viewing the latest version.
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h3 id="fides-deploy">fides deploy</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Deploy a sample project locally to try out Fides.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy [OPTIONS] COMMAND [ARGS]...
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-deploy-down">fides deploy down</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Stops the sample project and removes all volumes.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy down [OPTIONS]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-deploy-up">fides deploy up</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Starts the sample project via docker compose.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy up [OPTIONS]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --no-pull  Use a local image instead of trying to pull from DockerHub.
+  --help     Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-evaluate">fides evaluate</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
