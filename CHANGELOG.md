@@ -47,7 +47,9 @@ The types of changes are:
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 * Add datastore UI and manual connection fulfillment docs [#1501](https://github.com/ethyca/fides/pull/1501)
+
 
 ### Fixed
 
