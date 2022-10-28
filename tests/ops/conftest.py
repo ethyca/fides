@@ -204,6 +204,11 @@ def integration_config():
     yield load_toml(["tests/ops/integration_test_config.toml"])
 
 
+@pytest.fixture(scope="session")
+def celery_config():
+    return {"task_always_eager": False}
+
+
 @pytest.fixture(autouse=True, scope="session")
 def celery_enable_logging():
     """Turns on celery output logs."""

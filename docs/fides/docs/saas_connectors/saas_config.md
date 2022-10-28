@@ -39,10 +39,15 @@ saas_config:
         username: <username>
         password: <api_key>
 
+  rate_limit_config:
+    limits:
+    - rate: 10
+      period: second
+
   test_request:
     method: GET
     path: /3.0/lists
-    
+
   endpoints:
   - name: messages
     requests:
@@ -62,6 +67,8 @@ saas_config:
               field: from_email
               value:
                 identity: email
+        rate_limit_config:
+          enabled: false
   - name: conversations
     requests:
       read:
@@ -125,6 +132,7 @@ The above configuration also contains the following complex fields
 
 - `connector_params`
 - `client_config`
+- `rate_limit_config`
 - `test_request`
 - `endpoints`
 - `data_protection_request`
@@ -154,7 +162,7 @@ external_references:
 
 #### Client config
 
-The `client_config` describes the necessary information to be able to create a base HTTP client. The values for host, username, and password are not defined here, only referenced in the form of a `connector_param` which Fides uses to insert the actual value from the stored secrets.
+The `client_config` field describes the necessary information to be able to create a base HTTP client. The values for host, username, and password are not defined here, only referenced in the form of a `connector_param` which Fides uses to insert the actual value from the stored secrets.
 
 ```yaml
 client_config:
@@ -179,6 +187,20 @@ authentication:
 
 
 Fides also supports [OAuth2 authentication](saas_oauth2.md).
+
+#### Rate limits
+
+The `rate_limit_config` field describes rate limits which can be used to limit how fast requests can be made to an endpoint. They can also be configured at the [endpoint request level](#endpoints). 
+
+```yaml
+rate_limit_config:
+  enabled: true
+  limits:
+  - rate: <rate>
+    period: <period>
+```
+
+Rate limiter supports `second`, `minute`, `hour` and `day`periods. See [Saas Rate Limiting](./saas_rate_limiting.md) for additional details.
 
 #### Test request
 
@@ -245,6 +267,7 @@ The `requests` configuration further contains the following fields:
 | `pagination` | An optional strategy used to get the next set of results from APIs with resources spanning multiple pages. Details can be found under [SaaS Pagination](saas_pagination.md).
 |`grouped_inputs` | An optional list of reference fields whose inputs are dependent upon one another.  For example, an endpoint may need both an `organization_id` and a `project_id` from another endpoint.  These aren't independent values, as a `project_id` belongs to an `organization_id`.  You would specify this as `["organization_id", "project_id"]`.
 | `client_config` | Specify optional embedded Client Configs if an individual request needs a different protocol, host, or authentication strategy from the base Client Config.
+| `rate_limit_config` | An optional rate limit configuration. Can be used to set rate limits or disable limiting for a specific endpoint. See [Saas Rate Limiting](./saas_rate_limiting.md) for additional details.
 
 ## Param_values in more detail
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 from fastapi import Depends, HTTPException, Security
 from sqlalchemy.exc import IntegrityError
@@ -69,11 +70,6 @@ def create_consent_request(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if not CONFIG.execution.subject_identity_verification_required:
-        raise FunctionalityNotConfigured(
-            "Subject identity verification is required, but it is currently disabled! Please update your application configuration to enable subject identity verification."
-        )
-
     if not data.email:
         raise HTTPException(HTTP_400_BAD_REQUEST, detail="An email address is required")
 
@@ -99,14 +95,16 @@ def create_consent_request(
         "provided_identity_id": identity.id,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
-    try:
-        send_verification_code_to_user(db, consent_request, data.email)
-    except EmailDispatchException as exc:
-        logger.error("Error sending the verification code email: %s", str(exc))
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error sending the verification code email: {str(exc)}",
-        )
+
+    if CONFIG.execution.subject_identity_verification_required:
+        try:
+            send_verification_code_to_user(db, consent_request, data.email)
+        except EmailDispatchException as exc:
+            logger.error("Error sending the verification code email: %s", str(exc))
+            raise HTTPException(
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error sending the verification code email: {str(exc)}",
+            )
     return ConsentRequestResponse(
         identity=data,
         consent_request_id=consent_request.id,
@@ -127,6 +125,62 @@ def consent_request_verify(
     """Verifies the verification code and returns the current consent preferences if successful."""
     provided_identity = _get_consent_request_and_provided_identity(
         db=db, consent_request_id=consent_request_id, verification_code=data.code
+    )
+
+    if not provided_identity.hashed_value:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail="Provided identity missing email"
+        )
+
+    return _prepare_consent_preferences(db, provided_identity)
+
+
+@router.get(
+    CONSENT_REQUEST_PREFERENCES_WITH_ID,
+    status_code=HTTP_200_OK,
+    response_model=ConsentPreferences,
+    responses={
+        HTTP_200_OK: {
+            "consent": [
+                {
+                    "data_use": "advertising",
+                    "data_use_description": "We may use some of your personal information for advertising performance "
+                    "analysis and audience modeling for ongoing advertising which may be "
+                    "interpreted as 'Data Sharing' under some regulations.",
+                    "opt_in": True,
+                    "highlight": False,
+                },
+                {
+                    "data_use": "improve",
+                    "data_use_description": "We may use some of your personal information to collect analytics about "
+                    "how you use our products & services, in order to improve our service.",
+                    "opt_in": False,
+                },
+            ]
+        },
+        HTTP_404_NOT_FOUND: {"detail": "Consent request not found"},
+        HTTP_400_BAD_REQUEST: {
+            "detail": "Retrieving consent preferences without identity verification is "
+            "only supported with subject_identity_verification_required "
+            "turned off."
+        },
+    },
+)
+def get_consent_preferences_no_id(
+    *, db: Session = Depends(get_db), consent_request_id: str
+) -> ConsentPreferences:
+    """Returns the current consent preferences if successful."""
+
+    if CONFIG.execution.subject_identity_verification_required:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Retrieving consent preferences without identity verification is "
+            "only supported with subject_identity_verification_required "
+            "turned off.",
+        )
+
+    provided_identity = _get_consent_request_and_provided_identity(
+        db=db, consent_request_id=consent_request_id, verification_code=None
     )
 
     if not provided_identity.hashed_value:
@@ -218,7 +272,7 @@ def set_consent_preferences(
 def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
-    verification_code: str,
+    verification_code: Optional[str],
 ) -> ProvidedIdentity:
     """Verifies the consent request and verification code, then return the ProvidedIdentity if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(
@@ -230,13 +284,16 @@ def _get_consent_request_and_provided_identity(
             status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
         )
 
-    try:
-        consent_request.verify_identity(verification_code)
-    except IdentityVerificationException as exc:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
-    except PermissionError as exc:
-        logger.info("Invalid verification code provided for %s.", consent_request.id)
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
+    if CONFIG.execution.subject_identity_verification_required:
+        try:
+            consent_request.verify_identity(verification_code)
+        except IdentityVerificationException as exc:
+            raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
+        except PermissionError as exc:
+            logger.info(
+                "Invalid verification code provided for %s.", consent_request.id
+            )
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
     provided_identity: ProvidedIdentity | None = ProvidedIdentity.get_by_key_or_id(
         db, data={"id": consent_request.provided_identity_id}

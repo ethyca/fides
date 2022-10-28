@@ -15,7 +15,6 @@ from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     ResponseFormat,
-    StorageSecretsOnetrust,
     StorageSecretsS3,
     StorageType,
 )
@@ -41,7 +40,6 @@ def get_schema_for_secrets(
     try:
         schema = {
             StorageType.s3: StorageSecretsS3,
-            StorageType.onetrust: StorageSecretsOnetrust,
         }[storage_type]
     except KeyError:
         raise ValueError(

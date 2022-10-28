@@ -34,19 +34,6 @@ class StorageDetails(Enum):
     MAX_RETRIES = "max_retries"
     AUTH_METHOD = "auth_method"
 
-    # onetrust-specific
-    SERVICE_NAME = "service_name"
-    ONETRUST_POLLING_HR = "onetrust_polling_hr"
-    ONETRUST_POLLING_DAY_OF_WEEK = "onetrust_polling_day_of_week"
-
-
-class StorageDetailsOneTrust(BaseModel):
-    """The details required to represent a OneTrust storage configuration."""
-
-    service_name: str
-    onetrust_polling_hr: int
-    onetrust_polling_day_of_week: int
-
     class Config:
         """Restrict adding other fields through this schema."""
 
@@ -91,10 +78,6 @@ class StorageSecrets(Enum):
     # s3-specific
     AWS_ACCESS_KEY_ID = "aws_access_key_id"
     AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
-    # onetrust-specific
-    ONETRUST_HOSTNAME = "onetrust_hostname"
-    ONETRUST_CLIENT_ID = "onetrust_client_id"
-    ONETRUST_CLIENT_SECRET = "onetrust_client_secret"
 
 
 class StorageSecretsLocal(BaseModel):
@@ -118,26 +101,12 @@ class StorageSecretsS3(BaseModel):
         extra = Extra.forbid
 
 
-class StorageSecretsOnetrust(BaseModel):
-    """The secrets required to send results back to Onetrust."""
-
-    onetrust_hostname: str
-    onetrust_client_id: str
-    onetrust_client_secret: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
-
-
 class StorageType(Enum):
     """Enum for storage destination types"""
 
     s3 = "s3"
     gcs = "gcs"
     transcend = "transcend"
-    onetrust = "onetrust"
     ethyca = "ethyca"
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
@@ -149,7 +118,6 @@ class StorageDestination(BaseModel):
     type: StorageType
     details: Union[
         StorageDetailsS3,
-        StorageDetailsOneTrust,
         StorageDetailsLocal,
     ]
     key: Optional[FidesOpsKey]
@@ -176,7 +144,6 @@ class StorageDestination(BaseModel):
             schema = {
                 StorageType.s3.value: StorageDetailsS3,
                 StorageType.local.value: StorageDetailsLocal,
-                StorageType.onetrust.value: StorageDetailsOneTrust,
             }[storage_type]
         except KeyError:
             raise ValueError(
@@ -197,9 +164,9 @@ class StorageDestination(BaseModel):
     @classmethod
     def json_validator(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Custom validation to ensure that OneTrust and local destination formats are valid.
+        Custom validation to ensure that local destination formats are valid.
         """
-        json_only_destinations = [StorageType.onetrust.value, StorageType.local.value]
+        json_only_destinations = [StorageType.local.value]
         storage_type = values.get("type")
         response_format = values.get("format")
         if (
@@ -208,7 +175,7 @@ class StorageDestination(BaseModel):
             and response_format != ResponseFormat.json.value
         ):
             raise ValueError(
-                "Only JSON upload format is supported for OneTrust and local storage destinations."
+                "Only JSON upload format is supported for local storage destinations."
             )
 
         return values
@@ -235,7 +202,4 @@ class BulkPutStorageConfigResponse(BulkResponse):
     failed: List[BulkUpdateFailed]
 
 
-SUPPORTED_STORAGE_SECRETS = Union[
-    StorageSecretsS3,
-    StorageSecretsOnetrust,
-]
+SUPPORTED_STORAGE_SECRETS = StorageSecretsS3

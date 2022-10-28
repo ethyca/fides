@@ -21,7 +21,7 @@ class PaginationStrategy(Strategy):
         request_params: SaaSRequestParams,
         connector_params: Dict[str, Any],
         response: Response,
-        data_path: str,
+        data_path: Optional[str],
     ) -> Optional[SaaSRequestParams]:
         """Build request for next page of data"""
 
