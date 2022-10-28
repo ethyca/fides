@@ -1,6 +1,6 @@
 # Fides Deploy
 
-In order to get up-and-running quickly with a demo version of fides, we've shipped a sample application within fides that will configure and start all of the components for you.
+In order to get up-and-running quickly with Fides, we've bundled a sample project within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
 
 ## Deployment Steps
 
