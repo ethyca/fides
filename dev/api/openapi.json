@@ -9554,7 +9554,9 @@
         },
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": []
+            "OAuth2ClientCredentialsBearer": [
+              "user-permission:read"
+            ]
           }
         ]
       },
