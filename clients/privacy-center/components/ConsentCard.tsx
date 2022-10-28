@@ -2,14 +2,22 @@ import React from "react";
 import Card from "./Card";
 
 type ConsentCardProps = {
+  title: string;
+  iconPath: string;
+  description: string;
   onOpen: () => void;
 };
 
-const ConsentCard: React.FC<ConsentCardProps> = ({ onOpen }) => (
+const ConsentCard: React.FC<ConsentCardProps> = ({
+  title,
+  iconPath,
+  description,
+  onOpen,
+}) => (
   <Card
-    title="Manage my consent"
-    iconPath="consent.svg"
-    description="Manage how we use your data, including the option to select Do Not Sell My Personal Information."
+    title={title}
+    iconPath={iconPath}
+    description={description}
     onClick={onOpen}
   />
 );
