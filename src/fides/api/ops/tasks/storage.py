@@ -10,7 +10,6 @@ from io import BytesIO
 from typing import Any, Dict, Union
 
 import pandas as pd
-import requests
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
@@ -25,7 +24,6 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
 from fides.api.ops.util.storage_authenticator import (
-    get_onetrust_access_token,
     get_s3_session,
 )
 from fides.ctl.core.config import get_config
@@ -159,30 +157,6 @@ def upload_to_s3(  # pylint: disable=R0913
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
-
-
-def upload_to_onetrust(
-    payload: Dict,
-    storage_secrets: Dict[StorageSecrets, Any],
-    ref_id: str,
-) -> str:
-    """Uploads arbitrary data to onetrust returned from an access request"""
-    logger.info("Starting OneTrust Upload for ref_id %s", ref_id)
-
-    onetrust_hostname = storage_secrets[StorageSecrets.ONETRUST_HOSTNAME.value]  # type: ignore
-    access_token = get_onetrust_access_token(
-        client_id=storage_secrets[StorageSecrets.ONETRUST_CLIENT_ID.value],  # type: ignore
-        client_secret=storage_secrets[StorageSecrets.ONETRUST_CLIENT_SECRET.value],  # type: ignore
-        hostname=onetrust_hostname,
-    )
-    headers = {"Authorization": f"Bearer {access_token}"}
-    requests.post(
-        # todo- move to outbound_urn_registry
-        f"https://{onetrust_hostname}.com/api/datasubject/v3/datadiscovery/requestqueues/{ref_id}",
-        data=payload,
-        headers=headers,
-    )
-    return "onetrust"
 
 
 def _handle_json_encoding(field: Any) -> str:

@@ -85,8 +85,16 @@ const Home: NextPage = () => {
     );
   });
 
-  if (config.includeConsent) {
-    content.push(<ConsentCard key="consentCard" onOpen={onConsentModalOpen} />);
+  if (config.includeConsent && config.consent) {
+    content.push(
+      <ConsentCard
+        key="consentCard"
+        title={config.consent.title}
+        iconPath={config.consent.icon_path}
+        description={config.consent.description}
+        onOpen={onConsentModalOpen}
+      />
+    );
   }
 
   return (
@@ -108,6 +116,7 @@ const Home: NextPage = () => {
         >
           <Image
             src={config.logo_path}
+            margin="8px"
             height="56px"
             width="304px"
             alt="Logo"

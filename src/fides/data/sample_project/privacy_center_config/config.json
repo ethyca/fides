@@ -1,0 +1,79 @@
+{
+  "title": "Sample Privacy Center",
+  "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
+  "server_url_development": "http://localhost:8080/api/v1",
+  "server_url_production": "http://localhost:8080/api/v1",
+  "logo_path": "/logo.svg",
+  "actions": [
+    {
+      "policy_key": "default_access_policy",
+      "icon_path": "/download.svg",
+      "title": "Access your data",
+      "description": "We will email you a report of the data related to your account.",
+      "identity_inputs": {
+        "name": "optional",
+        "email": "required",
+        "phone": "optional"
+      }
+    },
+    {
+      "policy_key": "default_erasure_policy",
+      "icon_path": "/delete.svg",
+      "title": "Erase your data",
+      "description": "We will delete all of your account data. This action cannot be undone.",
+      "identity_inputs": {
+        "name": "optional",
+        "email": "required",
+        "phone": "optional"
+      }
+    }
+  ],
+  "includeConsent": false,
+  "consent": {
+    "cookieName": "fides_consent",
+    "consentOptions": [
+      {
+        "fidesDataUseKey": "advertising",
+        "name": "Advertising / Data Sharing",
+        "description": "We may use some of your personal information for advertising performance analysis and audience modeling for ongoing advertising which may be interpreted as 'Data Sharing' under some regulations.",
+        "url": "https://example.com/privacy#advertising",
+        "default": true,
+        "highlight": false,
+        "cookieKeys": ["data_sales"]
+      },
+      {
+        "fidesDataUseKey": "improve",
+        "name": "Product Analytics",
+        "description": "We may use some of your personal information to collect analytics about how you use our products & services, in order to improve our service.",
+        "url": "https://example.com/privacy#data-sales",
+        "default": true,
+        "highlight": false,
+        "cookieKeys": ["data_sales"]
+      },
+      {
+        "name": "Analytics",
+        "fidesDataUseKey": "third_party_sharing",
+        "description": "...",
+        "url": "https://example.com/privacy#analytics",
+        "cookieKeys": ["data_sharing"]
+      },
+      {
+        "name": "Personalize",
+        "fidesDataUseKey": "personalize",
+        "default": true,
+        "url": "https://example.com/privacy#personalize",
+        "description": "...",
+        "cookieKeys": ["functional"]
+      },
+      {
+        "name": "Essential",
+        "fidesDataUseKey": "provide.service",
+        "default": true,
+        "url": "https://example.com/privacy#essential",
+        "highlight": true,
+        "description": "...",
+        "cookieKeys": ["essential"]
+      }
+    ]
+  }
+}
