@@ -148,42 +148,34 @@ def worker(ctx: click.Context) -> None:
 
 
 # TODO: see comment
-"""
-Analytics had to be removed for this command group (deploy) to work.
+# Analytics had to be removed for this command group (deploy) to work.
 
-It behaves similarly to 'init' in that it is excluded from analytics in
-the main CLI logic. This allows us to run `fides init` _after_
-this command runs. However, it also means we aren't collecting analytics
-events specifically for people running `fides deploy`.
+# It behaves similarly to 'init' in that it is excluded from analytics in
+# the main CLI logic. This allows us to run `fides init` _after_
+# this command runs. However, it also means we aren't collecting analytics
+# events specifically for people running `fides deploy`.
 
-There is probably a smarter check we could be doing here...
-"""
+# There is probably a smarter check we could be doing here...
 
 
 @click.group(name="deploy")
 @click.pass_context
 def deploy(ctx: click.Context) -> None:
     """
-    Deploy a demo fides application.
+    Deploy a sample project locally to try out fides.
     """
 
 
 @deploy.command()
 @click.pass_context
-@click.option("--command", "-c", type=str, default="")
 @click.option(
     "--no-pull",
     is_flag=True,
     help="Use a local image instead of trying to pull from Dockerhub.",
 )
-def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
+def up(ctx: click.Context, no_pull: bool = False) -> None:
     """
-    Starts the demo fides application via docker compose.
-
-    Uses the fides.toml that exists within the container.
-
-    Use the --command flag to pass in a custom command for
-    the container shell to run.
+    Starts the sample project fides demo via docker compose.
     """
 
     check_docker_version()
@@ -207,7 +199,7 @@ def up(ctx: click.Context, command: str = "", no_pull: bool = False) -> None:
 @click.pass_context
 def down(ctx: click.Context) -> None:
     """
-    Stops the demo fides application.
+    Stops the sample project fides demo and removes all volumes.
     """
 
     check_docker_version()

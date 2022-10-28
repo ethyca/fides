@@ -52,7 +52,9 @@ def setup():
     )
     session = SessionLocal()
 
-    seed_postgres_data(session.bind.url, "./docker/sample_data/postgres_example.sql")
+    seed_postgres_data(
+        session.bind.url, "./src/fides/data/sample_project/postgres_sample.sql"
+    )
 
 
 if __name__ == "__main__":
