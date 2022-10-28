@@ -12,6 +12,7 @@ import {
   Text,
   Tooltip,
 } from "@fidesui/react";
+import { Dispatch, SetStateAction } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import {
@@ -23,7 +24,11 @@ import {
 import { changeStep } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
 
-const AddSystemForm = () => {
+interface Props {
+  setManualSystemsSetupChosen: Dispatch<SetStateAction<boolean>>;
+}
+
+const AddSystemForm = ({ setManualSystemsSetupChosen }: Props) => {
   const dispatch = useAppDispatch();
 
   return (
@@ -70,7 +75,10 @@ const AddSystemForm = () => {
                 boxShadow="base"
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
-                onClick={() => dispatch(changeStep())}
+                onClick={() => {
+                  setManualSystemsSetupChosen(false);
+                  dispatch(changeStep());
+                }}
                 data-testid="aws-btn"
               />
               <Text>Infrastructure Scan (AWS)</Text>
@@ -91,7 +99,10 @@ const AddSystemForm = () => {
                   boxShadow="base"
                   variant="ghost"
                   icon={<ManualSetupIcon boxSize="full" />}
-                  onClick={() => dispatch(changeStep(5))}
+                  onClick={() => {
+                    setManualSystemsSetupChosen(true);
+                    dispatch(changeStep(5));
+                  }}
                 />
               </HStack>
               <Text>Add a system manually</Text>
