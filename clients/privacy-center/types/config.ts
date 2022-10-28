@@ -7,6 +7,9 @@ export type Config = {
   actions: PrivacyRequestOption[];
   includeConsent: boolean;
   consent?: {
+    icon_path: string;
+    title: string;
+    description: string;
     cookieName?: string;
     consentOptions: ConfigConsentOption[];
   };
