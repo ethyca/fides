@@ -1,5 +1,5 @@
 {
-  "title": "Privacy Center",
+  "title": "Test Privacy Center",
   "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
   "server_url_development": "http://localhost:8080/api/v1",
   "server_url_production": "http://localhost:8080/api/v1",
@@ -35,7 +35,7 @@
       {
         "fidesDataUseKey": "advertising",
         "name": "Data Sales or Sharing",
-        "description": "We may use some of your personal information for behavioral advertising purposeswhich may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
+        "description": "We may use some of your personal information for behavioral advertising purposes, which may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
         "url": "https://example.com/privacy#data-sales",
         "default": true,
         "highlight": false,
