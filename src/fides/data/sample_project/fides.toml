@@ -18,6 +18,9 @@ cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 
+[root_user]
+analytics_opt_out = false
+
 [execution]
 require_manual_request_approval = true
 
@@ -30,9 +33,5 @@ send_request_review_notification = false
 server_host = "fides"
 server_port = 8080
 
-# TODO: remove these, keep analytics enabled but avoid prompt on fides webserver
-[root_user]
-analytics_opt_out = true
-
 [user]
-analytics_opt_out = true
+analytics_opt_out = false
