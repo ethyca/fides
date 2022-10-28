@@ -10,7 +10,10 @@ import {
 import React, { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { ColumnMetadata } from "~/features/common/ColumnDropdown";
+import {
+  ColumnDropdown,
+  ColumnMetadata,
+} from "~/features/common/ColumnDropdown";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
 import { System } from "~/types/api";
@@ -36,6 +39,8 @@ const ScanResultsForm = () => {
     onClose: onWarningClose,
   } = useDisclosure();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
+  const [selectedColumns, setSelectedColumns] =
+    useState<ColumnMetadata[]>(ALL_COLUMNS);
 
   const confirmRegisterSelectedSystems = () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
@@ -72,16 +77,24 @@ const ScanResultsForm = () => {
           Scan results
         </Heading>
 
-        <Text>
-          Below are search results for {region}. Please select and register the
-          systems you would like to maintain in your mapping and reports.
-        </Text>
-
+        <Box>
+          <Text>
+            Below are search results for {region}. Please select and register
+            the systems you would like to maintain in your mapping and reports.
+          </Text>
+          <Box display="flex" justifyContent="end">
+            <ColumnDropdown
+              allColumns={ALL_COLUMNS}
+              selectedColumns={selectedColumns}
+              onChange={setSelectedColumns}
+            />
+          </Box>
+        </Box>
         <SystemsCheckboxTable
           allSystems={systems}
           checked={selectedSystems}
           onChange={setSelectedSystems}
-          columns={ALL_COLUMNS}
+          columns={selectedColumns}
         />
 
         <HStack>
