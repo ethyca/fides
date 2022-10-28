@@ -102,8 +102,31 @@ def generate_route_file_map(ui_directory: Union[str, Path]) -> Dict[re.Pattern, 
 
 
 def match_route(route_file_map: Dict[re.Pattern, Path], route: str) -> Optional[Path]:
-    """Match a route against a route file map and return the first match, if any."""
-    for pattern, path in route_file_map.items():
-        if re.fullmatch(pattern, route):
-            return path
-    return None
+    """
+    Match a route against a route file map and return the match, if any.
+
+    If multiple routes match, prefers static routes (e.g. dataset/new) over
+    dynamic (e.g. dataset/[id]).
+    """
+    matches = [
+        path for pattern, path in route_file_map.items() if re.fullmatch(pattern, route)
+    ]
+
+    if not matches:
+        return None
+
+    if len(matches) == 1:
+        return matches[0]
+
+    # Multiple matches were found, so look for the first static path
+    static_matches = [path for path in matches if not _is_dynamic_path(path)]
+    if static_matches:
+        return sorted(static_matches)[0]
+
+    # If no static matches exist, fallback to the first match
+    return sorted(matches)[0]
+
+
+def _is_dynamic_path(path: Path) -> bool:
+    """Returns true if the given route is a dynamic NextJS route (e.g. "dataset/[id].html")"""
+    return re.compile(r"\[\w+\]").search(str(path)) is not None

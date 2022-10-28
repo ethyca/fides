@@ -15,7 +15,6 @@ from fides.api.ops.schemas.storage.storage import (
 )
 from fides.api.ops.tasks.storage import (
     upload_to_local,
-    upload_to_onetrust,
     upload_to_s3,
 )
 
@@ -74,7 +73,6 @@ def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
     """Determines which uploader method to use based on storage type"""
     return {
         StorageType.s3.value: _s3_uploader,
-        StorageType.onetrust.value: _onetrust_uploader,
         StorageType.local.value: _local_uploader,
     }[storage_type.value]
 
@@ -88,31 +86,6 @@ def _s3_uploader(_: Session, config: StorageConfig, data: Dict, request_id: str)
 
     return upload_to_s3(
         config.secrets, data, bucket_name, file_key, config.format.value, request_id, auth_method  # type: ignore
-    )
-
-
-def _onetrust_uploader(
-    db: Session, config: StorageConfig, data: Dict, request_id: str
-) -> str:
-
-    """Constructs necessary info needed for onetrust before calling upload"""
-    request_details: Optional[PrivacyRequest] = PrivacyRequest.get(
-        db, object_id=request_id
-    )
-    if request_details is None:
-        raise StorageUploadError(
-            f"Request could not be found for request_id: {request_id}"
-        )
-
-    payload_data = {
-        "language": "en-us",
-        "system": config.details[StorageDetails.SERVICE_NAME.value],
-        "results": data,
-    }
-    return upload_to_onetrust(
-        payload_data,
-        config.secrets,  # type: ignore
-        request_details.external_id,  # type: ignore
     )
 
 

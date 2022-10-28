@@ -6,12 +6,11 @@ import {
   Heading,
   Input,
   Stack,
-  Text,
   Tooltip,
   useToast,
 } from "@fidesui/react";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -132,21 +131,11 @@ const OrganizationInfoForm = () => {
     >
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Tell us about your business
+          Create your Organization
         </Heading>
         <div>
           Provide your organization information. This information is used to
-          configure your organization in Fidesctl for{" "}
-          <Tooltip
-            fontSize="md"
-            label="Wondering what a data map is? No problem, we've got your covered with this quick overview here"
-            placement="right"
-          >
-            <Text display="inline" color="complimentary.500">
-              data map
-            </Text>
-          </Tooltip>{" "}
-          reporting purposes.
+          configure your organization in Fides for data map reporting purposes.
         </div>
         <Stack>
           <FormControl>

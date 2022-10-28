@@ -1,6 +1,7 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-describe("Config Wizard", () => {
+// skipping while configWizardFlag exists
+describe.skip("Config Wizard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
@@ -136,7 +137,7 @@ describe("Config Wizard", () => {
           cy.getByTestId("close-scan-in-progress").click();
           cy.contains("Cancel Scan!");
           cy.contains("Yes, Cancel").click();
-          cy.contains("Add a system");
+          cy.contains("Scan for Systems");
         });
     });
   });
