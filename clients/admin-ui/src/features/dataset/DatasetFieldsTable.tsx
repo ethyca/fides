@@ -1,7 +1,9 @@
 import { Box, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { ColumnMetadata } from "~/features/common/ColumnDropdown";
 import { selectClassifyInstanceFieldMap } from "~/features/common/plus.slice";
+import { DatasetField } from "~/types/api";
 
 import {
   selectActiveEditor,
@@ -12,10 +14,10 @@ import {
 } from "./dataset.slice";
 import DatasetFieldCell from "./DatasetFieldCell";
 import EditFieldDrawer from "./EditFieldDrawer";
-import { ColumnMetadata, EditableType } from "./types";
+import { EditableType } from "./types";
 
 interface Props {
-  columns: ColumnMetadata[];
+  columns: ColumnMetadata<DatasetField>[];
 }
 
 const DatasetFieldsTable = ({ columns }: Props) => {
