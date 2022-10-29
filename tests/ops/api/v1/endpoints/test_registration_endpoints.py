@@ -83,7 +83,7 @@ class TestUserRegistration:
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.registration_endpoints.send_registration"
     )
-    def test_register_user_upserts(
+    def test_register_user_upserts_locally(
         self,
         send_registration_mock,
         url,
@@ -105,7 +105,7 @@ class TestUserRegistration:
         assert data["analytics_id"] == user_registration_opt_out.analytics_id
         assert data["opt_in"] == True
         assert len(UserRegistration.all(db)) == 1
-        assert send_registration_mock.call_count == 1
+        assert send_registration_mock.call_count == 0
 
     def test_register_user_no_analytics_id(
         self,

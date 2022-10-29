@@ -54,6 +54,7 @@ async def update_registration_status(
     """
     Return the registration status of this Fides deployment.
     """
+    send_to_fideslog = False
     registrations = UserRegistration.all(db=db)
     if registrations:
         registration = registrations[0]
@@ -68,17 +69,20 @@ async def update_registration_status(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This Fides deployment is already registered.",
             )
+    else:
+        # If a user registers locally and opts out, don't send data to Fideslog
+        send_to_fideslog = data.opt_in
 
     logger.debug(
         "Registering Fides with analytics_id: %s to opt_in: %s",
         data.analytics_id,
         data.opt_in,
     )
-    registration, created_or_updated = UserRegistration.create_or_update(
+    registration, _ = UserRegistration.create_or_update(
         db=db,
         data=data.dict(),
     )
-    if created_or_updated:
+    if send_to_fideslog:
         send_registration(registration)
 
     return registration
