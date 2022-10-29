@@ -24,6 +24,8 @@ from fides.ctl.core.export_helpers import (
 )
 from fides.ctl.core.utils import echo_green, get_all_level_fields
 
+EMPTY_COLUMN_PLACEHOLDER = "N/A"
+
 
 def generate_dataset_records(
     server_dataset_list: List,
@@ -174,45 +176,67 @@ def generate_system_records(
                 system.data_protection_impact_assessment.dict()
             )
         )
-        for declaration in system.privacy_declarations:
-            data_use = formatted_data_uses[declaration.data_use]
-            data_categories = declaration.data_categories or []
-            data_subjects = [
-                formatted_data_subjects[data_subject_fides_key]
-                for data_subject_fides_key in declaration.data_subjects
+        if system.privacy_declarations:
+            for declaration in system.privacy_declarations:
+                data_use = formatted_data_uses[declaration.data_use]
+                data_categories = declaration.data_categories or []
+                data_subjects = [
+                    formatted_data_subjects[data_subject_fides_key]
+                    for data_subject_fides_key in declaration.data_subjects
+                ]
+                dataset_references = declaration.dataset_references or [
+                    EMPTY_COLUMN_PLACEHOLDER
+                ]
+                cartesian_product_of_declaration = [
+                    (
+                        system.fides_key,
+                        system.name,
+                        system.description,
+                        system.data_responsibility_title,
+                        system.administrating_department,
+                        third_country_list,
+                        system_dependencies,
+                        declaration.name,
+                        category,
+                        data_use["name"],
+                        data_use["legal_basis"],
+                        data_use["special_category"],
+                        data_use["recipients"],
+                        data_use["legitimate_interest"],
+                        data_use["legitimate_interest_impact_assessment"],
+                        subject["name"],
+                        subject["rights_available"],
+                        subject["automated_decisions_or_profiling"],
+                        declaration.data_qualifier,
+                        data_protection_impact_assessment["is_required"],
+                        data_protection_impact_assessment["progress"],
+                        data_protection_impact_assessment["link"],
+                        dataset_reference,
+                    )
+                    for category in data_categories
+                    for subject in data_subjects
+                    for dataset_reference in dataset_references
+                ]
+                output_list += cartesian_product_of_declaration
+        else:
+            system_row = [
+                system.fides_key,
+                system.name,
+                system.description,
+                system.data_responsibility_title,
+                system.administrating_department,
+                third_country_list,
+                system_dependencies,
+                data_protection_impact_assessment["is_required"],
+                data_protection_impact_assessment["progress"],
+                data_protection_impact_assessment["link"],
             ]
-            dataset_references = declaration.dataset_references or ["N/A"]
-            cartesian_product_of_declaration = [
-                (
-                    system.fides_key,
-                    system.name,
-                    system.description,
-                    system.data_responsibility_title,
-                    system.administrating_department,
-                    third_country_list,
-                    system_dependencies,
-                    declaration.name,
-                    category,
-                    data_use["name"],
-                    data_use["legal_basis"],
-                    data_use["special_category"],
-                    data_use["recipients"],
-                    data_use["legitimate_interest"],
-                    data_use["legitimate_interest_impact_assessment"],
-                    subject["name"],
-                    subject["rights_available"],
-                    subject["automated_decisions_or_profiling"],
-                    declaration.data_qualifier,
-                    data_protection_impact_assessment["is_required"],
-                    data_protection_impact_assessment["progress"],
-                    data_protection_impact_assessment["link"],
-                    dataset_reference,
-                )
-                for category in data_categories
-                for subject in data_subjects
-                for dataset_reference in dataset_references
-            ]
-            output_list += cartesian_product_of_declaration
+            length_to_na = 12
+            start_position = 6
+            for i in range(length_to_na):
+                system_row.insert(i + start_position, EMPTY_COLUMN_PLACEHOLDER)
+            system_row.append(EMPTY_COLUMN_PLACEHOLDER)
+            output_list += [tuple(system_row)]
 
     return output_list
 
@@ -376,7 +400,7 @@ def build_joined_dataframe(
 
     # merge systems and datasets
     joined_df = systems_df.merge(datasets_df, how="left", on=["dataset.fides_key"])
-    joined_df.fillna("N/A", inplace=True)
+    joined_df.fillna(EMPTY_COLUMN_PLACEHOLDER, inplace=True)
     ## create a set of third_country attrs to combine as a single entity
     joined_df["third_country_combined"] = [
         convert_tuple_to_string(i)
@@ -408,7 +432,7 @@ def build_joined_dataframe(
         > 1
     ].drop_duplicates()
 
-    delete_df["dataset.name"] = "N/A"
+    delete_df["dataset.name"] = EMPTY_COLUMN_PLACEHOLDER
 
     joined_df = (
         pd.merge(joined_df, delete_df, indicator=True, how="outer")
