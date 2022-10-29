@@ -24,10 +24,26 @@ services:
         target: /fides/fides_uploads
         read_only: False
 
+  sample-app:
+    build:
+      context: ./cookie_house
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3000
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_DB=postgres_example
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres-test
+
   fides-pc:
     image: ethyca/fides-privacy-center:sample
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - type: bind
         source: ./privacy_center/config
