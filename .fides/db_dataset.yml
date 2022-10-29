@@ -1470,7 +1470,7 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: user_registration
+  - name: userregistration
     description: 'Records the registration status of this Fides deployment'
     data_categories: null
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
