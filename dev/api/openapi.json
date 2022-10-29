@@ -9917,6 +9917,68 @@
         ]
       }
     },
+    "/api/v1/registration": {
+      "get": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Get Registration Status",
+        "description": "Return the registration status of this Fides deployment.",
+        "operationId": "get_registration_status_api_v1_registration_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRegistrationStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Registration"
+        ],
+        "summary": "Update Registration Status",
+        "description": "Return the registration status of this Fides deployment.",
+        "operationId": "update_registration_status_api_v1_registration_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Registration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Registration"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "tags": [
@@ -12470,6 +12532,19 @@
         "type": "string",
         "description": "Generate Type Enum to capture the discrete possible values\nfor a valid type of resource to generate."
       },
+      "GetRegistrationStatusResponse": {
+        "title": "GetRegistrationStatusResponse",
+        "type": "object",
+        "properties": {
+          "opt_in": {
+            "title": "Opt In",
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "description": "Reflects the registration status of a Fides deployment."
+      },
       "HTTPMethod": {
         "title": "HTTPMethod",
         "enum": [
@@ -14208,6 +14283,34 @@
         },
         "additionalProperties": false,
         "description": "Redshift Secrets Schema for API Docs"
+      },
+      "Registration": {
+        "title": "Registration",
+        "required": [
+          "analytics_id"
+        ],
+        "type": "object",
+        "properties": {
+          "opt_in": {
+            "title": "Opt In",
+            "type": "boolean",
+            "default": false
+          },
+          "analytics_id": {
+            "title": "Analytics Id",
+            "type": "string"
+          },
+          "user_email": {
+            "title": "User Email",
+            "type": "string"
+          },
+          "user_organization": {
+            "title": "User Organization",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Describes a Fides registration."
       },
       "Registry": {
         "title": "Registry",
