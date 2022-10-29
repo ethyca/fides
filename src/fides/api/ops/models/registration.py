@@ -22,6 +22,15 @@ class UserRegistration(Base):
     analytics_id = Column(String, unique=True, nullable=False)
     opt_in = Column(Boolean, nullable=False, default=False)
 
+    def update(self, db: Session, data: Dict[str, Any]) -> FidesBase:
+        """
+        Updates a registration with the keys provided in `data`.
+        """
+        for key, value in data.items():
+            setattr(self, key, value)
+
+        return self.save(db=db)
+
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
@@ -34,7 +43,6 @@ class UserRegistration(Base):
             value=data["analytics_id"],
         )
         if existing_model:
-            existing_model.opt_in = data["opt_in"]
-            return existing_model.save(db=db)
+            return existing_model.update(db=db, data=data)
 
         return cls.create(db=db, data=data)
