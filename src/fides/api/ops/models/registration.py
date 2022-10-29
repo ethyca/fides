@@ -2,6 +2,10 @@ import logging
 from typing import Any, Dict
 
 from fideslib.db.base_class import Base, FidesBase
+
+# TODO: Uncomment once https://github.com/ethyca/fideslog/pull/87/files#diff-2a06515c42b1c2250befd410a494c1173fbbde8dff2a07e79ea597c7a3e25994
+# is merged
+# from fideslog.sdk.python.registration import Registration
 from sqlalchemy import (
     Boolean,
     Column,
@@ -15,6 +19,20 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
+
+
+class Registration:
+    """
+    This is a stub of the object at: https://github.com/ethyca/fideslog/pull/87/files#diff-2a06515c42b1c2250befd410a494c1173fbbde8dff2a07e79ea597c7a3e25994
+    and will be replaced once the PR is merged.
+    """
+
+    def __init__(self, email: str, organization: str) -> None:
+        """
+        A docstring.
+        """
+        self.email = email
+        self.organization = organization
 
 
 class UserRegistration(Base):
@@ -34,15 +52,6 @@ class UserRegistration(Base):
     analytics_id = Column(String, unique=True, nullable=False)
     opt_in = Column(Boolean, nullable=False, default=False)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> FidesBase:
-        """
-        Updates a registration with the keys provided in `data`.
-        """
-        for key, value in data.items():
-            setattr(self, key, value)
-
-        return self.save(db=db)
-
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
         """
@@ -58,3 +67,21 @@ class UserRegistration(Base):
             return existing_model.update(db=db, data=data)
 
         return cls.create(db=db, data=data)
+
+    def update(self, db: Session, data: Dict[str, Any]) -> FidesBase:
+        """
+        Updates a registration with the keys provided in `data`.
+        """
+        for key, value in data.items():
+            setattr(self, key, value)
+
+        return self.save(db=db)
+
+    def as_fideslog(self) -> Registration:
+        """
+        Converts a `UserRegistration` into the format required by Fideslog.
+        """
+        return Registration(
+            email=self.user_email,
+            organization=self.user_organization,
+        )

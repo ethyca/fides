@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from fides.api.ops.api.v1.urn_registry import (
@@ -49,12 +51,15 @@ class TestUserRegistration:
         data = resp.json()
         assert data["opt_in"] == True
 
+    @mock.patch("fides.api.ops.analytics.send_registration")
     def test_register_user(
         self,
+        send_registration_mock,
         url,
         api_client,
         db,
     ):
+        assert len(UserRegistration.all(db)) == 0
         EXAMPLE_ANALYTICS_ID = "example-analytics-id"
         OPT_IN = True
         resp = api_client.put(
@@ -71,9 +76,12 @@ class TestUserRegistration:
         assert data["analytics_id"] == EXAMPLE_ANALYTICS_ID
         assert data["opt_in"] == OPT_IN
         assert len(UserRegistration.all(db)) == 1
+        assert send_registration_mock.called_once()
 
+    @mock.patch("fides.api.ops.analytics.send_registration")
     def test_register_user_upserts(
         self,
+        send_registration_mock,
         url,
         api_client,
         db,
@@ -93,6 +101,7 @@ class TestUserRegistration:
         assert data["analytics_id"] == user_registration_opt_out.analytics_id
         assert data["opt_in"] == True
         assert len(UserRegistration.all(db)) == 1
+        assert not send_registration_mock.called
 
     def test_register_user_no_analytics_id(
         self,
@@ -111,8 +120,10 @@ class TestUserRegistration:
         assert resp.status_code == 422
         assert len(UserRegistration.all(db)) == 0
 
+    @mock.patch("fides.api.ops.analytics.send_registration")
     def test_register_user_one_allowed(
         self,
+        send_registration_mock,
         url,
         api_client,
         db,
@@ -130,3 +141,4 @@ class TestUserRegistration:
         assert resp.status_code == 400
         assert resp.json()["detail"] == "This Fides deployment is already registered."
         assert len(UserRegistration.all(db)) == 1
+        assert not send_registration_mock.called

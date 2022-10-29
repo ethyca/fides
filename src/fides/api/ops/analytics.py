@@ -2,6 +2,7 @@ import logging
 import os
 from platform import system
 from typing import Optional
+from fides.api.ops.models.registration import UserRegistration
 
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
@@ -50,5 +51,21 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
         logger.info(
             "Analytics event sent: %s with client id: %s",
             event.event,
+            analytics_client.client_id,
+        )
+
+
+async def send_registration(registration: UserRegistration) -> None:
+    if CONFIG.user.analytics_opt_out:
+        return
+    try:
+        await analytics_client._AnalyticsClient__register(  # pylint: disable=protected-access
+            registration.as_fideslog()
+        )
+    except AnalyticsError as err:
+        logger.warning("Error sending registration event: %s", err)
+    else:
+        logger.info(
+            "Analytics registration sent: %s with client id: %s",
             analytics_client.client_id,
         )
