@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import Depends
+from fastapi import Depends, status
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     urls.REGISTRATION,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     response_model=schemas.GetRegistrationStatusResponse,
 )
 def get_registration_status(
@@ -42,7 +42,7 @@ def get_registration_status(
 
 @router.put(
     urls.REGISTRATION,
-    status_code=200,
+    status_code=status.HTTP_200_OK,
     response_model=schemas.Registration,
 )
 def update_registration_status(
@@ -64,7 +64,7 @@ def update_registration_status(
                 registration.analytics_id,
             )
             raise HTTPException(
-                status_code=400,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This Fides deployment is already registered.",
             )
 
