@@ -1503,7 +1503,7 @@ dataset:
     - name: user_email
       description: 'The email of the user setting this opt_in preference'
       data_categories:
-      - user.email
+      - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: user_organization
       description: 'The name of the organization this Fides deployment belongs to'
