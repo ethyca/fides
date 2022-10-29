@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - PORT=3000
-      - DATABASE_HOST=postgres
+      - DATABASE_HOST=postgres-test
       - DATABASE_PORT=5432
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres

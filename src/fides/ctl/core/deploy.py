@@ -205,11 +205,12 @@ def print_deploy_success() -> None:
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
     echo_green("    (user=fidestest, password=Apassword1!)")
 
-    # Privacy Center
-    echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3000")
+    # Sample App
+    echo_green("\n- Sample 'Cookie House' Application running at http://localhost:3000")
+    echo_green("\n- Sample Privacy Center running at http://localhost:3001")
     echo_green("    (user=jane@example.com)")
 
-    # Example Datastores
+    # Example Databases
     echo_green("\n- Example Postgres Database running at localhost:6432")
     echo_green("    (user=postgres, password=postgres, db=postgres_example)")
     echo_green("\n- Example Mongo Database running at localhost:37017")
