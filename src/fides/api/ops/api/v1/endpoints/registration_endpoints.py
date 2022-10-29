@@ -45,7 +45,7 @@ def get_registration_status(
     status_code=200,
     response_model=schemas.Registration,
 )
-def get_registration_status(
+def update_registration_status(
     *,
     db: Session = Depends(deps.get_db),
     data: schemas.Registration,
@@ -58,12 +58,10 @@ def get_registration_status(
         registration = registrations[0]
         if registration.analytics_id != data.analytics_id:
             logger.debug(
-                "Error registering Fides with analytics_id: %s to opt_in: %s. Fides with analytics_id: %s already registered."
-                % (
-                    data.analytics_id,
-                    data.opt_in,
-                    registration.analytics_id,
-                )
+                "Error registering Fides with analytics_id: %s to opt_in: %s. Fides with analytics_id: %s already registered.",
+                data.analytics_id,
+                data.opt_in,
+                registration.analytics_id,
             )
             raise HTTPException(
                 status_code=400,
@@ -71,8 +69,9 @@ def get_registration_status(
             )
 
     logger.debug(
-        "Registering Fides with analytics_id: %s to opt_in: %s"
-        % (data.analytics_id, data.opt_in)
+        "Registering Fides with analytics_id: %s to opt_in: %s",
+        data.analytics_id,
+        data.opt_in,
     )
     registration = UserRegistration.create_or_update(
         db=db,
