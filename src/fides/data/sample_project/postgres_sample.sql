@@ -3,15 +3,15 @@
 -- requirements in the context of DROP DATABASE statements
 
 CREATE TABLE public.product (
-    id int primary key,
-    name character varying(100),
-    description character varying(200),
-    url character varying(200),
+    id SERIAL PRIMARY KEY,
+    name CHARACTER VARYING(100),
+    description CHARACTER VARYING(200),
+    url CHARACTER VARYING(200),
     price MONEY
 );
 
 CREATE TABLE public.address (
-    id BIGINT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     house INT,
     street CHARACTER VARYING(100),
     city CHARACTER VARYING(100),
@@ -20,7 +20,7 @@ CREATE TABLE public.address (
 );
 
 CREATE TABLE public.customer (
-    id INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     email CHARACTER VARYING(100),
     name  CHARACTER VARYING(100),
     created TIMESTAMP,
@@ -28,7 +28,7 @@ CREATE TABLE public.customer (
 );
 
 CREATE TABLE public.employee (
-    id INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     email CHARACTER VARYING(100),
     name CHARACTER VARYING(100),
     address_id BIGINT
@@ -116,11 +116,15 @@ INSERT INTO public.product VALUES
 (5, 'The Raisin Trippo Pack', 'Plant based raisin cookie with Belgian chocolate chunks x3 ', 'https://harpocrates.ethyca.com/assets/cookie_5.png', '$50.00'),
 (6, 'The Choco Trippo Pack', 'Crisp & chewy cookie with milk chocolate chunks x3', 'https://harpocrates.ethyca.com/assets/cookie_6.png', '$50.00');
 
+ALTER SEQUENCE product_id_seq RESTART WITH 10;
+
 INSERT INTO public.address VALUES
 (1, '123', 'Example Street', 'Exampletown', 'NY', '12345'),
 (2, '4', 'Example Lane', 'Exampletown', 'NY', '12321'),
 (3, '555', 'Example Ave', 'Example City', 'NY', '12000'),
 (4, '1111', 'Example Place', 'Example Mountain', 'TX', '54321');
+
+ALTER SEQUENCE address_id_seq RESTART WITH 10;
 
 INSERT INTO public.customer VALUES
 (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
@@ -129,9 +133,13 @@ INSERT INTO public.customer VALUES
 (4, 'jose@example.com', 'Jose Customer', '2020-04-01 11:47:42', 3),
 (5, 'jack@example.com', 'Jack Customer', '2020-04-01 11:47:42', 3);
 
+ALTER SEQUENCE customer_id_seq RESTART WITH 10;
+
 INSERT INTO public.employee VALUES
 (1, 'employee-1@example.com', 'Jack Employee', 3),
 (2, 'employee-2@example.com', 'Jane Employee', 3);
+
+ALTER SEQUENCE employee_id_seq RESTART WITH 10;
 
 INSERT INTO public.payment_card VALUES
 ('pay_aaa-aaa', 'Example Card 1', 123456789, 321, true, 1, 1),
