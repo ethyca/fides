@@ -8,6 +8,11 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy_utils import StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +22,14 @@ class UserRegistration(Base):
     Stores registration status of a particular Fides deployment.
     """
 
-    user_email = Column(String, nullable=True)
+    user_email = Column(
+        StringEncryptedType(
+            String,
+            CONFIG.security.app_encryption_key,
+            AesEngine,
+        ),
+        nullable=True,
+    )
     user_organization = Column(String, nullable=True)
     analytics_id = Column(String, unique=True, nullable=False)
     opt_in = Column(Boolean, nullable=False, default=False)
