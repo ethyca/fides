@@ -1,26 +1,20 @@
-import json
-from datetime import datetime, timedelta
-from typing import List
-
 import pytest
-
 
 from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
     REGISTRATION,
 )
 from fides.api.ops.models.registration import UserRegistration
-from fides.ctl.core.config import get_config
 
 
 class TestUserRegistration:
-    """ """
+    """Tests for the UserRegistration API, configured during `fides deploy`."""
 
     @pytest.fixture(scope="session")
     def url(self) -> str:
         return V1_URL_PREFIX + REGISTRATION
 
-    def test_get_registration_uninstalled(
+    def test_get_registration_unregistered(
         self,
         url,
         api_client,
@@ -33,22 +27,22 @@ class TestUserRegistration:
         data = resp.json()
         assert data["opt_in"] == False
 
-    def test_get_registration_unregistered(
+    def test_get_registration_opt_out(
         self,
         url,
         api_client,
-        user_registration_unregistered,
+        user_registration_opt_out,
     ):
         resp = api_client.get(url)
         assert resp.status_code == 200
         data = resp.json()
         assert data["opt_in"] == False
 
-    def test_get_registration_registered(
+    def test_get_registration_opt_in(
         self,
         url,
         api_client,
-        user_registration_registered,
+        user_registration_opt_in,
     ):
         resp = api_client.get(url)
         assert resp.status_code == 200
@@ -83,20 +77,20 @@ class TestUserRegistration:
         url,
         api_client,
         db,
-        user_registration_unregistered,
+        user_registration_opt_out,
     ):
         resp = api_client.put(
             url,
             json={
                 "user_email": "user@example.com",
                 "user_organization": "Example Org.",
-                "analytics_id": user_registration_unregistered.analytics_id,
+                "analytics_id": user_registration_opt_out.analytics_id,
                 "opt_in": True,
             },
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert data["analytics_id"] == user_registration_unregistered.analytics_id
+        assert data["analytics_id"] == user_registration_opt_out.analytics_id
         assert data["opt_in"] == True
         assert len(UserRegistration.all(db)) == 1
 
@@ -105,7 +99,6 @@ class TestUserRegistration:
         url,
         api_client,
         db,
-        user_registration_unregistered,
     ):
         resp = api_client.put(
             url,
@@ -115,19 +108,15 @@ class TestUserRegistration:
                 "opt_in": True,
             },
         )
-        assert resp.status_code == 400
-        assert (
-            resp.json()["details"]
-            == "Please supply an `analytics_id` to register Fides."
-        )
-        assert len(UserRegistration.all(db)) == 1
+        assert resp.status_code == 422
+        assert len(UserRegistration.all(db)) == 0
 
     def test_register_user_one_allowed(
         self,
         url,
         api_client,
         db,
-        user_registration_unregistered,
+        user_registration_opt_out,
     ):
         resp = api_client.put(
             url,
@@ -139,5 +128,5 @@ class TestUserRegistration:
             },
         )
         assert resp.status_code == 400
-        assert resp.json()["details"] == "This Fides deployment is already registered."
+        assert resp.json()["detail"] == "This Fides deployment is already registered."
         assert len(UserRegistration.all(db)) == 1
