@@ -34,8 +34,8 @@ services:
         target: /app/config
         read_only: False
       - type: bind
-        source: ./privacy_center/public/theme
-        target: /app/public/theme
+        source: ./privacy_center/public/assets
+        target: /app/public/assets
         read_only: False
 
   fides-db:
