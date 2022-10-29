@@ -51,7 +51,9 @@ class TestUserRegistration:
         data = resp.json()
         assert data["opt_in"] == True
 
-    @mock.patch("fides.api.ops.analytics.send_registration")
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.registration_endpoints.send_registration"
+    )
     def test_register_user(
         self,
         send_registration_mock,
@@ -76,9 +78,11 @@ class TestUserRegistration:
         assert data["analytics_id"] == EXAMPLE_ANALYTICS_ID
         assert data["opt_in"] == OPT_IN
         assert len(UserRegistration.all(db)) == 1
-        assert send_registration_mock.called_once()
+        assert send_registration_mock.call_count == 1
 
-    @mock.patch("fides.api.ops.analytics.send_registration")
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.registration_endpoints.send_registration"
+    )
     def test_register_user_upserts(
         self,
         send_registration_mock,
@@ -101,7 +105,7 @@ class TestUserRegistration:
         assert data["analytics_id"] == user_registration_opt_out.analytics_id
         assert data["opt_in"] == True
         assert len(UserRegistration.all(db)) == 1
-        assert not send_registration_mock.called
+        assert send_registration_mock.call_count == 1
 
     def test_register_user_no_analytics_id(
         self,
@@ -120,7 +124,9 @@ class TestUserRegistration:
         assert resp.status_code == 422
         assert len(UserRegistration.all(db)) == 0
 
-    @mock.patch("fides.api.ops.analytics.send_registration")
+    @mock.patch(
+        "fides.api.ops.api.v1.endpoints.registration_endpoints.send_registration"
+    )
     def test_register_user_one_allowed(
         self,
         send_registration_mock,
