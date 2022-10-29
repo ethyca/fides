@@ -33,6 +33,7 @@ from fides.api.ops.models.policy import (
     RuleTarget,
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import ResponseFormat, StorageConfig
 from fides.api.ops.schemas.email.email import (
     EmailServiceDetails,
@@ -1309,3 +1310,28 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
+
+
+@pytest.fixture(scope="session")
+def user_registration_unregistered(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as False."""
+    return create_user_registration(db, opt_in=False)
+
+
+@pytest.fixture(scope="session")
+def user_registration_registered(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as True."""
+    return create_user_registration(db, opt_in=True)
+
+
+def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistration:
+    """Adds a UserRegistration record."""
+    return UserRegistration.create(
+        db=db,
+        data={
+            "user_email": "user@example.com",
+            "user_organization": "Example Org.",
+            "analytics_id": "example-analytics-id",
+            "opt_in": opt_in,
+        },
+    )
