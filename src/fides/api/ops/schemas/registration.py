@@ -6,7 +6,9 @@ from fides.api.ops.schemas.base_class import BaseSchema
 
 
 class GetRegistrationStatusResponse(BaseSchema):
-    """Some PII grouping pertaining to a human"""
+    """
+    Reflects the registration status of a Fides deployment.
+    """
 
     opt_in: bool = False
 
