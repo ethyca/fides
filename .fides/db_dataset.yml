@@ -1491,12 +1491,12 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: analytics_id
-      description: 'Fides Generated Description for Column: analytics_id'
+      description: 'The identifier for this Fides deployment within Fideslog'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: opt_in
-      description: 'Whether the user has to share analytics data'
+      description: 'Whether the user has opted to share analytics data'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
