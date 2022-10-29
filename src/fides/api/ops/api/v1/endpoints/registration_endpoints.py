@@ -83,6 +83,6 @@ async def update_registration_status(
         data=data.dict(),
     )
     if send_to_fideslog:
-        send_registration(registration)
+        await send_registration(registration)
 
     return registration

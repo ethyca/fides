@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from fideslib.db.base_class import Base, FidesBase
 
@@ -27,7 +27,7 @@ class Registration:
     and will be replaced once the PR is merged.
     """
 
-    def __init__(self, email: str, organization: str) -> None:
+    def __init__(self, email: Optional[str], organization: Optional[str]) -> None:
         """
         A docstring.
         """
@@ -91,7 +91,9 @@ class UserRegistration(Base):
         """
         Converts a `UserRegistration` into the format required by Fideslog.
         """
+        email: Optional[str] = self.user_email
+        organization: Optional[str] = self.user_organization
         return Registration(
-            email=self.user_email,
-            organization=self.user_organization,
+            email=email,
+            organization=organization,
         )

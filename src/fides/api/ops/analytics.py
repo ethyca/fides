@@ -2,13 +2,13 @@ import logging
 import os
 from platform import system
 from typing import Optional
-from fides.api.ops.models.registration import UserRegistration
 
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
 
 from fides import __version__ as fides_version
+from fides.api.ops.models.registration import UserRegistration
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -66,6 +66,6 @@ async def send_registration(registration: UserRegistration) -> None:
         logger.warning("Error sending registration event: %s", err)
     else:
         logger.info(
-            "Analytics registration sent: %s with client id: %s",
+            "Analytics registration sent with client id: %s",
             analytics_client.client_id,
         )
