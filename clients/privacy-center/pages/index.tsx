@@ -117,8 +117,7 @@ const Home: NextPage = () => {
           <Image
             src={config.logo_path}
             margin="8px"
-            height="56px"
-            width="304px"
+            height="68px"
             alt="Logo"
           />
         </Flex>
