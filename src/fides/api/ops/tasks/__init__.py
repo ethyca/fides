@@ -65,15 +65,17 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 celery_app = _create_celery()
 
 
-def get_workers_health() -> Dict[str, Any]:
-    health = {"workers_connected": False}
-    connected_workers = celery_app.control.inspect().ping()
-    if not connected_workers:
-        return health
-
-    health["workers_connected"] = True
-    health.update(connected_workers)
-    return health
+def get_worker_ids() -> List[Optional[str]]:
+    """
+    Returns a list of the connected heahtly worker UUIDs.
+    """
+    try:
+        connected_workers = [
+            key for key, _ in celery_app.control.inspect().ping().items()
+        ]
+    except:  # pylint: disable=bare-except
+        connected_workers = []
+    return connected_workers
 
 
 def start_worker() -> None:
