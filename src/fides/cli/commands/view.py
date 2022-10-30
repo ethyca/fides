@@ -1,9 +1,9 @@
 """Contains the view group of the commands for fides."""
 
 import click
-from toml import dumps
+from toml import dumps as toml_dumps
 
-from fides.cli.utils import pretty_echo, with_analytics
+from fides.cli.utils import with_analytics
 
 
 @click.group(name="view")
@@ -36,4 +36,5 @@ def view_config(
     config_dict = config.dict(exclude_unset=exclude_unset)
     if section:
         config_dict = config_dict[section]
-    pretty_echo(dict_object=config_dict, color="green")
+
+    print(toml_dumps(config_dict))
