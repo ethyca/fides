@@ -16,11 +16,13 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
+import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
+import { useFeatures } from "../common/features.slice";
 import WarningModal from "../common/WarningModal";
 import {
   changeStep,
@@ -44,8 +46,11 @@ const ValidationSchema = Yup.object().shape({
 const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
+
+  const features = useFeatures();
 
   const initialValues: FormValues = useMemo(
     () => ({
@@ -58,15 +63,32 @@ const ScanResultsForm = () => {
     if (systems.length > values.selectedKeys.length) {
       setSelectedKeyValues(values.selectedKeys);
       onOpen();
-    } else {
+    }
+
+    if (!features.plus && systems.length <= values.selectedKeys.length) {
       dispatch(chooseSystemsForReview(values.selectedKeys));
       dispatch(changeStep());
+    }
+
+    if (features.plus && systems.length <= values.selectedKeys.length) {
+      // NOTE: I don't know if this will re-route correctly yet in a live environment?
+      router.push(`/datamap`);
     }
   };
 
   const confirmRegisterSelectedSystems = () => {
-    dispatch(chooseSystemsForReview(selectedKeyValues));
-    dispatch(changeStep());
+    // Manual system setup
+    // go to privacy declarations step
+    if (!features.plus) {
+      dispatch(chooseSystemsForReview(selectedKeyValues));
+      dispatch(changeStep());
+    }
+
+    // Non-manual system setup, go straight to datamap after systems registered
+    // no privacy declarations
+    if (features.plus) {
+      router.push(`/datamap`);
+    }
   };
 
   const handleCancel = () => {
