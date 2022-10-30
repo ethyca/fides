@@ -1,6 +1,7 @@
 """Contains the view group of the commands for fides."""
 
 import click
+from toml import dumps
 
 from fides.cli.utils import pretty_echo, with_analytics
 
