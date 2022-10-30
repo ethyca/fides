@@ -54,7 +54,9 @@ const Home = ({ products }: Props) => {
             ))}
             </div>
         </main>
-        <footer className={css.footer}>Do not sell my personal Information</footer>
+        <footer className={css.footer}>
+          <a href="http://localhost:3001">Do not sell my personal Information</a>
+        </footer>
         <PurchaseModal 
           isOpen={!!productInPurchase} 
           onRequestClose={onCloseModal} 
