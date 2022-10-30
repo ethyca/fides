@@ -10,15 +10,15 @@ interface Props {
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async () => {
-  const results = await pool.query("SELECT * FROM public.product;");
+  const results = await pool.query<Product>('SELECT * FROM public.product;');
   return { props: { products: results.rows } };
 };
 
-const Index = ({
+const IndexPage = ({
   products,
 }: Props) => {
   return (
-    <div>
+    <>
       <Head>
         <title>Cookie House</title>
         <meta name="description" content="Sample Project used within Fides (github.com/ethyca/fides)" />
@@ -27,8 +27,8 @@ const Index = ({
       </Head>
 
       <Home products={products} />
-    </div>
+    </>
   );
 };
 
-export default Index;
+export default IndexPage;

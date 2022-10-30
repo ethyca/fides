@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import { useCallback, useState } from 'react';
 import { Product, UserData } from '../../types';
 import Button from '../Button';
+import Header from '../Header';
 import Popup from '../Popup';
 import PurchaseModal from '../PurchaseModal';
 import css from './style.module.scss';
@@ -34,9 +34,7 @@ const Home = ({ products }: Props) => {
 
   return (
     <>
-        <header className={css.header}>
-            <Image src="/logo.svg" width={204} height={68} alt="Logo" />
-        </header>
+        <Header />
         <main>
             <div className={css.products}>
             {products.map((product) => (

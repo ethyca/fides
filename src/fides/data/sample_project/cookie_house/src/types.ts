@@ -6,14 +6,14 @@ export interface Address {
   city: string;
   state: string;
   zip: string;
-};
+}
 
 export interface Customer {
   id?: number;
   address_id: number;
   email: string;
   name: string;
-};
+}
 
 export interface UserData {
   name: string;
