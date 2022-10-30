@@ -39,8 +39,5 @@ send_request_review_notification = false
 server_host = "localhost"
 server_port = 8080
 
-[root_user]
-analytics_opt_out = true
-
 [user]
 analytics_opt_out = true
