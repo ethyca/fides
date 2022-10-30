@@ -12,6 +12,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import {
   defaultInitialValues,
@@ -25,8 +26,6 @@ import {
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
-
-import { changeStep } from "../config-wizard/config-wizard.slice";
 
 const ValidationSchema = Yup.object().shape({
   fides_key: Yup.string().required().label("System key"),

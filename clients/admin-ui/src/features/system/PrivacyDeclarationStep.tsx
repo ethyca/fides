@@ -6,9 +6,9 @@ import { Fragment, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { changeReviewStep } from "~/features/config-wizard/config-wizard.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
 
-import { changeReviewStep } from "../config-wizard/config-wizard.slice";
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
 import PrivacyDeclarationForm from "./PrivacyDeclarationForm";
 import { useUpdateSystemMutation } from "./system.slice";
