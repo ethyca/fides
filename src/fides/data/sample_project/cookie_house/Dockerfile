@@ -1,6 +1,10 @@
 FROM node:16-alpine
 
-USER root
+ENV DATABASE_HOST postgres-test
+ENV DATABASE_PORT 5432
+ENV DATABASE_USER postgres
+ENV DATABASE_PASSWORD postgres
+ENV DATABASE_DB postgres_example
 
 RUN mkdir /home/node/app
 WORKDIR /home/node/app
