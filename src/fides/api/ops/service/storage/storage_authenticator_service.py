@@ -9,9 +9,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.ops.util.storage_authenticator import (
-    get_s3_session,
-)
+from fides.api.ops.util.storage_authenticator import get_s3_session
 
 logger = logging.getLogger(__name__)
 
