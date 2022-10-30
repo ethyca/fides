@@ -19,7 +19,7 @@ oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 
 [root_user]
-analytics_opt_out = false
+analytics_opt_out = true
 
 [execution]
 require_manual_request_approval = true
@@ -34,4 +34,4 @@ server_host = "fides"
 server_port = 8080
 
 [user]
-analytics_opt_out = false
+analytics_opt_out = true
