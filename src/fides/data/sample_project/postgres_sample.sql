@@ -129,9 +129,7 @@ ALTER SEQUENCE address_id_seq RESTART WITH 10;
 INSERT INTO public.customer VALUES
 (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
 (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2),
-(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4),
-(4, 'jose@example.com', 'Jose Customer', '2020-04-01 11:47:42', 3),
-(5, 'jack@example.com', 'Jack Customer', '2020-04-01 11:47:42', 3);
+(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4);
 
 ALTER SEQUENCE customer_id_seq RESTART WITH 10;
 
@@ -144,18 +142,14 @@ ALTER SEQUENCE employee_id_seq RESTART WITH 10;
 INSERT INTO public.payment_card VALUES
 ('pay_aaa-aaa', 'Example Card 1', 123456789, 321, true, 1, 1),
 ('pay_bbb-bbb', 'Example Card 2', 987654321, 123, false, 2, 1),
-('pay_ccc-ccc', 'Example Card 3', 373719391, 222, false, 3, 4),
-('pay_ddd-ddd', 'Example Card 4', 373719391, 222, false, 4, 3),
-('pay_eee-eee', 'Example Card 5', 373719391, 222, false, 5, 3);
+('pay_ccc-ccc', 'Example Card 3', 373719391, 222, false, 3, 4);
 
 INSERT INTO public.orders VALUES
 ('ord_aaa-aaa', 1, 2, 'pay_aaa-aaa'),
 ('ord_bbb-bbb', 2, 1, 'pay_bbb-bbb'),
 ('ord_ccc-ccc', 1, 1, 'pay_aaa-aaa'),
 ('ord_ddd-ddd', 1, 1, 'pay_bbb-bbb'),
-('ord_ddd-eee', 3, 4, 'pay_ccc-ccc'),
-('ord_fff-fff', 4, 3, 'pay-ddd-ddd'),
-('ord_ggg-ggg', 4, 3, 'pay-ddd-ddd');
+('ord_ddd-eee', 3, 4, 'pay_ccc-ccc');
 
 INSERT INTO public.order_item VALUES
 ('ord_aaa-aaa', 1, 1, 1),
@@ -163,10 +157,7 @@ INSERT INTO public.order_item VALUES
 ('ord_ccc-ccc', 1, 1, 1),
 ('ord_ccc-ccc', 2, 2, 1),
 ('ord_ddd-ddd', 1, 1, 1),
-('ord_eee-eee', 3, 4, 3),
-('ord_fff-fff', 1, 2, 2),
-('ord_fff-fff', 2, 1, 2),
-('ord_ggg-ggg', 1, 5, 1);
+('ord_eee-eee', 3, 4, 3);
 
 INSERT INTO public.visit VALUES
 ('customer-1@example.com', '2021-01-06 01:00:00'),

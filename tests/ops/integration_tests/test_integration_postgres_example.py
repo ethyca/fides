@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def test_postgres_example_data(postgres_integration_db):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {
-        "product": 3,
+        "product": 6,
         "address": 4,
         "customer": 3,
         "employee": 2,
