@@ -2,10 +2,7 @@ import logging
 from typing import Any, Dict, Optional, Tuple
 
 from fideslib.db.base_class import Base, FidesBase
-
-# TODO: Uncomment once https://github.com/ethyca/fideslog/pull/87/files#diff-2a06515c42b1c2250befd410a494c1173fbbde8dff2a07e79ea597c7a3e25994
-# is merged
-# from fideslog.sdk.python.registration import Registration
+from fideslog.sdk.python.registration import Registration
 from sqlalchemy import (
     Boolean,
     Column,
@@ -19,20 +16,6 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
-
-
-class Registration:
-    """
-    This is a stub of the object at: https://github.com/ethyca/fideslog/pull/87/files#diff-2a06515c42b1c2250befd410a494c1173fbbde8dff2a07e79ea597c7a3e25994
-    and will be replaced once the PR is merged.
-    """
-
-    def __init__(self, email: Optional[str], organization: Optional[str]) -> None:
-        """
-        A docstring.
-        """
-        self.email = email
-        self.organization = organization
 
 
 class UserRegistration(Base):
