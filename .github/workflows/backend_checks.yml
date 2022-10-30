@@ -13,7 +13,7 @@ jobs:
   Build:
     strategy:
       matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        python_version: ["3.8.14", "3.9.14", "3.10.7", "3.11.0"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
