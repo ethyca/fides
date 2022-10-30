@@ -13,10 +13,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.ops.tasks.storage import (
-    upload_to_local,
-    upload_to_s3,
-)
+from fides.api.ops.tasks.storage import upload_to_local, upload_to_s3
 
 logger = logging.getLogger(__name__)
 
