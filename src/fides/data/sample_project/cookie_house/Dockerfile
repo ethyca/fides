@@ -4,8 +4,8 @@ USER root
 
 RUN mkdir /home/node/app
 WORKDIR /home/node/app
-COPY package.json package.json
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm clean-install
 COPY . /home/node/app
 RUN npm run build
 
