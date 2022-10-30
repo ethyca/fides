@@ -41,10 +41,13 @@ The types of changes are:
 ### Fixed
 
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+* Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 
 ### Fixed
 

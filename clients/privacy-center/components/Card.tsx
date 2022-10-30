@@ -20,6 +20,8 @@ const Card: React.FC<CardProps> = ({
     bg="white"
     py={8}
     px={6}
+    border="1px solid"
+    borderColor="gray.200"
     borderRadius={4}
     boxShadow="base"
     maxWidth={["100%", "100%", "100%", 304]}
@@ -28,11 +30,13 @@ const Card: React.FC<CardProps> = ({
     userSelect="none"
     m={2}
     _hover={{
-      boxShadow: "complimentary-2xl",
+      boxShadow:
+        "0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)",
     }}
     _focus={{
       outline: "none",
-      boxShadow: "complimentary-2xl",
+      boxShadow:
+        "0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)",
     }}
     onClick={() => {
       onClick();
