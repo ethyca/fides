@@ -15,16 +15,19 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
 
 ### Added
 
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 * Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
-    * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
+    * The format is generic. A reasonable set of defaults will be added later: [#1444](https://github.com/ethyca/fides/issues/1444)
     * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
     * Each consent option can provide an array of `cookieKeys`.
+* Individually select and reprocess DSRs that have errored [#1203](https://github.com/ethyca/fides/pull/1489)
+* Bulk select and reprocess DSRs that have errored [#1205](https://github.com/ethyca/fides/pull/1489)
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
+* Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
@@ -33,10 +36,30 @@ The types of changes are:
 
 * Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
 * Only the `docs-authors` team members are specified as `CODEOWNERS` [#1446](https://github.com/ethyca/fides/pull/1446)
+* Updates the default local configuration to not defer tasks to a worker node [#1552](https://github.com/ethyca/fides/pull/1552/)
+
+### Fixed
+
+* Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+* Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
+
+### Fixed
+
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+
+## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
+
+### Added
+
+* The database includes a `plus_system_scans` relation, to track the status and results of System Scanner executions in fidesctl-plus [#1554](https://github.com/ethyca/fides/pull/1554)
+
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
 ### Fixed
 

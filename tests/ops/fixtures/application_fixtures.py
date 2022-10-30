@@ -33,6 +33,7 @@ from fides.api.ops.models.policy import (
     RuleTarget,
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import ResponseFormat, StorageConfig
 from fides.api.ops.schemas.email.email import (
     EmailServiceDetails,
@@ -145,37 +146,6 @@ def storage_config(db: Session) -> Generator:
         storage_secrets={
             StorageSecrets.AWS_ACCESS_KEY_ID.value: "1234",
             StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "5678",
-        },
-    )
-    yield storage_config
-    storage_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def storage_config_onetrust(db: Session) -> Generator:
-    """
-    This fixture adds onetrust config data to the database.
-    """
-    name = "onetrust config"
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.onetrust,
-            "details": {
-                StorageDetails.SERVICE_NAME.value: "Meow Services",
-                StorageDetails.ONETRUST_POLLING_DAY_OF_WEEK.value: 1,
-                StorageDetails.ONETRUST_POLLING_HR.value: 8,
-            },
-            "key": "my_onetrust_config",
-        },
-    )
-    storage_config.set_secrets(
-        db=db,
-        storage_secrets={
-            StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23tcrcrewg",
-            StorageSecrets.ONETRUST_CLIENT_ID.value: "9upqn3ufqnff",
-            StorageSecrets.ONETRUST_HOSTNAME.value: "meow-services.onetrust",
         },
     )
     yield storage_config
@@ -1340,3 +1310,28 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
+
+
+@pytest.fixture(scope="function")
+def user_registration_opt_out(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as False."""
+    return create_user_registration(db, opt_in=False)
+
+
+@pytest.fixture(scope="function")
+def user_registration_opt_in(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as True."""
+    return create_user_registration(db, opt_in=True)
+
+
+def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistration:
+    """Adds a UserRegistration record."""
+    return UserRegistration.create(
+        db=db,
+        data={
+            "user_email": "user@example.com",
+            "user_organization": "Example Org.",
+            "analytics_id": "example-analytics-id",
+            "opt_in": opt_in,
+        },
+    )

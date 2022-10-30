@@ -236,7 +236,8 @@ def postgres_integration_session(postgres_integration_session_cls):
 @pytest.fixture(scope="function")
 def postgres_integration_db(postgres_integration_session):
     postgres_integration_session = seed_postgres_data(
-        postgres_integration_session, "./docker/sample_data/postgres_example.sql"
+        postgres_integration_session,
+        "./src/fides/data/sample_project/postgres_sample.sql",
     )
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)

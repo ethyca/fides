@@ -159,5 +159,3 @@ a similar process for each CSV file.
 ## Privacy request integrations
 
 * **Generic API interoperability**: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [authenticating with OAuth](../guides/oauth.md) for more information.
-
-* **OneTrust**: Fides can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. See the [OneTrust integration guide](../guides/onetrust.md) for more information.

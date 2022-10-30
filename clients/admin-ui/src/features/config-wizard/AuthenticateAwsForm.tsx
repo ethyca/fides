@@ -171,7 +171,7 @@ const AuthenticateAwsForm = () => {
               {scannerError ? <ScannerError error={scannerError} /> : null}
               {!isSubmitting && !scannerError ? (
                 <>
-                  <Heading size="lg">Scan for Systems</Heading>
+                  <Heading size="lg">Authenticate Scanner</Heading>
                   <Accordion allowToggle border="transparent">
                     <AccordionItem>
                       {({ isExpanded }) => (
@@ -241,7 +241,7 @@ const AuthenticateAwsForm = () => {
                   variant="outline"
                   onClick={!isSubmitting ? handleCancel : onOpen}
                 >
-                  Cancel
+                  Back
                 </Button>
                 <Button
                   type="submit"
