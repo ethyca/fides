@@ -3,7 +3,7 @@
 import click
 from toml import dumps as toml_dumps
 
-from fides.cli.utils import with_analytics
+from fides.cli.utils import with_analytics, print_divider
 
 
 @click.group(name="view")
@@ -37,4 +37,5 @@ def view_config(
     if section:
         config_dict = config_dict[section]
 
+    print_divider()
     print(toml_dumps(config_dict))
