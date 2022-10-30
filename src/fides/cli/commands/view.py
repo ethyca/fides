@@ -27,10 +27,7 @@ def view_config(
     ctx: click.Context, section: str = "", exclude_unset: bool = False
 ) -> None:
     """
-    Prints the fides configuration values.
-
-    To only view a specific section of the config,
-    supply the section name as an argument.
+    Prints the configuration values being used.
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
