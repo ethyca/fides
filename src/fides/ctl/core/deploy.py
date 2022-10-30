@@ -138,6 +138,7 @@ def pull_specific_docker_image() -> None:
     If no matching version is found, pull the most recent versions instead.
     """
 
+    # Update this to make sure it works as intended
     current_fides_version = fides.__version__
     echo(
         f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}"
