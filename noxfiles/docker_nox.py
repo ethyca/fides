@@ -13,6 +13,7 @@ from constants_nox import (
     IMAGE_SAMPLE,
 )
 
+# Add a build/push step here for the privacy center
 
 def get_current_tag() -> str:
     """Get the current git tag."""
