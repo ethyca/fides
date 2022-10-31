@@ -3,7 +3,7 @@
 import click
 from toml import dumps as toml_dumps
 
-from fides.cli.utils import with_analytics, print_divider
+from fides.cli.utils import print_divider, with_analytics
 
 
 @click.group(name="view")
