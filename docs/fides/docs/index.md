@@ -16,7 +16,7 @@ Export a [data map](./guides/generate_datamaps/) of your connected databases and
 When your organization receives a privacy request, Fides will automatically fulfill it according to the [execution policies](./getting-started/execution_policies.md) your legal and business owners have created. Fides orchestrates connections to both your owned [databases](./getting-started/database_connectors.md) and [third-party systems](./saas_connectors/saas_config.md) to access, update, and delete sensitive data.
 
 ### Comprehensive Privacy Standard Support
-The default 'efficiently describe the privacy behaviors of your system for major regulations, including [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/) as well as major standards like [ISO 19944](https://www.iso.org/standard/79573.html).
+The default taxonomy efficiently describes the privacy behaviors of your system for major regulations, including [GDPR](https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/), [CCPA](https://ethyca.com/cpra-hub/) and [LGPD](https://iapp.org/news/a/the-new-brazilian-general-data-protection-law-a-detailed-analysis/) as well as major standards like [ISO 19944](https://www.iso.org/standard/79573.html).
 
 ## Why is it called Fides?
 
