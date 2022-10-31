@@ -194,6 +194,7 @@ markers = [
     "integration_shopify",
     "integration_square",
     "integration_outreach",
+    "integration_recharge",
     "integration_salesforce",
     "integration_twilio_conversations",
     "integration_adobe_campaign",
