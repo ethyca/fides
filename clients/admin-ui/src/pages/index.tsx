@@ -10,10 +10,10 @@ import ActionButtons from "~/features/privacy-requests/buttons/ActionButtons";
 
 const Home: NextPage = () => (
   <ProtectedRoute redirectUrl={LOGIN_ROUTE}>
-    <Layout title="Subject Requests">
+    <Layout title="Privacy Requests">
       <Flex>
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Subject Requests
+          Privacy Requests
         </Heading>
         <Spacer />
         <ActionButtons />

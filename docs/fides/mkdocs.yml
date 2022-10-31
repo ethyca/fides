@@ -71,7 +71,7 @@ nav:
   - Fides UI:
       - Overview: ui/overview.md
       - Configuration Wizard: ui/wizard.md
-      - Subject Requests: ui/subject_requests.md
+      - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
       - Manage Datastores: ui/datastores.md
       - Manage Users: ui/user_management.md

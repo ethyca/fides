@@ -10,7 +10,7 @@ type ConnectionLayoutProps = {
 
 const ConnectionsLayout: React.FC<ConnectionLayoutProps> = ({ children }) => (
   <ProtectedRoute>
-    <Layout title="Datastore Connections">{children}</Layout>
+    <Layout title="Connections">{children}</Layout>
   </ProtectedRoute>
 );
 
