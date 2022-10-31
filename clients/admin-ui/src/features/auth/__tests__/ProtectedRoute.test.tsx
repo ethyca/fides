@@ -1,4 +1,3 @@
-import { userApi } from "~/features/user-management";
 import { render, screen } from "../../../../__tests__/test-utils";
 import { LOGIN_ROUTE } from "../../../constants";
 import ProtectedRoute from "../ProtectedRoute";
@@ -11,7 +10,7 @@ const preloadedLoginState = {
       id: "Test",
     },
     token: "Valid Token",
-  }
+  },
 };
 
 describe("ProtectedRoute", () => {
