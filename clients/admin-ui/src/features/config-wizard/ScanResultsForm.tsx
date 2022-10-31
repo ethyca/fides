@@ -16,11 +16,13 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { Field, FieldProps, Form, Formik } from "formik";
+import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
+import { useFeatures } from "../common/features.slice";
 import WarningModal from "../common/WarningModal";
 import {
   changeStep,
@@ -41,11 +43,18 @@ const ValidationSchema = Yup.object().shape({
     .label("Selected systems"),
 });
 
-const ScanResultsForm = () => {
+interface Props {
+  manualSystemSetupChosen: boolean;
+}
+
+const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
+
+  const features = useFeatures();
 
   const initialValues: FormValues = useMemo(
     () => ({
@@ -58,15 +67,34 @@ const ScanResultsForm = () => {
     if (systems.length > values.selectedKeys.length) {
       setSelectedKeyValues(values.selectedKeys);
       onOpen();
-    } else {
+    }
+
+    // manual system setup will go to privacy declaration step
+    if (
+      systems.length <= values.selectedKeys.length &&
+      manualSystemSetupChosen
+    ) {
       dispatch(chooseSystemsForReview(values.selectedKeys));
       dispatch(changeStep());
     }
-  };
 
-  const confirmRegisterSelectedSystems = () => {
-    dispatch(chooseSystemsForReview(selectedKeyValues));
-    dispatch(changeStep());
+    // non-plus and non-manual system setup will go to system page
+    if (
+      !features.plus &&
+      systems.length <= values.selectedKeys.length &&
+      !manualSystemSetupChosen
+    ) {
+      router.push(`/system`);
+    }
+
+    // plus and non-manual system setup will go to datamap page
+    if (
+      features.plus &&
+      systems.length <= values.selectedKeys.length &&
+      !manualSystemSetupChosen
+    ) {
+      router.push(`/datamap`);
+    }
   };
 
   const handleCancel = () => {
@@ -107,6 +135,13 @@ const ScanResultsForm = () => {
 
           return (
             <Form data-testid="scan-results-form">
+              <WarningModal
+                title="Warning"
+                message={warningMessage}
+                handleConfirm={() => handleSubmit(initialValues ?? values)}
+                isOpen={isOpen}
+                onClose={onClose}
+              />
               <Stack spacing={10}>
                 <Heading as="h3" size="lg">
                   Scan results
@@ -194,7 +229,7 @@ const ScanResultsForm = () => {
 
                 <HStack>
                   <Button variant="outline" onClick={handleCancel}>
-                    Cancel
+                    Back
                   </Button>
                   <Button
                     type="submit"
@@ -210,13 +245,6 @@ const ScanResultsForm = () => {
           );
         }}
       </Formik>
-      <WarningModal
-        title="Warning"
-        message={warningMessage}
-        handleConfirm={confirmRegisterSelectedSystems}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
     </Box>
   );
 };

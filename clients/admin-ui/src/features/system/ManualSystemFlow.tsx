@@ -59,11 +59,6 @@ const ManualSystemFlow = () => {
     dispatch(setActiveSystem(system));
   };
 
-  const goToIndex = () => {
-    router.push("/system");
-    dispatch(setActiveSystem(undefined));
-  };
-
   return (
     <Grid templateColumns="3fr 7fr" maxWidth="70vw">
       <GridItem>
@@ -78,23 +73,17 @@ const ManualSystemFlow = () => {
       </GridItem>
       <GridItem w="75%">
         {currentStepIndex === 0 ? (
-          <DescribeSystemStep
-            onSuccess={handleSuccess}
-            onCancel={goBack}
-            system={activeSystem}
-          />
+          <DescribeSystemStep onSuccess={handleSuccess} system={activeSystem} />
         ) : null}
         {currentStepIndex === 1 && activeSystem ? (
           <PrivacyDeclarationStep
             system={activeSystem}
             onSuccess={handleSuccess}
-            onCancel={goBack}
           />
         ) : null}
         {currentStepIndex === 2 && activeSystem ? (
           <ReviewSystemStep
             system={activeSystem}
-            onCancel={goBack}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
@@ -102,7 +91,6 @@ const ManualSystemFlow = () => {
           <SystemRegisterSuccess
             system={activeSystem}
             onAddNextSystem={goBack}
-            onContinue={goToIndex}
           />
         ) : null}
       </GridItem>
