@@ -3,7 +3,7 @@
 
 ## Implementation Summary
 
-Fides uses the following Salesforce endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
+Fides uses the following Salesforce endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Privacy Request. Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 For more information, see the [Salesforce sObject API reference](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_basic_info_post.htm).
 

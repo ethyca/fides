@@ -13,15 +13,15 @@ export const STORAGE_ROOT_KEY = "persist:root";
 
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
-    privilege: "View subject requests",
+    privilege: "View privacy requests",
     scope: "privacy-request:read",
   },
   {
-    privilege: "Approve subject requests",
+    privilege: "Approve privacy requests",
     scope: "privacy-request:review",
   },
   {
-    privilege: "Resume subject requests",
+    privilege: "Resume privacy requests",
     scope: "privacy-request:resume",
   },
   {
@@ -29,11 +29,11 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection:read",
   },
   {
-    privilege: "Create or Update datastore connections",
+    privilege: "Create or update datastore connections",
     scope: "connection:create_or_update",
   },
   {
-    privilege: "Instantiate connections to SaaS datastores",
+    privilege: "Instantiate datastore connections",
     scope: "connection:instantiate",
   },
   {
@@ -49,15 +49,15 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "consent:read",
   },
   {
-    privilege: "View Datasets",
+    privilege: "View datasets",
     scope: "dataset:read",
   },
   {
-    privilege: "Create or Update Datasets",
+    privilege: "Create or update datasets",
     scope: "dataset:create_or_update",
   },
   {
-    privilege: "Delete Datasets",
+    privilege: "Delete datasets",
     scope: "dataset:delete",
   },
   {

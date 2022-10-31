@@ -28,7 +28,7 @@ const NavBar = () => {
       borderColor="gray.100"
     >
       <nav>
-        <NavLink title="Subject Requests" href={INDEX_ROUTE} exact />
+        <NavLink title="Privacy Requests" href={INDEX_ROUTE} exact />
         <NavLink
           title="Datastore Connections"
           href={DATASTORE_CONNECTION_ROUTE}

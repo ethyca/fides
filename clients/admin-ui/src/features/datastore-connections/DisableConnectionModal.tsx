@@ -79,7 +79,7 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
                 lineHeight="20px"
               >
                 {disabled ? "Enabling" : "Disabling"} a datastore connection may
-                impact any subject request that is currently in progress. Do you
+                impact any privacy request that is currently in progress. Do you
                 wish to proceed?
               </Text>
             </Stack>

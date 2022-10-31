@@ -35,7 +35,7 @@ const NavBar = () => {
                 : "ghost"
             }
           >
-            Subject Requests
+            Privacy Requests
           </Button>
         </NextLink>
 

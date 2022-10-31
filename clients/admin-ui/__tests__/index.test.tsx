@@ -3,7 +3,7 @@ import { mockNextUseRouter, render, screen } from "./test-utils";
 
 // skipping while configWizardFlag exists
 describe("Home", () => {
-  it.skip("renders the Subject Requests page by default when logged in", () => {
+  it.skip("renders the Privacy Requests page by default when logged in", () => {
     mockNextUseRouter({ route: "/" });
     render(<Home />, {
       preloadedState: {
@@ -16,20 +16,6 @@ describe("Home", () => {
       },
     });
 
-    const message = screen.getAllByText("Subject Requests")[0];
+    const message = screen.getAllByText("Privacy Requests")[0];
     expect(message).toBeInTheDocument();
   });
-
-  // TODO: Either update or remove this test. We no longer use the SessionProvider from next/auth
-  // skip until this is fixed in fidesops
-  // it.skip("renders a logged out notification when no session is present", () => {
-  //   render(
-  //     <SessionProvider>
-  //       <Home session={null} />
-  //     </SessionProvider>
-  //   );
-  //
-  //   const message = screen.getByText("You are not logged in.");
-  //   expect(message).toBeInTheDocument();
-  // });
-});
