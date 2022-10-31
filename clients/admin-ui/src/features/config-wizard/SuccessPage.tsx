@@ -15,8 +15,8 @@ import {
   Tr,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useAppDispatch } from "~/app/hooks";
 
+import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features.slice";
 import {
   StepperCircleCheckmarkIcon,
@@ -48,9 +48,8 @@ const SuccessPage = ({
   );
 
   const onFinish = () => {
-    features.plus ? router.push("/datamap") : router.push("/system");
-
     dispatch(setActiveSystem(undefined));
+    return features.plus ? router.push("/datamap") : router.push("/system");
   };
 
   return (

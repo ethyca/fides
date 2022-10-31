@@ -15,8 +15,8 @@ import {
   Tr,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useAppDispatch } from "~/app/hooks";
 
+import { useAppDispatch } from "~/app/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import {
   setActiveSystem,
@@ -44,9 +44,8 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const systemName = system.name ?? system.fides_key;
 
   const onFinish = () => {
-    features.plus ? router.push("/datamap") : router.push("/system");
-
     dispatch(setActiveSystem(undefined));
+    return features.plus ? router.push("/datamap") : router.push("/system");
   };
 
   return (
