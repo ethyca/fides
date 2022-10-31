@@ -1,4 +1,3 @@
-import logging
 import os
 from platform import system
 from typing import Optional
@@ -6,14 +5,13 @@ from typing import Optional
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
+from loguru import logger as log
 
 from fides import __version__ as fides_version
 from fides.api.ops.models.registration import UserRegistration
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-
-logger = logging.getLogger(__name__)
 
 
 def in_docker_container() -> bool:
@@ -44,12 +42,10 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
     try:
         await analytics_client.send_async(event)
     except AnalyticsError as err:
-        logger.warning("Error sending analytics event: %s", err)
+        log.warning("Error sending analytics event: {err}")
     else:
-        logger.info(
-            "Analytics event sent: %s with client id: %s",
-            event.event,
-            analytics_client.client_id,
+        log.info(
+            "Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
         )
 
 
@@ -59,9 +55,8 @@ async def send_registration(registration: UserRegistration) -> None:
     try:
         await analytics_client.register_async(registration.as_fideslog())
     except AnalyticsError as err:
-        logger.warning("Error sending registration event: %s", err)
+        log.warning(f"Error sending registration event: {err}")
     else:
-        logger.info(
-            "Analytics registration sent with client id: %s",
-            analytics_client.client_id,
+        log.info(
+            f"Analytics registration sent with client id: {analytics_client.client_id}"
         )
