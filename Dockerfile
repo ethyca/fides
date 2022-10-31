@@ -119,6 +119,9 @@ COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/stat
 RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
 
+# Immediately flush to stdout, globally
+ENV PYTHONUNBUFFERED=TRUE
+
 ENV RUNNING_IN_DOCKER=true
 
 EXPOSE 8080
