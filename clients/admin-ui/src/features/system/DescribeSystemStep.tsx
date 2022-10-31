@@ -2,15 +2,17 @@ import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
+import { useAppDispatch } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import {
   defaultInitialValues,
@@ -44,14 +46,12 @@ const SystemHeading = ({ system }: { system?: System }) => {
 };
 
 interface Props {
-  onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
   system?: System;
 }
 
 const DescribeSystemStep = ({
-  onCancel,
   onSuccess,
   abridged,
   system: passedInSystem,
@@ -66,6 +66,7 @@ const DescribeSystemStep = ({
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const { data: systems } = useGetAllSystemsQuery();
   const systemOptions = systems
     ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
@@ -80,6 +81,10 @@ const DescribeSystemStep = ({
   );
 
   const toast = useToast();
+
+  const handleBack = () => {
+    dispatch(changeStep(2));
+  };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = transformFormValuesToSystem(values);
@@ -187,13 +192,13 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={() => onCancel()}
+                onClick={handleBack}
                 mr={2}
                 size="sm"
                 variant="outline"
-                data-testid="cancel-btn"
+                data-testid="back-btn"
               >
-                Cancel
+                Back
               </Button>
               <Button
                 type="submit"

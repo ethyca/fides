@@ -11,6 +11,12 @@ from fides.api.ctl.database.seed import (
 )
 from fides.api.ops.api.v1 import urn_registry as urls
 
+# Explicitly set these so they don't look like unused imports
+DEFAULT_ACCESS_POLICY = DEFAULT_ACCESS_POLICY
+DEFAULT_ACCESS_POLICY_RULE = DEFAULT_ACCESS_POLICY_RULE
+DEFAULT_ERASURE_POLICY = DEFAULT_ERASURE_POLICY
+DEFAULT_ERASURE_POLICY_RULE = DEFAULT_ERASURE_POLICY_RULE
+
 FIDES_USERNAME = "fidestest"
 FIDES_PASSWORD = "Apassword1!"
 

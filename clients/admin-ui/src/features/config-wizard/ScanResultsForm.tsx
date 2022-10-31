@@ -194,7 +194,7 @@ const ScanResultsForm = () => {
 
                 <HStack>
                   <Button variant="outline" onClick={handleCancel}>
-                    Cancel
+                    Back
                   </Button>
                   <Button
                     type="submit"

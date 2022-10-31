@@ -22,14 +22,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.routes import (
-    admin,
-    crud,
-    datamap,
-    generate,
-    health,
-    validate,
-)
+from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -285,17 +278,25 @@ def read_other_paths(request: Request) -> Response:
         ui_file = get_path_to_admin_ui_file(path)
 
     # If any of those worked, serve the file.
-    ui_file = get_path_to_admin_ui_file(path)
     if ui_file and ui_file.is_file():
+        log.debug(
+            f"catchall request path '{path}' matched static admin UI file: {ui_file}"
+        )
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
+        log.debug(
+            f"catchall request path '{path}' matched an invalid API route, return 404"
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
 
     # otherwise return the index
+    log.debug(
+        f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index"
+    )
     return get_admin_index_as_response()
 
 
