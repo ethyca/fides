@@ -50,7 +50,7 @@ const NavBar = () => {
                 : "ghost"
             }
           >
-            Datastore Connections
+            Connections
           </Button>
         </NextLink>
 
