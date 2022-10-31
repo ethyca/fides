@@ -108,6 +108,14 @@ RUN pip install -e . --no-deps
 FROM python:${PYTHON_VERSION}-slim-bullseye as prod
 ARG TARGETPLATFORM
 
+RUN : \
+    && apt-get update \
+    && apt-get install \
+    -y --no-install-recommends \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Loads compiled requirements and adds the to the path
 COPY --from=backend /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
