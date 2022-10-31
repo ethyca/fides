@@ -163,15 +163,55 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     ],
 )
 def push(session: nox.Session, tag: str) -> None:
-    """Push the fidesctl Docker image to Dockerhub."""
+    """
+    Push the main image & extra apps to DockerHub:
+      - ethyca/fides
+      - ethyca/fides-privacy-center
+      - ethyca/fides-sample-app
 
-    tag_matrix = {"prod": IMAGE_LATEST, "dev": IMAGE_DEV}
+    NOTE: Expects these to first be built via 'build(prod)'
+    """
+    fides_image_prod = get_current_image()
+    privacy_center_prod = f"{PRIVACY_CENTER_IMAGE}:{get_current_tag()}"
+    sample_app_prod = f"{SAMPLE_APP_IMAGE}:{get_current_tag()}"
 
-    # Push either "ethyca/fidesctl:dev" or "ethyca/fidesctl:latest"
-    session.run("docker", "tag", get_current_image(), tag_matrix[tag], external=True)
-    session.run("docker", "push", tag_matrix[tag], external=True)
+    if tag == "dev":
+        # Push the ethyca/fides image, tagging with :dev
+        session.run("docker", "tag", fides_image_prod, IMAGE_DEV, external=True)
+        session.run("docker", "push", IMAGE_DEV, external=True)
 
-    # Only push the tagged version if its for prod
-    # Example: "ethyca/ethyca-fides:1.7.0"
+        # Push the extra images, tagging with :dev
+        #   - ethyca/fides-privacy-center:dev
+        #   - ethyca/fides-sample-app:dev
+        privacy_center_dev = f"{PRIVACY_CENTER_IMAGE}:dev"
+        sample_app_dev = f"{SAMPLE_APP_IMAGE}:dev"
+        session.run(
+            "docker", "tag", privacy_center_prod, privacy_center_dev, external=True
+        )
+        session.run("docker", "push", privacy_center_dev, external=True)
+        session.run("docker", "tag", sample_app_prod, sample_app_dev, external=True)
+        session.run("docker", "push", sample_app_dev, external=True)
+
     if tag == "prod":
-        session.run("docker", "push", f"{IMAGE}:{get_current_tag()}", external=True)
+        # Push the ethyca/fides image, tagging as both the release and :latest
+        # Example: "ethyca/fides:2.0.0" and "ethyca/fides:latest"
+        session.run("docker", "tag", fides_image_prod, IMAGE_LATEST, external=True)
+        session.run("docker", "push", IMAGE_LATEST, external=True)
+        session.run("docker", "push", fides_image_prod, external=True)
+
+        # Push the extra images, tagging with release and :latest
+        # Example:
+        #   - ethyca/fides-privacy-center:2.0.0
+        #   - ethyca/fides-privacy-center:latest
+        #   - ethyca/fides-sample-app:2.0.0
+        #   - ethyca/fides-sample-app:latest
+        privacy_center_latest = f"{PRIVACY_CENTER_IMAGE}:dev"
+        sample_app_latest = f"{SAMPLE_APP_IMAGE}:dev"
+        session.run(
+            "docker", "tag", privacy_center_prod, privacy_center_latest, external=True
+        )
+        session.run("docker", "push", privacy_center_latest, external=True)
+        session.run("docker", "push", privacy_center_prod, external=True)
+        session.run("docker", "tag", sample_app_prod, sample_app_latest, external=True)
+        session.run("docker", "push", sample_app_latest, external=True)
+        session.run("docker", "push", sample_app_prod, external=True)
