@@ -143,16 +143,19 @@ def pull_specific_docker_image() -> None:
         f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}"
     )
 
+    # Untagged image names
     fides_image_stub = "ethyca/fides:{}"
     privacy_center_image_stub = "ethyca/fides-privacy-center:{}"
     sample_app_image_stub = "ethyca/fides-sample-app:{}"
 
+    # Tagged with the current application version
     current_fides_image = fides_image_stub.format(current_fides_version)
     current_privacy_center_image = privacy_center_image_stub.format(
         current_fides_version
     )
     current_sample_app_image = sample_app_image_stub.format(current_fides_version)
 
+    # Tagged with `dev`
     dev_fides_image = fides_image_stub.format("dev")
     dev_privacy_center_image = privacy_center_image_stub.format("dev")
     dev_sample_app_image = sample_app_image_stub.format("dev")
