@@ -15,7 +15,7 @@ import {
   Tr,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "~/app/hooks";
 
 import { useFeatures } from "~/features/common/features.slice";
 import {
@@ -37,7 +37,7 @@ const SuccessPage = ({
   onAddNextSystem,
 }: Props) => {
   const systemName = systemInReview.name ?? systemInReview.fides_key;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const features = useFeatures();
   const router = useRouter();
 
@@ -48,13 +48,7 @@ const SuccessPage = ({
   );
 
   const onFinish = () => {
-    // non-plus
-    if (!features.plus) {
-      router.push("/system");
-    } else {
-      // plus
-      router.push("/datamap");
-    }
+    features.plus ? router.push("/datamap") : router.push("/system");
 
     dispatch(setActiveSystem(undefined));
   };
