@@ -56,7 +56,7 @@ async def test_twilio_access_request_task(
     )
 
     assert_rows_match(
-        v[f"{dataset_name}:users"],
+        v[f"{dataset_name}:user"],
         min_size=1,
         keys=[
             "is_notifiable",

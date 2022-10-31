@@ -10,6 +10,8 @@ saas_config:
     - name: account_id
     - name: password
     - name: page_size
+      default_value: 1000
+      description: The maximum number of pages to return from Twilio endpoints
 
   external_references:
     - name: twilio_user_id
@@ -56,6 +58,11 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: user.sid
                   direction: from
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: meta.next_page_url
           data_path: conversations
     - name: conversation_messages
       requests:
@@ -71,6 +78,11 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: user_conversations.conversation_sid
                   direction: from
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: meta.next_page_url
           data_path: messages
     - name: conversation_participants
       requests:
@@ -86,4 +98,9 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: user_conversations.conversation_sid
                   direction: from
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: meta.next_page_url
           data_path: participants
