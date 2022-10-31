@@ -11,6 +11,7 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
 )
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.schemas.saas.saas_config import ClientConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
@@ -48,8 +49,17 @@ def test_saas_request() -> SaaSRequestParams:
 
 
 @pytest.fixture
-def test_authenticated_client(test_connection_config) -> AuthenticatedClient:
-    return AuthenticatedClient("https://test_uri", test_connection_config)
+def test_client_config() -> ClientConfig:
+    return ClientConfig(protocol="https", host="test_host")
+
+
+@pytest.fixture
+def test_authenticated_client(
+    test_connection_config, test_client_config
+) -> AuthenticatedClient:
+    return AuthenticatedClient(
+        "https://test_uri", test_connection_config, test_client_config
+    )
 
 
 @pytest.mark.unit_saas

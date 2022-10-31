@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import React from "react";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
@@ -15,7 +15,6 @@ import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
   changeStep,
-  continueReview,
   reset,
   reviewManualSystem,
   selectReviewStep,
@@ -28,7 +27,6 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
-import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
@@ -36,6 +34,9 @@ const ConfigWizardWalkthrough = () => {
   const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
+
+  const [manualSystemSetupChosen, setManualSystemsSetupChosen] =
+    useState(false);
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -71,10 +72,19 @@ const ConfigWizardWalkthrough = () => {
               />
             </Box>
             {step === 1 ? <OrganizationInfoForm /> : null}
-            {step === 2 ? <AddSystemForm /> : null}
+            {step === 2 ? (
+              <AddSystemForm
+                setManualSystemsSetupChosen={setManualSystemsSetupChosen}
+              />
+            ) : null}
             {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ? <ScanResultsForm /> : null}
-            {step === 5 ? (
+            {step === 4 ? (
+              <ScanResultsForm
+                manualSystemSetupChosen={manualSystemSetupChosen}
+              />
+            ) : null}
+            {/* These steps should only apply if you're creating systems manually */}
+            {step === 5 && manualSystemSetupChosen ? (
               <Stack direction="column">
                 {reviewStep <= 3 ? (
                   <HorizontalStepper
@@ -85,7 +95,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 1 && (
                   <DescribeSystemStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
@@ -93,7 +102,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 2 && system && (
                   <PrivacyDeclarationStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={handleSuccess}
                     abridged
                   />
@@ -101,7 +109,6 @@ const ConfigWizardWalkthrough = () => {
                 {reviewStep === 3 && system && (
                   <ReviewSystemStep
                     system={system}
-                    onCancel={handleCancelSetup}
                     onSuccess={() => dispatch(changeReviewStep())}
                     abridged
                   />
@@ -113,14 +120,10 @@ const ConfigWizardWalkthrough = () => {
                     onAddNextSystem={() => {
                       dispatch(reviewManualSystem());
                     }}
-                    onContinue={() => {
-                      dispatch(continueReview());
-                    }}
                   />
                 )}
               </Stack>
             ) : null}
-            {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>
         </Stack>
       </Stack>

@@ -1,6 +1,7 @@
 """Contains all of the Utility-type CLI commands for fides."""
 import os
 from datetime import datetime, timezone
+from subprocess import CalledProcessError
 
 import click
 import toml
@@ -12,6 +13,15 @@ from fides.cli.utils import (
     check_server,
     send_init_analytics,
     with_analytics,
+)
+from fides.ctl.core.deploy import (
+    check_docker_version,
+    check_fides_uploads_dir,
+    print_deploy_success,
+    pull_specific_docker_image,
+    seed_example_data,
+    start_application,
+    teardown_application,
 )
 from fides.ctl.core.utils import echo_green
 
@@ -135,3 +145,62 @@ def worker(ctx: click.Context) -> None:
     from fides.api.ops.tasks import start_worker
 
     start_worker()
+
+
+# TODO: see comment
+# Analytics had to be removed for this command group (deploy) to work.
+
+# It behaves similarly to 'init' in that it is excluded from analytics in
+# the main CLI logic. This allows us to run `fides init` _after_
+# this command runs. However, it also means we aren't collecting analytics
+# events specifically for people running `fides deploy`.
+
+# There is probably a smarter check we could be doing here...
+
+
+@click.group(name="deploy")
+@click.pass_context
+def deploy(ctx: click.Context) -> None:
+    """
+    Deploy a sample project locally to try out Fides.
+    """
+
+
+@deploy.command()
+@click.pass_context
+@click.option(
+    "--no-pull",
+    is_flag=True,
+    help="Use a local image instead of trying to pull from DockerHub.",
+)
+def up(ctx: click.Context, no_pull: bool = False) -> None:
+    """
+    Starts the sample project via docker compose.
+    """
+
+    check_docker_version()
+    echo_green("Docker version is compatible, starting deploy...")
+
+    if not no_pull:
+        pull_specific_docker_image()
+
+    try:
+        check_fides_uploads_dir()
+        start_application()
+        seed_example_data()
+        click.clear()
+        print_deploy_success()
+    except CalledProcessError:
+        teardown_application()
+        raise SystemExit(1)
+
+
+@deploy.command()
+@click.pass_context
+def down(ctx: click.Context) -> None:
+    """
+    Stops the sample project and removes all volumes.
+    """
+
+    check_docker_version()
+    teardown_application()

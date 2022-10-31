@@ -93,7 +93,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
       {response && (
         <SlideFade in>
           {" "}
-          <Box mt="16px" w="fit-content">
+          <Box mt="16px" maxW="528px" w="fit-content">
             <TestConnection response={response} />
           </Box>
         </SlideFade>
