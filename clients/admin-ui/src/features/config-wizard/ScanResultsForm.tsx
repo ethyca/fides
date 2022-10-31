@@ -43,7 +43,11 @@ const ValidationSchema = Yup.object().shape({
     .label("Selected systems"),
 });
 
-const ScanResultsForm = () => {
+interface Props {
+  manualSystemSetupChosen: boolean;
+}
+
+const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -65,27 +69,30 @@ const ScanResultsForm = () => {
       onOpen();
     }
 
-    if (!features.plus && systems.length <= values.selectedKeys.length) {
+    // manual system setup will go to privacy declaration step
+    if (
+      systems.length <= values.selectedKeys.length &&
+      manualSystemSetupChosen
+    ) {
       dispatch(chooseSystemsForReview(values.selectedKeys));
       dispatch(changeStep());
     }
 
-    if (features.plus && systems.length <= values.selectedKeys.length) {
-      router.push(`/datamap`);
-    }
-  };
-
-  const confirmRegisterSelectedSystems = () => {
-    // Manual system setup
-    // go to privacy declarations step
-    if (!features.plus) {
-      dispatch(chooseSystemsForReview(selectedKeyValues));
-      dispatch(changeStep());
+    // non-plus and non-manual system setup will go to system page
+    if (
+      !features.plus &&
+      systems.length <= values.selectedKeys.length &&
+      !manualSystemSetupChosen
+    ) {
+      router.push(`/system`);
     }
 
-    // Non-manual system setup, go straight to datamap after systems registered
-    // no privacy declarations
-    if (features.plus) {
+    // plus and non-manual system setup will go to datamap page
+    if (
+      features.plus &&
+      systems.length <= values.selectedKeys.length &&
+      !manualSystemSetupChosen
+    ) {
       router.push(`/datamap`);
     }
   };
@@ -128,6 +135,13 @@ const ScanResultsForm = () => {
 
           return (
             <Form data-testid="scan-results-form">
+              <WarningModal
+                title="Warning"
+                message={warningMessage}
+                handleConfirm={() => handleSubmit(initialValues ?? values)}
+                isOpen={isOpen}
+                onClose={onClose}
+              />
               <Stack spacing={10}>
                 <Heading as="h3" size="lg">
                   Scan results
@@ -231,13 +245,6 @@ const ScanResultsForm = () => {
           );
         }}
       </Formik>
-      <WarningModal
-        title="Warning"
-        message={warningMessage}
-        handleConfirm={confirmRegisterSelectedSystems}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
     </Box>
   );
 };

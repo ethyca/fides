@@ -5,6 +5,6 @@
   },
   {
     "name": "configWizardFlag",
-    "isActive": false
+    "isActive": true
   }
 ]

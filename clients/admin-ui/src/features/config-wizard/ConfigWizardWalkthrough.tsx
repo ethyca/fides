@@ -78,7 +78,11 @@ const ConfigWizardWalkthrough = () => {
               />
             ) : null}
             {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ? <ScanResultsForm /> : null}
+            {step === 4 ? (
+              <ScanResultsForm
+                manualSystemSetupChosen={manualSystemSetupChosen}
+              />
+            ) : null}
             {/* These steps should only apply if you're creating systems manually */}
             {step === 5 && manualSystemSetupChosen ? (
               <Stack direction="column">
