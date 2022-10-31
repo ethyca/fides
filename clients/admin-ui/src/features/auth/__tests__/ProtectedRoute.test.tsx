@@ -90,10 +90,6 @@ describe("ProtectedRoute", () => {
     });
 
     it.skip("should render passed children", () => {
-      mockGetUser.mockImplementationOnce(()=>({
-        useGetUserPermissionsQuery
-      })
-      )
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
