@@ -40,7 +40,7 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
   onSaveClick,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const firstField = useRef();
+  const firstField = useRef(null);
 
   const handleSubmit = async (values: any, _actions: any) => {
     const params: PatchUploadManualWebhookDataRequest = {
@@ -93,7 +93,6 @@ const ManualProcessingDetail: React.FC<ManualProcessingDetailProps> = ({
           <Drawer
             isOpen={isOpen}
             placement="right"
-            // @ts-ignore
             initialFocusRef={firstField}
             onClose={onClose}
             size="lg"
