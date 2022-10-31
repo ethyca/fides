@@ -12,8 +12,9 @@ saas_config:
     - name: page_size
 
   external_references:
-    - name: user_id
-      label: User ID
+    - name: twilio_user_id
+      label: Twilio User ID
+      description: Dataset reference to the location of Twilio user SIDs
 
   client_config:
     protocol: https
@@ -27,9 +28,12 @@ saas_config:
   test_request:
     method: GET
     path: /v1/Users
+    query_params:
+      - name: PageSize
+        value: 1
 
   endpoints:
-    - name: users
+    - name: user
       requests:
         read:
           method: GET
@@ -37,7 +41,7 @@ saas_config:
           param_values:
             - name: sid
               references:
-                - user_id
+                - twilio_user_id
     - name: user_conversations
       requests:
         read:
@@ -50,7 +54,7 @@ saas_config:
             - name: user_id
               references:
                 - dataset: <instance_fides_key>
-                  field: users.sid
+                  field: user.sid
                   direction: from
           data_path: conversations
     - name: conversation_messages

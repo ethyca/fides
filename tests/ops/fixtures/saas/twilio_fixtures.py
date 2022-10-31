@@ -30,9 +30,9 @@ def twilio_secrets(saas_config):
         "account_id": pydash.get(saas_config, "twilio.account_id")
         or secrets["account_id"],
         "password": pydash.get(saas_config, "twilio.password") or secrets["password"],
-        "user_id": {
+        "twilio_user_id": {
             "dataset": "twilio_postgres",
-            "field": "twilio_users.user_id",
+            "field": "twilio_users.twilio_user_id",
             "direction": "from",
         },
     }
@@ -120,7 +120,7 @@ def twilio_postgres_dataset() -> Dict[str, Any]:
                         "fidesops_meta": {"data_type": "string", "identity": "email"},
                     },
                     {
-                        "name": "user_id",
+                        "name": "twilio_user_id",
                         "fidesops_meta": {"data_type": "string"},
                     },
                 ],

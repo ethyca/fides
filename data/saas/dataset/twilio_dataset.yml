@@ -3,8 +3,8 @@ dataset:
     name: Twilio Dataset
     description: A sample dataset representing the Twilio connector for Fidesops
     collections:
-      - name: users
-        fields: 
+      - name: user
+        fields:
           - name: is_notifiable
             data_categories: [system.operations]
             fidesops_meta:
@@ -58,7 +58,7 @@ dataset:
             fidesops_meta:
               data_type: string[]
       - name: user_conversations
-        fields: 
+        fields:
           - name: notification_level
             data_categories: [system.operations]
             fidesops_meta:
