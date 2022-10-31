@@ -15,15 +15,21 @@ saas_config:
     - name: regulation
       description: The regulation to follow for data protection requests
     - name: client_id
-    - name: access_token
+    - name: technical_account_id
+    - name: private_key
+    - name: client_secret
 
   client_config:
     protocol: https
     host: <domain>/<organization_id>
     authentication:
-      strategy: bearer
+      strategy: adobe
       configuration:
-        token: <access_token>
+        organization_id: <organization_id>
+        technical_account_id: <technical_account_id>
+        client_id: <client_id>
+        private_key: <private_key>
+        client_secret: <client_secret>
 
   test_request:
     method: GET
