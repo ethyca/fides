@@ -10,6 +10,7 @@ from typing import Any, Dict, MutableMapping, Optional
 
 import toml
 from fideslib.core.config import load_toml
+from loguru import logger as log
 from pydantic import BaseModel
 
 from fides.ctl.core.utils import echo_red
@@ -25,8 +26,6 @@ from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
 from .utils import DEFAULT_CONFIG_PATH, get_test_mode
-
-logger = logging.getLogger(__name__)
 
 
 class FidesConfig(BaseModel):
@@ -65,11 +64,8 @@ class FidesConfig(BaseModel):
             self.admin_ui,
         ]:
             for key, value in settings.dict().items():  # type: ignore
-                logger.debug(
-                    "Using config: %s%s = %s",
-                    settings.Config.env_prefix,  # type: ignore
-                    key.upper(),
-                    value,
+                log.debug(
+                    f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",  # type: ignore
                 )
 
 
@@ -199,7 +195,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         config = FidesConfig.parse_obj(settings)
         return config
     except FileNotFoundError:
-        echo_red("No config file found")
+        print("No config file found")
     except IOError:
         echo_red("Error reading config file")
 

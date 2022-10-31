@@ -9,6 +9,7 @@ import {
   Text,
 } from "@fidesui/react";
 import type { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
 import React from "react";
@@ -60,13 +61,18 @@ const SubjectRequestDetails: NextPage = () => {
           <Box mt={2} mb={9}>
             <Breadcrumb fontWeight="medium" fontSize="sm">
               <BreadcrumbItem>
-                <BreadcrumbLink href={INDEX_ROUTE}>
+                <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
                   Subject Request
                 </BreadcrumbLink>
               </BreadcrumbItem>
-
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">View Details</BreadcrumbLink>
+                <BreadcrumbLink
+                  isCurrentPage
+                  color="complimentary.500"
+                  _hover={{ textDecoration: "none" }}
+                >
+                  View Details
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </Breadcrumb>
           </Box>

@@ -14,6 +14,7 @@ from fides.api.ops.api.v1.endpoints import (
     policy_endpoints,
     policy_webhook_endpoints,
     privacy_request_endpoints,
+    registration_endpoints,
     saas_config_endpoints,
     storage_endpoints,
     user_endpoints,
@@ -41,3 +42,4 @@ api_router.include_router(saas_config_endpoints.router)
 api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
+api_router.include_router(registration_endpoints.router)

@@ -38,6 +38,7 @@ from fides.api.ops.api.v1.urn_registry import (
     DATASETS,
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
@@ -2572,6 +2573,168 @@ class TestResumeErasureRequestWithManualConfirmation:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
         privacy_request.delete(db)
+
+
+class TestBulkRestartFromFailure:
+    @pytest.fixture(scope="function")
+    def url(self):
+        return f"{V1_URL_PREFIX}{PRIVACY_REQUEST_BULK_RETRY}"
+
+    def test_restart_from_failure_not_authenticated(self, api_client, url):
+        data = ["1234", "5678"]
+        response = api_client.post(url, json=data, headers={})
+        assert response.status_code == 401
+
+    def test_restart_from_failure_wrong_scope(
+        self, api_client, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        data = ["1234", "5678"]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 403
+
+    @pytest.mark.usefixtures("privacy_requests")
+    def test_restart_from_failure_not_errored(
+        self, api_client, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = ["1234", "5678"]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        assert response.json()["succeeded"] == []
+
+        failed_ids = [
+            x["data"]["privacy_request_id"] for x in response.json()["failed"]
+        ]
+        assert sorted(failed_ids) == sorted(data)
+
+    def test_restart_from_failure_no_stopped_step(
+        self, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = [privacy_requests[0].id]
+
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        response = api_client.post(url, json=data, headers=auth_header)
+
+        assert response.status_code == 200
+        assert response.json()["succeeded"] == []
+
+        failed_ids = [
+            x["data"]["privacy_request_id"] for x in response.json()["failed"]
+        ]
+
+        assert privacy_requests[0].id in failed_ids
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_restart_from_failure_from_specific_collection(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = [privacy_requests[0].id]
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.access,
+            collection=CollectionAddress("test_dataset", "test_collection"),
+        )
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+
+        assert privacy_requests[0].id in succeeded_ids
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_requests[0].id,
+            from_step=CurrentStep.access.value,
+            from_webhook_id=None,
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_restart_from_failure_outside_graph(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = [privacy_requests[0].id]
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.erasure_email_post_send,
+            collection=None,
+        )
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+        assert response.json()["failed"] == []
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+
+        assert privacy_requests[0].id in succeeded_ids
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_requests[0].id,
+            from_step=CurrentStep.erasure_email_post_send.value,
+            from_webhook_id=None,
+        )
+
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_mixed_result(
+        self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = [privacy_requests[0].id, privacy_requests[1].id]
+        privacy_requests[0].status = PrivacyRequestStatus.error
+        privacy_requests[0].save(db)
+
+        privacy_requests[0].cache_failed_checkpoint_details(
+            step=CurrentStep.access,
+            collection=CollectionAddress("test_dataset", "test_collection"),
+        )
+
+        privacy_requests[1].status = PrivacyRequestStatus.error
+        privacy_requests[1].save(db)
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(privacy_requests[0])
+        assert privacy_requests[0].status == PrivacyRequestStatus.in_processing
+
+        succeeded_ids = [x["id"] for x in response.json()["succeeded"]]
+        failed_ids = [
+            x["data"]["privacy_request_id"] for x in response.json()["failed"]
+        ]
+
+        assert privacy_requests[0].id in succeeded_ids
+        assert privacy_requests[1].id in failed_ids
+
+        submit_mock.assert_called_with(
+            privacy_request_id=privacy_requests[0].id,
+            from_step=CurrentStep.access.value,
+            from_webhook_id=None,
+        )
 
 
 class TestRestartFromFailure:

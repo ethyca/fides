@@ -4,8 +4,8 @@ import logging
 import re
 from functools import partial
 from json.decoder import JSONDecodeError
-from typing import Dict, Iterator, List
 from os.path import isfile
+from typing import Dict, Iterator, List
 
 import click
 import jwt

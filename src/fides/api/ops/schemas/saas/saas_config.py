@@ -13,6 +13,7 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
+from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -102,6 +103,7 @@ class SaaSRequest(BaseModel):
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
+    rate_limit_config: Optional[RateLimitConfig]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -308,6 +310,7 @@ class SaaSConfig(SaaSConfigBase):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+    rate_limit_config: Optional[RateLimitConfig]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:

@@ -12,6 +12,7 @@ WORKDIR /fides/clients/admin-ui
 COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
 COPY clients/admin-ui/ .
+RUN npm run export
 
 #########################
 ## Compile Python Deps ##
@@ -101,21 +102,14 @@ FROM backend as dev
 
 RUN pip install -e . --no-deps
 
-#########################
-## Production Frontend ##
-#########################
-FROM frontend as frontend_prod
-
-RUN npm run export
-
 #############################
 ## Production Application ##
 #############################
 FROM backend as prod
 
+# Copy frontend build over
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+
 # Install without a symlink
 RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
-
-# Copy frontend build over
-COPY --from=frontend_prod /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin

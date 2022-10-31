@@ -139,10 +139,10 @@ const PrivacyDeclarationForm = ({
                 {onCancel && (
                   <Button
                     variant="outline"
-                    data-testid="cancel-btn"
+                    data-testid="back-btn"
                     onClick={onCancel}
                   >
-                    Cancel
+                    Back
                   </Button>
                 )}
                 <Button

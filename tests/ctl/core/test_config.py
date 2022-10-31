@@ -179,7 +179,7 @@ def test_config_from_default() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": "data/config/fides.toml",
+        "FIDES__CONFIG_PATH": "src/fides/data/test_env/fides.test_env.toml",
     },
     clear=True,
 )
@@ -187,10 +187,9 @@ def test_config_from_path() -> None:
     """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     print(os.environ)
-    assert config.database.server == "testserver"
-    assert config.redis.host == "testredis"
     assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
     assert config.admin_ui.enabled == True
+    assert config.execution.require_manual_request_approval == True
 
 
 @patch.dict(
