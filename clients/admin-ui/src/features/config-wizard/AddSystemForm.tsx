@@ -108,6 +108,7 @@ const AddSystemForm = ({
                       dispatch(changeStep());
                       onSelectMethod(SystemMethods.RUNTIME);
                     }}
+                    data-testid="runtime-scan-btn"
                   />
                 </HStack>
                 <Text>Data Flow Scan</Text>
