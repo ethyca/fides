@@ -112,6 +112,9 @@ ARG TARGETPLATFORM
 COPY --from=backend /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
+
+COPY --from=backend /fides .
+
 # Copy frontend build over
 COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 
