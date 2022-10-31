@@ -23,6 +23,8 @@ server_port = 8080
 
 [user]
 analytics_opt_out = true
+api_key = "test_api_key"
+encryption_key = "test_encryption_key"
 
 
 [credentials]
@@ -40,3 +42,8 @@ auth_uri = "https://accounts.google.com/o/oauth2/auth"
 token_uri = "https://oauth2.googleapis.com/token"
 auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
 client_x509_cert_url = "redacted_url_override_in_tests"
+
+[security]
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+oauth_root_client_id = "fidesadmin"
+drp_jwt_secret = "secret"
