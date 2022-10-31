@@ -21,11 +21,17 @@ import {
   QuestionIcon,
   RuntimeScannerLogo,
 } from "~/features/common/Icon";
+import { ValidTargets } from "~/types/api";
 
 import { changeStep } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
+import { AddSystemMethods, SystemMethods } from "./types";
 
-const AddSystemForm = () => {
+const AddSystemForm = ({
+  onSelectMethod,
+}: {
+  onSelectMethod: (method: AddSystemMethods) => void;
+}) => {
   const dispatch = useAppDispatch();
   const { plus } = useFeatures();
 
@@ -73,7 +79,10 @@ const AddSystemForm = () => {
                 boxShadow="base"
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
-                onClick={() => dispatch(changeStep())}
+                onClick={() => {
+                  onSelectMethod(ValidTargets.AWS);
+                  dispatch(changeStep());
+                }}
                 data-testid="aws-btn"
               />
               <Text>Infrastructure Scan (AWS)</Text>
@@ -95,7 +104,10 @@ const AddSystemForm = () => {
                     boxShadow="base"
                     variant="ghost"
                     icon={<RuntimeScannerLogo boxSize="10" />}
-                    onClick={() => dispatch(changeStep(5))}
+                    onClick={() => {
+                      dispatch(changeStep());
+                      onSelectMethod(SystemMethods.RUNTIME);
+                    }}
                   />
                 </HStack>
                 <Text>Data Flow Scan</Text>
@@ -117,7 +129,10 @@ const AddSystemForm = () => {
                   boxShadow="base"
                   variant="ghost"
                   icon={<ManualSetupIcon boxSize="full" />}
-                  onClick={() => dispatch(changeStep(5))}
+                  onClick={() => {
+                    dispatch(changeStep(5));
+                    onSelectMethod(SystemMethods.MANUAL);
+                  }}
                 />
               </HStack>
               <Text>Add a system manually</Text>
