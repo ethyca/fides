@@ -42,10 +42,13 @@ The types of changes are:
 ### Fixed
 
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+* Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 
 ### Fixed
 
@@ -62,6 +65,7 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+* Expired auth tokens will now log the user out automatically. [#1569](https://github.com/ethyca/fides/pull/1569)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 

@@ -22,7 +22,7 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
   const date = formatDate(timestamp);
   const testText = timestamp
     ? `Last tested on ${date}`
-    : "This datastore has not been tested yet";
+    : "This connection has not been tested yet";
 
   return (
     <>

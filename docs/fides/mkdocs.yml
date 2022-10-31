@@ -17,6 +17,7 @@ nav:
           - Installation from Docker: installation/docker.md
           - Configuration: installation/configuration.md
       - Working with Fides:
+          - Deploying a Sample Fides Application: getting-started/sample_project.md
           - Connect to Databases: getting-started/database_connectors.md
           - Generate Resources: getting-started/generate_resources.md
           - Create Datasets: getting-started/datasets.md
@@ -70,9 +71,9 @@ nav:
   - Fides UI:
       - Overview: ui/overview.md
       - Configuration Wizard: ui/wizard.md
-      - Subject Requests: ui/subject_requests.md
+      - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
-      - Manage Datastores: ui/datastores.md
+      - Manage Connections: ui/datastores.md
       - Manage Users: ui/user_management.md
       - Privacy Center:  ui/privacy_center.md
       - Deployment: ui/deployment.md
@@ -89,6 +90,7 @@ nav:
       - Documentation: development/documentation.md
       - Writing Tests: development/testing.md
       - Testing Environment: development/testing_environment.md
+      - Local Fides Deploy: development/dev_deployment.md
       - Pull Requests: development/pull_requests.md
       - Releases: development/releases.md
       - Release Checklist: development/release_checklist.md

@@ -211,7 +211,7 @@ async def load_default_dsr_policies() -> None:
         log.info("All Policies & Rules Seeded.")
 
 
-async def load_default_organiztion() -> None:
+async def load_default_organization() -> None:
     """
     Seed the database with a default organization unless
     one with a matching name already exists.
@@ -269,6 +269,6 @@ async def load_default_resources() -> None:
     expects to be available.
     """
 
-    await load_default_organiztion()
+    await load_default_organization()
     await load_default_taxonomy()
     await load_default_dsr_policies()
