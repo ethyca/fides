@@ -1,0 +1,65 @@
+.popup {
+    --width: 500px;
+    width: var(--width);
+    left: 50%;
+    padding: 30px 55px 30px 68px;
+    margin-left: calc(var(--width) / -2);
+    background: #38A169;
+    border-radius: 6px;
+    position: absolute;
+    top: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    animation-duration: 1s;
+    animation-fill-mode: both;
+    transform: translateY(-1000px);
+}
+
+.checkmark {
+    position: absolute;
+    top: 30px;
+    left: 37px;
+}
+
+.close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    cursor: pointer;
+}
+
+ 
+ @keyframes bounceInDown {
+    0% {
+       opacity: 0;
+       transform: translateY(-1000px);
+    }
+    60% {
+       opacity: 1;
+       transform: translateY(30px);
+    }
+    80% {
+       transform: translateY(-10px);
+    }
+    100% {
+       transform: translateY(0);
+    }
+ }
+ 
+ .bounceInDown {
+    animation-name: bounceInDown;
+ }
+
+ @keyframes bounceUp {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-2000px);
+    }
+ }
+
+ .bounceUp {
+    animation-name: bounceUp;
+ }
