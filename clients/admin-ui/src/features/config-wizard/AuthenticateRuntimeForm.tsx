@@ -1,23 +1,15 @@
-import {
-  Box,
-  Button,
-  CloseButton,
-  ModalFooter,
-  Spinner,
-  Stack,
-  Text,
-} from "@fidesui/react";
-import { useMemo } from "react";
+import { useToast } from "@fidesui/react";
+import { useEffect, useState } from "react";
 
-import LargeGreenSpinner from "~/features/common/LargeGreenSpinner";
+import { useAppDispatch } from "~/app/hooks";
+import { ParsedError, parseError } from "~/features/common/helpers";
 import { useGetScanResultsQuery } from "~/features/common/plus.slice";
+import { successToastParams } from "~/features/common/toast";
+import { RTKErrorResult } from "~/types/errors";
 
-// TODO: update this with whatever progress statuses the backend can return
-enum ScanProgress {
-  IN_PROGRESS = "in progress",
-  COMPLETE = "complete",
-  ERROR = "error",
-}
+import { changeStep } from "./config-wizard.slice";
+import ScannerError from "./ScannerError";
+import ScannerLoading from "./ScannerLoading";
 
 /**
  * Currently, runtime scanning is configured before the server starts via
@@ -25,64 +17,52 @@ enum ScanProgress {
  * since that flow doesn't exist yet, this is mostly just a loading screen for now.
  */
 const AuthenticateRuntimeForm = () => {
-  const { data, isSuccess, error } = useGetScanResultsQuery();
+  const dispatch = useAppDispatch();
+  const toast = useToast();
+  const { data, error: queryError } = useGetScanResultsQuery();
+  const [scannerError, setScannerError] = useState<ParsedError>();
 
-  const progress = useMemo(() => {
-    if (error) {
-      return ScanProgress.ERROR;
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
+
+  const handleError = (error: RTKErrorResult["error"]) => {
+    const parsedError = parseError(error, {
+      status: 500,
+      message:
+        "Our system encountered a problem while scanning your infrastructure.",
+    });
+    setScannerError(parsedError);
+  };
+
+  // Handle success, which will redirect to another view
+  useEffect(() => {
+    if (data) {
+      toast(
+        successToastParams(
+          `Your scan was successfully completed, with ${data.systems.length} new systems detected!`
+        )
+      );
+      dispatch(changeStep());
     }
-    if (isSuccess) {
-      return ScanProgress.COMPLETE;
+  }, [data, dispatch, toast]);
+
+  // Handle errors
+  useEffect(() => {
+    if (queryError) {
+      handleError(queryError);
     }
-    return ScanProgress.IN_PROGRESS;
-  }, [isSuccess, error]);
+  }, [queryError]);
+
+  if (scannerError) {
+    <ScannerError error={scannerError} />;
+  }
 
   return (
-    <Box>
-      <Text
-        alignItems="center"
-        as="b"
-        color="gray.900"
-        display="flex"
-        fontSize="xl"
-      >
-        Infrastructure scanning {progress}
-        <CloseButton
-          data-testid="close-scan-in-progress"
-          display="inline-block"
-          //   onClick={onOpen}
-        />
-      </Text>
-
-      <Stack alignItems="center">
-        <LargeGreenSpinner />
-      </Stack>
-
-      <Box data-testid="status">
-        {progress === ScanProgress.IN_PROGRESS ? <Spinner /> : null}
-        {progress === ScanProgress.ERROR ? (
-          <Text color="red">{error}</Text>
-        ) : null}
-      </Box>
-      {data ? (
-        <Box data-testid="results">
-          <GreenCheckCircle /> {data.systems.length} systems identified
-        </Box>
-      ) : null}
-
-      {progress === ScanProgress.COMPLETE ? (
-        <ModalFooter justifyContent="center">
-          <Button
-            colorScheme="primary"
-            onClick={onFinished}
-            data-testid="finished-btn"
-            size="sm"
-          >
-            View Data Map
-          </Button>
-        </ModalFooter>
-      ) : null}
-    </Box>
+    <ScannerLoading
+      title="Infrastructure scanning in progress"
+      onClose={handleCancel}
+    />
   );
 };
 
