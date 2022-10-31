@@ -1,16 +1,17 @@
 """Update table for twilio
-Revision ID: 2d5ff3096959
-Revises: fb6b0150d6e4
-Create Date: 2022-10-21 22:10:48.899562
+
+Revision ID: 179f2bb623ae
+Revises: 8f1a19465239
+Create Date: 2022-10-31 18:19:26.845723
+
 """
-import sqlalchemy as sa
-import sqlalchemy_utils
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "2d5ff3096959"
-down_revision = "fb6b0150d6e4"
+revision = '179f2bb623ae'
+down_revision = '8f1a19465239'
 branch_labels = None
 depends_on = None
 
