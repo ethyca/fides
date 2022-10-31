@@ -71,7 +71,6 @@ const ScanResultsForm = () => {
     }
 
     if (features.plus && systems.length <= values.selectedKeys.length) {
-      // NOTE: I don't know if this will re-route correctly yet in a live environment?
       router.push(`/datamap`);
     }
   };

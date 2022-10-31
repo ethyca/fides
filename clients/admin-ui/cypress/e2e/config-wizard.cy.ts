@@ -74,9 +74,6 @@ describe("Config Wizard", () => {
       cy.intercept("PUT", "/api/v1/system*", {
         fixture: "generate/system_to_review.json",
       }).as("putSystem");
-
-      // Non-manual entry skips declaration step
-      // cy.url().contains("datamap");
     });
 
     it("Displays API errors and allows resubmission", () => {
