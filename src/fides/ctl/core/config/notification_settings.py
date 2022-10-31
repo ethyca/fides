@@ -20,14 +20,10 @@ class NotificationSettings(FidesSettings):
 
     @validator("notification_service_type", pre=True)
     @classmethod
-    def validate_notification_service_type(cls, value: Optional[str]) -> str:
+    def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
         if value:
-            valid_values = [
-                "MAILGUN",
-                "TWILIO_TEXT",
-                "TWILIO_EMAIL"
-            ]
+            valid_values = ["MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL"]
             value = value.upper()  # force lowercase for safety
 
             if value not in valid_values:

@@ -15,10 +15,14 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.messaging.messaging import (
+    EMAIL_MESSAGING_SERVICES,
+    SMS_MESSAGING_SERVICES,
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingMethod,
     MessagingServiceSecretsMailgun,
-    MessagingServiceType, MessagingServiceSecretsTwilioSMS, MessagingServiceSecretsTwilioEmail, MessagingMethod,
-    EMAIL_MESSAGING_SERVICES, SMS_MESSAGING_SERVICES,
+    MessagingServiceSecretsTwilioEmail,
+    MessagingServiceSecretsTwilioSMS,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -30,7 +34,9 @@ CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
-def get_messaging_method(service_type: Optional[MessagingServiceType]) -> Optional[MessagingMethod]:
+def get_messaging_method(
+    service_type: Optional[str],
+) -> Optional[MessagingMethod]:
     """returns messaging method based on configured service type"""
     if service_type in EMAIL_MESSAGING_SERVICES:
         return MessagingMethod.EMAIL

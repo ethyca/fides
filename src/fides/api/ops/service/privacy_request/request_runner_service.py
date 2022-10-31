@@ -45,7 +45,7 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    MessagingActionType, MessagingServiceType,
+    MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
@@ -456,7 +456,9 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_identity=to_identity,
-            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            messaging_method=get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
@@ -466,7 +468,9 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
-            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            messaging_method=get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             message_body_params=None,
         )
 

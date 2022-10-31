@@ -99,7 +99,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     FidesopsMessage,
     MessagingActionType,
     RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams, MessagingServiceType,
+    RequestReviewDenyBodyParams,
 )
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -323,7 +323,9 @@ def _send_privacy_request_receipt_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "messaging_method": get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            "messaging_method": get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             "to_identity": to_identity,
         },
     )
@@ -1175,7 +1177,9 @@ def _send_privacy_request_review_message_to_user(
                 if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "messaging_method": get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            "messaging_method": get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             "to_identity": to_identity,
         },
     )

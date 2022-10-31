@@ -35,7 +35,7 @@ def create_or_update_messaging_config(
         "service_type": config.service_type,
     }
     if config.details:
-        data["details"] = config.details.__dict__
+        data["details"] = config.details.__dict__  # type: ignore
     messaging_config: MessagingConfig = MessagingConfig.create_or_update(
         db=db,
         data=data,

@@ -143,7 +143,9 @@ class TestPostEmailConfig:
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(key="my_mailgun_messaging_config")[0]
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_mailgun_messaging_config"
+        )[0]
 
         expected_response = {
             "key": "my_mailgun_messaging_config",
@@ -270,7 +272,9 @@ class TestPatchEmailConfig:
         assert 200 == response.status_code
 
         response_body = json.loads(response.text)
-        email_config = db.query(MessagingConfig).filter_by(key="my_mailgun_messaging_config")[0]
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_mailgun_messaging_config"
+        )[0]
 
         expected_response = {
             "key": "my_mailgun_messaging_config",

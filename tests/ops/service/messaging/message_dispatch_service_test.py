@@ -11,8 +11,8 @@ from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import CheckpointActionRequired, ManualAction
 from fides.api.ops.schemas.messaging.messaging import (
-    FidesopsMessage,
     EmailForActionType,
+    FidesopsMessage,
     MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceType,
@@ -36,7 +36,9 @@ def test_email_dispatch_mailgun_success(
         db=db,
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_identity=Identity(**{"email": "test@email.com"}),
-        messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+        messaging_method=get_messaging_method(
+            CONFIG.notifications.notification_service_type
+        ),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
         ),
@@ -64,7 +66,9 @@ def test_email_dispatch_mailgun_config_not_found(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            messaging_method=get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -98,7 +102,9 @@ def test_email_dispatch_mailgun_config_no_secrets(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+            messaging_method=get_messaging_method(
+                CONFIG.notifications.notification_service_type
+            ),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -128,7 +134,9 @@ def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> N
                 db=db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
-                messaging_method=get_messaging_method(MessagingServiceType[CONFIG.notifications.notification_service_type]),
+                messaging_method=get_messaging_method(
+                    CONFIG.notifications.notification_service_type
+                ),
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600
                 ),

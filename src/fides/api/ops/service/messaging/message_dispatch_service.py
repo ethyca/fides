@@ -5,9 +5,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
-from twilio.base.exceptions import TwilioRestException
-
-from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException  # type: ignore
+from twilio.rest import Client  # type: ignore
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
@@ -15,8 +14,8 @@ from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    FidesopsMessage,
     EmailForActionType,
+    FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
     MessagingServiceDetails,
@@ -30,7 +29,6 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
-from loguru import logger as log
 
 CONFIG = get_config()
 
@@ -98,7 +96,8 @@ def dispatch_message(
         )
     else:
         logger.error(
-            "Notification service type is not valid: %s", CONFIG.notifications.notification_service_type
+            "Notification service type is not valid: %s",
+            CONFIG.notifications.notification_service_type,
         )
         raise MessageDispatchException(
             f"Notification service type is not valid: {CONFIG.notifications.notification_service_type}"
@@ -112,7 +111,8 @@ def dispatch_message(
     )
     if not dispatcher:
         logger.error(
-            "Dispatcher has not been implemented for message service type: %s", messaging_service
+            "Dispatcher has not been implemented for message service type: %s",
+            messaging_service,
         )
         raise MessageDispatchException(
             f"Dispatcher has not been implemented for message service type: {messaging_service}"
@@ -235,6 +235,9 @@ def _mailgun_dispatcher(
     if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
+    if not messaging_config.details:
+        logger.error("Message failed to send. No mailgun config details supplied.")
+        raise MessageDispatchException("No mailgun config details supplied.")
     base_url = (
         "https://api.mailgun.net"
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
@@ -269,9 +272,9 @@ def _mailgun_dispatcher(
 
 
 def _twilio_sms_dispatcher(
-        messaging_config: MessagingConfig,
-        message: str,
-        to: Optional[str],
+    messaging_config: MessagingConfig,
+    message: str,
+    to: Optional[str],
 ) -> None:
     """Dispatches SMS using Twilio"""
     if not to:
@@ -280,26 +283,28 @@ def _twilio_sms_dispatcher(
 
     account_sid = messaging_config.secrets[MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value]  # type: ignore
     auth_token = messaging_config.secrets[MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value]  # type: ignore
-    messaging_service_id = messaging_config.secrets[MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value]  # type:ignore
-    sender_phone_number = messaging_config.secrets[MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value]  # type:ignore
+    messaging_service_id = messaging_config.secrets[
+        MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+    ]  # type:ignore
+    sender_phone_number = messaging_config.secrets[
+        MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
+    ]  # type:ignore
 
     client = Client(account_sid, auth_token)
     try:
         if messaging_service_id:
             client.messages.create(
-                to=to,
-                messaging_service_sid=messaging_service_id,
-                body=message
+                to=to, messaging_service_sid=messaging_service_id, body=message
             )
         elif sender_phone_number:
-            client.messages.create(
-                to=to,
-                from_=sender_phone_number,
-                body=message
-            )
+            client.messages.create(to=to, from_=sender_phone_number, body=message)
         else:
-            logger.error("Message failed to send. Either sender phone number or messaging service sid must be provided.")
-            raise MessageDispatchException("Message failed to send. Either sender phone number or messaging service sid must be provided.")
+            logger.error(
+                "Message failed to send. Either sender phone number or messaging service sid must be provided."
+            )
+            raise MessageDispatchException(
+                "Message failed to send. Either sender phone number or messaging service sid must be provided."
+            )
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: %s", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")

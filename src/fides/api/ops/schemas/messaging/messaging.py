@@ -134,7 +134,9 @@ class MessagingServiceSecrets(Enum):
     TWILIO_ACCOUNT_SID = "twilio_account_sid"
     TWILIO_AUTH_TOKEN = "twilio_auth_token"
     TWILIO_MESSAGING_SERVICE_SID = "twilio_messaging_service_sid"
-    TWILIO_SENDER_PHONE_NUMBER = "twilio_sender_phone_number"  # formatted like +15558675309
+    TWILIO_SENDER_PHONE_NUMBER = (
+        "twilio_sender_phone_number"  # formatted like +15558675309
+    )
 
     # Twilio Sendgrid/Email
     TWILIO_API_KEY = "twilio_api_key"
@@ -157,7 +159,9 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
     twilio_account_sid: str
     twilio_auth_token: str
     twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[str]  # Either the twilio_messaging_service_id *OR* the twilio_sender_phone_number should be supplied.
+    twilio_sender_phone_number: Optional[
+        str
+    ]  # Either the twilio_messaging_service_id *OR* the twilio_sender_phone_number should be supplied.
 
     class Config:
         """Restrict adding other fields through this schema."""
@@ -203,7 +207,9 @@ class MessagingConfigResponse(BaseModel):
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
-    MessagingServiceSecretsMailgun, MessagingServiceSecretsTwilioSMS, MessagingServiceSecretsTwilioEmail
+    MessagingServiceSecretsMailgun,
+    MessagingServiceSecretsTwilioSMS,
+    MessagingServiceSecretsTwilioEmail,
 ]
 
 

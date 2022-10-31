@@ -72,7 +72,9 @@ def post_config(
         return create_or_update_messaging_config(db=db, config=messaging_config)
     except Exception as exc:
         logger.warning(
-            "Create failed for messaging config %s: %s", messaging_config.key, Pii(str(exc))
+            "Create failed for messaging config %s: %s",
+            messaging_config.key,
+            Pii(str(exc)),
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -105,7 +107,9 @@ def patch_config_by_key(
 
     except Exception as exc:
         logger.warning(
-            "Patch failed for messaging config %s: %s", messaging_config.key, Pii(str(exc))
+            "Patch failed for messaging config %s: %s",
+            messaging_config.key,
+            Pii(str(exc)),
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -152,7 +156,9 @@ def put_config_secrets(
             detail=exc.args[0],
         )
 
-    logger.info("Updating messaging config secrets for config with key '%s'", config_key)
+    logger.info(
+        "Updating messaging config secrets for config with key '%s'", config_key
+    )
     try:
         messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())
     except ValueError as exc:
@@ -176,7 +182,9 @@ def get_configs(
     """
     Retrieves configs for messaging.
     """
-    logger.info("Finding all messaging configurations with pagination params %s", params)
+    logger.info(
+        "Finding all messaging configurations with pagination params %s", params
+    )
     return paginate(
         MessagingConfig.query(db=db).order_by(MessagingConfig.created_at.desc()),
         params=params,
