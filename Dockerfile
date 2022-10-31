@@ -105,7 +105,12 @@ RUN pip install -e . --no-deps
 #############################
 ## Production Application ##
 #############################
-FROM backend as prod
+FROM python:${PYTHON_VERSION}-slim-bullseye as prod
+ARG TARGETPLATFORM
+
+# Loads compiled requirements and adds the to the path
+COPY --from=backend /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
 # Copy frontend build over
 COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
@@ -113,3 +118,8 @@ COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/stat
 # Install without a symlink
 RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
+
+ENV RUNNING_IN_DOCKER=true
+
+EXPOSE 8080
+CMD [ "fides", "webserver" ]
