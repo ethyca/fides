@@ -59,11 +59,6 @@ const ManualSystemFlow = () => {
     dispatch(setActiveSystem(system));
   };
 
-  const goToIndex = () => {
-    router.push("/system");
-    dispatch(setActiveSystem(undefined));
-  };
-
   return (
     <Grid templateColumns="3fr 7fr" maxWidth="70vw">
       <GridItem>
@@ -96,7 +91,6 @@ const ManualSystemFlow = () => {
           <SystemRegisterSuccess
             system={activeSystem}
             onAddNextSystem={goBack}
-            onContinue={goToIndex}
           />
         ) : null}
       </GridItem>

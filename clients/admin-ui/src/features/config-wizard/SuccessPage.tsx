@@ -14,33 +14,50 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React from "react";
+import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
 
+import { useFeatures } from "~/features/common/features.slice";
 import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
 } from "~/features/common/Icon";
 import { System } from "~/types/api";
 
+import { setActiveSystem } from "../system";
+
 interface Props {
   systemInReview: System;
   systemsForReview: System[];
-  onContinue: () => void;
   onAddNextSystem: () => void;
 }
 const SuccessPage = ({
   systemInReview,
   systemsForReview,
   onAddNextSystem,
-  onContinue,
 }: Props) => {
   const systemName = systemInReview.name ?? systemInReview.fides_key;
+  const dispatch = useDispatch();
+  const features = useFeatures();
+  const router = useRouter();
 
   // Systems are reviewed in order, so a lower index means that system has been reviewed
   // and a higher index means they'll reviewed after hitting "next".
   const systemInReviewIndex = systemsForReview.findIndex(
     (s) => s.fides_key === systemInReview.fides_key
   );
+
+  const onFinish = () => {
+    // non-plus
+    if (!features.plus) {
+      router.push("/system");
+    } else {
+      // plus
+      router.push("/datamap");
+    }
+
+    dispatch(setActiveSystem(undefined));
+  };
 
   return (
     <chakra.form w="100%">
@@ -111,12 +128,12 @@ const SuccessPage = ({
           </Button>
 
           <Button
-            onClick={onContinue}
+            onClick={onFinish}
             colorScheme="primary"
             size="sm"
-            data-testid="continue-btn"
+            data-testid="finish-btn"
           >
-            Continue
+            Finish
           </Button>
         </Box>
       </Stack>

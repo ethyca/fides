@@ -14,23 +14,27 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React from "react";
+import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
 
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import {
+  setActiveSystem,
+  useGetAllSystemsQuery,
+} from "~/features/system/system.slice";
 import { System } from "~/types/api";
+
+import { useFeatures } from "../common/features.slice";
 
 interface Props {
   system: System;
-  onContinue: () => void;
   onAddNextSystem: () => void;
 }
-const SystemRegisterSuccess = ({
-  system,
-  onAddNextSystem,
-  onContinue,
-}: Props) => {
+const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
+  const dispatch = useDispatch();
+  const features = useFeatures();
+  const router = useRouter();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
         (registeredSystem) => registeredSystem.name !== system.name
@@ -38,6 +42,18 @@ const SystemRegisterSuccess = ({
     : [];
 
   const systemName = system.name ?? system.fides_key;
+
+  const onFinish = () => {
+    // non-plus
+    if (!features.plus) {
+      router.push("/system");
+    } else {
+      // plus
+      router.push("/datamap");
+    }
+
+    dispatch(setActiveSystem(undefined));
+  };
 
   return (
     <chakra.form w="100%">
@@ -98,12 +114,12 @@ const SystemRegisterSuccess = ({
             Add next system
           </Button>
           <Button
-            onClick={onContinue}
+            onClick={onFinish}
             colorScheme="primary"
             size="sm"
-            data-testid="continue-btn"
+            data-testid="finish-btn"
           >
-            Continue
+            Finish
           </Button>
         </Box>
       </Stack>
@@ -111,3 +127,6 @@ const SystemRegisterSuccess = ({
   );
 };
 export default SystemRegisterSuccess;
+
+// router.push("/system");
+// dispatch(setActiveSystem(undefined));
