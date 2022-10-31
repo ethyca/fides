@@ -25,9 +25,7 @@ services:
         read_only: False
 
   sample-app:
-    build:
-      context: ./cookie_house
-      dockerfile: Dockerfile
+    image: ethyca/fides-sample-app:sample
     environment:
       - PORT=3000
       - DATABASE_HOST=postgres-test

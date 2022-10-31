@@ -11,6 +11,8 @@ from constants_nox import (
     IMAGE_LOCAL,
     IMAGE_LOCAL_UI,
     IMAGE_SAMPLE,
+    PRIVACY_CENTER_IMAGE,
+    SAMPLE_APP_IMAGE,
 )
 
 
@@ -83,17 +85,46 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
 
-    if image == "sample":
-        # Build the privacy center here, but let the webserver image build later
+    # When building an image for release (either the "prod" or "sample"
+    # targets), ensure we also build the extra apps:
+    #   ethyca/fides-privacy-center
+    #   ethyca/fides-sample-app
+    #
+    # This is because these images aren't built via the regular build matrix,
+    # which is used to produce various tags of the main ethyca/fides image
+    #
+    # TODO: this is messy, and could be integrated alongside ethyca/fides
+    # instead
+    if image in ("sample", "prod"):
+        if image == "prod":
+            tag_name = get_current_tag()
+        if image == "sample":
+            tag_name = "sample"
+        privacy_center_image_tag = f"{PRIVACY_CENTER_IMAGE}:{tag_name}"
+        sample_app_image_tag = f"{SAMPLE_APP_IMAGE}:{tag_name}"
+
+        session.log("Building extra images:")
+        session.log(f"  - {privacy_center_image_tag}")
+        session.log(f"  - {sample_app_image_tag}")
         session.run(
             "docker",
             "build",
             "clients/privacy-center",
             "--tag",
-            "ethyca/fides-privacy-center:sample",
+            privacy_center_image_tag,
+            external=True,
+        )
+        session.run(
+            "docker",
+            "build",
+            "src/fides/data/sample_project/cookie_house",
+            "--tag",
+            sample_app_image_tag,
             external=True,
         )
 
+    # Allow building the fides-privacy-center:local image directly when
+    # requested (for development purposes)
     if image == "privacy_center":
         session.run(
             "docker",
@@ -104,6 +135,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
             external=True,
         )
     else:
+        # Build the main ethyca/fides image
         target = build_matrix[image]["target"]
         tag = build_matrix[image]["tag"]
         build_command = (
