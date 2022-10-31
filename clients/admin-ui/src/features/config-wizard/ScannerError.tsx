@@ -32,7 +32,7 @@ const ScannerError = ({ error }: { error: ParsedError }) => (
         Error
       </Badge>
       <Heading color="red.500" size="lg">
-        Failed to Scan AWS
+        Failed to Scan
       </Heading>
     </HStack>
 
@@ -62,8 +62,9 @@ const ScannerError = ({ error }: { error: ParsedError }) => (
     ) : (
       <>
         <Text data-testid="generic-msg">
-          Fides was unable to scan AWS. Please ensure your credentials are
-          accurate and inspect the error log below for more details.
+          Fides was unable to scan your infrastructure. Please ensure your
+          credentials are accurate and inspect the error log below for more
+          details.
         </Text>
 
         <ErrorLog message={error.message} />

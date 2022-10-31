@@ -1,4 +1,4 @@
-import { useToast } from "@fidesui/react";
+import { Box, Button, Stack, useToast } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -55,7 +55,20 @@ const AuthenticateRuntimeForm = () => {
   }, [queryError]);
 
   if (scannerError) {
-    <ScannerError error={scannerError} />;
+    return (
+      <Stack>
+        <ScannerError error={scannerError} />
+        <Box>
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            data-testid="cancel-btn"
+          >
+            Cancel
+          </Button>
+        </Box>
+      </Stack>
+    );
   }
 
   return (
