@@ -62,6 +62,10 @@ body {
     background-color: var(--md-header-bg-color);
 }
 
+.md-tabs {
+    background-color: var(--md-header-bg-color);
+}
+
 .md-header .md-logo img {
     width: 100px;
     height: auto;
@@ -453,4 +457,12 @@ form.hs-form{
     .hs-form .hs_submit{
         margin-left: 10px;
     }
+}
+
+.admonition code, .admonition-title code {
+    font-size: .85em;
+}
+
+.md-typeset table:not([class]) code {
+    font-size: .60rem;
 }
