@@ -54,16 +54,27 @@ def get_platform(posargs: List[str]) -> str:
 @nox.parametrize(
     "image",
     [
+        nox.param("admin_ui", id="admin-ui"),
         nox.param("dev", id="dev"),
+        nox.param("privacy_center", id="privacy-center"),
         nox.param("prod", id="prod"),
         nox.param("sample", id="sample"),
         nox.param("test", id="test"),
-        nox.param("admin_ui", id="admin-ui"),
-        nox.param("privacy_center", id="privacy-center"),
     ],
 )
 def build(session: nox.Session, image: str, machine_type: str = "") -> None:
-    """Build the Docker containers."""
+    """
+    Build various Docker images.
+
+    Params:
+
+    admin-ui = Build the Next.js Admin UI application.
+    dev = Build the fides webserver/CLI, tagged as `local`.
+    privacy-center = Build the Next.js Privacy Center application.
+    prod = Build the fides webserver/CLI and tag it as the current application version.
+    sample = Builds all components required for the sample application.
+    test = Build the fides webserver/CLI the same as `prod`, but tag is as `local`.
+    """
     build_platform = get_platform(session.posargs)
 
     # This check needs to be here so it has access to the session to throw an error
@@ -85,16 +96,9 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
     }
 
-    # When building an image for release (either the "prod" or "sample"
-    # targets), ensure we also build the extra apps:
-    #   ethyca/fides-privacy-center
-    #   ethyca/fides-sample-app
-    #
-    # This is because these images aren't built via the regular build matrix,
-    # which is used to produce various tags of the main ethyca/fides image
-    #
-    # TODO: this is messy, and could be integrated alongside ethyca/fides
-    # instead
+    # When building for release, there are additional images that need
+    # to get built. These images are outside of the primary `ethyca/fides`
+    # image so some additional logic is required.
     if image in ("sample", "prod"):
         if image == "prod":
             tag_name = get_current_tag()
@@ -169,6 +173,11 @@ def push(session: nox.Session, tag: str) -> None:
       - ethyca/fides-privacy-center
       - ethyca/fides-sample-app
 
+    Params:
+
+    prod - Tags images with the current version of the application
+    dev - Tags images with `dev`
+
     NOTE: Expects these to first be built via 'build(prod)'
     """
     fides_image_prod = get_current_image()
@@ -193,13 +202,11 @@ def push(session: nox.Session, tag: str) -> None:
         session.run("docker", "push", sample_app_dev, external=True)
 
     if tag == "prod":
-        # Push the ethyca/fides image, tagging as both the release and :latest
         # Example: "ethyca/fides:2.0.0" and "ethyca/fides:latest"
         session.run("docker", "tag", fides_image_prod, IMAGE_LATEST, external=True)
         session.run("docker", "push", IMAGE_LATEST, external=True)
         session.run("docker", "push", fides_image_prod, external=True)
 
-        # Push the extra images, tagging with release and :latest
         # Example:
         #   - ethyca/fides-privacy-center:2.0.0
         #   - ethyca/fides-privacy-center:latest
