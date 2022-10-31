@@ -10,7 +10,7 @@ describe("Nav Bar", () => {
     cy.visit("/");
 
     cy.getByTestId("nav-link-Privacy Requests");
-    cy.getByTestId("nav-link-Datastore Connections");
+    cy.getByTestId("nav-link-Connections");
     cy.getByTestId("nav-link-User Management");
     cy.getByTestId("nav-link-Datasets");
     cy.getByTestId("nav-link-Taxonomy");

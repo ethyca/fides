@@ -17,7 +17,7 @@ All currently configured connections will appear in the paginated Connections pa
 | Option | Description |
 |----|----|
 | Search | Retrieve a connection by name. |
-| Datastore Type | Filter connections by type: SaaS, Postgres, Mongo, etc. |
+| Connection Type | Filter connections by type: SaaS, Postgres, Mongo, etc. |
 | System Type | Filter connections by system: SaaS, Database, or Manual. |
 | Testing Status | Filter stores by the result of their last test: Passed, Failed, or Untested. |
 | Status | Filter connections by status: Active or Disabled. |
