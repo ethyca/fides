@@ -1,7 +1,6 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
@@ -15,7 +14,6 @@ import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
   changeStep,
-  continueReview,
   reset,
   reviewManualSystem,
   selectReviewStep,
@@ -28,7 +26,6 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
-import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
@@ -90,7 +87,6 @@ const ConfigWizardWalkthrough = () => {
                   {reviewStep === 1 && (
                     <DescribeSystemStep
                       system={system}
-                      onCancel={handleCancelSetup}
                       onSuccess={handleSuccess}
                       abridged
                     />
@@ -98,7 +94,6 @@ const ConfigWizardWalkthrough = () => {
                   {reviewStep === 2 && system && (
                     <PrivacyDeclarationStep
                       system={system}
-                      onCancel={handleCancelSetup}
                       onSuccess={handleSuccess}
                       abridged
                     />
@@ -106,7 +101,6 @@ const ConfigWizardWalkthrough = () => {
                   {reviewStep === 3 && system && (
                     <ReviewSystemStep
                       system={system}
-                      onCancel={handleCancelSetup}
                       onSuccess={() => dispatch(changeReviewStep())}
                       abridged
                     />
@@ -118,14 +112,10 @@ const ConfigWizardWalkthrough = () => {
                       onAddNextSystem={() => {
                         dispatch(reviewManualSystem());
                       }}
-                      onContinue={() => {
-                        dispatch(continueReview());
-                      }}
                     />
                   )}
                 </Stack>
               ) : null}
-              {step === 6 ? <ViewYourDataMapPage /> : null}
             </Box>
           </Stack>
         </Stack>

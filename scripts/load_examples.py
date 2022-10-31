@@ -7,7 +7,7 @@ This script is only designed to be run from the Nox session 'nox -s test_env'.
 
 from setup import constants, get_secret
 from setup.authentication import get_auth_header
-from setup.dsr_policy import create_dsr_policy, create_rule, create_rule_target
+from setup.dsr_policy import create_dsr_policy, create_rule
 from setup.email import create_email_integration
 from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector

@@ -1,20 +1,31 @@
 import { useRouter } from "next/router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { LOGIN_ROUTE } from "../../constants";
-import { selectToken } from "./auth.slice";
+import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
+import { useGetUserPermissionsQuery } from "~/features/user-management";
+
+import { logout, selectToken, selectUser } from "./auth.slice";
 
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const token = useSelector(selectToken);
+  const user = useSelector(selectUser);
+  const userId = user?.id;
+  const permissionsQuery = useGetUserPermissionsQuery(userId!, {
+    pollingInterval: VERIFY_AUTH_INTERVAL,
+    skip: !userId,
+  });
 
-  // TODO: check for token invalidation
-  if (!token && typeof window !== "undefined") {
-    router.push(redirectUrl);
+  if (!token || !userId || permissionsQuery.isError) {
+    dispatch(logout());
+    if (typeof window !== "undefined") {
+      router.push(redirectUrl);
+    }
     return false;
   }
 
-  return true;
+  return permissionsQuery.isSuccess;
 };
 
 interface ProtectedRouteProps {

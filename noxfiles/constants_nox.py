@@ -23,7 +23,13 @@ IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
 IMAGE_DEV = f"{IMAGE}:dev"
+IMAGE_SAMPLE = f"{IMAGE}:sample"
 IMAGE_LATEST = f"{IMAGE}:latest"
+
+# Image names for the secondary apps
+PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
+SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
+
 
 # Disable TTY to perserve output within Github Actions logs
 # CI env variable is always set to true in Github Actions

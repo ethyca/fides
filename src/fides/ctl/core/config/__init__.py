@@ -195,7 +195,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         config = FidesConfig.parse_obj(settings)
         return config
     except FileNotFoundError:
-        echo_red("No config file found")
+        print("No config file found")
     except IOError:
         echo_red("Error reading config file")
 
