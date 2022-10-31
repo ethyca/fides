@@ -75,8 +75,8 @@ const DSRCustomization: React.FC = () => {
     <VStack align="stretch" gap="24px">
       <Box color="gray.700" fontSize="14px" w="572px">
         Customize your PII fields to create a friendly label name for your
-        privacy request packages. This “Package Label” is the label your
-        user will see in their downloaded package.
+        privacy request packages. This “Package Label” is the label your user
+        will see in their downloaded package.
       </Box>
       {(isFetching || isLoading) && (
         <Center>

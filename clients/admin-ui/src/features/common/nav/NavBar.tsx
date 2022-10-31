@@ -29,10 +29,7 @@ const NavBar = () => {
     >
       <nav>
         <NavLink title="Privacy Requests" href={INDEX_ROUTE} exact />
-        <NavLink
-          title="Connections"
-          href={DATASTORE_CONNECTION_ROUTE}
-        />
+        <NavLink title="Connections" href={DATASTORE_CONNECTION_ROUTE} />
         <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />
         <NavLink title="Systems" href="/system" />
         <NavLink title="Datasets" href="/dataset" />

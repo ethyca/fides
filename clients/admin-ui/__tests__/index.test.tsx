@@ -19,3 +19,4 @@ describe("Home", () => {
     const message = screen.getAllByText("Privacy Requests")[0];
     expect(message).toBeInTheDocument();
   });
+});
