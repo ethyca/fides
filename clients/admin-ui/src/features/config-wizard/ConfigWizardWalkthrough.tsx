@@ -15,7 +15,6 @@ import AuthenticateScanner from "./AuthenticateScanner";
 import {
   changeReviewStep,
   changeStep,
-  continueReview,
   reset,
   reviewManualSystem,
   selectReviewStep,
@@ -28,7 +27,6 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
-import ViewYourDataMapPage from "./ViewYourDataMapPage";
 
 const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
@@ -118,14 +116,10 @@ const ConfigWizardWalkthrough = () => {
                     onAddNextSystem={() => {
                       dispatch(reviewManualSystem());
                     }}
-                    onContinue={() => {
-                      dispatch(continueReview());
-                    }}
                   />
                 )}
               </Stack>
             ) : null}
-            {step === 6 ? <ViewYourDataMapPage /> : null}
           </Stack>
         </Stack>
       </Stack>

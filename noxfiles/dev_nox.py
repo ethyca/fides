@@ -61,7 +61,7 @@ def test_env(session: Session) -> None:
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
-        "FIDES__CONFIG_PATH": "/fides/data/config/fides.test_env.toml",
+        "FIDES__CONFIG_PATH": "/fides/src/fides/data/test_env/fides.test_env.toml",
     }
 
     session.log(
