@@ -1,7 +1,6 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
-import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
@@ -34,9 +33,6 @@ const ConfigWizardWalkthrough = () => {
   const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
-
-  const [manualSystemSetupChosen, setManualSystemsSetupChosen] =
-    useState(false);
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -72,19 +68,10 @@ const ConfigWizardWalkthrough = () => {
               />
             </Box>
             {step === 1 ? <OrganizationInfoForm /> : null}
-            {step === 2 ? (
-              <AddSystemForm
-                setManualSystemsSetupChosen={setManualSystemsSetupChosen}
-              />
-            ) : null}
+            {step === 2 ? <AddSystemForm /> : null}
             {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ? (
-              <ScanResultsForm
-                manualSystemSetupChosen={manualSystemSetupChosen}
-              />
-            ) : null}
-            {/* These steps should only apply if you're creating systems manually */}
-            {step === 5 && manualSystemSetupChosen ? (
+            {step === 4 ? <ScanResultsForm /> : null}
+            {step === 5 ? (
               <Stack direction="column">
                 {reviewStep <= 3 ? (
                   <HorizontalStepper
