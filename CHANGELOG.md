@@ -42,6 +42,7 @@ The types of changes are:
 
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
 * Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
 
 
 ### Docs
