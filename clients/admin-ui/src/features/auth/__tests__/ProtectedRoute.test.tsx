@@ -1,3 +1,4 @@
+import { userApi } from "~/features/user-management";
 import { render, screen } from "../../../../__tests__/test-utils";
 import { LOGIN_ROUTE } from "../../../constants";
 import ProtectedRoute from "../ProtectedRoute";
@@ -7,10 +8,10 @@ const useRouter = jest.spyOn(require("next/router"), "useRouter");
 const preloadedLoginState = {
   auth: {
     user: {
-      username: "Test",
+      id: "Test",
     },
     token: "Valid Token",
-  },
+  }
 };
 
 describe("ProtectedRoute", () => {
@@ -89,6 +90,28 @@ describe("ProtectedRoute", () => {
     });
 
     it("should render passed children", () => {
+      // const useGetUserPermissionsQuery = jest.spyOn(userApi, "useGetUserPermissionsQuery");
+      // useGetUserPermissionsQuery.mockReturnValue(
+      //     {
+      //       status: "mock",
+      //       endpointName: "getUserPermissions",
+      //       requestId: "mockid",
+      //       originalArgs: "Test",
+      //       startedTimeStamp: 1667233981984,
+      //       isUninitialized: false,
+      //       isLoading: true,
+      //       isSuccess: true,
+      //       isError: false,
+      //       data: undefined,
+      //       currentData: undefined,
+      //       isFetching: true,
+      //       refetch: function () {
+      //         var _a;
+      //         return void (null);
+      //       },
+      //     }     
+      // );
+      jest.mock(permissionsQuery = true)
       const push = jest.fn();
       useRouter.mockImplementationOnce(() => ({
         push,
