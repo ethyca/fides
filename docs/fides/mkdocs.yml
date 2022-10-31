@@ -73,7 +73,7 @@ nav:
       - Configuration Wizard: ui/wizard.md
       - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
-      - Manage Datastores: ui/datastores.md
+      - Manage Connections: ui/datastores.md
       - Manage Users: ui/user_management.md
       - Privacy Center:  ui/privacy_center.md
       - Deployment: ui/deployment.md
