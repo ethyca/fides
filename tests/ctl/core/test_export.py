@@ -114,7 +114,7 @@ def test_system_records_to_export_sans_privacy_declaration(
     test_sample_system_taxonomy: Generator, test_config: FidesConfig
 ) -> None:
     """
-    Asserts that unique records for systems without a privacy declaratopm
+    Asserts that unique records for systems without a privacy declaration
     are returned properly (including the header row)
     """
     test_sample_system_taxonomy["system"][0].privacy_declarations = []
