@@ -127,6 +127,3 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   );
 };
 export default SystemRegisterSuccess;
-
-// router.push("/system");
-// dispatch(setActiveSystem(undefined));
