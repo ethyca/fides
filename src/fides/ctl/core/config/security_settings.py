@@ -15,10 +15,10 @@ ENV_PREFIX = "FIDES__SECURITY__"
 class SecuritySettings(FideslibSecuritySettings):
     """Configuration settings for Security variables."""
 
-    oauth_root_client_secret: str = "testrootclientsecret"
-    app_encryption_key: str = "atestencryptionkeythatisvalidlen"
-    drp_jwt_secret: str = "testdrpsecret"
-    oauth_root_client_id: str = "testrootclientid"
+    oauth_root_client_secret: str = ""
+    app_encryption_key: str
+    drp_jwt_secret: str
+    oauth_root_client_id: str
     encoding: str = "UTF-8"
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
     subject_request_download_link_ttl_seconds: int = 432000  # 5 days

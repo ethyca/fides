@@ -17,9 +17,9 @@ class UserSettings(FidesSettings):
     """Class used to store values from the 'user' section of the config."""
 
     user_id: str = "1"
-    api_key: str = "test_api_key"
+    api_key: str
     request_headers: Dict[str, str] = {}
-    encryption_key: str = "test_encryption_key"
+    encryption_key: str
     analytics_opt_out: Optional[bool]
 
     # Automatically generate the request_headers on object creation

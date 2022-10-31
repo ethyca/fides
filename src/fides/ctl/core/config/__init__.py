@@ -31,16 +31,23 @@ from .utils import DEFAULT_CONFIG_PATH, get_test_mode
 class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
+    # Pydantic doesn't initialise subsections automatically if
+    # only environment variables are provided at runtime. If the
+    # config subclass is instantiated with no args, Pydantic runs
+    # validation before loading in environment variables, which
+    # always fails if any config vars in the subsection are non-optional.
+    # Using the empty dict allows Python to load in the environment
+    # variables _before_ validating them against the Pydantic schema.
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings = DatabaseSettings()
+    database: DatabaseSettings = {}  # type: ignore
     execution: ExecutionSettings = ExecutionSettings()
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
-    redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = SecuritySettings()
-    user: UserSettings = UserSettings()
+    redis: RedisSettings = {}  # type: ignore
+    security: SecuritySettings = {}  # type: ignore
+    user: UserSettings = {}  # type: ignore
 
     test_mode: bool = get_test_mode()
     is_test_mode: bool = test_mode
