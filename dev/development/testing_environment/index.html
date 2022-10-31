@@ -2061,7 +2061,7 @@ You're not viewing the latest version.
 <h1 id="testing-environment">Testing Environment</h1>
 <p>To facilitate thorough manual testing of the application, there is a comprehensive testing environment that can be set up via a single <code>nox</code> command.</p>
 <h2 id="configuration">Configuration</h2>
-<p>The environment will configure the <code>fides</code> server and CLI using the TOML configuration set in <code>data/config/fides.test_env.toml</code>. To test out other configurations, you can edit this file and reload the test env; however, don't commit these changes unless you are sure that the default configuration for testing should change for everyone!</p>
+<p>The environment will configure the <code>fides</code> server and CLI using the TOML configuration set in <code>src/fides/data/test_env/fides.test_env.toml</code>. To test out other configurations, you can edit this file and reload the test env; however, don't commit these changes unless you are sure that the default configuration for testing should change for everyone!</p>
 <h2 id="secrets-management">Secrets Management</h2>
 <p>The environment will work "out of the box", but can also be configured with secrets needed to configure other features like S3 storage, Mailgun notifications, etc. To configure this, you'll need to create the <code>.env</code> file, place it at the root of the repository directory, and provide some secrets. There is an <code>example.env</code> file you can reference to see what secrets are supported.</p>
 <p>This <code>.env</code> file is ignored by git and therefore safe to keep in your local repo during development.</p>
