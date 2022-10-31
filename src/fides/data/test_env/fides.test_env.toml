@@ -30,11 +30,6 @@ task_retry_backoff = 1
 require_manual_request_approval = true
 masking_strict = true
 
-[notifications]
-send_request_completion_notification = false
-send_request_receipt_notification = false
-send_request_review_notification = false
-
 [cli]
 server_host = "localhost"
 server_port = 8080
