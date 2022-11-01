@@ -25,16 +25,18 @@ The types of changes are:
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
 * Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
 * Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
-
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+* Fix redis `db_index` config issue [#1647](https://github.com/ethyca/fides/pull/1647)
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 
-### Fixed
+### Changed 
 
-* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+* Allow multiple masking strategies to be specified when using fides as a masking engine [#1647](https://github.com/ethyca/fides/pull/1647)
+
 
 ## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
