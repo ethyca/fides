@@ -14287,14 +14287,14 @@
       "Registration": {
         "title": "Registration",
         "required": [
+          "opt_in",
           "analytics_id"
         ],
         "type": "object",
         "properties": {
           "opt_in": {
             "title": "Opt In",
-            "type": "boolean",
-            "default": false
+            "type": "boolean"
           },
           "analytics_id": {
             "title": "Analytics Id",
