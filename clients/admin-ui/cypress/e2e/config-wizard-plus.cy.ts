@@ -45,6 +45,10 @@ describe.skip("Config wizard with plus settings", () => {
         delay: 500,
         fixture: "runtime-scanner/list.json",
       }).as("getScanResults");
+      cy.intercept({
+        method: "POST",
+        url: "/api/v1/system/upsert",
+      }).as("upsertSystems");
     });
 
     it("Allows calling the runtime scanner", () => {
@@ -52,7 +56,46 @@ describe.skip("Config wizard with plus settings", () => {
       cy.getByTestId("scanner-loading");
       cy.wait("@getScanResults");
       cy.getByTestId("scan-results");
-      //   TODO: make sure the systems show up in the table
+
+      // Check that the systems we expect are in the results table
+      const numSystems = 42;
+      cy.getByTestId("checkbox-fidesctl-demo");
+      cy.getByTestId("checkbox-postgres");
+      cy.get("table")
+        .find("tr")
+        .then((rows) => {
+          expect(rows.length).to.eql(numSystems + 1); // +1 for the header row
+        });
+      cy.getByTestId("register-btn").click();
+      // TODO: https://github.com/ethyca/fides/pull/1634
+      // cy.wait("@upsertSystems").then((interception) => {
+      //   const { body } = interception.request;
+      //   expect(body.length).to.eql(numSystems);
+      // });
+    });
+
+    it("Can register a subset of systems", () => {
+      goToRuntimeScanner();
+      cy.getByTestId("scanner-loading");
+      cy.wait("@getScanResults");
+      cy.getByTestId("scan-results");
+
+      // Uncheck all of the systems by clicking the select all box
+      cy.get("th").first().click();
+      cy.getByTestId("register-btn").should("be.disabled");
+      // Check just two systems
+      const systems = ["fidesctl-demo", "postgres"];
+      systems.forEach((s) => {
+        cy.getByTestId(`checkbox-${s}`).click();
+      });
+      cy.getByTestId("register-btn").click();
+      cy.getByTestId("warning-modal-confirm-btn").click();
+
+      // TODO: https://github.com/ethyca/fides/pull/1634
+      // cy.wait("@upsertSystems").then((interception) => {
+      //   const { body } = interception.request;
+      //   expect(body.map((s) => s.fides_key)).to.eql(systems);
+      // });
     });
 
     it("Can render an error", () => {
