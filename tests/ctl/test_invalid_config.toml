@@ -21,4 +21,5 @@ encryption_key = "test_encryption_key"
 [security]
 app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
