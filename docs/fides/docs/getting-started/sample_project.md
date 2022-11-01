@@ -1,12 +1,43 @@
-# Fides Deploy
+# Run the Fides Sample Project
 
-In order to get up-and-running quickly with Fides, we've bundled a sample project within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
+In order to get started quickly with Fides, a sample project is bundled within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
 
 ## Deployment Steps
 
-1. If you haven't already, make sure to `pip install ethyca-fides`
-1. `fides deploy up` - This command will verify your Docker version compatibility (an upgrade may be required), as well as pull the required Docker versions. There will be a success welcome message once the startup is complete.
-1. `fides init` - This will set up your local CLI environment for use with the deployed fides application.
-1. Finally, run `fides deploy down` to teardown the application. Congratulations, you've completed the fides sample tutorial!
+### Download and install Fides
+You can easily download and install the Fides demo using `pip`. Run the following command to get started:
 
-!!! Warning "If running `fides deploy` as part of a local fides development environment, refer to [this page](../development/dev_deployment.md) instead."
+```
+pip install ethyca-fides
+```
+
+### Deploy the Fides sample project
+By default, Fides ships with a small project belonging to a fictional e-commerce store. Running the `deploy up` command builds a Fides project with all you need to run your first Data Subject Request against real databases.
+
+```
+fides deploy up
+```
+
+!!! Warning "If running `fides deploy` as part of a local fides development environment, refer to the [local documentation](../development/dev_deployment.md) instead."
+
+### Exploring the sample project
+When your deployment finishes, a welcome screen will explain the key components of Fides and the sample Cookie House store. 
+
+If your browser does not open automatically, you should navigate to http://localhost:3000.
+
+The project contains:
+
+* The Fides [Admin UI](../ui/overview.md) for managing privacy requests
+* The Fides [Privacy Center](../ui/privacy_center.md) for submitting requests
+* The sample Cookie House eCommerce site for testing
+* A DSR Directory on your computer to view results
+
+### Run your first Privacy Access Request
+Navigate to the Fides Privacy Center, type in the email address for the sample user (`jane@example.com`), and submit the request.
+
+Then, navigate  to the Fides Admin UI to review the pending privacy request.
+
+Approve the request, and review the resulting package! 
+
+## Next steps
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](../dsr_quickstart/basic_setup.md), discover [data mapping](../guides/generate_datamaps.md), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).

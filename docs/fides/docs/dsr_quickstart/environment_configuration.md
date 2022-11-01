@@ -71,4 +71,8 @@ fides webserver
 
 With the Fides webserver running, the hosted UI is available at `http://{server_url}/` (e.g. `http://localhost:8080/`). 
 
+## Additional resources
+For more information on customizing your environment configuration, see the [configuration reference](../installation/configuration.md) guide.
+
 ## Next steps
+Now that your webserver is running, you are ready to [add Connectors](./configure_connectors.md).

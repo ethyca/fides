@@ -1,6 +1,6 @@
-# Quick Start: DSR Automation
+# Get Started with DSR Automation
 
-This quick start guide is designed to walk you through configuring Fides and running your first DSR automation. To begin, you must first have an instance available for running Fides.
+This guide is designed to walk you through configuring Fides and automating your first Data Subject Request. To quickly run Fides against real databases for experimentation, see the provided [sample project](../getting-started/sample_project.md). 
 
 ## Set up a compute instance
 The instance you use for running Fides should simulate a "typical" developer machine (e.g., a modern laptop with 8GB RAM, an m6g.large on AWS EC2, etc).

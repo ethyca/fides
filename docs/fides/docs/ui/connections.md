@@ -2,7 +2,7 @@
 
 Connections represent connected integrations to third party applications, databases and datasets, or manual storage locations.
 
-![datastore](../img/admin_ui/datastore_list.png)
+![connections](../img/admin_ui/datastore_list.png)
 
 ## Viewing Connections
 
