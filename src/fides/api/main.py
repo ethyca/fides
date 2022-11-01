@@ -2,7 +2,6 @@
 Contains the code that sets up the API.
 """
 import logging
-import subprocess
 from datetime import datetime, timezone
 from logging import WARNING
 from os import getenv
@@ -23,15 +22,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.routes import (
-    admin,
-    crud,
-    datamap,
-    generate,
-    health,
-    validate,
-    visualize,
-)
+from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
@@ -62,7 +53,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     update_saas_configs,
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
-from fides.api.ops.tasks.scheduled.tasks import initiate_scheduled_request_intake
 from fides.api.ops.util.cache import get_cache
 from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -76,28 +66,31 @@ logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
-ROUTERS = (
-    crud.routers  # type: ignore[attr-defined]
-    + visualize.routers
-    + [
-        admin.router,
-        datamap.router,
-        generate.router,
-        health.router,
-        validate.router,
-        view.router,
-    ]
-)
+ROUTERS = crud.routers + [  # type: ignore[attr-defined]
+    admin.router,
+    datamap.router,
+    generate.router,
+    health.router,
+    validate.router,
+    view.router,
+]
 
 
 @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     """
-    HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
-    :param request: Request to fidesops api
+    HTTP Middleware that logs analytics events for each call to Fides endpoints.
+    :param request: Request to Fides api
     :param call_next: Callable api endpoint
     :return: Response
     """
+
+    # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
+    path = request.url.path
+    if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
+        return await call_next(request)
+
+
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
     endpoint = f"{request.method}: {request.url}"
@@ -190,18 +183,16 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
-    logger.warning(
-        "Startup configuration: reloading = %s, dev_mode = %s",
-        CONFIG.hot_reloading,
-        CONFIG.dev_mode,
+    log.warning(
+        f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
-    logger.warning(
-        "Startup configuration: pii logging = %s",
-        getenv("FIDES__LOG_PII", "").lower() == "true",
+    log_pii = getenv("FIDES__LOG_PII", "").lower() == "true"
+    log.warning(
+        f"Startup configuration: pii logging = {log_pii}",
     )
 
     if logger.getEffectiveLevel() == logging.DEBUG:
-        logger.warning(
+        log.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
             "Set FIDES__LOGGING__LEVEL to INFO or higher in production."
         )
@@ -212,7 +203,7 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    logger.info("Validating SaaS connector templates...")
+    log.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
     try:
         db = get_api_session()
@@ -220,21 +211,18 @@ async def setup_server() -> None:
     finally:
         db.close()
 
-    logger.info("Running Redis connection test...")
+    log.info("Running Redis connection test...")
 
     try:
         get_cache()
     except (RedisConnectionError, ResponseError) as e:
-        logger.error("Connection to cache failed: %s", Pii(str(e)))
+        log.error("Connection to cache failed: %s", Pii(str(e)))
         return
 
     if not scheduler.running:
         scheduler.start()
 
-    logger.info("Starting scheduled request intake...")
-    initiate_scheduled_request_intake()
-
-    logging.debug("Sending startup analytics events...")
+    log.debug("Sending startup analytics events...")
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
@@ -242,10 +230,6 @@ async def setup_server() -> None:
             event_created_at=datetime.now(tz=timezone.utc),
         )
     )
-
-    if not CONFIG.execution.worker_enabled:
-        logger.info("Starting worker...")
-        subprocess.Popen(["fides", "worker"])  # pylint: disable=consider-using-with
 
     setup_logging(
         CONFIG.logging.level,
@@ -301,17 +285,25 @@ def read_other_paths(request: Request) -> Response:
         ui_file = get_path_to_admin_ui_file(path)
 
     # If any of those worked, serve the file.
-    ui_file = get_path_to_admin_ui_file(path)
     if ui_file and ui_file.is_file():
+        log.debug(
+            f"catchall request path '{path}' matched static admin UI file: {ui_file}"
+        )
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
+        log.debug(
+            f"catchall request path '{path}' matched an invalid API route, return 404"
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
         )
 
     # otherwise return the index
+    log.debug(
+        f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index"
+    )
     return get_admin_index_as_response()
 
 

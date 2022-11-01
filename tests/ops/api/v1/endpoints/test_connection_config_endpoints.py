@@ -56,6 +56,11 @@ class TestPatchConnections:
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
 
+    def test_malformed_token_is_forbidden(self, api_client: TestClient, url, payload):
+        auth_header = {"Authorization": "Bearer invalid"}
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
     def test_patch_connections_incorrect_scope(
         self, api_client: TestClient, generate_auth_header, url, payload
     ) -> None:

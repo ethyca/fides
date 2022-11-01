@@ -15,29 +15,35 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
-### Added
+## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
 
-* Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
-* Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
-    * The format is generic. A reasonable set of defaults will be added later: (#1444)[https://github.com/ethyca/fides/issues/1444]
-    * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
-    * Each consent option can provide an array of `cookieKeys`.
-* Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
+### Fixed
 
-### Changed
-* Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
+* Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
+* Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
 
-### Developer Experience
-
-* Repository dispatch events are sent to fidesctl-plus and fidesops-plus [#1263](https://github.com/ethyca/fides/pull/1263)
-* Only the `docs-authors` team members are specified as `CODEOWNERS` [#1446](https://github.com/ethyca/fides/pull/1446)
 
 ### Docs
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
+* Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 * Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
+
+### Fixed
+
+* After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+
+## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
+
+### Added
+
+* The database includes a `plus_system_scans` relation, to track the status and results of System Scanner executions in fidesctl-plus [#1554](https://github.com/ethyca/fides/pull/1554)
+
+## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
 ### Fixed
 
@@ -58,11 +64,11 @@ The types of changes are:
   * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
+
 * Privacy Center:
   * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
   * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
   * Redirect to index on consent save [#1238](https://github.com/ethyca/fides/pull/1238)
-
 
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
@@ -294,7 +300,7 @@ The types of changes are:
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/ctl/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
 

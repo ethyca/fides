@@ -3,6 +3,7 @@ import {
   AlertTitle,
   Button,
   ButtonGroup,
+  Checkbox,
   Menu,
   MenuButton,
   MenuItem,
@@ -23,6 +24,7 @@ import React, { useRef, useState } from "react";
 import { MoreIcon } from "../common/Icon";
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
+import ReprocessButton from "./buttons/ReprocessButton";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import {
   useApproveRequestMutation,
@@ -113,7 +115,11 @@ const useRequestRow = (request: PrivacyRequest) => {
   };
 };
 
-const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
+const RequestRow: React.FC<{
+  isChecked: boolean;
+  onCheckChange: (id: string, checked: boolean) => void;
+  request: PrivacyRequest;
+}> = ({ isChecked, onCheckChange, request }) => {
   const {
     hovered,
     handleMenuOpen,
@@ -149,6 +155,14 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
       onMouseLeave={handleMouseLeave}
       height="36px"
     >
+      <Td px={0}>
+        <Checkbox
+          aria-label="Select request"
+          isChecked={!!isChecked}
+          isDisabled={request.status !== "error"}
+          onChange={(e) => onCheckChange(request.id, e.target.checked)}
+        />
+      </Td>
       <Td pl={0} py={1}>
         <RequestStatusBadge status={request.status} />
       </Td>
@@ -215,7 +229,13 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
           shadow="base"
           borderRadius="md"
         >
-          {request.status === "pending" ? (
+          {request.status === "error" && (
+            <ReprocessButton
+              buttonProps={{ mr: "-px", size: "xs" }}
+              subjectRequest={request}
+            />
+          )}
+          {request.status === "pending" && (
             <>
               <Button
                 size="xs"
@@ -260,8 +280,7 @@ const RequestRow: React.FC<{ request: PrivacyRequest }> = ({ request }) => {
                 }}
               />
             </>
-          ) : null}
-
+          )}
           <Menu onOpen={handleMenuOpen} onClose={handleMenuClose}>
             <MenuButton
               as={Button}

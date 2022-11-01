@@ -85,3 +85,10 @@ export const stubPlus = (available: boolean) => {
     }).as("getPlusHealth");
   }
 };
+
+export const stubHomePage = () => {
+  cy.intercept("GET", "/api/v1/privacy-request*", {
+    statusCode: 200,
+    body: { items: [], total: 0, page: 1, size: 25 },
+  }).as("getPrivacyRequests");
+};

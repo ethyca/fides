@@ -2,13 +2,10 @@ import logging
 from typing import Any, Dict
 
 import boto3
-import requests
 from boto3 import Session
-from requests import Response
 
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
-from fides.api.ops.schemas.third_party.onetrust import OneTrustOAuthResponse
 
 logger = logging.getLogger(__name__)
 
@@ -43,18 +40,3 @@ def get_s3_session(
 
     logger.error("Auth method not supported for S3: %s", auth_method)
     raise ValueError(f"Auth method not supported for S3: {auth_method}")
-
-
-def get_onetrust_access_token(client_id: str, client_secret: str, hostname: str) -> str:
-    """Retrieves onetrust access token using secrets"""
-    form_data = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": "client_credentials",
-    }
-    response: Response = requests.post(
-        f"https://{hostname}.com/api/access/v1/oauth/token",
-        files=form_data,
-    )
-    res_body: OneTrustOAuthResponse = response.json()
-    return res_body.access_token
