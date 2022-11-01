@@ -32,6 +32,7 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
+* Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
 
 ### Changed 
 
