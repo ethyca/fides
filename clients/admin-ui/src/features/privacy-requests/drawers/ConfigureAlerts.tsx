@@ -32,6 +32,7 @@ import {
   FieldMetaProps,
   Form,
   Formik,
+  FormikHelpers,
   FormikProps,
 } from "formik";
 import { ChangeEvent, useRef } from "react";
@@ -55,8 +56,11 @@ const ConfigureAlerts: React.FC = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef(null);
 
-  const handleSubmit = async (values: FormValues, _actions: any) => {
-    console.log(values);
+  const handleSubmit = async (
+    values: FormValues,
+    helpers: FormikHelpers<FormValues>
+  ) => {
+    helpers.setSubmitting(false);
     onClose();
   };
 
@@ -211,13 +215,20 @@ const ConfigureAlerts: React.FC = () => {
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
                 <ButtonGroup size="sm" spacing="8px" variant="outline">
-                  <Button onClick={onClose} variant="outline">
+                  <Button
+                    onClick={() => {
+                      props.resetForm();
+                      onClose();
+                    }}
+                    variant="outline"
+                  >
                     Cancel
                   </Button>
                   <Button
                     bg="primary.800"
                     color="white"
                     form="configure-alerts-form"
+                    isDisabled={props.isSubmitting}
                     isLoading={props.isSubmitting}
                     loadingText="Submitting"
                     size="sm"
