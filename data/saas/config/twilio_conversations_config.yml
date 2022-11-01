@@ -7,6 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: conversations.twilio.com
     - name: account_id
     - name: password
     - name: page_size
