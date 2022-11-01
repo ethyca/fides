@@ -35,7 +35,7 @@ const Home = ({ products }: Props) => {
   return (
     <>
         <Header />
-        <main>
+        <main className={css.main}>
             <div className={css.products}>
             {products.map((product) => (
                 <div key={product.id} className={css.product}>
