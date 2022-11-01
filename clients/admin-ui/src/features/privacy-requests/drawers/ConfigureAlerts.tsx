@@ -85,7 +85,10 @@ const ConfigureAlerts: React.FC = () => {
             isOpen={isOpen}
             placement="right"
             initialFocusRef={firstField}
-            onClose={onClose}
+            onClose={() => {
+              props.resetForm();
+              onClose();
+            }}
             size="lg"
           >
             <DrawerOverlay />
