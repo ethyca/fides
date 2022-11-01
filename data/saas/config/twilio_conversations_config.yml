@@ -1,8 +1,8 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Twilio SaaS Config
-  type: twilio
-  description: A sample schema representing the Twilio connector for Fidesops
+  name: Twilio Conversations SaaS Config
+  type: twilio_conversations
+  description: A sample schema representing the Twilio Conversations connector for Fidesops
   version: 0.0.1
 
   connector_params:
@@ -11,7 +11,7 @@ saas_config:
     - name: password
     - name: page_size
       default_value: 1000
-      description: The maximum number of pages to return from Twilio endpoints
+      description: The maximum number of records to return per page
 
   external_references:
     - name: twilio_user_id

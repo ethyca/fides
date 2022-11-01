@@ -59,7 +59,7 @@ from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.shopify_fixtures import *
 from .fixtures.saas.square_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
-from .fixtures.saas.twilio_fixtures import *
+from .fixtures.saas.twilio_conversations_fixtures import *
 from .fixtures.saas.zendesk_fixtures import *
 from .fixtures.saas_example_fixtures import *
 from .fixtures.snowflake_fixtures import *
