@@ -22,6 +22,9 @@ def dev(session: Session) -> None:
     build(session, "dev")
     session.notify("teardown")
 
+    if "worker" in session.posargs:
+        session.run("docker", "compose", "up", "--wait", "worker", external=True)
+
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
@@ -61,7 +64,7 @@ def test_env(session: Session) -> None:
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
-        "FIDES__CONFIG_PATH": "/fides/data/config/fides.test_env.toml",
+        "FIDES__CONFIG_PATH": "/fides/src/fides/data/test_env/fides.test_env.toml",
     }
 
     session.log(

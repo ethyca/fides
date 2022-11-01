@@ -1,19 +1,18 @@
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from fides.api.ops.models.policy import ActionType, DrpAction
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.base_class import BaseSchema
-from fides.api.ops.schemas.masking.masking_configuration import FormatPreservationConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import StorageDestinationResponse
 from fides.api.ops.util.data_category import DataCategory
 
 
 class PolicyMaskingSpec(BaseSchema):
-    """Models the masking strategy definition int the policy document"""
+    """Models the masking strategy definition"""
 
     strategy: str
-    configuration: Dict[str, Union[str, FormatPreservationConfig]]
+    configuration: Dict[str, Any]
 
 
 class PolicyMaskingSpecResponse(BaseSchema):
