@@ -44,9 +44,7 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
     except AnalyticsError as err:
         log.warning(f"Error sending analytics event: {err}")
     else:
-        log.info(
-            f"Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
-        )
+        log.info(f"Analytics event sent with client id: {analytics_client.client_id}")
 
 
 async def send_registration(registration: UserRegistration) -> None:
