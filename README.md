@@ -1,4 +1,4 @@
-# Meet Fides: Privacy Policies as Code
+# Meet Fides: Privacy as Code
 
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
@@ -13,117 +13,54 @@
 
 ## :zap: Overview
 
-Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
-
-![Fides overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fides overview")
+Fides (pronounced */fee-dhez/*, from Latin: Fidēs) is an open-source privacy engineering platform for managing the fulfillment of data privacy requests in your runtime environment, and the enforcement of privacy regulations in your code.
 
 ## :rocket: Quick Start
 
-### System Requirements
-
-* **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
-* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
-* [Python](https://www.python.org/downloads/) (3.8+)
-* [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
-
 ### Getting Started
 
-Fides is capable of generating a series of YAML configuration files to represent your stored data, processes, and organizations. These [configuration resources](https://ethyca.github.io/fides/language/resources/system/) can then be exported into both a data map, and an Article 30-compliant Record of Processing Activities (RoPA).
+In order to get started quickly with Fides, a sample project is bundled within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
 
-This guide will walk through generating a mock RoPA using predefined resources included in the [Fides repository](https://github.com/ethyca/fides).
+#### Minimum requirements 
 
-1. Ensure `nox` and `docker` and installed locally, and clone the Fides repo.
+* [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
+* [Python](https://www.python.org/downloads/) (version 3.9 or later) 
 
-2. From the root fides directory, run the following commands:
+#### Download and install Fides
+You can easily download and install Fides using `pip`. Run the following command to get started:
 
-    ```sh
-    nox -s dev -- shell
-    ```
+```
+pip install ethyca-fides
+```
 
-    This will spin up the entire project and open a shell within the `fides` container.
+#### Deploy the Fides sample project
+By default, Fides ships with a small project belonging to a fictional e-commerce store. Running the `fides deploy up` command builds a Fides project with all you need to run your first Data Subject Request against real databases.
 
-    Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
+```
+fides deploy up
+```
 
-    ```sh
-    fides init
-    ```
+#### Explore the sample project
+When your deployment finishes, a welcome screen will explain the key components of Fides and the sample "Cookie House" store. 
 
-    This builds the required images, spins up the database, and runs the initialization scripts.
+If your browser does not open automatically, you should navigate to http://localhost:3000/landing.
 
-3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
+The project contains:
 
-    ```sh
-    fides push demo_resources/
-    fides export datamap --output-dir demo_resources/
-    ```
+* The Fides [Admin UI](https://ethyca.github.io/fides/ui/overview/) for managing privacy requests
+* The Fides [Privacy Center](https://ethyca.github.io/fides/ui/privacy_center/) for submitting requests
+* The sample "Cookie House" eCommerce site for testing
+* A DSR Directory on your computer to view results (`./fides_uploads`)
 
-    This will `push` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
+#### Run your first Privacy Access Request
+Navigate to the Fides Privacy Center (http://localhost:3001), submit a "Download your data" request, provide the email address for the sample user (`jane@example.com`), and submit the request.
 
-4. View the newly-generated data map generated from the provided resources.
+Then, navigate to the Fides Admin UI (http://localhost:8080) to review the pending privacy request.
 
-#### **Controller**
+Use username `fidestest` and password `Apassword1!` to login, approve the request, and review the resulting package in your `./fides_uploads` folder!
 
-    The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
-
-#### **Article 30 Record of Processing Activities**
-
-    The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
-
-    The [Dataset resource](demo_resources/demo_dataset.yml) is primarily used to provide a list of categories of personal data, recorded here using the [Fides taxonomy](https://github.com/ethyca/fideslang), that your systems store or process, as well as their retention policies. Any Datasets referenced by a System will have this information included as rows of your data map.
-
-    The [System resource](demo_resources/demo_system.yml) describes anything that processes data for your organization, such as applications, services, and third party APIs. In the resulting data map, this populates system-relevant items like the purpose of processing and use, as well as categories of individual the data pertains to.
-
-    Together, these configuration files build out an initial map of RoPA-required data and resources.
-
-5. Assess the Organization and System datasets using the `--audit` flag.
-
-    ```
-    fides evaluate demo_resources/ --audit
-    ```
-
-    This command will identify any missing information in your resources, which should be added to generate a compliant Record of Processing Activities.
-
-    <details>
-
-    <summary>Example Output</summary>
-
-    ```sh
-    "Auditing Organization Resource Compliance"
-    Found 1 Organization resource(s) to audit...
-    Auditing Organization: Demo Organization
-    controller for default_organization in Demo Organization is compliant
-    data_protection_officer for default_organization in Demo Organization is compliant
-    representative for default_organization in Demo Organization is compliant
-    security_policy for default_organization in Demo Organization is compliant
-    All audited organization resource(s) compliant!
-    ----------
-    "Auditing System Resource Compliance"
-    Found 2 System resource(s) to audit...
-    "Auditing System: Demo Analytics System"
-    improve.system missing recipients in Demo Analytics System.
-    improve.system missing legal_basis in Demo Analytics System.
-    improve.system missing special_category in Demo Analytics System.
-    customer missing rights in Demo Analytics System.
-    customer missing automated_decisions_or_profiling in Demo Analytics System.
-    "Auditing System: Demo Marketing System"
-    advertising missing recipients in Demo Marketing System.
-    advertising missing legal_basis in Demo Marketing System.
-    advertising missing special_category in Demo Marketing System.
-    customer missing rights in Demo Marketing System.
-    customer missing automated_decisions_or_profiling in Demo Marketing System.
-    10 issue(s) were detected in auditing system completeness.
-    ```
-
-    </details>
-
-    `--audit` flags any empty fields, along with the System or Organization they belong to, and returns where or not the system is incomplete or fully compliant. In the above example, the Organization resource is compliant, but both the Marketing and Analytics systems are missing information that would be required in your RoPA.
-
-6. Running the `exit` command will close the shell and stop the Docker containers. The
-Docker volumes created at startup will still be present so on the next start of the containers
-the data previously created will still be present. If you would like to remove these
-volumes run `nox -s teardown -- volumes`.
-
-Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and push your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
+### Next steps
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.github.io/fides/dsr_quickstart/basic_setup/), discover [data mapping](https://ethyca.github.io/fides/guides/generate_datamaps/), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
 ## :book: Learn More
 
@@ -134,8 +71,6 @@ The Fides core team is committed to providing a variety of documentation to help
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
 * Documentation: <https://ethyca.github.io/fides/>
-* Tutorial: <https://ethyca.github.io/fides/tutorial/>
-* Installation: <https://ethyca.github.io/fides/installation/installation/>
 * Roadmap: <https://github.com/ethyca/fides/projects>
 * Website: www.ethyca.com/fides
 
@@ -151,11 +86,11 @@ Join the conversation on:
 
 We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.github.io/fides/development/overview/) to opening issues for bugs, new features, and security or experience enhancements.
 
-Read about the [Fides community](https://ethyca.github.io/fides/community/hints_tips/) or dive into the [development guides](https://ethyca.github.io/fides/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+Read about the [Fides community](https://ethyca.github.io/fides/community/hints_tips/) or dive into the [contributor guides](https://ethyca.github.io/fides/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ## :balance_scale: License
 
-The Fides ecosystem of tools ([Fides](https://github.com/ethyca/fides) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+The [Fides](https://github.com/ethyca/fides) ecosystem of tools are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 Fides tools are built on [fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
 
 Fides is created and sponsored by Ethyca: a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
