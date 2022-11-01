@@ -55,14 +55,19 @@ const ScanResultsForm = () => {
   const confirmRegisterSelectedSystems = () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     createSystems();
-    return features.plus ? router.push(`/datamap`) : router.push(`/system`);
+
+    if (features.plus) {
+      router.push(`/datamap`);
+    }
+
+    router.push(`/system`);
   };
 
   const handleSubmit = () => {
     if (systems.length > selectedSystems.length) {
-      return onWarningOpen();
+      onWarningOpen();
     }
-    return confirmRegisterSelectedSystems();
+    confirmRegisterSelectedSystems();
   };
 
   const handleCancel = () => {
