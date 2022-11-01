@@ -118,10 +118,12 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
 
     Returns the config_path if successful
     """
+    # TODO: These important constants should live elsewhere
     fides_dir_name = ".fides"
     fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
     config_file_name = "fides.toml"
     config_path = f"{fides_dir_path}/{config_file_name}"
+
     config = ctx.obj["CONFIG"]
 
     included_values = {
