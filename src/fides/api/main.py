@@ -90,7 +90,6 @@ async def dispatch_log_request(request: Request, call_next: Callable) -> Respons
     if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
         return await call_next(request)
 
-
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
     endpoint = f"{request.method}: {request.url}"

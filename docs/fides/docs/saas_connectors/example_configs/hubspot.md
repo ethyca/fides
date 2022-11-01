@@ -13,6 +13,18 @@ Fides uses the following Hubspot endpoints to retrieve and delete Personally Ide
 |[Communication Preferences](https://developers.hubspot.com/docs/api/marketing-api/subscriptions-preferences#endpoint?spec=POST-/communication-preferences/v3/unsubscribe) | Yes | Yes |
 |[Users](https://developers.hubspot.com/docs/api/settings/user-provisioning) | Yes | Yes |
 
+## Scopes
+
+The following Hubspot scopes are required for executing privacy requests:
+
+* crm.objects.contacts.read
+* crm.objects.contacts.write
+* crm.objects.owners.read
+* communication_preferences.read
+* communication_preferences.write
+* settings.user.read
+* settings.users.write
+
 ## Connection Settings
 
 Fides provides a [Postman collection](../../development/postman/using_postman.md) for easily establishing connections to your third party applications. Additional connection instructions may be found in the [configuration guide](../saas_config.md).
