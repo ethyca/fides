@@ -17,19 +17,15 @@ Fides (pronounced */fee-dhez/*, from Latin: Fidēs) is an open-source privacy en
 
 ## :rocket: Quick Start
 
-### System Requirements
-
-* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
-* [Python](https://www.python.org/downloads/) (3.8+)
-
 ### Getting Started
 
 In order to get started quickly with Fides, a sample project is bundled within the Fides CLI that will set up a server, privacy center, and a sample application for you to experiment with.
 
 #### Minimum requirements 
 
-*  [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-*  Python (version 3.9 or later) 
+* [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
+* [Python](https://www.python.org/downloads/) (version 3.9 or later) 
+
 #### Download and install Fides
 You can easily download and install the Fides demo using `pip`. Run the following command to get started:
 
