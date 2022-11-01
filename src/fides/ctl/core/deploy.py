@@ -238,5 +238,6 @@ def print_deploy_success() -> None:
     echo_green("\n- Visit ethyca.github.io/fides for documentation.")
     echo_green("\nRun `fides deploy down` to stop the application.")
 
-    # Open the landing page!
+    # Open the landing page and DSR directory
     webbrowser.open("http://localhost:3000/landing")
+    webbrowser.open(f"file:///{FIDES_UPLOADS_DIR}")
