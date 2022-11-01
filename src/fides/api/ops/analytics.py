@@ -42,10 +42,10 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
     try:
         await analytics_client.send_async(event)
     except AnalyticsError as err:
-        log.warning("Error sending analytics event: {err}")
+        log.warning(f"Error sending analytics event: {err}")
     else:
         log.info(
-            "Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
+            f"Analytics event sent: {event.event} with client id: {analytics_client.client_id}"
         )
 
 

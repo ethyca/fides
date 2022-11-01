@@ -3,13 +3,12 @@ from datetime import datetime, timezone
 from subprocess import CalledProcessError
 
 import click
-from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
-    check_server,
     check_and_update_analytics_config,
+    check_server,
     create_config_file,
     print_divider,
     send_init_analytics,

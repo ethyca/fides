@@ -194,7 +194,6 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     config file with their preferences.
     """
 
-    # TODO: check if server is connected
     server_url = ctx.obj["CONFIG"].cli.server_url
     try:
         check_server_health(server_url)
