@@ -65,7 +65,6 @@ class PGEncryptedString(TypeDecorator):
         super().__init__()
 
         self.passphrase = CONFIG.user.encryption_key
-        # self.passphrase = CONFIG.security.app_encryption_key
 
     def bind_expression(self, bindparam):
         # Needs to be a string for the encryption, however it also needs to be treated as JSON first
