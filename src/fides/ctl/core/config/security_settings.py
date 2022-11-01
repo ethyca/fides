@@ -1,7 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from fideslib.core.config import SecuritySettings as FideslibSecuritySettings
 
