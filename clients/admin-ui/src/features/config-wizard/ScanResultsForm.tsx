@@ -15,12 +15,12 @@ import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
+import { useFeatures } from "~/features/common/features.slice";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
+import WarningModal from "~/features/common/WarningModal";
+import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
-import WarningModal from "../common/WarningModal";
-import { useCreateSystemMutation } from "../system";
 import {
   changeStep,
   chooseSystemsForReview,
@@ -33,11 +33,7 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Resource ID", attribute: "fidesctl_meta.resource_id" },
 ];
 
-interface Props {
-  manualSystemSetupChosen: boolean;
-}
-
-const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
+const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -46,23 +42,19 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
     onOpen: onWarningOpen,
     onClose: onWarningClose,
   } = useDisclosure();
-  const [createSystem] = useCreateSystemMutation();
+  const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
   const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
   const createSystems = async () => {
-    await selectedSystems.forEach((system: System) => createSystem(system));
+    await upsertSystems(selectedSystems);
   };
 
   const confirmRegisterSelectedSystems = () => {
-    if (manualSystemSetupChosen) {
-      dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-      return dispatch(changeStep());
-    }
+    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     createSystems();
-
     return features.plus ? router.push(`/datamap`) : router.push(`/system`);
   };
 
@@ -70,9 +62,7 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
     if (systems.length > selectedSystems.length) {
       return onWarningOpen();
     }
-    if (manualSystemSetupChosen) {
-      return confirmRegisterSelectedSystems();
-    }
+    confirmRegisterSelectedSystems();
     createSystems();
     return features.plus ? router.push(`/datamap`) : router.push(`/system`);
   };
