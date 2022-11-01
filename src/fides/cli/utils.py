@@ -131,7 +131,7 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
             "destination",
             "serialization",
         },
-        "cli": {"server_protocol", "server_host", "server_port" },
+        "cli": {"server_protocol", "server_host", "server_port"},
     }
 
     # create the .fides dir if it doesn't exist
@@ -154,7 +154,6 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
     click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
 
     return config_path
-
 
 
 def is_user_registered(ctx: click.Context) -> bool:
@@ -191,7 +190,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
 
     # TODO: check if server is connected
     is_server_connected = True
-    should_attempt_registration = (is_server_connected and not is_user_registered(ctx))
+    should_attempt_registration = is_server_connected and not is_user_registered(ctx)
 
     # Show our consent prompt in two cases:
     # 1) we've not collected an explicit opt-out or opt-in for this CLI
@@ -208,12 +207,14 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         )
 
         # If we've not opted out, attempt to collect user registration
-        if ctx.obj["CONFIG"].user.analytics_opt_out is False and should_attempt_registration:
+        if (
+            ctx.obj["CONFIG"].user.analytics_opt_out is False
+            and should_attempt_registration
+        ):
             email = input(EMAIL_PROMPT)
             organization = input(ORGANIZATION_PROMPT)
             if email and organization:
                 register_user(ctx, email, organization)
-
 
         click.echo(CONFIRMATION_COPY)
 

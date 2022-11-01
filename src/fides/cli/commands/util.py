@@ -46,7 +46,9 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     print_divider()
 
     # create the config file as needed
-    config_path = create_config_file(ctx=ctx, fides_directory_location=fides_directory_location)
+    config_path = create_config_file(
+        ctx=ctx, fides_directory_location=fides_directory_location
+    )
     print_divider()
 
     # request explicit consent for analytics collection
