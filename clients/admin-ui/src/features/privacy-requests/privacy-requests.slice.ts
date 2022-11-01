@@ -238,7 +238,7 @@ export const {
 
 export const { reducer } = subjectRequestsSlice;
 
-// Subject requests API
+// Privacy requests API
 export const privacyRequestApi = createApi({
   reducerPath: "privacyRequestApi",
   baseQuery: fetchBaseQuery({

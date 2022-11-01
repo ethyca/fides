@@ -12,7 +12,7 @@ const ConnectionsHeader: React.FC<ConnectionsHeaderProps> = ({
 }) => (
   <Flex mb="24px" justifyContent="center" alignItems="center">
     <Heading fontSize="2xl" fontWeight="semibold">
-      Datastore Connection Management
+      Connections
     </Heading>
     <Spacer />
     {hasConnections && <AddConnectionButton />}

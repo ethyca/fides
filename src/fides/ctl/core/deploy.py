@@ -143,29 +143,40 @@ def pull_specific_docker_image() -> None:
         f"Pulling ethyca/fides image from DockerHub to match local fides version: {current_fides_version}"
     )
 
+    # Untagged image names
     fides_image_stub = "ethyca/fides:{}"
     privacy_center_image_stub = "ethyca/fides-privacy-center:{}"
+    sample_app_image_stub = "ethyca/fides-sample-app:{}"
 
+    # Tagged with the current application version
     current_fides_image = fides_image_stub.format(current_fides_version)
     current_privacy_center_image = privacy_center_image_stub.format(
         current_fides_version
     )
+    current_sample_app_image = sample_app_image_stub.format(current_fides_version)
 
+    # Tagged with `dev`
     dev_fides_image = fides_image_stub.format("dev")
     dev_privacy_center_image = privacy_center_image_stub.format("dev")
+    dev_sample_app_image = sample_app_image_stub.format("dev")
 
     try:
         echo("Attempting to pull:")
         echo(f"- {current_fides_image}")
         echo(f"- {current_privacy_center_image}")
+        echo(f"- {current_sample_app_image}")
 
         run_shell(f"docker pull {current_fides_image}")
         run_shell(f"docker pull {current_privacy_center_image}")
+        run_shell(f"docker pull {current_sample_app_image}")
         run_shell(
             f"docker tag {current_fides_image} {fides_image_stub.format('sample')}"
         )
         run_shell(
             f"docker tag {current_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+        )
+        run_shell(
+            f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
         )
     except CalledProcessError:
         echo_red("Unable to fetch matching version, defaulting to 'dev' versions...")
@@ -174,14 +185,19 @@ def pull_specific_docker_image() -> None:
             echo("Attempting to pull:")
             echo(f"- {dev_fides_image}")
             echo(f"- {dev_privacy_center_image}")
+            echo(f"- {dev_sample_app_image}")
 
             run_shell(f"docker pull {dev_fides_image}")
             run_shell(f"docker pull {dev_privacy_center_image}")
+            run_shell(f"docker pull {dev_sample_app_image}")
             run_shell(
                 f"docker tag {dev_fides_image} {fides_image_stub.format('sample')}"
             )
             run_shell(
                 f"docker tag {dev_privacy_center_image} {privacy_center_image_stub.format('sample')}"
+            )
+            run_shell(
+                f"docker tag {dev_sample_app_image} {sample_app_image_stub.format('sample')}"
             )
         except CalledProcessError:
             echo_red("Failed to pull 'dev' versions of docker containers! Aborting...")
@@ -203,11 +219,12 @@ def print_deploy_success() -> None:
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
     echo_green("    (user=fidestest, password=Apassword1!)")
 
-    # Privacy Center
-    echo_green("\n- Visit the Fides Privacy Center running at http://localhost:3000")
+    # Sample App
+    echo_green("\n- Sample 'Cookie House' Application running at http://localhost:3000")
+    echo_green("\n- Sample Privacy Center running at http://localhost:3001")
     echo_green("    (user=jane@example.com)")
 
-    # Example Datastores
+    # Example Databases
     echo_green("\n- Example Postgres Database running at localhost:6432")
     echo_green("    (user=postgres, password=postgres, db=postgres_example)")
     echo_green("\n- Example Mongo Database running at localhost:37017")

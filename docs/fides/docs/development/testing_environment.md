@@ -4,7 +4,7 @@ To facilitate thorough manual testing of the application, there is a comprehensi
 
 ## Configuration
 
-The environment will configure the `fides` server and CLI using the TOML configuration set in `data/config/fides.test_env.toml`. To test out other configurations, you can edit this file and reload the test env; however, don't commit these changes unless you are sure that the default configuration for testing should change for everyone!
+The environment will configure the `fides` server and CLI using the TOML configuration set in `src/fides/data/test_env/fides.test_env.toml`. To test out other configurations, you can edit this file and reload the test env; however, don't commit these changes unless you are sure that the default configuration for testing should change for everyone!
 
 ## Secrets Management
 
