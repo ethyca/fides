@@ -110,6 +110,20 @@ def test_system_records_to_export(
 
 
 @pytest.mark.unit
+def test_system_records_to_export_sans_privacy_declaration(
+    test_sample_system_taxonomy: Generator, test_config: FidesConfig
+) -> None:
+    """
+    Asserts that unique records for systems without a privacy declaration
+    are returned properly (including the header row)
+    """
+    test_sample_system_taxonomy["system"][0].privacy_declarations = []
+    output_list = export.generate_system_records(test_sample_system_taxonomy)
+    print(output_list)
+    assert len(output_list) == 2
+
+
+@pytest.mark.unit
 def test_dataset_records_to_export(test_sample_dataset_taxonomy: Generator) -> None:
     """
     Asserts that unique records are returned properly (including

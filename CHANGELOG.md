@@ -15,7 +15,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
+
+## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
+
+### Fixed
+
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
 
 ## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
