@@ -12435,20 +12435,6 @@
         "type": "string",
         "description": "The resource types with which DataFlows can be created."
       },
-      "FormatPreservationConfig": {
-        "title": "FormatPreservationConfig",
-        "required": [
-          "suffix"
-        ],
-        "type": "object",
-        "properties": {
-          "suffix": {
-            "title": "Suffix",
-            "type": "string"
-          }
-        },
-        "description": "option to preserve format in masking"
-      },
       "Generate": {
         "title": "Generate",
         "required": [
@@ -12799,7 +12785,26 @@
             }
           },
           "masking_strategy": {
-            "$ref": "#/components/schemas/PolicyMaskingSpec"
+            "title": "Masking Strategy",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyMaskingSpec"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PolicyMaskingSpec"
+                }
+              }
+            ]
+          },
+          "masking_strategies": {
+            "title": "Masking Strategies",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyMaskingSpec"
+            },
+            "default": []
           }
         },
         "description": "The API Request for masking operations"
@@ -13478,20 +13483,10 @@
           },
           "configuration": {
             "title": "Configuration",
-            "type": "object",
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/components/schemas/FormatPreservationConfig"
-                }
-              ]
-            }
+            "type": "object"
           }
         },
-        "description": "Models the masking strategy definition int the policy document"
+        "description": "Models the masking strategy definition"
       },
       "PolicyMaskingSpecResponse": {
         "title": "PolicyMaskingSpecResponse",

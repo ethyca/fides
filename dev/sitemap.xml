@@ -346,41 +346,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/add/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/dataset/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/google/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/pass/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/policy/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://ethyca.github.io/fides/dev/tutorial/system/</loc>
-         <lastmod>2022-11-01</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://ethyca.github.io/fides/dev/ui/datasets/</loc>
          <lastmod>2022-11-01</lastmod>
          <changefreq>daily</changefreq>
