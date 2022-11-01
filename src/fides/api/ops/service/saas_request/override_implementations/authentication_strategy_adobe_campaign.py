@@ -2,7 +2,7 @@ import logging
 import math
 import time
 from datetime import datetime, timedelta
-from typing import Dict, cast
+from typing import Dict, Optional, cast
 
 from jwt import encode
 from requests import PreparedRequest, post
@@ -54,8 +54,8 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
         """
 
         secrets = cast(Dict, connection_config.secrets)
-        access_token = secrets.get("access_token")
-        expires_at = secrets.get("expires_at")
+        access_token: Optional[str] = secrets.get("access_token")
+        expires_at: Optional[int] = secrets.get("expires_at")
 
         if not access_token or self._close_to_expiration(expires_at, connection_config):
             # generate a JWT token and sign it with the private key
@@ -67,7 +67,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
                     "https://ims-na1.adobelogin.com/s/ent_campaign_sdk": True,
                     "aud": f"https://ims-na1.adobelogin.com/c/{assign_placeholders(self.client_id, secrets)}",
                 },
-                assign_placeholders(self.private_key, secrets),
+                str(assign_placeholders(self.private_key, secrets)),
                 algorithm="RS256",
             )
 
@@ -108,7 +108,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
 
     @staticmethod
     def _close_to_expiration(
-        expires_at: int, connection_config: ConnectionConfig
+        expires_at: Optional[int], connection_config: ConnectionConfig
     ) -> bool:
         """Check if the access_token will expire in the next 10 minutes."""
 
