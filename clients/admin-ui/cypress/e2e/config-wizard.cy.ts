@@ -1,7 +1,7 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
 // skipping while configWizardFlag exists
-describe("Config Wizard", () => {
+describe.skip("Config Wizard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
