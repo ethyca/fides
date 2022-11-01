@@ -58,7 +58,7 @@ const ConfigWizardWalkthrough = () => {
       </Box>
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
-        <Stack bg="white" height="100vh" maxW="60%">
+        <Stack bg="white" height="100vh">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box flexShrink={0}>
               <Stepper
@@ -67,50 +67,56 @@ const ConfigWizardWalkthrough = () => {
                 steps={STEPS}
               />
             </Box>
-            {step === 1 ? <OrganizationInfoForm /> : null}
-            {step === 2 ? <AddSystemForm /> : null}
-            {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ? <ScanResultsForm /> : null}
-            {step === 5 ? (
-              <Stack direction="column">
-                {reviewStep <= 3 ? (
-                  <HorizontalStepper
-                    activeStep={reviewStep}
-                    steps={HORIZONTAL_STEPS}
-                  />
-                ) : null}
-                {reviewStep === 1 && (
-                  <DescribeSystemStep
-                    system={system}
-                    onSuccess={handleSuccess}
-                    abridged
-                  />
-                )}
-                {reviewStep === 2 && system && (
-                  <PrivacyDeclarationStep
-                    system={system}
-                    onSuccess={handleSuccess}
-                    abridged
-                  />
-                )}
-                {reviewStep === 3 && system && (
-                  <ReviewSystemStep
-                    system={system}
-                    onSuccess={() => dispatch(changeReviewStep())}
-                    abridged
-                  />
-                )}
-                {reviewStep === 4 && system && (
-                  <SuccessPage
-                    systemInReview={system}
-                    systemsForReview={systemsForReview}
-                    onAddNextSystem={() => {
-                      dispatch(reviewManualSystem());
-                    }}
-                  />
-                )}
-              </Stack>
-            ) : null}
+            <Box w={step === 4 ? "100%" : "40%"}>
+              {step === 1 ? <OrganizationInfoForm /> : null}
+              {step === 2 ? <AddSystemForm /> : null}
+              {step === 3 ? <AuthenticateScanner /> : null}
+              {step === 4 ? (
+                <Box pr={10}>
+                  <ScanResultsForm />
+                </Box>
+              ) : null}
+              {step === 5 ? (
+                <Stack direction="column">
+                  {reviewStep <= 3 ? (
+                    <HorizontalStepper
+                      activeStep={reviewStep}
+                      steps={HORIZONTAL_STEPS}
+                    />
+                  ) : null}
+                  {reviewStep === 1 && (
+                    <DescribeSystemStep
+                      system={system}
+                      onSuccess={handleSuccess}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 2 && system && (
+                    <PrivacyDeclarationStep
+                      system={system}
+                      onSuccess={handleSuccess}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 3 && system && (
+                    <ReviewSystemStep
+                      system={system}
+                      onSuccess={() => dispatch(changeReviewStep())}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 4 && system && (
+                    <SuccessPage
+                      systemInReview={system}
+                      systemsForReview={systemsForReview}
+                      onAddNextSystem={() => {
+                        dispatch(reviewManualSystem());
+                      }}
+                    />
+                  )}
+                </Stack>
+              ) : null}
+            </Box>
           </Stack>
         </Stack>
       </Stack>
