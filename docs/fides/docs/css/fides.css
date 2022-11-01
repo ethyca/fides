@@ -3,7 +3,8 @@
 [data-md-color-scheme="default"] {
     --md-typeset-color: rgb(66, 84, 102);
     --md-default-fg-color--light: rgb(17, 20, 57);
-    --md-primary-fg-color: #8653f2;
+    --md-primary-fg-color: #1A1D2E;
+    --md-primary-fg-color--dark: #1A1D2E;
     --md-vis-bg-color: rgba(0, 0, 0, 0.02);
     --md-code-bg-color: #8653f227;
     --md-code-fg-color: #6536EC;
@@ -38,6 +39,7 @@
     --md-default-fg-color--light: rgb(247, 250, 252);
     --md-default-bg-color: #2A2F45;
     --md-primary-fg-color: #1A1D2E;
+    --md-primary-fg-color--dark: #1A1D2E;
     --md-accent-fg-color: #0cc876;
     --md-typeset-a-color: rgb(31, 223, 143);
     --md-vis-bg-color: rgba(0, 0, 0, 0.12);
@@ -465,4 +467,11 @@ form.hs-form{
 
 .md-typeset table:not([class]) code {
     font-size: .60rem;
+}
+
+@media screen and (max-width: 76.1875em) {
+    .md-nav--primary .md-nav__title {
+        background-color: var(--md-primary-fg-color);
+        color: var(--md-primary-bg-color);
+    }
 }
