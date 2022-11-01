@@ -21,9 +21,11 @@ import React, { useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { defaultInitialValues } from "~/features/system/form";
 
 import { useFeatures } from "../common/features.slice";
 import WarningModal from "../common/WarningModal";
+import { useCreateSystemMutation } from "../system";
 import {
   changeStep,
   chooseSystemsForReview,
@@ -53,6 +55,7 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
+  const [createSystem] = useCreateSystemMutation();
 
   const features = useFeatures();
 
@@ -62,6 +65,18 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
     }),
     [systems]
   );
+
+  const createSystems = async (values: FormValues) => {
+    const systemBodyArray = values.selectedKeys.map((val) => ({
+      ...defaultInitialValues,
+      fides_key: val,
+      // to post systems without the declaration steps, they need to at least have default values, including
+      // a valid link in the data protection impact assessment
+      data_protection_impact_assessment: { link: "http://www.ethyca.com" },
+    }));
+
+    await systemBodyArray.forEach(async (system) => createSystem(system));
+  };
 
   const handleSubmit = (values: FormValues) => {
     if (systems.length > values.selectedKeys.length) {
@@ -84,6 +99,7 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
       systems.length <= values.selectedKeys.length &&
       !manualSystemSetupChosen
     ) {
+      createSystems(values);
       router.push(`/system`);
     }
 
@@ -93,6 +109,7 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
       systems.length <= values.selectedKeys.length &&
       !manualSystemSetupChosen
     ) {
+      createSystems(values);
       router.push(`/datamap`);
     }
   };
