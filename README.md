@@ -27,14 +27,14 @@ In order to get started quickly with Fides, a sample project is bundled within t
 * [Python](https://www.python.org/downloads/) (version 3.9 or later) 
 
 #### Download and install Fides
-You can easily download and install the Fides demo using `pip`. Run the following command to get started:
+You can easily download and install Fides using `pip`. Run the following command to get started:
 
 ```
 pip install ethyca-fides
 ```
 
 #### Deploy the Fides sample project
-By default, Fides ships with a small project belonging to a fictional e-commerce store. Running the `deploy up` command builds a Fides project with all you need to run your first Data Subject Request against real databases.
+By default, Fides ships with a small project belonging to a fictional e-commerce store. Running the `fides deploy up` command builds a Fides project with all you need to run your first Data Subject Request against real databases.
 
 ```
 fides deploy up
@@ -43,21 +43,21 @@ fides deploy up
 #### Explore the sample project
 When your deployment finishes, a welcome screen will explain the key components of Fides and the sample "Cookie House" store. 
 
-If your browser does not open automatically, you should navigate to http://localhost:3000.
+If your browser does not open automatically, you should navigate to http://localhost:3000/landing.
 
 The project contains:
 
 * The Fides [Admin UI](https://ethyca.github.io/fides/ui/overview/) for managing privacy requests
 * The Fides [Privacy Center](https://ethyca.github.io/fides/ui/privacy_center/) for submitting requests
-* The sample Cookie House eCommerce site for testing
-* A DSR Directory on your computer to view results
+* The sample "Cookie House" eCommerce site for testing
+* A DSR Directory on your computer to view results (`./fides_uploads`)
 
 #### Run your first Privacy Access Request
-Navigate to the Fides Privacy Center, type in the email address for the sample user (`jane@example.com`), and submit the request.
+Navigate to the Fides Privacy Center (http://localhost:3001), submit a "Download your data" request, provide the email address for the sample user (`jane@example.com`), and submit the request.
 
-Then, navigate  to the Fides Admin UI to review the pending privacy request.
+Then, navigate to the Fides Admin UI (http://localhost:8080) to review the pending privacy request.
 
-Approve the request, and review the resulting package! 
+Use username `fidestest` and password `Apassword1!` to login, approve the request, and review the resulting package in your `./fides_uploads` folder!
 
 ### Next steps
 Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.github.io/fides/dsr_quickstart/basic_setup/), discover [data mapping](https://ethyca.github.io/fides/guides/generate_datamaps/), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
