@@ -26,7 +26,6 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fideslib.models.client import ClientDetail
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)

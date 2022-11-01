@@ -104,6 +104,32 @@ nav:
       - Privacy Center:  ui/privacy_center.md
       - Deployment: ui/deployment.md
   - Fides Lang: https://ethyca.github.io/fideslang/
+<<<<<<< HEAD
+=======
+  - API: api/index.md
+  - CLI: cli.md
+  - Development:
+      - Overview: development/overview.md
+      - Contributing Details: development/contributing_details.md
+      - Code Style: development/code_style.md
+      - UI Development: development/ui.md
+      - Fideslog Analytics: development/fideslog.md
+      - Database Migration: development/database_migration.md
+      - Documentation: development/documentation.md
+      - Writing Tests: development/testing.md
+      - Testing Environment: development/testing_environment.md
+      - Local Fides Deploy: development/dev_deployment.md
+      - Pull Requests: development/pull_requests.md
+      - Releases: development/releases.md
+      - Release Checklist: development/release_checklist.md
+      - Jetbrains Debugging: development/jetbrains_debugging.md
+      - Using Postman: development/postman/using_postman.md
+      - Updating the Database Diagram: development/update_erd_diagram.md
+  - Community:
+      - Github, Slack, and Discord: community/overview.md
+      - Community Hints and Tips: community/hints_tips.md
+      - Code of Conduct: community/code_of_conduct.md
+>>>>>>> main
   - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md
