@@ -41,13 +41,13 @@ class FidesConfig(BaseModel):
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings = {}  # type: ignore
+    database: DatabaseSettings = DatabaseSettings()
     execution: ExecutionSettings = ExecutionSettings()
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
-    redis: RedisSettings = {}  # type: ignore
-    security: SecuritySettings = {}  # type: ignore
-    user: UserSettings = {}  # type: ignore
+    redis: RedisSettings = RedisSettings()
+    security: SecuritySettings = SecuritySettings()
+    user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
     is_test_mode: bool = test_mode

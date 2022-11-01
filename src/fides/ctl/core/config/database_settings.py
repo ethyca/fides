@@ -18,8 +18,8 @@ ENV_PREFIX = "FIDES__DATABASE__"
 class DatabaseSettings(FideslibDatabaseSettings):
     """Configuration settings for Postgres."""
 
-    user: str
-    password: str
+    user: str = "defaultuser"
+    password: str = "defaultpassword"
     server: str = "default-db"
     port: str = "5432"
     db: str = "default_db"
