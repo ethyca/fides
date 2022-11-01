@@ -73,7 +73,8 @@ def get_worker_ids() -> List[Optional[str]]:
         connected_workers = [
             key for key, _ in celery_app.control.inspect().ping().items()
         ]
-    except:  # pylint: disable=bare-except
+    except Exception as exception:
+        logger.critical(exception)
         connected_workers = []
     return connected_workers
 
