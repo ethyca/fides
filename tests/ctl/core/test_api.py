@@ -9,16 +9,16 @@ from fideslang import DEFAULT_TAXONOMY, model_list, parse
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
-from fidesctl.api.ctl.routes import health
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.ctl.core import api as _api
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.api.ctl.routes import health
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.ctl.core import api as _api
+from fides.ctl.core.config import FidesConfig
 
 TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifier"]
 
 
 # Helper Functions
-def get_existing_key(test_config: FidesctlConfig, resource_type: str) -> int:
+def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
     """Get an ID that is known to exist."""
     return _api.ls(
         test_config.cli.server_url, resource_type, test_config.user.request_headers
@@ -27,7 +27,7 @@ def get_existing_key(test_config: FidesctlConfig, resource_type: str) -> int:
 
 # Unit Tests
 @pytest.mark.unit
-def test_generate_resource_urls_no_id(test_config: FidesctlConfig) -> None:
+def test_generate_resource_urls_no_id(test_config: FidesConfig) -> None:
     """
     Test that the URL generator works as intended.
     """
@@ -38,7 +38,7 @@ def test_generate_resource_urls_no_id(test_config: FidesctlConfig) -> None:
 
 
 @pytest.mark.unit
-def test_generate_resource_urls_with_id(test_config: FidesctlConfig) -> None:
+def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
     """
     Test that the URL generator works as intended.
     """
@@ -56,7 +56,7 @@ def test_generate_resource_urls_with_id(test_config: FidesctlConfig) -> None:
 class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_create(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         print(manifest.json(exclude_none=True))
@@ -70,7 +70,7 @@ class TestCrud:
         assert result.status_code == 201
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_ls(self, test_config: FidesctlConfig, endpoint: str) -> None:
+    def test_api_ls(self, test_config: FidesConfig, endpoint: str) -> None:
         result = _api.ls(
             url=test_config.cli.server_url,
             resource_type=endpoint,
@@ -80,7 +80,7 @@ class TestCrud:
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_get(self, test_config: FidesctlConfig, endpoint: str) -> None:
+    def test_api_get(self, test_config: FidesConfig, endpoint: str) -> None:
         existing_id = get_existing_key(test_config, endpoint)
         result = _api.get(
             url=test_config.cli.server_url,
@@ -93,7 +93,7 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_sent_is_received(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         """
         Confirm that the resource and values that we send are the
@@ -117,7 +117,7 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_update(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         result = _api.update(
@@ -131,7 +131,7 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         result = _api.upsert(
@@ -144,7 +144,7 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_delete(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
@@ -163,7 +163,7 @@ class TestCrud:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
 
@@ -177,7 +177,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
@@ -193,7 +193,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesctlConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
@@ -207,7 +207,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -228,7 +228,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -249,7 +249,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         _api.create(
@@ -270,7 +270,7 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesctlConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -306,30 +306,15 @@ class TestDefaultTaxonomyCrud:
         )
 
 
-# This test will fail if certain other tests run before it, due to a non-deterministic bug in the code
-# Keeping the order as-is is a temporary fix
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "resource_type", ["data_category", "data_use", "data_qualifier"]
-)
-def test_visualize(
-    setup_db: str, test_config: FidesctlConfig, resource_type: str
-) -> None:
-    response = requests.get(
-        f"{test_config.cli.server_url}{API_PREFIX}/{resource_type}/visualize/graphs"
-    )
-    assert response.status_code == 200
-
-
-@pytest.mark.integration
-def test_static_sink(test_config: FidesctlConfig) -> None:
+def test_static_sink(test_config: FidesConfig) -> None:
     """Make sure we are hosting something at / and not getting a 404"""
     response = requests.get(f"{test_config.cli.server_url}")
     assert response.status_code == 200
 
 
 @pytest.mark.integration
-def test_404_on_api_routes(test_config: FidesctlConfig) -> None:
+def test_404_on_api_routes(test_config: FidesConfig) -> None:
     """Should get a 404 on routes that start with API_PREFIX but do not exist"""
     response = requests.get(
         f"{test_config.cli.server_url}{API_PREFIX}/path/that/does/not/exist"
@@ -344,25 +329,25 @@ def test_404_on_api_routes(test_config: FidesctlConfig) -> None:
     [("healthy", 200), ("needs migration", 200), ("unhealthy", 503)],
 )
 def test_api_ping(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
     database_health: str,
     expected_status_code: int,
     monkeypatch: MonkeyPatch,
     test_client: TestClient,
 ) -> None:
-    def mock_get_db_health(url: str) -> str:
+    def mock_get_db_health(url: str, db) -> str:
         return database_health
 
     monkeypatch.setattr(health, "get_db_health", mock_get_db_health)
-    response = test_client.get(test_config.cli.server_url + API_PREFIX + "/health")
+    response = test_client.get(test_config.cli.server_url + "/health")
     assert response.status_code == expected_status_code
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("endpoint_name", ["organization", "health"])
-def test_trailing_slash(test_config: FidesctlConfig, endpoint_name: str) -> None:
+@pytest.mark.parametrize("endpoint_name", [f"{API_PREFIX}/organization", "/health"])
+def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     """URLs both with and without a trailing slash should resolve and not 404"""
-    url = f"{test_config.cli.server_url}{API_PREFIX}/{endpoint_name}"
+    url = f"{test_config.cli.server_url}{endpoint_name}"
     response = requests.get(url)
     assert response.status_code == 200
     response = requests.get(f"{url}/")

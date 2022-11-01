@@ -13,8 +13,8 @@ from fideslang.models import (
     System,
 )
 
-from fidesctl.ctl.core import export
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.core import export
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture()
@@ -97,7 +97,7 @@ def test_sample_dataset_taxonomy() -> Generator:
 
 @pytest.mark.unit
 def test_system_records_to_export(
-    test_sample_system_taxonomy: Generator, test_config: FidesctlConfig
+    test_sample_system_taxonomy: Generator, test_config: FidesConfig
 ) -> None:
     """
     Asserts that unique records are returned properly (including
@@ -150,7 +150,7 @@ def test_organization_records_to_export() -> None:
 @pytest.mark.unit
 def test_joined_datamap_export_system_only(
     test_sample_system_taxonomy: Dict,
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a basic system
@@ -165,7 +165,7 @@ def test_joined_datamap_export_system_only(
 def test_joined_datamap_export_system_dataset_overlap(
     test_sample_system_taxonomy: Dict,
     test_sample_dataset_taxonomy: Generator,
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a system with a dataset
@@ -179,7 +179,7 @@ def test_joined_datamap_export_system_dataset_overlap(
 @pytest.mark.unit
 def test_joined_datamap_export_system_dataset_common(
     test_sample_system_taxonomy: Dict,
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Asserts the duplicate rows are removed from an export
@@ -219,7 +219,7 @@ def test_joined_datamap_export_system_dataset_common(
 @pytest.mark.unit
 def test_joined_datamap_export_system_multiple_declarations_overlap(
     test_sample_system_taxonomy: Dict,
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     """
     Asserts the correct number of rows are exported for a complex system

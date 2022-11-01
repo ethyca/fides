@@ -46,6 +46,16 @@ The types of changes are:
 * Dataset generation enhancements using Fides Classify for Plus users:
   * Integrate Fides Plus API into placeholder features introduced in 1.9.0. [#1194](https://github.com/ethyca/fides/pull/1194)
 
+* Fides Admin UI:
+  * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
+
+### Fixed
+
+* Privacy Center:
+  * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
+  * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
+  * Redirect to index on consent save [#1238](https://github.com/ethyca/fides/pull/1238)
+
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
 ### Changed
@@ -81,7 +91,11 @@ The types of changes are:
 * Changed behavior of `load_default_taxonomy` to append instead of upsert [#1040](https://github.com/ethyca/fides/pull/1040)
 * Changed behavior of adding privacy declarations to decouple the actions of the "add" and "next" buttons [#1086](https://github.com/ethyca/fides/pull/1086)
 * Moved system related UI components from the `config-wizard` directory to the `system` directory [#1097](https://github.com/ethyca/fides/pull/1097)
-* Dataset fields table shows categories in the last column. [#1088](https://github.com/ethyca/fides/pull/1088)
+* Updated "type" on SaaS config to be a simple string type, not an enum [#1197](https://github.com/ethyca/fides/pull/1197)
+
+### Developer Experience
+
+* Optional dependencies may have their version defined only once, in `optional-requirements.txt` [#1171](https://github.com/ethyca/fides/pull/1171)
 
 ### Docs
 
@@ -148,12 +162,30 @@ The types of changes are:
 * Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
 * Pinned pydantic version to < 1.10.0 to fix an error in finding referenced fides keys [#1045](https://github.com/ethyca/fides/pull/1045)
 
+### Fixed
+
+* Fixed failing mypy tests [#1030](https://github.com/ethyca/fides/pull/1030)
+* Fixed an issue where `fides push --diff` would return a false positive diff [#1026](https://github.com/ethyca/fides/pull/1026)
+
+### Docs
+
+* Minor formatting updates to [Policy Webhooks](https://ethyca.github.io/fidesops/guides/policy_webhooks/) documentation [#1114](https://github.com/ethyca/fidesops/pull/1114)
+
+### Removed
+
+* Removed create superuser [#1116](https://github.com/ethyca/fidesops/pull/1116)
+
 ## [1.8.2](https://github.com/ethyca/fides/compare/1.8.1...1.8.2) - 2022-08-18
 
 ### Added
 
-* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977)
+* Added the ability to edit taxonomy fields via the UI [#977](https://github.com/ethyca/fides/pull/977) [#1028](https://github.com/ethyca/fides/pull/1028)
 * New column `is_default` added to DataCategory, DataUse, DataSubject, and DataQualifier tables [#976](https://github.com/ethyca/fides/pull/976)
+* Added the ability to add taxonomy fields via the UI [#1019](https://github.com/ethyca/fides/pull/1019)
+* Added the ability to delete taxonomy fields via the UI [#1006](https://github.com/ethyca/fides/pull/1006)
+  * Only non-default taxonomy entities can be deleted [#1023](https://github.com/ethyca/fides/pull/1023)
+* Prevent deleting taxonomy `is_default` fields and from adding `is_default=True` fields via the API [#990](https://github.com/ethyca/fides/pull/990).
+* Added a "Custom" tag to distinguish user defined taxonomy fields from default taxonomy fields in the UI [#1027](https://github.com/ethyca/fides/pull/1027)
 
 ### Changed
 
@@ -214,6 +246,7 @@ The types of changes are:
 * Add `push` cli command alias for `apply` and deprecate `apply` [943](https://github.com/ethyca/fides/pull/943)
 * Add resource groups tagging api as a source of system generation [939](https://github.com/ethyca/fides/pull/939)
 * Add GitHub Action to publish the `fidesctl` package to testpypi on pushes to main [#951](https://github.com/ethyca/fides/pull/951)
+* Added configWizardFlag to ui to hide the config wizard when false [[#1453](https://github.com/ethyca/fides/issues/1453)
 
 ### Changed
 
@@ -359,9 +392,64 @@ The types of changes are:
 
 ### Added
 
-* CHANGELOG.md file
-* On API server startup, in-use config values are logged at the DEBUG level
-* Send a usage analytics event upon execution of the `fidesctl init` command
+* ESLint configuration changes [#514](https://github.com/ethyca/fidesops/pull/514)
+* User creation, update and permissions in the Admin UI [#511](https://github.com/ethyca/fidesops/pull/511)
+* Yaml support for dataset upload [#284](https://github.com/ethyca/fidesops/pull/284)
+
+### Breaking Changes
+
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443)
+
+### Docs
+
+* DRP feature documentation [#520](https://github.com/ethyca/fidesops/pull/520)
+
+## [1.4.2](https://github.com/ethyca/fidesops/compare/1.4.1...1.4.2) - 2022-05-12
+
+### Added
+
+* GET routes for users [#405](https://github.com/ethyca/fidesops/pull/405)
+* Username based search on GET route [#444](https://github.com/ethyca/fidesops/pull/444)
+* FIDESOPS\_\_DEV_MODE for Easier SaaS Request Debugging [#363](https://github.com/ethyca/fidesops/pull/363)
+* Track user privileges across sessions [#425](https://github.com/ethyca/fidesops/pull/425)
+* Add first_name and last_name fields. Also add them along with created_at to FidesUser response [#465](https://github.com/ethyca/fidesops/pull/465)
+* Denial reasons for DSR and user `AuditLog` [#463](https://github.com/ethyca/fidesops/pull/463)
+* DRP action to Policy [#453](https://github.com/ethyca/fidesops/pull/453)
+* `CHANGELOG.md` file[#484](https://github.com/ethyca/fidesops/pull/484)
+* DRP status endpoint [#485](https://github.com/ethyca/fidesops/pull/485)
+* DRP exerise endpoint [#496](https://github.com/ethyca/fidesops/pull/496)
+* Frontend for privacy request denial reaons [#480](https://github.com/ethyca/fidesops/pull/480)
+* Publish Fidesops to Pypi [#491](https://github.com/ethyca/fidesops/pull/491)
+* DRP data rights endpoint [#526](https://github.com/ethyca/fidesops/pull/526)
+
+### Changed
+
+* Converted HTTP Status Codes to Starlette constant values [#438](https://github.com/ethyca/fidesops/pull/438)
+* SaasConnector.send behavior on ignore_errors now returns raw response [#462](https://github.com/ethyca/fidesops/pull/462)
+* Seed user permissions in `create_superuser.py` script [#468](https://github.com/ethyca/fidesops/pull/468)
+* User API Endpoints (update fields and reset user passwords) [#471](https://github.com/ethyca/fidesops/pull/471)
+* Format tests with `black` [#466](https://github.com/ethyca/fidesops/pull/466)
+* Extract privacy request endpoint logic into separate service for DRP [#470](https://github.com/ethyca/fidesops/pull/470)
+* Fixing inconsistent SaaS connector integration tests [#473](https://github.com/ethyca/fidesops/pull/473)
+* Add user data to login response [#501](https://github.com/ethyca/fidesops/pull/501)
+
+### Breaking Changes
+
+* Update masking API to take multiple input values [#443](https://github.com/ethyca/fidesops/pull/443)
+
+### Docs
+
+* Added issue template for documentation updates [#442](https://github.com/ethyca/fidesops/pull/442)
+* Clarify masking updates [#464](https://github.com/ethyca/fidesops/pull/464)
+* Added dark mode [#476](https://github.com/ethyca/fidesops/pull/476)
+
+### Fixed
+
+* Removed miradb test warning [#436](https://github.com/ethyca/fidesops/pull/436)
+* Added missing import [#448](https://github.com/ethyca/fidesops/pull/448)
+* Removed pypi badge pointing to wrong package [#452](https://github.com/ethyca/fidesops/pull/452)
+* Audit imports and references [#479](https://github.com/ethyca/fidesops/pull/479)
+* Switch to using update method on PUT permission endpoint [#500](https://github.com/ethyca/fidesops/pull/500)
 
 ### Developer Experience
 

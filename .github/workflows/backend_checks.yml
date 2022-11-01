@@ -1,0 +1,304 @@
+name: Backend Code Checks
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+env:
+  IMAGE: ethyca/fides:local
+  DEFAULT_PYTHON_VERSION: "3.10.7"
+
+jobs:
+  Build:
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build container
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          build-args: PYTHON_VERSION=${{ matrix.python_version }}
+          target: prod
+          outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
+          push: false
+          tags: ${{ env.IMAGE }}
+
+      - name: Upload container
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/python-${{ matrix.python_version }}.tar
+          retention-days: 1
+
+########################
+## Application Checks ##
+########################
+  Docs:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check that the docs can build
+        run: nox -s docs_check
+
+  Fides-Checks:
+    needs: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check fides installation
+        run: nox -s check_install
+
+      - name: Run fides evaluation
+        run: nox -s check_fides_annotations
+
+      - name: Scan fides db
+        run: nox -s fides_db_scan
+
+################
+## Safe Tests ##
+################
+  Pytest-Ctl-Not-External:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run non-external test suite
+        run: nox -s "pytest_ctl(not-external)"
+
+
+  Pytest-Unit-Ops:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run unit test suite
+        run: nox -s "pytest_ops(unit)"
+
+  Pytest-Integration-Ops:
+    needs: Build
+    strategy:
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run integration test suite
+        run: nox -s "pytest_ops(integration)"
+
+##################
+## Unsafe Tests ##
+##################
+  Pytest-Ctl-External:
+    needs: Build
+    strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run external test suite
+        run: nox -s "pytest_ctl(external)"
+        env:
+          SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
+          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_FIDESCTL_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FIDESCTL_ACCESS_KEY }}
+          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
+          AWS_DEFAULT_REGION: us-east-1
+          BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
+
+  External-Datastores:
+    needs: Build
+    strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    continue-on-error: true
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Integration Tests (External)
+        env:
+          REDSHIFT_TEST_URI: ${{ secrets.REDSHIFT_TEST_URI }}
+          REDSHIFT_TEST_DB_SCHEMA: fidesops_test
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
+          BIGQUERY_DATASET: fidesopstest
+          SNOWFLAKE_TEST_URI: ${{ secrets.SNOWFLAKE_TEST_URI }}
+        run: nox -s "pytest_ops(external-datastores)"
+
+  External-SaaS-Connectors:
+    needs: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      max-parallel: 1 # This prevents collisions in shared external resources
+      matrix:
+        python_version: ["3.8.14", "3.9.14", "3.10.7"]
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-${{ matrix.python_version }}
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Vault Token
+        uses: hashicorp/vault-action@v2.4.2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          namespace: ${{ secrets.VAULT_NAMESPACE }}
+          method: jwt
+          role: ${{ secrets.VAULT_ROLE }}
+          exportToken: True
+
+      - name: SaaS Connector Tests
+        env:
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
+        run: nox -s "pytest_ops(saas)"

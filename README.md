@@ -1,4 +1,4 @@
-# Meet Fidesctl: Privacy Policies as Code
+# Meet Fides: Privacy Policies as Code
 
 [![Latest Release Version][release-image]][release-url]
 [![Docker][docker-workflow-image]][docker-actions-url]
@@ -9,23 +9,21 @@
 [![Checked with mypy][mypy-image]][mypy-url]
 [![Twitter][twitter-image]][twitter-url]
 
-![Fidesctl banner](docs/fides/docs/img/fidesctl.png "Fidesctl banner")
-
- _[Join the waitlist](https://ethyca.com/waitlist/) to get started with our free, hosted version!_
+![Fides banner](docs/fides/docs/img/fides-banner.png "Fides banner")
 
 ## :zap: Overview
 
 Fides (_fee-dhez_, Latin: Fidēs) is an open-source tool that allows you to easily [declare your systems' privacy characteristics](https://ethyca.github.io/fides/tutorial/system/), [track privacy related changes](https://ethyca.github.io/fides/tutorial/policy/) to systems and data in version control, and [enforce policies](https://ethyca.github.io/fides/tutorial/pass/#evaluate-the-fidesctl-policies) in both your source code and [your runtime infrastructure](https://ethyca.github.io/fides/deployment/#step-5-install-fidesctl-cli-on-ci-build-server).
 
-![Fidesctl overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fidesctl overview")
+![Fides overview](docs/fides/docs/img/fidesctl-overview-diagram.png "Fides overview")
 
 ## :rocket: Quick Start
 
 ### System Requirements
 
 * **Optional:** [`pipx`](https://pypa.github.io/pipx/) for environment isolation. The following documentation assumes `pipx` is installed, but `pip` commands can be substituted when needed.
-* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+) and [Docker Compose](https://docs.docker.com/compose/install/) (1.29.0+)
-* [Python](https://www.python.org/downloads/) (3.9+)
+* [Docker](https://www.docker.com/products/docker-desktop) (20.10.8+)
+* [Python](https://www.python.org/downloads/) (3.8+)
 * [Nox](https://nox.thea.codes/en/stable/) (`pipx install nox`)
 
 ### Getting Started
@@ -38,16 +36,16 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
 2. From the root fides directory, run the following commands:
 
-    ```
-    nox -s dev
+    ```sh
+    nox -s dev -- shell
     ```
 
-    This will spin up the entire project and open a shell within the `fidesctl` container.
+    This will spin up the entire project and open a shell within the `fides` container.
 
     Once you see the `fides#` prompt (takes ~3 minutes the first time), you can run the next command:
 
-    ```
-    fidesctl init
+    ```sh
+    fides init
     ```
 
     This builds the required images, spins up the database, and runs the initialization scripts.
@@ -55,19 +53,19 @@ This guide will walk through generating a mock RoPA using predefined resources i
 3. Use the `export datamap` command to generate a [data map](/docs/fides/docs/guides/generating_datamap.md) of the provided [demo resources](demo_resources/):
 
     ```sh
-    fidesctl push demo_resources/
-    fidesctl export datamap --output-dir demo_resources/
+    fides push demo_resources/
+    fides export datamap --output-dir demo_resources/
     ```
 
     This will `push` the provided demo resources, and `export` an `.xlsx` file of their contents to the `demo_resources/` directory.
 
 4. View the newly-generated data map generated from the provided resources.
 
-    #### **Controller**
+#### **Controller**
 
     The header block at the top of the data map is composed of properties found in the [Organization resource](/demo_resources/demo_organization.yml). In a production deployment, this would be composed of publicly available information for your company or organization.
 
-    #### **Article 30 Record of Processing Activities**
+#### **Article 30 Record of Processing Activities**
 
     The remainder of the information on the data map is generated from the provided [configuration resources](https://ethyca.github.io/fides/language/resources/system). In a production environment, these could be [automatically generated](https://ethyca.github.io/fides/guides/generate_resources/) from your databases and system resources.
 
@@ -80,7 +78,7 @@ This guide will walk through generating a mock RoPA using predefined resources i
 5. Assess the Organization and System datasets using the `--audit` flag.
 
     ```
-    fidesctl evaluate demo_resources/ --audit
+    fides evaluate demo_resources/ --audit
     ```
 
     This command will identify any missing information in your resources, which should be added to generate a compliant Record of Processing Activities.
@@ -120,11 +118,16 @@ This guide will walk through generating a mock RoPA using predefined resources i
 
     `--audit` flags any empty fields, along with the System or Organization they belong to, and returns where or not the system is incomplete or fully compliant. In the above example, the Organization resource is compliant, but both the Marketing and Analytics systems are missing information that would be required in your RoPA.
 
+6. Running the `exit` command will close the shell and stop the Docker containers. The
+Docker volumes created at startup will still be present so on the next start of the containers
+the data previously created will still be present. If you would like to remove these
+volumes run `nox -s teardown -- volumes`.
+
 Now that you've seen how Fides can generate a data map from your resources and assess them for compliance, learn how you can [extend the Fides taxonomy](https://ethyca.github.io/fides/guides/generating_datamap/#extend-the-default-taxonomy) to replace the missing values revealed by `--audit` with additional data, and push your changes to generate an [Article 30-compliant RoPA](https://ethyca.github.io/fides/guides/generating_datamap/#generate-a-ropa).
 
 ## :book: Learn More
 
-The Fides core team is committed to providing a variety of documentation to help get you started using Fidesctl.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
 
 ### Documentation
 
@@ -152,8 +155,8 @@ Read about the [Fides community](https://ethyca.github.io/fides/community/hints_
 
 ## :balance_scale: License
 
-The Fides ecosystem of tools ([Fidesops](https://github.com/ethyca/fidesops) and [Fidesctl](https://github.com/ethyca/fides)) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-Fides tools are built on [Fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
+The Fides ecosystem of tools ([Fides](https://github.com/ethyca/fides) are licensed under the [Apache Software License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+Fides tools are built on [fideslang](https://github.com/ethyca/privacy-taxonomy), the Fides language specification, which is licensed under [CC by 4](https://github.com/ethyca/privacy-taxonomy/blob/main/LICENSE).
 
 Fides is created and sponsored by Ethyca: a developer tools company building the trust infrastructure of the internet. If you have questions or need assistance getting started, let us know at fides@ethyca.com!
 
@@ -161,8 +164,8 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 [release-url]: https://github.com/ethyca/fides/releases
 [docker-workflow-image]: https://github.com/ethyca/fides/workflows/Docker%20Build%20&%20Push/badge.svg
 [docs-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20Docs/badge.svg
-[release-workflow-image]: https://github.com/ethyca/fides/workflows/Publish%20fidesctl/badge.svg
-[docker-actions-url]: https://github.com/ethyca/fides/actions/workflows/docker.yaml
+[release-workflow-image]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml/badge.svg
+[docker-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docker.yaml
 [docs-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_docs.yaml
 [publish-actions-url]: https://github.com/ethyca/fides/actions/workflows/publish_package.yaml
 [license-image]: https://img.shields.io/:license-Apache%202-blue.svg

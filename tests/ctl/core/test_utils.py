@@ -6,8 +6,8 @@ from typing import Generator
 import pytest
 from fideslang.models import DatasetCollection, DatasetField
 
-from fidesctl.ctl.core import utils
-from fidesctl.ctl.core.config import get_config
+from fides.ctl.core import utils
+from fides.ctl.core.config import get_config
 
 
 @pytest.fixture()
@@ -39,8 +39,8 @@ def test_nested_collection_fields() -> Generator:
 
 
 @pytest.mark.unit
-def test_get_db_engine() -> None:
-    conn_str = get_config().database.sync_database_uri
+def test_get_db_engine(test_config_path) -> None:
+    conn_str = get_config(test_config_path).database.sync_database_uri
     engine = utils.get_db_engine(conn_str)
     assert str(engine.url) == conn_str
 

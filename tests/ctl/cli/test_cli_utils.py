@@ -3,9 +3,9 @@ import click
 import pytest
 from requests_mock import Mocker
 
-import fidesctl.cli.utils as utils
-from fidesctl.api.ctl.routes.util import API_PREFIX
-from fidesctl.ctl.core.config import FidesctlConfig
+import fides.cli.utils as utils
+from fides.api.ctl.routes.util import API_PREFIX
+from fides.ctl.core.config import FidesConfig
 
 
 @pytest.mark.unit
@@ -46,9 +46,7 @@ def test_check_server_version_comparisons(
 ) -> None:
     """Check that comparing versions works"""
     fake_url = "http://fake_address:8080"
-    requests_mock.get(
-        f"{fake_url}{API_PREFIX}/health", json={"version": server_version}
-    )
+    requests_mock.get(f"{fake_url}/health", json={"version": server_version})
     utils.check_server(cli_version, "http://fake_address:8080", quiet=quiet)
     captured = capsys.readouterr()
     if expected_output is None:
@@ -61,7 +59,7 @@ def test_check_server_version_comparisons(
 class TestHandleDatabaseCredentialsOptions:
     def test_neither_option_supplied_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if neither option is supplied."
         with pytest.raises(click.UsageError):
@@ -75,7 +73,7 @@ class TestHandleDatabaseCredentialsOptions:
 
     def test_both_options_supplied_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if both options are supplied."
         with pytest.raises(click.UsageError):
@@ -89,7 +87,7 @@ class TestHandleDatabaseCredentialsOptions:
 
     def test_config_does_not_exist_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         with pytest.raises(click.UsageError):
@@ -103,7 +101,7 @@ class TestHandleDatabaseCredentialsOptions:
 
     def test_returns_input_connection_string(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Checks if expected connection string is returned from input"
         input_connection_string = "my_connection_string"
@@ -117,7 +115,7 @@ class TestHandleDatabaseCredentialsOptions:
 
     def test_returns_config_connection_string(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Checks if expected connection string is returned from config"
         input_connection_string = ""
@@ -129,12 +127,12 @@ class TestHandleDatabaseCredentialsOptions:
         )
         assert (
             connection_string
-            == "postgresql+psycopg2://postgres:fidesctl@fidesctl-db:5432/fidesctl_test"
+            == "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"
         )
 
 
 def test_handle_okta_credentials_options_both_raises(
-    test_config: FidesctlConfig,
+    test_config: FidesConfig,
 ) -> None:
     "Check for an exception if both credentials options are supplied."
     with pytest.raises(click.UsageError):
@@ -153,7 +151,7 @@ def test_handle_okta_credentials_options_both_raises(
 class TestHandleOktaCredentialsOptions:
     def test_config_dne_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         with pytest.raises(click.UsageError):
@@ -169,7 +167,7 @@ class TestHandleOktaCredentialsOptions:
 
     def test_returns_config_dict(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         input_org_url = ""
@@ -188,7 +186,7 @@ class TestHandleOktaCredentialsOptions:
 
     def test_returns_input_dict(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         input_org_url = "hello.com"
@@ -207,7 +205,7 @@ class TestHandleOktaCredentialsOptions:
 class TestHandleAWSCredentialsOptions:
     def test_both_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if both credentials options are supplied."
         with pytest.raises(click.UsageError):
@@ -225,7 +223,7 @@ class TestHandleAWSCredentialsOptions:
 
     def test_config_dne_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         with pytest.raises(click.UsageError):
@@ -243,7 +241,7 @@ class TestHandleAWSCredentialsOptions:
 
     def test_returns_config_dict(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         input_access_key = ""
@@ -266,7 +264,7 @@ class TestHandleAWSCredentialsOptions:
 
     def test_returns_input_dict(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         "Check for an exception if credentials dont exist"
         input_access_key = "access_key"
@@ -291,7 +289,7 @@ class TestHandleAWSCredentialsOptions:
 class TestHandleBigQueryCredentialsOptions:
     def test_multiple_config_options_raises(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         with pytest.raises(click.UsageError):
             utils.handle_bigquery_config_options(
@@ -303,7 +301,7 @@ class TestHandleBigQueryCredentialsOptions:
 
     def test_missing_credential_id(
         self,
-        test_config: FidesctlConfig,
+        test_config: FidesConfig,
     ) -> None:
         with pytest.raises(click.UsageError):
             utils.handle_bigquery_config_options(

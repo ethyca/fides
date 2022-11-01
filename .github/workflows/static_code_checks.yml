@@ -1,0 +1,102 @@
+name: Python Static Checks
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+env:
+  IMAGE: ethyca/fides:local
+  DEFAULT_PYTHON_VERSION: "3.10.7"
+
+jobs:
+
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run sorter
+        run: nox -s isort
+
+  Black:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run formatter
+        run: nox -s black
+
+  Pylint:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run linter
+        run: nox -s pylint
+
+  Mypy:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run typechecker
+        run: nox -s mypy
+
+  Xenon:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run cyclomatic complexity check
+        run: nox -s xenon

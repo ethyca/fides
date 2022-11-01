@@ -1,0 +1,113 @@
+[adobe_campaign]
+config = "data/saas/config/adobe_campaign_config.yml"
+dataset = "data/saas/dataset/adobe_campaign_dataset.yml"
+icon = "data/saas/icon/adobe.svg"
+human_readable = "Adobe Campaign"
+
+[auth0]
+config = "data/saas/config/auth0_config.yml"
+dataset = "data/saas/dataset/auth0_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Auth0"
+
+[datadog]
+config = "data/saas/config/datadog_config.yml"
+dataset = "data/saas/dataset/datadog_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Datadog"
+
+[doordash]
+config = "data/saas/config/doordash_config.yml"
+dataset = "data/saas/dataset/doordash_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Doordash"
+
+[firebase_auth]
+config = "data/saas/config/firebase_auth_config.yml"
+dataset = "data/saas/dataset/firebase_auth_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Firebase Auth"
+
+[hubspot]
+config = "data/saas/config/hubspot_config.yml"
+dataset = "data/saas/dataset/hubspot_dataset.yml"
+icon = "data/saas/icon/hubspot.svg"
+human_readable = "HubSpot"
+
+[mailchimp]
+config = "data/saas/config/mailchimp_config.yml"
+dataset = "data/saas/dataset/mailchimp_dataset.yml"
+icon = "data/saas/icon/mailchimp.svg"
+human_readable = "Mailchimp"
+
+[outreach]
+config = "data/saas/config/outreach_config.yml"
+dataset = "data/saas/dataset/outreach_dataset.yml"
+icon = "data/saas/icon/outreach.svg"
+human_readable = "Outreach"
+
+[salesforce]
+config = "data/saas/config/salesforce_config.yml"
+dataset = "data/saas/dataset/salesforce_dataset.yml"
+icon = "data/saas/icon/salesforce.svg"
+human_readable = "Salesforce"
+
+[segment]
+config = "data/saas/config/segment_config.yml"
+dataset = "data/saas/dataset/segment_dataset.yml"
+icon = "data/saas/icon/segment.svg"
+human_readable = "Segment"
+
+[sendgrid]
+config = "data/saas/config/sendgrid_config.yml"
+dataset = "data/saas/dataset/sendgrid_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "SendGrid"
+
+[sentry]
+config = "data/saas/config/sentry_config.yml"
+dataset = "data/saas/dataset/sentry_dataset.yml"
+icon = "data/saas/icon/sentry.svg"
+human_readable = "Sentry"
+
+[shopify]
+config = "data/saas/config/shopify_config.yml"
+dataset = "data/saas/dataset/shopify_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Shopify"
+
+[square]
+config = "data/saas/config/square_config.yml"
+dataset = "data/saas/dataset/square_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Square"
+
+[stripe]
+config = "data/saas/config/stripe_config.yml"
+dataset = "data/saas/dataset/stripe_dataset.yml"
+icon = "data/saas/icon/stripe.svg"
+human_readable = "Stripe"
+
+[zendesk]
+config = "data/saas/config/zendesk_config.yml"
+dataset = "data/saas/dataset/zendesk_dataset.yml"
+icon = "data/saas/icon/zendesk.svg"
+human_readable = "Zendesk"
+
+[rollbar]
+config = "data/saas/config/rollbar_config.yml"
+dataset = "data/saas/dataset/rollbar_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Rollbar"
+
+[braze]
+config = "data/saas/config/braze_config.yml"
+dataset = "data/saas/dataset/braze_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Braze"
+
+[domo]
+config = "data/saas/config/domo_config.yml"
+dataset = "data/saas/dataset/domo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Domo"

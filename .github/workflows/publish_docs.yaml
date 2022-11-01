@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
@@ -30,7 +30,7 @@ jobs:
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
-      - name: Install fidesctl
+      - name: Install fides
         run: pip install -e ./[all]
 
       - name: Checkout the gh-pages branches

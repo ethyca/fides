@@ -6,13 +6,13 @@ import pytest
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
-from fidesctl.ctl.connectors.models import OktaConfig
-from fidesctl.ctl.core import api
-from fidesctl.ctl.core import system as _system
-from fidesctl.ctl.core.config import FidesctlConfig
+from fides.ctl.connectors.models import OktaConfig
+from fides.ctl.core import api
+from fides.ctl.core import system as _system
+from fides.ctl.core.config import FidesConfig
 
 
-def create_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
+def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
     for system in systems:
         api.create(
             url=test_config.cli.server_url,
@@ -22,7 +22,7 @@ def create_server_systems(test_config: FidesctlConfig, systems: List[System]) ->
         )
 
 
-def delete_server_systems(test_config: FidesctlConfig, systems: List[System]) -> None:
+def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
     for system in systems:
         api.delete(
             url=test_config.cli.server_url,
@@ -34,7 +34,7 @@ def delete_server_systems(test_config: FidesctlConfig, systems: List[System]) ->
 
 @pytest.fixture(scope="function")
 def create_test_server_systems(
-    test_config: FidesctlConfig, redshift_systems: List[System]
+    test_config: FidesConfig, redshift_systems: List[System]
 ) -> Generator:
     systems = redshift_systems
     delete_server_systems(test_config, systems)
@@ -44,7 +44,7 @@ def create_test_server_systems(
 
 
 @pytest.fixture(scope="function")
-def create_external_server_systems(test_config: FidesctlConfig) -> Generator:
+def create_external_server_systems(test_config: FidesConfig) -> Generator:
     systems = (
         _system.generate_redshift_systems(
             organization_key="default_organization",
@@ -212,7 +212,7 @@ def test_find_missing_systems(
 
 @pytest.mark.integration
 def test_get_all_server_systems(
-    test_config: FidesctlConfig, create_test_server_systems: Generator
+    test_config: FidesConfig, create_test_server_systems: Generator
 ) -> None:
     actual_result = _system.get_all_server_systems(
         url=test_config.cli.server_url,
@@ -224,7 +224,7 @@ def test_get_all_server_systems(
 
 @pytest.mark.external
 def test_scan_system_aws_passes(
-    test_config: FidesctlConfig, create_external_server_systems: Generator
+    test_config: FidesConfig, create_external_server_systems: Generator
 ) -> None:
     _system.scan_system_aws(
         coverage_threshold=100,
@@ -237,7 +237,7 @@ def test_scan_system_aws_passes(
 
 
 @pytest.mark.external
-def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_generate_system_aws(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     actual_result = _system.generate_system_aws(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
@@ -253,7 +253,7 @@ OKTA_ORG_URL = "https://dev-78908748.okta.com"
 
 
 @pytest.mark.external
-def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     actual_result = _system.generate_system_okta(
         file_name=f"{tmpdir}/test_file.yml",
         include_null=False,
@@ -269,9 +269,7 @@ def test_generate_system_okta(tmpdir: LocalPath, test_config: FidesctlConfig) ->
 
 
 @pytest.mark.external
-def test_scan_system_okta_success(
-    tmpdir: LocalPath, test_config: FidesctlConfig
-) -> None:
+def test_scan_system_okta_success(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     file_name = f"{tmpdir}/test_file.yml"
     _system.generate_system_okta(
         file_name=file_name,
@@ -299,7 +297,7 @@ def test_scan_system_okta_success(
 
 
 @pytest.mark.external
-def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesctlConfig) -> None:
+def test_scan_system_okta_fail(tmpdir: LocalPath, test_config: FidesConfig) -> None:
     with pytest.raises(SystemExit):
         _system.scan_system_okta(
             manifest_dir="",

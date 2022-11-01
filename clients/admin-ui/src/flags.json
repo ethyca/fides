@@ -1,0 +1,10 @@
+[
+  {
+    "name": "createNewConnection",
+    "isActive": true
+  },
+  {
+    "name": "configWizardFlag",
+    "isActive": false
+  }
+]

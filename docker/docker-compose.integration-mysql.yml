@@ -1,0 +1,20 @@
+services:
+  mysql_example:
+    image: mysql
+    platform: linux/amd64
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_HOST=mysql_example
+      - MYSQL_DATABASE=mysql_example
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_USER=mysql_user
+      - MYSQL_PASSWORD=mysql_pw
+    expose:
+      - 3307
+    ports:
+      - "3307:3306"
+    # Because we're using the "-f" flag from a parent directory, this relative path needs
+    # to be from the parent directory as well
+    volumes:
+      - ./docker/sample_data/mysql_example.sql:/docker-entrypoint-initdb.d/mysql_example.sql

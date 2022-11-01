@@ -1,6 +1,2 @@
-# Set the fidesctl core team as the default codeowners
-* @ethyca/automation-team
-* @ethyca/experience-team
-
 # Set the product/tech writing team as owners for the docs
-docs/ @ethyca/docs-authors
+/docs/ @ethyca/docs-authors

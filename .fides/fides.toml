@@ -1,0 +1,51 @@
+[database]
+server = "fides-db"
+user = "postgres"
+password = "fides"
+port = "5432"
+db = "fides"
+test_db = "fides_test"
+
+[credentials]
+app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test"}
+
+[logging]
+level = "INFO"
+
+[cli]
+server_host = "localhost"
+server_port = 8080
+
+[user]
+analytics_opt_out = false
+
+[redis]
+host = "redis"
+password = "testpassword"
+port = 6379
+charset = "utf8"
+default_ttl_seconds = 604800
+db_index = 0
+ssl = false
+ssl_cert_reqs = "required"
+
+[security]
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
+encoding = "UTF-8"
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+drp_jwt_secret = "secret"
+root_username = "root_user"
+root_password = "Testpassword1!"
+
+[execution]
+masking_strict = true
+require_manual_request_approval = false
+task_retry_backoff = 1
+subject_identity_verification_required = false
+task_retry_count = 0
+task_retry_delay = 1
+
+[admin_ui]
+enabled = true
