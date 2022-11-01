@@ -1,3 +1,4 @@
+import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
@@ -215,6 +216,9 @@ def print_deploy_success() -> None:
     )
     echo_green("Next steps:")
 
+    # Landing Page
+    echo_green("\n- View the documentation http://localhost:3000/landing")
+
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
     echo_green("    (user=fidestest, password=Apassword1!)")
@@ -233,3 +237,7 @@ def print_deploy_success() -> None:
     # Documentation
     echo_green("\n- Visit ethyca.github.io/fides for documentation.")
     echo_green("\nRun `fides deploy down` to stop the application.")
+
+    # Open the landing page and DSR directory
+    webbrowser.open("http://localhost:3000/landing")
+    webbrowser.open(f"file:///{FIDES_UPLOADS_DIR}")

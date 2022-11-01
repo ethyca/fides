@@ -11,6 +11,7 @@
         "volumes-down": "docker-compose down --volumes"
     },
     "dependencies": {
+        "balajs": "^2.0.2",
         "next": "13.0.0",
         "pg": "8.8.0",
         "react": "18.2.0",
