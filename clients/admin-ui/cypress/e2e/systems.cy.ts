@@ -233,7 +233,7 @@ describe("System management page", () => {
             "contain",
             `${system.name} successfully registered`
           );
-          cy.getByTestId("continue-btn").click();
+          cy.getByTestId("finish-btn").click();
           cy.url().should("match", /system$/);
         });
       });

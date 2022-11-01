@@ -2,9 +2,11 @@ import { Box, Button, Divider, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { FormikHelpers } from "formik";
-import React, { Fragment, useState } from "react";
+import { Fragment, useState } from "react";
 
+import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { changeReviewStep } from "~/features/config-wizard/config-wizard.slice";
 import { PrivacyDeclaration, System } from "~/types/api";
 
 import PrivacyDeclarationAccordion from "./PrivacyDeclarationAccordion";
@@ -23,23 +25,22 @@ const transformFormValuesToDeclaration = (
 
 interface Props {
   system: System;
-  onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
 }
 
-const PrivacyDeclarationStep = ({
-  system,
-  onCancel,
-  onSuccess,
-  abridged,
-}: Props) => {
+const PrivacyDeclarationStep = ({ system, onSuccess, abridged }: Props) => {
   const toast = useToast();
   const [formDeclarations, setFormDeclarations] = useState<
     PrivacyDeclaration[]
   >(system?.privacy_declarations ? [...system.privacy_declarations] : []);
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
+
+  const handleBack = () => {
+    dispatch(changeReviewStep(1));
+  };
 
   const handleSubmit = async () => {
     const systemBodyWithDeclaration = {
@@ -145,13 +146,13 @@ const PrivacyDeclarationStep = ({
       <PrivacyDeclarationForm onSubmit={addDeclaration} abridged={abridged} />
       <Box>
         <Button
-          onClick={onCancel}
+          onClick={handleBack}
           mr={2}
           size="sm"
           variant="outline"
-          data-testid="cancel-btn"
+          data-testid="back-btn"
         >
-          Cancel
+          Back
         </Button>
         <Button
           colorScheme="primary"

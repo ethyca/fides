@@ -11,6 +11,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()

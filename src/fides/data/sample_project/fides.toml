@@ -14,24 +14,16 @@ db_index = 0
 
 [security]
 app_encryption_key = "examplevalidprojectencryptionkey"
-cors_origins = [ "http://localhost:8080", "http://localhost:3000",]
+cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 
-[root_user]
-analytics_opt_out = false
-
 [execution]
 require_manual_request_approval = true
-
-[notifications]
-send_request_completion_notification = false
-send_request_receipt_notification = false
-send_request_review_notification = false
 
 [cli]
 server_host = "fides"
 server_port = 8080
 
 [user]
-analytics_opt_out = false
+analytics_opt_out = true

@@ -1,6 +1,6 @@
 # SaaS Post-Processors
 
-Post-processors are, in essence, data transformers. Given data from an endpoint, we can add specific processors to transform the data into a format we need for subject requests.
+Post-processors are, in essence, data transformers. Given data from an endpoint, we can add specific processors to transform the data into a format we need for privacy requests.
 
 ## Configuration
 
@@ -72,7 +72,7 @@ Filters object or array given field name and value. Value can reference a dynami
 
 - `field` (_str_): Corresponds to the field on which to filter. For example, we wish to filter where `email_contact == "bob@mail.com"`, then `field` will be `email_contact`.
 - `value` (_str_): Value to search for when filtering (e.g. hard-coded `bob@mail.com`) or Dict of identity path:
-    - `identity` (_str_): Identity object from subject request (e.g. `email` or `phone_number`)
+    - `identity` (_str_): Identity object from privacy request (e.g. `email` or `phone_number`)
 - `exact` (optional _bool_ defaults to True): `value` and `field` value must be the same length (no extra characters).
 - `case_sensitive` (optional _bool_ defaults to True): Cases must match between `value` and `field` value.
 

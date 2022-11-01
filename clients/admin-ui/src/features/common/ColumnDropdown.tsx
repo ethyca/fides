@@ -8,30 +8,42 @@ import {
   MenuList,
   Stack,
 } from "@fidesui/react";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
 import { ArrowDownLineIcon } from "~/features/common/Icon";
 
-import { ColumnMetadata } from "./types";
-
-interface Props {
-  allColumns: ColumnMetadata[];
-  selectedColumns: ColumnMetadata[];
-  onChange: (columns: ColumnMetadata[]) => void;
+export interface ColumnMetadata<T = Record<string, unknown>> {
+  name: string;
+  attribute: keyof T;
 }
-const ColumnDropdown = ({ allColumns, selectedColumns, onChange }: Props) => {
+
+interface Props<T> {
+  allColumns: ColumnMetadata<T>[];
+  selectedColumns: ColumnMetadata<T>[];
+  onChange: (columns: ColumnMetadata<T>[]) => void;
+}
+export const ColumnDropdown = <T extends Record<string, unknown>>({
+  allColumns,
+  selectedColumns,
+  onChange,
+}: Props<T>) => {
   const nameToColumnInfo = useMemo(() => {
     const info = new Map<string, boolean>();
-    allColumns.forEach((c) => info.set(c.name, true));
+    allColumns.forEach((c) =>
+      info.set(
+        c.name,
+        !!selectedColumns.find((selected) => selected.name === c.name)
+      )
+    );
     return info;
-  }, [allColumns]);
+  }, [allColumns, selectedColumns]);
 
   const handleClear = () => {
     nameToColumnInfo.forEach((value, key) => nameToColumnInfo.set(key, false));
     onChange([]);
   };
 
-  const handleChange = (column: ColumnMetadata) => {
+  const handleChange = (column: ColumnMetadata<T>) => {
     // Toggle the column
     const prevInfo = nameToColumnInfo.get(column.name) ?? false;
     nameToColumnInfo.set(column.name, !prevInfo);

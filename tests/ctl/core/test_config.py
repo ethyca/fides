@@ -179,7 +179,7 @@ def test_config_from_default() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": "data/config/fides.test_env.toml",
+        "FIDES__CONFIG_PATH": "src/fides/data/test_env/fides.test_env.toml",
     },
     clear=True,
 )
