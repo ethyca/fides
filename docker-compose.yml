@@ -102,10 +102,12 @@ services:
     environment:
       - FIDES__DEV_MODE=True
       - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID:-}
-      - FIDES___DATABASE__USER="postgres"
+      - FIDES__DATABASE__USER="postgres"
       - FIDES__DATABASE__PASSWORD="fides"
-      - FIDES__DATABASE__SERVER="fides-db"        
+      - FIDES__DATABASE__SERVER="fides-db"
       - FIDES__DATABASE__DATABASE="db"
+      - FIDES__DATABASE__PORT="5432"
+      - FIDES__DATABASE__TEST_DB="fides_test"
 
   redis:
     image: "redis:6.2.5-alpine"
