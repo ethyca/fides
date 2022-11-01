@@ -7,24 +7,20 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import { Field, FieldProps, Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
-import * as Yup from "yup";
+import { useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { defaultInitialValues } from "~/features/system/form";
+import { System } from "~/types/api";
 
 import { useFeatures } from "../common/features.slice";
 import WarningModal from "../common/WarningModal";
 import { useCreateSystemMutation } from "../system";
-import { System } from "~/types/api";
-
 import {
   changeStep,
   chooseSystemsForReview,
@@ -50,9 +46,8 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
     onOpen: onWarningOpen,
     onClose: onWarningClose,
   } = useDisclosure();
-  const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
   const [createSystem] = useCreateSystemMutation();
-const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
+  const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
   const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
@@ -62,59 +57,22 @@ const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
     dispatch(changeStep());
   };
 
-  const createSystems = async (values: FormValues) => {
-    const systemBodyArray = values.selectedKeys.map((val) => ({
-      ...defaultInitialValues,
-      fides_key: val,
-      // to post systems without the declaration steps, they need to at least have default values, including
-      // a valid link in the data protection impact assessment
-      data_protection_impact_assessment: { link: "http://www.ethyca.com" },
-    }));
-
-    await systemBodyArray.forEach(async (system) => createSystem(system));
+  const createSystems = async () => {
+    await selectedSystems.forEach(async (system: System) =>
+      createSystem(system)
+    );
   };
-
-  /* const handleSubmit = (values: FormValues) => {
-    if (systems.length > values.selectedKeys.length) {
-      setSelectedKeyValues(values.selectedKeys);
-      onOpen();
-    }
-
-    // manual system setup will go to privacy declaration step
-    if (
-      systems.length <= values.selectedKeys.length &&
-      manualSystemSetupChosen
-    ) {
-      dispatch(chooseSystemsForReview(values.selectedKeys));
-      dispatch(changeStep()); */
 
   const handleSubmit = () => {
     if (systems.length > selectedSystems.length) {
-      onWarningOpen();
-    } else {
-      confirmRegisterSelectedSystems();
-    }
-
-    // non-plus and non-manual system setup will go to system page
-    /* if (
-      !features.plus &&
-      systems.length <= values.selectedKeys.length &&
-      !manualSystemSetupChosen
-    ) {
-      createSystems(values);
-      router.push(`/system`);
-    }
-
-    // plus and non-manual system setup will go to datamap page
-    if (
-      features.plus &&
-      systems.length <= values.selectedKeys.length &&
-      !manualSystemSetupChosen
-    ) {
-      createSystems(values);
-      router.push(`/datamap`);
-    }
-  }; */
+      return onWarningOpen();
+    } if (manualSystemSetupChosen) {
+      return confirmRegisterSelectedSystems();
+    } 
+      createSystems();
+      return features.plus ? router.push(`/datamap`) : router.push(`/system`);
+    
+  };
 
   const handleCancel = () => {
     dispatch(changeStep(2));

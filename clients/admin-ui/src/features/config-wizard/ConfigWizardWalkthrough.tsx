@@ -71,58 +71,63 @@ const ConfigWizardWalkthrough = () => {
                 steps={STEPS}
               />
             </Box>
-<Box w={step === 4 ? "100%" : "40%"}>
-            {step === 1 ? <OrganizationInfoForm /> : null}
-            {step === 2 ? (
-              <AddSystemForm
-                setManualSystemsSetupChosen={setManualSystemsSetupChosen}
-              />
-            ) : null}
-            {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ?  (<Box pr={10}>
-                  <ScanResultsForm />
-                </Box>) : null}
-            {/* These steps should only apply if you're creating systems manually */}
-            {step === 5 && manualSystemSetupChosen ? (
-              <Stack direction="column">
-                {reviewStep <= 3 ? (
-                  <HorizontalStepper
-                    activeStep={reviewStep}
-                    steps={HORIZONTAL_STEPS}
+            <Box w={step === 4 ? "100%" : "40%"}>
+              {step === 1 ? <OrganizationInfoForm /> : null}
+              {step === 2 ? (
+                <AddSystemForm
+                  setManualSystemsSetupChosen={setManualSystemsSetupChosen}
+                />
+              ) : null}
+              {step === 3 ? <AuthenticateScanner /> : null}
+              {step === 4 ? (
+                <Box pr={10}>
+                  <ScanResultsForm
+                    manualSystemSetupChosen={manualSystemSetupChosen}
                   />
-                ) : null}
-                {reviewStep === 1 && (
-                  <DescribeSystemStep
-                    system={system}
-                    onSuccess={handleSuccess}
-                    abridged
-                  />
-                )}
-                {reviewStep === 2 && system && (
-                  <PrivacyDeclarationStep
-                    system={system}
-                    onSuccess={handleSuccess}
-                    abridged
-                  />
-                )}
-                {reviewStep === 3 && system && (
-                  <ReviewSystemStep
-                    system={system}
-                    onSuccess={() => dispatch(changeReviewStep())}
-                    abridged
-                  />
-                )}
-                {reviewStep === 4 && system && (
-                  <SuccessPage
-                    systemInReview={system}
-                    systemsForReview={systemsForReview}
-                    onAddNextSystem={() => {
-                      dispatch(reviewManualSystem());
-                    }}
-                  />
-                )}
-              </Stack>
-            ) : null}
+                </Box>
+              ) : null}
+              {/* These steps should only apply if you're creating systems manually */}
+              {step === 5 && manualSystemSetupChosen ? (
+                <Stack direction="column">
+                  {reviewStep <= 3 ? (
+                    <HorizontalStepper
+                      activeStep={reviewStep}
+                      steps={HORIZONTAL_STEPS}
+                    />
+                  ) : null}
+                  {reviewStep === 1 && (
+                    <DescribeSystemStep
+                      system={system}
+                      onSuccess={handleSuccess}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 2 && system && (
+                    <PrivacyDeclarationStep
+                      system={system}
+                      onSuccess={handleSuccess}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 3 && system && (
+                    <ReviewSystemStep
+                      system={system}
+                      onSuccess={() => dispatch(changeReviewStep())}
+                      abridged
+                    />
+                  )}
+                  {reviewStep === 4 && system && (
+                    <SuccessPage
+                      systemInReview={system}
+                      systemsForReview={systemsForReview}
+                      onAddNextSystem={() => {
+                        dispatch(reviewManualSystem());
+                      }}
+                    />
+                  )}
+                </Stack>
+              ) : null}
+            </Box>
           </Stack>
         </Stack>
       </Stack>
