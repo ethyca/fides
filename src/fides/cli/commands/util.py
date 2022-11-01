@@ -120,6 +120,11 @@ def deploy(ctx: click.Context) -> None:
     is_flag=True,
     help="Use a local image instead of trying to pull from DockerHub.",
 )
+@click.option(
+    "--no-init",
+    is_flag=True,
+    help="Disable the initialization of the Fides CLI, to run in headless mode.",
+)
 def up(ctx: click.Context, no_pull: bool = False) -> None:
     """
     Starts the sample project via docker compose.
@@ -138,10 +143,14 @@ def up(ctx: click.Context, no_pull: bool = False) -> None:
         click.clear()
 
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
-        echo_green("Deployment successful! Initializing fides...")
-        config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+        if not no_init:
+            echo_green("Deployment successful! Initializing fides...")
+            config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+            check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+        else:
+            echo_green("Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)")
         print_divider()
-        check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+
         print_deploy_success()
     except CalledProcessError:
         teardown_application()
