@@ -24,5 +24,6 @@ class Registration(GetRegistrationStatusResponse):
     """
 
     analytics_id: str
+    opt_in: bool
     user_email: Optional[str]
     user_organization: Optional[str]
