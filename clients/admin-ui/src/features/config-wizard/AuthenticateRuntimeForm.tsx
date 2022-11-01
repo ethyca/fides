@@ -7,7 +7,7 @@ import { useGetScanResultsQuery } from "~/features/common/plus.slice";
 import { successToastParams } from "~/features/common/toast";
 import { RTKErrorResult } from "~/types/errors";
 
-import { changeStep } from "./config-wizard.slice";
+import { changeStep, setSystemsForReview } from "./config-wizard.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
@@ -43,6 +43,7 @@ const AuthenticateRuntimeForm = () => {
           `Your scan was successfully completed, with ${data.systems.length} new systems detected!`
         )
       );
+      dispatch(setSystemsForReview(data.systems));
       dispatch(changeStep());
     }
   }, [data, dispatch, toast]);
