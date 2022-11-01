@@ -4,6 +4,7 @@ from fastapi import Depends, status
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
+from fides.api.ops.analytics import send_registration
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.registration import UserRegistration
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
     status_code=status.HTTP_200_OK,
     response_model=schemas.GetRegistrationStatusResponse,
 )
-def get_registration_status(
+async def get_registration_status(
     *,
     db: Session = Depends(deps.get_db),
 ) -> schemas.GetRegistrationStatusResponse:
@@ -45,7 +46,7 @@ def get_registration_status(
     status_code=status.HTTP_200_OK,
     response_model=schemas.Registration,
 )
-def update_registration_status(
+async def update_registration_status(
     *,
     db: Session = Depends(deps.get_db),
     data: schemas.Registration,
@@ -53,6 +54,7 @@ def update_registration_status(
     """
     Return the registration status of this Fides deployment.
     """
+    send_to_fideslog = False
     registrations = UserRegistration.all(db=db)
     if registrations:
         registration = registrations[0]
@@ -67,14 +69,20 @@ def update_registration_status(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This Fides deployment is already registered.",
             )
+    else:
+        # If a user registers locally and opts out, don't send data to Fideslog
+        send_to_fideslog = data.opt_in
 
     logger.debug(
         "Registering Fides with analytics_id: %s to opt_in: %s",
         data.analytics_id,
         data.opt_in,
     )
-    registration = UserRegistration.create_or_update(
+    registration, _ = UserRegistration.create_or_update(
         db=db,
         data=data.dict(),
     )
+    if send_to_fideslog:
+        await send_registration(registration)
+
     return registration
