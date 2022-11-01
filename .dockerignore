@@ -48,4 +48,4 @@ venv/
 
 # Dev files
 .pre-commit-config.yaml
-.fides/fides.toml
+.fides/
