@@ -1,9 +1,4 @@
-import { DataCategory, DatasetField } from "~/types/api";
-
-export interface ColumnMetadata {
-  name: string;
-  attribute: keyof DatasetField;
-}
+import { DataCategory } from "~/types/api";
 
 export enum EditableType {
   DATASET = "dataset",

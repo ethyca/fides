@@ -37,7 +37,8 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values['password'])}@{values['host']}:{values['port']}/{values.get('db_index', '')}"
+        db_index = values.get("db_index") if values.get("db_index") is not None else ""
+        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}"
 
     class Config:
         env_prefix = ENV_PREFIX

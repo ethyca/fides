@@ -3,7 +3,7 @@ import {
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
-import { ConfigConsentOption } from "~/config/types";
+import { ConfigConsentOption } from "~/types/config";
 
 describe("makeConsentItems", () => {
   const consentOptions: ConfigConsentOption[] = [

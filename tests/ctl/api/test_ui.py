@@ -15,6 +15,7 @@ STATIC_FILES = (
     "dataset/new.html",
     "dataset/[id].html",
     "nested/[...slug].html",
+    "multimatch/[first].html",
 )
 
 
@@ -53,9 +54,9 @@ def test_generate_route_file_map(route_file_map: Dict[re.Pattern, Path]) -> None
         ("dataset/G00d-Times_R011/", "dataset/[id].html"),
         ("nested/you/me/and", "nested/[...slug].html"),
         ("nested/the_devil/makes/3/", "nested/[...slug].html"),
+        ("multimatch/one", "multimatch/[first].html"),
     ],
 )
-@pytest.mark.xfail()  # TODO: see https://github.com/ethyca/fides/issues/1525
 def test_match_route(
     tmp_static: Path, route_file_map: Dict[re.Pattern, Path], route: str, expected: str
 ) -> None:

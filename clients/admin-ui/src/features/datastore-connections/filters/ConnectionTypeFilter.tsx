@@ -50,7 +50,7 @@ const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
 
   return (
     <MultiSelectDropdown
-      label="Datastore Type"
+      label="Connection Type"
       list={list}
       onChange={handleChange}
       selectedList={selectedList}

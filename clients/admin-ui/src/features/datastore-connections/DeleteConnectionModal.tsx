@@ -60,8 +60,8 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 fontWeight="sm"
                 lineHeight="20px"
               >
-                Deleting a datastore connection may impact any subject request
-                that is currently in progress. Do you wish to proceed?
+                Deleting a connection may impact any privacy request that is
+                currently in progress. Do you wish to proceed?
               </Text>
             </Stack>
           </ModalBody>
@@ -95,7 +95,7 @@ const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
                 color: "gray.600",
               }}
             >
-              Delete Connection
+              Delete connection
             </Button>
           </ModalFooter>
         </ModalContent>
