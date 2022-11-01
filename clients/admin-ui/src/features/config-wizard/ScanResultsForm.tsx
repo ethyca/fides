@@ -16,6 +16,7 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
+import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
 import { useUpsertSystemsMutation } from "~/features/system";
@@ -56,18 +57,29 @@ const ScanResultsForm = () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     createSystems();
 
-    if (features.plus) {
-      router.push(`/datamap`);
-    }
+    const basePath = router.basePath || "/";
 
-    router.push(`/system`);
+    const datamapRoute = resolveLink({
+      href: "/datamap",
+      basePath,
+    });
+
+    const systemRoute = resolveLink({
+      href: "/system",
+      basePath,
+    });
+
+    return features.plus
+      ? router.push(datamapRoute.href)
+      : router.push(systemRoute.href);
   };
 
   const handleSubmit = () => {
     if (systems.length > selectedSystems.length) {
       onWarningOpen();
+    } else {
+      confirmRegisterSelectedSystems();
     }
-    confirmRegisterSelectedSystems();
   };
 
   const handleCancel = () => {

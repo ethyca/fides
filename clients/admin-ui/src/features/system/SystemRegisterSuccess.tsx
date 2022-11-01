@@ -17,14 +17,14 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features.slice";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
+import { resolveLink } from "~/features/common/nav/zone-config";
 import {
   setActiveSystem,
   useGetAllSystemsQuery,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
-
-import { useFeatures } from "../common/features.slice";
 
 interface Props {
   system: System;
@@ -42,10 +42,24 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
     : [];
 
   const systemName = system.name ?? system.fides_key;
+  const basePath = router.basePath || "/";
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
-    return features.plus ? router.push("/datamap") : router.push("/system");
+
+    const datamapRoute = resolveLink({
+      href: "/datamap",
+      basePath,
+    });
+
+    const systemRoute = resolveLink({
+      href: "/system",
+      basePath,
+    });
+
+    return features.plus
+      ? router.push(datamapRoute.href)
+      : router.push(systemRoute.href);
   };
 
   return (
