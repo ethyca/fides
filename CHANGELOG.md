@@ -22,6 +22,7 @@ The types of changes are:
 ### Fixed
 
 * Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
+* Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
 
 ## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
