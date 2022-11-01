@@ -62,7 +62,7 @@ const ConfigWizardWalkthrough = () => {
       </Box>
       <Divider orientation="horizontal" />
       <Stack direction={["column", "row"]}>
-        <Stack bg="white" height="100vh" maxW="60%">
+        <Stack bg="white" height="100vh">
           <Stack mt={10} mb={10} direction="row" spacing="24px">
             <Box flexShrink={0}>
               <Stepper
@@ -71,6 +71,7 @@ const ConfigWizardWalkthrough = () => {
                 steps={STEPS}
               />
             </Box>
+<Box w={step === 4 ? "100%" : "40%"}>
             {step === 1 ? <OrganizationInfoForm /> : null}
             {step === 2 ? (
               <AddSystemForm
@@ -78,11 +79,9 @@ const ConfigWizardWalkthrough = () => {
               />
             ) : null}
             {step === 3 ? <AuthenticateScanner /> : null}
-            {step === 4 ? (
-              <ScanResultsForm
-                manualSystemSetupChosen={manualSystemSetupChosen}
-              />
-            ) : null}
+            {step === 4 ?  (<Box pr={10}>
+                  <ScanResultsForm />
+                </Box>) : null}
             {/* These steps should only apply if you're creating systems manually */}
             {step === 5 && manualSystemSetupChosen ? (
               <Stack direction="column">

@@ -1,9 +1,6 @@
 import pytest
 
-from fides.api.ops.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-    REGISTRATION,
-)
+from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.api.ops.models.registration import UserRegistration
 
 

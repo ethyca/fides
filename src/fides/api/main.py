@@ -22,14 +22,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
-from fides.api.ctl.routes import (
-    admin,
-    crud,
-    datamap,
-    generate,
-    health,
-    validate,
-)
+from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
     get_admin_index_as_response,
