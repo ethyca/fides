@@ -231,11 +231,15 @@ def generate_system_records(
                 data_protection_impact_assessment["progress"],
                 data_protection_impact_assessment["link"],
             ]
-            length_to_na = 12
-            start_position = 6
-            for i in range(length_to_na):
-                system_row.insert(i + start_position, EMPTY_COLUMN_PLACEHOLDER)
+            num_privacy_declaration_fields = 12
+            privacy_declaration_start_index = 6
+            for i in range(num_privacy_declaration_fields):
+                system_row.insert(
+                    i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
+                )
             system_row.append(EMPTY_COLUMN_PLACEHOLDER)
+
+            # also add n/a for the dataset reference
             output_list += [tuple(system_row)]
 
     return output_list
