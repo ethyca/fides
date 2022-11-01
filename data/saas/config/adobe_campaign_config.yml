@@ -3,33 +3,39 @@ saas_config:
   name: Adobe Campaign SaaS Config
   type: adobe_campaign
   description: A schema representing the Adobe Campaign connector for Fidesops
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: mc.adobe.io
+    - name: organization
+      description: e.g. ORGANIZATION for production or ORGANIZATION-mkt-stage for staging
     - name: organization_id
+      description: e.g. ***@AdobeOrg
+    - name: client_id
+    - name: client_secret
+    - name: technical_account_id
+      description: e.g. ***@techacct.adobe.com
+    - name: private_key
+      description: PEM formatted
     - name: namespace
       default_value: defaultNamespace1
       description: The namespace to use for data protections requests
     - name: regulation
+      options: [CCPA, GDPR]
       description: The regulation to follow for data protection requests
-    - name: client_id
-    - name: technical_account_id
-    - name: private_key
-    - name: client_secret
 
   client_config:
     protocol: https
-    host: <domain>/<organization_id>
+    host: <domain>/<organization>
     authentication:
       strategy: adobe
       configuration:
         organization_id: <organization_id>
         technical_account_id: <technical_account_id>
         client_id: <client_id>
-        private_key: <private_key>
         client_secret: <client_secret>
+        private_key: <private_key>
 
   test_request:
     method: GET

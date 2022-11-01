@@ -1,17 +1,22 @@
+import logging
 import math
 import time
-from typing import Any, Dict, Optional
+from datetime import datetime, timedelta
+from typing import Dict, cast
 
-import jwt.utils
 from jwt import encode
-from requests import PreparedRequest
+from requests import PreparedRequest, post
+from sqlalchemy.orm import Session
 
+from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.ops.util.saas_util import assign_placeholders
+
+logger = logging.getLogger(__name__)
 
 
 class AdobeAuthenticationConfiguration(StrategyConfiguration):
@@ -38,8 +43,8 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
         self.organization_id = configuration.organization_id
         self.technical_account_id = configuration.technical_account_id
         self.client_id = configuration.client_id
+        self.client_secret = configuration.client_secret
         self.private_key = configuration.private_key
-        self.client_secrent = configuration.client_secret
 
     def add_authentication(
         self, request: PreparedRequest, connection_config: ConnectionConfig
@@ -48,21 +53,69 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
         Generate an Adobe JWT and add it as bearer auth
         """
 
-        secrets: Optional[Dict[str, Any]] = connection_config.secrets
+        secrets = cast(Dict, connection_config.secrets)
+        access_token = secrets.get("access_token")
+        expires_at = secrets.get("expires_at")
 
-        token = encode(
-            {
-                "exp": str(math.floor(time.time() + 60)),
-                "iss": f"{assign_placeholders(self.organization_id, secrets)}@AdobeOrg",
-                "sub": f"{assign_placeholders(self.technical_account_id, secrets)}@techacct.adobe.com",
-                "https://ims-na1.adobelogin.com/s/meta_scope": True,
-                "aud": f"https://ims-na1.adobelogin.com/c/{assign_placeholders(self.client_id, secrets)}",
-            },
-            jwt.utils.base64url_decode(
-                assign_placeholders(self.private_key, secrets)  # type: ignore
-            ),
-            algorithm="RS256",
-        )
+        if not access_token or self._close_to_expiration(expires_at, connection_config):
+            # generate a JWT token and sign it with the private key
+            jwt_token = encode(
+                {
+                    "exp": math.floor(time.time() + 60),
+                    "iss": f"{assign_placeholders(self.organization_id, secrets)}",
+                    "sub": f"{assign_placeholders(self.technical_account_id, secrets)}",
+                    "https://ims-na1.adobelogin.com/s/ent_campaign_sdk": True,
+                    "aud": f"https://ims-na1.adobelogin.com/c/{assign_placeholders(self.client_id, secrets)}",
+                },
+                assign_placeholders(self.private_key, secrets),
+                algorithm="RS256",
+            )
 
-        request.headers["Authorization"] = f"Bearer {token}"
+            # exchange the short-lived JWT token for longer-lived access token
+            response = post(
+                url="https://ims-na1.adobelogin.com/ims/exchange/jwt",
+                data={
+                    "client_id": assign_placeholders(self.client_id, secrets),
+                    "client_secret": assign_placeholders(self.client_secret, secrets),
+                    "jwt_token": jwt_token,
+                },
+            )
+
+            if response.ok:
+                json_response = response.json()
+                access_token = json_response.get("access_token")
+                expires_in = json_response.get("expires_in")
+
+                data = {
+                    "access_token": access_token,
+                    "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                }
+
+                # save values to the connection_config secrets
+                db = Session.object_session(connection_config)
+                updated_secrets = {**secrets, **data}
+                connection_config.update(db, data={"secrets": updated_secrets})
+                logger.info(
+                    "Successfully updated the access token for %s",
+                    connection_config.key,
+                )
+            else:
+                raise FidesopsException(f"Unable to get access token {response.json()}")
+
+        request.headers["Authorization"] = f"Bearer {access_token}"
         return request
+
+    @staticmethod
+    def _close_to_expiration(
+        expires_at: int, connection_config: ConnectionConfig
+    ) -> bool:
+        """Check if the access_token will expire in the next 10 minutes."""
+
+        if expires_at is None:
+            logger.info(
+                "The expires_at value is not defined for %s, skipping token refresh",
+                connection_config.key,
+            )
+            return False
+
+        return expires_at < (datetime.utcnow() + timedelta(minutes=10)).timestamp()
