@@ -7,9 +7,10 @@ The Fides developer tools allow engineers and legal teams to label system privac
 ## Key Features
 
 ### End-to-End Data Subject Request Automation
+Start your Fides privacy engineering journey by running a DSR [against real databases](./getting-started/sample_project.md), or easily incorporate Fides into your [existing infrastructure](./dsr_quickstart/basic_setup.md).
+
  When your organization receives a privacy request, Fides will automatically fulfill it according to the [execution policies](./getting-started/execution_policies.md) your legal and business owners have created. Fides orchestrates connections to both your owned [databases](./getting-started/database_connectors.md) and [third-party systems](./saas_connectors/saas_config.md) to access, update, and delete sensitive data.
 
-Start your Fides privacy engineering journey by running a DSR [against real databases](./getting-started/sample_project.md), or easily incorporate Fides into your [existing infrastructure](./dsr_quickstart/basic_setup.md).
 
 ### Privacy-as-Code
 Fides' extensible [description language](https://ethyca.github.io/fideslang/) allows you to describe your datasets and code in human-readable manifest files. Create a consistent, versioned definition of your system's privacy characteristics and resources for use in your [CI/CD pipeline](./cicd/examples), when processing [privacy requests](./getting-started/privacy_requests), or in the [Fides UI](./ui/overview/).

@@ -10,23 +10,22 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
-      - DSR Automation:
-          - Get Started with DSR Automation:
-              - Basic Setup: dsr_quickstart/basic_setup.md
-              - Environment Configuration: dsr_quickstart/environment_configuration.md
-              - Configure Connectors: dsr_quickstart/configure_connectors.md
-              - Connect Databases: dsr_quickstart/connect_databases.md
-              - Customize the Privacy Center: dsr_quickstart/privacy_center.md
-              - Process a DSR: dsr_quickstart/dsr_processing.md
+      - Get Started with DSR Automation:
           - Sample Fides Application: getting-started/sample_project.md
-      - Privacy Requests:
+          - Basic Setup: dsr_quickstart/basic_setup.md
+          - Environment Configuration: dsr_quickstart/environment_configuration.md
+          - Configure Connectors: dsr_quickstart/configure_connectors.md
+          - Connect Databases: dsr_quickstart/connect_databases.md
+          - Customize the Privacy Center: dsr_quickstart/privacy_center.md
+          - Process a DSR: dsr_quickstart/dsr_processing.md
+      - Understanding Privacy Requests:
           - Connect to Databases: getting-started/database_connectors.md
           - Generate Resources: getting-started/generate_resources.md
           - Create Datasets: getting-started/datasets.md
           - Configure Storage Destinations: getting-started/storage.md
           - Create Execution Policies: getting-started/execution_policies.md
           - Execute Privacy Requests: getting-started/privacy_requests.md
-      - How-To Guides:
+      - In-Depth Guides:
           - Authenticate with OAuth: guides/oauth.md
           - Create Policies: guides/policies.md
           - Extend the Taxonomy: guides/extend_taxonomy.md

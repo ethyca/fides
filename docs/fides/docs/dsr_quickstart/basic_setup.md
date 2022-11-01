@@ -1,10 +1,12 @@
 # Get Started with DSR Automation
 
-This guide is designed to walk you through configuring Fides and automating your first Data Subject Request. To quickly run Fides against real databases for experimentation, see the provided [sample project](../getting-started/sample_project.md). 
+This guide is designed to walk you through configuring Fides and automating your first Data Subject Request.
+
+To quickly run Fides against real databases for experimentation, see the provided [sample project](../getting-started/sample_project.md). 
 
 ## Set up a compute instance
 The instance you use for running Fides should simulate a "typical" developer machine (e.g., a modern laptop with 8GB RAM, an m6g.large on AWS EC2, etc).
-xw
+
 ### Instance requirements
 Your instance must: 
 
@@ -31,4 +33,4 @@ Python 3.9.13
 ```
 
 ## Next steps
-You are now ready to install Fides, and set up your [environment](./environment_configuration.md).
+You are now ready to install Fides, and set up your [environment](./environment_configuration.md)!
