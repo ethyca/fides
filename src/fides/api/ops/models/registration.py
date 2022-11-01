@@ -3,11 +3,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from fideslib.db.base_class import Base, FidesBase
 from fideslog.sdk.python.registration import Registration
-from sqlalchemy import (
-    Boolean,
-    Column,
-    String,
-)
+from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine

@@ -4,8 +4,8 @@ from fastapi import Depends, status
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
-from fides.api.ops.api import deps
 from fides.api.ops.analytics import send_registration
+from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.schemas import registration as schemas
