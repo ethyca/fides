@@ -15,3 +15,10 @@ server_port = "8080"
 
 [user]
 analytics_opt_out = true
+api_key = "test_api_key"
+encryption_key = "test_encryption_key"
+
+[security]
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+oauth_root_client_id = "fidesadmin"
+drp_jwt_secret = "secret"
