@@ -1,15 +1,12 @@
-import {
-  createListenerMiddleware,
-  createSlice,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { addCommonHeaders } from "common/CommonHeaders";
-import { utf8ToB64 } from "common/utils";
-import { User } from "user-management/types";
 
-import type { RootState } from "../../app/store";
-import { BASE_URL, STORAGE_ROOT_KEY } from "../../constants";
+import type { RootState } from "~/app/store";
+import { BASE_URL } from "~/constants";
+import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { utf8ToB64 } from "~/features/common/utils";
+import { User } from "~/features/user-management/types";
+
 import {
   LoginRequest,
   LoginResponse,
@@ -55,27 +52,6 @@ export const selectUser = (state: RootState) => selectAuth(state).user;
 export const selectToken = (state: RootState) => selectAuth(state).token;
 
 export const { login, logout } = authSlice.actions;
-
-export const credentialStorage = createListenerMiddleware();
-credentialStorage.startListening({
-  actionCreator: login,
-  effect: (action, { getState }) => {
-    if (window && window.localStorage) {
-      localStorage.setItem(
-        STORAGE_ROOT_KEY,
-        JSON.stringify(selectAuth(getState() as RootState))
-      );
-    }
-  },
-});
-credentialStorage.startListening({
-  actionCreator: logout,
-  effect: () => {
-    if (window && window.localStorage) {
-      localStorage.removeItem(STORAGE_ROOT_KEY);
-    }
-  },
-});
 
 // Auth API
 export const authApi = createApi({

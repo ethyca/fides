@@ -51,8 +51,3 @@ task_retry_delay = 1
 
 [admin_ui]
 enabled = true
-
-[notifications]
-send_request_completion_notification = false
-send_request_receipt_notification = false
-send_request_review_notification = false

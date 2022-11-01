@@ -28,6 +28,7 @@ The types of changes are:
 * Bulk select and reprocess DSRs that have errored [#1205](https://github.com/ethyca/fides/pull/1489)
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
+* Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
@@ -42,6 +43,7 @@ The types of changes are:
 
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
 * Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
 
 
 ### Docs
@@ -64,6 +66,7 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+* Expired auth tokens will now log the user out automatically. [#1569](https://github.com/ethyca/fides/pull/1569)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 

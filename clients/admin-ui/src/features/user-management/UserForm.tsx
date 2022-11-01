@@ -17,7 +17,7 @@ import * as Yup from "yup";
 
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
 import { CustomTextInput } from "./form/inputs";
-import { User } from "./types";
+import { User, UserCreateResponse } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
@@ -49,7 +49,7 @@ const ValidationSchema = Yup.object().shape({
 interface Props {
   onSubmit: (values: FormValues) => Promise<
     | {
-        data: User;
+        data: User | UserCreateResponse;
       }
     | {
         error: FetchBaseQueryError | SerializedError;
@@ -86,7 +86,7 @@ const UserForm = ({
     // then issue a separate call to update their permissions
     const { data } = result;
     const userWithPrivileges = {
-      id: data.id,
+      user_id: data.id,
       scopes: [...new Set([...values.scopes, "privacy-request:read"])],
     };
     const updateUserPermissionsResult = await updateUserPermissions(

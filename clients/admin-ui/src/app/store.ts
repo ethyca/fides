@@ -56,7 +56,6 @@ import {
 } from "~/features/organization";
 import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
-import { reducer as userReducer } from "~/features/user";
 
 import { authApi, AuthState, reducer as authReducer } from "../features/auth";
 
@@ -90,14 +89,12 @@ const reducer = {
   [dataUseApi.reducerPath]: dataUseApi.reducer,
   [datasetApi.reducerPath]: datasetApi.reducer,
   [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
-  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [scannerApi.reducerPath]: scannerApi.reducer,
   [systemApi.reducerPath]: systemApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
-  [userApi.reducerPath]: userApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
   configWizard: configWizardReducer,
@@ -111,7 +108,6 @@ const reducer = {
   subjectRequests: privacyRequestsReducer,
   system: systemReducer,
   taxonomy: taxonomyReducer,
-  user: userReducer,
   userManagement: userManagementReducer,
 };
 

@@ -40,7 +40,7 @@ const SubjectRequestDetails: NextPage = () => {
   const { data, isLoading, isUninitialized } = useSubjectRequestDetails();
   let body =
     !data || data?.items.length === 0 ? (
-      <Text>404 no subject request found</Text>
+      <Text>404 no privacy request found</Text>
     ) : (
       <SubjectRequest subjectRequest={data?.items[0]!} />
     );
@@ -55,14 +55,14 @@ const SubjectRequestDetails: NextPage = () => {
 
   return (
     <ProtectedRoute>
-      <Layout title="Subject Request">
+      <Layout title="Privacy Request">
         <Heading fontSize="2xl" fontWeight="semibold">
-          Subject Request
+          Privacy Request
           <Box mt={2} mb={9}>
             <Breadcrumb fontWeight="medium" fontSize="sm">
               <BreadcrumbItem>
                 <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
-                  Subject Request
+                  Privacy Request
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbItem>

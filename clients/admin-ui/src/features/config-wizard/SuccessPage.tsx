@@ -85,6 +85,7 @@ const SuccessPage = ({
                 <Tr key={`${s.fides_key}-tr`}>
                   <Td
                     color={i === systemInReviewIndex ? "green.500" : undefined}
+                    pl={0}
                   >
                     {s.name}
                   </Td>

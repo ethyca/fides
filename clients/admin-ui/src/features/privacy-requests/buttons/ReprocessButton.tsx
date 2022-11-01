@@ -46,7 +46,7 @@ const ReprocessButton = forwardRef(
               <Text as="span" fontWeight="semibold">
                 {payload.data.failed.length}
               </Text>{" "}
-              subject request(s). Please review the event log for further
+              privacy request(s). Please review the event log for further
               details.
             </Box>,
             undefined,
@@ -54,7 +54,7 @@ const ReprocessButton = forwardRef(
           );
         }
         if (payload.data.succeeded.length > 0) {
-          successAlert(`Data subject request(s) are now being reprocessed.`);
+          successAlert(`Privacy request(s) are now being reprocessed.`);
         }
       }
       setIsReprocessing(false);
@@ -69,11 +69,11 @@ const ReprocessButton = forwardRef(
       if ("error" in payload) {
         errorAlert(
           getErrorMessage(payload.error),
-          `DSR automation has failed for this subject request due to the following:`,
+          `DSR automation has failed for this privacy request due to the following:`,
           { duration: null }
         );
       } else {
-        successAlert(`Data subject request is now being reprocessed.`);
+        successAlert(`Privacy request is now being reprocessed.`);
       }
       setIsReprocessing(false);
     };

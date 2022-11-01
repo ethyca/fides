@@ -1,99 +1,57 @@
 import {
   Box,
   Button,
-  Checkbox,
   Heading,
   HStack,
   Stack,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   useDisclosure,
 } from "@fidesui/react";
-import { Field, FieldProps, Form, Formik } from "formik";
-import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
-import * as Yup from "yup";
+import React, { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  ColumnDropdown,
+  ColumnMetadata,
+} from "~/features/common/ColumnDropdown";
+import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
+import WarningModal from "~/features/common/WarningModal";
+import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
-import WarningModal from "../common/WarningModal";
 import {
   changeStep,
   chooseSystemsForReview,
   selectSystemsForReview,
 } from "./config-wizard.slice";
 
-interface FormValues {
-  selectedKeys: string[];
-}
+const ALL_COLUMNS: ColumnMetadata[] = [
+  { name: "Name", attribute: "name" },
+  { name: "System type", attribute: "system_type" },
+  { name: "Resource ID", attribute: "fidesctl_meta.resource_id" },
+];
 
-const ValidationSchema = Yup.object().shape({
-  selectedKeys: Yup.array()
-    .of(Yup.string())
-    .compact()
-    .required()
-    .min(1)
-    .label("Selected systems"),
-});
-
-interface Props {
-  manualSystemSetupChosen: boolean;
-}
-
-const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
+const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedKeyValues, setSelectedKeyValues] = useState<string[]>([]);
+  const {
+    isOpen: isWarningOpen,
+    onOpen: onWarningOpen,
+    onClose: onWarningClose,
+  } = useDisclosure();
+  const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
+  const [selectedColumns, setSelectedColumns] =
+    useState<ColumnMetadata[]>(ALL_COLUMNS);
 
-  const features = useFeatures();
+  const confirmRegisterSelectedSystems = () => {
+    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
+    dispatch(changeStep());
+  };
 
-  const initialValues: FormValues = useMemo(
-    () => ({
-      selectedKeys: systems.map((s) => s.fides_key),
-    }),
-    [systems]
-  );
-
-  const handleSubmit = (values: FormValues) => {
-    if (systems.length > values.selectedKeys.length) {
-      setSelectedKeyValues(values.selectedKeys);
-      onOpen();
-    }
-
-    // manual system setup will go to privacy declaration step
-    if (
-      systems.length <= values.selectedKeys.length &&
-      manualSystemSetupChosen
-    ) {
-      dispatch(chooseSystemsForReview(values.selectedKeys));
-      dispatch(changeStep());
-    }
-
-    // non-plus and non-manual system setup will go to system page
-    if (
-      !features.plus &&
-      systems.length <= values.selectedKeys.length &&
-      !manualSystemSetupChosen
-    ) {
-      router.push(`/system`);
-    }
-
-    // plus and non-manual system setup will go to datamap page
-    if (
-      features.plus &&
-      systems.length <= values.selectedKeys.length &&
-      !manualSystemSetupChosen
-    ) {
-      router.push(`/datamap`);
+  const handleSubmit = () => {
+    if (systems.length > selectedSystems.length) {
+      onWarningOpen();
+    } else {
+      confirmRegisterSelectedSystems();
     }
   };
 
@@ -106,7 +64,7 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
 
   const warningMessage = (
     <Text color="gray.500" mb={3}>
-      You’re registering {selectedKeyValues.length} of {systems.length} systems
+      You’re registering {selectedSystems.length} of {systems.length} systems
       available. Do you want to continue with registration or cancel and
       register all systems now?
     </Text>
@@ -114,137 +72,53 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
 
   return (
     <Box maxW="full">
-      <Formik
-        initialValues={initialValues}
-        validationSchema={ValidationSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isValid, values, setValues }) => {
-          const handleChangeAll = (
-            event: React.ChangeEvent<HTMLInputElement>
-          ) => {
-            if (event.target.checked) {
-              setValues(initialValues);
-            } else {
-              setValues({ selectedKeys: [] });
-            }
-          };
+      <Stack spacing={10}>
+        <Heading as="h3" size="lg" data-testid="scan-results">
+          Scan results
+        </Heading>
 
-          const allChecked =
-            values.selectedKeys.length === initialValues.selectedKeys.length;
+        <Box>
+          <Text>
+            Below are search results for {region}. Please select and register
+            the systems you would like to maintain in your mapping and reports.
+          </Text>
+          <Box display="flex" justifyContent="end">
+            <ColumnDropdown
+              allColumns={ALL_COLUMNS}
+              selectedColumns={selectedColumns}
+              onChange={setSelectedColumns}
+            />
+          </Box>
+        </Box>
+        <SystemsCheckboxTable
+          allSystems={systems}
+          checked={selectedSystems}
+          onChange={setSelectedSystems}
+          columns={selectedColumns}
+        />
 
-          return (
-            <Form data-testid="scan-results-form">
-              <WarningModal
-                title="Warning"
-                message={warningMessage}
-                handleConfirm={() => handleSubmit(initialValues ?? values)}
-                isOpen={isOpen}
-                onClose={onClose}
-              />
-              <Stack spacing={10}>
-                <Heading as="h3" size="lg">
-                  Scan results
-                </Heading>
+        <HStack>
+          <Button variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            isDisabled={selectedSystems.length === 0}
+            data-testid="register-btn"
+            onClick={handleSubmit}
+          >
+            Register selected systems
+          </Button>
+        </HStack>
+      </Stack>
 
-                <Text>
-                  Below are search results for {region}. Please select and
-                  register the systems you would like to maintain in your
-                  mapping and reports.
-                </Text>
-
-                {/* TODO(#879): Build out the SystemsTable to have a reusable view for selecting
-                    systems, searching by column, etc.
-                */}
-                <TableContainer>
-                  <Table>
-                    <Thead>
-                      <Tr>
-                        <Th>
-                          <Checkbox
-                            title="Select All"
-                            isChecked={allChecked}
-                            onChange={handleChangeAll}
-                          />
-                        </Th>
-                        <Th>SYSTEM NAME</Th>
-                        <Th>SYSTEM TYPE</Th>
-                        <Th>RESOURCE ID</Th>
-
-                        {/* TODO(#876): These fields are not yet returned by the API.
-                          <Th>REGION/ZONE</Th>
-                          <Th>INSTANCE NAME</Th>
-                          <Th>RESOURCE GROUP</Th>
-                        */}
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {systems.map((system) => (
-                        <Tr
-                          key={system.fides_key}
-                          data-testid={`scan-result-row-${system.fides_key}`}
-                        >
-                          <Td>
-                            <Field
-                              type="checkbox"
-                              name="selectedKeys"
-                              value={system.fides_key}
-                            >
-                              {({ field }: FieldProps<string>) => (
-                                <Checkbox
-                                  {...field}
-                                  isChecked={field.checked}
-                                  data-testid="checkbox"
-                                />
-                              )}
-                            </Field>
-                          </Td>
-                          <Td>
-                            <label htmlFor={`checkbox-${system.fides_key}`}>
-                              {system.name}
-                            </label>
-                          </Td>
-                          <Td>{system.system_type}</Td>
-                          <Td>
-                            <Box
-                              maxW="200px"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              title={system.fidesctl_meta?.resource_id}
-                            >
-                              {system.fidesctl_meta?.resource_id}
-                            </Box>
-                          </Td>
-
-                          {/* TODO(#876): These fields are not yet returned by the API.
-                            <Td>{system.fidesctl_meta?.region_name}</Td>
-                            <Td>{system.fidesctl_meta?.instance_name}</Td>
-                            <Td>{system.fidesctl_meta?.resource_group}</Td>
-                          */}
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-
-                <HStack>
-                  <Button variant="outline" onClick={handleCancel}>
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    isDisabled={!isValid}
-                    data-testid="register-btn"
-                  >
-                    Register selected systems
-                  </Button>
-                </HStack>
-              </Stack>
-            </Form>
-          );
-        }}
-      </Formik>
+      <WarningModal
+        title="Warning"
+        message={warningMessage}
+        handleConfirm={confirmRegisterSelectedSystems}
+        isOpen={isWarningOpen}
+        onClose={onWarningClose}
+      />
     </Box>
   );
 };
