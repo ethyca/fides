@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Any, List
 
 from fastapi import HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -13,6 +13,7 @@ from fides.api.ops.schemas.masking.masking_api import (
 from fides.api.ops.schemas.masking.masking_strategy_description import (
     MaskingStrategyDescription,
 )
+from fides.api.ops.schemas.policy import PolicyMaskingSpec
 from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.ops.util.api_router import APIRouter
 
@@ -25,17 +26,31 @@ logger = logging.getLogger(__name__)
 def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
     """Masks the value(s) provided using the provided masking strategy"""
     try:
-        values = request.values
-        masking_strategy = request.masking_strategy
-        strategy = MaskingStrategy.get_strategy(
-            masking_strategy.strategy, masking_strategy.configuration
-        )
-        logger.info(
-            "Starting masking of %s value(s) with strategy %s",
-            len(values),
-            masking_strategy.strategy,
-        )
-        masked_values = strategy.mask(values, None)
+        values: List[Any] = request.values
+        masked_values: List[Any] = request.values.copy()
+        masking_strategies: List[PolicyMaskingSpec] = request.masking_strategies
+
+        num_strat: int = len(masking_strategies)
+
+        if num_strat > 1:
+            logger.info(
+                "%s masking strategies requested; running in order.",
+                num_strat,
+            )
+
+        for strategy in masking_strategies:
+            masking_strategy = MaskingStrategy.get_strategy(
+                strategy.strategy, strategy.configuration
+            )
+            logger.info(
+                "Starting masking of %s value(s) with strategy %s",
+                len(values),
+                strategy.strategy,
+            )
+            masked_values = masking_strategy.mask(  # type: ignore
+                masked_values, None
+            )  # passing in masked values from previous strategy
+
         return MaskingAPIResponse(plain=values, masked_values=masked_values)
     except NoSuchStrategyException as e:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=str(e))
