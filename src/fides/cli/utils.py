@@ -217,7 +217,6 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         # If we've not opted out, attempt to register the user if they are
         # currently connected to a Fides server
         if ctx.obj["CONFIG"].user.analytics_opt_out is False:
-            click.echo("DEBUG: Checking server status...")
             server_url = ctx.obj["CONFIG"].cli.server_url
             try:
                 check_server_health(server_url)
