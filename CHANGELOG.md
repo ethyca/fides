@@ -33,6 +33,8 @@ The types of changes are:
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 * Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
+* Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
+
 
 ### Changed 
 
@@ -47,7 +49,6 @@ The types of changes are:
 
 ## [1.9.4](https://github.com/ethyca/fides/compare/1.9.2...1.9.4)
 
-* Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
