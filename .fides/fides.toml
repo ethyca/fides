@@ -18,7 +18,6 @@ server_port = 8080
 
 [user]
 analytics_opt_out = false
-api_key = "test_api_key"
 
 [redis]
 host = "redis"
