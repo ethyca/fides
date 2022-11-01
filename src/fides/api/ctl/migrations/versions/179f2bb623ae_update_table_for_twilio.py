@@ -66,11 +66,6 @@ def upgrade():
         ["service_type"],
         unique=True,
     )
-    op.drop_index("ix_emailconfig_id", table_name="emailconfig")
-    op.drop_index("ix_emailconfig_key", table_name="emailconfig")
-    op.drop_index("ix_emailconfig_name", table_name="emailconfig")
-    op.drop_index("ix_emailconfig_service_type", table_name="emailconfig")
-    op.drop_table("emailconfig")
     # ### end Alembic commands ###
 
 
