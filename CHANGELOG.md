@@ -45,6 +45,11 @@ The types of changes are:
 * Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
 * Added DSR quickstart docs, restructured docs navigation [#1651](https://github.com/ethyca/fides/pull/1651)
 
+### Fixed
+
+* Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
+
+
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
 
 ### Fixed
