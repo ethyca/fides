@@ -4067,14 +4067,28 @@
                   "title": "Response Health Health Get",
                   "type": "object",
                   "additionalProperties": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   }
                 },
                 "example": {
                   "webserver": "healthy",
                   "version": "1.0.0",
                   "database": "healthy",
-                  "cache": "healthy"
+                  "cache": "healthy",
+                  "workers_enabled": "True",
+                  "workers": [
+                    "celery@c606808353b5"
+                  ]
                 }
               }
             }
@@ -4088,7 +4102,11 @@
                     "webserver": "healthy",
                     "version": "1.0.0",
                     "database": "unhealthy",
-                    "cache": "healthy"
+                    "cache": "healthy",
+                    "workers_enabled": "True",
+                    "workers": [
+                      "celery@c606808353b5"
+                    ]
                   }
                 }
               }
