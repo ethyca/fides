@@ -199,8 +199,6 @@ def print_deploy_success() -> None:
     )
     echo_green("Next steps:")
 
-    echo_green("\n- Run 'fides init' to set up your local command-line!")
-
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
     echo_green("    (user=fidestest, password=Apassword1!)")

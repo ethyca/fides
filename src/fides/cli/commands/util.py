@@ -47,14 +47,13 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     # create the config file as needed
     config_path = create_config_file(ctx=ctx, fides_directory_location=fides_directory_location)
-    click.echo("To learn more about configuring fides, see:")
-    click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
     print_divider()
 
     # request explicit consent for analytics collection
     check_and_update_analytics_config(ctx=ctx, config_path=config_path)
-    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
+    print_divider()
 
+    send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")
 
 
@@ -136,6 +135,10 @@ def up(ctx: click.Context, no_pull: bool = False) -> None:
         start_application()
         seed_example_data()
         click.clear()
+
+        # Deployment is ready! Perform the same steps as `fides init` to setup CLI
+        config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+        check_and_update_analytics_config(ctx=ctx, config_path=config_path)
         print_deploy_success()
     except CalledProcessError:
         teardown_application()
