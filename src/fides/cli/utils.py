@@ -1,6 +1,7 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
+import os
 import pprint
 import sys
 from datetime import datetime, timezone
@@ -12,6 +13,7 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import click
 import requests
+import toml
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
@@ -104,6 +106,56 @@ def handle_cli_response(
     return response
 
 
+def create_config_file(ctx: click.Context, fides_directory_location: str = ".") -> str:
+    """
+    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
+
+    Returns the config_path if successful
+    """
+    fides_dir_name = ".fides"
+    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
+    config_file_name = "fides.toml"
+    config_path = f"{fides_dir_path}/{config_file_name}"
+    config = ctx.obj["CONFIG"]
+
+    included_values = {
+        "database": {
+            "server",
+            "user",
+            "password",
+            "port",
+            "db",
+        },
+        "logging": {
+            "level",
+            "destination",
+            "serialization",
+        },
+        "cli": {"server_protocol", "server_host", "server_port"},
+    }
+
+    # create the .fides dir if it doesn't exist
+    if not os.path.exists(fides_dir_path):
+        os.mkdir(fides_dir_path)
+        echo_green(f"Created a '{fides_dir_path}' directory.")
+    else:
+        click.echo(f"Directory '{fides_dir_path}' already exists.")
+
+    # create a fides.toml config file if it doesn't exist
+    if not os.path.isfile(config_path):
+        with open(config_path, "w", encoding="utf-8") as config_file:
+            config_dict = config.dict(include=included_values)
+            toml.dump(config_dict, config_file)
+        echo_green(f"Created a fides config file: {config_path}")
+    else:
+        click.echo(f"Configuration file already exists: {config_path}")
+
+    click.echo("To learn more about configuring fides, see:")
+    click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
+
+    return config_path
+
+
 def is_user_registered(ctx: click.Context) -> bool:
     """
     Send a request to the API server, and determine if a registration is already present.
@@ -136,37 +188,47 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     config file with their preferences.
     """
 
+    # TODO: check if server is connected
+    is_server_connected = True
+    should_attempt_registration = is_server_connected and not is_user_registered(ctx)
+
+    # Show our consent prompt in two cases:
+    # 1) we've not collected an explicit opt-out or opt-in for this CLI
+    # 2) we're connected to a server, and we've not registered the user yet
     config_updates: Dict[str, Dict] = {}
-    if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+    if ctx.obj["CONFIG"].user.analytics_opt_out is None or should_attempt_registration:
         click.echo(OPT_OUT_COPY)
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
-            input(OPT_OUT_PROMPT).lower() == "n"
+            input(OPT_OUT_PROMPT + "\n").lower() == "n"
         )
 
         config_updates.update(
             user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
         )
 
-    if ctx.obj["CONFIG"].user.analytics_opt_out is False and not is_user_registered(
-        ctx
-    ):
-        email = input(EMAIL_PROMPT)
-        organization = input(ORGANIZATION_PROMPT)
-        if email and organization:
-            register_user(ctx, email, organization)
+        # If we've not opted out, attempt to collect user registration
+        if (
+            ctx.obj["CONFIG"].user.analytics_opt_out is False
+            and should_attempt_registration
+        ):
+            email = input(EMAIL_PROMPT)
+            organization = input(ORGANIZATION_PROMPT)
+            if email and organization:
+                register_user(ctx, email, organization)
 
         click.echo(CONFIRMATION_COPY)
 
-    is_analytics_opt_out_config_empty = get_config_from_file(
+    # Update the analytics ID in the config file if necessary
+    is_analytics_id_config_empty = get_config_from_file(
         config_path,
         "cli",
         "analytics_id",
     ) in ("", None)
-    is_analytics_opt_out_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
+    is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
         not ctx.obj["CONFIG"].user.analytics_opt_out
-        and is_analytics_opt_out_config_empty
-        and not is_analytics_opt_out_env_var_set
+        and is_analytics_id_config_empty
+        and not is_analytics_id_env_var_set
     ):
         config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
 
