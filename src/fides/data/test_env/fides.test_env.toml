@@ -35,4 +35,4 @@ server_host = "localhost"
 server_port = 8080
 
 [user]
-analytics_opt_out = true
+analytics_opt_out = false

@@ -1,7 +1,8 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 
 from fideslib.db.base_class import Base, FidesBase
+from fideslog.sdk.python.registration import Registration
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import StringEncryptedType
@@ -31,27 +32,48 @@ class UserRegistration(Base):
     analytics_id = Column(String, unique=True, nullable=False)
     opt_in = Column(Boolean, nullable=False, default=False)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> FidesBase:
-        """
-        Updates a registration with the keys provided in `data`.
-        """
-        for key, value in data.items():
-            setattr(self, key, value)
-
-        return self.save(db=db)
-
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create_or_update(
+        cls, db: Session, *, data: Dict[str, Any]
+    ) -> Tuple[FidesBase, bool]:
         """
         Creates a registration if none exists, or updates an existing
         registration matched by `analytics_id`.
         """
+        created_or_updated = True
         existing_model = cls.get_by(
             db=db,
             field="analytics_id",
             value=data["analytics_id"],
         )
         if existing_model:
-            return existing_model.update(db=db, data=data)
+            updated_model, created_or_updated = existing_model.update(db=db, data=data)
+            return (updated_model, created_or_updated)
 
-        return cls.create(db=db, data=data)
+        return (cls.create(db=db, data=data), created_or_updated)
+
+    def update(self, db: Session, data: Dict[str, Any]) -> Tuple[FidesBase, bool]:
+        """
+        Updates a registration with the keys provided in `data`.
+        """
+        model_updated = False
+        for key, value in data.items():
+            if getattr(self, key) != value:
+                setattr(self, key, value)
+                model_updated = True
+
+        if model_updated:
+            return (self.save(db=db), model_updated)
+
+        return (self, model_updated)
+
+    def as_fideslog(self) -> Registration:
+        """
+        Converts a `UserRegistration` into the format required by Fideslog.
+        """
+        email: Optional[str] = self.user_email
+        organization: Optional[str] = self.user_organization
+        return Registration(
+            email=email,
+            organization=organization,
+        )
