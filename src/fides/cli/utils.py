@@ -194,19 +194,15 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     config file with their preferences.
     """
 
-    server_url = ctx.obj["CONFIG"].cli.server_url
-    try:
-        check_server_health(server_url)
-        is_server_connected = True
-    except SystemExit:
-        is_server_connected = False
-    should_attempt_registration = is_server_connected and not is_user_registered(ctx)
-
-    # Show our consent prompt in two cases:
-    # 1) we've not collected an explicit opt-out or opt-in for this CLI
-    # 2) we're connected to a server, and we've not registered the user yet
+    # Prompt for user prompt if we've not collected explicit opt-out or opt-in
+    #
+    # NOTE: this doesn't handle the case where we've collected consent for this CLI,
+    # but are connected to a server for the first time that is unregistered.
+    # This *should* be something we can detect and then "re-prompt" the user for
+    # their email/org information, but right now a lot of our test automation
+    # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
-    if ctx.obj["CONFIG"].user.analytics_opt_out is None or should_attempt_registration:
+    if ctx.obj["CONFIG"].user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
             input(OPT_OUT_PROMPT + "\n").lower() == "n"
@@ -216,17 +212,25 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
             user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
         )
 
-        # If we've not opted out, attempt to collect user registration
-        if (
-            ctx.obj["CONFIG"].user.analytics_opt_out is False
-            and should_attempt_registration
-        ):
-            email = input(EMAIL_PROMPT)
-            organization = input(ORGANIZATION_PROMPT)
-            if email and organization:
-                register_user(ctx, email, organization)
+        # If we've not opted out, attempt to register the user if they are
+        # currently connected to a Fides server
+        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
+            click.echo("DEBUG: Checking server status...")
+            server_url = ctx.obj["CONFIG"].cli.server_url
+            try:
+                check_server_health(server_url)
+                should_attempt_registration = not is_user_registered(ctx)
+            except SystemExit:
+                should_attempt_registration = False
 
-        click.echo(CONFIRMATION_COPY)
+            if should_attempt_registration:
+                email = input(EMAIL_PROMPT)
+                organization = input(ORGANIZATION_PROMPT)
+                if email and organization:
+                    register_user(ctx, email, organization)
+
+            # Either way, thank the user for their opt-in for analytics!
+            click.echo(CONFIRMATION_COPY)
 
     # Update the analytics ID in the config file if necessary
     is_analytics_id_config_empty = get_config_from_file(
