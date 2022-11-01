@@ -58,20 +58,18 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
   };
 
   const createSystems = async () => {
-    await selectedSystems.forEach(async (system: System) =>
-      createSystem(system)
-    );
+    await selectedSystems.forEach((system: System) => createSystem(system));
   };
 
   const handleSubmit = () => {
     if (systems.length > selectedSystems.length) {
       return onWarningOpen();
-    } if (manualSystemSetupChosen) {
+    }
+    if (manualSystemSetupChosen) {
       return confirmRegisterSelectedSystems();
-    } 
-      createSystems();
-      return features.plus ? router.push(`/datamap`) : router.push(`/system`);
-    
+    }
+    createSystems();
+    return features.plus ? router.push(`/datamap`) : router.push(`/system`);
   };
 
   const handleCancel = () => {
