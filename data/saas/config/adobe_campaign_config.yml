@@ -29,7 +29,7 @@ saas_config:
     protocol: https
     host: <domain>/<organization>
     authentication:
-      strategy: adobe
+      strategy: adobe_campaign
       configuration:
         organization_id: <organization_id>
         technical_account_id: <technical_account_id>

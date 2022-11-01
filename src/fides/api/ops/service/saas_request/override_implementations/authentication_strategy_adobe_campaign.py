@@ -19,7 +19,7 @@ from fides.api.ops.util.saas_util import assign_placeholders
 logger = logging.getLogger(__name__)
 
 
-class AdobeAuthenticationConfiguration(StrategyConfiguration):
+class AdobeCampaignAuthenticationConfiguration(StrategyConfiguration):
     """
     Parameters to generate an Adobe JWT token
     """
@@ -36,10 +36,10 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
     Adds an Adobe JWT as bearer auth to the request
     """
 
-    name = "adobe"
-    configuration_model = AdobeAuthenticationConfiguration
+    name = "adobe_campaign"
+    configuration_model = AdobeCampaignAuthenticationConfiguration
 
-    def __init__(self, configuration: AdobeAuthenticationConfiguration):
+    def __init__(self, configuration: AdobeCampaignAuthenticationConfiguration):
         self.organization_id = configuration.organization_id
         self.technical_account_id = configuration.technical_account_id
         self.client_id = configuration.client_id
