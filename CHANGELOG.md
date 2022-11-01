@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Added
+* Initial flow for runtime scanner option in the config wizard [#1640](https://github.com/ethyca/fides/pull/1640)
+
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
 
 ### Fixed
