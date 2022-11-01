@@ -57,8 +57,8 @@ FIDES_ASCII_ART = """
 """
 
 
-def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
-    """Runs a health check and a version check against the server."""
+def check_server_health(server_url: str) -> requests.Response:
+    """Hit the '/health' endpoint and verify the server is available."""
 
     healthcheck_url = server_url + "/health"
     try:
@@ -68,7 +68,13 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
             f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
         )
         raise SystemExit(1)
+    return health_response
 
+
+def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
+    """Runs a health check and a version check against the server."""
+
+    health_response = check_server_health(server_url)
     server_version = health_response.json()["version"]
     normalize_version = lambda v: str(v).replace(".dirty", "", 1)
     if normalize_version(server_version) == normalize_version(cli_version):
@@ -189,7 +195,12 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     """
 
     # TODO: check if server is connected
-    is_server_connected = True
+    server_url = ctx.obj["CONFIG"].cli.server_url
+    try:
+        check_server_health(server_url)
+        is_server_connected = True
+    except SystemExit:
+        is_server_connected = False
     should_attempt_registration = is_server_connected and not is_user_registered(ctx)
 
     # Show our consent prompt in two cases:
