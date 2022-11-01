@@ -52,13 +52,18 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
-  const confirmRegisterSelectedSystems = () => {
-    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    dispatch(changeStep());
-  };
-
   const createSystems = async () => {
     await selectedSystems.forEach((system: System) => createSystem(system));
+  };
+
+  const confirmRegisterSelectedSystems = () => {
+    if (manualSystemSetupChosen) {
+      dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
+      return dispatch(changeStep());
+    } 
+      createSystems();
+    
+    return features.plus ? router.push(`/datamap`) : router.push(`/system`);
   };
 
   const handleSubmit = () => {
