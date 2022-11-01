@@ -137,7 +137,7 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
     # create the .fides dir if it doesn't exist
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
-        echo_green(f"Created a '{fides_dir_path}' directory.")
+        click.echo(f"Created a '{fides_dir_path}' directory.")
     else:
         click.echo(f"Directory '{fides_dir_path}' already exists.")
 
@@ -146,7 +146,7 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
         with open(config_path, "w", encoding="utf-8") as config_file:
             config_dict = config.dict(include=included_values)
             toml.dump(config_dict, config_file)
-        echo_green(f"Created a fides config file: {config_path}")
+        click.echo(f"Created a fides config file: {config_path}")
     else:
         click.echo(f"Configuration file already exists: {config_path}")
 

@@ -139,7 +139,9 @@ def up(ctx: click.Context, no_pull: bool = False) -> None:
         click.clear()
 
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
+        echo_green("Deployment successful! Initializing fides...")
         config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+        print_divider()
         check_and_update_analytics_config(ctx=ctx, config_path=config_path)
         print_deploy_success()
     except CalledProcessError:
