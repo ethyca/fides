@@ -26,7 +26,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 PAGE_SIZE = Params().size
 
 
-class TestPostEmailConfig:
+class TestPostMessagingConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + MESSAGING_CONFIG
@@ -208,7 +208,7 @@ class TestPostEmailConfig:
         }  # fixme- what's the error here?
 
 
-class TestPatchEmailConfig:
+class TestPatchMessagingConfig:
     @pytest.fixture(scope="function")
     def url(self, messaging_config) -> str:
         return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
@@ -290,7 +290,7 @@ class TestPatchEmailConfig:
         email_config.delete(db)
 
 
-class TestPutEmailConfigSecretsMailgun:
+class TestPutMessagingConfigSecretsMailgun:
     @pytest.fixture(scope="function")
     def url(self, messaging_config) -> str:
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
@@ -364,7 +364,7 @@ class TestPutEmailConfigSecretsMailgun:
         )
 
 
-class TestGetEmailConfigs:
+class TestGetMessagingConfigs:
     @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + MESSAGING_CONFIG
@@ -408,7 +408,7 @@ class TestGetEmailConfigs:
         assert expected_response == response_body
 
 
-class TestGetEmailConfig:
+class TestGetMessagingConfig:
     @pytest.fixture(scope="function")
     def url(self, messaging_config) -> str:
         return (V1_URL_PREFIX + MESSAGING_BY_KEY).format(

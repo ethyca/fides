@@ -5,14 +5,14 @@ Revises: 8f1a19465239
 Create Date: 2022-10-31 18:19:26.845723
 
 """
-from alembic import op
-import sqlalchemy_utils
 import sqlalchemy as sa
+import sqlalchemy_utils
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '179f2bb623ae'
-down_revision = '8f1a19465239'
+revision = "179f2bb623ae"
+down_revision = "8f1a19465239"
 branch_labels = None
 depends_on = None
 

@@ -297,18 +297,18 @@ async def create_privacy_request(
 def _send_privacy_request_receipt_message_to_user(
     policy: Optional[Policy], to_identity: Optional[Identity]
 ) -> None:
-    """Helper function to send request receipt email to the user"""
+    """Helper function to send request receipt message to the user"""
     if not to_identity:
         logger.error(
             IdentityNotFoundException(
-                "Identity was not found, so request receipt email could not be sent."
+                "Identity was not found, so request receipt message could not be sent."
             )
         )
         return
     if not policy:
         logger.error(
             PolicyNotFoundException(
-                "Policy was not found, so request receipt email could not be sent."
+                "Policy was not found, so request receipt message could not be sent."
             )
         )
         return
@@ -1159,7 +1159,7 @@ def _send_privacy_request_review_message_to_user(
     if not identity_data:
         logger.error(
             IdentityNotFoundException(
-                "Identity was not found, so request review email could not be sent."
+                "Identity was not found, so request review message could not be sent."
             )
         )
     to_identity: Identity = Identity(

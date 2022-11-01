@@ -65,7 +65,7 @@ def post_config(
     messaging_config: MessagingConfigRequest,
 ) -> MessagingConfigResponse:
     """
-    Given a messaging config, create corresponding EmailConfig object, provided no config already exists
+    Given a messaging config, create corresponding MessagingConfig object, provided no config already exists
     """
 
     try:

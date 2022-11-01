@@ -1693,8 +1693,8 @@ class TestApprovePrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_APPROVE
 
     @pytest.fixture(scope="function")
-    def privacy_request_review_email_notification_enabled(self):
-        """Enable request review email"""
+    def privacy_request_review_notification_enabled(self):
+        """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
         yield
@@ -1861,7 +1861,7 @@ class TestApprovePrivacyRequest:
         generate_auth_header,
         user,
         privacy_request_status_pending,
-        privacy_request_review_email_notification_enabled,
+        privacy_request_review_notification_enabled,
     ):
         payload = {
             JWE_PAYLOAD_SCOPES: user.client.scopes,
@@ -1909,8 +1909,8 @@ class TestDenyPrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
 
     @pytest.fixture(autouse=True, scope="function")
-    def privacy_request_review_email_notification_enabled(self):
-        """Enable request review email"""
+    def privacy_request_review_notification_enabled(self):
+        """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
         CONFIG.notifications.send_request_review_notification = True
         yield
@@ -2856,8 +2856,8 @@ class TestVerifyIdentity:
         )
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_email_notification_enabled(self):
-        """Enable request receipt email"""
+    def privacy_request_receipt_notification_enabled(self):
+        """Enable request receipt"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
         yield
@@ -2882,7 +2882,7 @@ class TestVerifyIdentity:
         api_client,
         url,
         privacy_request,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_notification_enabled,
     ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
@@ -2906,7 +2906,7 @@ class TestVerifyIdentity:
         api_client,
         url,
         privacy_request,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_notification_enabled,
     ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
@@ -2935,7 +2935,7 @@ class TestVerifyIdentity:
         api_client,
         url,
         privacy_request,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_notification_enabled,
     ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
@@ -3041,7 +3041,7 @@ class TestVerifyIdentity:
         api_client,
         url,
         privacy_request,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_notification_enabled,
     ):
         privacy_request.status = PrivacyRequestStatus.identity_unverified
         privacy_request.save(db)
@@ -3646,8 +3646,8 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @pytest.fixture(scope="function")
-    def privacy_request_receipt_email_notification_enabled(self):
-        """Enable request receipt email"""
+    def privacy_request_receipt_notification_enabled(self):
+        """Enable request receipt notification"""
         original_value = CONFIG.notifications.send_request_receipt_notification
         CONFIG.notifications.send_request_receipt_notification = True
         yield
@@ -3667,7 +3667,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         db,
         api_client: TestClient,
         policy,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_email_enabled,
     ):
         data = [
             {
@@ -3718,7 +3718,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         api_client: TestClient,
         policy,
         messaging_config,
-        privacy_request_receipt_email_notification_enabled,
+        privacy_request_receipt_email_enabled,
     ):
         data = [
             {

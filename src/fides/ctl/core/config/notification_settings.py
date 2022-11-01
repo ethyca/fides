@@ -24,7 +24,7 @@ class NotificationSettings(FidesSettings):
         """Ensure the provided type is a valid value."""
         if value:
             valid_values = ["MAILGUN", "TWILIO_TEXT", "TWILIO_EMAIL"]
-            value = value.upper()  # force lowercase for safety
+            value = value.upper()  # force uppercase for safety
 
             if value not in valid_values:
                 raise ValueError(

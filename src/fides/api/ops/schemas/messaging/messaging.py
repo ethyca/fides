@@ -1,7 +1,8 @@
 from enum import Enum
+from re import compile as regex
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
@@ -134,9 +135,7 @@ class MessagingServiceSecrets(Enum):
     TWILIO_ACCOUNT_SID = "twilio_account_sid"
     TWILIO_AUTH_TOKEN = "twilio_auth_token"
     TWILIO_MESSAGING_SERVICE_SID = "twilio_messaging_service_sid"
-    TWILIO_SENDER_PHONE_NUMBER = (
-        "twilio_sender_phone_number"  # formatted like +15558675309
-    )
+    TWILIO_SENDER_PHONE_NUMBER = "twilio_sender_phone_number"
 
     # Twilio Sendgrid/Email
     TWILIO_API_KEY = "twilio_api_key"
@@ -159,14 +158,27 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
     twilio_account_sid: str
     twilio_auth_token: str
     twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[
-        str
-    ]  # Either the twilio_messaging_service_id *OR* the twilio_sender_phone_number should be supplied.
+    twilio_sender_phone_number: Optional[str]
 
     class Config:
         """Restrict adding other fields through this schema."""
 
         extra = Extra.forbid
+
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        sender_phone = values.get("twilio_sender_phone_number")
+        if not values.get("twilio_messaging_service_sid") or sender_phone:
+            raise ValueError(
+                "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+            )
+        if sender_phone:
+            pattern = regex(r"^\+\d+$")
+            if not pattern.search(sender_phone):
+                raise ValueError(
+                    "Sender phone number must include country code, formatted like +15558675309"
+                )
+        return values
 
 
 class MessagingServiceSecretsTwilioEmail(BaseModel):
@@ -186,7 +198,7 @@ class MessagingConfigRequest(BaseModel):
     name: str
     key: Optional[FidesOpsKey]
     service_type: MessagingServiceType
-    details: Optional[Union[MessagingServiceDetailsMailgun]]
+    details: Optional[MessagingServiceDetailsMailgun]
 
     class Config:
         use_enum_values = False

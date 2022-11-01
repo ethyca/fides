@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
-from twilio.base.exceptions import TwilioRestException  # type: ignore
-from twilio.rest import Client  # type: ignore
+from twilio.base.exceptions import TwilioRestException
+from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
@@ -118,7 +118,7 @@ def dispatch_message(
             f"Dispatcher has not been implemented for message service type: {messaging_service}"
         )
     logger.info(
-        "Starting email dispatch for messaging service with action type: %s",
+        "Starting message dispatch for messaging service with action type: %s",
         action_type,
     )
     dispatcher(

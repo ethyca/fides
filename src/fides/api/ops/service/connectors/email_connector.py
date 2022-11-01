@@ -63,7 +63,7 @@ class EmailConnector(BaseConnector[None]):
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
-                to_identity=Identity(**{"email": config.test_email}),
+                to_identity=Identity(email=config.test_email),
                 messaging_method=MessagingMethod.EMAIL,
                 message_body_params=[
                     CheckpointActionRequired(
@@ -202,7 +202,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         dispatch_message(
             db,
             action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
-            to_identity=Identity(**{"email": cc.secrets.get("to_email")}),
+            to_identity=Identity(email=cc.secrets.get("to_email")),
             messaging_method=MessagingMethod.EMAIL,
             message_body_params=template_values,
         )
