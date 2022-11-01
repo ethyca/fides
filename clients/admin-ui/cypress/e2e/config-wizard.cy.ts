@@ -1,7 +1,7 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
 // skipping while configWizardFlag exists
-describe.skip("Config Wizard", () => {
+describe("Config Wizard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
@@ -72,6 +72,18 @@ describe.skip("Config Wizard", () => {
       cy.intercept("PUT", "/api/v1/system*", {
         fixture: "generate/system_to_review.json",
       }).as("putSystem");
+
+      // assert that the systems do POST
+      cy.intercept({
+        method: "POST",
+        url: "/api/v1/system/upsert",
+      }).as("upsertSystems");
+
+      cy.getByTestId("warning-modal-confirm-btn").click();
+
+      cy.wait("@upsertSystems").then((interception) => {
+        assert.isNotNull(interception.response.body, "Upsert call has data");
+      });
     });
 
     it("Displays API errors and allows resubmission", () => {

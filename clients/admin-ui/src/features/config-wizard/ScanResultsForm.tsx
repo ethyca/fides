@@ -62,9 +62,7 @@ const ScanResultsForm = () => {
     if (systems.length > selectedSystems.length) {
       return onWarningOpen();
     }
-    confirmRegisterSelectedSystems();
-    createSystems();
-    return features.plus ? router.push(`/datamap`) : router.push(`/system`);
+    return confirmRegisterSelectedSystems();
   };
 
   const handleCancel = () => {
