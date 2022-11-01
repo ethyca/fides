@@ -232,7 +232,7 @@ def generate_system_records(
                 data_protection_impact_assessment["link"],
             ]
             num_privacy_declaration_fields = 12
-            privacy_declaration_start_index = 6
+            privacy_declaration_start_index = 7
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(
                     i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
