@@ -83,6 +83,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 @pytest.mark.unit
 def test_get_config_cache() -> None:
     "Test lru cache hits."
+
     config = get_config()
     cache_info = get_config.cache_info()
     assert config.user.user_id == "1"
@@ -97,7 +98,7 @@ def test_get_config_cache() -> None:
     assert cache_info.hits == 1
     assert cache_info.misses == 1
 
-    config = get_config("tests/test_config.toml")
+    config = get_config("tests/ctl/test_config.toml")
     cache_info = get_config.cache_info()
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
