@@ -15,7 +15,7 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.5...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
 ### Added
 
@@ -40,8 +40,13 @@ The types of changes are:
 * Updates the default local configuration to not defer tasks to a worker node [#1552](https://github.com/ethyca/fides/pull/1552/)
 * Updates the healthcheck to return health status of connected Celery workers [#1588](https://github.com/ethyca/fides/pull/1588)
 
+
+
+## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
+
 ### Fixed
 
+* Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
 * Handle malformed tokens [#1523](https://github.com/ethyca/fides/pull/1523)
 * Remove thrown exception from getAllPrivacyRequests method [#1592](https://github.com/ethyca/fides/pull/1593)
 * Include systems without a privacy declaration on data map [#1603](https://github.com/ethyca/fides/pull/1603)
@@ -67,7 +72,6 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
-* Expired auth tokens will now log the user out automatically. [#1569](https://github.com/ethyca/fides/pull/1569)
 
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
@@ -84,11 +88,11 @@ The types of changes are:
   * Configure Connector after creation [#1204](https://github.com/ethyca/fides/pull/1356)
 
 ### Fixed
+
 * Privacy Center:
   * Handle error on startup if server isn't running [#1239](https://github.com/ethyca/fides/pull/1239)
   * Fix styling issue with cards [#1240](https://github.com/ethyca/fides/pull/1240)
   * Redirect to index on consent save [#1238](https://github.com/ethyca/fides/pull/1238)
-
 
 ## [1.9.1](https://github.com/ethyca/fides/compare/1.9.0...1.9.1)
 
@@ -320,7 +324,7 @@ The types of changes are:
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
+* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/ctl/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
 
