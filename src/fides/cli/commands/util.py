@@ -148,7 +148,9 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
             config_path = create_config_file(ctx=ctx, fides_directory_location=".")
             check_and_update_analytics_config(ctx=ctx, config_path=config_path)
         else:
-            echo_green("Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)")
+            echo_green(
+                "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"
+            )
         print_divider()
 
         print_deploy_success()
