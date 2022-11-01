@@ -40,6 +40,10 @@ The types of changes are:
 * Updates the default local configuration to not defer tasks to a worker node [#1552](https://github.com/ethyca/fides/pull/1552/)
 * Updates the healthcheck to return health status of connected Celery workers [#1588](https://github.com/ethyca/fides/pull/1588)
 
+### Fixed
+
+* Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
+
 
 
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
