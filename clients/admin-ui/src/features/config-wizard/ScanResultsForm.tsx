@@ -60,9 +60,9 @@ const ScanResultsForm = ({ manualSystemSetupChosen }: Props) => {
     if (manualSystemSetupChosen) {
       dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
       return dispatch(changeStep());
-    } 
-      createSystems();
-    
+    }
+    createSystems();
+
     return features.plus ? router.push(`/datamap`) : router.push(`/system`);
   };
 
