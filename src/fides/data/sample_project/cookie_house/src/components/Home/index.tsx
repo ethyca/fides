@@ -33,9 +33,9 @@ const Home = ({ products }: Props) => {
   }, []);
 
   return (
-    <>
+    <div className={css.main}>
         <Header />
-        <main className={css.main}>
+        <main>
             <div className={css.products}>
             {products.map((product) => (
                 <div key={product.id} className={css.product}>
@@ -64,7 +64,7 @@ const Home = ({ products }: Props) => {
           product={productInPurchase} 
         />
         <Popup trigger={popupTrigger} />
-    </>
+    </div>
   );
 };
 

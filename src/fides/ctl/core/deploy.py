@@ -96,7 +96,7 @@ def check_docker_version() -> bool:
 
 def seed_example_data() -> None:
     run_shell(
-        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/"
+        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push src/fides/data/sample_project/sample_resources/"
     )
     run_shell(
         DOCKER_COMPOSE_COMMAND
@@ -180,7 +180,7 @@ def pull_specific_docker_image() -> None:
             f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
         )
     except CalledProcessError:
-        echo_red("Unable to fetch matching version, defaulting to 'dev' versions...")
+        print("Unable to fetch matching version, defaulting to 'dev' versions...")
 
         try:
             echo("Attempting to pull:")

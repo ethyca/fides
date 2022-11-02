@@ -1,4 +1,5 @@
 .wrapper {
+    background: linear-gradient(180deg, #0C0F30 0%, #01020D 100%);
     font-family: 'Source Sans Pro', serif;
     color: #fff;
     padding: 51px 0;
@@ -24,7 +25,7 @@
         position: absolute;
         left: 50%;
         margin-left: calc(1860px / -2);
-        top: -50px;
+        top: -120px;
         z-index: -1;
     }
     .headingContent {
