@@ -28,7 +28,8 @@ The types of changes are:
 * Bulk select and reprocess DSRs that have errored [#1205](https://github.com/ethyca/fides/pull/1489)
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
-* Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
+* Config Wizard: Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
+* Config Wizard: Flow for runtime scanner option [#1640](https://github.com/ethyca/fides/pull/1640)
 * Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
 
 ### Changed

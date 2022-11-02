@@ -1,13 +1,14 @@
 import { Box, Button, Divider, Stack } from "@fidesui/react";
 import HorizontalStepper from "common/HorizontalStepper";
 import Stepper from "common/Stepper";
+import React, { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CloseSolidIcon } from "~/features/common/Icon";
 import DescribeSystemStep from "~/features/system/DescribeSystemStep";
 import PrivacyDeclarationStep from "~/features/system/PrivacyDeclarationStep";
 import ReviewSystemStep from "~/features/system/ReviewSystemStep";
-import { System } from "~/types/api";
+import { System, ValidTargets } from "~/types/api";
 
 import AddSystemForm from "./AddSystemForm";
 import AuthenticateScanner from "./AuthenticateScanner";
@@ -26,6 +27,7 @@ import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
 import ScanResultsForm from "./ScanResultsForm";
 import SuccessPage from "./SuccessPage";
+import { AddSystemMethods } from "./types";
 
 const ConfigWizardWalkthrough = () => {
   const step = useAppSelector(selectStep);
@@ -33,6 +35,10 @@ const ConfigWizardWalkthrough = () => {
   const dispatch = useAppDispatch();
   const system = useAppSelector(selectSystemInReview);
   const systemsForReview = useAppSelector(selectSystemsForReview);
+
+  const [addSystemMethod, setAddSystemMethod] = useState<AddSystemMethods>(
+    ValidTargets.AWS
+  );
 
   const handleCancelSetup = () => {
     dispatch(reset());
@@ -69,8 +75,12 @@ const ConfigWizardWalkthrough = () => {
             </Box>
             <Box w={step === 4 ? "100%" : "40%"}>
               {step === 1 ? <OrganizationInfoForm /> : null}
-              {step === 2 ? <AddSystemForm /> : null}
-              {step === 3 ? <AuthenticateScanner /> : null}
+              {step === 2 ? (
+                <AddSystemForm onSelectMethod={setAddSystemMethod} />
+              ) : null}
+              {step === 3 ? (
+                <AuthenticateScanner infrastructure={addSystemMethod} />
+              ) : null}
               {step === 4 ? (
                 <Box pr={10}>
                   <ScanResultsForm />
