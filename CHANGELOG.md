@@ -44,6 +44,7 @@ The types of changes are:
 * Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
 * Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
 * Added DSR quickstart docs, restructured docs navigation [#1651](https://github.com/ethyca/fides/pull/1651)
+* Update privacy request execution overview docs [#1258](https://github.com/ethyca/fides/pull/1490)
 
 ### Fixed
 
