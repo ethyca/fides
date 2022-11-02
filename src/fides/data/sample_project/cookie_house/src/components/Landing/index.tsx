@@ -27,9 +27,9 @@ const Landing = () => (
                         <h5>FIDES</h5>
                         <p>This is the webserver and Admin UI to manage Fides, including administering privacy requests (and more!)</p>
                         <p>
-                            Username: <strong>"fidestest"</strong>
+                            Username: <strong>fidestest</strong>
                             <br/>
-                            Password: <strong>"Apassword1!"</strong>
+                            Password: <strong>Apassword1!</strong>
                         </p>
                         <p><a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
                     </div>
