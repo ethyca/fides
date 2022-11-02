@@ -1,17 +1,27 @@
 """Contains all of the Utility-type CLI commands for fides."""
-import os
 from datetime import datetime, timezone
+from subprocess import CalledProcessError
 
 import click
-import toml
-from fideslog.sdk.python.utils import OPT_OUT_COPY, OPT_OUT_PROMPT
 
 import fides
 from fides.cli.utils import (
     FIDES_ASCII_ART,
+    check_and_update_analytics_config,
     check_server,
+    create_config_file,
+    print_divider,
     send_init_analytics,
     with_analytics,
+)
+from fides.ctl.core.deploy import (
+    check_docker_version,
+    check_fides_uploads_dir,
+    print_deploy_success,
+    pull_specific_docker_image,
+    seed_example_data,
+    start_application,
+    teardown_application,
 )
 from fides.ctl.core.utils import echo_green
 
@@ -28,69 +38,23 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     """
 
     executed_at = datetime.now(timezone.utc)
-    separate = lambda: print("-" * 10, end=None)
-    fides_dir_name = ".fides"
-    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
-    config_path = f"{fides_dir_path}/{config_file_name}"
     config = ctx.obj["CONFIG"]
 
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-            "test_db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port", "analytics_id"},
-        "user": {"analytics_opt_out"},
-    }
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
-    separate()
+    print_divider()
 
-    # create the .fides dir if it doesn't exist
-    if not os.path.exists(fides_dir_path):
-        os.mkdir(fides_dir_path)
-        echo_green(f"Created a '{fides_dir_path}' directory.")
-    else:
-        click.echo(f"Directory '{fides_dir_path}' already exists.")
+    # create the config file as needed
+    config_path = create_config_file(
+        ctx=ctx, fides_directory_location=fides_directory_location
+    )
+    print_divider()
 
-    separate()
-
-    # create a fides.toml config file if it doesn't exist
-    if not os.path.isfile(config_path):
-        # request explicit consent for analytics collection
-        click.echo(OPT_OUT_COPY, nl=False)
-        config.user.analytics_opt_out = bool(input(OPT_OUT_PROMPT).lower() == "n")
-
-        separate()
-
-        with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)
-            toml.dump(config_dict, config_file)
-
-        echo_green(f"Created a fides config file: {config_path}")
-        click.echo("To learn more about configuring fides, see:")
-        click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
-
-    else:
-        click.echo(f"Configuration file already exists: {config_path}")
-
-    separate()
-    click.echo("For example policies and help getting started, see:")
-    click.echo("\thttps://ethyca.github.io/fides/guides/policies/")
-    separate()
+    # request explicit consent for analytics collection
+    check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+    print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
-
     echo_green("fides initialization complete.")
 
 
@@ -135,3 +99,72 @@ def worker(ctx: click.Context) -> None:
     from fides.api.ops.tasks import start_worker
 
     start_worker()
+
+
+# NOTE: This behaves similarly to 'init' in that it is excluded from analytics
+# in the main CLI logic. This allows us to run `fides init` _during_ the deploy
+# command, once the sample project server is accessible, to allow us to
+# immediately register it
+@click.group(name="deploy")
+@click.pass_context
+def deploy(ctx: click.Context) -> None:
+    """
+    Deploy a sample project locally to try out Fides.
+    """
+
+
+@deploy.command()
+@click.pass_context
+@click.option(
+    "--no-pull",
+    is_flag=True,
+    help="Use a local image instead of trying to pull from DockerHub.",
+)
+@click.option(
+    "--no-init",
+    is_flag=True,
+    help="Disable the initialization of the Fides CLI, to run in headless mode.",
+)
+def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None:
+    """
+    Starts the sample project via docker compose.
+    """
+
+    check_docker_version()
+    echo_green("Docker version is compatible, starting deploy...")
+
+    if not no_pull:
+        pull_specific_docker_image()
+
+    try:
+        check_fides_uploads_dir()
+        start_application()
+        seed_example_data()
+        click.clear()
+
+        # Deployment is ready! Perform the same steps as `fides init` to setup CLI
+        if not no_init:
+            echo_green("Deployment successful! Initializing fides...")
+            config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+            check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+        else:
+            echo_green(
+                "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"
+            )
+        print_divider()
+
+        print_deploy_success()
+    except CalledProcessError:
+        teardown_application()
+        raise SystemExit(1)
+
+
+@deploy.command()
+@click.pass_context
+def down(ctx: click.Context) -> None:
+    """
+    Stops the sample project and removes all volumes.
+    """
+
+    check_docker_version()
+    teardown_application()

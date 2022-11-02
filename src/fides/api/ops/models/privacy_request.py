@@ -145,13 +145,13 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
 class PrivacyRequest(Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing a data subject request's progression within the Fidesops system.
+    database record representing the request's progression within the Fides system.
     """
 
     external_id = Column(String, index=True)
-    # When the request was dispatched into the Fidesops pipeline
+    # When the request was dispatched into the Fides pipeline
     started_processing_at = Column(DateTime(timezone=True), nullable=True)
-    # When the request finished or errored in the Fidesops pipeline
+    # When the request finished or errored in the Fides pipeline
     finished_processing_at = Column(DateTime(timezone=True), nullable=True)
     # When the request was created at the origin
     requested_at = Column(DateTime(timezone=True), nullable=True)
@@ -263,7 +263,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         super().delete(db=db)
 
     def cache_identity(self, identity: Identity) -> None:
-        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
@@ -350,7 +350,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         return res
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
-        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
         for key, value in drp_request_body_dict.items():
@@ -368,7 +368,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
-        """Sets the encryption key in the Fidesops app cache if provided"""
+        """Sets the encryption key in the Fides app cache if provided"""
         if not encryption_key:
             return
 
@@ -379,7 +379,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         )
 
     def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
-        """Sets masking encryption secrets in the Fidesops app cache if provided"""
+        """Sets masking encryption secrets in the Fides app cache if provided"""
         if not masking_secret:
             return
         cache: FidesopsRedis = get_cache()

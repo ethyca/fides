@@ -31,6 +31,13 @@ from .utils import DEFAULT_CONFIG_PATH, get_test_mode
 class FidesConfig(BaseModel):
     """Umbrella class that encapsulates all of the config subsections."""
 
+    # Pydantic doesn't initialise subsections automatically if
+    # only environment variables are provided at runtime. If the
+    # config subclass is instantiated with no args, Pydantic runs
+    # validation before loading in environment variables, which
+    # always fails if any config vars in the subsection are non-optional.
+    # Using the empty dict allows Python to load in the environment
+    # variables _before_ validating them against the Pydantic schema.
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
@@ -39,7 +46,7 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = SecuritySettings()
+    security: SecuritySettings = {}  # type: ignore
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
@@ -195,7 +202,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         config = FidesConfig.parse_obj(settings)
         return config
     except FileNotFoundError:
-        echo_red("No config file found")
+        print("No config file found")
     except IOError:
         echo_red("Error reading config file")
 

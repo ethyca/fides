@@ -61,10 +61,8 @@ describe.skip("Config Wizard", () => {
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate");
 
-      cy.getByTestId("scan-results-form");
-      cy.getByTestId(`scan-result-row-example-system-1`).within(() => {
-        cy.getByTestId("checkbox").click();
-      });
+      cy.getByTestId("scan-results");
+      cy.getByTestId(`checkbox-example-system-1`).click();
       cy.getByTestId("register-btn").click();
 
       // The request while editing the form should match the generated system's body.

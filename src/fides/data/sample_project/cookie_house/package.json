@@ -1,0 +1,41 @@
+{
+    "name": "my-app",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "dotenv next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "test": "npm run lint && tsc --noemit",
+        "volumes-down": "docker-compose down --volumes"
+    },
+    "dependencies": {
+        "balajs": "^2.0.2",
+        "next": "13.0.0",
+        "pg": "8.8.0",
+        "react": "18.2.0",
+        "react-dom": "18.2.0",
+        "react-hook-form": "7.38.0",
+        "sass": "1.55.0"
+    },
+    "devDependencies": {
+        "@types/node": "18.11.7",
+        "@types/pg": "^8.6.5",
+        "@types/react": "18.0.24",
+        "@types/react-dom": "18.0.8",
+        "@typescript-eslint/eslint-plugin": "5.41.0",
+        "@typescript-eslint/parser": "5.41.0",
+        "autoprefixer": "10.4.13",
+        "dotenv-cli": "6.0.0",
+        "eslint": "8.26.0",
+        "eslint-config-airbnb": "19.0.4",
+        "eslint-config-airbnb-typescript": "17.0.0",
+        "eslint-config-next": "13.0.0",
+        "eslint-plugin-import": "2.26.0",
+        "eslint-plugin-jsx-a11y": "6.6.1",
+        "eslint-plugin-react": "7.31.10",
+        "eslint-plugin-react-hooks": "4.6.0",
+        "typescript": "4.8.4"
+    }
+}

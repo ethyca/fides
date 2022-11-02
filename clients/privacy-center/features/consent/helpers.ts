@@ -1,4 +1,4 @@
-import { ConfigConsentOption } from "~/config/types";
+import { ConfigConsentOption } from "~/types/config";
 
 import {
   ConsentItem,

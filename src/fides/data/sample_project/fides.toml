@@ -1,0 +1,30 @@
+[database]
+server = "fides-db"
+user = "postgres"
+password = "postgres"
+port = "5432"
+db = "fides"
+
+[redis]
+enabled = true
+host = "redis"
+password = "redispass"
+port = 6379
+db_index = 0
+
+[security]
+app_encryption_key = "examplevalidprojectencryptionkey"
+cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+
+[execution]
+require_manual_request_approval = true
+celery_config_path = "/fides/src/fides/data/sample_project/celery.toml"
+
+[cli]
+server_host = "fides"
+server_port = 8080
+
+[user]
+analytics_opt_out = false

@@ -74,9 +74,9 @@ const DSRCustomization: React.FC = () => {
   return (
     <VStack align="stretch" gap="24px">
       <Box color="gray.700" fontSize="14px" w="572px">
-        Customize your PII fields to create a friendly label name for your data
-        subject request packages. This “DSR Package Label” is the label your
-        data subject will see in their downloaded DSR package.
+        Customize your PII fields to create a friendly label name for your
+        privacy request packages. This “Package Label” is the label your user
+        will see in their downloaded package.
       </Box>
       {(isFetching || isLoading) && (
         <Center>

@@ -23,9 +23,7 @@ from fides.api.ops.util.cache import get_cache, get_encryption_cache_key
 from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
-from fides.api.ops.util.storage_authenticator import (
-    get_s3_session,
-)
+from fides.api.ops.util.storage_authenticator import get_s3_session
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)

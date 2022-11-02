@@ -3,7 +3,7 @@
 
 ## Implementation Summary
 
-Fides uses the following Hubspot endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Data Subject Request (DSR). Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
+Fides uses the following Hubspot endpoints to retrieve and delete Personally Identifiable Information (PII) when processing a Privacy Request. Right to Access and Right to Delete (Right to Forget) support for each endpoint is noted below.
 
 |Endpoint | Right to Access | Right to Delete |
 |----|----|----|
@@ -12,6 +12,18 @@ Fides uses the following Hubspot endpoints to retrieve and delete Personally Ide
 |[Owners](https://developers.hubspot.com/docs/api/crm/owners) | Yes | No |
 |[Communication Preferences](https://developers.hubspot.com/docs/api/marketing-api/subscriptions-preferences#endpoint?spec=POST-/communication-preferences/v3/unsubscribe) | Yes | Yes |
 |[Users](https://developers.hubspot.com/docs/api/settings/user-provisioning) | Yes | Yes |
+
+## Scopes
+
+The following Hubspot scopes are required for executing privacy requests:
+
+* crm.objects.contacts.read
+* crm.objects.contacts.write
+* crm.objects.owners.read
+* communication_preferences.read
+* communication_preferences.write
+* settings.user.read
+* settings.users.write
 
 ## Connection Settings
 

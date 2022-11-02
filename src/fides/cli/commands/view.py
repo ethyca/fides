@@ -1,8 +1,9 @@
 """Contains the view group of the commands for fides."""
 
 import click
+from toml import dumps as toml_dumps
 
-from fides.cli.utils import pretty_echo, with_analytics
+from fides.cli.utils import print_divider, with_analytics
 
 
 @click.group(name="view")
@@ -26,13 +27,12 @@ def view_config(
     ctx: click.Context, section: str = "", exclude_unset: bool = False
 ) -> None:
     """
-    Prints the fides configuration values.
-
-    To only view a specific section of the config,
-    supply the section name as an argument.
+    Prints the configuration values being used.
     """
     config = ctx.obj["CONFIG"]
     config_dict = config.dict(exclude_unset=exclude_unset)
     if section:
         config_dict = config_dict[section]
-    pretty_echo(dict_object=config_dict, color="green")
+
+    print_divider()
+    print(toml_dumps(config_dict))

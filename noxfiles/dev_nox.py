@@ -1,5 +1,7 @@
 """Contains the nox sessions for running development environments."""
-import nox
+from nox import Session
+from nox import session as nox_session
+from nox.command import CommandFailed
 
 from constants_nox import (
     COMPOSE_SERVICE_NAME,
@@ -13,12 +15,15 @@ from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import COMPOSE_DOWN_VOLUMES
 
 
-@nox.session()
-def dev(session: nox.Session) -> None:
+@nox_session()
+def dev(session: Session) -> None:
     """Spin up the application. Uses positional arguments for additional features."""
 
     build(session, "dev")
     session.notify("teardown")
+
+    if "worker" in session.posargs:
+        session.run("docker", "compose", "up", "--wait", "worker", external=True)
 
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
@@ -46,13 +51,20 @@ def dev(session: nox.Session) -> None:
         )
 
 
-@nox.session()
-def test_env(session: nox.Session) -> None:
-    """Spins up a comprehensive test environment seeded with data."""
+@nox_session()
+def test_env(session: Session) -> None:
+    """
+    Spins up a comprehensive test environment seeded with data.
+
+    Posargs:
+    test: instead of running 'bin/bash', runs 'fides' to verify the CLI and provide a zero exit code
+    """
+
+    shell_command = "fides" if "test" in session.posargs else "/bin/bash"
 
     # Temporarily override some ENV vars as needed. To set local secrets, see 'example.env'
     test_env_vars = {
-        "FIDES__CONFIG_PATH": "/fides/data/config/fides.test_env.toml",
+        "FIDES__CONFIG_PATH": "/fides/src/fides/data/test_env/fides.test_env.toml",
     }
 
     session.log(
@@ -60,9 +72,9 @@ def test_env(session: nox.Session) -> None:
     )
     try:
         session.run(*COMPOSE_DOWN_VOLUMES, external=True, env=test_env_vars)
-    except nox.command.CommandFailed:
+    except CommandFailed:
         session.error(
-            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other nox sessions and try again"
+            "Failed to cleanly teardown existing containers & volumes. Please exit out of all other and try again"
         )
     session.notify("teardown", posargs=["volumes"])
 
@@ -125,11 +137,11 @@ def test_env(session: nox.Session) -> None:
         "Example Mongo Database running at localhost:27017 (user: 'mongo_test', pass: 'mongo_pass', db: 'mongo_test')"
     )
     session.log("Opening Fides CLI shell... (press CTRL+D to exit)")
-    session.run(*RUN_NO_DEPS, "/bin/bash", external=True, env=test_env_vars)
+    session.run(*RUN_NO_DEPS, shell_command, external=True, env=test_env_vars)
 
 
-@nox.session()
-def quickstart(session: nox.Session) -> None:
+@nox_session()
+def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
     session.notify("teardown")

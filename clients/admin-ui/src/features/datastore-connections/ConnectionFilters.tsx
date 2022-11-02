@@ -37,7 +37,7 @@ const ConnectionFilters: React.FC = () => {
           autoFocus
           type="search"
           minWidth={200}
-          placeholder="Search datastore name or description"
+          placeholder="Search connection name or description"
           size="sm"
           borderRadius="md"
           value={search}

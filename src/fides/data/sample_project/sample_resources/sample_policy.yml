@@ -1,0 +1,20 @@
+policy:
+  - fides_key: sample_policy
+    name: Sample Privacy Policy
+    description: A sample privacy policy
+    rules:
+      - name: Reject Third Party Advertising
+        description: Disallow collecting any user contact data for third party advertising
+        data_categories:
+          matches: ANY
+          values:
+            - user.contact
+        data_uses:
+          matches: ANY
+          values:
+            - advertising.third_party
+        data_subjects:
+          matches: ANY
+          values:
+            - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified

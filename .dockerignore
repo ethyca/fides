@@ -45,3 +45,7 @@ venv/
 **/videos/
 **/screenshots/
 .DS_Store
+
+# Dev files
+.pre-commit-config.yaml
+.fides/

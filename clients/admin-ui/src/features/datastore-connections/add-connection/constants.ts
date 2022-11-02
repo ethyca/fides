@@ -54,7 +54,7 @@ export const DEFAULT_CONNECTION_TYPE_FILTER = CONNECTION_TYPE_FILTER_MAP.get(
 export const STEPS: AddConnectionStep[] = [
   {
     stepId: 0,
-    label: "Datastore Connections",
+    label: "Connections",
     href: DATASTORE_CONNECTION_ROUTE,
   },
   {
