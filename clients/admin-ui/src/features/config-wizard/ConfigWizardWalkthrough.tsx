@@ -86,6 +86,7 @@ const ConfigWizardWalkthrough = () => {
                   <ScanResultsForm />
                 </Box>
               ) : null}
+              {/* These steps should only apply if you're creating systems manually */}
               {step === 5 ? (
                 <Stack direction="column">
                   {reviewStep <= 3 ? (

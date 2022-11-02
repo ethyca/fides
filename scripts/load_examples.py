@@ -90,7 +90,4 @@ if get_secret("STRIPE_SECRETS")["api_key"]:
         auth_header=auth_header,
     )
 
-# Run an example privacy request
-create_privacy_request(user_email="jane@example.com")
-
 print("Examples loaded successfully!")

@@ -22,6 +22,7 @@ import {
   StepperCircleCheckmarkIcon,
   StepperCircleIcon,
 } from "~/features/common/Icon";
+import { resolveLink } from "~/features/common/nav/zone-config";
 import { System } from "~/types/api";
 
 import { setActiveSystem } from "../system";
@@ -49,7 +50,15 @@ const SuccessPage = ({
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
-    return features.plus ? router.push("/datamap") : router.push("/system");
+
+    const datamapRoute = resolveLink({
+      href: "/datamap",
+      basePath: "/",
+    });
+
+    return features.plus
+      ? router.push(datamapRoute.href)
+      : router.push("/system");
   };
 
   return (

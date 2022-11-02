@@ -7,15 +7,19 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
+import { useFeatures } from "~/features/common/features.slice";
+import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
+import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
 import {
@@ -33,18 +37,34 @@ const ALL_COLUMNS: ColumnMetadata[] = [
 const ScanResultsForm = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const {
     isOpen: isWarningOpen,
     onOpen: onWarningOpen,
     onClose: onWarningClose,
   } = useDisclosure();
+  const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
+  const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
+  const createSystems = async () => {
+    await upsertSystems(selectedSystems);
+  };
+
   const confirmRegisterSelectedSystems = () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    dispatch(changeStep());
+    createSystems();
+
+    const datamapRoute = resolveLink({
+      href: "/datamap",
+      basePath: "/",
+    });
+
+    return features.plus
+      ? router.push(datamapRoute.href)
+      : router.push("/system");
   };
 
   const handleSubmit = () => {
@@ -99,7 +119,7 @@ const ScanResultsForm = () => {
 
         <HStack>
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            Back
           </Button>
           <Button
             variant="primary"
