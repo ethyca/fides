@@ -14,7 +14,8 @@ from fides.api.ops.models.privacy_request import (
     ManualAction,
 )
 from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType, MessagingMethod
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -182,7 +183,8 @@ async def test_email_connector_cache_and_delayed_send(
         call_args["action_type"]
         == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
     )
-    assert call_args["to_email"] == "test@example.com"
+    assert call_args["to_identity"] == Identity(email="test@example.com")
+    assert call_args["messaging_method"] == MessagingMethod.EMAIL
     assert call_args["message_body_params"] == raw_email_template_values
 
     created_email_audit_log = (

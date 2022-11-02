@@ -37,7 +37,7 @@ def test_email_dispatch_mailgun_success(
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_identity=Identity(**{"email": "test@email.com"}),
         messaging_method=get_messaging_method(
-            CONFIG.notifications.notification_service_type
+            MessagingServiceType.MAILGUN.value
         ),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
@@ -67,7 +67,7 @@ def test_email_dispatch_mailgun_config_not_found(
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
             messaging_method=get_messaging_method(
-                CONFIG.notifications.notification_service_type
+                MessagingServiceType.MAILGUN.value
             ),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
@@ -103,7 +103,7 @@ def test_email_dispatch_mailgun_config_no_secrets(
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
             messaging_method=get_messaging_method(
-                CONFIG.notifications.notification_service_type
+                MessagingServiceType.MAILGUN.value
             ),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
@@ -135,7 +135,7 @@ def test_email_dispatch_mailgun_failed_email(db: Session, messaging_config) -> N
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=Identity(**{"email": "test@email.com"}),
                 messaging_method=get_messaging_method(
-                    CONFIG.notifications.notification_service_type
+                    MessagingServiceType.MAILGUN.value
                 ),
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code="2348", verification_code_ttl_seconds=600

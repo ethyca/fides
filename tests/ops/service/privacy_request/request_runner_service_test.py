@@ -35,9 +35,10 @@ from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
-    MessagingActionType,
+    MessagingActionType, MessagingMethod,
 )
 from fides.api.ops.schemas.policy import Rule
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
@@ -1677,7 +1678,7 @@ class TestPrivacyRequestsEmailConnector:
         assert mailgun_send.called
         kwargs = mailgun_send.call_args.kwargs
         assert type(kwargs["messaging_config"]) == MessagingConfig
-        assert type(kwargs["email"]) == EmailForActionType
+        assert type(kwargs["message"]) == EmailForActionType
 
     @mock.patch(
         "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
@@ -1963,13 +1964,15 @@ class TestPrivacyRequestsEmailNotifications:
             data,
         )
         pr.delete(db=db)
+        identity = Identity(email=customer_email)
 
         mailgun_send.assert_has_calls(
             [
                 call(
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                    to_email=customer_email,
+                    to_identity=identity,
+                    messaging_method=MessagingMethod.EMAIL,
                     message_body_params=AccessRequestCompleteBodyParams(
                         download_links=[upload_mock.return_value]
                     ),
@@ -1977,7 +1980,8 @@ class TestPrivacyRequestsEmailNotifications:
                 call(
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-                    to_email=customer_email,
+                    to_identity=identity,
+                    messaging_method=MessagingMethod.EMAIL,
                     message_body_params=None,
                 ),
             ],
