@@ -50,7 +50,7 @@ The types of changes are:
 ### Fixed
 
 * Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
-
+* Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
 
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
 
