@@ -20,6 +20,7 @@ oauth_root_client_secret = "fidesadminsecret"
 
 [execution]
 require_manual_request_approval = true
+celery_config_path = "/fides/src/fides/data/sample_project/celery.toml"
 
 [cli]
 server_host = "fides"
