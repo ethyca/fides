@@ -39,7 +39,7 @@ nav:
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
-          - Understanding Privacy Request Execution: guides/fidesops_workflow.md
+          - Understanding Privacy Request Execution: guides/request_execution.md
       - SaaS Connectors:
           - Connect to SaaS Applications: saas_connectors/saas_connectors.md
           - SaaS Configuration: saas_connectors/saas_config.md
@@ -89,6 +89,7 @@ nav:
       - Configuration Wizard: ui/wizard.md
       - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
+      - Manage Systems: ui/systems.md
       - Manage Connections: ui/connections.md
       - Manage Users: ui/user_management.md
       - Privacy Center:  ui/privacy_center.md
