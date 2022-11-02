@@ -2024,11 +2024,15 @@ You're not viewing the latest version.
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">[</span><span class="w"></span>
 <span class="w">  </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;User Email Address&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user_email_address_policy&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;drp_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;access&quot;</span><span class="w"> </span><span class="c1">// optional</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;drp_action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;access&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// optional</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;execution_timeframe&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
+
 <span class="w">  </span><span class="p">}</span><span class="w"></span>
 <span class="p">]</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
@@ -2052,6 +2056,10 @@ You're not viewing the latest version.
 <tr>
 <td><code>drp_action</code></td>
 <td><em>Optional.</em> A <a href="../../guides/data_rights_protocol/">Data Rights Protocol</a> action to associate to this policy. Accepted values are <code>access</code> (must be used with an <a href="#add-a-rule">access Rule</a>) or <code>deletion</code> (must be used with an <a href="#add-an-erasure-rule">erasure Rule</a>).</td>
+</tr>
+<tr>
+<td><code>execution_timeframe</code></td>
+<td>The time in which to fulfill an associated privacy request, in days.</td>
 </tr>
 </tbody>
 </table>
