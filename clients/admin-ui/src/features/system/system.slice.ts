@@ -93,14 +93,6 @@ export const systemApi = createApi({
         }
       },
     }),
-    upsertSystems: build.mutation<UpsertResponse, System[]>({
-      query: (systems) => ({
-        url: `/system/upsert`,
-        method: "POST",
-        body: systems,
-      }),
-      invalidatesTags: ["System"],
-    }),
   }),
 });
 
@@ -109,7 +101,6 @@ export const {
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
   useUpdateSystemMutation,
-  useUpsertSystemsMutation,
   useDeleteSystemMutation,
   useUpsertSystemsMutation,
 } = systemApi;
