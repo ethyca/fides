@@ -17,9 +17,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features.slice";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import { resolveLink } from "~/features/common/nav/zone-config";
 import {
   setActiveSystem,
   useGetAllSystemsQuery,
@@ -33,7 +31,6 @@ interface Props {
 const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const dispatch = useAppDispatch();
-  const features = useFeatures();
   const router = useRouter();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
@@ -42,24 +39,11 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
     : [];
 
   const systemName = system.name ?? system.fides_key;
-  const basePath = router.basePath || "/";
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
 
-    const datamapRoute = resolveLink({
-      href: "/datamap",
-      basePath,
-    });
-
-    const systemRoute = resolveLink({
-      href: "/system",
-      basePath,
-    });
-
-    return features.plus
-      ? router.push(datamapRoute.href)
-      : router.push(systemRoute.href);
+    router.push("/system");
   };
 
   return (

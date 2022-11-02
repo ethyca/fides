@@ -50,21 +50,15 @@ const SuccessPage = ({
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
-    const basePath = router.basePath || "/";
 
     const datamapRoute = resolveLink({
       href: "/datamap",
-      basePath,
-    });
-
-    const systemRoute = resolveLink({
-      href: "/system",
-      basePath,
+      basePath: "/",
     });
 
     return features.plus
       ? router.push(datamapRoute.href)
-      : router.push(systemRoute.href);
+      : router.push("/system");
   };
 
   return (
