@@ -49,13 +49,9 @@ const ScanResultsForm = () => {
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
-  const createSystems = async () => {
-    await upsertSystems(selectedSystems);
-  };
-
-  const confirmRegisterSelectedSystems = () => {
+  const confirmRegisterSelectedSystems = async () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    createSystems();
+    await upsertSystems(selectedSystems);
 
     const datamapRoute = resolveLink({
       href: "/datamap",
