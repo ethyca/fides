@@ -180,7 +180,7 @@ def pull_specific_docker_image() -> None:
             f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
         )
     except CalledProcessError:
-        echo_red("Unable to fetch matching version, defaulting to 'dev' versions...")
+        print("Unable to fetch matching version, defaulting to 'dev' versions...")
 
         try:
             echo("Attempting to pull:")
