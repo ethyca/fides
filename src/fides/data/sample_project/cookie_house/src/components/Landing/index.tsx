@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import css from './style.module.scss';
 import WhatInTheBox from './WhatInTheBox';
-import landingImage from '../../../public/landing-box-transparent.png'
+import landingImage from '../../../public/landing-box-transparent.png';
 
 const Landing = () => (
     <div className={css.wrapper}>
