@@ -1,6 +1,7 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
+import os
 import pprint
 import sys
 from datetime import datetime, timezone
@@ -12,17 +13,23 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import click
 import requests
+import toml
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
 from fideslog.sdk.python.utils import (
+    CONFIRMATION_COPY,
+    EMAIL_PROMPT,
     FIDESCTL_CLI,
     OPT_OUT_COPY,
     OPT_OUT_PROMPT,
+    ORGANIZATION_PROMPT,
     generate_client_id,
 )
+from requests import get, put
 
-import fides
+from fides import __name__ as app_name
+from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.ctl.connectors.models import (
     AWSConfig,
     BigQueryConfig,
@@ -50,8 +57,8 @@ FIDES_ASCII_ART = """
 """
 
 
-def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
-    """Runs a health check and a version check against the server."""
+def check_server_health(server_url: str) -> requests.Response:
+    """Hit the '/health' endpoint and verify the server is available."""
 
     healthcheck_url = server_url + "/health"
     try:
@@ -61,7 +68,13 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
             f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
         )
         raise SystemExit(1)
+    return health_response
 
+
+def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
+    """Runs a health check and a version check against the server."""
+
+    health_response = check_server_health(server_url)
     server_version = health_response.json()["version"]
     normalize_version = lambda v: str(v).replace(".dirty", "", 1)
     if normalize_version(server_version) == normalize_version(cli_version):
@@ -99,6 +112,83 @@ def handle_cli_response(
     return response
 
 
+def create_config_file(ctx: click.Context, fides_directory_location: str = ".") -> str:
+    """
+    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
+
+    Returns the config_path if successful
+    """
+    # TODO: These important constants should live elsewhere
+    fides_dir_name = ".fides"
+    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
+    config_file_name = "fides.toml"
+    config_path = f"{fides_dir_path}/{config_file_name}"
+
+    config = ctx.obj["CONFIG"]
+
+    included_values = {
+        "database": {
+            "server",
+            "user",
+            "password",
+            "port",
+            "db",
+        },
+        "logging": {
+            "level",
+            "destination",
+            "serialization",
+        },
+        "cli": {"server_protocol", "server_host", "server_port"},
+    }
+
+    # create the .fides dir if it doesn't exist
+    if not os.path.exists(fides_dir_path):
+        os.mkdir(fides_dir_path)
+        click.echo(f"Created a '{fides_dir_path}' directory.")
+    else:
+        click.echo(f"Directory '{fides_dir_path}' already exists.")
+
+    # create a fides.toml config file if it doesn't exist
+    if not os.path.isfile(config_path):
+        with open(config_path, "w", encoding="utf-8") as config_file:
+            config_dict = config.dict(include=included_values)
+            toml.dump(config_dict, config_file)
+        click.echo(f"Created a fides config file: {config_path}")
+    else:
+        click.echo(f"Configuration file already exists: {config_path}")
+
+    click.echo("To learn more about configuring fides, see:")
+    click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
+
+    return config_path
+
+
+def is_user_registered(ctx: click.Context) -> bool:
+    """
+    Send a request to the API server, and determine if a registration is already present.
+    """
+
+    response = get(f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
+    return response.json()["opt_in"]
+
+
+def register_user(ctx: click.Context, email: str, organization: str) -> None:
+    """
+    Create a new registration record in the database.
+    """
+
+    put(
+        f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
+        json={
+            "analytics_id": ctx.obj["CONFIG"].cli.analytics_id,
+            "opt_in": True,
+            "user_email": email,
+            "user_organization": organization,
+        },
+    )
+
+
 def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> None:
     """
     Ensure the analytics-related config is present. If not,
@@ -106,28 +196,54 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     config file with their preferences.
     """
 
+    # Prompt for user prompt if we've not collected explicit opt-out or opt-in
+    #
+    # NOTE: this doesn't handle the case where we've collected consent for this CLI,
+    # but are connected to a server for the first time that is unregistered.
+    # This *should* be something we can detect and then "re-prompt" the user for
+    # their email/org information, but right now a lot of our test automation
+    # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
     if ctx.obj["CONFIG"].user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
         ctx.obj["CONFIG"].user.analytics_opt_out = bool(
-            input(OPT_OUT_PROMPT).lower() == "n"
+            input(OPT_OUT_PROMPT + "\n").lower() == "n"
         )
 
         config_updates.update(
             user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
         )
 
-    is_analytics_opt_out = ctx.obj["CONFIG"].user.analytics_opt_out
-    is_analytics_opt_out_config_empty = get_config_from_file(
+        # If we've not opted out, attempt to register the user if they are
+        # currently connected to a Fides server
+        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
+            server_url = ctx.obj["CONFIG"].cli.server_url
+            try:
+                check_server_health(server_url)
+                should_attempt_registration = not is_user_registered(ctx)
+            except SystemExit:
+                should_attempt_registration = False
+
+            if should_attempt_registration:
+                email = input(EMAIL_PROMPT)
+                organization = input(ORGANIZATION_PROMPT)
+                if email and organization:
+                    register_user(ctx, email, organization)
+
+            # Either way, thank the user for their opt-in for analytics!
+            click.echo(CONFIRMATION_COPY)
+
+    # Update the analytics ID in the config file if necessary
+    is_analytics_id_config_empty = get_config_from_file(
         config_path,
         "cli",
         "analytics_id",
     ) in ("", None)
-    is_analytics_opt_out_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
+    is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
-        not is_analytics_opt_out
-        and is_analytics_opt_out_config_empty
-        and not is_analytics_opt_out_env_var_set
+        not ctx.obj["CONFIG"].user.analytics_opt_out
+        and is_analytics_id_config_empty
+        and not is_analytics_id_env_var_set
     ):
         config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
 
@@ -149,7 +265,6 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
         return
 
     analytics_id = get_config_from_file(config_path, "cli", "analytics_id")
-    app_name = fides.__name__
 
     try:
         client = AnalyticsClient(

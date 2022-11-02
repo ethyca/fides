@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Dict, MutableMapping
+from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
 from celery.utils.log import get_task_logger
@@ -63,6 +63,20 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 
 
 celery_app = _create_celery()
+
+
+def get_worker_ids() -> List[Optional[str]]:
+    """
+    Returns a list of the connected heahtly worker UUIDs.
+    """
+    try:
+        connected_workers = [
+            key for key, _ in celery_app.control.inspect().ping().items()
+        ]
+    except Exception as exception:
+        logger.critical(exception)
+        connected_workers = []
+    return connected_workers
 
 
 def start_worker() -> None:

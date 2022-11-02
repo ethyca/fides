@@ -1,9 +1,9 @@
 # Fides UI
 
-Fides provides several user interfaces to assist in receiving and reviewing privacy requests, including options for managing your systems, datasets, and configuration settings. The Privacy Center and Admin UI work together to allow users to submit data subject requests (DSRs), which can then be fulfilled either automatically, or by privacy administrators.
+Fides provides several user interfaces to assist in receiving and reviewing privacy requests, including options for managing your systems, datasets, and configuration settings. The Privacy Center and Admin UI work together to allow users to submit privacy requests, which can then be fulfilled either automatically, or by privacy administrators.
 
 ## Admin UI
-The Admin UI organizes processes like fulfilling [data subject requests](subject_requests.md), creating Fides resources, and [managing user access](user_management.md) into a single control panel. Once configured, the Admin UI allows authorized users to manage policies, [update datasets](datasets.md), and customize your Fides [taxonomy](https://ethyca.github.io/fideslang/taxonomy/overview/).
+The Admin UI organizes processes like fulfilling [privacy requests](privacy_requests.md), creating Fides resources, and [managing user access](user_management.md) into a single control panel. Once configured, the Admin UI allows authorized users to manage policies, [update datasets](datasets.md), and customize your Fides [taxonomy](https://ethyca.github.io/fideslang/taxonomy/overview/).
 
 ![admin ui](../img/admin_ui/sr_overview.png)
 

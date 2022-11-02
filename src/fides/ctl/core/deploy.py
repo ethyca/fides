@@ -1,3 +1,4 @@
+import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
@@ -95,7 +96,7 @@ def check_docker_version() -> bool:
 
 def seed_example_data() -> None:
     run_shell(
-        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/"
+        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push src/fides/data/sample_project/sample_resources/"
     )
     run_shell(
         DOCKER_COMPOSE_COMMAND
@@ -179,7 +180,7 @@ def pull_specific_docker_image() -> None:
             f"docker tag {current_sample_app_image} {sample_app_image_stub.format('sample')}"
         )
     except CalledProcessError:
-        echo_red("Unable to fetch matching version, defaulting to 'dev' versions...")
+        print("Unable to fetch matching version, defaulting to 'dev' versions...")
 
         try:
             echo("Attempting to pull:")
@@ -215,7 +216,8 @@ def print_deploy_success() -> None:
     )
     echo_green("Next steps:")
 
-    echo_green("\n- Run 'fides init' to set up your local command-line!")
+    # Landing Page
+    echo_green("\n- View the documentation http://localhost:3000/landing")
 
     # Admin UI
     echo_green("\n- Visit the Fides Admin UI running at http://localhost:8080")
@@ -235,3 +237,7 @@ def print_deploy_success() -> None:
     # Documentation
     echo_green("\n- Visit ethyca.github.io/fides for documentation.")
     echo_green("\nRun `fides deploy down` to stop the application.")
+
+    # Open the landing page and DSR directory
+    webbrowser.open("http://localhost:3000/landing")
+    webbrowser.open(f"file:///{FIDES_UPLOADS_DIR}")

@@ -1,2 +1,2 @@
-event_queue_prefix = "overridden_fidesops_worker"
-task_default_queue = "overridden_fidesops"
+event_queue_prefix = "overridden_fides_worker"
+task_default_queue = "overridden_fides"
