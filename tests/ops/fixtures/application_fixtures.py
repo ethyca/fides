@@ -179,6 +179,50 @@ def messaging_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def messaging_config_twilio_email(db: Session) -> Generator:
+    name = str(uuid4())
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_twilio_emailconfig",
+            "service_type": MessagingServiceType.TWILIO_EMAIL,
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.TWILIO_API_KEY.value: "123489ctynpiqurwfh"
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_config_twilio_sms(db: Session) -> Generator:
+    name = str(uuid4())
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_twilio_sms_config",
+            "service_type": MessagingServiceType.TWILIO_TEXT,
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "23rwrfwxwef",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23984y29384y598432",
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID: "2ieurnoqw",
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def https_connection_config(db: Session) -> Generator:
     name = str(uuid4())
     connection_config = ConnectionConfig.create(

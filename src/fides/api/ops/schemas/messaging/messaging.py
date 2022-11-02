@@ -26,10 +26,10 @@ class MessagingServiceType(Enum):
 
 
 EMAIL_MESSAGING_SERVICES = [
-    MessagingServiceType.MAILGUN,
-    MessagingServiceType.TWILIO_EMAIL,
+    MessagingServiceType.MAILGUN.value,
+    MessagingServiceType.TWILIO_EMAIL.value,
 ]
-SMS_MESSAGING_SERVICES = [MessagingServiceType.TWILIO_TEXT]
+SMS_MESSAGING_SERVICES = [MessagingServiceType.TWILIO_TEXT.value]
 
 
 class MessagingActionType(str, Enum):

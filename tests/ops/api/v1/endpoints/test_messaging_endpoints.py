@@ -39,6 +39,20 @@ class TestPostMessagingConfig:
             "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
         }
 
+    @pytest.fixture(scope="function")
+    def payload_twilio_email(self):
+        return {
+            "name": "twilio email",
+            "service_type": MessagingServiceType.TWILIO_EMAIL,
+        }
+
+    @pytest.fixture(scope="function")
+    def payload_twilio_sms(self):
+        return {
+            "name": "twilio sms",
+            "service_type": MessagingServiceType.TWILIO_TEXT,
+        }
+
     def test_post_email_config_not_authenticated(
         self, api_client: TestClient, payload, url
     ):
@@ -207,6 +221,62 @@ class TestPostMessagingConfig:
             "detail": "Only one messaging config is supported at a time. Config with key my_mailgun_messaging_config is already configured."
         }  # fixme- what's the error here?
 
+    def test_post_twilio_email_config(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_twilio_email,
+        url,
+        generate_auth_header,
+    ):
+        payload_twilio_email["key"] = "my_twilio_email_config"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=payload_twilio_email)
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_twilio_email_config"
+        )[0]
+
+        expected_response = {
+            "key": "my_twilio_email_config",
+            "name": "twilio_email",
+            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
+            "details": None,
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
+
+    def test_post_twilio_sms_config(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload_twilio_sms,
+        url,
+        generate_auth_header,
+    ):
+        payload_twilio_sms["key"] = "my_twilio_sms_config"
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=payload_twilio_sms)
+        assert 200 == response.status_code
+
+        response_body = json.loads(response.text)
+        email_config = db.query(MessagingConfig).filter_by(key="my_twilio_sms_config")[
+            0
+        ]
+
+        expected_response = {
+            "key": "my_twilio_sms_config",
+            "name": "twilio_sms",
+            "service_type": MessagingServiceType.TWILIO_TEXT.value,
+            "details": None,
+        }
+        assert expected_response == response_body
+        email_config.delete(db)
+
 
 class TestPatchMessagingConfig:
     @pytest.fixture(scope="function")
@@ -362,6 +432,178 @@ class TestPutMessagingConfigSecretsMailgun:
             messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value]
             == "1345234524"
         )
+
+
+class TestPutMessagingConfigSecretTwilioEmail:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config.key
+        )
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {MessagingServiceSecrets.TWILIO_API_KEY.value: "23p48btcpy14b"}
+
+    def test_put_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        messaging_config_twilio_email,
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_twilio_email)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for MessagingConfig with key: my_twilio_email_config.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_twilio_email.secrets[
+                MessagingServiceSecrets.TWILIO_API_KEY.value
+            ]
+            == "23p48btcpy14b"
+        )
+
+
+class TestPutMessagingConfigSecretTwilioSms:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config.key
+        )
+
+    def test_put_config_secrets_with_messaging_service_sid(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_twilio_sms,
+    ):
+        payload = {
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "234ct324",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "3rcuinhewrf",
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID: "asdfasdf",
+        }
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_twilio_sms)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for MessagingConfig with key: my_twilio_email_config.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
+            ]
+            == "234ct324"
+        )
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
+            ]
+            == "3rcuinhewrf"
+        )
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+            ]
+            == "asdfasdf"
+        )
+
+    def test_put_config_secrets_with_sender_phone(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_twilio_sms,
+    ):
+        payload = {
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER: "+12345436543",
+        }
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_twilio_sms)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for MessagingConfig with key: my_twilio_sms_config.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
+            ]
+            == "2asdf35tv5wsdf"
+        )
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
+            ]
+            == "23tc3"
+        )
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+            ]
+            == "+12345436543"
+        )
+
+    def test_put_config_secrets_with_sender_phone_incorrect_format(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_twilio_sms,
+    ):
+        payload = {
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER: "12345436543",
+        }
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 400
+        assert response.json() == {
+            "detail": "Sender phone number must include country code, formatted like +15558675309"
+        }
+
+    def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        messaging_config_twilio_sms,
+    ):
+        payload = {
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
+        }
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert response.status_code == 400
+        assert response.json() == {
+            "detail": "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+        }
 
 
 class TestGetMessagingConfigs:
