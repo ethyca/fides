@@ -8,14 +8,14 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/fidesops_workflow/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/dev/guides/request_execution/">
       
       <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.2.7">
     
     
       
-        <title>Understanding Privacy Request Execution - Fides</title>
+        <title>Privacy Request Execution - Fides</title>
       
     
     
@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fidesops-privacy-request-execution" class="md-skip">
+        <a href="#privacy-request-execution" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Understanding Privacy Request Execution
+              Privacy Request Execution
             
           </span>
         </div>
@@ -217,15 +217,13 @@ You're not viewing the latest version.
         
   
   
-    
-  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link md-tabs__link--active">
+      <a href="../.." class="md-tabs__link">
         Fides
       </a>
     </li>
@@ -325,14 +323,12 @@ You're not viewing the latest version.
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
       
       
       
@@ -615,14 +611,12 @@ You're not viewing the latest version.
               
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" >
       
       
       
@@ -825,175 +819,11 @@ You're not viewing the latest version.
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Understanding Privacy Request Execution
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../fidesops_workflow.md" class="md-nav__link">
         Understanding Privacy Request Execution
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#privacy-request-submission" class="md-nav__link">
-    Privacy request submission
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#privacy-request-execution" class="md-nav__link">
-    Privacy request execution
-  </a>
-  
-    <nav class="md-nav" aria-label="Privacy request execution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#respond-to-manual-webhooks" class="md-nav__link">
-    Respond to manual webhooks
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-pre-execution-webhooks" class="md-nav__link">
-    Run pre-execution webhooks
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#access-request-automation" class="md-nav__link">
-    Access request automation
-  </a>
-  
-    <nav class="md-nav" aria-label="Access request automation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#graph-building" class="md-nav__link">
-    Graph building
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#graph-execution" class="md-nav__link">
-    Graph Execution
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#final-result-retrieval" class="md-nav__link">
-    Final result retrieval
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#upload-results" class="md-nav__link">
-    Upload results
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#erasure-request-automation" class="md-nav__link">
-    Erasure request automation
-  </a>
-  
-    <nav class="md-nav" aria-label="Erasure request automation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#graph-building_1" class="md-nav__link">
-    Graph building
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#graph-execution_1" class="md-nav__link">
-    Graph execution
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#send-erasure-request-emails" class="md-nav__link">
-    Send erasure request emails
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-policy-post-execution-webhooks" class="md-nav__link">
-    Run policy post-execution webhooks
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#send-email-notifications" class="md-nav__link">
-    Send email notifications
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#additional-notes" class="md-nav__link">
-    Additional notes
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1961,7 +1791,7 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#privacy-request-execution" class="md-nav__link">
+  <a href="#privacy-request-execution_1" class="md-nav__link">
     Privacy request execution
   </a>
   
@@ -2095,17 +1925,17 @@ You're not viewing the latest version.
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/fidesops_workflow.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/guides/request_execution.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
 
 
-<h1 id="fidesops-privacy-request-execution">Fidesops Privacy Request Execution</h1>
-<p>When a <a href="../../getting-started/privacy_requests/">Privacy Request</a> is submitted, fidesops performs several prerequisite checks, and then visits your collections in two passes: first, to retrieve relevant data for the subject across all your collections, and again to mask the subject's data, if necessary.</p>
-<p>The following guide outlines the steps fidesops takes to fulfill a privacy request from end to end, including optional configurations and manual data retrieval.</p>
+<h1 id="privacy-request-execution">Privacy Request Execution</h1>
+<p>Fully configured, Fides provides end-to-end <a href="../../getting-started/privacy_requests/">privacy request</a> execution. The following outline summarizes the steps Fides takes to fulfill privacy requests, including optional configurations and manual data retrieval. </p>
 <h2 id="privacy-request-submission">Privacy request submission</h2>
-<p>Prior to processing a privacy request, fidesops first creates records to store the relevant information, and can perform a number of other actions based on your configuration:</p>
+<p>Once a privacy request has been submitted via the <a href="../../ui/privacy_center/">Privacy Center</a>, Fides first creates temporary records to store any relevant submission information.</p>
+<p>Based on your <a href="../../installation/configuration/">configuration</a>, Fides can perform a number of other actions: </p>
 <table>
 <thead>
 <tr>
@@ -2116,11 +1946,11 @@ You're not viewing the latest version.
 <tbody>
 <tr>
 <td><strong>Persist</strong></td>
-<td>Fidesops creates a privacy request in long-term storage to capture high-level information (e.g. date created, current status). Fidesops saves the identity of the subject to both short- and long-term storage.</td>
+<td>Fides creates a privacy request in long-term storage to capture high-level information (e.g. date created, current status). Fides saves the identity of the subject to both short- and long-term storage.</td>
 </tr>
 <tr>
 <td><strong>Verify</strong></td>
-<td>If configured, Fidesops sends an <a href="../../getting-started/privacy_requests/#subject-identity-verification">email</a> to the user to verify their identity before proceeding.</td>
+<td>If configured, Fides sends an <a href="../../getting-started/privacy_requests/#subject-identity-verification">email</a> to the user to verify their identity before proceeding.</td>
 </tr>
 <tr>
 <td><strong>Notify</strong></td>
@@ -2128,13 +1958,13 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><strong>Approve</strong></td>
-<td>If configured, Fidesops will require a system administrator to <a href="../../installation/configuration/">approve</a> the request before proceeding.</td>
+<td>If configured, Fides will require a system administrator to <a href="../../installation/configuration/">approve</a> the request before proceeding.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="privacy-request-execution">Privacy request execution</h2>
-<p>Once the required submission steps have been completed, the request status is updated to <code>in_processing</code> status, and the privacy request is dispatched to a separate queue for processing.</p>
-<p>Request execution involves gathering data from multiple sources, and/or masking data in multiple locations. Fidesops will follow the steps below in order, skipping any that are not applicable for the given request:</p>
+<h2 id="privacy-request-execution_1">Privacy request execution</h2>
+<p>When the required submission steps have been completed, the request status is updated to <code>in_processing</code>, and the privacy request is dispatched to a separate queue for processing. </p>
+<p>Request execution involves gathering data from multiple sources, and/or masking data in multiple locations. Fides will follow the steps below in order, skipping any that are not applicable for the given request (or not configured):</p>
 <ol>
 <li>Respond to manual webhooks</li>
 <li>Run policy pre-execution webhooks</li>
@@ -2146,68 +1976,67 @@ You're not viewing the latest version.
 <li>Send email notifications</li>
 </ol>
 <h3 id="respond-to-manual-webhooks">Respond to manual webhooks</h3>
-<p>Manual webhooks allow data pertaining a subject to be manually uploaded by a fidesops admin. If manual webhooks are enabled, request execution will exit with a status of <code>requires_input</code> until a submission has been received for each manual webhook configured. The privacy request can then be resumed, and request execution will continue from this step.  See <a href="../manual_webhooks/">Manual Webhooks</a> for more information on configuration options and resuming a <code>requires_input</code> request.</p>
+<p>Manual webhooks allow data pertaining a subject to be manually uploaded by a Fides admin. If manual webhooks are enabled, request execution will exit with a status of <code>requires_input</code> until a submission has been received for each manual webhook configured. The privacy request can then be resumed, and request execution will continue from this step.  See <a href="../manual_webhooks/">Manual Webhooks</a> for more information on configuration options and resuming a <code>requires_input</code> request.</p>
 <p>Data uploaded for manual webhooks will be returned to the data subject directly at the end of request execution. Data gathered here is not used to locate data from other sources.</p>
 <h3 id="run-pre-execution-webhooks">Run pre-execution webhooks</h3>
-<p>Policy pre-execution webhooks let your system take care of prerequisite tasks, or locate additional identities for the data subject. Examples include turning on a specific database in your infrastructure, or locating a phone number for a subject from a table for which you do not want to give Fidesops direct access. Configuration involves defining endpoint(s) for fidesops to call in order. See <a href="../policy_webhooks/">Policy Webhooks</a> for more details.</p>
-<p>Fidesops sends a request to each pre-execution webhook with a <a href="../policy_webhooks/#policy-webhook-request-format">policy webhooks request format</a>, which your endpoints should be prepared to unpack. If you need more time to carry out an action, your webhook can instruct fidesops to <code>halt</code>, which will cause execution to exit with a status of <code>paused</code>. Request execution can be continued when ready using a token supplied in the original request.</p>
+<p>Policy pre-execution webhooks let your system take care of prerequisite tasks, or locate additional identities for the data subject. Examples include turning on a specific database in your infrastructure, or locating a phone number for a subject from a table for which you do not want to give Fides direct access. Configuration involves defining endpoint(s) for Fides to call in order. See <a href="../policy_webhooks/">Policy Webhooks</a> for more details.</p>
+<p>Fides sends a request to each pre-execution webhook with a <a href="../policy_webhooks/#policy-webhook-request-format">policy webhooks request format</a>, which your endpoints should be prepared to unpack. If you need more time to carry out an action, your webhook can instruct Fides to <code>halt</code>, which will cause execution to exit with a status of <code>paused</code>. Request execution can be continued when ready using a token supplied in the original request.</p>
 <p>No data uploaded by policy webhooks is returned to the data subject, but identities discovered can be used to later locate data pertaining to the subject during access request automation.</p>
 <p>If a request to a pre-execution webhook fails, request execution will exit with a status of <code>error</code>. Retrying the privacy request will resume from this step and attempt to re-run all pre-execution webhooks.</p>
 <h3 id="access-request-automation">Access request automation</h3>
 <p>Access request automation is performed regardless of whether there are access or erasure Rules defined, as both Rules require this data.  See how to <a href="../policies/">configure policies, rules, and rule targets</a> for additional information.</p>
-<p>This step visits all Collections and retrieves all Fields that you've defined in your <a href="../../getting-started/datasets/">Datasets</a>. Fidesops builds a graph in accordance with how you've designated your Collections are related, visits each Collection in turn, and gathers all the results together.</p>
+<p>This step visits all Collections and retrieves all Fields that you've defined in your <a href="../../getting-started/datasets/">Datasets</a>. Fides builds a graph in accordance with how you've designated your Collections are related, visits each Collection in turn, and gathers all the results together.</p>
 <h4 id="graph-building">Graph building</h4>
-<p>Fidesops builds a Directed Acyclic Graph, or DAG, where each location or node corresponds to a Collection in one of your Datasets. The graph helps determine the order in which nodes will be visited. Fidesops begins with any Collections that can be queried using the supplied identity data, and then points those Collections toward dependent Collections, etc. If fidesops can't determine how to reach a Collection, it will exit early with a status of <code>error</code>.  To remedy an errored access request, you update how your Collections are related to each other in your Datasets, and resubmit the privacy request.</p>
+<p>Fides builds a Directed Acyclic Graph, or DAG, where each location or node corresponds to a Collection in one of your Datasets. The graph helps determine the order in which nodes will be visited. Fides begins with any Collections that can be queried using the supplied identity data, and then points those Collections toward dependent Collections, etc. If Fides can't determine how to reach a Collection, it will exit early with a status of <code>error</code>.  To remedy an errored access request, you update how your Collections are related to each other in your Datasets, and resubmit the privacy request.</p>
 <p><img alt="Access Graph" src="../../img/access_graph.png" /></p>
 <h4 id="graph-execution">Graph Execution</h4>
-<p>After the graph is built, Fidesops passes the result to <a href="https://www.dask.org/">Dask</a> to execute sequentially. Fidesops visits one Collection at a time, following the graph created, and uses Dask to determine ordering for ties.</p>
-<p>For the first Collections in the graph connected to the root, Fidesops uses the customers' provided identity to locate subject data, by either making database queries or HTTP requests to a configured API endpoint. The details on how to access your data are determined by the <a href="../connection_types/">Connection</a> type. Fidesops retrieves all Fields that have been configured on the Collection, and caches the results in temporary storage for usage later. Fidesops then passes the results of that Collection to downstream Collections that similarly make queries, temporarily cache the results, and return their results to their own downstream Collections.</p>
-<p>A Collection isn't visited until Fidesops has searched for data across all of its upstream Collections. This continues until all Collections have been visited. See <a href="../query_execution/">Query Execution</a> for more information.</p>
+<p>After the graph is built, Fides passes the result to <a href="https://www.dask.org/">Dask</a> to execute sequentially. Fides visits one Collection at a time, following the graph created, and uses Dask to determine ordering for ties.</p>
+<p>For the first Collections in the graph connected to the root, Fides uses the customers' provided identity to locate subject data, by either making database queries or HTTP requests to a configured API endpoint. The details on how to access your data are determined by the <a href="../connection_types/">Connection</a> type. Fides retrieves all Fields that have been configured on the Collection, and caches the results in temporary storage for usage later. Fides then passes the results of that Collection to downstream Collections that similarly make queries, temporarily cache the results, and return their results to their own downstream Collections.</p>
+<p>A Collection isn't visited until Fides has searched for data across all of its upstream Collections. This continues until all Collections have been visited. See <a href="../query_execution/">Query Execution</a> for more information.</p>
 <p><img alt="Access Execution" src="../../img/access_execution.png" /></p>
 <p>If there is a failure trying to retrieve data on any Collections, the request is retried the number of times <a href="../../installation/configuration/">configured</a> by <code>task_retry_count</code> until the request exits with status <code>error</code>.  Both the <code>access</code> step and errored Collection are cached in temporary storage.
 Restarting the privacy request will restart from this step and failed Collection.  Collections that have already been visited will not be visited again.</p>
 <h4 id="final-result-retrieval">Final result retrieval</h4>
 <p>The final step of an automated access request gathers all the results for each Collection from temporary storage.</p>
 <h3 id="upload-results">Upload results</h3>
-<p>If configured, Fidesops uploads the results retrieved from access automation for the data subject.</p>
-<p>For each configured access Rule, Fidesops filter the graph results to match targeted Data Categories. See <a href="../../getting-started/datasets/">Datasets</a> for more details.
-Fidesops also supplements the results with any data manually uploaded from <a href="#respond-to-manual-webhooks">manual webhooks</a>. Each data package is uploaded in JSON
+<p>If configured, Fides uploads the results retrieved from access automation for the data subject.</p>
+<p>For each configured access Rule, Fides filter the graph results to match targeted Data Categories. See <a href="../../getting-started/datasets/">Datasets</a> for more details.
+Fides also supplements the results with any data manually uploaded from <a href="#respond-to-manual-webhooks">manual webhooks</a>. Each data package is uploaded in JSON
 or CSV format to a specified storage location like Amazon S3. See <a href="../../getting-started/storage/">Storage</a> for more information.</p>
 <h3 id="erasure-request-automation">Erasure request automation</h3>
-<p>If applicable, (erasure <a href="../policies/#Rule-attributes">Rules</a> are configured on your execution policy), Fidesops builds a simpler version of the access request graph, and visits each Collection in turn, performing masking requests as necessary.</p>
+<p>If applicable, (erasure <a href="../policies/#Rule-attributes">Rules</a> are configured on your execution policy), Fides builds a simpler version of the access request graph, and visits each Collection in turn, performing masking requests as necessary.</p>
 <h4 id="graph-building_1">Graph building</h4>
 <p>The "graph" for an erasure runs on the data from the access request, which is kept in temporary storage, and can be used to locate data for each Collection individually. Because the data has already been found, each Collection could be visited in any order or run in parallel. The graph is configured so each Collection has its previous access request results passed in as inputs, and each Collection returns a count of records masked when complete.</p>
 <p><img alt="Erasure Graph" src="../../img/erasure_graph.png" /></p>
 <h4 id="graph-execution_1">Graph execution</h4>
-<p>Fidesops visits each Collection sequentially, using a deterministic order set by Dask. For each row of data retrieved in the access request step, Fidesops attempts to mask the data targeting the fields specified on your execution policy, using the <a href="../masking_strategies/">masking strategies</a> you've defined. If no rows exist from the access request, or no Fields on that Collection match the targeted Data Categories, no masking occurs. Fidesops caches a count of the records
+<p>Fides visits each Collection sequentially, using a deterministic order set by Dask. For each row of data retrieved in the access request step, Fides attempts to mask the data targeting the fields specified on your execution policy, using the <a href="../masking_strategies/">masking strategies</a> you've defined. If no rows exist from the access request, or no Fields on that Collection match the targeted Data Categories, no masking occurs. Fides caches a count of the records
 that had fields masked in temporary storage.</p>
 <p>The masking request might involve an <code>update</code> database query or an <code>update</code> or <code>delete</code> HTTP request depending on the <a href="../connection_types/">Connection Type</a>. The Email Connector type doesn't mask any data itself, but instead persists how to locate and mask that Collection in temporary storage for use later.</p>
-<p>If masking fails on a given Collection, Fidesops retries the requests for a configured number of times, and then request execution will exit with a status of <code>error</code>. Fidesops will cache both the failed Collection and that the failure occurred on the <code>erasure</code> step. Retrying the privacy request will resume from the <code>erasure</code> step at the failed Collection. Previously masked Collections will not be masked again.</p>
+<p>If masking fails on a given Collection, Fides retries the requests for a configured number of times, and then request execution will exit with a status of <code>error</code>. Fides will cache both the failed Collection and that the failure occurred on the <code>erasure</code> step. Retrying the privacy request will resume from the <code>erasure</code> step at the failed Collection. Previously masked Collections will not be masked again.</p>
 <h3 id="send-erasure-request-emails">Send erasure request emails</h3>
-<p>After the access and erasure steps have both executed, Fidesops checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See <a href="../email_communications/#Email-third-party-services-to-mask-data">emailing third party services to mask data</a> for more information.</p>
-<p>Fidesops retrieves any masking instructions cached by Email Connectors in the erasure request step, and combines them into a single email per Dataset.</p>
-<p>This step is only performed if you have Email Connectors configured. If the email send fails for any reason, the request will exit with status <code>error</code>.  Fidesops will cache this step in temporary storage, so retrying the request will resume from this point.</p>
+<p>After the access and erasure steps have both executed, Fides checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See <a href="../email_communications/#Email-third-party-services-to-mask-data">emailing third party services to mask data</a> for more information.</p>
+<p>Fides retrieves any masking instructions cached by Email Connectors in the erasure request step, and combines them into a single email per Dataset.</p>
+<p>This step is only performed if you have Email Connectors configured. If the email send fails for any reason, the request will exit with status <code>error</code>.  Fides will cache this step in temporary storage, so retrying the request will resume from this point.</p>
 <h3 id="run-policy-post-execution-webhooks">Run policy post-execution webhooks</h3>
-<p>After automated access and erasures have completed, post-execution webhooks can be used to perform any cleanup steps in your system.  Examples include setting up a webhook to shut down a database, or to delete user data from a source you don't want Fidesops to access directly.  Post-execution webhooks are more limited than Pre-execution webhooks. They currently cannot pause the graph, and should be configured as a series of API endpoints you would like Fidesops to call. See <a href="../policy_webhooks/">policy webhooks</a> for more details on configuration.</p>
+<p>After automated access and erasures have completed, post-execution webhooks can be used to perform any cleanup steps in your system.  Examples include setting up a webhook to shut down a database, or to delete user data from a source you don't want Fides to access directly.  Post-execution webhooks are more limited than Pre-execution webhooks. They currently cannot pause the graph, and should be configured as a series of API endpoints you would like Fides to call. See <a href="../policy_webhooks/">policy webhooks</a> for more details on configuration.</p>
 <p>If a request to a post-execution webhook fails, request execution will exit with a status of <code>error</code>. Retrying the privacy request will resume from this step and attempt to re-run all the post-execution webhooks.</p>
 <h3 id="send-email-notifications">Send email notifications</h3>
-<p>If configured, Fidesops will send a followup email to the data subject to let them know their request has finished processing.  For access Rules, the emails will contain links to where the data subject can retrieve data. For erasure Rules, the emails will simplify notify them that their request is complete.</p>
+<p>If configured, Fides will send a followup email to the data subject to let them know their request has finished processing.  For access Rules, the emails will contain links to where the data subject can retrieve data. For erasure Rules, the emails will simplify notify them that their request is complete.</p>
 <p>Request execution will then exit with the status <code>complete</code>.</p>
 <h2 id="additional-notes">Additional notes</h2>
 <ul>
-<li>Fidesops uses Redis as temporary storage to support executing your request.  Data automatically retrieved from each Collection, manually uploaded data, and details about where the Privacy Request may be paused or where it failed may all be temporarily stored.  This information will expire in accordance with the <code>FIDESOPS__REDIS__DEFAULT_TTL_SECONDS</code> <a href="../../installation/configuration/">setting</a>.</li>
-<li>The current fidesops execution strategy prioritizes being able to erase as many of the original Collections requested as possible. If Fidesops masks
-some Collections and then registers a failure, the current logic will mask the original remaining Collections using the temporarily saved data retrieved in the original access step instead of re-querying the Collections. Once data is masked in one Collection, it could potentially prevent us from being able to locate data in downstream Collections, and so will use temporarily stored data.<ul>
+<li>Fides uses Redis as temporary storage to support executing your request.  Data automatically retrieved from each Collection, manually uploaded data, and details about where the Privacy Request may be paused or where it failed may all be temporarily stored.  This information will expire in accordance with the <code>FIDES__REDIS__DEFAULT_TTL_SECONDS</code> <a href="../../installation/configuration/">setting</a>.</li>
+<li>The current Fides execution strategy prioritizes being able to erase as many of the original Collections requested as possible. If Fides masks some Collections and then registers a failure, the current logic will mask the original remaining Collections using the temporarily saved data retrieved in the original access step instead of re-querying the Collections. Once data is masked in one Collection, it could potentially prevent us from being able to locate data in downstream Collections, and so will use temporarily stored data.<ul>
 <li>Data added in the interim, or data related to newly added Collections, can be missed.</li>
 <li>If the automated access step fails part of the way through, a new Collection is added, and then the request is restarted from failure,
-  Fidesops may miss data from already completed Collections downstream, and any Collections further downstream of that set.</li>
-<li>If the erasure step fails, a new Collection is added, and the request is restarted from failure, Fidesops may miss masking data from the new
+  Fides may miss data from already completed Collections downstream, and any Collections further downstream of that set.</li>
+<li>If the erasure step fails, a new Collection is added, and the request is restarted from failure, Fides may miss masking data from the new
   Collection and data downstream of the new Collection.</li>
 </ul>
 </li>
-<li>Nodes on the graph correspond to individual Collections within Datasets, not Datasets.  The graph built may result in Fidesops
+<li>Nodes on the graph correspond to individual Collections within Datasets, not Datasets.  The graph built may result in Fides
 visiting a Collection in one Dataset to be able to find data on a Collection in a separate Dataset, which is used to find data on a Collection in the original Dataset.</li>
-<li>Automated access requests often select more Fields than may be returned specifically to the user because this data has multiple uses. Fidesops selects all Fields defined to be able to potentially query downstream Collections, filter data according to multiple access Rules, and mask data in accordance with multiple erasure Rules.</li>
+<li>Automated access requests often select more Fields than may be returned specifically to the user because this data has multiple uses. Fides selects all Fields defined to be able to potentially query downstream Collections, filter data according to multiple access Rules, and mask data in accordance with multiple erasure Rules.</li>
 </ul>
 
               
@@ -2250,59 +2079,6 @@ visiting a Collection in one Dataset to be able to find data on a Collection in 
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
-  
-    <nav
-      class="md-footer__inner md-grid"
-      aria-label="Footer"
-    >
-      <div class="nav-wrap">
-      <!-- Link to previous page -->
-      
-        
-        <a
-          href="../manual_webhooks/"
-          class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Configure Manual Webhooks"
-          rel="prev"
-        >
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Configure Manual Webhooks
-            </div>
-          </div>
-        </a>
-      
-
-      <!-- Link to next page -->
-      
-        
-        <a
-          href="../../saas_connectors/saas_connectors/"
-          class="md-footer__link md-footer__link--next"
-          aria-label="Next: Connect to SaaS Applications"
-          rel="next"
-        >
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Connect to SaaS Applications
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
-          </div>
-        </a>
-      
-    </div>
-    </nav>
   
 
   </div>
