@@ -29,7 +29,7 @@ The types of changes are:
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
 * Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
-* Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
