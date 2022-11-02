@@ -21,7 +21,9 @@ To create a new execution policy, it must first be defined:
   {
     "name": "User Email Address",
     "key": "user_email_address_policy",
-    "drp_action": "access" // optional
+    "drp_action": "access", // optional
+    "execution_timeframe": 7
+
   }
 ]
 ```
@@ -31,6 +33,7 @@ To create a new execution policy, it must first be defined:
 | `name` | User-friendly name for your Policy. |
 | `key` | Unique key by which to reference the Policy. |
 | `drp_action` | *Optional.* A [Data Rights Protocol](../guides/data_rights_protocol.md) action to associate to this policy. Accepted values are `access` (must be used with an [access Rule](#add-a-rule)) or `deletion` (must be used with an [erasure Rule](#add-an-erasure-rule)). |
+| `execution_timeframe` | The time in which to fulfill an associated privacy request, in days. |
 
 ## Add a Rule
 The policy creation operation returns an execution policy key. This key can be used to add a Rule to the execution policy. Rules represent a series of information and actions to take when a privacy request of the corresponding `action_type` is submitted.

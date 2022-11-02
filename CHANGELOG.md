@@ -66,6 +66,7 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
+* Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 
 ### Changed 
 
@@ -83,7 +84,6 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
-
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
