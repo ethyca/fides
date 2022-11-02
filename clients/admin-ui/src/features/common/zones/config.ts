@@ -46,12 +46,7 @@ export const resolveZone = ({
     };
   }
 
-  if (
-    process.env.NODE_ENV === "development" &&
-    zoneConfig.development &&
-    // In Cypress, navigating to a URL that is outside of the application will throw an error
-    !window.Cypress
-  ) {
+  if (process.env.NODE_ENV === "development" && zoneConfig.development) {
     const externalZoneUrl = new URL(window.location.href);
     externalZoneUrl.pathname = href;
     externalZoneUrl.host = zoneConfig.development.host;
