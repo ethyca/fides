@@ -88,6 +88,12 @@ dataset = "data/saas/dataset/stripe_dataset.yml"
 icon = "data/saas/icon/stripe.svg"
 human_readable = "Stripe"
 
+[twilio_conversations]
+config = "data/saas/config/twilio_conversations_config.yml"
+dataset = "data/saas/dataset/twilio_conversations_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Twilio Conversations"
+
 [zendesk]
 config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
