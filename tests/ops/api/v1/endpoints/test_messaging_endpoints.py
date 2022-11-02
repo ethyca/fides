@@ -43,14 +43,14 @@ class TestPostMessagingConfig:
     def payload_twilio_email(self):
         return {
             "name": "twilio email",
-            "service_type": MessagingServiceType.TWILIO_EMAIL,
+            "service_type": MessagingServiceType.TWILIO_EMAIL.value,
         }
 
     @pytest.fixture(scope="function")
     def payload_twilio_sms(self):
         return {
             "name": "twilio sms",
-            "service_type": MessagingServiceType.TWILIO_TEXT,
+            "service_type": MessagingServiceType.TWILIO_TEXT.value,
         }
 
     def test_post_email_config_not_authenticated(
@@ -104,7 +104,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'mailgun'"
+            == "value is not a valid enumeration member; permitted: 'mailgun', 'twilio_text', 'twilio_email'"
         )
 
     def test_post_email_config_with_no_key(
@@ -198,7 +198,7 @@ class TestPostMessagingConfig:
         assert "details" in errors[0]["loc"]
         assert errors[0]["msg"] == "field required"
 
-    def test_post_email_config_already_exists(
+    def test_post_email_config_service_already_exists(
         self,
         api_client: TestClient,
         url,
@@ -210,7 +210,7 @@ class TestPostMessagingConfig:
             url,
             headers=auth_header,
             json={
-                "key": "my_mailgun_messaging_config",
+                "key": "my_new_mailgun_messaging_config",
                 "name": "mailgun",
                 "service_type": MessagingServiceType.MAILGUN.value,
                 "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
@@ -218,7 +218,7 @@ class TestPostMessagingConfig:
         )
         assert response.status_code == 400
         assert response.json() == {
-            "detail": "Only one messaging config is supported at a time. Config with key my_mailgun_messaging_config is already configured."
+            "detail": ""
         }  # fixme- what's the error here?
 
     def test_post_twilio_email_config(
@@ -733,20 +733,19 @@ class TestDeleteConfig:
         generate_auth_header,
     ):
         # Creating new config, so we don't run into issues trying to clean up a deleted fixture
-        email_config = MessagingConfig.create(
+        twilio_sms_config = MessagingConfig.create(
             db=db,
             data={
-                "key": "my_different_email_config",
-                "name": "mailgun",
-                "service_type": MessagingServiceType.MAILGUN,
-                "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
+                "key": "my_twilio_sms_config",
+                "name": "twilio sms",
+                "service_type": MessagingServiceType.TWILIO_TEXT,
             },
         )
-        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key=email_config.key)
+        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key=twilio_sms_config.key)
         auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 204
 
         db.expunge_all()
-        config = db.query(MessagingConfig).filter_by(key=email_config.key).first()
+        config = db.query(MessagingConfig).filter_by(key=twilio_sms_config.key).first()
         assert config is None

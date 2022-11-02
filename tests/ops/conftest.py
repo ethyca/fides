@@ -298,3 +298,12 @@ def privacy_request_review_notification_disabled():
     CONFIG.notifications.send_request_review_notification = False
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_notification_service_type_mailgun():
+    """Set default notification service type"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    yield
+    CONFIG.notifications.notification_service_type = original_value

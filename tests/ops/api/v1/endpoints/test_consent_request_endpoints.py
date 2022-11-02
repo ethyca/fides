@@ -56,7 +56,7 @@ class TestConsentRequest:
         return f"{V1_URL_PREFIX}{CONSENT_REQUEST}"
 
     @pytest.mark.usefixtures(
-        "email_config",
+        "messaging_config",
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",
@@ -69,7 +69,7 @@ class TestConsentRequest:
         assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
-        "email_config",
+        "messaging_config",
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",
@@ -89,7 +89,7 @@ class TestConsentRequest:
         assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
-        "email_config",
+        "messaging_config",
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",
@@ -102,7 +102,7 @@ class TestConsentRequest:
         assert "redis cache required" in response.json()["message"]
 
     @pytest.mark.usefixtures(
-        "email_config",
+        "messaging_config",
         "email_connection_config",
         "email_dataset_config",
     )
@@ -116,7 +116,7 @@ class TestConsentRequest:
         assert not mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
-        "email_config",
+        "messaging_config",
         "email_connection_config",
         "email_dataset_config",
         "subject_identity_verification_required",

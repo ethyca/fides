@@ -28,6 +28,7 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 
 page_size = Params().size
@@ -1467,7 +1468,7 @@ class TestPutConnectionConfigSecrets:
             kwargs["action_type"]
             == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
         )
-        assert kwargs["to_email"] == "test@example.com"
+        assert kwargs["to_identity"] == Identity(email="test@example.com")
         assert kwargs["message_body_params"] == [
             CheckpointActionRequired(
                 step=CurrentStep.erasure,

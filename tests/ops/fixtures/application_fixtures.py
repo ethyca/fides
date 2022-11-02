@@ -213,9 +213,9 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
     messaging_config.set_secrets(
         db=db,
         messaging_secrets={
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "23rwrfwxwef",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23984y29384y598432",
-            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID: "2ieurnoqw",
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "23rwrfwxwef",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23984y29384y598432",
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "2ieurnoqw",
         },
     )
     yield messaging_config

@@ -244,6 +244,7 @@ def _mailgun_dispatcher(
         else "https://api.eu.mailgun.net"
     )
     domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
+    # todo: ensure formatting of to phone number is correct
     data = {
         "from": f"<mailgun@{domain}>",
         "to": [to],
