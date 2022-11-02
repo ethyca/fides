@@ -36,9 +36,7 @@ def test_email_dispatch_mailgun_success(
         db=db,
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
         to_identity=Identity(**{"email": "test@email.com"}),
-        messaging_method=get_messaging_method(
-            MessagingServiceType.MAILGUN.value
-        ),
+        messaging_method=get_messaging_method(MessagingServiceType.MAILGUN.value),
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
         ),
@@ -66,9 +64,7 @@ def test_email_dispatch_mailgun_config_not_found(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=get_messaging_method(
-                MessagingServiceType.MAILGUN.value
-            ),
+            messaging_method=get_messaging_method(MessagingServiceType.MAILGUN.value),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
@@ -102,9 +98,7 @@ def test_email_dispatch_mailgun_config_no_secrets(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
             to_identity=Identity(**{"email": "test@email.com"}),
-            messaging_method=get_messaging_method(
-                MessagingServiceType.MAILGUN.value
-            ),
+            messaging_method=get_messaging_method(MessagingServiceType.MAILGUN.value),
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),

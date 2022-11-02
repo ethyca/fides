@@ -65,9 +65,10 @@ from fides.api.ops.schemas.dataset import DryRunDatasetResponse
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
+    MessagingMethod,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
-    SubjectIdentityVerificationBodyParams, MessagingMethod,
+    SubjectIdentityVerificationBodyParams,
 )
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity

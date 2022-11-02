@@ -14,7 +14,10 @@ from fides.api.ops.models.privacy_request import (
     ManualAction,
 )
 from fides.api.ops.schemas.dataset import FidesopsDataset
-from fides.api.ops.schemas.messaging.messaging import MessagingActionType, MessagingMethod
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingActionType,
+    MessagingMethod,
+)
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,

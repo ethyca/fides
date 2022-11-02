@@ -35,7 +35,8 @@ from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
-    MessagingActionType, MessagingMethod,
+    MessagingActionType,
+    MessagingMethod,
 )
 from fides.api.ops.schemas.policy import Rule
 from fides.api.ops.schemas.redis_cache import Identity
