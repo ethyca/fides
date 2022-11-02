@@ -1,5 +1,4 @@
 import logging
-from json import dumps
 from typing import Any, Dict, List
 
 import requests
@@ -14,7 +13,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.ops.util.saas_util import PRIVACY_REQUEST_ID
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -40,7 +38,7 @@ def twilio_user_update(
         masked_object_fields = row_param_values["masked_object_fields"]
 
         if "user.name" in policy.get_erasure_target_categories():
-            for k, v in masked_object_fields.copy().items():
+            for k in masked_object_fields.copy().keys():
                 new_key = update_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
@@ -92,7 +90,7 @@ def twilio_conversation_message_update(
         masked_object_fields = row_param_values["masked_object_fields"]
 
         if "user.name" in policy.get_erasure_target_categories():
-            for k, v in masked_object_fields.copy().items():
+            for k in masked_object_fields.copy().keys():
                 new_key = update_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
@@ -123,7 +121,7 @@ def twilio_conversation_message_update(
     return rows_updated
 
 
-def update_to_camel_case(str):
-    str = str.title()
-    str = str.replace("_", "")
-    return str
+def update_to_camel_case(s):
+    s = s.title()
+    s = s.replace("_", "")
+    return s

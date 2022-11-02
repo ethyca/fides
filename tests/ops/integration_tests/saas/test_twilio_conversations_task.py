@@ -1,7 +1,5 @@
-from email import message
 import logging
 import random
-from xdrlib import ConversionError
 
 import pytest
 import requests
@@ -38,7 +36,6 @@ async def test_twilio_conversations_access_request_task(
     twilio_conversations_identity_email,
     connection_config,
     twilio_postgres_dataset_config,
-    twilio_postgres_db,
 ) -> None:
     """Full access request based on the Twilio Conversation SaaS config"""
     privacy_request = PrivacyRequest(
@@ -153,11 +150,9 @@ async def test_twilio_conversations_erasure_request_task(
     twilio_conversations_dataset_config,
     connection_config,
     twilio_postgres_dataset_config,
-    twilio_conversations_postgres_erasure_db,
     erasure_policy_string_rewrite,
     twilio_conversations_erasure_identity_email,
     twilio_conversations_erasure_identity_name,
-    twilio_conversations_erasure_data,
 ) -> None:
     """Full erasure request based on the Twilio SaaS config"""
 

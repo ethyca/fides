@@ -7,6 +7,7 @@ from fideslib.cryptography import cryptographic_util
 from fideslib.db import session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -20,7 +21,6 @@ from fides.api.ops.util.saas_util import (
 )
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 from tests.ops.test_helpers.vault_client import get_secrets
-from starlette.status import HTTP_204_NO_CONTENT
 
 secrets = get_secrets("twilio_conversations")
 
@@ -206,8 +206,6 @@ def twilio_conversations_postgres_erasure_db(
 
 @pytest.fixture(scope="function")
 def twilio_conversations_erasure_data(
-    twilio_conversations_connection_config,
-    twilio_conversations_erasure_identity_email,
     twilio_conversations_secrets,
     twilio_conversations_erasure_identity_name,
 ) -> Generator:
