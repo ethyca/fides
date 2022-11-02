@@ -3,13 +3,14 @@
 import Image from 'next/image';
 import css from './style.module.scss';
 import WhatInTheBox from './WhatInTheBox';
+import landingImage from '../../../public/landing-box-transparent.png'
 
 const Landing = () => (
     <div className={css.wrapper}>
         <style jsx global>{'body { background-color: #01020D; }'}</style>
         <div className={css.content}>
             <div className={css.headingContent}>
-                <Image src="/landing-box.png" width={1860} height={774} alt="" className={css.box} />
+                <Image src={landingImage} width={1860} alt="" className={css.box} />
                 <h1>Welcome to Fides 2.0</h1>
                 <p className={css.subhead}>Let's run our first privacy request in under 5 minutes!</p>
             </div>
@@ -26,9 +27,9 @@ const Landing = () => (
                         <h5>FIDES</h5>
                         <p>This is the webserver and Admin UI to manage Fides, including administering privacy requests (and more!)</p>
                         <p>
-                            Username: <strong>fidestest</strong>
+                            Username: <strong>"fidestest"</strong>
                             <br/>
-                            Password: <strong>Apassword1!</strong>
+                            Password: <strong>"Apassword1!"</strong>
                         </p>
                         <p><a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
                     </div>
@@ -65,7 +66,7 @@ const Landing = () => (
             <Image className={css.separator} src="/line-16.svg" width={1860} height={2} alt="" />
 
             <svg className={css.fides}  width="108" height="33" viewBox="0 0 108 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g clip-path="url(#clip0_1_2658)">
+                <g clipPath="url(#clip0_1_2658)">
                     <path d="M33.5081 0H0.962402V32.5457H33.5081V0Z" fill="white"/>
                     <path d="M53.7521 8.91117C54.3019 8.92157 54.845 9.03447 55.3533 9.24408L56.1779 5.86904C55.1907 5.50533 54.1471 5.31854 53.095 5.31726C48.9225 5.31726 47.4115 7.99522 47.4115 11.2544V12.0545H44.231V15.6447H47.417V27.5024H51.9944V15.6484H55.2687V12.0581H51.9944V11.1256C51.9944 9.52365 52.6478 8.91117 53.7521 8.91117Z" fill="white"/>
                     <path d="M73.4775 5.69434H78.0475V27.5024H73.4775V25.9722C72.3842 27.0628 71.256 27.8776 69.7652 27.8776C65.9222 27.8776 63.443 24.8281 63.443 19.7849C63.443 14.7416 66.5976 11.6922 69.8535 11.6922C71.556 11.6922 72.4302 12.3249 73.4775 13.3052V5.69434ZM73.4775 22.7571V16.408C72.7791 15.7706 71.865 15.421 70.9192 15.4295C69.4357 15.4295 68.1363 16.7979 68.1363 19.7352C68.1363 22.7663 69.1836 24.1329 70.9578 24.1329C71.9315 24.1329 72.7192 23.7632 73.4775 22.7498V22.7571Z" fill="white"/>
