@@ -11011,12 +11011,9 @@
             "description": "Identifies the System or Dataset resource with which the communication occurs. May also be 'user', to represent communication with the user(s) of a System."
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FlowableResources"
-              }
-            ],
-            "description": "Specifies the resource model class for which the `fides_key` applies. May be any of 'dataset', 'system', or 'user'."
+            "title": "Type",
+            "type": "string",
+            "description": "Specifies the resource model class for which the `fides_key` applies. May be any of dataset, system, user."
           },
           "data_categories": {
             "title": "Data Categories",
@@ -12442,16 +12439,6 @@
           }
         },
         "description": "Schema detailing the individual fields affected by a particular query detailed in the ExecutionLog"
-      },
-      "FlowableResources": {
-        "title": "FlowableResources",
-        "enum": [
-          "dataset",
-          "system",
-          "user"
-        ],
-        "type": "string",
-        "description": "The resource types with which DataFlows can be created."
       },
       "Generate": {
         "title": "Generate",
