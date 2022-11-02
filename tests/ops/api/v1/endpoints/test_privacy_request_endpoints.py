@@ -100,7 +100,7 @@ class TestCreatePrivacyRequest:
     )
     def test_create_privacy_request(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         run_access_request_mock,
         url,
         db,
@@ -121,7 +121,7 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert run_access_request_mock.called
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -1805,7 +1805,7 @@ class TestApprovePrivacyRequest:
     )
     def test_approve_privacy_request(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         submit_mock,
         db,
         url,
@@ -1841,7 +1841,7 @@ class TestApprovePrivacyRequest:
         assert response_body["succeeded"][0]["reviewed_by"] == user.id
 
         assert submit_mock.called
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
         privacy_request.delete(db)
 
@@ -1853,7 +1853,7 @@ class TestApprovePrivacyRequest:
     )
     def test_approve_privacy_request_creates_audit_log_and_sends_email(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         submit_mock,
         db,
         url,
@@ -1889,7 +1889,7 @@ class TestApprovePrivacyRequest:
 
         approval_audit_log.delete(db)
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -1977,7 +1977,7 @@ class TestDenyPrivacyRequest:
     )
     def test_deny_privacy_request_without_denial_reason(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         submit_mock,
         db,
         url,
@@ -2018,7 +2018,7 @@ class TestDenyPrivacyRequest:
             ),
         ).first()
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -2047,7 +2047,7 @@ class TestDenyPrivacyRequest:
     )
     def test_deny_privacy_request_with_denial_reason(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         submit_mock,
         db,
         url,
@@ -2088,7 +2088,7 @@ class TestDenyPrivacyRequest:
             ),
         ).first()
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -2877,7 +2877,7 @@ class TestVerifyIdentity:
     )
     def test_verification_code_expired(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         db,
         api_client,
         url,
@@ -2894,14 +2894,14 @@ class TestVerifyIdentity:
             resp.json()["detail"]
             == f"Identification code expired for {privacy_request.id}."
         )
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
     def test_invalid_code(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         db,
         api_client,
         url,
@@ -2919,7 +2919,7 @@ class TestVerifyIdentity:
             resp.json()["detail"]
             == f"Incorrect identification code for '{privacy_request.id}'"
         )
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -2929,7 +2929,7 @@ class TestVerifyIdentity:
     )
     def test_verify_identity_no_admin_approval_needed(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_run_privacy_request,
         db,
         api_client,
@@ -2965,9 +2965,9 @@ class TestVerifyIdentity:
 
         assert mock_run_privacy_request.called
 
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -2989,7 +2989,7 @@ class TestVerifyIdentity:
     )
     def test_verify_identity_no_admin_approval_needed_email_disabled(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_run_privacy_request,
         db,
         api_client,
@@ -3024,7 +3024,7 @@ class TestVerifyIdentity:
 
         assert mock_run_privacy_request.called
 
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -3034,7 +3034,7 @@ class TestVerifyIdentity:
     )
     def test_verify_identity_admin_approval_needed(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_run_privacy_request,
         require_manual_request_approval,
         db,
@@ -3070,9 +3070,9 @@ class TestVerifyIdentity:
         assert approved_audit_log is None
         assert not mock_run_privacy_request.called
 
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -3132,10 +3132,10 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
-    @mock.patch("fides.api.ops.service._verification.dispatch_email")
+    @mock.patch("fides.api.ops.service._verification.dispatch_message")
     def test_create_privacy_request_with_email_config(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_execute_request,
         url,
         db,
@@ -3168,8 +3168,8 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
 
         assert response_data[0]["status"] == PrivacyRequestStatus.identity_unverified
 
-        assert mock_dispatch_email.called
-        kwargs = mock_dispatch_email.call_args.kwargs
+        assert mock_dispatch_message.called
+        kwargs = mock_dispatch_message.call_args.kwargs
         assert (
             kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
         )
@@ -3661,7 +3661,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
     )
     def test_create_privacy_request_no_email_config(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_execute_request,
         url,
         db,
@@ -3685,9 +3685,9 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         assert mock_execute_request.called
         assert response_data[0]["status"] == PrivacyRequestStatus.pending
 
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 
@@ -3711,7 +3711,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
     )
     def test_create_privacy_request_with_email_config(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         mock_execute_request,
         url,
         db,
@@ -3735,9 +3735,9 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         assert mock_execute_request.called
 
         assert response_data[0]["status"] == PrivacyRequestStatus.pending
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
-        call_args = mock_dispatch_email.call_args[1]
+        call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_email"] == "test@example.com"
 

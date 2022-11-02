@@ -1421,10 +1421,10 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
-    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_email")
+    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
     def test_put_email_connection_config_secrets(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
@@ -1461,8 +1461,8 @@ class TestPutConnectionConfigSecrets:
         assert email_connection_config.last_test_timestamp is not None
         assert email_connection_config.last_test_succeeded is not None
 
-        assert mock_dispatch_email.called
-        kwargs = mock_dispatch_email.call_args.kwargs
+        assert mock_dispatch_message.called
+        kwargs = mock_dispatch_message.call_args.kwargs
         assert (
             kwargs["action_type"]
             == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT

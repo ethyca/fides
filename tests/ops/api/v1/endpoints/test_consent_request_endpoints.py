@@ -61,12 +61,12 @@ class TestConsentRequest:
         "email_dataset_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_email")
-    def test_consent_request(self, mock_dispatch_email, api_client, url):
+    @patch("fides.api.ops.service._verification.dispatch_message")
+    def test_consent_request(self, mock_dispatch_message, api_client, url):
         data = {"email": "test@example.com"}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "email_config",
@@ -74,10 +74,10 @@ class TestConsentRequest:
         "email_dataset_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.ops.service._verification.dispatch_email")
+    @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_identity_present(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         provided_identity_and_consent_request,
         api_client,
         url,
@@ -86,7 +86,7 @@ class TestConsentRequest:
         data = {"email": provided_identity.encrypted_value["value"]}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert mock_dispatch_email.called
+        assert mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "email_config",
@@ -106,14 +106,14 @@ class TestConsentRequest:
         "email_connection_config",
         "email_dataset_config",
     )
-    @patch("fides.api.ops.service._verification.dispatch_email")
+    @patch("fides.api.ops.service._verification.dispatch_message")
     def test_consent_request_subject_verification_disabled_no_email(
-        self, mock_dispatch_email, api_client, url
+        self, mock_dispatch_message, api_client, url
     ):
         data = {"email": "test@example.com"}
         response = api_client.post(url, json=data)
         assert response.status_code == 200
-        assert not mock_dispatch_email.called
+        assert not mock_dispatch_message.called
 
     @pytest.mark.usefixtures(
         "email_config",
