@@ -13,6 +13,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
+from fides.api.ops.util.saas_util import change_string_to_camel_case
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -39,7 +40,7 @@ def twilio_user_update(
 
         if "user.name" in policy.get_erasure_target_categories():
             for k in masked_object_fields.copy().keys():
-                new_key = update_to_camel_case(k)
+                new_key = change_string_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
         update_body = masked_object_fields
@@ -91,7 +92,7 @@ def twilio_conversation_message_update(
 
         if "user.name" in policy.get_erasure_target_categories():
             for k in masked_object_fields.copy().keys():
-                new_key = update_to_camel_case(k)
+                new_key = change_string_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
         update_body = masked_object_fields
@@ -119,9 +120,3 @@ def twilio_conversation_message_update(
 
         rows_updated += 1
     return rows_updated
-
-
-def update_to_camel_case(s):
-    s = s.title()
-    s = s.replace("_", "")
-    return s
