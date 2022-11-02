@@ -29,6 +29,7 @@ The types of changes are:
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
 * Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
+* Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
 
 ### Changed
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
@@ -45,6 +46,7 @@ The types of changes are:
 * Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
 * Added DSR quickstart docs, restructured docs navigation [#1651](https://github.com/ethyca/fides/pull/1651)
 * Update privacy request execution overview docs [#1258](https://github.com/ethyca/fides/pull/1490)
+* Add datastore UI and manual connection fulfillment docs [#1501](https://github.com/ethyca/fides/pull/1501)
 
 ### Fixed
 
@@ -66,8 +68,7 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
-* Add datastore UI and manual connection fulfillment docs [#1501](https://github.com/ethyca/fides/pull/1501)
-
+* Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 
 ### Changed 
 
@@ -85,7 +86,6 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
-
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated

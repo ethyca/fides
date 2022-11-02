@@ -19,7 +19,7 @@ The Fides Admin UI is designed to provide at-a-glance access to submitted privac
 | Option | Description |
 |----|----|
 | Status | The request's current status. |
-| Days Left | The number of days remaining to fullfil the privacy request, according to compliance policies and regulations. |
+| Days Left | The number of days remaining to fullfil the subject request, according to compliance policies and regulations. This is configured on your [execution policy](../getting-started/execution_policies.md) as `execution_timeframe`. |
 | Policy Name | The name of the [execution policy](../getting-started/execution_policies.md) used for this request. |
 | Subject Identity | Subject information. Hidden if **Reveal PII** is not selected. |
 | Time Received | The time the request was first received. |

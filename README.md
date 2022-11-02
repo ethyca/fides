@@ -24,7 +24,7 @@ In order to get started quickly with Fides, a sample project is bundled within t
 #### Minimum requirements
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.9 or later)
+* [Python](https://www.python.org/downloads/) (version 3.8 or later)
 
 #### Download and install Fides
 
@@ -44,7 +44,7 @@ fides deploy up
 
 #### Explore the sample project
 
-When your deployment finishes, a welcome screen will explain the key components of Fides and the sample "Cookie House" store.
+When your deployment finishes, a welcome screen will explain the key components of Fides and the sample "Cookie House" project.
 
 If your browser does not open automatically, you should navigate to <http://localhost:3000/landing>.
 
@@ -63,7 +63,7 @@ Then, navigate to the Fides Admin UI (<http://localhost:8080>) to review the pen
 
 Use username `fidestest` and password `Apassword1!` to login, approve the request, and review the resulting package in your `./fides_uploads` folder!
 
-### Next steps
+### Next Steps
 
 Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.github.io/fides/dsr_quickstart/basic_setup/), discover [data mapping](https://ethyca.github.io/fides/guides/generate_datamaps/), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
@@ -76,7 +76,6 @@ The Fides core team is committed to providing a variety of documentation to help
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
 * Documentation: <https://ethyca.github.io/fides/>
-* Roadmap: <https://github.com/ethyca/fides/projects>
 * Website: www.ethyca.com/fides
 
 ### Support
