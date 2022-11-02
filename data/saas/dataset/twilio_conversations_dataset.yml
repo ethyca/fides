@@ -190,7 +190,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-              # primary_key: true
+              primary_key: true
           - name: attributes
             data_categories: [system.operations]
             fidesops_meta:

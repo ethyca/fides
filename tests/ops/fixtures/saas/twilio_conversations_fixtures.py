@@ -19,9 +19,8 @@ from fides.api.ops.util.saas_util import (
     load_dataset_with_replacement,
 )
 from tests.ops.test_helpers.db_utils import seed_postgres_data
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
-from starlette.status import HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_204_NO_CONTENT
 
 secrets = get_secrets("twilio_conversations")
 
@@ -59,6 +58,7 @@ def twilio_conversations_erasure_identity_email():
 @pytest.fixture(scope="function")
 def twilio_conversations_erasure_identity_name():
     return f"{cryptographic_util.generate_secure_random_string(13)}"
+
 
 @pytest.fixture
 def twilio_conversations_config() -> Dict[str, Any]:
@@ -176,17 +176,28 @@ def twilio_postgres_db(postgres_integration_session):
     yield postgres_integration_session
     drop_database(postgres_integration_session.bind.url)
 
+
 @pytest.fixture(scope="function")
-def twilio_conversations_postgres_erasure_db(postgres_integration_session,twilio_conversations_erasure_identity_email, twilio_conversations_erasure_identity_name):
+def twilio_conversations_postgres_erasure_db(
+    postgres_integration_session,
+    twilio_conversations_erasure_identity_email,
+    twilio_conversations_erasure_identity_name,
+):
     if database_exists(postgres_integration_session.bind.url):
-    # Postgres cannot drop databases from within a transaction block, so
-    # we should drop the DB this way instead
+        # Postgres cannot drop databases from within a transaction block, so
+        # we should drop the DB this way instead
         drop_database(postgres_integration_session.bind.url)
     create_database(postgres_integration_session.bind.url)
 
     create_table_query = "CREATE TABLE public.twilio_users (email CHARACTER VARYING(100) PRIMARY KEY,twilio_user_id CHARACTER VARYING(100));"
     postgres_integration_session.execute(create_table_query)
-    insert_query = "INSERT INTO public.twilio_users VALUES('" + twilio_conversations_erasure_identity_email + "', '" + twilio_conversations_erasure_identity_name+"')"
+    insert_query = (
+        "INSERT INTO public.twilio_users VALUES('"
+        + twilio_conversations_erasure_identity_email
+        + "', '"
+        + twilio_conversations_erasure_identity_name
+        + "')"
+    )
     postgres_integration_session.execute(insert_query)
 
     yield postgres_integration_session
@@ -195,7 +206,10 @@ def twilio_conversations_postgres_erasure_db(postgres_integration_session,twilio
 
 @pytest.fixture(scope="function")
 def twilio_conversations_erasure_data(
-    twilio_conversations_connection_config, twilio_conversations_erasure_identity_email, twilio_conversations_secrets, twilio_conversations_erasure_identity_name
+    twilio_conversations_connection_config,
+    twilio_conversations_erasure_identity_email,
+    twilio_conversations_secrets,
+    twilio_conversations_erasure_identity_name,
 ) -> Generator:
     """
     Creates a dynamic test data record for erasure tests.
@@ -203,9 +217,15 @@ def twilio_conversations_erasure_data(
     """
 
     base_url = f"https://{twilio_conversations_secrets['domain']}"
-    auth = twilio_conversations_secrets["account_id"], twilio_conversations_secrets["password"]
+    auth = (
+        twilio_conversations_secrets["account_id"],
+        twilio_conversations_secrets["password"],
+    )
     # Create user
-    user_body = {'Identity': twilio_conversations_erasure_identity_name, 'FriendlyName': "Test User"}
+    user_body = {
+        "Identity": twilio_conversations_erasure_identity_name,
+        "FriendlyName": "Test User",
+    }
     users_response = requests.post(
         url=f"{base_url}/v1/Users", data=user_body, auth=auth
     )
@@ -213,10 +233,8 @@ def twilio_conversations_erasure_data(
     user = users_response.json()
     assert users_response.ok
 
-    #Create Conversation
-    conversation_body = {
-        "FriendlyName" : "friendly_conversation"
-    }
+    # Create Conversation
+    conversation_body = {"FriendlyName": "friendly_conversation"}
     conversations_response = requests.post(
         url=f"{base_url}/v1/Conversations", data=conversation_body, auth=auth
     )
@@ -224,47 +242,59 @@ def twilio_conversations_erasure_data(
     assert conversations_response.ok
 
     conversation_id = conversation["sid"]
-    #Add Conversation participant
+    # Add Conversation participant
     participant_body = {
-        "FriendlyName" : "friendly_conversation_participant",
-        "Identity" : twilio_conversations_erasure_identity_name
+        "FriendlyName": "friendly_conversation_participant",
+        "Identity": twilio_conversations_erasure_identity_name,
     }
     participants_response = requests.post(
-        url=f"{base_url}/v1/Conversations/"+ conversation_id +"/Participants", data=participant_body, auth=auth
+        url=f"{base_url}/v1/Conversations/" + conversation_id + "/Participants",
+        data=participant_body,
+        auth=auth,
     )
     participant = participants_response.json()
 
     assert conversations_response.ok
 
-    #Add conversation Message
+    # Add conversation Message
     message_body = {
         "Author": twilio_conversations_erasure_identity_name,
-        "Body": "Test Body"
+        "Body": "Test Body",
     }
     messages_response = requests.post(
-        url=f"{base_url}/v1/Conversations/"+ conversation_id +"/Messages", data=message_body, auth=auth
+        url=f"{base_url}/v1/Conversations/" + conversation_id + "/Messages",
+        data=message_body,
+        auth=auth,
     )
     message = messages_response.json()
 
     assert messages_response.ok
 
-    yield user,conversation, message, participant
+    yield user, conversation, message, participant
 
     user_id = user["sid"]
     message_id = message["sid"]
     participant_id = participant["sid"]
 
     paricipant_delete_response = requests.delete(
-        url=f"{base_url}/v1/Conversations/" + conversation_id +"/Participants/" + participant_id,auth=auth
+        url=f"{base_url}/v1/Conversations/"
+        + conversation_id
+        + "/Participants/"
+        + participant_id,
+        auth=auth,
     )
     message_delete_response = requests.delete(
-        url=f"{base_url}/v1/Conversations/" + conversation_id +"/Messages/" + message_id,auth=auth
+        url=f"{base_url}/v1/Conversations/"
+        + conversation_id
+        + "/Messages/"
+        + message_id,
+        auth=auth,
     )
     conversation_delete_response = requests.delete(
-        url=f"{base_url}/v1/Conversations/" + conversation_id,auth=auth
+        url=f"{base_url}/v1/Conversations/" + conversation_id, auth=auth
     )
     user_delete_response = requests.delete(
-        url=f"{base_url}/v1/Users/" + user_id,auth=auth
+        url=f"{base_url}/v1/Users/" + user_id, auth=auth
     )
     # # we expect 204 if resource doesn't exist
     assert paricipant_delete_response.status_code == HTTP_204_NO_CONTENT

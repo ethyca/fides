@@ -41,10 +41,15 @@ The types of changes are:
 * Updates the default local configuration to not defer tasks to a worker node [#1552](https://github.com/ethyca/fides/pull/1552/)
 * Updates the healthcheck to return health status of connected Celery workers [#1588](https://github.com/ethyca/fides/pull/1588)
 
+### Docs
+* Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
+* Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
+* Added DSR quickstart docs, restructured docs navigation [#1651](https://github.com/ethyca/fides/pull/1651)
+* Update privacy request execution overview docs [#1258](https://github.com/ethyca/fides/pull/1490)
+
 ### Fixed
 
 * Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
-
 
 
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
@@ -62,9 +67,7 @@ The types of changes are:
 
 * Add unlinked docs and fix any remaining broken links [#1266](https://github.com/ethyca/fides/pull/1266)
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
-* Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
-* Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
-
+* Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 
 ### Changed 
 
@@ -82,7 +85,6 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
-
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated

@@ -24,8 +24,6 @@ import {
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
-import { useFeatures } from "../common/features.slice";
-
 interface Props {
   system: System;
   onAddNextSystem: () => void;
@@ -33,7 +31,6 @@ interface Props {
 const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const dispatch = useAppDispatch();
-  const features = useFeatures();
   const router = useRouter();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
@@ -45,7 +42,8 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
 
   const onFinish = () => {
     dispatch(setActiveSystem(undefined));
-    return features.plus ? router.push("/datamap") : router.push("/system");
+
+    router.push("/system");
   };
 
   return (

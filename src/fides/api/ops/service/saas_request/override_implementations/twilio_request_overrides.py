@@ -29,7 +29,7 @@ def twilio_user_update(
     secrets: Dict[str, Any],
 ) -> int:
     rows_updated = 0
-    # each update_params dict correspond to a record that needs to be updated
+
     for row_param_values in param_values_per_row:
         # get params to be used in update request
         user_id = row_param_values.get("sid")
@@ -40,19 +40,17 @@ def twilio_user_update(
         masked_object_fields = row_param_values["masked_object_fields"]
 
         if "user.name" in policy.get_erasure_target_categories():
-            for k, v in masked_object_fields.items():
+            for k, v in masked_object_fields.copy().items():
                 new_key = update_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
-        update_body = dumps(masked_object_fields)
+        update_body = masked_object_fields
 
         auth = secrets["account_id"], secrets["password"]
+
         try:
             response = requests.post(
-                url=f'https://{secrets["domain"]}/v1/users/{user_id}',
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
+                url=f'https://{secrets["domain"]}/v1/Users/{user_id}',
                 auth=auth,
                 data=update_body,
             )
@@ -82,7 +80,7 @@ def twilio_conversation_message_update(
     secrets: Dict[str, Any],
 ) -> int:
     rows_updated = 0
-    # each update_params dict correspond to a record that needs to be updated
+
     for row_param_values in param_values_per_row:
         # get params to be used in update request
         conversation_id = row_param_values.get("conversation_id")
@@ -94,19 +92,16 @@ def twilio_conversation_message_update(
         masked_object_fields = row_param_values["masked_object_fields"]
 
         if "user.name" in policy.get_erasure_target_categories():
-            for k, v in masked_object_fields.items():
+            for k, v in masked_object_fields.copy().items():
                 new_key = update_to_camel_case(k)
                 masked_object_fields[new_key] = masked_object_fields.pop(k)
 
-        update_body = dumps(masked_object_fields)
+        update_body = masked_object_fields
 
         auth = secrets["account_id"], secrets["password"]
         try:
             response = requests.post(
                 url=f'https://{secrets["domain"]}/v1/Conversations/{conversation_id}/Messages/{message_id}',
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
                 auth=auth,
                 data=update_body,
             )
@@ -130,5 +125,5 @@ def twilio_conversation_message_update(
 
 def update_to_camel_case(str):
     str = str.title()
-    str = str.replace("_", '')
+    str = str.replace("_", "")
     return str
