@@ -83,6 +83,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 @pytest.mark.unit
 def test_get_config_cache() -> None:
     "Test lru cache hits."
+
     config = get_config()
     cache_info = get_config.cache_info()
     assert config.user.user_id == "1"
@@ -97,7 +98,7 @@ def test_get_config_cache() -> None:
     assert cache_info.hits == 1
     assert cache_info.misses == 1
 
-    config = get_config("tests/test_config.toml")
+    config = get_config("tests/ctl/test_config.toml")
     cache_info = get_config.cache_info()
     assert config.user.user_id == "1"
     assert config.user.api_key == "test_api_key"
@@ -179,7 +180,7 @@ def test_config_from_default() -> None:
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": "data/config/fides.toml",
+        "FIDES__CONFIG_PATH": "src/fides/data/test_env/fides.test_env.toml",
     },
     clear=True,
 )
@@ -187,10 +188,9 @@ def test_config_from_path() -> None:
     """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     print(os.environ)
-    assert config.database.server == "testserver"
-    assert config.redis.host == "testredis"
     assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
     assert config.admin_ui.enabled == True
+    assert config.execution.require_manual_request_approval == True
 
 
 @patch.dict(

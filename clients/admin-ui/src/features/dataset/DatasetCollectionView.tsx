@@ -2,12 +2,16 @@ import { Box, HStack, Select, Spinner } from "@fidesui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import {
+  ColumnDropdown,
+  ColumnMetadata,
+} from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
 import { useGetClassifyDatasetQuery } from "~/features/common/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
+import { DatasetField } from "~/types/api";
 
 import ApproveClassification from "./ApproveClassification";
-import ColumnDropdown from "./ColumnDropdown";
 import {
   selectActiveCollection,
   selectActiveCollections,
@@ -22,9 +26,9 @@ import DatasetHeading from "./DatasetHeading";
 import EditCollectionDrawer from "./EditCollectionDrawer";
 import EditDatasetDrawer from "./EditDatasetDrawer";
 import MoreActionsMenu from "./MoreActionsMenu";
-import { ColumnMetadata, EditableType } from "./types";
+import { EditableType } from "./types";
 
-const ALL_COLUMNS: ColumnMetadata[] = [
+const ALL_COLUMNS: ColumnMetadata<DatasetField>[] = [
   { name: "Field Name", attribute: "name" },
   { name: "Description", attribute: "description" },
   { name: "Identifiability", attribute: "data_qualifier" },
@@ -63,7 +67,8 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   const activeCollection = useSelector(selectActiveCollection);
   const activeEditor = useSelector(selectActiveEditor);
 
-  const [columns, setColumns] = useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const [columns, setColumns] =
+    useState<ColumnMetadata<DatasetField>[]>(ALL_COLUMNS);
 
   // Query subscriptions:
   useGetAllDataCategoriesQuery();
@@ -71,7 +76,6 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
   useEffect(() => {
     if (dataset) {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
-      dispatch(setActiveCollectionIndex(0));
     }
   }, [dispatch, dataset]);
 

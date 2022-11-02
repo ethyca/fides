@@ -14,12 +14,12 @@ import { setupServer } from "msw/node";
 import {
   PrivacyRequestModal,
   RequestModalProps,
-} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
+import { hostUrl } from "~/constants";
+import { ModalViews } from "~/components/modals/types";
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
-import { hostUrl } from "../constants";
-import { ModalViews } from "../components/modals/types";
 
 jest.mock("../config/config.json");
 
@@ -41,7 +41,6 @@ const defaultModalProperties: RequestModalProps = {
   isOpen: true,
   onClose: () => {},
   openAction: mockConfig.actions[0].policy_key,
-  setAlert: () => {},
   currentView: ModalViews.PrivacyRequest,
   setCurrentView: () => {},
   privacyRequestId: "",
@@ -158,11 +157,6 @@ describe("RequestModal", () => {
     });
 
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request was successful, please await further instructions."
-    );
-    expect(notification).toBeInTheDocument();
   });
 
   it("handles form submission failure with an appropriate alert", async () => {
@@ -199,12 +193,5 @@ describe("RequestModal", () => {
     act(() => {
       userEvent.click(screen.getByText("Continue"));
     });
-
-    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request has failed. Please try again."
-    );
-    expect(notification).toBeInTheDocument();
   });
 });

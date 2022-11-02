@@ -37,7 +37,7 @@ class OffsetPaginationConfiguration(StrategyConfiguration):
 
     incremental_param: str
     increment_by: int
-    limit: Union[int, ConnectorParamRef]
+    limit: Optional[Union[int, ConnectorParamRef]]
 
     @validator("increment_by")
     def check_increment_by(cls, increment_by: int) -> int:

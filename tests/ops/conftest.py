@@ -44,6 +44,7 @@ from .fixtures.saas.auth0_fixtures import *
 from .fixtures.saas.braze_fixtures import *
 from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
+from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.doordash_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
@@ -201,6 +202,11 @@ def generate_webhook_auth_header() -> Callable[[Any], Dict[str, str]]:
 @pytest.fixture(scope="session")
 def integration_config():
     yield load_toml(["tests/ops/integration_test_config.toml"])
+
+
+@pytest.fixture(scope="session")
+def celery_config():
+    return {"task_always_eager": False}
 
 
 @pytest.fixture(autouse=True, scope="session")

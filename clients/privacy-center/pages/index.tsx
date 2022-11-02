@@ -1,37 +1,27 @@
 import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import {
-  Flex,
-  Heading,
-  Text,
-  Stack,
-  Alert,
-  AlertIcon,
-  AlertDescription,
-  CloseButton,
-  Image,
-} from "@fidesui/react";
+import { Flex, Heading, Text, Stack, Image, useToast } from "@fidesui/react";
+import { ConfigErrorToastOptions } from "~/common/toast-options";
 
 import {
   usePrivactRequestModal,
   PrivacyRequestModal,
-} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import {
   useConsentRequestModal,
   ConsentRequestModal,
-} from "../components/modals/consent-request-modal/ConsentRequestModal";
+} from "~/components/modals/consent-request-modal/ConsentRequestModal";
+import { hostUrl } from "~/constants";
 import PrivacyCard from "../components/PrivacyCard";
 import ConsentCard from "../components/ConsentCard";
-import type { AlertState } from "../types/AlertState";
 
 import config from "../config/config.json";
-import { hostUrl } from "../constants";
 
 const Home: NextPage = () => {
-  const [alert, setAlert] = useState<AlertState | null>(null);
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
+  const toast = useToast();
   const {
     isOpen: isPrivacyModalOpen,
     onClose: onPrivacyModalClose,
@@ -56,30 +46,29 @@ const Home: NextPage = () => {
   } = useConsentRequestModal();
 
   useEffect(() => {
-    if (alert?.status) {
-      const closeAlertTimer = setTimeout(() => setAlert(null), 8000);
-      return () => clearTimeout(closeAlertTimer);
-    }
-    return () => false;
-  }, [alert]);
-
-  useEffect(() => {
     const getConfig = async () => {
       try {
-        const response = await fetch(`${hostUrl}/id-verification/config`, {
+        const response = await fetch(`${hostUrl}/id-verification/config/`, {
           headers: {
             "X-Fides-Source": "fidesops-privacy-center",
           },
         });
         const data = await response.json();
+        if (!response.ok) {
+          toast({
+            description: data.detail,
+            ...ConfigErrorToastOptions,
+          });
+        }
         setIsVerificationRequired(data.identity_verification_required);
       } catch (e) {
+        toast(ConfigErrorToastOptions);
         // eslint-disable-next-line no-console
         console.error(e);
       }
     };
     getConfig();
-  }, [setIsVerificationRequired]);
+  }, [setIsVerificationRequired, toast]);
 
   const content: any = [];
 
@@ -96,8 +85,16 @@ const Home: NextPage = () => {
     );
   });
 
-  if (config.includeConsent) {
-    content.push(<ConsentCard key="consentCard" onOpen={onConsentModalOpen} />);
+  if (config.includeConsent && config.consent) {
+    content.push(
+      <ConsentCard
+        key="consentCard"
+        title={config.consent.title}
+        iconPath={config.consent.icon_path}
+        description={config.consent.description}
+        onOpen={onConsentModalOpen}
+      />
+    );
   }
 
   return (
@@ -117,29 +114,7 @@ const Home: NextPage = () => {
           justifyContent="center"
           alignItems="center"
         >
-          {alert ? (
-            <Alert
-              status={alert.status}
-              minHeight={14}
-              maxWidth="5xl"
-              zIndex={1}
-              position="absolute"
-            >
-              <AlertIcon />
-              <AlertDescription>{alert.description}</AlertDescription>
-              <CloseButton
-                position="absolute"
-                right="8px"
-                onClick={() => setAlert(null)}
-              />
-            </Alert>
-          ) : null}
-          <Image
-            src={config.logo_path}
-            height="56px"
-            width="304px"
-            alt="Logo"
-          />
+          <Image src={config.logo_path} margin="8px" height="68px" alt="Logo" />
         </Flex>
       </header>
 
@@ -172,7 +147,6 @@ const Home: NextPage = () => {
           isOpen={isPrivacyModalOpen}
           onClose={onPrivacyModalClose}
           openAction={openAction}
-          setAlert={setAlert}
           currentView={currentPrivacyModalView}
           setCurrentView={setCurrentPrivacyModalView}
           privacyRequestId={privacyRequestId}
@@ -184,7 +158,6 @@ const Home: NextPage = () => {
         <ConsentRequestModal
           isOpen={isConsentModalOpen}
           onClose={onConsentModalClose}
-          setAlert={setAlert}
           currentView={currentConsentModalView}
           setCurrentView={setCurrentConsentModalView}
           consentRequestId={consentRequestId}

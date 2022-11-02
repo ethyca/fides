@@ -7,7 +7,7 @@ This script is only designed to be run from the Nox session 'nox -s test_env'.
 
 from setup import constants, get_secret
 from setup.authentication import get_auth_header
-from setup.dsr_policy import create_dsr_policy, create_rule, create_rule_target
+from setup.dsr_policy import create_dsr_policy, create_rule
 from setup.email import create_email_integration
 from setup.healthcheck import check_health
 from setup.mailchimp_connector import create_mailchimp_connector
@@ -89,8 +89,5 @@ if get_secret("STRIPE_SECRETS")["api_key"]:
     create_stripe_connector(
         auth_header=auth_header,
     )
-
-# Run an example privacy request
-create_privacy_request(user_email="jane@example.com")
 
 print("Examples loaded successfully!")

@@ -1,6 +1,7 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-describe("Config Wizard", () => {
+// skipping while configWizardFlag exists
+describe.skip("Config Wizard", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
@@ -60,10 +61,8 @@ describe("Config Wizard", () => {
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate");
 
-      cy.getByTestId("scan-results-form");
-      cy.getByTestId(`scan-result-row-example-system-1`).within(() => {
-        cy.getByTestId("checkbox").click();
-      });
+      cy.getByTestId("scan-results");
+      cy.getByTestId(`checkbox-example-system-1`).click();
       cy.getByTestId("register-btn").click();
 
       // The request while editing the form should match the generated system's body.
@@ -75,6 +74,7 @@ describe("Config Wizard", () => {
       }).as("putSystem");
 
       // The form interactions are covered by the system forms tests.
+      cy.contains("Continue").click();
       cy.getByTestId("confirm-btn").click();
       cy.getByTestId("privacy-declaration-form");
       cy.getByTestId("input-name").type("declaration");
@@ -116,6 +116,27 @@ describe("Config Wizard", () => {
       cy.getByTestId("scanner-error");
       cy.getByTestId("generic-msg");
       cy.getByTestId("error-log").contains("Internal Server Error");
+    });
+
+    it("Allows stepping back to the previous step during an in-progress scan", () => {
+      cy.intercept(
+        "POST",
+        "/api/v1/generate",
+
+        (req) => {
+          req.continue((res) => {
+            res.setDelay(1000);
+          });
+        }
+      ).as("postGenerate");
+      cy.getByTestId("submit-btn")
+        .click()
+        .then(() => {
+          cy.getByTestId("close-scan-in-progress").click();
+          cy.contains("Cancel Scan!");
+          cy.contains("Yes, Cancel").click();
+          cy.contains("Scan for Systems");
+        });
     });
   });
 });

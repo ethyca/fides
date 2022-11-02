@@ -35,7 +35,7 @@ const NavBar = () => {
                 : "ghost"
             }
           >
-            Subject Requests
+            Privacy Requests
           </Button>
         </NextLink>
 
@@ -50,7 +50,7 @@ const NavBar = () => {
                 : "ghost"
             }
           >
-            Datastore Connections
+            Connections
           </Button>
         </NextLink>
 

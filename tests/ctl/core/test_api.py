@@ -306,19 +306,6 @@ class TestDefaultTaxonomyCrud:
         )
 
 
-# This test will fail if certain other tests run before it, due to a non-deterministic bug in the code
-# Keeping the order as-is is a temporary fix
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "resource_type", ["data_category", "data_use", "data_qualifier"]
-)
-def test_visualize(setup_db: str, test_config: FidesConfig, resource_type: str) -> None:
-    response = requests.get(
-        f"{test_config.cli.server_url}{API_PREFIX}/{resource_type}/visualize/graphs"
-    )
-    assert response.status_code == 200
-
-
 @pytest.mark.integration
 def test_static_sink(test_config: FidesConfig) -> None:
     """Make sure we are hosting something at / and not getting a 404"""

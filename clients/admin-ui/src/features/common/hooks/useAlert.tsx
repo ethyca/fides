@@ -2,8 +2,11 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
+  AlertTitle,
   Box,
+  CloseButton,
   useToast,
+  UseToastOptions,
 } from "@fidesui/react";
 
 /**
@@ -18,16 +21,28 @@ export const useAlert = () => {
    * Display custom error toast notification
    * @param description
    */
-  const errorAlert = (description: string | JSX.Element) => {
+  const errorAlert = (
+    description: string | JSX.Element,
+    title?: string,
+    options?: UseToastOptions
+  ) => {
     toast({
-      isClosable: true,
-      position: DEFAULT_POSITION,
-      render: () => (
-        <Alert status="error">
+      ...options,
+      position: options?.position || DEFAULT_POSITION,
+      render: ({ onClose }) => (
+        <Alert alignItems="normal" status="error">
           <AlertIcon />
           <Box>
+            {title && <AlertTitle>{title}</AlertTitle>}
             <AlertDescription>{description}</AlertDescription>
           </Box>
+          <CloseButton
+            onClick={onClose}
+            position="relative"
+            right={0}
+            size="sm"
+            top={-1}
+          />
         </Alert>
       ),
     });
@@ -37,14 +52,28 @@ export const useAlert = () => {
    * Display custom success toast notification
    * @param description
    */
-  const successAlert = (description: string) => {
+  const successAlert = (
+    description: string,
+    title?: string,
+    options?: UseToastOptions
+  ) => {
     toast({
-      isClosable: true,
-      position: DEFAULT_POSITION,
-      render: () => (
-        <Alert status="success" variant="subtle">
+      ...options,
+      position: options?.position || DEFAULT_POSITION,
+      render: ({ onClose }) => (
+        <Alert alignItems="normal" status="success" variant="subtle">
           <AlertIcon />
-          {description}
+          <Box>
+            {title && <AlertTitle>{title}</AlertTitle>}
+            <AlertDescription>{description}</AlertDescription>
+          </Box>
+          <CloseButton
+            onClick={onClose}
+            position="relative"
+            right={0}
+            size="sm"
+            top={-1}
+          />
         </Alert>
       ),
     });
