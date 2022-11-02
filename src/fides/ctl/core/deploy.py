@@ -96,7 +96,7 @@ def check_docker_version() -> bool:
 
 def seed_example_data() -> None:
     run_shell(
-        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push demo_resources/"
+        DOCKER_COMPOSE_COMMAND + "run --no-deps --rm fides fides push src/fides/data/sample_project/sample_resources/"
     )
     run_shell(
         DOCKER_COMPOSE_COMMAND

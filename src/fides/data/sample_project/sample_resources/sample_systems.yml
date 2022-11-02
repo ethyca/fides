@@ -1,0 +1,81 @@
+system:
+  - fides_key: cookie_house
+    name: Cookie House
+    description: Cookie House eCommerce Application
+    system_type: Application
+    administrating_department: Engineering
+    data_responsibility_title: Controller
+    third_country_transfers:
+    - USA
+    - CAN
+    data_protection_impact_assessment:
+      is_required: True
+      progress: Complete
+      link: https://example.org/cookie_house_dpia
+    privacy_declarations:
+      - name: Analyze customer behaviour for improvements.
+        data_categories:
+          - user.contact
+          - user.device.cookie_id
+        data_use: improve.system
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - demo_users_dataset
+
+  - fides_key: cookie_house_postgres
+    name: Cookie House PostgreSQL Database
+    description: Store data about our users for orders.
+    system_type: Application
+    administrating_department: Engineering
+    data_responsibility_title: Processor
+    system_dependencies:
+    - cookie_house
+    privacy_declarations:
+      - name: Collect data for marketing
+        data_categories:
+          - user.contact
+          - user.financial
+        data_use: provide.service
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - postgres_example_test_dataset
+
+  - fides_key: cookie_house_mongo
+    name: Cookie House Customer Database
+    description: Store detailed data about our users for additional customer marketing.
+    system_type: Application
+    administrating_department: Engineering
+    data_responsibility_title: Processor
+    system_dependencies:
+    - cookie_house
+    privacy_declarations:
+      - name: Collect detailed data for marketing
+        data_categories:
+          - user.contact
+        data_use: advertising
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+        dataset_references:
+          - mongo_test
+
+  - fides_key: cookie_house_marketing
+    name: Cookie House Marketing System
+    description: Collect data about our users for marketing.
+    system_type: Application
+    administrating_department: Marketing
+    data_responsibility_title: Processor
+    system_dependencies:
+    - cookie_house_mongo
+    privacy_declarations:
+      - name: Collect data for marketing
+        data_categories:
+          - user.device.cookie_id
+        data_use: advertising
+        data_subjects:
+          - customer
+        data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
