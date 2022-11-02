@@ -1,6 +1,6 @@
 CREATE TABLE public.twilio_users (
     email CHARACTER VARYING(100) PRIMARY KEY,
-    user_id CHARACTER VARYING(100)
+    twilio_user_id CHARACTER VARYING(100)
 );
 
 INSERT INTO public.twilio_users VALUES

@@ -20,9 +20,9 @@ Privileges represent individual user permissions. Ensure each user is created wi
 
 | Privilege | Description |
 |----|----|
-| View datastore connections | Allows the user to view, but not edit, any existing connections to your datastores. |
-| Create or Update datastore connections | Allows the user to create new datastore connections, and update existing connections. |
-| Delete datastore connections | Allows the user to delete existing datastore connections, removing them entirely from Fides. |
+| View connections | Allows the user to view, but not edit, any existing connections to your datastores. |
+| Create or update connections | Allows the user to create new connections, and update existing connections. |
+| Delete connections | Allows the user to delete existing connections, removing them entirely from Fides. |
 | View policies | Allows the user to view existing Fides policies. |
 | Create policies | Allows the user to create new Fides policies. |
 | View users | Allows the user to view the User Management panel. |

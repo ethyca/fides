@@ -1,0 +1,38 @@
+# Configuration values used for test environment (see `nox -s test_env`)
+[database]
+server = "fides-db"
+user = "postgres"
+password = "fides"
+port = "5432"
+db = "fides"
+
+[redis]
+host = "redis"
+password = "testpassword"
+port = 6379
+db_index = 0
+
+[logging]
+level = "DEBUG"
+
+[security]
+app_encryption_key = "atestencryptionkeythatisvalidlen"
+cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+root_username = "root_user"
+root_password = "Testpassword1!"
+
+[execution]
+task_retry_count = 0
+task_retry_delay = 1
+task_retry_backoff = 1
+require_manual_request_approval = true
+masking_strict = true
+
+[cli]
+server_host = "localhost"
+server_port = 8080
+
+[user]
+analytics_opt_out = false

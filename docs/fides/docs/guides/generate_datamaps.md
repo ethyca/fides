@@ -302,7 +302,7 @@ Now that you have added the additional information around privacy notices and da
 
 ```sh title="Push and Export Defaults"
 $ fides push demo_resources/
-$ fides export datamap --output_dir demo_resources/
+$ fides export datamap --output-dir demo_resources/
 ```
 
 ### Populated Fields

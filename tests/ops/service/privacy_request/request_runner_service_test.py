@@ -38,6 +38,7 @@ from fides.api.ops.schemas.masking.masking_configuration import (
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.policy import Rule
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.service.connectors.sql_connector import (
@@ -609,6 +610,9 @@ def test_create_and_process_erasure_request_saas(
     )
 
     connector = SaaSConnector(mailchimp_connection_config)
+    connector.set_saas_request_state(
+        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+    )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/3.0/search-members",
