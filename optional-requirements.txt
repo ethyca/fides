@@ -15,10 +15,6 @@ PyMySQL==1.0.2
 # Okta
 okta==2.7.0
 
-# Redis
-redis==3.5.3
-fastapi-caching[redis]
-
 # Redshift
 sqlalchemy-redshift==0.8.11
 

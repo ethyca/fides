@@ -55,7 +55,6 @@ extras = {
     "mssql": optional_requirements(["pyodbc"], dangerous_requires),
     "mysql": optional_requirements(["PyMySQL"]),
     "okta": optional_requirements(["okta"]),
-    "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),
     "redshift": optional_requirements(["sqlalchemy-redshift"]),
     "snowflake": optional_requirements(["snowflake-sqlalchemy"]),
 }
