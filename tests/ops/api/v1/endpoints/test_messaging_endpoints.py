@@ -561,9 +561,15 @@ class TestPutMessagingConfigSecretTwilioSms:
         )
         assert (
             messaging_config_twilio_sms.secrets[
-                MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+                MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
             ]
             == "+12345436543"
+        )
+        assert (
+            messaging_config_twilio_sms.secrets[
+                MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
+            ]
+            is None
         )
 
     def test_put_config_secrets_with_sender_phone_incorrect_format(
@@ -582,9 +588,10 @@ class TestPutMessagingConfigSecretTwilioSms:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
-        assert response.json() == {
-            "detail": "Sender phone number must include country code, formatted like +15558675309"
-        }
+        assert (
+            f"Sender phone number must include country code, formatted like +15558675309"
+            in response.json()["detail"]
+        )
 
     def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
         self,
@@ -601,11 +608,10 @@ class TestPutMessagingConfigSecretTwilioSms:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
-        assert response.json() == {
-            "detail": [
-                "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied. ('__root__',)"
-            ]
-        }
+        assert (
+            f"Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+            in response.json()["detail"]
+        )
 
 
 class TestGetMessagingConfigs:
