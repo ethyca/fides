@@ -589,7 +589,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
-            f"Sender phone number must include country code, formatted like +15558675309"
+            f"Sender phone number must include country code, formatted like +15558675309 ('__root__',)"
             in response.json()["detail"]
         )
 
@@ -609,7 +609,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
-            f"Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+            f"Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied. ('__root__',)"
             in response.json()["detail"]
         )
 
