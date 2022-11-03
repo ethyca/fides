@@ -1,7 +1,7 @@
 # This file exists for caching optional dependencies within the Docker build
 
 # AWS
-boto3~=1.24.46
+boto3==1.26.1
 
 # BigQuery
 sqlalchemy-bigquery==1.4.4
