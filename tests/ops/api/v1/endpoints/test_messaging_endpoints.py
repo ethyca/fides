@@ -217,9 +217,7 @@ class TestPostMessagingConfig:
             },
         )
         assert response.status_code == 400
-        assert response.json() == {
-            "detail": ""
-        }  # fixme- what's the error here?
+        assert response.json() == {"detail": ""}  # fixme- what's the error here?
 
     def test_post_twilio_email_config(
         self,
@@ -741,7 +739,9 @@ class TestDeleteConfig:
                 "service_type": MessagingServiceType.TWILIO_TEXT,
             },
         )
-        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(config_key=twilio_sms_config.key)
+        url = (V1_URL_PREFIX + MESSAGING_BY_KEY).format(
+            config_key=twilio_sms_config.key
+        )
         auth_header = generate_auth_header([MESSAGING_DELETE])
         response = api_client.delete(url, headers=auth_header)
         assert response.status_code == 204

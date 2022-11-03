@@ -2973,7 +2973,9 @@ class TestVerifyIdentity:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(phone_number='+1 234 567 8910', email='test@example.com')
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+1 234 567 8910", email="test@example.com"
+        )
         assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
 
         message_meta = task_kwargs["message_meta"]
@@ -3079,7 +3081,9 @@ class TestVerifyIdentity:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(phone_number='+1 234 567 8910', email='test@example.com')
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+1 234 567 8910", email="test@example.com"
+        )
         assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
 
         message_meta = task_kwargs["message_meta"]
@@ -3659,7 +3663,6 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         CONFIG.notifications.send_request_receipt_notification = True
         yield
         CONFIG.notifications.send_request_receipt_notification = original_value
-
 
     @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
