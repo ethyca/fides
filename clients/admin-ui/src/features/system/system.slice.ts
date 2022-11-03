@@ -48,6 +48,14 @@ export const systemApi = createApi({
       }),
       invalidatesTags: ["System"],
     }),
+    upsertSystems: build.mutation<UpsertResponse, System[]>({
+      query: (systems) => ({
+        url: `/system/upsert`,
+        method: "POST",
+        body: systems,
+      }),
+      invalidatesTags: ["System"],
+    }),
     updateSystem: build.mutation<
       System,
       Partial<System> & Pick<System, "fides_key">
@@ -85,14 +93,6 @@ export const systemApi = createApi({
         }
       },
     }),
-    upsertSystems: build.mutation<UpsertResponse, System[]>({
-      query: (systems) => ({
-        url: `/system/upsert`,
-        method: "POST",
-        body: systems,
-      }),
-      invalidatesTags: ["System"],
-    }),
   }),
 });
 
@@ -101,8 +101,8 @@ export const {
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
   useUpdateSystemMutation,
-  useUpsertSystemsMutation,
   useDeleteSystemMutation,
+  useUpsertSystemsMutation,
 } = systemApi;
 
 export interface State {

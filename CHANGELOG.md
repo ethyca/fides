@@ -17,21 +17,34 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Fixed
+
+* Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
+* Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
+
+### Security
+
+* Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
+
+## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
+
 ### Added
 
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
 * Privacy center consent choices store a browser cookie. [#1364](https://github.com/ethyca/fides/pull/1364)
-    * The format is generic. A reasonable set of defaults will be added later: [#1444](https://github.com/ethyca/fides/issues/1444)
-    * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
-    * Each consent option can provide an array of `cookieKeys`.
+  * The format is generic. A reasonable set of defaults will be added later: [#1444](https://github.com/ethyca/fides/issues/1444)
+  * The cookie name defaults to `fides_consent` but can be configured under `config.json > consent > cookieName`.
+  * Each consent option can provide an array of `cookieKeys`.
 * Individually select and reprocess DSRs that have errored [#1203](https://github.com/ethyca/fides/pull/1489)
 * Bulk select and reprocess DSRs that have errored [#1205](https://github.com/ethyca/fides/pull/1489)
 * Config Wizard: AWS scan results populate in system review forms. [#1454](https://github.com/ethyca/fides/pull/1454)
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
-* Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
+* Config Wizard: Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
+* Config Wizard: Flow for runtime scanner option [#1640](https://github.com/ethyca/fides/pull/1640)
 * Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
 
 ### Changed
+
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
 
 ### Developer Experience
@@ -42,6 +55,7 @@ The types of changes are:
 * Updates the healthcheck to return health status of connected Celery workers [#1588](https://github.com/ethyca/fides/pull/1588)
 
 ### Docs
+
 * Remove the tutorial to prepare for new update [#1543](https://github.com/ethyca/fides/pull/1543)
 * Add system management via UI documentation [#1541](https://github.com/ethyca/fides/pull/1541)
 * Added DSR quickstart docs, restructured docs navigation [#1651](https://github.com/ethyca/fides/pull/1651)
@@ -50,7 +64,6 @@ The types of changes are:
 ### Fixed
 
 * Fixed system dependencies appearing as "N/A" in the datamap endpoint when there are no privacy declarations [#1649](https://github.com/ethyca/fides/pull/1649)
-* Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
 
 ## [1.9.6](https://github.com/ethyca/fides/compare/1.9.5...1.9.6)
 
@@ -69,10 +82,9 @@ The types of changes are:
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 * Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 
-### Changed 
+### Changed
 
 * Allow multiple masking strategies to be specified when using fides as a masking engine [#1647](https://github.com/ethyca/fides/pull/1647)
-
 
 ## [1.9.5](https://github.com/ethyca/fides/compare/1.9.4...1.9.5)
 
@@ -85,6 +97,7 @@ The types of changes are:
 ### Fixed
 
 * After editing a dataset, the table will stay on the previously selected collection instead of resetting to the first one. [#1511](https://github.com/ethyca/fides/pull/1511)
+
 ## [1.9.2](https://github.com/ethyca/fides/compare/1.9.1...1.9.2)
 
 ### Deprecated
@@ -336,7 +349,7 @@ The types of changes are:
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/ctl/admin-ui/src/types/api/README.md) for more details.
+* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
 
