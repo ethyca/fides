@@ -168,7 +168,7 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         sender_phone = values.get("twilio_sender_phone_number")
-        if not values.get("twilio_messaging_service_sid") or sender_phone:
+        if not values.get("twilio_messaging_service_sid") and not sender_phone:
             raise ValueError(
                 "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
             )

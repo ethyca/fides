@@ -185,7 +185,7 @@ def messaging_config_twilio_email(db: Session) -> Generator:
         db=db,
         data={
             "name": name,
-            "key": "my_twilio_emailconfig",
+            "key": "my_twilio_email_config",
             "service_type": MessagingServiceType.TWILIO_EMAIL,
         },
     )

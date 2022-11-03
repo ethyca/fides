@@ -217,7 +217,9 @@ class TestPostMessagingConfig:
             },
         )
         assert response.status_code == 500
-        assert response.json() == {"detail": ""}  # fixme- what's the error here?
+        assert (
+            f"Key (service_type)=(MAILGUN) already exists" in response.json()["detail"]
+        )
 
     def test_post_twilio_email_config(
         self,
@@ -498,7 +500,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         db.refresh(messaging_config_twilio_sms)
 
         assert json.loads(response.text) == {
-            "msg": "Secrets updated for MessagingConfig with key: my_twilio_email_config.",
+            "msg": "Secrets updated for MessagingConfig with key: my_twilio_sms_config.",
             "test_status": None,
             "failure_reason": None,
         }
@@ -600,7 +602,9 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert response.json() == {
-            "detail": "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+            "detail": [
+                "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied. ('__root__',)"
+            ]
         }
 
 
