@@ -16,6 +16,10 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
+from slowapi.errors import RateLimitExceeded
+from slowapi.extension import Limiter, _rate_limit_exceeded_handler
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
@@ -66,6 +70,14 @@ logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
+app.state.limiter = Limiter(
+    default_limits=["100/minute"],
+    headers_enabled=True,
+    key_func=get_remote_address,
+    retry_after="http-date",
+)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
     datamap.router,
