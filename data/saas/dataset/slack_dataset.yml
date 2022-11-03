@@ -34,18 +34,42 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
-          - name: is_bot
+          - name: tz_label
             data_categories: [system.operations]
             fidesops_meta:
-              data_type: boolean
+              data_type: string
+          - name: tz_offset
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
           - name: profile
             fidesops_meta:
               data_type: object
             fields:
-              - name: avatar_hash
+              - name: title
                 data_categories: [system.operations]
+              - name: phone
+                data_categories: [system.operations]
+              - name: skype
+                data_categories: [system.operations]
+              - name: real_name
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
+              - name: real_name_normalized
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: display_name
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: display_name_normalized
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: fields
+                data_categories: [system.operations]
               - name: status_text
                 data_categories: [system.operations]
                 fidesops_meta:
@@ -54,23 +78,211 @@ dataset:
                 data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
-              - name: real_name
-                data_categories: [user.name]
+              - name: status_emoji_display_info
+                data_categories: [system.operations]
+              - name: status_expiration
+                data_categories: [system.operations]
                 fidesops_meta:
-                  data_type: string
-              - name: display_name
-                data_categories: [user.name]
-                fidesops_meta:
-                  data_type: string
-              - name: real_name_normalized
-                data_categories: [user.name]
-                fidesops_meta:
-                  data_type: string
-              - name: display_name_normalized
-                data_categories: [user.name]
+                  data_type: integer
+              - name: avatar_hash
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: email
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+              - name: first_name
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_name
+                data_categories: [system.operations]
+              - name: image_24
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_32
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_48
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_72
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_192
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_512
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: status_text_canonical
+                data_categories: [system.operations]
+              - name: team
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: is_admin
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_owner
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_primary_owner
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_restricted
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_ultra_restricted
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_bot
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_app_user
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: updated
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: is_email_confirmed
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: who_can_share_contact_card
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_invited_user
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+      - name: user_conversations
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_channel
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_group
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_im
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_mpim
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_private
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: created
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: is_archived
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_general
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: unlinked
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: name_normalized
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_shared
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_org_shared
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: is_pending_ext_shared
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: pending_shared
+            data_categories: [system.operations]
+          - name: context_team_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: parent_conversation
+            data_categories: [system.operations]
+          - name: creator
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: is_ext_shared
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: shared_team_ids
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string[]
+          - name: pending_connected_team_ids
+            data_categories: [system.operations]
+          - name: topic
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: value
+                data_categories: [system.operations]
+              - name: creator
+                data_categories: [system.operations]
+              - name: last_set
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: purpose
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: creator
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: last_set
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: previous_names
+            data_categories: [system.operations]

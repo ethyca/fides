@@ -37,5 +37,20 @@ saas_config:
           param_values:
             - name: email
               identity: email
-
           data_path: user
+
+    - name: user_conversations
+      requests:
+        read:
+          method: GET
+          path: /api/users.conversations
+          query_params:
+            - name: user
+              value: <user_id>
+          param_values:
+            - name: user_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.id
+                  direction: from
+          data_path: channels

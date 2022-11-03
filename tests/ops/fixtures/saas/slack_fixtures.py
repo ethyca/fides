@@ -2,7 +2,9 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import requests
 from fideslib.db import session
+from requests import Response
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -91,3 +93,38 @@ def slack_dataset_config(
     )
     yield dataset
     dataset.delete(db=db)
+
+
+class SlackTestClient:
+    """Helper to call various Slack data management requests"""
+
+    def __init__(self, slack_connection_config: ConnectionConfig):
+        self.slack_secrets = slack_connection_config.secrets
+        self.base_url = f"https://{self.slack_secrets['domain']}/api"
+        self.headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": f"Bearer {self.slack_secrets['access_token']}",
+        }
+
+    def get_user_from_email(self, email) -> Response:
+        # get user id from email
+        url = f"{self.base_url}/users.lookupByEmail?email={email}"
+        user_response: Response = requests.get(url=url, headers=self.headers)
+        return user_response
+
+
+@pytest.fixture(scope="function")
+def slack_test_client(
+    slack_connection_config: SlackTestClient,
+) -> Generator:
+    test_client = SlackTestClient(slack_connection_config=slack_connection_config)
+    yield test_client
+
+
+@pytest.fixture(scope="function")
+def slack_user_id(
+    slack_test_client: SlackTestClient, slack_identity_email
+) -> Generator:
+    response = slack_test_client.get_user_from_email(email=slack_identity_email)
+    if response.ok and response.json()["user"]:
+        return response.json()["user"]["id"]
