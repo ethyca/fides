@@ -42,14 +42,14 @@ class TestPostMessagingConfig:
     @pytest.fixture(scope="function")
     def payload_twilio_email(self):
         return {
-            "name": "twilio email",
+            "name": "twilio_email",
             "service_type": MessagingServiceType.TWILIO_EMAIL.value,
         }
 
     @pytest.fixture(scope="function")
     def payload_twilio_sms(self):
         return {
-            "name": "twilio sms",
+            "name": "twilio_sms",
             "service_type": MessagingServiceType.TWILIO_TEXT.value,
         }
 
@@ -216,7 +216,7 @@ class TestPostMessagingConfig:
                 "details": {MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain"},
             },
         )
-        assert response.status_code == 400
+        assert response.status_code == 500
         assert response.json() == {"detail": ""}  # fixme- what's the error here?
 
     def test_post_twilio_email_config(
@@ -434,9 +434,9 @@ class TestPutMessagingConfigSecretsMailgun:
 
 class TestPutMessagingConfigSecretTwilioEmail:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config_twilio_email) -> str:
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
-            config_key=messaging_config.key
+            config_key=messaging_config_twilio_email.key
         )
 
     @pytest.fixture(scope="function")
@@ -473,9 +473,9 @@ class TestPutMessagingConfigSecretTwilioEmail:
 
 class TestPutMessagingConfigSecretTwilioSms:
     @pytest.fixture(scope="function")
-    def url(self, messaging_config) -> str:
+    def url(self, messaging_config_twilio_sms) -> str:
         return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
-            config_key=messaging_config.key
+            config_key=messaging_config_twilio_sms.key
         )
 
     def test_put_config_secrets_with_messaging_service_sid(
@@ -487,9 +487,9 @@ class TestPutMessagingConfigSecretTwilioSms:
         messaging_config_twilio_sms,
     ):
         payload = {
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "234ct324",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "3rcuinhewrf",
-            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID: "asdfasdf",
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "234ct324",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "3rcuinhewrf",
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "asdfasdf",
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -530,9 +530,9 @@ class TestPutMessagingConfigSecretTwilioSms:
         messaging_config_twilio_sms,
     ):
         payload = {
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
-            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER: "+12345436543",
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value: "+12345436543",
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -573,9 +573,9 @@ class TestPutMessagingConfigSecretTwilioSms:
         messaging_config_twilio_sms,
     ):
         payload = {
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
-            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER: "12345436543",
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
+            MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value: "12345436543",
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -593,8 +593,8 @@ class TestPutMessagingConfigSecretTwilioSms:
         messaging_config_twilio_sms,
     ):
         payload = {
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID: "2asdf35tv5wsdf",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN: "23tc3",
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "2asdf35tv5wsdf",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23tc3",
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -735,7 +735,7 @@ class TestDeleteConfig:
             db=db,
             data={
                 "key": "my_twilio_sms_config",
-                "name": "twilio sms",
+                "name": "twilio_sms",
                 "service_type": MessagingServiceType.TWILIO_TEXT,
             },
         )
