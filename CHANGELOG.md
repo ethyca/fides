@@ -21,6 +21,7 @@ The types of changes are:
 
 * Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
 * Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
+* Update system fides_key tooltip text [#1533](https://github.com/ethyca/fides/pull/1685)
 
 ### Security
 
