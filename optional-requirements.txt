@@ -23,4 +23,4 @@ fastapi-caching[redis]
 sqlalchemy-redshift==0.8.11
 
 # Snowflake
-snowflake-sqlalchemy==1.4.1
+snowflake-sqlalchemy==1.4.3
