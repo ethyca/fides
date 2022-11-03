@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Fixed
+
+* Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
+
+## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
+
 ### Added
 
 * Allow delete-only SaaS connector endpoints [#1200](https://github.com/ethyca/fides/pull/1200)
@@ -33,6 +39,7 @@ The types of changes are:
 * Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
 
 ### Changed
+
 * Updated mypy to version 0.981 and Python to version 3.10.7 [#1448](https://github.com/ethyca/fides/pull/1448)
 
 ### Developer Experience
@@ -70,7 +77,7 @@ The types of changes are:
 * Update privacy center docs to include consent information [#1537](https://github.com/ethyca/fides/pull/1537)
 * Update UI docs to include DSR countdown information and additional descriptions/filtering [#1545](https://github.com/ethyca/fides/pull/1545)
 
-### Changed 
+### Changed
 
 * Allow multiple masking strategies to be specified when using fides as a masking engine [#1647](https://github.com/ethyca/fides/pull/1647)
 
@@ -337,7 +344,7 @@ The types of changes are:
 * Add datasets via database connection (UI only) [#834](https://github.com/ethyca/fides/pull/834)
 * Add Okta support to the `/generate` endpoint [#842](https://github.com/ethyca/fides/pull/842)
 * Add db support to `/generate` endpoint [849](https://github.com/ethyca/fides/pull/849)
-* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/ctl/admin-ui/src/types/api/README.md) for more details.
+* Added OpenAPI TypeScript client generation for the UI app. See the [README](/clients/admin-ui/src/types/api/README.md) for more details.
 
 ### Changed
 
