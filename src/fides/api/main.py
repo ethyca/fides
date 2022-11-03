@@ -71,7 +71,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
 app.state.limiter = Limiter(
-    default_limits=["100/minute"],
+    default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
     key_func=get_remote_address,
     retry_after="http-date",
