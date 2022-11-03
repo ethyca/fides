@@ -176,7 +176,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
             We have sent a verification code to your email address. Please check
-            your email, then return to this window and the code below.
+            your email, then return to this window and enter the code below.
           </Text>
           <Stack spacing={3}>
             <FormControl
