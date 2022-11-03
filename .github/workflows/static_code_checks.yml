@@ -82,6 +82,25 @@ jobs:
 
       - name: Run typechecker
         run: nox -s mypy
+        
+  Fides-Installation:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Check fides package installation
+        run: nox -s check_install
+
 
   Xenon:
     runs-on: ubuntu-latest
