@@ -753,6 +753,11 @@ def _get_manual_input_from_cache(
     return None
 
 
+class PrivacyRequestNofifications(Base):
+    email: str
+    notify_after_failures: int
+
+
 class ProvidedIdentityType(EnumType):
     """Enum for privacy request identity types"""
 
