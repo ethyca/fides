@@ -50,3 +50,5 @@ jobs:
       
       - name: Stop the sample application
         run: fides deploy down
+
+# Add a test here that confirms the CLI/Webserver work with only the standard requirements
