@@ -70,7 +70,6 @@ interface Props {
   columns: ColumnMetadata<System>[];
   tableHeadProps?: TableHeadProps;
 }
-
 export const SystemsCheckboxTable = ({
   allSystems,
   checked,
@@ -85,7 +84,6 @@ export const SystemsCheckboxTable = ({
       onChange([]);
     }
   };
-
   const onCheck = (system: System) => {
     const exists = checked.indexOf(system) >= 0;
     if (!exists) {
