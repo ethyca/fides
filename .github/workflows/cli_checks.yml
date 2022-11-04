@@ -8,6 +8,10 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+  push:
+    branches:
+      - "main"
+
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
