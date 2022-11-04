@@ -2,7 +2,7 @@ import webbrowser
 from functools import partial
 from os import environ, getcwd, makedirs
 from os.path import dirname, exists, join
-from subprocess import PIPE, CalledProcessError, run
+from subprocess import DEVNULL, PIPE, STDOUT, CalledProcessError, run
 from typing import List
 
 from click import echo
@@ -66,17 +66,11 @@ def compare_semvers(version_a: List[int], version_b: List[int]) -> bool:
 def check_docker_version() -> bool:
     """Verify the Docker version."""
     try:
-        run("docker info", stdout=PIPE, stderr=PIPE, check=True, shell=True)
-    except CalledProcessError:
-        raise SystemExit(
-            "Error: Could not run 'docker info'. Please ensure that Docker is running and try again."
-        )
-
-    try:
+        run("docker info", stdout=DEVNULL, stderr=STDOUT, check=True, shell=True)
         raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     except CalledProcessError:
         raise SystemExit(
-            "Error: Could not run 'docker --version'. Please ensure that Docker is running and try again."
+            "Error: Could not determine Docker version from 'docker' commands. Please ensure that Docker is running and try again."
         )
 
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
