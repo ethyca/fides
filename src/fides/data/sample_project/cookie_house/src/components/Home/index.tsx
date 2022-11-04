@@ -33,7 +33,7 @@ const Home = ({ products }: Props) => {
   }, []);
 
   return (
-    <>
+    <div className={css.main}>
         <Header />
         <main>
             <div className={css.products}>
@@ -64,7 +64,7 @@ const Home = ({ products }: Props) => {
           product={productInPurchase} 
         />
         <Popup trigger={popupTrigger} />
-    </>
+    </div>
   );
 };
 

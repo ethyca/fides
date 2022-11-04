@@ -25,16 +25,24 @@ secrets = get_secrets("adobe_campaign")
 def adobe_campaign_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "adobe_campaign.domain") or secrets["domain"],
+        "organization": pydash.get(saas_config, "adobe_campaign.organization")
+        or secrets["organization"],
         "organization_id": pydash.get(saas_config, "adobe_campaign.organization_id")
         or secrets["organization_id"],
+        "client_id": pydash.get(saas_config, "adobe_campaign.client_id")
+        or secrets["client_id"],
+        "client_secret": pydash.get(saas_config, "adobe_campaign.client_secret")
+        or secrets["client_secret"],
+        "technical_account_id": pydash.get(
+            saas_config, "adobe_campaign.technical_account_id"
+        )
+        or secrets["technical_account_id"],
+        "private_key": pydash.get(saas_config, "adobe_campaign.private_key")
+        or secrets["private_key"],
         "namespace": pydash.get(saas_config, "adobe_campaign.namespace")
         or secrets["namespace"],
         "regulation": pydash.get(saas_config, "adobe_campaign.regulation")
         or secrets["regulation"],
-        "client_id": pydash.get(saas_config, "adobe_campaign.client_id")
-        or secrets["client_id"],
-        "access_token": pydash.get(saas_config, "adobe_campaign.access_token")
-        or secrets["access_token"],
     }
 
 

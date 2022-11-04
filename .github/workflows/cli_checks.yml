@@ -8,6 +8,10 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+  push:
+    branches:
+      - "main"
+
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
@@ -15,6 +19,7 @@ env:
 jobs:
   Nox-Test-Env:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,6 +32,7 @@ jobs:
 
   Fides-Deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -46,7 +52,7 @@ jobs:
         run: pip install .
 
       - name: Start the sample application
-        run: fides deploy up --no-pull
+        run: fides deploy up --no-pull --no-init
       
       - name: Stop the sample application
         run: fides deploy down

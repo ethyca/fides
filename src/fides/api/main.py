@@ -79,11 +79,17 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
 @app.middleware("http")
 async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
     """
-    HTTP Middleware that logs analytics events for each call to Fidesops endpoints.
-    :param request: Request to fidesops api
+    HTTP Middleware that logs analytics events for each call to Fides endpoints.
+    :param request: Request to Fides api
     :param call_next: Callable api endpoint
     :return: Response
     """
+
+    # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
+    path = request.url.path
+    if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
+        return await call_next(request)
+
     fides_source: Optional[str] = request.headers.get("X-Fides-Source")
     now: datetime = datetime.now(tz=timezone.utc)
     endpoint = f"{request.method}: {request.url}"

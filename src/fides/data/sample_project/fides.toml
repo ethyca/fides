@@ -20,15 +20,11 @@ oauth_root_client_secret = "fidesadminsecret"
 
 [execution]
 require_manual_request_approval = true
-
-[notifications]
-send_request_completion_notification = false
-send_request_receipt_notification = false
-send_request_review_notification = false
+celery_config_path = "/fides/src/fides/data/sample_project/celery.toml"
 
 [cli]
 server_host = "fides"
 server_port = 8080
 
 [user]
-analytics_opt_out = true
+analytics_opt_out = false
