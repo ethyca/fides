@@ -69,14 +69,14 @@ def check_docker_version() -> bool:
         run("docker info", stdout=PIPE, stderr=PIPE, check=True, shell=True)
     except CalledProcessError:
         raise SystemExit(
-            "Error running 'docker info'. Please ensure that Docker is running and try again."
+            "Error: Could not run 'docker info'. Please ensure that Docker is running and try again."
         )
 
     try:
         raw = run("docker --version", stdout=PIPE, check=True, shell=True)
     except CalledProcessError:
         raise SystemExit(
-            "Error running 'docker --version'. Please ensure that Docker is running and try again."
+            "Error: Could not run 'docker --version'. Please ensure that Docker is running and try again."
         )
 
     parsed = raw.stdout.decode("utf-8").rstrip("\n")
