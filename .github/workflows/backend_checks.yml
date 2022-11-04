@@ -198,7 +198,8 @@ jobs:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    # In PRs run with the "unsafe" label, or run on a "push" event to main
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     continue-on-error: true
     steps:
       - name: Download container
@@ -235,7 +236,8 @@ jobs:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks')
+    # In PRs run with the "unsafe" label, or run on a "push" event to main
+    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     continue-on-error: true
     steps:
       - name: Download container
@@ -267,6 +269,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
+    # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
       contents: read
