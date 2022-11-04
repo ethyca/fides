@@ -47,13 +47,11 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
 
     router.push("/system");
 
-    if (allRegisteredSystems && allRegisteredSystems.length !== undefined) {
-      successAlert(
-        `You have successfully added ${allRegisteredSystems?.length} systems to your Data Map`,
-        `${allRegisteredSystems?.length} Systems successfully added to your Data Map`,
-        { isClosable: true }
-      );
-    }
+    successAlert(
+      `You have successfully added ${allRegisteredSystems?.length} systems to your Data Map`,
+      `${allRegisteredSystems?.length} Systems successfully added to your Data Map`,
+      { isClosable: true }
+    );
   };
 
   return (
