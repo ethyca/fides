@@ -1,7 +1,7 @@
 import { stubHomePage } from "cypress/support/stubs";
 
 describe("Nav Bar", () => {
-  before(() => {
+  beforeEach(() => {
     cy.login();
   });
 

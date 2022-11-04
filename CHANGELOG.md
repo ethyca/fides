@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Changed
+
+* All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+
 ### Fixed
 
 * Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)

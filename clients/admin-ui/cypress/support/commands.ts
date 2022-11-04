@@ -12,7 +12,16 @@ Cypress.Commands.add("login", () => {
       user: body.user_data,
       token: body.token_data.access_token,
     };
-    window.localStorage.setItem(STORAGE_ROOT_KEY, JSON.stringify(authState));
+    cy.window().then((win) => {
+      win.localStorage.setItem(
+        STORAGE_ROOT_KEY,
+        // redux-persist stringifies the root object _and_ the first layer of children.
+        // https://github.com/rt2zz/redux-persist/issues/489#issuecomment-336928988
+        JSON.stringify({
+          auth: JSON.stringify(authState),
+        })
+      );
+    });
     cy.intercept("/api/v1/user/*/permission", {
       body: {
         id: body.user_data.id,
