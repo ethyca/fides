@@ -1,5 +1,6 @@
 name: Backend Code Checks
 
+# Run this on main as well
 on:
   pull_request:
     paths-ignore:
