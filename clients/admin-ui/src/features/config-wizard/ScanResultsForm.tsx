@@ -22,8 +22,8 @@ import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
-import { isErrorResult } from "../common/helpers";
 
+import { isErrorResult } from "../common/helpers";
 import {
   changeStep,
   chooseSystemsForReview,
@@ -58,8 +58,8 @@ const ScanResultsForm = () => {
     const response = await upsertSystems(selectedSystems);
 
     if (isErrorResult(response)) {
-      handleError(response.error);
-    } else {
+      return handleError(response.error);
+    } 
       const datamapRoute = resolveLink({
         href: "/datamap",
         basePath: "/",
@@ -74,7 +74,7 @@ const ScanResultsForm = () => {
       return features.plus
         ? router.push(datamapRoute.href)
         : router.push("/system");
-    }
+    
   };
 
   const handleSubmit = () => {
