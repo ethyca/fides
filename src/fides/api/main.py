@@ -73,6 +73,7 @@ app = FastAPI(title="fides")
 app.state.limiter = Limiter(
     default_limits=[CONFIG.security.request_rate_limit],
     headers_enabled=True,
+    key_prefix=CONFIG.security.rate_limit_prefix,
     key_func=get_remote_address,
     retry_after="http-date",
     storage_uri=CONFIG.redis.connection_url,

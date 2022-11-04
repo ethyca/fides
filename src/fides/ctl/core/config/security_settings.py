@@ -16,6 +16,7 @@ class SecuritySettings(FideslibSecuritySettings):
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
     subject_request_download_link_ttl_seconds: int = 432000  # 5 days
     request_rate_limit: str = "100/minute"
+    rate_limit_prefix: str = "fides-"
 
     class Config:
         env_prefix = ENV_PREFIX
