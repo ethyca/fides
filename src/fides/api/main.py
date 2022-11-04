@@ -75,6 +75,7 @@ app.state.limiter = Limiter(
     headers_enabled=True,
     key_func=get_remote_address,
     retry_after="http-date",
+    storage_uri=CONFIG.redis.connection_url,
 )
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
