@@ -204,6 +204,16 @@ class MessagingConfigRequest(BaseModel):
         use_enum_values = False
         orm_mode = True
 
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        service_type: MessagingServiceType = values.get("service_type")
+        if service_type == MessagingServiceType.MAILGUN:
+            if not values.get("details"):
+                raise ValueError(
+                    "Mailgun messaging config must include details"
+                )
+        return values
+
 
 class MessagingConfigResponse(BaseModel):
     """Messaging Config Response Schema"""

@@ -1677,9 +1677,9 @@ class TestPrivacyRequestsEmailConnector:
         )
         pr.delete(db=db)
         assert mailgun_send.called
-        kwargs = mailgun_send.call_args.kwargs
-        assert type(kwargs["messaging_config"]) == MessagingConfig
-        assert type(kwargs["message"]) == EmailForActionType
+        args = mailgun_send.call_args.args
+        assert type(args[0]) == MessagingConfig
+        assert type(args[1]) == EmailForActionType
 
     @mock.patch(
         "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"

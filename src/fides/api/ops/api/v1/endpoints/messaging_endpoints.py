@@ -70,6 +70,16 @@ def post_config(
 
     try:
         return create_or_update_messaging_config(db=db, config=messaging_config)
+    except ValueError as e:
+        logger.warning(
+            "Create failed for messaging config %s: %s",
+            messaging_config.key,
+            Pii(str(e)),
+        )
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Config with key {messaging_config.key} failed to be added: {e}",
+        )
     except Exception as exc:
         logger.warning(
             "Create failed for messaging config %s: %s",
@@ -104,7 +114,16 @@ def patch_config_by_key(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No messaging config found with key {config_key}",
         )
-
+    except ValueError as e:
+        logger.warning(
+            "Create failed for messaging config %s: %s",
+            messaging_config.key,
+            Pii(str(e)),
+        )
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Config with key {messaging_config.key} failed to be added: {e}",
+        )
     except Exception as exc:
         logger.warning(
             "Patch failed for messaging config %s: %s",

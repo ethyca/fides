@@ -188,10 +188,10 @@ class TestPostMessagingConfig:
                 "details": None,
             },
         )
-        assert response.status_code == 422
+        assert response.status_code == 400
         errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
-        assert errors[0]["msg"] == "field required"
+        assert errors[0]["msg"] == "Mailgun messaging config must include details"
 
     def test_post_email_config_service_already_exists(
         self,
