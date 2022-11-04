@@ -235,7 +235,7 @@ def validate_dataset_reference(
     to a `Dataset`, `Collection` and `Field` that actually exist in the DB.
     Raises a `ValidationError` if not.
     """
-    dataset_config: DatasetConfig = (
+    dataset_config: Optional[DatasetConfig] = (
         db.query(DatasetConfig)
         .filter(DatasetConfig.fides_key == dataset_reference.dataset)
         .first()
