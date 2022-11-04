@@ -58,7 +58,7 @@ const ScanResultsForm = () => {
       `Scan Successfully Completed`,
       { isClosable: true }
     );
-  }, []);
+  }, [successAlert, systems.length]);
 
   const confirmRegisterSelectedSystems = async () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));

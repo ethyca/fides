@@ -107,25 +107,8 @@ export const {
 
 export interface State {
   activeSystem?: System;
-  page: number;
-  size: number;
 }
-const initialState: State = {
-  page: 1,
-  size: 25,
-};
-
-export interface SystemCheckboxTableParams {
-  page: number;
-  size: number;
-}
-
-export const selectSystemsTableFilters = (
-  state: RootState
-): SystemCheckboxTableParams => ({
-  page: state.system.page,
-  size: state.system.size,
-});
+const initialState: State = {};
 
 export const systemSlice = createSlice({
   name: "system",
@@ -137,19 +120,10 @@ export const systemSlice = createSlice({
     ) => {
       draftState.activeSystem = action.payload;
     },
-    setPage: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: action.payload,
-    }),
-    setSize: (state, action: PayloadAction<number>) => ({
-      ...state,
-      page: initialState.page,
-      size: action.payload,
-    }),
   },
 });
 
-export const { setActiveSystem, setPage } = systemSlice.actions;
+export const { setActiveSystem } = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
