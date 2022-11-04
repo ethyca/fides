@@ -206,12 +206,10 @@ class MessagingConfigRequest(BaseModel):
 
     @root_validator
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        service_type: MessagingServiceType = values.get("service_type")
+        service_type: MessagingServiceType = values.get("service_type")  # type: ignore
         if service_type == MessagingServiceType.MAILGUN:
             if not values.get("details"):
-                raise ValueError(
-                    "Mailgun messaging config must include details"
-                )
+                raise ValueError("Mailgun messaging config must include details")
         return values
 
 
