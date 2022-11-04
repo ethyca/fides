@@ -27,6 +27,7 @@ The types of changes are:
 * Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
 * Update system fides_key tooltip text [#1533](https://github.com/ethyca/fides/pull/1685)
 * Removed local storage parsing that is redundant with redux-persist. [#1678](https://github.com/ethyca/fides/pull/1678)
+* Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
 
 ### Security
 
