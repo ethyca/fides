@@ -152,7 +152,7 @@ const DescribeSystemStep = ({
                 name="fides_key"
                 label="System key"
                 disabled={isEditing}
-                tooltip="System keys are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry. Manually changing this may make it hard to keep track of your systems."
+                tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
               />
               <CustomTextInput
                 id="description"

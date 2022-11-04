@@ -1,13 +1,13 @@
 # This file exists for caching optional dependencies within the Docker build
 
 # AWS
-boto3~=1.24.46
+boto3==1.26.1
 
 # BigQuery
 sqlalchemy-bigquery==1.4.4
 
 # Mongodb
-pymongo==3.12.0
+pymongo==3.13.0
 
 # MySQL
 PyMySQL==1.0.2
@@ -19,4 +19,4 @@ okta==2.7.0
 sqlalchemy-redshift==0.8.11
 
 # Snowflake
-snowflake-sqlalchemy==1.4.1
+snowflake-sqlalchemy==1.4.3
