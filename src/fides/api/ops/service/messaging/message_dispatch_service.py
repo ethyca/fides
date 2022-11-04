@@ -106,9 +106,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: %s", messaging_service
     )
-    dispatcher: Optional[Callable[
-        [MessagingConfig, Any, Optional[str]], None
-    ]] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
+    dispatcher: Optional[
+        Callable[[MessagingConfig, Any, Optional[str]], None]
+    ] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: %s",
@@ -222,9 +222,9 @@ def _get_dispatcher_from_config_type(
     message_service_type: MessagingServiceType,
 ) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
     """Determines which dispatcher to use based on message service type"""
-    if message_service_type == MessagingServiceType.MAILGUN.value:
+    if message_service_type == MessagingServiceType.MAILGUN:
         return _mailgun_dispatcher
-    if message_service_type == MessagingServiceType.TWILIO_TEXT.value:
+    if message_service_type == MessagingServiceType.TWILIO_TEXT:
         return _twilio_sms_dispatcher
     return None
 

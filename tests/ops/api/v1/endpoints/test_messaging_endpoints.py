@@ -185,6 +185,7 @@ class TestPostMessagingConfig:
                 "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
                 "service_type": MessagingServiceType.MAILGUN.value,
+                "details": None,
             },
         )
         assert response.status_code == 422
