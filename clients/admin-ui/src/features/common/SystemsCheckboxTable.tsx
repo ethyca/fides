@@ -10,9 +10,17 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
+import { useDispatch } from "react-redux";
 
+import { useAppSelector } from "~/app/hooks";
 import type { ColumnMetadata } from "~/features/common/ColumnDropdown";
+import {
+  selectSystemsTableFilters,
+  setPage,
+} from "~/features/system/system.slice";
 import { System } from "~/types/api";
+
+import PaginationFooter from "./PaginationFooter";
 
 /**
  * Index into an object with possibility of nesting
@@ -70,6 +78,26 @@ interface Props {
   columns: ColumnMetadata<System>[];
   tableHeadProps?: TableHeadProps;
 }
+
+const useConnectionGrid = () => {
+  const dispatch = useDispatch();
+  const filters = useAppSelector(selectSystemsTableFilters);
+
+  const handlePreviousPage = () => {
+    dispatch(setPage(filters.page - 1));
+  };
+
+  const handleNextPage = () => {
+    dispatch(setPage(filters.page + 1));
+  };
+
+  return {
+    ...filters,
+    handleNextPage,
+    handlePreviousPage,
+  };
+};
+
 export const SystemsCheckboxTable = ({
   allSystems,
   checked,
@@ -77,6 +105,9 @@ export const SystemsCheckboxTable = ({
   columns,
   tableHeadProps,
 }: Props) => {
+  const { page, size, handleNextPage, handlePreviousPage } =
+    useConnectionGrid();
+
   const handleChangeAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       onChange(allSystems);
@@ -84,6 +115,7 @@ export const SystemsCheckboxTable = ({
       onChange([]);
     }
   };
+
   const onCheck = (system: System) => {
     const exists = checked.indexOf(system) >= 0;
     if (!exists) {
@@ -100,49 +132,58 @@ export const SystemsCheckboxTable = ({
   }
 
   return (
-    <Table
-      size="sm"
-      /* https://github.com/chakra-ui/chakra-ui/issues/6822 */
-      sx={{
-        tableLayout: "fixed",
-      }}
-    >
-      <Thead {...tableHeadProps}>
-        <Tr>
-          <Th width="15px">
-            <Checkbox
-              colorScheme="complimentary"
-              title="Select All"
-              isChecked={allChecked}
-              onChange={handleChangeAll}
-            />
-          </Th>
-          {columns.map((c) => (
-            <Th key={c.attribute}>{c.name}</Th>
-          ))}
-        </Tr>
-      </Thead>
-      <Tbody>
-        {allSystems.map((system) => (
-          <Tr key={system.fides_key}>
-            <Td>
+    <>
+      <Table
+        size="sm"
+        /* https://github.com/chakra-ui/chakra-ui/issues/6822 */
+        sx={{
+          tableLayout: "fixed",
+        }}
+      >
+        <Thead {...tableHeadProps}>
+          <Tr>
+            <Th width="15px">
               <Checkbox
                 colorScheme="complimentary"
-                value={system.fides_key}
-                isChecked={checked.indexOf(system) >= 0}
-                onChange={() => onCheck(system)}
-                data-testid={`checkbox-${system.fides_key}`}
+                title="Select All"
+                isChecked={allChecked}
+                onChange={handleChangeAll}
               />
-            </Td>
+            </Th>
             {columns.map((c) => (
-              <Td key={c.attribute}>
-                <SystemTableCell system={system} attribute={c.attribute} />
-              </Td>
+              <Th key={c.attribute}>{c.name}</Th>
             ))}
           </Tr>
-        ))}
-      </Tbody>
-    </Table>
+        </Thead>
+        <Tbody>
+          {allSystems.map((system) => (
+            <Tr key={system.fides_key}>
+              <Td>
+                <Checkbox
+                  colorScheme="complimentary"
+                  value={system.fides_key}
+                  isChecked={checked.indexOf(system) >= 0}
+                  onChange={() => onCheck(system)}
+                  data-testid={`checkbox-${system.fides_key}`}
+                />
+              </Td>
+              {columns.map((c) => (
+                <Td key={c.attribute}>
+                  <SystemTableCell system={system} attribute={c.attribute} />
+                </Td>
+              ))}
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      <PaginationFooter
+        page={page}
+        size={size}
+        total={allSystems.length}
+        handleNextPage={handleNextPage}
+        handlePreviousPage={handlePreviousPage}
+      />
+    </>
   );
 };
 
