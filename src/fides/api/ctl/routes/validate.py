@@ -7,12 +7,7 @@ from typing import Callable, Dict, Union
 from fastapi import Response, status
 from pydantic import BaseModel
 
-from fides.api.ctl.routes.util import (
-    API_PREFIX,
-    route_requires_aws_connector,
-    route_requires_bigquery_connector,
-    route_requires_okta_connector,
-)
+from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.ctl.connectors.models import (
     AWSConfig,
@@ -99,7 +94,6 @@ async def validate(
     )
 
 
-@route_requires_aws_connector
 async def validate_aws(aws_config: AWSConfig) -> None:
     """
     Validates that given aws credentials are valid. Dependency
@@ -110,7 +104,6 @@ async def validate_aws(aws_config: AWSConfig) -> None:
     aws_connector.validate_credentials(aws_config=aws_config)
 
 
-@route_requires_bigquery_connector
 async def validate_bigquery(bigquery_config: BigQueryConfig) -> None:
     """
     Validates that given GCP BigQuery credentials are valid. Dependency
@@ -122,7 +115,6 @@ async def validate_bigquery(bigquery_config: BigQueryConfig) -> None:
     bigquery_connector.validate_bigquery_engine(bigquery_engine)
 
 
-@route_requires_okta_connector
 async def validate_okta(okta_config: OktaConfig) -> None:
     """
     Validates that given okta credentials are valid. Dependency
