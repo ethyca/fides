@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Fixed
 
+* Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
 * Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
 * Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
 * Update system fides_key tooltip text [#1533](https://github.com/ethyca/fides/pull/1685)
