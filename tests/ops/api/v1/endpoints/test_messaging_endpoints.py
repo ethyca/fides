@@ -83,11 +83,8 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
-        assert json.loads(response.text)["detail"][0]["msg"] == "field required"
-        assert (
-            json.loads(response.text)["detail"][1]["msg"]
-            == "extra fields not permitted"
-        )
+        assert response.json()["detail"][0]["msg"] == "field required"
+        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
 
     def test_post_email_config_with_not_supported_service_type(
         self,
@@ -188,9 +185,6 @@ class TestPostMessagingConfig:
                 "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
                 "service_type": MessagingServiceType.MAILGUN.value,
-                "details": {
-                    # "domain": "my.mailgun.domain"
-                },
             },
         )
         assert response.status_code == 422

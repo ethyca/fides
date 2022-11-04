@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
@@ -83,7 +83,7 @@ def dispatch_message(
     logger.info(
         "Building appropriate message template for action type: %s", action_type
     )
-    message: Optional[Union[EmailForActionType, str]] = None  # fixme- huh??
+    message: Optional[Union[EmailForActionType, str]] = None
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
             action_type=action_type,
@@ -106,9 +106,9 @@ def dispatch_message(
     logger.info(
         "Retrieving appropriate dispatcher for email service: %s", messaging_service
     )
-    dispatcher: Any = _get_dispatcher_from_config_type(
-        message_service_type=messaging_service
-    )
+    dispatcher: Optional[Callable[
+        [MessagingConfig, Any, Optional[str]], None
+    ]] = _get_dispatcher_from_config_type(message_service_type=messaging_service)
     if not dispatcher:
         logger.error(
             "Dispatcher has not been implemented for message service type: %s",
@@ -122,9 +122,9 @@ def dispatch_message(
         action_type,
     )
     dispatcher(
-        messaging_config=messaging_config,
-        message=message,
-        to=to_identity.email
+        messaging_config,
+        message,
+        to_identity.email
         if messaging_method == MessagingMethod.EMAIL
         else to_identity.phone_number,
     )
@@ -218,12 +218,15 @@ def _build_email(  # pylint: disable=too-many-return-statements
     )
 
 
-def _get_dispatcher_from_config_type(message_service_type: MessagingServiceType) -> Any:
+def _get_dispatcher_from_config_type(
+    message_service_type: MessagingServiceType,
+) -> Optional[Callable[[MessagingConfig, Any, Optional[str]], None]]:
     """Determines which dispatcher to use based on message service type"""
-    return {
-        MessagingServiceType.MAILGUN.value: _mailgun_dispatcher,
-        MessagingServiceType.TWILIO_TEXT.value: _twilio_sms_dispatcher,
-    }[message_service_type.value]
+    if message_service_type == MessagingServiceType.MAILGUN.value:
+        return _mailgun_dispatcher
+    if message_service_type == MessagingServiceType.TWILIO_TEXT.value:
+        return _twilio_sms_dispatcher
+    return None
 
 
 def _mailgun_dispatcher(
@@ -235,9 +238,11 @@ def _mailgun_dispatcher(
     if not to:
         logger.error("Message failed to send. No email identity supplied.")
         raise MessageDispatchException("No email identity supplied.")
-    if not messaging_config.details:
-        logger.error("Message failed to send. No mailgun config details supplied.")
-        raise MessageDispatchException("No mailgun config details supplied.")
+    if not messaging_config.details or not messaging_config.secrets:
+        logger.error(
+            "Message failed to send. No mailgun config details or secrets supplied."
+        )
+        raise MessageDispatchException("No mailgun config details or secrets supplied.")
     base_url = (
         "https://api.mailgun.net"
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
@@ -280,15 +285,17 @@ def _twilio_sms_dispatcher(
     if not to:
         logger.error("Message failed to send. No phone identity supplied.")
         raise MessageDispatchException("No phone identity supplied.")
-
+    if messaging_config.secrets is None:
+        logger.error("Message failed to send. No config secrets supplied.")
+        raise MessageDispatchException("No config secrets supplied.")
     account_sid = messaging_config.secrets[MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value]  # type: ignore
     auth_token = messaging_config.secrets[MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value]  # type: ignore
     messaging_service_id = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    ]  # type:ignore
+    ]  # type: ignore
     sender_phone_number = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    ]  # type:ignore
+    ]  # type: ignore
 
     client = Client(account_sid, auth_token)
     try:

@@ -1,6 +1,6 @@
 from enum import Enum
 from re import compile as regex
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Extra, root_validator
 
@@ -25,11 +25,11 @@ class MessagingServiceType(Enum):
     TWILIO_EMAIL = "twilio_email"
 
 
-EMAIL_MESSAGING_SERVICES = [
+EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
-]
-SMS_MESSAGING_SERVICES = [MessagingServiceType.TWILIO_TEXT.value]
+)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = tuple(MessagingServiceType.TWILIO_TEXT.value)
 
 
 class MessagingActionType(str, Enum):
