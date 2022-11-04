@@ -16,6 +16,7 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
+import { useAlert } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
@@ -48,6 +49,7 @@ const ScanResultsForm = () => {
   const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const { successAlert } = useAlert();
 
   const confirmRegisterSelectedSystems = async () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
@@ -57,6 +59,14 @@ const ScanResultsForm = () => {
       href: "/datamap",
       basePath: "/",
     });
+
+    if (selectedSystems && selectedSystems.length !== undefined) {
+      successAlert(
+        `You have successfully added ${selectedSystems?.length} systems to your Data Map`,
+        `${selectedSystems?.length} Systems successfully added to your Data Map`,
+        { isClosable: true }
+      );
+    }
 
     return features.plus
       ? router.push(datamapRoute.href)

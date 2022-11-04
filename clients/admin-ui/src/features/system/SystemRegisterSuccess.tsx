@@ -17,6 +17,7 @@ import {
 import { useRouter } from "next/router";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useAlert } from "~/features/common/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import {
   setActiveSystem,
@@ -32,6 +33,7 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { successAlert } = useAlert();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
         (registeredSystem) => registeredSystem.name !== system.name
@@ -44,6 +46,14 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
     dispatch(setActiveSystem(undefined));
 
     router.push("/system");
+
+    if (allRegisteredSystems && allRegisteredSystems.length !== undefined) {
+      successAlert(
+        `You have successfully added ${allRegisteredSystems?.length} systems to your Data Map`,
+        `${allRegisteredSystems?.length} Systems successfully added to your Data Map`,
+        { isClosable: true }
+      );
+    }
   };
 
   return (
