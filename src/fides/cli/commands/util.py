@@ -130,8 +130,8 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
     Starts the sample project via docker compose.
     """
 
+    echo_green("Checking Docker is running and version is compatible...")
     check_docker_version()
-    echo_green("Docker version is compatible, starting deploy...")
 
     if not no_pull:
         pull_specific_docker_image()
