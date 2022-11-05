@@ -44,12 +44,20 @@ async def get_current_user(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> FidesUser:
-    """A wrapper around verify_oauth_client that returns that client's user if one exsits."""
+    """A wrapper around verify_oauth_client that returns that client's user if one exists."""
     client = await verify_oauth_client(
         security_scopes=security_scopes,
         authorization=authorization,
         db=db,
     )
+
+    if client.id == CONFIG.security.oauth_root_client_id:
+        return FidesUser(
+            id=CONFIG.security.oauth_root_client_id,
+            username=CONFIG.security.root_username,
+            created_at=datetime.utcnow(),
+        )
+
     return client.user
 
 

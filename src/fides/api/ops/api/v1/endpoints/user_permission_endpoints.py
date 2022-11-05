@@ -10,6 +10,7 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NO
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.scope_registry import (
+    SCOPE_REGISTRY,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -26,7 +27,9 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
+from fides.ctl.core.config import get_config
 
+CONFIG = get_config()
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -97,15 +100,28 @@ async def get_user_permissions(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
 ) -> FidesUserPermissions:
-    validate_user_id(db, user_id)
+    # A user is able to retrieve their own permissions.
     if current_user.id == user_id:
-        logger.info("Retrieved FidesUserPermission record for current user")
-    else:
-        await verify_oauth_client(
-            security_scopes=SecurityScopes([USER_PERMISSION_READ]),
-            authorization=authorization,
-            db=db,
-        )
-        logger.info("Retrieved FidesUserPermission record")
+        # The root user is a special case because they aren't persisted in the database.
+        if current_user.id == CONFIG.security.oauth_root_client_id:
+            logger.info("Created FidesUserPermission for root user")
+            return FidesUserPermissions(
+                id=CONFIG.security.oauth_root_client_id,
+                user_id=CONFIG.security.oauth_root_client_id,
+                scopes=SCOPE_REGISTRY,
+            )
 
+        logger.info("Retrieved FidesUserPermission record for current user")
+        return FidesUserPermissions.get_by(db, field="user_id", value=current_user.id)
+
+    # To look up the permissions of another user, that user must exist and the current user must
+    # have permission to read users.
+    validate_user_id(db, user_id)
+    await verify_oauth_client(
+        security_scopes=SecurityScopes([USER_PERMISSION_READ]),
+        authorization=authorization,
+        db=db,
+    )
+
+    logger.info("Retrieved FidesUserPermission record")
     return FidesUserPermissions.get_by(db, field="user_id", value=user_id)

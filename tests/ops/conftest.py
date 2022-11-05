@@ -154,6 +154,29 @@ def oauth_client(db: Session) -> Generator:
     yield client
 
 
+@pytest.fixture(scope="function")
+def oauth_root_client(db: Session) -> ClientDetail:
+    """Return the configured root client (never persisted)"""
+    return ClientDetail.get(
+        db,
+        object_id=CONFIG.security.oauth_root_client_id,
+        config=CONFIG,
+        scopes=SCOPE_REGISTRY,
+    )
+
+
+@pytest.fixture(scope="function")
+def root_auth_header(oauth_root_client: ClientDetail) -> Dict[str, str]:
+    """Return an auth header for the root client"""
+    payload = {
+        JWE_PAYLOAD_SCOPES: oauth_root_client.scopes,
+        JWE_PAYLOAD_CLIENT_ID: oauth_root_client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
 def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
