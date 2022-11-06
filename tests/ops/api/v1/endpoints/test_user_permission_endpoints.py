@@ -16,6 +16,7 @@ from starlette.status import (
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_READ,
     SAAS_CONFIG_READ,
+    SCOPE_REGISTRY,
     USER_PERMISSION_CREATE,
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
@@ -302,3 +303,36 @@ class TestGetUserPermissions:
         assert response_body["id"] == permissions.id
         assert response_body["user_id"] == auth_user.id
         assert response_body["scopes"] == scopes
+
+    def test_get_current_root_user_permissions(
+        self, api_client, oauth_root_client, root_auth_header
+    ):
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/user/{oauth_root_client.id}/permission",
+            headers=root_auth_header,
+        )
+        response_body = response.json()
+        assert HTTP_200_OK == response.status_code
+        assert response_body["id"] == oauth_root_client.id
+        assert response_body["user_id"] == oauth_root_client.id
+        assert response_body["scopes"] == SCOPE_REGISTRY
+
+    def test_get_root_user_permissions_by_non_root_user(
+        self, db, api_client, oauth_root_client, auth_user
+    ):
+        # Even with user read permissions, the root user can't be queried.
+        scopes = [USER_PERMISSION_READ]
+        ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=scopes,
+            user_id=auth_user.id,
+        )
+        auth_header = generate_auth_header_for_user(auth_user, scopes)
+
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/user/{oauth_root_client.user_id}/permission",
+            headers=auth_header,
+        )
+        assert HTTP_404_NOT_FOUND == response.status_code

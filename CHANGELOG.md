@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Changed
+
+* All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+
 ### Fixed
 
 * Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
@@ -24,6 +28,7 @@ The types of changes are:
 * Update system fides_key tooltip text [#1533](https://github.com/ethyca/fides/pull/1685)
 * Removed local storage parsing that is redundant with redux-persist. [#1678](https://github.com/ethyca/fides/pull/1678)
 * Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
+* Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
 
 ### Security
 
