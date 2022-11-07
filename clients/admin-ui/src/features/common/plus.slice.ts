@@ -14,7 +14,9 @@ import {
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
+  System,
 } from "~/types/api";
+import { SystemScanResponse } from "~/types/plus/models/SystemScanResponse";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -65,6 +67,14 @@ export const plusApi = createApi({
         `classify/details/${dataset_fides_key}`,
       providesTags: ["ClassifyInstances"],
     }),
+
+    // Kubernetes Cluster Scanner
+    getScanResults: build.query<SystemScanResponse, void>({
+      query: () => ({
+        url: `scan`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -74,6 +84,7 @@ export const {
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
   useUpdateClassifyInstanceMutation,
+  useGetScanResultsQuery,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -149,4 +160,14 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
+);
+
+/**
+ * Kubernetes cluster scanner
+ */
+const emptySystems: System[] = [];
+
+export const selectScannedSystems = createSelector(
+  plusApi.endpoints.getScanResults.select(),
+  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
 );

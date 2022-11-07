@@ -14,17 +14,26 @@ import {
 } from "@fidesui/react";
 
 import { useAppDispatch } from "~/app/hooks";
+import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
   QuestionIcon,
+  RuntimeScannerLogo,
 } from "~/features/common/Icon";
+import { ValidTargets } from "~/types/api";
 
 import { changeStep } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
+import { AddSystemMethods, SystemMethods } from "./types";
 
-const AddSystemForm = () => {
+const AddSystemForm = ({
+  onSelectMethod,
+}: {
+  onSelectMethod: (method: AddSystemMethods) => void;
+}) => {
   const dispatch = useAppDispatch();
+  const { plus } = useFeatures();
 
   return (
     <chakra.form w="100%" data-testid="add-system-form">
@@ -60,9 +69,9 @@ const AddSystemForm = () => {
             )}
           </AccordionItem>
         </Accordion>
-        <Stack>
-          <FormControl>
-            <Stack direction="row" display="flex" alignItems="center" mb={5}>
+        <FormControl>
+          <Stack spacing={5}>
+            <Stack direction="row" display="flex" alignItems="center">
               <IconButton
                 aria-label="AWS"
                 boxSize={iconButtonSize}
@@ -70,7 +79,10 @@ const AddSystemForm = () => {
                 boxShadow="base"
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
-                onClick={() => dispatch(changeStep())}
+                onClick={() => {
+                  onSelectMethod(ValidTargets.AWS);
+                  dispatch(changeStep());
+                }}
                 data-testid="aws-btn"
               />
               <Text>Infrastructure Scan (AWS)</Text>
@@ -82,6 +94,33 @@ const AddSystemForm = () => {
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
+            {plus ? (
+              <Stack direction="row" display="flex" alignItems="center">
+                <HStack>
+                  <IconButton
+                    aria-label="Data flow scan"
+                    boxSize={iconButtonSize}
+                    minW={iconButtonSize}
+                    boxShadow="base"
+                    variant="ghost"
+                    icon={<RuntimeScannerLogo boxSize="10" />}
+                    onClick={() => {
+                      dispatch(changeStep());
+                      onSelectMethod(SystemMethods.RUNTIME);
+                    }}
+                    data-testid="runtime-scan-btn"
+                  />
+                </HStack>
+                <Text>Data Flow Scan</Text>
+                <Tooltip
+                  fontSize="md"
+                  label="The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
+                  placement="right"
+                >
+                  <QuestionIcon boxSize={5} color="gray.400" />
+                </Tooltip>
+              </Stack>
+            ) : null}
             <Stack direction="row" display="flex" alignItems="center">
               <HStack>
                 <IconButton
@@ -91,7 +130,10 @@ const AddSystemForm = () => {
                   boxShadow="base"
                   variant="ghost"
                   icon={<ManualSetupIcon boxSize="full" />}
-                  onClick={() => dispatch(changeStep(5))}
+                  onClick={() => {
+                    dispatch(changeStep(5));
+                    onSelectMethod(SystemMethods.MANUAL);
+                  }}
                 />
               </HStack>
               <Text>Add a system manually</Text>
@@ -103,8 +145,8 @@ const AddSystemForm = () => {
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
-          </FormControl>
-        </Stack>
+          </Stack>
+        </FormControl>
       </Stack>
     </chakra.form>
   );

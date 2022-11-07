@@ -24,7 +24,6 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
-from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
@@ -86,7 +85,6 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     generate.router,
     health.router,
     validate.router,
-    view.router,
 ]
 
 

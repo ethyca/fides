@@ -54,7 +54,12 @@ const Header: React.FC = () => {
         <Flex alignItems="center">
           {username ? (
             <Menu>
-              <MenuButton as={Button} size="sm" variant="ghost">
+              <MenuButton
+                as={Button}
+                size="sm"
+                variant="ghost"
+                data-testid="header-menu-button"
+              >
                 <UserIcon color="gray.700" />
               </MenuButton>
               <MenuList shadow="xl">
@@ -70,6 +75,7 @@ const Header: React.FC = () => {
                   px={3}
                   _focus={{ color: "complimentary.500", bg: "gray.100" }}
                   onClick={handleLogout}
+                  data-testid="header-menu-sign-out"
                 >
                   Sign out
                 </MenuItem>
