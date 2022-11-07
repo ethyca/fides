@@ -18,7 +18,8 @@ jobs:
   Build:
     strategy:
       matrix:
-        python_version: ["${{ env.PYTHON_38_VERSION }}", "${{ env.PYTHON_39_VERSION }}", "${{ env.PYTHON_310_VERSION }}"]
+        python_version:
+        - "3.8.14"
 
     runs-on: ubuntu-latest
     steps:
