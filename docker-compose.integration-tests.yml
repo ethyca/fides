@@ -18,7 +18,7 @@ services:
       - "0.0.0.0:6432:5432"
     volumes:
       # Revert this to point at the sample data
-      - ./src/fides/data/sample_project/postgres_sample.sql:/docker-entrypoint-initdb.d/postgres_example.sql:ro
+      - ./docker/sample_data/postgres_example.sql:/docker-entrypoint-initdb.d/postgres_example.sql:ro
 
   mysql-test:
     image: mysql:8
@@ -59,4 +59,4 @@ services:
     # Because we're using the "-f" flag from a parent directory, this relative path needs
     # to be from the parent directory as well
     volumes:
-      - ./src/fides/data/sample_project/mongo_sample.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./docker/sample_data/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
