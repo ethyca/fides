@@ -110,6 +110,8 @@ jobs:
 ##################
 ## Unsafe Tests ##
 ##################
+# NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
+
   Pytest-Ctl-External:
     needs: Build
     strategy:
