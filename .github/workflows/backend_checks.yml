@@ -19,7 +19,9 @@ jobs:
     strategy:
       matrix:
         python_version:
-        - "3.8.14"
+        - ${{ env.PYTHON_38_VERSION }}
+        - ${{ env.PYTHON_39_VERSION }}
+        - ${{ env.PYTHON_310_VERSION }}
 
     runs-on: ubuntu-latest
     steps:
@@ -85,6 +87,7 @@ jobs:
         - ${{ env.PYTHON_38_VERSION }}
         - ${{ env.PYTHON_39_VERSION }}
         - ${{ env.PYTHON_310_VERSION }}
+
         test_selection:
         - "pytest_ctl(not-external)"
         - "pytest_ops(unit)"
