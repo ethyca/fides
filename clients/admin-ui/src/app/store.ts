@@ -57,7 +57,7 @@ import {
 import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 
-import { authApi, AuthState, reducer as authReducer } from "../features/auth";
+import { authApi, reducer as authReducer } from "../features/auth";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -111,10 +111,12 @@ const reducer = {
   userManagement: userManagementReducer,
 };
 
+export type RootState = StateFromReducersMapObject<typeof reducer>;
+
 const allReducers = combineReducers(reducer);
 
-const rootReducer = (state: any, action: AnyAction) => {
-  let newState = { ...state };
+const rootReducer = (state: RootState | undefined, action: AnyAction) => {
+  let newState = state;
   if (action.type === "auth/logout") {
     storage.removeItem(STORAGE_ROOT_KEY);
     newState = undefined;
@@ -151,8 +153,6 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export type RootState = StateFromReducersMapObject<typeof reducer>;
-
 export const makeStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
     reducer: persistedReducer,
@@ -181,23 +181,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
     preloadedState,
   });
 
-let storedAuthState: AuthState | undefined;
-if (typeof window !== "undefined" && "localStorage" in window) {
-  const storedAuthStateString = localStorage.getItem(STORAGE_ROOT_KEY);
-  if (storedAuthStateString) {
-    try {
-      storedAuthState = JSON.parse(storedAuthStateString);
-    } catch (error) {
-      // TODO: build in formal error logging system
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-}
-
-const store = makeStore({
-  auth: storedAuthState,
-});
+const store = makeStore();
 
 type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore["dispatch"];

@@ -1,11 +1,8 @@
 import { stubHomePage } from "cypress/support/stubs";
 
 describe("Taxonomy management page", () => {
-  before(() => {
-    cy.login();
-  });
-
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_categories.json",
     }).as("getDataCategories");
