@@ -14,15 +14,17 @@ env:
 
 # Matrix this
 jobs:
-
-  isort:
+  Static-Checks:
+    strategy:
+      matrix:
+        session_name: ["isort", "black", "mypy", "pylint", "xenon"]
     runs-on: ubuntu-latest
     steps:
 
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Set Up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -30,77 +32,5 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run sorter
-        run: nox -s isort
-
-  Black:
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run formatter
-        run: nox -s black
-
-  Pylint:
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run linter
-        run: nox -s pylint
-
-  Mypy:
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run typechecker
-        run: nox -s mypy
-
-  Xenon:
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run cyclomatic complexity check
-        run: nox -s xenon
+      - name: Run Static Check
+        run: nox -s ${{ matrix.session_name }}
