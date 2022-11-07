@@ -51,7 +51,7 @@ jobs:
   Static-Checks:
     strategy:
       matrix:
-        session_name: ["isort", "black", "mypy", "pylint", "xenon"]
+        session_name: ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
     runs-on: ubuntu-latest
     steps:
 
@@ -69,74 +69,22 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
-
-########################
-## Application Checks ##
-########################
-  Docs:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Check that the docs can build
-        run: nox -s docs_check
-
-  Fides-Checks:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Check fides installation
-        run: nox -s check_install
-
-      - name: Run fides evaluation
-        run: nox -s check_fides_annotations
-
-      - name: Scan fides db
-        run: nox -s fides_db_scan
-
 ################
 ## Safe Tests ##
 ################
-  Pytest-Ctl-Not-External:
+  Safe-Tests:
     needs: Build
+
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
-        test_selection: ["pytest_ctl(not-external)", "pytest_ops(unit)", "pytest_ops(integration)"]
+        test_selection:
+        - "pytest_ctl(not-external)"
+        - "pytest_ops(unit)"
+        - "pytest_ops(integration)"
+        - "check_fides_annotations"
+        - "fides_db_scan"
+
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
