@@ -21,6 +21,10 @@ The types of changes are:
 
 * All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
 
+### Removed
+
+* Removed the `view` endpoint for evaluations [#1703](https://github.com/ethyca/fides/pull/1703)
+
 ### Fixed
 
 * Exceptions are no longer raised when sending analytics on Windows [#1666](https://github.com/ethyca/fides/pull/1666)
