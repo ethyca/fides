@@ -14,7 +14,7 @@ const Layout = ({
   noPadding?: boolean;
   title: string;
 }) => (
-  <div>
+  <div data-testid={title}>
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Generated from FidesUI template" />

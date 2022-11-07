@@ -7,8 +7,6 @@ import RequestTable from "privacy-requests/RequestTable";
 // @ts-ignore
 import { Flags } from "react-feature-flags";
 
-import { LOGIN_ROUTE } from "~/constants";
-import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import Layout from "~/features/common/Layout";
 
 const ActionButtons = dynamic(
@@ -17,22 +15,20 @@ const ActionButtons = dynamic(
 );
 
 const Home: NextPage = () => (
-  <ProtectedRoute redirectUrl={LOGIN_ROUTE}>
-    <Layout title="Privacy Requests">
-      <Flex>
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Privacy Requests
-        </Heading>
-        <Spacer />
-        <Flags
-          authorizedFlags={["configureAlertsFlag"]}
-          renderOn={() => <ActionButtons />}
-        />
-      </Flex>
-      <RequestFilters />
-      <RequestTable />
-    </Layout>
-  </ProtectedRoute>
+  <Layout title="Privacy Requests">
+    <Flex>
+      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
+        Privacy Requests
+      </Heading>
+      <Spacer />
+      <Flags
+        authorizedFlags={["configureAlertsFlag"]}
+        renderOn={() => <ActionButtons />}
+      />
+    </Flex>
+    <RequestFilters />
+    <RequestTable />
+  </Layout>
 );
 
 export default Home;

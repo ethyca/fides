@@ -11,9 +11,12 @@ import { FlagsProvider } from "react-feature-flags";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
+import ProtectedRoute from "~/features/auth/ProtectedRoute";
+
 import store, { persistor } from "../app/store";
 import flags from "../flags.json";
 import theme from "../theme";
+import Login from "./login";
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require
@@ -32,7 +35,17 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <ChakraProvider theme={theme}>
-            <Component {...pageProps} />
+            {Component === Login ? (
+              // Only the login page is accessible while logged out. If there is
+              // a use case for more unprotected routes, Next has a guide for
+              // per-page layouts:
+              // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
+              <Component {...pageProps} />
+            ) : (
+              <ProtectedRoute>
+                <Component {...pageProps} />
+              </ProtectedRoute>
+            )}
           </ChakraProvider>
         </PersistGate>
       </Provider>
