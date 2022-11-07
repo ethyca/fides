@@ -1,6 +1,5 @@
 import { Checkbox, Flex, Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
-import { debounce } from "common/utils";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -10,31 +9,24 @@ import {
   selectRetryRequests,
   setPage,
   setRetryRequests,
-  useGetAllPrivacyRequestsQuery,
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
 import SortRequestButton from "./SortRequestButton";
-import { PrivacyRequest, PrivacyRequestParams } from "./types";
+import { PrivacyRequest, PrivacyRequestResponse } from "./types";
 
 type RequestTableProps = {
-  requests?: PrivacyRequest[];
+  isFetching: boolean;
+  data: PrivacyRequestResponse | undefined;
 };
 
-const useRequestTable = () => {
+const RequestTable: React.FC<RequestTableProps> = ({
+  isFetching = false,
+  data = { items: [], total: 0 },
+}) => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectPrivacyRequestFilters);
-  const [cachedFilters, setCachedFilters] = useState(filters);
-  const updateCachedFilters = useRef(
-    debounce(
-      (updatedFilters: React.SetStateAction<PrivacyRequestParams>) =>
-        setCachedFilters(updatedFilters),
-      250
-    )
-  );
-
   const { checkAll, errorRequests } = useAppSelector(selectRetryRequests);
-  const { data, isFetching } = useGetAllPrivacyRequestsQuery(cachedFilters);
-  const { items: requests, total } = data || { items: [], total: 0 };
+  const { items: requests, total } = data;
 
   const getErrorRequests = useCallback(
     () => requests.filter((r) => r.status === "error").map((r) => r.id),
@@ -73,42 +65,6 @@ const useRequestTable = () => {
       })
     );
   };
-
-  useEffect(() => {
-    updateCachedFilters.current(filters);
-    if (isFetching && filters.status?.includes("error")) {
-      dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
-    }
-  }, [dispatch, filters, isFetching]);
-
-  return {
-    ...filters,
-    checkAll,
-    errorRequests,
-    handleCheckChange,
-    handleNextPage,
-    handlePreviousPage,
-    handleCheckAll,
-    isFetching,
-    requests,
-    total,
-  };
-};
-
-const RequestTable: React.FC<RequestTableProps> = () => {
-  const {
-    checkAll,
-    errorRequests,
-    handleCheckChange,
-    handleNextPage,
-    handlePreviousPage,
-    handleCheckAll,
-    isFetching,
-    page,
-    requests,
-    size,
-    total,
-  } = useRequestTable();
 
   return (
     <>
@@ -153,18 +109,14 @@ const RequestTable: React.FC<RequestTableProps> = () => {
         </Tbody>
       </Table>
       <PaginationFooter
-        page={page}
-        size={size}
+        page={filters.page}
+        size={filters.size}
         total={total}
         handleNextPage={handleNextPage}
         handlePreviousPage={handlePreviousPage}
       />
     </>
   );
-};
-
-RequestTable.defaultProps = {
-  requests: [],
 };
 
 export default RequestTable;

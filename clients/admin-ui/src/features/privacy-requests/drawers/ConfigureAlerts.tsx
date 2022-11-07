@@ -38,10 +38,14 @@ import {
 import { ChangeEvent, useRef } from "react";
 import * as Yup from "yup";
 
+import ChipEmailInput from "./ChipEmailInput";
+
+const DEFAULT_MIN_ERROR_COUNT = 1;
+
 const initialValues = {
   email: "",
   notify: false,
-  minErrorCount: 0,
+  minErrorCount: DEFAULT_MIN_ERROR_COUNT,
 };
 
 type FormValues = typeof initialValues;
@@ -50,9 +54,10 @@ const validationSchema = Yup.object().shape({
   email: Yup.string()
     .email("Must be a valid email format")
     .required("Email is required"),
+  minErrorCount: Yup.number().required(),
 });
 
-const ConfigureAlerts: React.FC = () => {
+const ConfigureAlerts = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef(null);
 
@@ -112,7 +117,7 @@ const ConfigureAlerts: React.FC = () => {
                   <Text fontSize="md">Contact details</Text>
                   <VStack align="stretch" gap="29px" mt="14px">
                     <HStack>
-                      <Field id="email" name="email">
+                      {/* <Field id="email" name="email">
                         {({
                           field,
                           meta,
@@ -143,7 +148,14 @@ const ConfigureAlerts: React.FC = () => {
                             </VStack>
                           </FormControl>
                         )}
-                      </Field>
+                      </Field> */}
+                      <ChipEmailInput
+                        autoComplete="off"
+                        name="email"
+                        placeholder="Please enter email"
+                        ref={firstField}
+                        size="sm"
+                      />
                     </HStack>
                     <HStack>
                       <Field id="notify" name="notify">
@@ -165,7 +177,10 @@ const ConfigureAlerts: React.FC = () => {
                                 event: ChangeEvent<HTMLInputElement>
                               ) => {
                                 field.onChange(event);
-                                props.setFieldValue("minErrorCount", 0);
+                                props.setFieldValue(
+                                  "minErrorCount",
+                                  DEFAULT_MIN_ERROR_COUNT
+                                );
                               }}
                             />
                           </FormControl>
@@ -183,14 +198,25 @@ const ConfigureAlerts: React.FC = () => {
                   {props.values.notify && (
                     <HStack mt="34px">
                       <Field id="minErrorCount" name="minErrorCount">
-                        {({ field }: { field: FieldInputProps<string> }) => (
-                          <FormControl alignItems="center" display="flex">
+                        {({
+                          field,
+                          meta,
+                        }: {
+                          field: FieldInputProps<string>;
+                          meta: FieldMetaProps<string>;
+                        }) => (
+                          <FormControl
+                            alignItems="center"
+                            display="flex"
+                            isRequired
+                            isInvalid={!!(meta.error && meta.touched)}
+                          >
                             <Text>Notify me after</Text>
                             <NumberInput
                               allowMouseWheel
                               color="gray.700"
-                              defaultValue={0}
-                              min={0}
+                              defaultValue={DEFAULT_MIN_ERROR_COUNT}
+                              min={DEFAULT_MIN_ERROR_COUNT}
                               ml="8px"
                               mr="8px"
                               onChange={(_valueAsString, valueAsNumber) => {
