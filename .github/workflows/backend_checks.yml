@@ -10,7 +10,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  PYTHON_38_VERSION: "3.8.14"
+  PYTHON_38_VERSION: 3.8.14"
   PYTHON_39_VERSION: "3.9.14"
   PYTHON_310_VERSION: "3.10.7"
 
@@ -19,9 +19,9 @@ jobs:
     strategy:
       matrix:
         python_version:
-        - ${{ env.PYTHON_38_VERSION }}
-        - ${{ env.PYTHON_39_VERSION }}
-        - ${{ env.PYTHON_310_VERSION }}
+        - "${{ env.PYTHON_38_VERSION }}"
+        - "${{ env.PYTHON_39_VERSION }}"
+        - "${{ env.PYTHON_310_VERSION }}"
 
     runs-on: ubuntu-latest
     steps:
