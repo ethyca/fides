@@ -136,6 +136,7 @@ jobs:
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        test_selection: ["pytest_ctl(not-external)", "pytest_ops(unit)", "pytest_ops(integration)"]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
@@ -155,63 +156,8 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run non-external test suite
-        run: nox -s "pytest_ctl(not-external)"
-
-
-  Pytest-Unit-Ops:
-    needs: Build
-    strategy:
-      matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run unit test suite
-        run: nox -s "pytest_ops(unit)"
-
-  Pytest-Integration-Ops:
-    needs: Build
-    strategy:
-      matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run integration test suite
-        run: nox -s "pytest_ops(integration)"
+      - name: Run test suite
+        run: nox -s "${{ matrix.test_selection }}"
 
 ##################
 ## Unsafe Tests ##
