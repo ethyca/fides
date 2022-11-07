@@ -32,14 +32,14 @@ from starlette.status import (
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.api import deps
-from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
 from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -52,11 +52,15 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
+    PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
+    REQUEST_STATUS_LOGS,
+    V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import (
     EmailDispatchException,
@@ -85,6 +89,7 @@ from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
+    PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     ProvidedIdentityType,
@@ -107,6 +112,7 @@ from fides.api.ops.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     ManualWebhookData,
     PrivacyRequestCreate,
+    PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
     PrivacyRequestVerboseResponse,
     ReviewPrivacyRequestIds,
@@ -134,7 +140,7 @@ from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_cl
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
+router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 CONFIG = get_config()
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
@@ -157,7 +163,7 @@ def get_privacy_request_or_error(
 
 
 @router.post(
-    urls.PRIVACY_REQUESTS,
+    PRIVACY_REQUESTS,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
@@ -597,8 +603,8 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
 
 
 @router.get(
-    urls.PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     response_model=Page[
         Union[
             PrivacyRequestVerboseResponse,
@@ -689,8 +695,8 @@ def get_request_status(
 
 
 @router.get(
-    urls.REQUEST_STATUS_LOGS,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
+    REQUEST_STATUS_LOGS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
     response_model=Page[ExecutionLogDetailResponse],
 )
 def get_request_status_logs(
@@ -715,6 +721,61 @@ def get_request_status_logs(
         .order_by(ExecutionLog.updated_at.asc()),
         params,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_NOTIFICATIONS,
+    status_code=HTTP_200_OK,
+    response_model=PRIVACY_REQUEST_NOTIFICATIONS,
+    dependencies=[
+        Security(
+            verify_oauth_client,
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_READ],
+        )
+    ],
+)
+def get_privacy_request_notification_info(
+    *, db: Session = Depends(deps.get_db)
+) -> PrivacyRequestNotifications:
+    """Retrieve privacy request notification email addresses and number of failures to trigger notifications."""
+    info = PrivacyRequestNotifications.all(db)
+
+    if not info:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No privacy request notification info found",
+        )
+
+    return PrivacyRequestNotificationInfo(
+        email_addresses=[x for x in info.email_addresses.split(",")],
+        notify_after_failures=info.notify_after_failures,
+    )
+
+
+@router.put(
+    PRIVACY_REQUEST_NOTIFICATIONS,
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestNotificationInfo,
+    dependencies=[
+        Security(
+            verify_oauth_client,
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE],
+        )
+    ],
+)
+def create_or_update_privacy_request_notifications(
+    *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
+) -> PrivacyRequestNotificationInfo:
+    """Create or update list list of email addresses and number of failures for privacy request notifications."""
+    notification_info = {
+        "email_addresses": ", ".join(request_body.email_addresses),
+        "notify_after_failures": request_body.notify_after_failures,
+    }
+    info_check = PrivacyRequestNotifications.all(db)
+    if info_check:
+        return PrivacyRequestNotifications.update(db, notification_info)
+    else:
+        return PrivacyRequestNotifications.create(db, notification_info)
 
 
 @router.put(
@@ -800,7 +861,7 @@ async def resume_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     webhook: PolicyPreWebhook = Security(
-        verify_callback_oauth, scopes=[scopes.PRIVACY_REQUEST_CALLBACK_RESUME]
+        verify_callback_oauth, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME]
     ),
     webhook_callback: PrivacyRequestResumeFormat,
 ) -> PrivacyRequestResponse:

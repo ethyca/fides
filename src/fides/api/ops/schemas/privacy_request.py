@@ -152,6 +152,11 @@ class ManualWebhookData(BaseSchema):
     fields: Dict[str, Any]
 
 
+class PrivacyRequestNotificationInfo(BaseSchema):
+    email_addresses: List[str]
+    notify_after_failures: int
+
+
 class PrivacyRequestResponse(BaseSchema):
     """Schema to check the status of a PrivacyRequest"""
 
