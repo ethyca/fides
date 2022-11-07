@@ -23,7 +23,7 @@ import WarningModal from "~/features/common/WarningModal";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
-import { isErrorResult } from "../common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
 import {
   changeStep,
   chooseSystemsForReview,
