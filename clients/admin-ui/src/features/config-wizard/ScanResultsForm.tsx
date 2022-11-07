@@ -16,6 +16,7 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
+import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
@@ -23,7 +24,6 @@ import WarningModal from "~/features/common/WarningModal";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
-import { isErrorResult } from "~/features/common/helpers";
 import {
   changeStep,
   chooseSystemsForReview,
