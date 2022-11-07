@@ -85,6 +85,22 @@ jobs:
         - "check_fides_annotations"
         - "fides_db_scan"
         - "docs_checks"
+        exclude:
+        # Not all jobs need to run against the Python matrix
+        - python_version: "3.8.14"
+          test_selection: "check_fides_annotations"
+        - python_version: "3.9.14"
+          test_selection: "check_fides_annotations"
+
+        - python_version: "3.8.14"
+          test_selection: "fides_db_scan"
+        - python_version: "3.9.14"
+          test_selection: "fides_db_scan"
+
+        - python_version: "3.8.14"
+          test_selection: "docs_checks"
+        - python_version: "3.9.14"
+          test_selection: "docs_checks"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
