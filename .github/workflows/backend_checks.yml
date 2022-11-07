@@ -44,6 +44,32 @@ jobs:
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
 
+
+###################
+## Static Checks ##
+###################
+  Static-Checks:
+    strategy:
+      matrix:
+        session_name: ["isort", "black", "mypy", "pylint", "xenon"]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run Static Check
+        run: nox -s ${{ matrix.session_name }}
+
+
 ########################
 ## Application Checks ##
 ########################
