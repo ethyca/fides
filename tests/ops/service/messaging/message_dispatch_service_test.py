@@ -43,12 +43,12 @@ def test_email_dispatch_mailgun_success(
     )
     body = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <title>ID Code</title>\n</head>\n<body>\n<main>\n    <p>\n        Your privacy request verification code is 2348.\n        Please return to the Privacy Center and enter the code to\n        continue. This code will expire in 10 minutes\n    </p>\n</main>\n</body>\n</html>'
     mock_mailgun_dispatcher.assert_called_with(
-        messaging_config=messaging_config,
-        message=EmailForActionType(
+        messaging_config,
+        EmailForActionType(
             subject="Your one-time code",
             body=body,
         ),
-        to="test@email.com",
+        "test@email.com",
     )
 
 

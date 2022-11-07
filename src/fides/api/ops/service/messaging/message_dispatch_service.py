@@ -260,7 +260,7 @@ def _mailgun_dispatcher(
             f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
             auth=(
                 "api",
-                messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],  # type: ignore
+                messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
             ),
             data=data,
         )
@@ -288,14 +288,18 @@ def _twilio_sms_dispatcher(
     if messaging_config.secrets is None:
         logger.error("Message failed to send. No config secrets supplied.")
         raise MessageDispatchException("No config secrets supplied.")
-    account_sid = messaging_config.secrets[MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value]  # type: ignore
-    auth_token = messaging_config.secrets[MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value]  # type: ignore
+    account_sid = messaging_config.secrets[
+        MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
+    ]
+    auth_token = messaging_config.secrets[
+        MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
+    ]
     messaging_service_id = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    ]  # type: ignore
+    ]
     sender_phone_number = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    ]  # type: ignore
+    ]
 
     client = Client(account_sid, auth_token)
     try:

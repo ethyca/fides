@@ -185,10 +185,9 @@ class TestPostMessagingConfig:
                 "key": "my_mailgun_messaging_config",
                 "name": "mailgun",
                 "service_type": MessagingServiceType.MAILGUN.value,
-                "details": None,
             },
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
         errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
         assert errors[0]["msg"] == "Mailgun messaging config must include details"
