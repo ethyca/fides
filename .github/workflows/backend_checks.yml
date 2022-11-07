@@ -53,6 +53,7 @@ jobs:
       matrix:
         session_name: ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
 
       - name: Checkout
