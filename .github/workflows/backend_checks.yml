@@ -84,6 +84,7 @@ jobs:
         - "pytest_ops(integration)"
         - "check_fides_annotations"
         - "fides_db_scan"
+        - "docs_checks"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
