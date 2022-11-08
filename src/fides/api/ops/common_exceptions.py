@@ -121,16 +121,12 @@ class SaaSConfigNotFoundException(FidesopsException):
     """Custom Exception - SaaS Config Not Found"""
 
 
-class EmailConfigAlreadyExistsException(FidesopsException):
-    """Custom Exception - Email Config already exists"""
+class MessagingConfigNotFoundException(FidesopsException):
+    """Custom Exception - Messaging Config Not Found"""
 
 
-class EmailConfigNotFoundException(FidesopsException):
-    """Custom Exception - Email Config Not Found"""
-
-
-class EmailDispatchException(FidesopsException):
-    """Custom Exception - Email Dispatch Error"""
+class MessageDispatchException(FidesopsException):
+    """Custom Exception - Message Dispatch Error"""
 
 
 class EmailTemplateUnhandledActionType(FidesopsException):

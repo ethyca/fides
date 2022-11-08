@@ -154,6 +154,29 @@ def oauth_client(db: Session) -> Generator:
     yield client
 
 
+@pytest.fixture(scope="function")
+def oauth_root_client(db: Session) -> ClientDetail:
+    """Return the configured root client (never persisted)"""
+    return ClientDetail.get(
+        db,
+        object_id=CONFIG.security.oauth_root_client_id,
+        config=CONFIG,
+        scopes=SCOPE_REGISTRY,
+    )
+
+
+@pytest.fixture(scope="function")
+def root_auth_header(oauth_root_client: ClientDetail) -> Dict[str, str]:
+    """Return an auth header for the root client"""
+    payload = {
+        JWE_PAYLOAD_SCOPES: oauth_root_client.scopes,
+        JWE_PAYLOAD_CLIENT_ID: oauth_root_client.id,
+        JWE_ISSUED_AT: datetime.now().isoformat(),
+    }
+    jwe = generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+    return {"Authorization": "Bearer " + jwe}
+
+
 def generate_auth_header_for_user(user, scopes) -> Dict[str, str]:
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -283,8 +306,8 @@ def privacy_request_complete_email_notification_disabled():
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_receipt_email_notification_disabled():
-    """Disable request receipt email for most tests unless overridden"""
+def privacy_request_receipt_notification_disabled():
+    """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
     CONFIG.notifications.send_request_receipt_notification = False
     yield
@@ -292,9 +315,18 @@ def privacy_request_receipt_email_notification_disabled():
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_review_email_notification_disabled():
-    """Disable request review email for most tests unless overridden"""
+def privacy_request_review_notification_disabled():
+    """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
     CONFIG.notifications.send_request_review_notification = False
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_notification_service_type_mailgun():
+    """Set default notification service type"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    yield
+    CONFIG.notifications.notification_service_type = original_value

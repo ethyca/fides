@@ -4,6 +4,9 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+  push:
+    branches:
+      - "main"
 
 env:
   IMAGE: ethyca/fides:local

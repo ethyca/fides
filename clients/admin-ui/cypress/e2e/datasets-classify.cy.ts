@@ -13,6 +13,10 @@ import { ClassificationResponse, ClassificationStatus } from "~/types/api";
  */
 describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
+    cy.login();
+  });
+
+  beforeEach(() => {
     stubDatasetCrud();
     stubPlus(true);
     cy.intercept("GET", "/api/v1/plus/classify", {

@@ -20,6 +20,11 @@ The types of changes are:
 ### Changed
 
 * Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
+* All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+
+### Removed
+
+* Removed the `view` endpoint for evaluations [#1703](https://github.com/ethyca/fides/pull/1703)
 
 ### Fixed
 
@@ -27,6 +32,8 @@ The types of changes are:
 * Fixed wording on identity verification modal in the Privacy Center [#1674](https://github.com/ethyca/fides/pull/1674)
 * Update system fides_key tooltip text [#1533](https://github.com/ethyca/fides/pull/1685)
 * Removed local storage parsing that is redundant with redux-persist. [#1678](https://github.com/ethyca/fides/pull/1678)
+* Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
+* Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
 
 ### Security
 
@@ -48,6 +55,7 @@ The types of changes are:
 * Config Wizard: Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
 * Config Wizard: Flow for runtime scanner option [#1640](https://github.com/ethyca/fides/pull/1640)
 * Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
+* Message Config: Adds Twilio Email/SMS support [#1519](https://github.com/ethyca/fides/pull/1519)
 
 ### Changed
 

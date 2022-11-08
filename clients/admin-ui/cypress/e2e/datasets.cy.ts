@@ -6,11 +6,8 @@ import {
 } from "cypress/support/stubs";
 
 describe("Dataset", () => {
-  before(() => {
-    cy.login();
-  });
-
   beforeEach(() => {
+    cy.login();
     stubDatasetCrud();
     // Ensure these tests all run with Plus features disabled.
     stubPlus(false);

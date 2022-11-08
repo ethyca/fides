@@ -65,6 +65,7 @@ class FidesConfig(BaseModel):
             self.user,
             self.logging,
             self.database,
+            self.notifications,
             self.redis,
             self.security,
             self.execution,
@@ -127,6 +128,12 @@ CONFIG_KEY_ALLOWLIST = {
         "port",
         "db",
         "test_db",
+    ],
+    "notifications": [
+        "send_request_completion_notification",
+        "send_request_receipt_notification",
+        "send_request_review_notification",
+        "notification_service_type",
     ],
     "redis": [
         "host",
