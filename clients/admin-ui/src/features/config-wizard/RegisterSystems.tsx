@@ -7,7 +7,6 @@ import {
   Text,
   useDisclosure,
 } from "@fidesui/react";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -15,8 +14,6 @@ import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
-import { useFeatures } from "~/features/common/features.slice";
-import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
 import { useUpsertSystemsMutation } from "~/features/system";
@@ -34,10 +31,10 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Resource ID", attribute: "fidesctl_meta.resource_id" },
 ];
 
-const ScanResultsForm = () => {
+const RegisterSystems = ({ onFinish }: { onFinish: () => void }) => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
-  const router = useRouter();
+
   const {
     isOpen: isWarningOpen,
     onOpen: onWarningOpen,
@@ -45,7 +42,6 @@ const ScanResultsForm = () => {
   } = useDisclosure();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
-  const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
@@ -53,14 +49,7 @@ const ScanResultsForm = () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     await upsertSystems(selectedSystems);
 
-    const datamapRoute = resolveLink({
-      href: "/datamap",
-      basePath: "/",
-    });
-
-    return features.plus
-      ? router.push(datamapRoute.href)
-      : router.push("/system");
+    onFinish();
   };
 
   const handleSubmit = () => {
@@ -139,4 +128,4 @@ const ScanResultsForm = () => {
   );
 };
 
-export default ScanResultsForm;
+export default RegisterSystems;

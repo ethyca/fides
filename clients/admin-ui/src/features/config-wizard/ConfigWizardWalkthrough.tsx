@@ -24,7 +24,7 @@ import {
 } from "./config-wizard.slice";
 import { HORIZONTAL_STEPS, STEPS } from "./constants";
 import OrganizationInfoForm from "./OrganizationInfoForm";
-import ScanResultsForm from "./ScanResultsForm";
+import ScanResults from "./ScanResults";
 import SuccessPage from "./SuccessPage";
 
 const ConfigWizardWalkthrough = () => {
@@ -73,7 +73,7 @@ const ConfigWizardWalkthrough = () => {
               {step === 3 ? <AuthenticateScanner /> : null}
               {step === 4 ? (
                 <Box pr={10}>
-                  <ScanResultsForm />
+                  <ScanResults />
                 </Box>
               ) : null}
               {/* These steps should only apply if you're creating systems manually */}

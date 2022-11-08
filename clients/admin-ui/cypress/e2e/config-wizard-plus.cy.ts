@@ -74,11 +74,12 @@ describe.skip("Config wizard with plus settings", () => {
         const { body } = interception.request;
         expect(body.length).to.eql(numSystems);
       });
-      /* This will redirect to localhost:3000/datamap instead of localhost:4000/datamap
-       * which is not actually what we want.
-       * However, it is difficult to test across zones, so all we can do is assert the path is right
-       */
-      cy.url().should("contain", "datamap");
+      cy.getByTestId("systems-classify-table");
+      // /* This will redirect to localhost:3000/datamap instead of localhost:4000/datamap
+      //  * which is not actually what we want.
+      //  * However, it is difficult to test across zones, so all we can do is assert the path is right
+      //  */
+      // cy.url().should("contain", "datamap");
     });
 
     it("Can register a subset of systems", () => {
