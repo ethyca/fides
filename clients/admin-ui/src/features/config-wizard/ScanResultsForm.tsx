@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -16,7 +16,8 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
-import { useAlert } from "~/features/common/hooks";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
@@ -51,18 +52,21 @@ const ScanResultsForm = () => {
     useState<ColumnMetadata[]>(ALL_COLUMNS);
 
   const { successAlert } = useAlert();
+  const { handleError } = useAPIHelper();
 
-  useEffect(() => {
+  const confirmRegisterSelectedSystems = async () => {
+    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
+    const response = await upsertSystems(selectedSystems);
+
+    if (isErrorResult(response)) {
+      return handleError(response.error);
+    }
+
     successAlert(
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
       `Scan Successfully Completed`,
       { isClosable: true }
     );
-  }, [successAlert, systems.length]);
-
-  const confirmRegisterSelectedSystems = async () => {
-    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    await upsertSystems(selectedSystems);
 
     const datamapRoute = resolveLink({
       href: "/datamap",
