@@ -1,4 +1,4 @@
-# pylint: disable=R0401
+# pylint: disable=R0401, C0302
 
 from __future__ import annotations
 
