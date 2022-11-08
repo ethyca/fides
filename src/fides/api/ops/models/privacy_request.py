@@ -18,7 +18,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -753,9 +753,9 @@ def _get_manual_input_from_cache(
     return None
 
 
-class PrivacyRequetNofifications(Base):
-    email: str
-    notify_after_failures: int
+class PrivacyRequestNotifications(Base):
+    email = Column(String, nullable=False)
+    notify_after_failures = Column(Integer, nullable=False)
 
 
 class ProvidedIdentityType(EnumType):

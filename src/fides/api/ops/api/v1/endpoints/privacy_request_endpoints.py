@@ -726,7 +726,7 @@ def get_request_status_logs(
 @router.get(
     PRIVACY_REQUEST_NOTIFICATIONS,
     status_code=HTTP_200_OK,
-    response_model=PRIVACY_REQUEST_NOTIFICATIONS,
+    response_model=PrivacyRequestNotificationInfo,
     dependencies=[
         Security(
             verify_oauth_client,
@@ -736,7 +736,7 @@ def get_request_status_logs(
 )
 def get_privacy_request_notification_info(
     *, db: Session = Depends(deps.get_db)
-) -> PrivacyRequestNotifications:
+) -> PrivacyRequestNotificationInfo:
     """Retrieve privacy request notification email addresses and number of failures to trigger notifications."""
     info = PrivacyRequestNotifications.all(db)
 
@@ -768,14 +768,22 @@ def create_or_update_privacy_request_notifications(
 ) -> PrivacyRequestNotificationInfo:
     """Create or update list list of email addresses and number of failures for privacy request notifications."""
     notification_info = {
-        "email_addresses": ", ".join(request_body.email_addresses),
+        "email": ", ".join(request_body.email_addresses),
         "notify_after_failures": request_body.notify_after_failures,
     }
     info_check = PrivacyRequestNotifications.all(db)
     if info_check:
-        return PrivacyRequestNotifications.update(db, notification_info)
-    else:
-        return PrivacyRequestNotifications.create(db, notification_info)
+        info = info_check[0].update(db=db, data=notification_info)
+        return PrivacyRequestNotificationInfo(
+            email_addresses=info.email.split(", "),
+            notify_after_failures=info.notify_after_failures,
+        )
+
+    info = PrivacyRequestNotifications.create(db=db, data=notification_info)
+    return PrivacyRequestNotificationInfo(
+        email_addresses=info.email.split(", "),
+        notify_after_failures=info.notify_after_failures,
+    )
 
 
 @router.put(
