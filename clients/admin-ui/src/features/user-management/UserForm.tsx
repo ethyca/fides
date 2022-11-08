@@ -135,7 +135,7 @@ const UserForm = ({
                     label="Password"
                     placeholder="********"
                     type="password"
-                    tooltip="Password must contain at least 8 characters, must have at least 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                    tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                   />
                 ) : (
                   canChangePassword &&
