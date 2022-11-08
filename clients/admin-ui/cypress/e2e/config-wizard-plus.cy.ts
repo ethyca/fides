@@ -51,10 +51,13 @@ describe.skip("Config wizard with plus settings", () => {
       }).as("upsertSystems");
     });
 
-    it("Allows calling the runtime scanner", () => {
+    it("Allows calling the runtime scanner with classify", () => {
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
-      cy.wait("@getScanResults");
+      cy.wait("@getScanResults").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("classify=true");
+      });
       cy.getByTestId("scan-results");
 
       // Check that the systems we expect are in the results table
@@ -101,7 +104,7 @@ describe.skip("Config wizard with plus settings", () => {
     });
 
     it("Can render an error", () => {
-      cy.intercept("GET", "/api/v1/plus/scan", {
+      cy.intercept("GET", "/api/v1/plus/scan*", {
         statusCode: 404,
         body: {
           detail: "Item not found",

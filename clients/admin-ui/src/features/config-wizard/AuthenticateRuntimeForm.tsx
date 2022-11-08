@@ -19,7 +19,9 @@ import ScannerLoading from "./ScannerLoading";
 const AuthenticateRuntimeForm = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { data, error: queryError } = useGetScanResultsQuery();
+  const { data, error: queryError } = useGetScanResultsQuery({
+    classify: true,
+  });
   const [scannerError, setScannerError] = useState<ParsedError>();
 
   const handleCancel = () => {
