@@ -58,6 +58,9 @@ def get_schema_for_secrets(
 class StorageConfig(Base):
     """The DB ORM model for StorageConfig"""
 
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     name = Column(String, unique=True, index=True)
     type = Column(Enum(StorageType), index=True, nullable=False)
     # allows JSON to detect in-place mutations to the structure (when used with sqlalchemy)

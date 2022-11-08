@@ -99,6 +99,9 @@ def update_user_password(
     Update a user's password given a `user_id`. By default this is limited to users
     updating their own data.
     """
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
@@ -122,6 +125,9 @@ def logout_oauth_client(
     Otherwise, regardless if the token is malformed or expired, still return a 204.
     Returns a client if we can extract one from the token.
     """
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 

@@ -2,7 +2,6 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
-import logging
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
@@ -46,7 +45,7 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = {}  # type: ignore
+    security: Optional[SecuritySettings] = None
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()

@@ -93,6 +93,10 @@ async def acquire_access_token(
         raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
+
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     access_code = client_detail.create_access_code_jwe(
         CONFIG.security.app_encryption_key
     )
@@ -116,6 +120,9 @@ def create_client(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
+
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
 
     client, secret = ClientDetail.create_client_and_secret(
         db,

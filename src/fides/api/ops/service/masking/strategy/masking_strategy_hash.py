@@ -104,12 +104,18 @@ class HashMaskingStrategy(MaskingStrategy):
 
     @staticmethod
     def _hash_sha256(value: str, salt: str) -> str:
+        if not CONFIG.security:
+            raise ValueError("No security configuration provided")
+
         return hashlib.sha256(
             (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()
 
     @staticmethod
     def _hash_sha512(value: str, salt: str) -> str:
+        if not CONFIG.security:
+            raise ValueError("No security configuration provided")
+
         return hashlib.sha512(
             (value + salt).encode(CONFIG.security.encoding)
         ).hexdigest()

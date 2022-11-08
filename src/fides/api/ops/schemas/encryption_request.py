@@ -17,6 +17,10 @@ class AesEncryptionRequest(BaseModel):
     @validator("key")
     def validate_key(cls, v: str) -> bytes:
         """Convert string into bytes and verify this is the correct length"""
+
+        if not CONFIG.security:
+            raise ValueError("No security configuration provided")
+
         key = v.encode(CONFIG.security.encoding)
         verify_encryption_key(key)
         return key

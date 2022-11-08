@@ -45,6 +45,9 @@ async def get_current_user(
     db: Session = Depends(get_db),
 ) -> FidesUser:
     """A wrapper around verify_oauth_client that returns that client's user if one exists."""
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     client = await verify_oauth_client(
         security_scopes=security_scopes,
         authorization=authorization,
@@ -86,6 +89,9 @@ def verify_callback_oauth(
     Also verifies scopes, but note that this was given to the user in a request header and they've
     just returned it back.
     """
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
@@ -124,6 +130,9 @@ async def verify_oauth_client(
     the necessary scopes specified by the caller. Yields a 403 forbidden error
     if not
     """
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
+
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 

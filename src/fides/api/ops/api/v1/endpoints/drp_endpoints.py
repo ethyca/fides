@@ -48,6 +48,7 @@ from fides.ctl.core.config import get_config
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -66,6 +67,9 @@ async def create_drp_privacy_request(
     Given a drp privacy request body, create and execute
     a corresponding Fidesops PrivacyRequest
     """
+
+    if not CONFIG.security:
+        raise ValueError("No security configuration provided")
 
     jwt_key: str = CONFIG.security.drp_jwt_secret
     if jwt_key is None:
