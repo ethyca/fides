@@ -17,7 +17,7 @@ env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
 jobs:
-  Nox-Test-Env:
+  Test-Envs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

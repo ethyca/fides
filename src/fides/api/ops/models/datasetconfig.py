@@ -1,12 +1,11 @@
 import logging
 from typing import Any, Dict, Optional, Set
 
-from boto3 import Session
 from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
@@ -236,7 +235,7 @@ def validate_dataset_reference(
     to a `Dataset`, `Collection` and `Field` that actually exist in the DB.
     Raises a `ValidationError` if not.
     """
-    dataset_config: DatasetConfig = (
+    dataset_config: Optional[DatasetConfig] = (
         db.query(DatasetConfig)
         .filter(DatasetConfig.fides_key == dataset_reference.dataset)
         .first()

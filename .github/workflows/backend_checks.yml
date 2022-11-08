@@ -93,9 +93,6 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Check fides installation
-        run: nox -s check_install
-
       - name: Run fides evaluation
         run: nox -s check_fides_annotations
 
