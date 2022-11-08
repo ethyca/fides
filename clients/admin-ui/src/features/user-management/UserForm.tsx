@@ -15,8 +15,9 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { CustomTextInput } from "~/features/common/form/inputs";
+
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
-import { CustomTextInput } from "./form/inputs";
 import { User, UserCreateResponse } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
@@ -134,6 +135,7 @@ const UserForm = ({
                     label="Password"
                     placeholder="********"
                     type="password"
+                    tooltip="Password must contain at least 8 characters, must have at least 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                   />
                 ) : (
                   canChangePassword &&
