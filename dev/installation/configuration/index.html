@@ -217,13 +217,15 @@ You're not viewing the latest version.
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link md-tabs__link--active">
         Fides
       </a>
     </li>
@@ -253,7 +255,7 @@ You're not viewing the latest version.
 
   <li class="md-tabs__item">
     <a href="https://ethyca.github.io/fideslang/" class="md-tabs__link">
-      Fides Lang
+      Fides Lang Docs
     </a>
   </li>
 
@@ -323,12 +325,14 @@ You're not viewing the latest version.
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
       
       
       
@@ -363,23 +367,333 @@ You're not viewing the latest version.
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_2" type="checkbox" id="__nav_1_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_2" type="checkbox" id="__nav_1_2" checked>
       
       
       
       
         <label class="md-nav__link" for="__nav_1_2">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Installation" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requirements/" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pypi/" class="md-nav__link">
+        PyPI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Configuration
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-your-configuration" class="md-nav__link">
+    Viewing your configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing your configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    CLI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    API
+  </a>
+  
+    <nav class="md-nav" aria-label="API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-database" class="md-nav__link">
+    Postgres database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cache" class="md-nav__link">
+    Redis cache
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-settings" class="md-nav__link">
+    Security settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-settings" class="md-nav__link">
+    Execution settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-file" class="md-nav__link">
+    Configuration file
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-variable-reference" class="md-nav__link">
+    Configuration variable reference
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration variable reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#posgtres-database" class="md-nav__link">
+    Posgtres database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cache_1" class="md-nav__link">
+    Redis cache
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    Logging
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli_1" class="md-nav__link">
+    CLI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    Security
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution" class="md-nav__link">
+    Execution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user" class="md-nav__link">
+    User
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    Credentials
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-ui" class="md-nav__link">
+    Admin UI
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-environment-variables" class="md-nav__link">
+    Set environment variables
+  </a>
+  
+    <nav class="md-nav" aria-label="Set environment variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additional-environment-variables" class="md-nav__link">
+    Additional environment variables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#celery-configuration" class="md-nav__link">
+    Celery configuration
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_3" type="checkbox" id="__nav_1_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_3">
           Get Started with DSR Automation
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Get Started with DSR Automation" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_2">
+        <label class="md-nav__title" for="__nav_1_3">
           <span class="md-nav__icon md-icon"></span>
           Get Started with DSR Automation
         </label>
@@ -499,18 +813,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_3" type="checkbox" id="__nav_1_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_3">
+        <label class="md-nav__link" for="__nav_1_4">
           Understanding Privacy Requests
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Understanding Privacy Requests" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_3">
+        <label class="md-nav__title" for="__nav_1_4">
           <span class="md-nav__icon md-icon"></span>
           Understanding Privacy Requests
         </label>
@@ -616,18 +930,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_4">
+        <label class="md-nav__link" for="__nav_1_5">
           In-Depth Guides
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="In-Depth Guides" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_4">
+        <label class="md-nav__title" for="__nav_1_5">
           <span class="md-nav__icon md-icon"></span>
           In-Depth Guides
         </label>
@@ -845,18 +1159,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_5">
+        <label class="md-nav__link" for="__nav_1_6">
           SaaS Connectors
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="SaaS Connectors" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
+        <label class="md-nav__title" for="__nav_1_6">
           <span class="md-nav__icon md-icon"></span>
           SaaS Connectors
         </label>
@@ -955,18 +1269,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_7" type="checkbox" id="__nav_1_5_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6_7" type="checkbox" id="__nav_1_6_7" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_5_7">
+        <label class="md-nav__link" for="__nav_1_6_7">
           Connection Examples
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Connection Examples" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_7">
+        <label class="md-nav__title" for="__nav_1_6_7">
           <span class="md-nav__icon md-icon"></span>
           Connection Examples
         </label>
@@ -1205,18 +1519,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_11" type="checkbox" id="__nav_1_11" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_12" type="checkbox" id="__nav_1_12" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_11">
+        <label class="md-nav__link" for="__nav_1_12">
           Community
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_11">
+        <label class="md-nav__title" for="__nav_1_12">
           <span class="md-nav__icon md-icon"></span>
           Community
         </label>
@@ -1273,18 +1587,18 @@ You're not viewing the latest version.
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_11_4" type="checkbox" id="__nav_1_11_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_12_4" type="checkbox" id="__nav_1_12_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_1_11_4">
+        <label class="md-nav__link" for="__nav_1_12_4">
           Contributing
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Contributing" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_11_4">
+        <label class="md-nav__title" for="__nav_1_12_4">
           <span class="md-nav__icon md-icon"></span>
           Contributing
         </label>
@@ -1689,7 +2003,7 @@ You're not viewing the latest version.
   
     <li class="md-nav__item">
       <a href="https://ethyca.github.io/fideslang/" class="md-nav__link">
-        Fides Lang
+        Fides Lang Docs
       </a>
     </li>
   
@@ -1784,6 +2098,67 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#viewing-your-configuration" class="md-nav__link">
+    Viewing your configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing your configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    CLI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    API
+  </a>
+  
+    <nav class="md-nav" aria-label="API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-database" class="md-nav__link">
+    Postgres database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-cache" class="md-nav__link">
+    Redis cache
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-settings" class="md-nav__link">
+    Security settings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-settings" class="md-nav__link">
+    Execution settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuration-file" class="md-nav__link">
     Configuration file
   </a>
@@ -1806,7 +2181,7 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#redis-cache" class="md-nav__link">
+  <a href="#redis-cache_1" class="md-nav__link">
     Redis cache
   </a>
   
@@ -1820,7 +2195,7 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#cli" class="md-nav__link">
+  <a href="#cli_1" class="md-nav__link">
     CLI
   </a>
   
@@ -1893,13 +2268,6 @@ You're not viewing the latest version.
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#view-a-live-configuration" class="md-nav__link">
-    View a live configuration
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1930,6 +2298,94 @@ You're not viewing the latest version.
 <li>The user's home (<code>~</code>) directory</li>
 </ol>
 <p>Fides can also run exclusively via environment variables. These can be used in tandem with a <code>toml</code> configuration file, with the environment variables overriding the toml configuration values.</p>
+<h2 id="viewing-your-configuration">Viewing your configuration</h2>
+<p>You can view the current configuration of your application via either the CLI or API</p>
+<h3 id="cli">CLI</h3>
+<p>To view your application configuration via the CLI, run:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides view config
+</code></pre></div></td></tr></table></div>
+<p>The output will look something like this:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span></pre></div></td><td class="code"><div><pre><span></span><code>fides&gt; fides view config 
+Loading config from: .fides/fides.toml
+Directory <span class="s1">&#39;./.fides&#39;</span> already exists.
+Configuration file already exists: ./.fides/fides.toml
+To learn more about configuring fides, see:
+        https://ethyca.github.io/fides/installation/configuration/
+----------
+<span class="nv">test_mode</span> <span class="o">=</span> <span class="nb">false</span>
+<span class="nv">is_test_mode</span> <span class="o">=</span> <span class="nb">false</span>
+<span class="nv">hot_reloading</span> <span class="o">=</span> <span class="nb">false</span>
+<span class="nv">dev_mode</span> <span class="o">=</span> <span class="nb">false</span>
+
+<span class="o">[</span>admin_ui<span class="o">]</span>
+<span class="nv">enabled</span> <span class="o">=</span> <span class="nb">true</span>
+
+<span class="o">[</span>cli<span class="o">]</span>
+<span class="nv">local_mode</span> <span class="o">=</span> <span class="nb">false</span>
+<span class="nv">analytics_id</span> <span class="o">=</span> <span class="s2">&quot;internal&quot;</span>
+<span class="nv">server_protocol</span> <span class="o">=</span> <span class="s2">&quot;http&quot;</span>
+<span class="nv">server_host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+...
+</code></pre></div></td></tr></table></div>
+<p>The output after the initial separator (<code>----------</code>) is valid TOML, and can be copy/pasted for reuse as a functioning config file.</p>
+<p>For more information, see the <a href="../../cli/">CLI docs</a>.</p>
+<h3 id="api">API</h3>
+<p>To view your application configuration via the CLI, run:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET /api/v1/config
+</code></pre></div></td></tr></table></div>
+<p>Fides will filter out any sensitive configuration variables. The full list of variables deemed safe to return is:</p>
+<h4 id="postgres-database">Postgres database</h4>
+<ul>
+<li><code>server</code></li>
+<li><code>user</code></li>
+<li><code>port</code></li>
+<li><code>db</code></li>
+<li><code>test_db</code></li>
+</ul>
+<h4 id="redis-cache">Redis cache</h4>
+<ul>
+<li><code>host</code></li>
+<li><code>port</code></li>
+<li><code>charset</code></li>
+<li><code>decode_responses</code></li>
+<li><code>default_ttl_seconds</code></li>
+<li><code>db_index</code></li>
+</ul>
+<h4 id="security-settings">Security settings</h4>
+<ul>
+<li><code>cors_origins</code></li>
+<li><code>encoding</code></li>
+<li><code>oauth_access_token_expire_minutes</code></li>
+</ul>
+<h4 id="execution-settings">Execution settings</h4>
+<ul>
+<li><code>task_retry_count</code></li>
+<li><code>task_retry_delay</code></li>
+<li><code>task_retry_backoff</code></li>
+<li><code>require_manual_request_approval</code></li>
+<li><code>masking_strict</code></li>
+</ul>
+<p>For more information, see the <a href="../../api/">API docs</a>.</p>
 <h2 id="configuration-file">Configuration file</h2>
 <p>After initializing Fides, a default configuration file will be generated and placed within the <code>.fides</code> directory:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">fides.toml</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
@@ -2081,7 +2537,7 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<h4 id="redis-cache">Redis cache</h4>
+<h4 id="redis-cache_1">Redis cache</h4>
 <table>
 <thead>
 <tr>
@@ -2173,7 +2629,7 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<h4 id="cli">CLI</h4>
+<h4 id="cli_1">CLI</h4>
 <table>
 <thead>
 <tr>
@@ -2370,7 +2826,7 @@ You're not viewing the latest version.
 </tbody>
 </table>
 <h4 id="credentials">Credentials</h4>
-<p>The credentials section uses custom keys which can be referenced in certain commands. </p>
+<p>The credentials section uses custom keys which can be referenced in certain commands.</p>
 <table>
 <thead>
 <tr>
@@ -2481,7 +2937,7 @@ You're not viewing the latest version.
 </tbody>
 </table>
 <h2 id="celery-configuration">Celery configuration</h2>
-<p>Fides uses <a href="https://docs.celeryq.dev/en/stable/index.html">Celery</a> for asynchronous task management. </p>
+<p>Fides uses <a href="https://docs.celeryq.dev/en/stable/index.html">Celery</a> for asynchronous task management.</p>
 <p>The <code>celery.toml</code> file provided contains a brief configuration reference for managing Celery variables. By default, Fides will look for this file in the root directory of your application, but this location can be optionally overridden by specifying an alternate <code>celery_config_path</code> in your <code>fides.toml</code>.</p>
 <p>For a full list of possible variable overrides, see the <a href="https://docs.celeryq.dev/en/stable/userguide/configuration.html#new-lowercase-settings">Celery configuration</a> documentation.</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Example <code>celery.toml</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2516,43 +2972,6 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<h2 id="view-a-live-configuration">View a live configuration</h2>
-<p>You can view the currently running configuration of your application with the following request:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>GET /api/v1/config
-</code></pre></div></td></tr></table></div>
-<p>Fides will filter out any sensitive configuration variables. The full list of variables deemed safe to return is:</p>
-<p><strong>Postgres database</strong></p>
-<ul>
-<li><code>server</code></li>
-<li><code>user</code></li>
-<li><code>port</code></li>
-<li><code>db</code></li>
-<li><code>test_db</code></li>
-</ul>
-<p><strong>Redis cache</strong></p>
-<ul>
-<li><code>host</code></li>
-<li><code>port</code></li>
-<li><code>charset</code></li>
-<li><code>decode_responses</code></li>
-<li><code>default_ttl_seconds</code></li>
-<li><code>db_index</code></li>
-</ul>
-<p><strong>Security settings</strong></p>
-<ul>
-<li><code>cors_origins</code></li>
-<li><code>encoding</code></li>
-<li><code>oauth_access_token_expire_minutes</code></li>
-</ul>
-<p><strong>Execution settings</strong></p>
-<ul>
-<li><code>task_retry_count</code></li>
-<li><code>task_retry_delay</code></li>
-<li><code>task_retry_backoff</code></li>
-<li><code>require_manual_request_approval</code></li>
-<li><code>masking_strict</code></li>
-</ul>
-<p>For more information, see the <a href="../api/">API docs</a>.</p>
 
               
             </article>
@@ -2594,6 +3013,59 @@ You're not viewing the latest version.
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+      <div class="nav-wrap">
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../docker/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Docker"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Docker
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../../getting-started/sample_project/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: Sample Fides Application"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Sample Fides Application
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </div>
+    </nav>
   
 
   </div>

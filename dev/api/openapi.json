@@ -4157,26 +4157,6 @@
         }
       }
     },
-    "/view/evaluations": {
-      "get": {
-        "tags": [
-          "View"
-        ],
-        "summary": "Evaluation View",
-        "description": "Returns an html document with a list of evaluations",
-        "operationId": "evaluation_view_view_evaluations_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/user": {
       "get": {
         "tags": [
@@ -8810,14 +8790,14 @@
         ]
       }
     },
-    "/api/v1/email/config": {
+    "/api/v1/messaging/config": {
       "get": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Get Configs",
-        "description": "Retrieves configs for email.",
-        "operationId": "get_configs_api_v1_email_config_get",
+        "description": "Retrieves configs for messaging.",
+        "operationId": "get_configs_api_v1_messaging_config_get",
         "parameters": [
           {
             "required": false,
@@ -8849,7 +8829,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_EmailConfigResponse_"
+                  "$ref": "#/components/schemas/Page_MessagingConfigResponse_"
                 }
               }
             }
@@ -8868,23 +8848,23 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:read"
+              "messaging:read"
             ]
           }
         ]
       },
       "post": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Post Config",
-        "description": "Given an email config, create corresponding EmailConfig object, provided no config already exists",
-        "operationId": "post_config_api_v1_email_config_post",
+        "description": "Given a messaging config, create corresponding MessagingConfig object, provided no config already exists",
+        "operationId": "post_config_api_v1_messaging_config_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmailConfigRequest"
+                "$ref": "#/components/schemas/MessagingConfigRequest"
               }
             }
           },
@@ -8896,7 +8876,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmailConfigResponse"
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
                 }
               }
             }
@@ -8915,20 +8895,20 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:create_or_update"
+              "messaging:create_or_update"
             ]
           }
         ]
       }
     },
-    "/api/v1/email/config/{config_key}": {
+    "/api/v1/messaging/config/{config_key}": {
       "get": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Get Config By Key",
-        "description": "Retrieves configs for email by key.",
-        "operationId": "get_config_by_key_api_v1_email_config__config_key__get",
+        "description": "Retrieves configs for messaging service by key.",
+        "operationId": "get_config_by_key_api_v1_messaging_config__config_key__get",
         "parameters": [
           {
             "required": true,
@@ -8947,7 +8927,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmailConfigResponse"
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
                 }
               }
             }
@@ -8966,18 +8946,18 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:read"
+              "messaging:read"
             ]
           }
         ]
       },
       "delete": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Delete Config By Key",
-        "description": "Deletes email configs by key.",
-        "operationId": "delete_config_by_key_api_v1_email_config__config_key__delete",
+        "description": "Deletes messaging configs by key.",
+        "operationId": "delete_config_by_key_api_v1_messaging_config__config_key__delete",
         "parameters": [
           {
             "required": true,
@@ -9008,18 +8988,18 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:delete"
+              "messaging:delete"
             ]
           }
         ]
       },
       "patch": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Patch Config By Key",
-        "description": "Updates config for email by key, provided config with key can be found.",
-        "operationId": "patch_config_by_key_api_v1_email_config__config_key__patch",
+        "description": "Updates config for messaging by key, provided config with key can be found.",
+        "operationId": "patch_config_by_key_api_v1_messaging_config__config_key__patch",
         "parameters": [
           {
             "required": true,
@@ -9036,7 +9016,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmailConfigRequest"
+                "$ref": "#/components/schemas/MessagingConfigRequest"
               }
             }
           },
@@ -9048,7 +9028,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EmailConfigResponse"
+                  "$ref": "#/components/schemas/MessagingConfigResponse"
                 }
               }
             }
@@ -9067,20 +9047,20 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:create_or_update"
+              "messaging:create_or_update"
             ]
           }
         ]
       }
     },
-    "/api/v1/email/config/{config_key}/secret": {
+    "/api/v1/messaging/config/{config_key}/secret": {
       "put": {
         "tags": [
-          "email"
+          "messaging"
         ],
         "summary": "Put Config Secrets",
-        "description": "Add or update secrets for email config.",
-        "operationId": "put_config_secrets_api_v1_email_config__config_key__secret_put",
+        "description": "Add or update secrets for messaging config.",
+        "operationId": "put_config_secrets_api_v1_messaging_config__config_key__secret_put",
         "parameters": [
           {
             "required": true,
@@ -9097,7 +9077,18 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EmailSecretsMailgunDocs"
+                "title": "Unvalidated Messaging Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsMailgunDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioSMSDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingSecretsTwilioEmailDocs"
+                  }
+                ]
               }
             }
           },
@@ -9109,7 +9100,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestEmailStatusMessage"
+                  "$ref": "#/components/schemas/TestMessagingStatusMessage"
                 }
               }
             }
@@ -9128,7 +9119,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "email:create_or_update"
+              "messaging:create_or_update"
             ]
           }
         ]
@@ -11725,71 +11716,6 @@
         },
         "description": "Response model for dataset dry run"
       },
-      "EmailConfigRequest": {
-        "title": "EmailConfigRequest",
-        "required": [
-          "name",
-          "service_type",
-          "details"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "key": {
-            "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string"
-          },
-          "service_type": {
-            "$ref": "#/components/schemas/EmailServiceType"
-          },
-          "details": {
-            "$ref": "#/components/schemas/EmailServiceDetailsMailgun"
-          }
-        },
-        "description": "Email Config Request Schema"
-      },
-      "EmailConfigResponse": {
-        "title": "EmailConfigResponse",
-        "required": [
-          "name",
-          "key",
-          "service_type",
-          "details"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "title": "Name",
-            "type": "string"
-          },
-          "key": {
-            "title": "Key",
-            "pattern": "^[a-zA-Z0-9_.-]+$",
-            "type": "string"
-          },
-          "service_type": {
-            "$ref": "#/components/schemas/EmailServiceType"
-          },
-          "details": {
-            "title": "Details",
-            "type": "object"
-          }
-        },
-        "description": "Email Config Response Schema"
-      },
-      "EmailConnectionTestStatus": {
-        "title": "EmailConnectionTestStatus",
-        "enum": [
-          "succeeded",
-          "failed",
-          "skipped"
-        ],
-        "description": "Enum for supplying statuses of validating credentials for an Email Config"
-      },
       "EmailDocsSchema": {
         "title": "EmailDocsSchema",
         "required": [
@@ -11812,53 +11738,6 @@
         },
         "additionalProperties": false,
         "description": "EmailDocsSchema Secrets Schema for API Docs"
-      },
-      "EmailSecretsMailgunDocs": {
-        "title": "EmailSecretsMailgunDocs",
-        "required": [
-          "mailgun_api_key"
-        ],
-        "type": "object",
-        "properties": {
-          "mailgun_api_key": {
-            "title": "Mailgun Api Key",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "description": "The secrets required to connect to Mailgun, for documentation"
-      },
-      "EmailServiceDetailsMailgun": {
-        "title": "EmailServiceDetailsMailgun",
-        "required": [
-          "domain"
-        ],
-        "type": "object",
-        "properties": {
-          "is_eu_domain": {
-            "title": "Is Eu Domain",
-            "type": "boolean",
-            "default": false
-          },
-          "api_version": {
-            "title": "Api Version",
-            "type": "string",
-            "default": "v3"
-          },
-          "domain": {
-            "title": "Domain",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "description": "The details required to represent a Mailgun email configuration."
-      },
-      "EmailServiceType": {
-        "title": "EmailServiceType",
-        "enum": [
-          "mailgun"
-        ],
-        "description": "Enum for email service type"
       },
       "Endpoint": {
         "title": "Endpoint",
@@ -12899,6 +12778,161 @@
         "type": "string",
         "description": "The MatchesEnum resource model.\n\nDetermines how the listed resources are matched in the evaluation logic."
       },
+      "MessagingConfigRequest": {
+        "title": "MessagingConfigRequest",
+        "required": [
+          "name",
+          "service_type"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "$ref": "#/components/schemas/MessagingServiceDetailsMailgun"
+          }
+        },
+        "description": "Messaging Config Request Schema"
+      },
+      "MessagingConfigResponse": {
+        "title": "MessagingConfigResponse",
+        "required": [
+          "name",
+          "key",
+          "service_type"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "type": "string"
+          },
+          "service_type": {
+            "$ref": "#/components/schemas/MessagingServiceType"
+          },
+          "details": {
+            "title": "Details",
+            "type": "object"
+          }
+        },
+        "description": "Messaging Config Response Schema"
+      },
+      "MessagingConnectionTestStatus": {
+        "title": "MessagingConnectionTestStatus",
+        "enum": [
+          "succeeded",
+          "failed",
+          "skipped"
+        ],
+        "description": "Enum for supplying statuses of validating credentials for a messaging Config"
+      },
+      "MessagingSecretsMailgunDocs": {
+        "title": "MessagingSecretsMailgunDocs",
+        "required": [
+          "mailgun_api_key"
+        ],
+        "type": "object",
+        "properties": {
+          "mailgun_api_key": {
+            "title": "Mailgun Api Key",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The secrets required to connect to Mailgun, for documentation"
+      },
+      "MessagingSecretsTwilioEmailDocs": {
+        "title": "MessagingSecretsTwilioEmailDocs",
+        "required": [
+          "twilio_api_key"
+        ],
+        "type": "object",
+        "properties": {
+          "twilio_api_key": {
+            "title": "Twilio Api Key",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The secrets required to connect to Twilio email, for documentation"
+      },
+      "MessagingSecretsTwilioSMSDocs": {
+        "title": "MessagingSecretsTwilioSMSDocs",
+        "required": [
+          "twilio_account_sid",
+          "twilio_auth_token"
+        ],
+        "type": "object",
+        "properties": {
+          "twilio_account_sid": {
+            "title": "Twilio Account Sid",
+            "type": "string"
+          },
+          "twilio_auth_token": {
+            "title": "Twilio Auth Token",
+            "type": "string"
+          },
+          "twilio_messaging_service_sid": {
+            "title": "Twilio Messaging Service Sid",
+            "type": "string"
+          },
+          "twilio_sender_phone_number": {
+            "title": "Twilio Sender Phone Number",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The secrets required to connect to Twilio sms, for documentation"
+      },
+      "MessagingServiceDetailsMailgun": {
+        "title": "MessagingServiceDetailsMailgun",
+        "required": [
+          "domain"
+        ],
+        "type": "object",
+        "properties": {
+          "is_eu_domain": {
+            "title": "Is Eu Domain",
+            "type": "boolean",
+            "default": false
+          },
+          "api_version": {
+            "title": "Api Version",
+            "type": "string",
+            "default": "v3"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The details required to represent a Mailgun email configuration."
+      },
+      "MessagingServiceType": {
+        "title": "MessagingServiceType",
+        "enum": [
+          "mailgun",
+          "twilio_text",
+          "twilio_email"
+        ],
+        "description": "Enum for messaging service type"
+      },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
         "type": "object",
@@ -13154,40 +13188,6 @@
           }
         }
       },
-      "Page_EmailConfigResponse_": {
-        "title": "Page[EmailConfigResponse]",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "title": "Items",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmailConfigResponse"
-            }
-          },
-          "total": {
-            "title": "Total",
-            "minimum": 0.0,
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "minimum": 1.0,
-            "type": "integer"
-          }
-        }
-      },
       "Page_ExecutionLogDetailResponse_": {
         "title": "Page[ExecutionLogDetailResponse]",
         "required": [
@@ -13237,6 +13237,40 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FidesopsDataset"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          }
+        }
+      },
+      "Page_MessagingConfigResponse_": {
+        "title": "Page[MessagingConfigResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessagingConfigResponse"
             }
           },
           "total": {
@@ -15199,8 +15233,8 @@
         ],
         "description": "An enumeration."
       },
-      "TestEmailStatusMessage": {
-        "title": "TestEmailStatusMessage",
+      "TestMessagingStatusMessage": {
+        "title": "TestMessagingStatusMessage",
         "required": [
           "msg"
         ],
@@ -15211,14 +15245,14 @@
             "type": "string"
           },
           "test_status": {
-            "$ref": "#/components/schemas/EmailConnectionTestStatus"
+            "$ref": "#/components/schemas/MessagingConnectionTestStatus"
           },
           "failure_reason": {
             "title": "Failure Reason",
             "type": "string"
           }
         },
-        "description": "A schema for checking status of email config."
+        "description": "A schema for checking status of message config."
       },
       "TestStatus": {
         "title": "TestStatus",
