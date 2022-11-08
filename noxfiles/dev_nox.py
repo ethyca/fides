@@ -8,8 +8,7 @@ from constants_nox import (
     RUN,
     RUN_NO_DEPS,
     START_APP,
-    START_APP_EXTERNAL,
-    START_TEST_ENV
+    START_TEST_ENV,
 )
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
