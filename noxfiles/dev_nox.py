@@ -9,6 +9,7 @@ from constants_nox import (
     RUN_NO_DEPS,
     START_APP,
     START_APP_EXTERNAL,
+    START_TEST_ENV
 )
 from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
@@ -87,7 +88,7 @@ def test_env(session: Session) -> None:
         "Starting the application with example databases defined in docker-compose.integration-tests.yml..."
     )
     session.run(
-        *START_APP_EXTERNAL, "fides-ui", "fides-pc", external=True, env=test_env_vars
+        *START_TEST_ENV, "fides-ui", "fides-pc", external=True, env=test_env_vars
     )
 
     session.log(
