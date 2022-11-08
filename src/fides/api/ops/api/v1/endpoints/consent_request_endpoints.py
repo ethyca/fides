@@ -24,9 +24,9 @@ from fides.api.ops.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import (
-    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityVerificationException,
+    MessageDispatchException,
 )
 from fides.api.ops.models.privacy_request import (
     Consent,
@@ -98,12 +98,12 @@ def create_consent_request(
 
     if CONFIG.execution.subject_identity_verification_required:
         try:
-            send_verification_code_to_user(db, consent_request, data.email)
-        except EmailDispatchException as exc:
-            logger.error("Error sending the verification code email: %s", str(exc))
+            send_verification_code_to_user(db, consent_request, data)
+        except MessageDispatchException as exc:
+            logger.error("Error sending the verification code message: %s", str(exc))
             raise HTTPException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error sending the verification code email: {str(exc)}",
+                detail=f"Error sending the verification code message: {str(exc)}",
             )
     return ConsentRequestResponse(
         identity=data,

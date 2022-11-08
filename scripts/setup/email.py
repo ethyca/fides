@@ -17,7 +17,7 @@ def create_email_integration(
     key: str = "fides_email",
 ):
     response = requests.post(
-        f"{constants.BASE_URL}{urls.EMAIL_CONFIG}",
+        f"{constants.BASE_URL}{urls.MESSAGING_CONFIG}",
         headers=auth_header,
         json={
             "name": "fides Emails",
@@ -32,20 +32,12 @@ def create_email_integration(
     )
 
     if not response.ok:
-        if (
-            response.json()["detail"]
-            != f"Only one email config is supported at a time. Config with key {key} is already configured."
-        ):
-            raise RuntimeError(
-                f"fides email config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
-            )
-        logger.info(
-            f"fides email config is already created. Using the existing config."
+        raise RuntimeError(
+            f"fides messaging config creation failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
-        return
 
     # Now add secrets
-    email_secrets_path = urls.EMAIL_SECRETS.format(config_key=key)
+    email_secrets_path = urls.MESSAGING_SECRETS.format(config_key=key)
     response = requests.put(
         f"{constants.BASE_URL}{email_secrets_path}",
         headers=auth_header,
@@ -56,7 +48,7 @@ def create_email_integration(
 
     if not response.ok:
         raise RuntimeError(
-            f"fides email config secrets update failed! response.status_code={response.status_code}, response.json()={response.json()}"
+            f"fides messaging config secrets update failed! response.status_code={response.status_code}, response.json()={response.json()}"
         )
 
     logger.info(response.json()["msg"])
