@@ -45,18 +45,17 @@ jobs:
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
 
-
-###################
-## Static Checks ##
-###################
+  ###################
+  ## Static Checks ##
+  ###################
   Static-Checks:
     strategy:
       matrix:
-        session_name: ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
+        session_name:
+          ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -64,6 +63,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -71,9 +71,9 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
-################
-## Safe Tests ##
-################
+  ################
+  ## Safe Tests ##
+  ################
   Safe-Tests:
     needs: Build
 
@@ -81,28 +81,28 @@ jobs:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
         test_selection:
-        - "pytest_ctl(not-external)"
-        - "pytest_ops(unit)"
-        - "pytest_ops(integration)"
-        - "check_fides_annotations"
-        - "fides_db_scan"
-        - "docs_check"
+          - "pytest_ctl(not-external)"
+          - "pytest_ops(unit)"
+          - "pytest_ops(integration)"
+          - "check_fides_annotations"
+          - "fides_db_scan"
+          - "docs_check"
         exclude:
-        # Not all jobs need to run against the Python matrix
-        - python_version: "3.8.14"
-          test_selection: "check_fides_annotations"
-        - python_version: "3.9.14"
-          test_selection: "check_fides_annotations"
+          # Not all jobs need to run against the Python matrix
+          - python_version: "3.8.14"
+            test_selection: "check_fides_annotations"
+          - python_version: "3.9.14"
+            test_selection: "check_fides_annotations"
 
-        - python_version: "3.8.14"
-          test_selection: "fides_db_scan"
-        - python_version: "3.9.14"
-          test_selection: "fides_db_scan"
+          - python_version: "3.8.14"
+            test_selection: "fides_db_scan"
+          - python_version: "3.9.14"
+            test_selection: "fides_db_scan"
 
-        - python_version: "3.8.14"
-          test_selection: "docs_check"
-        - python_version: "3.9.14"
-          test_selection: "docs_check"
+          - python_version: "3.8.14"
+            test_selection: "docs_check"
+          - python_version: "3.9.14"
+            test_selection: "docs_check"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -126,10 +126,10 @@ jobs:
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
 
-##################
-## Unsafe Tests ##
-##################
-# NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
+  ##################
+  ## Unsafe Tests ##
+  ##################
+  # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
   Pytest-Ctl-External:
     needs: Build
