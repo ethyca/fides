@@ -234,9 +234,7 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
     Email connectors require that an email messaging service has been configured.
     Prefers Twilio if both Twilio email AND Mailgun has been configured.
     """
-    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.filter(
-        db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
-    ).all()
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(db=db).all()
     if not messaging_configs:
         # let messaging dispatch service handle non-existent service
         return None
@@ -245,9 +243,5 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
             return MessagingServiceType.TWILIO_EMAIL.value
         if messaging_config.service_type == MessagingServiceType.MAILGUN:
             return MessagingServiceType.MAILGUN.value
-        logger.info(
-            "New email service type %s needs to be implemented in email connector",
-            messaging_config.service_type,
-        )
-        return messaging_config.service_type
+        return None
     return None

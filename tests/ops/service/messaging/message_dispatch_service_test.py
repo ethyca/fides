@@ -193,7 +193,7 @@ def test_sms_dispatch_twilio_success(
         f"Your privacy request verification code is 2348. "
         + f"Please return to the Privacy Center and enter the code to continue. "
         + f"This code will expire in 10 minutes",
-        "test@email.com",
+        "+12312341231",
     )
 
 
@@ -214,7 +214,7 @@ def test_sms_dispatch_twilio_config_not_found(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
-    assert exc.value.args[0] == "No messaging config found."
+    assert exc.value.args[0] == "No messaging config found for service_type TWILIO_TEXT."
 
     mock_twilio_dispatcher.assert_not_called()
 
@@ -247,7 +247,7 @@ def test_sms_dispatch_twilio_config_no_secrets(
         )
     assert (
         exc.value.args[0]
-        == "Messaging secrets not found for config with key: my_mailgun_messaging_config"
+        == "Messaging secrets not found for config with key: my_twilio_sms_config"
     )
 
     mock_mailgun_dispatcher.assert_not_called()
