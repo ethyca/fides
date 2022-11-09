@@ -245,6 +245,9 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
             return MessagingServiceType.TWILIO_EMAIL.value
         if messaging_config.service_type == MessagingServiceType.MAILGUN:
             return MessagingServiceType.MAILGUN.value
-        logger.info("New email service type %s needs to be implemented in email connector", messaging_config.service_type)
+        logger.info(
+            "New email service type %s needs to be implemented in email connector",
+            messaging_config.service_type,
+        )
         return messaging_config.service_type
     return None

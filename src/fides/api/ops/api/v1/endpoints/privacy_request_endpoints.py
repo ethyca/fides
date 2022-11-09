@@ -280,7 +280,7 @@ async def create_privacy_request(
         except Exception as exc:
             logger.error("Exception: %s", Pii(str(exc)))
             failure = {
-                "message": f"This record could not be added",
+                "message": "This record could not be added",
                 "data": kwargs,
             }
             failed.append(failure)
