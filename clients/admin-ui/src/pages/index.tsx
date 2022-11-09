@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 import dynamic from "next/dynamic";
 import RequestFilters from "privacy-requests/RequestFilters";
 import RequestTable from "privacy-requests/RequestTable";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { Flags } from "react-feature-flags";
@@ -25,15 +25,35 @@ const ActionButtons = dynamic(
 const Home: NextPage = () => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectPrivacyRequestFilters);
-  const { data, isFetching } = useGetAllPrivacyRequestsQuery(filters);
-  const { processingErrorsAlert } = useDSRAlert(data?.items);
+  const [pollingInterval, setPollingInterval] = useState(0);
+  const { data, isFetching } = useGetAllPrivacyRequestsQuery(filters, {
+    pollingInterval,
+  });
+  const [initialRender, setInitialRender] = useState(false);
+  const { DEFAULT_POLLING_INTERVAL, processingErrorsAlert } = useDSRAlert(
+    data?.items
+  );
 
   useEffect(() => {
+    setInitialRender(true);
+  }, []);
+
+  useEffect(() => {
+    if (!initialRender) {
+      setPollingInterval(DEFAULT_POLLING_INTERVAL);
+      processingErrorsAlert();
+    }
     if (isFetching && filters.status?.includes("error")) {
       dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
     }
-    processingErrorsAlert();
-  }, [dispatch, filters.status, isFetching, processingErrorsAlert]);
+  }, [
+    DEFAULT_POLLING_INTERVAL,
+    dispatch,
+    filters.status,
+    initialRender,
+    isFetching,
+    processingErrorsAlert,
+  ]);
 
   return (
     <Layout title="Privacy Requests">

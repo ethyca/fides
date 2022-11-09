@@ -9,6 +9,7 @@ export const useDSRAlert = (requests: PrivacyRequest[] | undefined) => {
   const toast = useToast();
   const { errorAlert } = useAlert();
   const [errorRequests, setErrorRequests] = useState([] as PrivacyRequest[]);
+  const DEFAULT_POLLING_INTERVAL = 15000;
   const PROCESSING_ERRORS_ALERT_ID = "processingErrorsAlert";
   const STATUS = "pending";
 
@@ -61,5 +62,5 @@ export const useDSRAlert = (requests: PrivacyRequest[] | undefined) => {
     );
   };
 
-  return { processingErrorsAlert };
+  return { DEFAULT_POLLING_INTERVAL, processingErrorsAlert };
 };
