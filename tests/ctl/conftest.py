@@ -8,7 +8,7 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Any, AsyncGenerator, Dict, Generator, Union
+from typing import Any, Dict, Generator, Union
 from uuid import uuid4
 
 import pytest
@@ -22,19 +22,20 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
 from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.database.session import engine, sync_session
+from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
-from fides.ctl.core import api
 from fides.ctl.core.config import FidesConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+CONFIG = get_config()
 
 
 @pytest.fixture(scope="session")
@@ -71,9 +72,10 @@ def test_client() -> Generator:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesConfig) -> Generator:
-    "Sets up the database for testing."
-    yield api.db_action(test_config.cli.server_url, "reset")
+def setup_db(test_config: FidesConfig, test_client) -> Generator:
+    """Sets up the database for testing."""
+    assert CONFIG.test_mode
+    yield test_client.post(url=f"{CONFIG.cli.server_url}{API_PREFIX}/admin/db/reset")
 
 
 @pytest.fixture(scope="function")
@@ -281,11 +283,23 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
     return manifest_dir
 
 
-@pytest.fixture
-def db() -> Generator:
-    session = sync_session()
-    yield session
-    session.close()
+@pytest.fixture(scope="session")
+@pytest.mark.asyncio
+async def async_session() -> AsyncSession:
+    assert CONFIG.test_mode
+    async_engine = create_async_engine(
+        CONFIG.database.async_database_uri,
+        echo=True,
+    )
+
+    session_maker = sessionmaker(
+        async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    async with session_maker() as session:
+        yield session
+        session.close()
+        async_engine.dispose()
 
 
 @pytest.fixture
@@ -414,13 +428,3 @@ def event_loop() -> Generator:
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-@pytest.fixture(autouse=True)
-async def async_db() -> AsyncGenerator:
-    """
-    Makes sure to clean up the engine event loop to avoid async tests
-    attaching to the wrong event loop
-    """
-    yield
-    await engine.dispose()

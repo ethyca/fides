@@ -18,22 +18,21 @@ def get_config() -> FidesConfig:
 
 
 def get_db() -> Generator:
-    """Return our database session"""
+    """Return a sync db session for dependency injection into API endpoints"""
     try:
-        db = get_api_session()
+        db = get_sync_session()
         yield db
     finally:
         db.close()
 
 
-def get_api_session() -> Session:
+def get_sync_session() -> Session:
     """Gets the shared database session to use for API functionality"""
     global _engine  # pylint: disable=W0603
     if not _engine:
         _engine = get_db_engine(config=CONFIG)
-    SessionLocal = get_db_session(CONFIG, engine=_engine)
-    db = SessionLocal()
-    return db
+    session_maker = get_db_session(CONFIG, engine=_engine)
+    return session_maker()
 
 
 def get_cache() -> Generator:

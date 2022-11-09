@@ -13,6 +13,12 @@ def get_test_mode() -> bool:
     return test_mode
 
 
+def get_dev_mode() -> bool:
+    """Returns whether we're currently in dev mode"""
+    dev_mode = getenv("FIDES__DEV_MODE", "").lower() == "true"
+    return dev_mode
+
+
 def get_config_from_file(
     config_path_override: str,
     section: str,

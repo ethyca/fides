@@ -149,7 +149,7 @@ extension-pkg-whitelist = ["pydantic", "zlib"]
 ############
 [tool.pytest.ini_options]
 env = [
-  "TESTING=True"
+  "FIDES__TEST_MODE=true"
 ]
 log_cli=false
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"

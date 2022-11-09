@@ -8,8 +8,8 @@ from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
 from fideslib.utils.text import to_snake_case
 from loguru import logger as log
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
@@ -22,6 +22,7 @@ from fides.api.ops.schemas.storage.storage import (
 )
 from fides.ctl.core.config import get_config
 
+from ...ops.api.deps import get_sync_session
 from .crud import create_resource, list_resource
 
 CONFIG = get_config()
@@ -69,7 +70,7 @@ async def load_default_dsr_policies() -> None:
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
     """
-    with sync_session() as db_session:
+    with get_sync_session() as db_session:  # type: ignore[attr-defined]
 
         client = ClientDetail.get_by(
             db=db_session,
@@ -211,7 +212,7 @@ async def load_default_dsr_policies() -> None:
         log.info("All Policies & Rules Seeded.")
 
 
-async def load_default_organization() -> None:
+async def load_default_organization(async_session: AsyncSession) -> None:
     """
     Seed the database with a default organization unless
     one with a matching name already exists.
@@ -223,7 +224,7 @@ async def load_default_organization() -> None:
     inserted = 0
     for org in organizations:
         try:
-            await create_resource(sql_model_map["organization"], org)
+            await create_resource(sql_model_map["organization"], org, async_session)
             inserted += 1
         except AlreadyExistsError:
             pass
@@ -232,7 +233,7 @@ async def load_default_organization() -> None:
     log.info(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
 
 
-async def load_default_taxonomy() -> None:
+async def load_default_taxonomy(async_session: AsyncSession) -> None:
     """Seed the database with the default taxonomy resources."""
 
     upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
@@ -242,7 +243,9 @@ async def load_default_taxonomy() -> None:
     for resource_type in upsert_resource_types:
         log.info(f"Processing {resource_type} resources...")
         default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
-        existing_resources = await list_resource(sql_model_map[resource_type])
+        existing_resources = await list_resource(
+            sql_model_map[resource_type], async_session
+        )
         existing_keys = [item.fides_key for item in existing_resources]
         resources = [
             resource
@@ -256,19 +259,20 @@ async def load_default_taxonomy() -> None:
 
         try:
             for resource in resources:
-                await create_resource(sql_model_map[resource_type], resource)
+                await create_resource(
+                    sql_model_map[resource_type], resource, async_session
+                )
         except QueryError:
             pass  # The create_resource function will log the error
         else:
             log.info(f"INSERTED {len(resources)} {resource_type} resource(s)")
 
 
-async def load_default_resources() -> None:
+async def load_default_resources(async_session: AsyncSession) -> None:
     """
     Seed the database with default resources that the application
     expects to be available.
     """
-
-    await load_default_organization()
-    await load_default_taxonomy()
+    await load_default_organization(async_session)
+    await load_default_taxonomy(async_session)
     await load_default_dsr_policies()

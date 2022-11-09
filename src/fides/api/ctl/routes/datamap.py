@@ -3,12 +3,14 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict, List
 
-from fastapi import Response, status
+from fastapi import Depends, Response, status
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database.crud import get_resource, list_resource
+from fides.api.ctl.database.session import get_async_db
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
@@ -84,7 +86,9 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
     },
 )
 async def export_datamap(
-    organization_fides_key: str, response: Response
+    organization_fides_key: str,
+    response: Response,
+    db: AsyncSession = Depends(get_async_db),
 ) -> List[Dict[str, str]]:
     """
     An endpoint to return the data map for a given Organization.
@@ -101,7 +105,7 @@ async def export_datamap(
     try:
         try:
             organization = await get_resource(
-                sql_model_map["organization"], organization_fides_key
+                sql_model_map["organization"], organization_fides_key, db
             )
         except NotFoundError:
             not_found_error = NotFoundError(
@@ -114,7 +118,7 @@ async def export_datamap(
         server_resource_dict = {"organization": [organization]}
 
         for resource_type in ["system", "dataset", "data_subject", "data_use"]:
-            server_resources = await list_resource(sql_model_map[resource_type])
+            server_resources = await list_resource(sql_model_map[resource_type], db)
             filtered_server_resources = [
                 parse_dict(resource_type, resource.__dict__, from_server=True)
                 for resource in server_resources

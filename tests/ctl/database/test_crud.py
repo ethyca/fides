@@ -1,3 +1,4 @@
+import os
 from json import dumps
 from typing import Generator, List
 
@@ -5,19 +6,22 @@ import pytest
 
 from fides.api.ctl import sql_models
 from fides.api.ctl.database.crud import delete_resource, list_resource
-from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
+from fides.ctl.core.api import generate_resource_url
+from fides.ctl.core.config import FidesConfig, get_config
 from tests.ctl.types import FixtureRequest
+
+config = get_config()
 
 
 @pytest.fixture(name="created_resources")
 def fixture_created_resources(
-    test_config: FidesConfig, request: FixtureRequest
+    test_config: FidesConfig, request: FixtureRequest, test_client
 ) -> Generator:
     """
     Fixture that creates and tears down a set of resources for each test run.
     Only creates resources for a given type based on test parameter
     """
+    assert config.test_mode
     created_keys = []
     resource_type = request.param
     to_create = ["foo", "foo.bar", "foo.bar.baz", "foo.boo"]
@@ -25,11 +29,10 @@ def fixture_created_resources(
     for key in to_create:
         parent_key = ".".join(key.split(".")[:-1]) if "." in key else None
 
-        _api.create(
-            url=test_config.cli.server_url,
-            resource_type=resource_type,
-            json_resource=dumps({"fides_key": key, "parent_key": parent_key}),
+        test_client.post(
+            generate_resource_url(test_config.cli.server_url, resource_type),
             headers=test_config.user.request_headers,
+            data=dumps({"fides_key": key, "parent_key": parent_key}),
         )
         created_keys.append(key)
 
@@ -37,10 +40,10 @@ def fixture_created_resources(
     yield resource_type, created_keys
 
     for created_key in created_keys:
-        _api.delete(
-            url=test_config.cli.server_url,
-            resource_type=resource_type,
-            resource_id=created_key,
+        test_client.delete(
+            url=generate_resource_url(
+                test_config.cli.server_url, resource_type, created_key
+            ),
             headers=test_config.user.request_headers,
         )
 
@@ -51,11 +54,13 @@ def fixture_created_resources(
     ["data_category", "data_use", "data_qualifier"],
     indirect=["created_resources"],
 )
-async def test_cascade_delete_taxonomy_children(created_resources: List) -> None:
+async def test_cascade_delete_taxonomy_children(
+    created_resources: List, async_session
+) -> None:
     """Deleting a parent taxonomy should delete all of its children too"""
     resource_type, keys = created_resources
     sql_model = sql_models.sql_model_map[resource_type]
-    await delete_resource(sql_model, keys[0])
-    resources = await list_resource(sql_model)
+    await delete_resource(sql_model, keys[0], async_session)
+    resources = await list_resource(sql_model, async_session)
     remaining_keys = {resource.fides_key for resource in resources}
     assert len(set(keys).intersection(remaining_keys)) == 0
