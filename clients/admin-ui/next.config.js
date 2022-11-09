@@ -21,6 +21,12 @@ const nextConfig = {
         return config;
     },
     async rewrites() {
+        // The tests run without a server. Rewrites cause Next to continually try to connect,
+        // which spams the logs with "ECONNREFUSED".
+        if (process.env.NODE_ENV === "test") {
+            return [];
+        }
+
         // these paths are unnecessarily complicated due to our backend being
         // picky about trailing slashes https://github.com/ethyca/fides/issues/690
         return [
