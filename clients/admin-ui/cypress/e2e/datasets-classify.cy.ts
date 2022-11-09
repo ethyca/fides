@@ -192,10 +192,7 @@ describe("Datasets with Fides Classify", () => {
         }
       );
 
-      cy.getByTestId("approve-classification-btn")
-        .should("be.enabled")
-        .click()
-        .should("be.disabled");
+      cy.getByTestId("approve-classification-btn").should("be.enabled").click();
 
       // The mutations should run.
       cy.wait("@putDataset");
