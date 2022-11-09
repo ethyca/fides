@@ -159,7 +159,6 @@ def generate_system_aws(
     Connect to an aws account by leveraging a valid boto3 environment varible
     configuration and extract tracked resource to write a System manifest with.
     """
-    _check_aws_connector_import()
 
     organization = get_organization(
         organization_key=organization_key,
@@ -206,8 +205,6 @@ def generate_system_okta(
     """
     Generates a system manifest from existing Okta applications.
     """
-
-    _check_okta_connector_import()
 
     organization = get_organization(
         organization_key=organization_key,
@@ -366,8 +363,6 @@ def scan_system_aws(
     configuration and compares tracked resources to existing systems.
     """
 
-    _check_aws_connector_import()
-
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
@@ -414,8 +409,6 @@ def scan_system_okta(
     systems in the server and manifest supplied.
     """
 
-    _check_okta_connector_import()
-
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
@@ -448,21 +441,3 @@ def scan_system_okta(
         missing_systems=missing_systems,
         coverage_threshold=coverage_threshold,
     )
-
-
-def _check_okta_connector_import() -> None:
-    "Validate okta can be imported"
-    try:
-        import fides.ctl.connectors.okta  # pylint: disable=unused-import
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fides[okta]"')
-        raise SystemExit
-
-
-def _check_aws_connector_import() -> None:
-    "Validates boto3 is installed and can be imported"
-    try:
-        import fides.ctl.connectors.aws  # pylint: disable=unused-import
-    except ModuleNotFoundError:
-        echo_red('Packages not found, try: pip install "fides[aws]"')
-        raise SystemExit

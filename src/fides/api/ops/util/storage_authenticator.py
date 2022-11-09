@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict
 
-import boto3
 from boto3 import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
@@ -21,7 +20,7 @@ def get_s3_session(
             logger.warning(err_msg)
             raise StorageUploadError(err_msg)
 
-        session = boto3.session.Session(
+        session = Session(
             aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],  # type: ignore
             aws_secret_access_key=storage_secrets[
                 StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
@@ -34,7 +33,7 @@ def get_s3_session(
         return session
 
     if auth_method == S3AuthMethod.AUTOMATIC.value:
-        session = boto3.session.Session()
+        session = Session()
         logger.info("Successfully created automatic session")
         return session
 

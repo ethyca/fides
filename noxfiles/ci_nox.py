@@ -97,12 +97,16 @@ def xenon(session: nox.Session) -> None:
     session.run(*command)
 
 
-# Fidesctl Checks
+# Fides Checks
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fidesctl is installed."""
+    """Check that fides installs works correctly."""
     session.install(".")
-    run_command = ("fides", *(WITH_TEST_CONFIG), "--version")
+
+    run_command = ("fides", "--version")
+    session.run(*run_command)
+
+    run_command = ("python", "-c", "from fides.api.main import start_webserver")
     session.run(*run_command)
 
 
