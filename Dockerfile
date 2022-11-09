@@ -33,9 +33,6 @@ RUN apt-get update && \
 COPY dangerous-requirements.txt .
 RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
 
-COPY optional-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r optional-requirements.txt
-
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
 

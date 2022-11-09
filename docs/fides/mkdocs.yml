@@ -10,6 +10,12 @@ edit_uri: blob/main/docs/fides/docs/
 nav:
   - Fides:
       - What is Fides?: index.md
+      - Installation:
+        - Overview: installation/overview.md
+        - Requirements: installation/requirements.md
+        - PyPI: installation/pypi.md
+        - Docker: installation/docker.md
+        - Configuration: installation/configuration.md
       - Get Started with DSR Automation:
           - Sample Fides Application: getting-started/sample_project.md
           - Basic Setup: dsr_quickstart/basic_setup.md
@@ -93,7 +99,7 @@ nav:
       - Manage Users: ui/user_management.md
       - Privacy Center:  ui/privacy_center.md
       - Deployment: ui/deployment.md
-  - Fides Lang: https://ethyca.github.io/fideslang/
+  - Fides Lang Docs: https://ethyca.github.io/fideslang/
   - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md

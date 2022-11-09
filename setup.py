@@ -14,16 +14,13 @@ long_description = open("README.md", encoding="utf-8").read()
 
 install_requires = open("requirements.txt", encoding="utf-8").read().strip().split("\n")
 dev_requires = open("dev-requirements.txt", encoding="utf-8").read().strip().split("\n")
-optional_requires = (
-    open("optional-requirements.txt", encoding="utf-8").read().strip().split("\n")
-)
 dangerous_requires = (
     open("dangerous-requirements.txt", encoding="utf-8").read().strip().split("\n")
 )
 
 
 def optional_requirements(
-    dependency_names: List[str], requires: List[str] = optional_requires
+    dependency_names: List[str], requires: List[str] = dangerous_requires
 ) -> List[str]:
     """
     Matches the provided dependency names to lines in `optional-requirements.txt`,
@@ -49,15 +46,7 @@ def optional_requirements(
 # Human-Readable Extras
 # Versions are read from corresponding lines in `optional-requirements.txt`
 extras = {
-    "aws": optional_requirements(["boto3"]),
-    "bigquery": optional_requirements(["sqlalchemy-bigquery"]),
-    "mongo": optional_requirements(["pymongo"]),
     "mssql": optional_requirements(["pyodbc"], dangerous_requires),
-    "mysql": optional_requirements(["PyMySQL"]),
-    "okta": optional_requirements(["okta"]),
-    "redis": optional_requirements(["redis", "fastapi-caching[redis]"]),
-    "redshift": optional_requirements(["sqlalchemy-redshift"]),
-    "snowflake": optional_requirements(["snowflake-sqlalchemy"]),
 }
 dangerous_extras = ["mssql"]  # These extras break on certain platforms
 extras["all"] = sum(
