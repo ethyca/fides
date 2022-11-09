@@ -98,7 +98,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     create_config_file(ctx)
 
     # init also handles this workflow
-    if ctx.invoked_subcommand not in ["init", "deploy"]:
+    if ctx.invoked_subcommand not in ["init", "deploy", "webserver"]:
         check_and_update_analytics_config(ctx, config_path)
 
         # Analytics requires explicit opt-in
