@@ -40,7 +40,7 @@ class FidesConfig(BaseModel):
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings = DatabaseSettings()
+    database: DatabaseSettings
     execution: ExecutionSettings = ExecutionSettings()
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
@@ -213,10 +213,9 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     except IOError:
         echo_red("Error reading config file")
 
+    database_settings = DatabaseSettings()
     security_settings = SecuritySettings()
-    print("FIRST!!!!!!")
-    print(security_settings)
-    config = FidesConfig(security=security_settings)
+    config = FidesConfig(database=database_settings, security=security_settings)
     print("Using default configuration values.")
 
     return config
