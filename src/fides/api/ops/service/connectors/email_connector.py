@@ -16,6 +16,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, Policy, Rule
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -24,8 +25,8 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.connection_configuration import EmailSchema
 from fides.api.ops.schemas.messaging.messaging import (
+    EMAIL_MESSAGING_SERVICES,
     MessagingActionType,
-    MessagingMethod,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import BaseConnector
@@ -58,13 +59,20 @@ class EmailConnector(BaseConnector[None]):
 
         db = Session.object_session(self.configuration)
 
+        # email connector requires an email messaging config type
+        messaging_config: Optional[MessagingConfig] = MessagingConfig.filter(
+            db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
+        ).first()
+
         try:
             # synchronous for now since failure to send is considered a connection test failure
             dispatch_message(
                 db=db,
                 action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 to_identity=Identity(email=config.test_email),
-                messaging_method=MessagingMethod.EMAIL,
+                service_type=messaging_config.service_type
+                if messaging_config
+                else None,
                 message_body_params=[
                     CheckpointActionRequired(
                         step=CurrentStep.erasure,
@@ -199,11 +207,16 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
             return
 
+        # email connector requires an email messaging config type
+        messaging_config: Optional[MessagingConfig] = MessagingConfig.filter(
+            db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
+        ).first()
+
         dispatch_message(
             db,
             action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
             to_identity=Identity(email=cc.secrets.get("to_email")),
-            messaging_method=MessagingMethod.EMAIL,
+            service_type=messaging_config.service_type if messaging_config else None,
             message_body_params=template_values,
         )
 

@@ -75,7 +75,6 @@ from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.messaging import get_messaging_method
 from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -281,7 +280,7 @@ async def create_privacy_request(
         except Exception as exc:
             logger.error("Exception: %s", Pii(str(exc)))
             failure = {
-                "message": "This record could not be added",
+                "message": f"This record could not be added: {exc}",
                 "data": kwargs,
             }
             failed.append(failure)
@@ -323,9 +322,7 @@ def _send_privacy_request_receipt_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "messaging_method": get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
+            "service_type": CONFIG.notifications.notification_service_type,
             "to_identity": to_identity,
         },
     )
@@ -1177,9 +1174,7 @@ def _send_privacy_request_review_message_to_user(
                 if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "messaging_method": get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
+            "service_type": CONFIG.notifications.notification_service_type,
             "to_identity": to_identity,
         },
     )

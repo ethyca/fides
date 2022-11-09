@@ -602,7 +602,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
-            f"Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied. ('__root__',)"
+            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied. ('__root__',)"
             in response.json()["detail"]
         )
 
