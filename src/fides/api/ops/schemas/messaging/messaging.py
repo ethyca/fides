@@ -206,12 +206,12 @@ class MessagingConfigRequest(BaseModel):
         use_enum_values = False
         orm_mode = True
 
-    @root_validator
+    @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         # uppercase to match enums in database
         values["service_type"] = values.get("service_type").upper()  # type: ignore
         service_type: MessagingServiceType = values.get("service_type")  # type: ignore
-        if service_type == MessagingServiceType.MAILGUN:
+        if service_type == MessagingServiceType.MAILGUN.value:
             if not values.get("details"):
                 raise ValueError("Mailgun messaging config must include details")
         return values

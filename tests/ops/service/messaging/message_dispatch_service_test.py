@@ -69,7 +69,7 @@ def test_email_dispatch_mailgun_config_not_found(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
-    assert exc.value.args[0] == "No messaging config found."
+    assert exc.value.args[0] == "No messaging config found for service_type MAILGUN."
 
     mock_mailgun_dispatcher.assert_not_called()
 
@@ -182,7 +182,7 @@ def test_sms_dispatch_twilio_success(
     dispatch_message(
         db=db,
         action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-        to_identity=Identity(**{"phone": "+12312341231"}),
+        to_identity=Identity(**{"phone_number": "+12312341231"}),
         service_type=MessagingServiceType.TWILIO_TEXT.value,
         message_body_params=SubjectIdentityVerificationBodyParams(
             verification_code="2348", verification_code_ttl_seconds=600
@@ -208,7 +208,7 @@ def test_sms_dispatch_twilio_config_not_found(
         dispatch_message(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-            to_identity=Identity(**{"phone": "+12312341231"}),
+            to_identity=Identity(**{"phone_number": "+12312341231"}),
             service_type=MessagingServiceType.TWILIO_TEXT.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
@@ -239,7 +239,7 @@ def test_sms_dispatch_twilio_config_no_secrets(
         dispatch_message(
             db=db,
             action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-            to_identity=Identity(**{"phone": "+12312341231"}),
+            to_identity=Identity(**{"phone_number": "+12312341231"}),
             service_type=MessagingServiceType.TWILIO_TEXT.value,
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
