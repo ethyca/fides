@@ -214,7 +214,9 @@ def test_sms_dispatch_twilio_config_not_found(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
         )
-    assert exc.value.args[0] == "No messaging config found for service_type TWILIO_TEXT."
+    assert (
+        exc.value.args[0] == "No messaging config found for service_type TWILIO_TEXT."
+    )
 
     mock_twilio_dispatcher.assert_not_called()
 

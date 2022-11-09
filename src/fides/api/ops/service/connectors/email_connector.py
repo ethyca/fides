@@ -25,7 +25,6 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.connection_configuration import EmailSchema
 from fides.api.ops.schemas.messaging.messaging import (
-    EMAIL_MESSAGING_SERVICES,
     MessagingActionType,
     MessagingServiceType,
 )
@@ -234,7 +233,9 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
     Email connectors require that an email messaging service has been configured.
     Prefers Twilio if both Twilio email AND Mailgun has been configured.
     """
-    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(db=db).all()
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(
+        db=db
+    ).all()
     if not messaging_configs:
         # let messaging dispatch service handle non-existent service
         return None
