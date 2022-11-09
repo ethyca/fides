@@ -80,6 +80,7 @@ const EmailChipList = forwardRef(({ ...props }: FieldArrayRenderProps, ref) => {
                 borderRadius="full"
                 backgroundColor="primary.400"
                 color="white"
+                size="sm"
                 variant="solid"
               >
                 <TagLabel>{email}</TagLabel>
