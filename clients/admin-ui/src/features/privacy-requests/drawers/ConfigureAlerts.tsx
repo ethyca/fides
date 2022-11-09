@@ -11,10 +11,8 @@ import {
   DrawerHeader,
   DrawerOverlay,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   HStack,
-  Input,
   MenuItem,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -28,6 +26,7 @@ import {
 } from "@fidesui/react";
 import {
   Field,
+  FieldArray,
   FieldInputProps,
   FieldMetaProps,
   Form,
@@ -38,32 +37,29 @@ import {
 import { ChangeEvent, useRef } from "react";
 import * as Yup from "yup";
 
-import ChipEmailInput from "./ChipEmailInput";
+import EmailChipList from "./EmailChipList";
 
 const DEFAULT_MIN_ERROR_COUNT = 1;
 
-const initialValues = {
-  email: "",
-  notify: false,
-  minErrorCount: DEFAULT_MIN_ERROR_COUNT,
-};
-
-type FormValues = typeof initialValues;
-
 const validationSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Must be a valid email format")
-    .required("Email is required"),
+  emails: Yup.array(Yup.string())
+    .min(1, "Must enter at least one valid email")
+    .label("Email"),
   minErrorCount: Yup.number().required(),
 });
 
 const ConfigureAlerts = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialValues = {
+    emails: [] as string[],
+    notify: false,
+    minErrorCount: DEFAULT_MIN_ERROR_COUNT,
+  };
   const firstField = useRef(null);
 
   const handleSubmit = async (
-    values: FormValues,
-    helpers: FormikHelpers<FormValues>
+    values: typeof initialValues,
+    helpers: FormikHelpers<typeof initialValues>
   ) => {
     helpers.setSubmitting(false);
     onClose();
@@ -81,11 +77,9 @@ const ConfigureAlerts = () => {
         enableReinitialize
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        validateOnBlur={false}
-        validateOnChange={false}
         validationSchema={validationSchema}
       >
-        {(props: FormikProps<FormValues>) => (
+        {(props: FormikProps<typeof initialValues>) => (
           <Drawer
             isOpen={isOpen}
             placement="right"
@@ -117,44 +111,14 @@ const ConfigureAlerts = () => {
                   <Text fontSize="md">Contact details</Text>
                   <VStack align="stretch" gap="29px" mt="14px">
                     <HStack>
-                      {/* <Field id="email" name="email">
-                        {({
-                          field,
-                          meta,
-                        }: {
-                          field: FieldInputProps<string>;
-                          meta: FieldMetaProps<string>;
-                        }) => (
-                          <FormControl
-                            alignItems="baseline"
-                            display="inline-flex"
-                            isRequired
-                            isInvalid={!!(meta.error && meta.touched)}
-                          >
-                            <FormLabel fontSize="md" htmlFor="email" w="30%">
-                              Email
-                            </FormLabel>
-                            <VStack align="flex-start" w="inherit">
-                              <Input
-                                {...field}
-                                autoComplete="off"
-                                placeholder="Please enter email"
-                                ref={firstField}
-                                size="sm"
-                              />
-                              <FormErrorMessage>
-                                {props.errors.email}
-                              </FormErrorMessage>
-                            </VStack>
-                          </FormControl>
+                      <FieldArray
+                        name="emails"
+                        render={(fieldArrayProps) => (
+                          <EmailChipList
+                            {...fieldArrayProps}
+                            ref={firstField}
+                          />
                         )}
-                      </Field> */}
-                      <ChipEmailInput
-                        autoComplete="off"
-                        name="email"
-                        placeholder="Please enter email"
-                        ref={firstField}
-                        size="sm"
                       />
                     </HStack>
                     <HStack>
@@ -208,8 +172,8 @@ const ConfigureAlerts = () => {
                           <FormControl
                             alignItems="center"
                             display="flex"
-                            isRequired
                             isInvalid={!!(meta.error && meta.touched)}
+                            isRequired
                           >
                             <Text>Notify me after</Text>
                             <NumberInput
