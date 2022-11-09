@@ -8,6 +8,10 @@ def test_requests_ratelimited(api_client, cache):
     """
     Asserts that incremental HTTP requests above the ratelimit threshold are
     rebuffed from the API with a 429 response.
+
+    A theoretical failure condition exists in this test should the container
+    running it not be able to execute 100 requests against the client in a
+    one minute period.
     """
     ratelimit = int(CONFIG.security.request_rate_limit.split("/")[0])
     for _ in range(ratelimit):
