@@ -27,6 +27,7 @@ from fides.api.ops.schemas.connection_configuration import EmailSchema
 from fides.api.ops.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     MessagingActionType,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import BaseConnector
@@ -59,10 +60,7 @@ class EmailConnector(BaseConnector[None]):
 
         db = Session.object_session(self.configuration)
 
-        # email connector requires an email messaging config type
-        messaging_config: Optional[MessagingConfig] = MessagingConfig.filter(
-            db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
-        ).first()
+        email_service: Optional[str] = _get_email_messaging_config_service_type(db=db)
 
         try:
             # synchronous for now since failure to send is considered a connection test failure
@@ -70,9 +68,7 @@ class EmailConnector(BaseConnector[None]):
                 db=db,
                 action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 to_identity=Identity(email=config.test_email),
-                service_type=messaging_config.service_type
-                if messaging_config
-                else None,
+                service_type=email_service,
                 message_body_params=[
                     CheckpointActionRequired(
                         step=CurrentStep.erasure,
@@ -207,16 +203,13 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
             return
 
-        # email connector requires an email messaging config type
-        messaging_config: Optional[MessagingConfig] = MessagingConfig.filter(
-            db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
-        ).first()
+        email_service: Optional[str] = _get_email_messaging_config_service_type(db=db)
 
         dispatch_message(
             db,
             action_type=MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
             to_identity=Identity(email=cc.secrets.get("to_email")),
-            service_type=messaging_config.service_type if messaging_config else None,
+            service_type=email_service,
             message_body_params=template_values,
         )
 
@@ -234,3 +227,24 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
                 "message": f"Erasure email instructions dispatched for '{ds.dataset.get('fides_key')}'",
             },
         )
+
+
+def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
+    """
+    Email connectors require that an email messaging service has been configured.
+    Prefers Twilio if both Twilio email AND Mailgun has been configured.
+    """
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.filter(
+        db=db, conditions=MessagingConfig.service_type in EMAIL_MESSAGING_SERVICES
+    ).all()
+    if not messaging_configs:
+        # let messaging dispatch service handle non-existent service
+        return None
+    for messaging_config in messaging_configs:
+        if messaging_config.service_type == MessagingServiceType.TWILIO_EMAIL:
+            return MessagingServiceType.TWILIO_EMAIL.value
+        if messaging_config.service_type == MessagingServiceType.MAILGUN:
+            return MessagingServiceType.MAILGUN.value
+        logger.info("New email service type %s needs to be implemented in email connector", messaging_config.service_type)
+        return messaging_config.service_type
+    return None
