@@ -856,6 +856,25 @@ class ConsentRequest(Base):
             value,
             CONFIG.redis.identity_verification_code_ttl_seconds,
         )
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count",
+            0,
+            CONFIG.redis.identity_verification_code_ttl_seconds,
+        )
+
+    def increment_verification_code_attempt_count(self) -> None:
+        """Cache the generated identity verification code for later comparison."""
+        cache: FidesopsRedis = get_cache()
+        attempt_count: Optional[str] = self.get_cached_verification_code_attempt_count()
+        if attempt_count is None:
+            # This cache key has expired
+            return
+
+        cache.set_with_autoexpire(
+            f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count",
+            attempt_count + 1,
+            CONFIG.redis.identity_verification_code_ttl_seconds,
+        )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
@@ -873,14 +892,31 @@ class ConsentRequest(Base):
 
         return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
 
+    def get_cached_verification_code_attempt_count(self) -> Optional[str]:
+        """Retrieve the generated identity verification code if it exists"""
+        cache = get_cache()
+        values = (
+            cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count"])
+            or {}
+        )
+        if not values:
+            return None
+
+        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count", None)
+
     def verify_identity(self, provided_code: str) -> ConsentRequest:
         """Verify the identification code supplied by the user."""
+        attempt_count: Optional[str] = self.get_cached_verification_code_attempt_count()
         code: Optional[str] = self.get_cached_verification_code()
-        if not code:
+        if not code or not attempt_count:
             raise IdentityVerificationException(
                 f"Identification code expired for {self.id}."
             )
 
+        if attempt_count > CONFIG.security.identity_verification_attempt_limit:
+            raise PermissionError(f"Attempt limit hit for '{self.id}'")
+
+        self.increment_verification_code_attempt_count()
         if code != provided_code:
             raise PermissionError(f"Incorrect identification code for '{self.id}'")
 
