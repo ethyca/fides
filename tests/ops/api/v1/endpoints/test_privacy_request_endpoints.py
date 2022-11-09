@@ -3015,7 +3015,7 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
         assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
@@ -3123,7 +3123,7 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
         assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
