@@ -70,9 +70,6 @@ class PrivacyRequestCreate(BaseSchema):
         cls: "PrivacyRequestCreate", value: Optional[str] = None
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
-        if not CONFIG.security:
-            raise ValueError("No security configuration provided")
-
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value

@@ -40,9 +40,6 @@ CONFIG = get_config()
     response_model=str,
 )
 def get_encryption_key() -> str:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     logger.info("Generating encryption key")
     return cryptographic_util.generate_secure_random_string(
         CONFIG.security.aes_encryption_key_length
@@ -55,9 +52,6 @@ def get_encryption_key() -> str:
     response_model=AesEncryptionResponse,
 )
 def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionResponse:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     logger.info("Starting AES Encryption")
     nonce: bytes = secrets.token_bytes(CONFIG.security.aes_gcm_nonce_length)
 
@@ -77,9 +71,6 @@ def aes_encrypt(encryption_request: AesEncryptionRequest) -> AesEncryptionRespon
     response_model=AesDecryptionResponse,
 )
 def aes_decrypt(decryption_request: AesDecryptionRequest) -> AesDecryptionResponse:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     logger.info("Starting AES Decryption")
     nonce: bytes = b64_str_to_bytes(decryption_request.nonce)
 

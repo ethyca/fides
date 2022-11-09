@@ -100,9 +100,6 @@ async def get_user_permissions(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
 ) -> FidesUserPermissions:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     # A user is able to retrieve their own permissions.
     if current_user.id == user_id:
         # The root user is a special case because they aren't persisted in the database.

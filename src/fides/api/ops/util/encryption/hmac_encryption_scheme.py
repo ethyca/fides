@@ -57,9 +57,6 @@ def _hmac_sha512(value: str, hmac_key: str, salt: str) -> hmac.HMAC:
 
 
 def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> hmac.HMAC:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     return hmac.new(
         key=hmac_key.encode(CONFIG.security.encoding),
         msg=(value + salt).encode(CONFIG.security.encoding),

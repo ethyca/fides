@@ -134,9 +134,6 @@ class PrivacyRequestStatus(str, EnumType):
 
 def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     """Generate a JWE to be used to resume privacy request execution."""
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     jwe = WebhookJWE(
         webhook_id=webhook.id,
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
@@ -768,9 +765,6 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     A table for storing identity fields and values provided at privacy request
     creation time.
     """
-
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
 
     privacy_request_id = Column(
         String,

@@ -20,9 +20,6 @@ class UserRegistration(Base):
     Stores registration status of a particular Fides deployment.
     """
 
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     user_email = Column(
         StringEncryptedType(
             String,

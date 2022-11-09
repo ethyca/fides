@@ -60,9 +60,6 @@ from fides.ctl.core.config import get_config as get_ctl_config
 
 CONFIG: FidesConfig = get_ctl_config()
 
-if not CONFIG.security:
-    raise ValueError("No security configuration provided")
-
 logging.basicConfig(level=CONFIG.logging.level)
 logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)

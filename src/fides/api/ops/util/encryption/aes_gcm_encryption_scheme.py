@@ -22,9 +22,6 @@ def encrypt_to_bytes_verify_secrets_length(
 def _encrypt_to_bytes(plain_value: Optional[str], key: bytes, nonce: bytes) -> bytes:
     """Encrypts the value using the AES GCM Algorithm. Note that provided nonce must be 12 bytes.
     Returns encrypted value in bytes"""
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     if plain_value is None:
         raise ValueError("plain_value cannot be null")
     gcm = AESGCM(key)
@@ -51,9 +48,6 @@ def encrypt(plain_value: Optional[str], key: bytes, nonce: bytes) -> str:
 
 def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:
     """Decrypts a message when the nonce has been packaged together with the message"""
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     verify_encryption_key(key)
     gcm = AESGCM(key)
 
@@ -71,9 +65,6 @@ def decrypt_combined_nonce_and_message(encrypted_value: str, key: bytes) -> str:
 
 def decrypt(encrypted_value: str, key: bytes, nonce: bytes) -> str:
     """Decrypts the value using the AES GCM Algorithm"""
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     verify_encryption_key(key)
     verify_nonce(nonce)
 
@@ -85,9 +76,6 @@ def decrypt(encrypted_value: str, key: bytes, nonce: bytes) -> str:
 
 
 def verify_nonce(nonce: bytes) -> None:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     if len(nonce) != CONFIG.security.aes_gcm_nonce_length:
         raise ValueError(
             f"Nonce must be {CONFIG.security.aes_gcm_nonce_length} bytes long"
@@ -95,9 +83,6 @@ def verify_nonce(nonce: bytes) -> None:
 
 
 def verify_encryption_key(key: bytes) -> None:
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     if len(key) != CONFIG.security.aes_encryption_key_length:
         raise ValueError(
             f"Encryption key must be {CONFIG.security.aes_encryption_key_length} bytes long"

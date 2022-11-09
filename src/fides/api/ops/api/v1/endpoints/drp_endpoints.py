@@ -68,10 +68,7 @@ async def create_drp_privacy_request(
     a corresponding Fidesops PrivacyRequest
     """
 
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
-    jwt_key: str = CONFIG.security.drp_jwt_secret
+    jwt_key = CONFIG.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

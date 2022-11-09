@@ -34,9 +34,6 @@ LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
     """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     cache = get_cache()
     encryption_cache_key = get_encryption_cache_key(
         privacy_request_id=request_id,
@@ -70,9 +67,6 @@ def write_to_in_memory_buffer(
     :param data: Dict
     :param request_id: str, The privacy request id
     """
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     logger.info("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
@@ -112,9 +106,6 @@ def create_presigned_url_for_s3(
     :param object_name: string
     :return: Presigned URL as string.
     """
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     response = s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket_name, "Key": object_name},

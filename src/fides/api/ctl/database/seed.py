@@ -69,9 +69,6 @@ async def load_default_dsr_policies() -> None:
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
     """
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     with sync_session() as db_session:
 
         client = ClientDetail.get_by(

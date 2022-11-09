@@ -76,9 +76,6 @@ def get_schema_for_secrets(
 class MessagingConfig(Base):
     """The DB ORM model for MessagingConfig"""
 
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     key = Column(String, index=True, unique=True, nullable=False)
     name = Column(String, unique=True, index=True)
     service_type = Column(

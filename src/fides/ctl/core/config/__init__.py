@@ -45,7 +45,8 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: Optional[SecuritySettings] = None
+    security: SecuritySettings
+    # security: Optional[SecuritySettings] = None
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
@@ -212,6 +213,10 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     except IOError:
         echo_red("Error reading config file")
 
-    config = FidesConfig()
+    security_settings = SecuritySettings()
+    print("FIRST!!!!!!")
+    print(security_settings)
+    config = FidesConfig(security=security_settings)
     print("Using default configuration values.")
+
     return config

@@ -213,9 +213,6 @@ class Rule(Base):
         - Where to upload any retrieved data
     """
 
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     name = Column(String, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     policy_id = Column(

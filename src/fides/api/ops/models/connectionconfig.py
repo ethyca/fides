@@ -97,9 +97,6 @@ class ConnectionConfig(Base):
     Stores credentials to connect fidesops to an engineer's application databases.
     """
 
-    if not CONFIG.security:
-        raise ValueError("No security configuration provided")
-
     name = Column(String, index=True, unique=True, nullable=False)
     key = Column(String, index=True, unique=True, nullable=False)
     description = Column(String, index=True, nullable=True)
