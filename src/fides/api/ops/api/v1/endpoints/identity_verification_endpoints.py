@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import urn_registry as urls
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.schemas.identity_verification import (
     IdentityVerificationConfigResponse,
 )
@@ -27,8 +27,8 @@ def get_id_verification_config(
 ) -> IdentityVerificationConfigResponse:
     """Returns id verification config."""
     config = get_config()
-    email_config: Optional[EmailConfig] = db.query(EmailConfig).first()
+    messaging_config: Optional[MessagingConfig] = db.query(MessagingConfig).first()
     return IdentityVerificationConfigResponse(
         identity_verification_required=config.execution.subject_identity_verification_required,
-        valid_email_config_exists=bool(email_config and email_config.secrets),
+        valid_email_config_exists=bool(messaging_config and messaging_config.secrets),
     )
