@@ -26,5 +26,5 @@ def test_requests_ratelimited(api_client, cache):
         # Depending on what requests have been stored previously, the ratelimtier will
         # store keys in the format `LIMITER/fides-/127.0.0.1//health/100/1/minute`
         assert key.startswith(f"LIMITER/{CONFIG.security.rate_limit_prefix}")
-        # Reset the cache to not interere with any other tests
+        # Reset the cache to not interfere with any other tests
         cache.delete(key)
