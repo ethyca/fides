@@ -24,7 +24,7 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -40,6 +40,8 @@ def provided_identity_and_consent_request(db):
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
     yield provided_identity, consent_request
+    provided_identity.delete(db=db)
+    consent_request.delete(db=db)
 
 
 @pytest.fixture
@@ -443,7 +445,6 @@ class TestSaveConsent:
     )
     def test_set_consent_preferences_invalid_code_respects_attempt_count(
         self,
-        cache,
         provided_identity_and_consent_request,
         api_client,
         verification_code,

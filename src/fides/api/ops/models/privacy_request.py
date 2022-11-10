@@ -902,6 +902,12 @@ class ConsentRequest(Base):
             attempts = "0"
         return int(attempts)
 
+    def purge_verification_code(self) -> None:
+        """Removes any verification codes from the cache so they can no longer be used."""
+        cache = get_cache()
+        cache.delete(self._get_identity_verification_cache_key())
+        cache.delete(self._get_identity_verification_attempt_count_cache_key())
+
     def verify_identity(self, provided_code: str) -> ConsentRequest:
         """Verify the identification code supplied by the user."""
         code: Optional[str] = self.get_cached_verification_code()
@@ -913,16 +919,16 @@ class ConsentRequest(Base):
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
             # When the attempt_count we can remove the verification code entirely
-            # from the cache to ensure it can never be used again
-            cache = get_cache()
-            cache.delete(self._get_identity_verification_cache_key())
-            cache.delete(self._get_identity_verification_attempt_count_cache_key())
+            # from the cache to ensure it can never be used again.
+            self.purge_verification_code()
             raise PermissionError(f"Attempt limit hit for '{self.id}'")
 
         self._increment_verification_code_attempt_count()
         if code != provided_code:
             raise PermissionError(f"Incorrect identification code for '{self.id}'")
 
+        # This code should only be successfully used once, so purge here now that's happened.
+        self.purge_verification_code()
         return self
 
 
