@@ -5,12 +5,13 @@ config sections into a single config.
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, MutableMapping, Optional, Tuple
 
 import toml
 from fideslib.core.config import load_toml
 from loguru import logger as log
 from pydantic import BaseModel
+from pydantic.env_settings import SettingsSourceCallable
 
 from fides.ctl.core.utils import echo_red
 
@@ -40,12 +41,12 @@ class FidesConfig(BaseModel):
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings
+    database: DatabaseSettings = DatabaseSettings()
     execution: ExecutionSettings = ExecutionSettings()
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings
+    security: SecuritySettings = SecuritySettings()
     # security: Optional[SecuritySettings] = None
     user: UserSettings = UserSettings()
 
@@ -57,6 +58,16 @@ class FidesConfig(BaseModel):
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
+
+        @classmethod
+        def customise_sources(
+            cls,
+            init_settings: SettingsSourceCallable,
+            env_settings: SettingsSourceCallable,
+            file_secret_settings: SettingsSourceCallable,
+        ) -> Tuple[SettingsSourceCallable, ...]:
+            """Set environment variables to take precedence over init values."""
+            return env_settings, init_settings, file_secret_settings
 
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
@@ -213,9 +224,10 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     except IOError:
         echo_red("Error reading config file")
 
-    database_settings = DatabaseSettings()
-    security_settings = SecuritySettings()
-    config = FidesConfig(database=database_settings, security=security_settings)
+    # database_settings = DatabaseSettings()
+    # security_settings = SecuritySettings()
+    # config = FidesConfig(database=database_settings, security=security_settings)
+    config = FidesConfig()
     print("Using default configuration values.")
 
     return config
