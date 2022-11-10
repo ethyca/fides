@@ -9,6 +9,22 @@ from fides.ctl.core.api import generate_resource_url
 from fides.ctl.core.config import FidesConfig
 
 
+@pytest.fixture(scope="function", name="data_category")
+def fixture_data_category(test_config: FidesConfig, test_client) -> Generator:
+    """
+    Fixture that yields a data category and then deletes it for each test run.
+    """
+    fides_key = "foo"
+    yield DataCategory(fides_key=fides_key, parent_key=None)
+
+    test_client.delete(
+        generate_resource_url(
+            test_config.cli.server_url, "data_category", resource_id=fides_key
+        ),
+        headers=test_config.user.request_headers,
+    )
+
+
 @pytest.mark.unit
 class TestFilterDataCategories:
     def test_filter_data_categories_excluded(self) -> None:
