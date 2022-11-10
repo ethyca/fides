@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Added
+
+* Classification flow for system data flows
+  * Classification is now triggered as part of data flow scanning
 ### Changed
 
 * Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
