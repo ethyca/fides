@@ -2952,6 +2952,11 @@ class TestVerifyIdentity:
             )
             assert not mock_dispatch_message.called
 
+        assert (
+            privacy_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+
         request_body = {"code": VERIFICATION_CODE}
         resp = api_client.post(url, headers={}, json=request_body)
         assert resp.status_code == 403
