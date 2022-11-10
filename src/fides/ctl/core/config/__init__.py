@@ -3,12 +3,6 @@ This module is responsible for combining all of the different
 config sections into a single config.
 """
 
-# pylint: disable=wrong-import-order, wrong-import-position
-
-import pydantic
-
-pydantic.class_validators._FUNCS.clear()  # pylint: disable=protected-access
-
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
@@ -18,6 +12,7 @@ import toml
 from fideslib.core.config import load_toml
 from loguru import logger as log
 from pydantic import BaseModel
+from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
 from fides.ctl.core.utils import echo_red
@@ -200,6 +195,8 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     On failure, returns default configuration.
     """
+
+    _FUNCS.clear()
 
     env_config_path = getenv("FIDES__CONFIG_PATH")
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
