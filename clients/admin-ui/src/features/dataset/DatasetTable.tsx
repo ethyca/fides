@@ -1,15 +1,7 @@
-import {
-  Badge,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tooltip,
-  Tr,
-} from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
+import ClassificationStatusBadge from "~/features/common/ClassificationStatusBadge";
 import { useFeatures } from "~/features/common/features.slice";
 import {
   selectClassifyInstanceMap,
@@ -17,7 +9,6 @@ import {
 } from "~/features/common/plus.slice";
 import { Dataset } from "~/types/api";
 
-import { STATUS_DISPLAY } from "./constants";
 import {
   selectActiveDatasetFidesKey,
   setActiveDatasetFidesKey,
@@ -64,8 +55,6 @@ const DatasetsTable = () => {
             activeDatasetFidesKey === dataset.fides_key;
 
           const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
-          const statusDisplay =
-            STATUS_DISPLAY[classifyDataset?.status ?? "unknown"];
 
           return (
             <Tr
@@ -85,16 +74,11 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
-              <Td pl={1}>
-                <Tooltip label={statusDisplay.tooltip}>
-                  <Badge
-                    variant="solid"
-                    colorScheme={statusDisplay.color}
-                    data-testid={`dataset-status-${dataset.fides_key}`}
-                  >
-                    {statusDisplay.title}
-                  </Badge>
-                </Tooltip>
+              <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+                <ClassificationStatusBadge
+                  resource="dataset"
+                  status={classifyDataset?.status}
+                />
               </Td>
             </Tr>
           );

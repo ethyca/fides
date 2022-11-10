@@ -1,5 +1,3 @@
-import { ClassificationStatus } from "~/types/api";
-
 export const DATA_QUALIFIERS = [
   {
     key: "aggregated",
@@ -77,45 +75,5 @@ export const FIELD = {
   data_categories: {
     tooltip:
       "Arrays of Data Category resources, identified by fides_key, that apply to this field.",
-  },
-};
-
-/**
- * Details to display about datasets based on status. Status is currently only determined by the
- * classification feature.
- */
-export const STATUS_DISPLAY = {
-  [ClassificationStatus.PROCESSING]: {
-    title: "Processing",
-    tooltip:
-      "This dataset is currently being generated and classified. You will be notified when this process is complete",
-    color: "orange",
-  },
-  [ClassificationStatus.CREATED]: {
-    title: "Processing",
-    tooltip:
-      "This dataset is currently being generated and classified. You will be notified when this process is complete",
-    color: "orange",
-  },
-  [ClassificationStatus.COMPLETE]: {
-    title: "Awaiting Review",
-    tooltip:
-      "This dataset has been automatically classified. Review the results and update the dataset.",
-    color: "orange",
-  },
-  [ClassificationStatus.REVIEWED]: {
-    title: "Classified",
-    tooltip: "This dataset has been classified.",
-    color: "green",
-  },
-  [ClassificationStatus.FAILED]: {
-    title: "Failed",
-    tooltip: "This dataset must be manually updated.",
-    color: "red",
-  },
-  unknown: {
-    title: "Unknown",
-    tooltip: "This dataset must be manually updated.",
-    color: "gray",
   },
 };
