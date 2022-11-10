@@ -21,6 +21,7 @@ import { PrivacyRequestStatus } from "~/types";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
 import { hostUrl } from "~/constants";
+import PhoneInput from "react-phone-number-input/input";
 import config from "../../../config/config.json";
 
 import { ModalViews } from "../types";
@@ -147,7 +148,7 @@ const usePrivacyRequestForm = ({
       if (!values.name && action.identity_inputs.name === "required") {
         errors.name = "Required";
       }
-
+      console.log(values)
       if (!values.phone && action.identity_inputs.phone === "required") {
         errors.phone = "Required";
       }
@@ -263,28 +264,28 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
               </FormControl>
             ) : null}
             {action.identity_inputs.phone ? (
-              <FormControl
-                id="phone"
-                isInvalid={touched.phone && Boolean(errors.phone)}
-              >
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="phone"
-                  focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.phone === "required"
-                      ? "Phone*"
-                      : "Phone"
-                  }
-                  isRequired={action.identity_inputs.phone === "required"}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.phone}
-                  isInvalid={touched.phone && Boolean(errors.phone)}
+                <FormControl
+                    id="phone"
+                    isInvalid={touched.phone && Boolean(errors.phone)}
+                >
+                <PhoneInput
+                    // id="phone"
+                    // name="phone"
+                    // type="phone"
+                    // focusBorderColor="primary.500"
+                    placeholder={
+                      action.identity_inputs.phone === "required"
+                          ? "Phone*"
+                          : "Phone"
+                    }
+                    onChange={handleChange}  // fixme- this onChange handler isn't being called
+                    // onBlur={handleBlur}
+                    value={values.phone}
+                    // inputComponent={Input}
+                    // isInvalid={touched.phone && Boolean(errors.phone)}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
-              </FormControl>
+                </FormControl>
             ) : null}
           </Stack>
         </ModalBody>
