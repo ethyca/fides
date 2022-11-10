@@ -268,7 +268,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                     id="phone"
                     isInvalid={touched.phone && Boolean(errors.phone)}
                 >
-                <PhoneInput
+                <Input as={PhoneInput}
                     // id="phone"
                     // name="phone"
                     // type="phone"
@@ -278,7 +278,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                           ? "Phone*"
                           : "Phone"
                     }
-                    onChange={handleChange}  // fixme- this onChange handler isn't being called
+                    onChange={console.log}  // fixme- this onChange handler isn't being called
                     // onBlur={handleBlur}
                     value={values.phone}
                     // inputComponent={Input}
