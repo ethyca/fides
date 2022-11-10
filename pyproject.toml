@@ -134,6 +134,7 @@ output-format="colorized"
 
 [tool.pylint.format]
 max-line-length="88"
+max-module-lines="1500"
 
 [tool.pylint.basic]
 good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
