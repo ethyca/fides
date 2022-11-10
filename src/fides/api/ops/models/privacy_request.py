@@ -912,6 +912,11 @@ class ConsentRequest(Base):
 
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
+            # When the attempt_count we can remove the verification code entirely
+            # from the cache to ensure it can never be used again
+            cache = get_cache()
+            cache.delete(self._get_identity_verification_cache_key())
+            cache.delete(self._get_identity_verification_attempt_count_cache_key())
             raise PermissionError(f"Attempt limit hit for '{self.id}'")
 
         self._increment_verification_code_attempt_count()
