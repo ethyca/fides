@@ -59,6 +59,7 @@ from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 
 CONFIG: FidesConfig = get_ctl_config()
+print("CONFIG LOADED IN MAIN")
 
 logging.basicConfig(level=CONFIG.logging.level)
 logging.setLogRecordFactory(get_fides_log_record_factory())

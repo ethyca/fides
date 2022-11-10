@@ -32,6 +32,8 @@ from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fides.ctl.core import api
 from fides.ctl.core.config import FidesConfig, get_config
 
+print("CONFIG IMPORT SUCCESSFUL IN TESTS")
+
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
