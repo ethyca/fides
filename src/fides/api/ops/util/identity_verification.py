@@ -72,7 +72,7 @@ class IdentityVerificationMixin:
         cache.delete(self._get_identity_verification_cache_key())
         cache.delete(self._get_identity_verification_attempt_count_cache_key())
 
-    def verify_identity(self, provided_code: str) -> object:
+    def _verify_identity(self, provided_code: str) -> object:
         """Verify the identification code supplied by the user."""
         code: Optional[str] = self.get_cached_verification_code()
         if not code:
@@ -94,3 +94,9 @@ class IdentityVerificationMixin:
         # This code should only be successfully used once, so purge here now that's happened.
         self.purge_verification_code()
         return self
+
+    def verify_identity(self, provided_code: str) -> object:
+        """
+        A default method for verifying identities that can be overloaded with other actions.
+        """
+        return self._verify_identity(provided_code=provided_code)

@@ -143,7 +143,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
 
 
-class PrivacyRequest(Base):  # pylint: disable=R0904
+class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
     database record representing the request's progression within the Fides system.
@@ -316,14 +316,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
 
-        code: Optional[str] = self.get_cached_verification_code()
-        if not code:
-            raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
-            )
-
-        if code != provided_code:
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+        self._verify_identity(provided_code=provided_code)
 
         self.status = PrivacyRequestStatus.pending
         self.identity_verified_at = datetime.utcnow()
@@ -613,26 +606,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
             Dict[str, Optional[GraphRepr]]
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
-
-    def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
-        )
-
-    def get_cached_verification_code(self) -> Optional[str]:
-        """Retrieve the generated identity verification code if it exists"""
-        cache: FidesopsRedis = get_cache()
-        values: Optional[Dict[str, Any]] = (
-            cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
-        )
-        if not values:
-            return None
-
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
 
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
