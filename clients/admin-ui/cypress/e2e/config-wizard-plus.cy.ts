@@ -81,6 +81,11 @@ describe.skip("Config wizard with plus settings", () => {
       cy.getByTestId("systems-classify-table");
       cy.url().should("contain", "classify-systems");
       cy.wait("@getClassifyList");
+
+      // Check that the classified systems have a status
+      cy.getByTestId("status-vzmgr-service").contains("Awaiting Review");
+      cy.getByTestId("status-kube-dns").contains("Awaiting Review");
+      cy.getByTestId("status-pl-elastic-es-transport").contains("Unknown");
     });
 
     it("Can register a subset of systems", () => {
