@@ -72,27 +72,6 @@ jobs:
         run: nox -s ${{ matrix.session_name }}
 
   ################
-  ## DEBUGGING: REMOVE WHEN DONE ##
-  ################
-  debug:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          python-version: 3.10.7
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Build container
-        run: nox -s "build(dev)"
-
-      - name: Run test suite
-        run: nox -s "pytest_ctl(not-external)"
-
-  ################
   ## Safe Tests ##
   ################
   Safe-Tests:
