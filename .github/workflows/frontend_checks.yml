@@ -5,6 +5,9 @@ on:
     paths:
       - "clients/**"
       - ".github/workflows/frontend_pr_checks.yml"
+  push:
+    branches:
+      - "main"
 
 env:
   CI: true
@@ -14,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.x ]
+        node-version: [16.x]
     defaults:
       run:
         working-directory: clients/admin-ui
@@ -69,6 +72,12 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cypress-videos
+          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
 
   Privacy-Center-Unit:
     runs-on: ubuntu-latest

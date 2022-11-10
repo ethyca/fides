@@ -4,18 +4,13 @@ Contains all of the endpoints required to manage generating resources.
 from enum import Enum
 from typing import Dict, List, Optional, Union
 
-from fastapi import HTTPException, Response, status
+from fastapi import HTTPException, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, root_validator
 
 from fides.api.ctl.database.crud import get_resource
-from fides.api.ctl.routes.util import (
-    API_PREFIX,
-    route_requires_aws_connector,
-    route_requires_bigquery_connector,
-    route_requires_okta_connector,
-)
+from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.api_router import APIRouter
 from fides.ctl.connectors.models import (
@@ -115,7 +110,7 @@ router = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
     },
 )
 async def generate(
-    generate_request_payload: GenerateRequestPayload, response: Response
+    generate_request_payload: GenerateRequestPayload,
 ) -> GenerateResponse:
     """
     A multi-purpose endpoint to generate Fides resources based on existing
@@ -136,36 +131,43 @@ async def generate(
     organization = await get_resource(
         sql_model_map["organization"], generate_request_payload.organization_key
     )
+    generate_config = generate_request_payload.generate.config
+    generate_target = generate_request_payload.generate.target.lower()
+
     try:
-        if generate_request_payload.generate.target.lower() == "aws":
+        if generate_target == "aws" and isinstance(generate_config, AWSConfig):
             generate_results = generate_aws(
-                aws_config=generate_request_payload.generate.config,
+                aws_config=generate_config,
                 organization=organization,
             )
-        elif generate_request_payload.generate.target.lower() == "db" and isinstance(
-            generate_request_payload.generate.config, DatabaseConfig
-        ):
+
+        elif generate_target == "db" and isinstance(generate_config, DatabaseConfig):
             generate_results = generate_db(
-                db_config=generate_request_payload.generate.config,
+                db_config=generate_config,
             )
-        elif generate_request_payload.generate.target.lower() == "okta":
+
+        elif generate_target == "okta" and isinstance(generate_config, OktaConfig):
             generate_results = await generate_okta(
-                okta_config=generate_request_payload.generate.config,
+                okta_config=generate_config,
                 organization=organization,
             )
-        elif generate_request_payload.generate.target.lower() == "bigquery":
+
+        elif generate_target == "bigquery" and isinstance(
+            generate_config, BigQueryConfig
+        ):
             generate_results = generate_bigquery(
-                bigquery_config=generate_request_payload.generate.config,
+                bigquery_config=generate_config,
             )
+
     except ConnectorAuthFailureException as error:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(error),
         )
+
     return GenerateResponse(generate_results=generate_results)
 
 
-@route_requires_aws_connector
 def generate_aws(
     aws_config: AWSConfig, organization: Organization
 ) -> List[Dict[str, str]]:
@@ -189,7 +191,6 @@ def generate_aws(
     return [i.dict(exclude_none=True) for i in aws_systems]
 
 
-@route_requires_okta_connector
 async def generate_okta(
     okta_config: OktaConfig, organization: Organization
 ) -> List[Dict[str, str]]:
@@ -231,7 +232,6 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     return [i.dict(exclude_none=True) for i in db_datasets]
 
 
-@route_requires_bigquery_connector
 def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
     """
     Returns a list of datasets found in a BigQuery dataset

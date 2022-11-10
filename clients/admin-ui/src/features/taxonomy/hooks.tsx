@@ -122,6 +122,14 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
     legitimate_interest: !!(
       formValues.legitimate_interest?.toString() === "true"
     ),
+    legal_basis:
+      formValues.legal_basis?.toString() === ""
+        ? undefined
+        : formValues.legal_basis,
+    special_category:
+      formValues.special_category?.toString() === ""
+        ? undefined
+        : formValues.special_category,
   });
 
   const [handleDelete] = useDeleteDataUseMutation();
@@ -156,11 +164,13 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
         name="legal_basis"
         label={labels.legal_basis}
         options={legalBases}
+        isClearable
       />
       <CustomSelect
         name="special_category"
         label={labels.special_category}
         options={specialCategories}
+        isClearable
       />
       <CustomCreatableMultiSelect
         name="recipients"

@@ -871,8 +871,8 @@ dataset:
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
-  - name: emailconfig
-    description: 'Fides Generated Description for Table: emailconfig'
+  - name: messagingconfig
+    description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:

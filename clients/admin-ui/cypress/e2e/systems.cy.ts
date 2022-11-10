@@ -5,10 +5,8 @@ import {
 } from "cypress/support/stubs";
 
 describe("System management page", () => {
-  before(() => {
-    cy.login();
-  });
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
       "getSystems"
     );

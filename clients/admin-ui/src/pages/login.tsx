@@ -97,7 +97,7 @@ const Login: NextPage = () => {
         <div>
           <Head />
 
-          <main>
+          <main data-testid="Login">
             <Stack
               spacing={16}
               mx="auto"
