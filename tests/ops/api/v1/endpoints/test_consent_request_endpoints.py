@@ -418,7 +418,10 @@ class TestSaveConsent:
         "subject_identity_verification_required",
     )
     def test_set_consent_preferences_invalid_code(
-        self, provided_identity_and_consent_request, api_client, verification_code
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -434,6 +437,50 @@ class TestSaveConsent:
         )
         assert response.status_code == 403
         assert "Incorrect identification" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_set_consent_preferences_invalid_code_respects_attempt_count(
+        self,
+        cache,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        data = {
+            "code": "12345",
+            "identity": {"email": "test@email.com"},
+            "consent": [{"data_use": "email", "opt_in": True}],
+        }
+        for _ in range(0, CONFIG.security.identity_verification_attempt_limit):
+            response = api_client.patch(
+                f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+                json=data,
+            )
+            assert response.status_code == 403
+            assert "Incorrect identification" in response.json()["detail"]
+
+        data["code"] = verification_code
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+        assert response.status_code == 403
+        assert (
+            response.json()["detail"] == f"Attempt limit hit for '{consent_request.id}'"
+        )
+        assert (
+            consent_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+        cache.delete(
+            consent_request._get_identity_verification_attempt_count_cache_key()
+        )
+        assert consent_request._get_cached_verification_code_attempt_count() == 0
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
