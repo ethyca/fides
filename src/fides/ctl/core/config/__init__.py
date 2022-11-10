@@ -2,6 +2,13 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
+
+# pylint: disable=wrong-import-order, wrong-import-position
+
+import pydantic
+
+pydantic.class_validators._FUNCS.clear()  # pylint: disable=protected-access
+
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
