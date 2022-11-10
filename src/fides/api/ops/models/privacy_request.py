@@ -848,16 +848,22 @@ class ConsentRequest(Base):
         back_populates="consent_request",
     )
 
+    def _get_identity_verification_cache_key(self) -> str:
+        return f"IDENTITY_VERIFICATION_CODE__{self.id}"
+
+    def _get_identity_verification_attempt_count_cache_key(self) -> str:
+        return self._get_identity_verification_cache_key() + "__attempt_count"
+
     def cache_identity_verification_code(self, value: str) -> None:
         """Cache the generated identity verification code for later comparison."""
         cache: FidesopsRedis = get_cache()
         cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
+            self._get_identity_verification_cache_key(),
             value,
             CONFIG.redis.identity_verification_code_ttl_seconds,
         )
         cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count",
+            self._get_identity_verification_attempt_count_cache_key(),
             0,
             CONFIG.redis.identity_verification_code_ttl_seconds,
         )
@@ -867,7 +873,7 @@ class ConsentRequest(Base):
         cache: FidesopsRedis = get_cache()
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count",
+            self._get_identity_verification_attempt_count_cache_key(),
             attempt_count + 1,
             CONFIG.redis.identity_verification_code_ttl_seconds,
         )
@@ -882,16 +888,16 @@ class ConsentRequest(Base):
     def get_cached_verification_code(self) -> Optional[str]:
         """Retrieve the generated identity verification code if it exists"""
         cache = get_cache()
-        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
+        values = cache.get_values([self._get_identity_verification_cache_key()]) or {}
         if not values:
             return None
 
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
+        return values.get(self._get_identity_verification_cache_key(), None)
 
     def _get_cached_verification_code_attempt_count(self) -> int:
         """Retrieve the generated identity verification code if it exists"""
         cache = get_cache()
-        attempts = cache.get(f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count")
+        attempts = cache.get(self._get_identity_verification_attempt_count_cache_key())
         if not attempts:
             attempts = "0"
         return int(attempts)
@@ -905,7 +911,7 @@ class ConsentRequest(Base):
             )
 
         attempt_count: int = self._get_cached_verification_code_attempt_count()
-        if attempt_count > CONFIG.security.identity_verification_attempt_limit:
+        if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
             raise PermissionError(f"Attempt limit hit for '{self.id}'")
 
         self._increment_verification_code_attempt_count()
