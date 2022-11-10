@@ -227,7 +227,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     # database_settings = DatabaseSettings()
     security_settings = SecuritySettings()
     # config = FidesConfig(database=database_settings, security=security_settings)
-    config = FidesConfig()
+    config = FidesConfig(security=security_settings)
     print("Using default configuration values.")
 
     return config
