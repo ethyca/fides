@@ -865,7 +865,7 @@ class ConsentRequest(Base):
     def _increment_verification_code_attempt_count(self) -> None:
         """Cache the generated identity verification code for later comparison."""
         cache: FidesopsRedis = get_cache()
-        attempt_count: int = self.get_cached_verification_code_attempt_count()
+        attempt_count: int = self._get_cached_verification_code_attempt_count()
         cache.set_with_autoexpire(
             f"IDENTITY_VERIFICATION_CODE__{self.id}__attempt_count",
             attempt_count + 1,
