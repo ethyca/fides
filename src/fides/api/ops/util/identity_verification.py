@@ -81,7 +81,7 @@ class IdentityVerificationMixin:
         cache.delete(self._get_identity_verification_cache_key())
         cache.delete(self._get_identity_verification_attempt_count_cache_key())
 
-    def _verify_identity(self, provided_code: str) -> object:
+    def _verify_identity(self, provided_code: str) -> None:
         """Verify the identification code supplied by the user."""
         code: Optional[str] = self.get_cached_verification_code()
         if not code:
@@ -103,5 +103,3 @@ class IdentityVerificationMixin:
         if code != provided_code:
             self._increment_verification_code_attempt_count()
             raise PermissionError(f"Incorrect identification code for '{self.id}'")
-
-        return self

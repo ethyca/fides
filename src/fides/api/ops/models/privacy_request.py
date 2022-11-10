@@ -829,12 +829,12 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def verify_identity(self, provided_code: str) -> object:
+    def verify_identity(self, provided_code: str) -> None:
         """
         A method to call the internal identity verification method provided by the
         `IdentityVerificationMixin`.
         """
-        return self._verify_identity(provided_code=provided_code)
+        self._verify_identity(provided_code=provided_code)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
