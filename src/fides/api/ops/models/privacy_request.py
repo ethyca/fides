@@ -858,14 +858,12 @@ class ConsentRequest(Base):
         """Cache the generated identity verification code for later comparison."""
         cache: FidesopsRedis = get_cache()
         cache.set_with_autoexpire(
-            self._get_identity_verification_cache_key(),
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
+            key=self._get_identity_verification_cache_key(),
+            value=value,
         )
         cache.set_with_autoexpire(
-            self._get_identity_verification_attempt_count_cache_key(),
-            0,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
+            key=self._get_identity_verification_attempt_count_cache_key(),
+            value=0,
         )
 
     def _increment_verification_code_attempt_count(self) -> None:
@@ -873,9 +871,8 @@ class ConsentRequest(Base):
         cache: FidesopsRedis = get_cache()
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         cache.set_with_autoexpire(
-            self._get_identity_verification_attempt_count_cache_key(),
-            attempt_count + 1,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
+            key=self._get_identity_verification_attempt_count_cache_key(),
+            value=attempt_count + 1,
         )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
