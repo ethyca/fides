@@ -72,6 +72,33 @@ jobs:
         run: nox -s ${{ matrix.session_name }}
 
   ################
+  ## DEBUGGING: REMOVE WHEN DONE ##
+  ################
+  debug:
+    needs: Build
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download container
+        uses: actions/download-artifact@v3
+        with:
+          name: python-10
+          path: /tmp/
+
+      - name: Load image
+        run: docker load --input /tmp/python-3.10.7.tar
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Run test suite
+        run: nox -s "pytest_ctl(not-external"
+
+  ################
   ## Safe Tests ##
   ################
   Safe-Tests:
