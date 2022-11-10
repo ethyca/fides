@@ -196,6 +196,8 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     On failure, returns default configuration.
     """
 
+    # This prevents a Pydantic validator reuse error. For context see
+    # https://github.com/streamlit/streamlit/issues/3218
     _FUNCS.clear()
 
     env_config_path = getenv("FIDES__CONFIG_PATH")
