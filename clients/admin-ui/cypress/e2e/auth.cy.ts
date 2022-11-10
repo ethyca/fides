@@ -61,6 +61,10 @@ describe("User Authentication", () => {
       cy.visit("/system");
       cy.getByTestId("Systems");
 
+      cy.intercept("POST", "/api/v1/logout", {
+        statusCode: 204,
+      });
+
       cy.getByTestId("header-menu-button").click();
       cy.getByTestId("header-menu-sign-out").click();
 

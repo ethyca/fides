@@ -10,7 +10,7 @@ The instance you use for running Fides should simulate a "typical" developer mac
 ### Instance requirements
 Your instance must: 
 
-* Have [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later) or [Python](https://www.python.org/downloads/) (version 3.9 or later) installed
+* Have [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later) or [Python](https://www.python.org/downloads/) (version 3.8, 3.9, or 3.10) installed
 * Have a hard drive to persist database volumes, YAML resource files, etc.
 * Be accessible for interactive shell commands (e.g. SSH)
 * Be accessible via HTTP for web browser commands
