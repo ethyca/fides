@@ -73,6 +73,10 @@ class IdentityVerificationMixin:
 
     def purge_verification_code(self) -> None:
         """Removes any verification codes from the cache so they can no longer be used."""
+        logger.debug(
+            "Removing cached identity verification code for record with ID: %s"
+            % self.id
+        )
         cache = get_cache()
         cache.delete(self._get_identity_verification_cache_key())
         cache.delete(self._get_identity_verification_attempt_count_cache_key())
@@ -87,6 +91,10 @@ class IdentityVerificationMixin:
 
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
+            logger.debug(
+                "Failed identity verification attempt limit exceeded for record with ID: %s"
+                % self.id
+            )
             # When the attempt_count we can remove the verification code entirely
             # from the cache to ensure it can never be used again.
             self.purge_verification_code()
