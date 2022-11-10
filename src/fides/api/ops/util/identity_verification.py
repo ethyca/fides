@@ -100,10 +100,8 @@ class IdentityVerificationMixin:
             self.purge_verification_code()
             raise PermissionError(f"Attempt limit hit for '{self.id}'")
 
-        self._increment_verification_code_attempt_count()
         if code != provided_code:
+            self._increment_verification_code_attempt_count()
             raise PermissionError(f"Incorrect identification code for '{self.id}'")
 
-        # This code should only be successfully used once, so purge here now that's happened.
-        self.purge_verification_code()
         return self
