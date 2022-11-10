@@ -22,6 +22,10 @@ The types of changes are:
 * Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
 * All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
 
+### Developer Experience
+
+* Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
+
 ### Removed
 
 * Removed the `view` endpoint for evaluations [#1703](https://github.com/ethyca/fides/pull/1703)
