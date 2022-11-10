@@ -21,11 +21,16 @@ class IdentityVerificationMixin:
     """
 
     def _get_identity_verification_cache_key(self) -> str:
-        """ """
+        """
+        Returns the cache key at which the identity verification code is stored.
+        """
         return f"IDENTITY_VERIFICATION_CODE__{self.id}"
 
     def _get_identity_verification_attempt_count_cache_key(self) -> str:
-        """ """
+        """
+        Returns the cache key at which the attempt count for this request's identity
+        verification is stored.
+        """
         return self._get_identity_verification_cache_key() + "__attempt_count"
 
     def cache_identity_verification_code(self, value: str) -> None:
