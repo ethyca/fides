@@ -13,7 +13,7 @@
       "identity_inputs": {
         "name": "optional",
         "email": "required",
-        "phone": "required"
+        "phone": "optional"
       }
     },
     {

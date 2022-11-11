@@ -64,7 +64,7 @@ const usePrivacyRequestForm = ({
         {
           identity: {
             email: values.email,
-            phone_number: values.phone.replace(/[^\d]/g, ""),
+            phone_number: values.phone,
             // enable this when name field is supported on the server
             // name: values.name
           },
