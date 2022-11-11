@@ -215,6 +215,7 @@ The `fides.toml` file should specify the following variables:
 | `subject_request_download_link_ttl_seconds` | int | `432000` | The number of seconds that a pre-signed download URL when using S3 storage will be valid. |
 | `request_rate_limit` | str | `100/minute` | The number of requests from a single IP address allowed to hit an endpoint within a rolling 60 second period. |
 | `rate_limit_prefix` | str | `fides-` | The prefix given to keys in the Redis cache used by the rate limiter. |
+| `identity_verification_attempt_limit` | int | `3` | The number of identity verification attempts to allow. |
 
 #### Execution
 
