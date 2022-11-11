@@ -136,7 +136,7 @@ def dispatch_message(
     )
 
 
-def _build_sms(
+def _build_sms(  # pylint: disable=too-many-return-statements
     action_type: MessagingActionType,
     body_params: Any,
 ) -> str:
