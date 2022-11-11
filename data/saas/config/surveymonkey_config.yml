@@ -1,0 +1,124 @@
+saas_config:
+    fides_key: <instance_fides_key>
+    name: Surveymonkey SaaS Config
+    type: surveymonkey
+    description: A sample schema representing the Surveymonkey connector for Fidesops
+    version: 0.0.1
+  
+    connector_params:
+      - name: domain
+      - name: access_token
+  
+    client_config:
+      protocol: https
+      host: <domain>
+      authentication:
+        strategy: bearer
+        configuration:
+          token: <access_token>
+  
+    test_request:
+      method: GET
+      path: /v3/users/me
+  
+    endpoints:
+      - name: contacts
+        requests:
+          read:
+            method: GET
+            path: /v3/contacts
+            param_values:
+              - name: placeholder
+                identity: email
+            postprocessors:
+              - strategy: filter
+                configuration:
+                  field: email
+                  value:
+                    identity: email
+            data_path: data
+          update:
+            method: PATCH
+            path: /v3/contacts/<contact_id>
+            body: |
+              {
+                <masked_object_fields>
+              }
+            param_values:
+              - name: placeholder
+                identity: email
+              - name: contact_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: contacts.id
+                    direction: from
+      - name: surveys
+        requests:
+          read:
+            method: GET
+            path: /v3/surveys
+            param_values:
+              - name: placeholder
+                identity: email
+            data_path: data
+      - name: survey_collectors
+        requests:
+          read:
+            method: GET
+            path: /v3/surveys/<survey_id>/collectors
+            param_values:
+              - name: placeholder
+                identity: email
+              - name: survey_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: surveys.id
+                    direction: from
+            data_path: data
+      # - name: collector_messages
+      #   requests:
+      #     read:
+      #       method: GET
+      #       path: /v3/collectors/collector_id/messages
+      #       param_values:
+      #         - name: placeholder
+      #           identity: email
+      #         - name: collector_id
+      #           references:
+      #             - dataset: <instance_fides_key>
+      #               field: survey_collectors.id
+      #               direction: from
+      #       data_path: data
+      # - name: message_recipients
+      #   requests:
+      #     read:
+      #       method: GET
+      #       path: /v3/collectors/collector_id/messages/message_id/
+      #       param_values:
+      #         - name: placeholder
+      #           identity: email
+      #         - name: message_id
+      #           references:
+      #             - dataset: <instance_fides_key>
+      #               field: collector_messages.id
+      #               direction: from
+      #         - name: collector_id
+      #           references:
+      #             - dataset: <instance_fides_key>
+      #               field: collector_messages.collector_id
+      #               direction: from
+      #       data_path: data
+      - name: survey_responses
+        requests:
+          read:
+            method: GET
+            path: /v3/surveys/<survey_id>/responses/bulk
+            param_values:
+              - name: placeholder
+                identity: email
+              - name: survey_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: surveys.id
+                    direction: from
+            data_path: data

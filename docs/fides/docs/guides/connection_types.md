@@ -112,6 +112,11 @@ which fidesops can communicate.
             "human_readable": "Stripe"
         },
         {
+            "identifier": "surveymonkey",
+            "type": "saas",
+            "human_readable": "Surveymonkey"
+        },
+        {
             "identifier": "zendesk",
             "type": "saas",
             "human_readable": "Zendesk"

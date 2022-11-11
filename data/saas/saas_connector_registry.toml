@@ -88,6 +88,12 @@ dataset = "data/saas/dataset/stripe_dataset.yml"
 icon = "data/saas/icon/stripe.svg"
 human_readable = "Stripe"
 
+[surveymonkey]
+config = "data/saas/config/surveymonkey_config.yml"
+dataset = "data/saas/dataset/surveymonkey_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Surveymonkey"
+
 [twilio_conversations]
 config = "data/saas/config/twilio_conversations_config.yml"
 dataset = "data/saas/dataset/twilio_conversations_dataset.yml"

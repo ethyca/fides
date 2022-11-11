@@ -185,6 +185,7 @@ markers = [
     "integration_zendesk",
     "integration_sentry",
     "integration_stripe",
+    "integration_surveymonkey",
     "integration_hubspot",
     "integration_datadog",
     "integration_domo",
