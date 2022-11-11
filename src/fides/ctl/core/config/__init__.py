@@ -223,6 +223,11 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
             credentials_dict=config_environment_dict
         )
 
+        # This is required to set security settings from the environment
+        # if that section of the config is missing
+        if not settings.get("security"):
+            settings["security"] = SecuritySettings()
+
         config = FidesConfig.parse_obj(settings)
         return config
     except FileNotFoundError:
