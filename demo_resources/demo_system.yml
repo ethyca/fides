@@ -5,6 +5,9 @@ system:
     system_type: Service
     administrating_department: Engineering
     data_responsibility_title: Controller
+    ingress:
+    - fides_key: demo_marketing_system
+      type: system
     third_country_transfers:
     - USA
     - CAN
@@ -32,13 +35,8 @@ system:
     data_responsibility_title: Processor
     system_dependencies:
     - demo_analytics_system
-    ingress:
-    - fides_key: hubspot
-      type: system
-    - fides_key: marketing_website
-      type: system
     egress:
-    - fides_key: salesforce
+    - fides_key: demo_analytics_system
       type: system
     privacy_declarations:
       - name: Collect data for marketing
