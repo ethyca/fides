@@ -3130,7 +3130,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert resp.status_code == 200
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
-        assert response_data[0]["message"] == "Verification email could not be sent."
+        assert response_data[0]["message"] == "Verification message could not be sent."
         assert (
             response_data[0]["data"]["status"]
             == PrivacyRequestStatus.identity_unverified.value

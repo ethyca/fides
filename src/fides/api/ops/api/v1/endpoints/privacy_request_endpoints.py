@@ -264,9 +264,9 @@ async def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
         except MessageDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", exc)
+            logger.error("MessageDispatchException: %s", exc)
             failure = {
-                "message": "Verification email could not be sent.",
+                "message": "Verification message could not be sent.",
                 "data": kwargs,
             }
             failed.append(failure)
