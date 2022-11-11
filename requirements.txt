@@ -1,6 +1,7 @@
 alembic==1.8.1
 APScheduler==3.9.1
 asyncpg==0.25.0
+boto3==1.26.1
 celery[pytest]==5.2.7
 click==8.1.3
 colorama>=0.4.3
@@ -10,6 +11,7 @@ deepdiff==5.8.1
 fastapi-caching[redis]
 fastapi-pagination[sqlalchemy]~= 0.10.0
 fastapi[all]==0.82.0
+fastapi-caching[redis]
 fideslang==1.3.1
 fideslib==3.1.5
 fideslog==1.2.10
@@ -19,6 +21,7 @@ hvac==0.11.2
 Jinja2==3.1.2
 loguru>=0.5,<0.6
 multidimensional_urlencode==0.0.4
+okta==2.7.0
 openpyxl==3.0.9
 pandas==1.4.3
 passlib[bcrypt]==1.7.4
@@ -27,11 +30,17 @@ psycopg2-binary==2.9.3
 pydantic<1.10.0
 pydash==5.1.1
 PyJWT==2.4.0
+pymongo==3.13.0
+PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<6
+redis==3.5.3
+sqlalchemy[asyncio]==1.4.27
+sqlalchemy-bigquery==1.4.4
+sqlalchemy-redshift==0.8.11
+snowflake-sqlalchemy==1.4.3
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
-sqlalchemy[asyncio]==1.4.42
 toml>=0.10.1
 twilio==7.15.0
 Unidecode==1.3.4
