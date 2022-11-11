@@ -75,17 +75,15 @@ describe("Consent settings", () => {
       cy.getByTestId("consent");
 
       cy.getByTestId(`consent-item-card-advertising.first_party`).within(() => {
-        cy.get('input[type="radio"][value="true"]').should("not.be.checked");
+        cy.getRadio().should("not.be.checked");
       });
       cy.getByTestId(`consent-item-card-improve`).within(() => {
-        cy.get('input[type="radio"][value="true"]').should("be.checked");
+        cy.getRadio().should("be.checked");
       });
 
       // Consent to an item that was opted-out.
       cy.getByTestId(`consent-item-card-advertising`).within(() => {
-        cy.get('input[type="radio"][value="true"]')
-          .should("not.be.checked")
-          .check({ force: true });
+        cy.getRadio().should("not.be.checked").check({ force: true });
       });
 
       cy.intercept(
