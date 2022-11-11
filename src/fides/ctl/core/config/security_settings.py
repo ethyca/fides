@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from fideslib.core.config import SecuritySettings as FideslibSecuritySettings
 from pydantic import validator
-from slowapi.wrappers import parse_many
+from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 

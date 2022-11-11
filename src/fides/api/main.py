@@ -16,10 +16,10 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
-from slowapi.errors import RateLimitExceeded
-from slowapi.extension import Limiter, _rate_limit_exceeded_handler
-from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded  # type: ignore
+from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
+from slowapi.middleware import SlowAPIMiddleware  # type: ignore
+from slowapi.util import get_remote_address  # type: ignore
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
