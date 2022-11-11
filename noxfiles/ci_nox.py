@@ -134,6 +134,25 @@ def fides_db_scan(session: nox.Session) -> None:
     session.run(*run_command, external=True)
 
 
+@nox.session()
+def minimal_config_startup(session: nox.Session) -> None:
+    """Check that the server can start successfully with a minimal configuration set
+    through environment vairables."""
+    session.notify("teardown")
+    compose_file = "docker/docker-compose.minimal-config.yml"
+    start_command = (
+        "docker",
+        "compose",
+        "-f",
+        compose_file,
+        "up",
+        "-d",
+        IMAGE_NAME,
+    )
+    print(f"{start_command=}")
+    session.run(*start_command, external=True)
+
+
 # Pytest
 @nox.session()
 @nox.parametrize(
