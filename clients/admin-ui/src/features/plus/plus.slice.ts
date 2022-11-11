@@ -16,8 +16,8 @@ import {
   ClassifyStatusUpdatePayload,
   GenerateTypes,
   System,
+  SystemScanResponse,
 } from "~/types/api";
-import { SystemScanResponse } from "~/types/plus/models/SystemScanResponse";
 
 interface HealthResponse {
   core_fidesctl_version: string;
