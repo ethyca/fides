@@ -1,10 +1,44 @@
+import pytest
+from typing import Generator
+
+from fastapi.testclient import TestClient
+from slowapi.extension import Limiter
+from slowapi.util import get_remote_address
+
+from fides.api.main import app
 from fides.api.ops.api.v1.urn_registry import HEALTH
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
+LIMIT = 2
 
 
-def test_requests_ratelimited(api_client, cache):
+@pytest.fixture(scope="function")
+def api_client_for_rate_limiting() -> Generator:
+    """
+    Return a client used to make API requests ratelimited at 2/minute.
+    """
+    app.state.limiter = Limiter(
+        default_limits=[f"{LIMIT}/minute"],
+        headers_enabled=True,
+        key_prefix=CONFIG.security.rate_limit_prefix,
+        key_func=get_remote_address,
+        retry_after="http-date",
+        storage_uri=CONFIG.redis.connection_url,
+    )
+    with TestClient(app) as c:
+        yield c
+        app.state.limiter = Limiter(
+            default_limits=[CONFIG.security.request_rate_limit],
+            headers_enabled=True,
+            key_prefix=CONFIG.security.rate_limit_prefix,
+            key_func=get_remote_address,
+            retry_after="http-date",
+            storage_uri=CONFIG.redis.connection_url,
+        )
+
+
+def test_requests_ratelimited(api_client_for_rate_limiting, cache):
     """
     Asserts that incremental HTTP requests above the ratelimit threshold are
     rebuffed from the API with a 429 response.
@@ -13,18 +47,17 @@ def test_requests_ratelimited(api_client, cache):
     running it not be able to execute 100 requests against the client in a
     one minute period.
     """
-    ratelimit = int(CONFIG.security.request_rate_limit.split("/")[0])
-    for _ in range(ratelimit):
-        response = api_client.get(HEALTH)
+    for _ in range(0, LIMIT):
+        response = api_client_for_rate_limiting.get(HEALTH)
         assert response.status_code == 200
 
-    response = api_client.get(HEALTH)
+    response = api_client_for_rate_limiting.get(HEALTH)
     assert response.status_code == 429
 
     ratelimiter_cache_keys = [key for key in cache.keys() if key.startswith("LIMITER/")]
     for key in ratelimiter_cache_keys:
-        # Depending on what requests have been stored previously, the ratelimiter will
+        # Depending on what requests have been stored previously, the ratelimtier will
         # store keys in the format `LIMITER/fides-/127.0.0.1//health/100/1/minute`
         assert key.startswith(f"LIMITER/{CONFIG.security.rate_limit_prefix}")
-        # Reset the cache to not interfere with any other tests
+        # Reset the cache to not interere with any other tests
         cache.delete(key)
