@@ -10,7 +10,7 @@ import {
 } from "~/features/plus/plus.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
-import { ClassificationStatus } from "~/types/api";
+import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
 const ClassifySystems: NextPage = () => {
   const router = useRouter();
@@ -20,7 +20,7 @@ const ClassifySystems: NextPage = () => {
     { skip: !hasPlus }
   );
   const { isLoading: isLoadingClassifications, data: classifications } =
-    useGetAllClassifyInstancesQuery(undefined, { skip: !hasPlus });
+    useGetAllClassifyInstancesQuery(GenerateTypes.SYSTEMS, { skip: !hasPlus });
 
   useEffect(() => {
     if (!isLoadingPlus && !hasPlus) {

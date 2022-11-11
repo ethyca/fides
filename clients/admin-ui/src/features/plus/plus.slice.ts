@@ -14,6 +14,7 @@ import {
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
+  GenerateTypes,
   System,
 } from "~/types/api";
 import { SystemScanResponse } from "~/types/plus/models/SystemScanResponse";
@@ -61,9 +62,13 @@ export const plusApi = createApi({
     }),
     getAllClassifyInstances: build.query<
       ClassifyInstanceResponseValues[],
-      void
+      GenerateTypes | undefined
     >({
-      query: () => `classify/`,
+      query: (resource_type = GenerateTypes.DATASETS) => ({
+        url: `classify/`,
+        method: "GET",
+        params: { resource_type },
+      }),
       providesTags: ["ClassifyInstances"],
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
@@ -98,27 +103,40 @@ export const useHasPlus = () => {
 };
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
-export const selectClassifyInstances = createSelector(
-  plusApi.endpoints.getAllClassifyInstances.select(),
+export const selectDatasetClassifyInstances = createSelector(
+  plusApi.endpoints.getAllClassifyInstances.select(GenerateTypes.DATASETS),
+  ({ data: instances }) => instances ?? emptyClassifyInstances
+);
+
+export const selectSystemClassifyInstances = createSelector(
+  plusApi.endpoints.getAllClassifyInstances.select(GenerateTypes.SYSTEMS),
   ({ data: instances }) => instances ?? emptyClassifyInstances
 );
 
 const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =
   new Map();
-export const selectClassifyInstanceMap = createSelector(
-  selectClassifyInstances,
-  (instances) => {
-    const map = new Map<string, ClassifyInstanceResponseValues>();
-    instances.forEach((ci) => {
-      map.set(ci.dataset_key, ci);
-    });
 
-    if (map.size === 0) {
-      return emptyClassifyInstanceMap;
-    }
+const instancesToMap = (instances: ClassifyInstanceResponseValues[]) => {
+  const map = new Map<string, ClassifyInstanceResponseValues>();
+  instances.forEach((ci) => {
+    map.set(ci.dataset_key, ci);
+  });
 
-    return map;
+  if (map.size === 0) {
+    return emptyClassifyInstanceMap;
   }
+
+  return map;
+};
+
+export const selectDatasetClassifyInstanceMap = createSelector(
+  selectDatasetClassifyInstances,
+  (instances) => instancesToMap(instances)
+);
+
+export const selectSystemClassifyInstanceMap = createSelector(
+  selectSystemClassifyInstances,
+  (instances) => instancesToMap(instances)
 );
 
 /**
