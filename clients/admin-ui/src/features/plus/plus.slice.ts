@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+import { selectSystemsForReview } from "~/features/config-wizard/config-wizard.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -26,6 +27,11 @@ interface HealthResponse {
 
 interface ScanParams {
   classify?: boolean;
+}
+
+interface ClassifyInstancesParams {
+  fides_keys?: string[];
+  resource_type: GenerateTypes;
 }
 
 export const plusApi = createApi({
@@ -62,13 +68,19 @@ export const plusApi = createApi({
     }),
     getAllClassifyInstances: build.query<
       ClassifyInstanceResponseValues[],
-      GenerateTypes | undefined
+      ClassifyInstancesParams
     >({
-      query: (resource_type = GenerateTypes.DATASETS) => ({
-        url: `classify/`,
-        method: "GET",
-        params: { resource_type },
-      }),
+      query: (params) => {
+        const urlParams = new URLSearchParams();
+        urlParams.append("resource_type", params.resource_type);
+        params.fides_keys?.forEach((key) => {
+          urlParams.append("fides_keys", key);
+        });
+        return {
+          url: `classify/?${urlParams.toString()}`,
+          method: "GET",
+        };
+      },
       providesTags: ["ClassifyInstances"],
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
@@ -104,13 +116,19 @@ export const useHasPlus = () => {
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(
-  plusApi.endpoints.getAllClassifyInstances.select(GenerateTypes.DATASETS),
+  plusApi.endpoints.getAllClassifyInstances.select({
+    resource_type: GenerateTypes.DATASETS,
+  }),
   ({ data: instances }) => instances ?? emptyClassifyInstances
 );
 
 export const selectSystemClassifyInstances = createSelector(
-  plusApi.endpoints.getAllClassifyInstances.select(GenerateTypes.SYSTEMS),
-  ({ data: instances }) => instances ?? emptyClassifyInstances
+  [(state) => state, selectSystemsForReview],
+  (state, systems) =>
+    plusApi.endpoints.getAllClassifyInstances.select({
+      resource_type: GenerateTypes.SYSTEMS,
+      fides_keys: systems.map((s) => s.fides_key),
+    })(state)?.data ?? emptyClassifyInstances
 );
 
 const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =

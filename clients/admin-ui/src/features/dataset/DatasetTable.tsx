@@ -21,9 +21,12 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(GenerateTypes.DATASETS, {
-    skip: !features.plus,
-  });
+  useGetAllClassifyInstancesQuery(
+    { resource_type: GenerateTypes.DATASETS },
+    {
+      skip: !features.plus,
+    }
+  );
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {

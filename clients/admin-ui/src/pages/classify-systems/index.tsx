@@ -1,9 +1,15 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 
+import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
+import {
+  selectSystemsForReview,
+  setSystemsForReview,
+} from "~/features/config-wizard/config-wizard.slice";
 import {
   useGetAllClassifyInstancesQuery,
   useGetHealthQuery,
@@ -14,13 +20,36 @@ import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
 const ClassifySystems: NextPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { isSuccess: hasPlus, isLoading: isLoadingPlus } = useGetHealthQuery();
-  const { isLoading: isLoadingSystems, data: systems } = useGetAllSystemsQuery(
-    undefined,
-    { skip: !hasPlus }
-  );
+  /**
+   * TODO: fides#1744
+   * Because there is currently no way to associate a scan with its classification,
+   * we attempt to get the classification results for only the systems in review.
+   * However, because this is a page that is waiting for results and so will likely
+   * be refreshed, we can't necessarily rely on knowing the systems we put into review
+   * Therefore, as a fallback, query all systems.
+   */
+  const systemsForReview = useAppSelector(selectSystemsForReview);
+  const { isLoading: isLoadingSystems, data: allSystems } =
+    useGetAllSystemsQuery(undefined, {
+      skip: !hasPlus || systemsForReview.length > 0,
+    });
+  const systems = systemsForReview || allSystems;
+  useEffect(() => {
+    if (allSystems && allSystems.length) {
+      dispatch(setSystemsForReview(allSystems));
+    }
+  }, [dispatch, allSystems]);
+
   const { isLoading: isLoadingClassifications, data: classifications } =
-    useGetAllClassifyInstancesQuery(GenerateTypes.SYSTEMS, { skip: !hasPlus });
+    useGetAllClassifyInstancesQuery(
+      {
+        resource_type: GenerateTypes.SYSTEMS,
+        fides_keys: systems.map((s) => s.fides_key),
+      },
+      { skip: !hasPlus }
+    );
 
   useEffect(() => {
     if (!isLoadingPlus && !hasPlus) {
@@ -52,7 +81,7 @@ const ClassifySystems: NextPage = () => {
         </Text>
 
         {isLoading ? <Spinner /> : null}
-        {systems && classifications ? (
+        {systems && systems.length && classifications ? (
           <ClassifySystemsTable systems={systems} />
         ) : (
           "No systems with classifications found"
