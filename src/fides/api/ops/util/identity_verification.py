@@ -24,7 +24,7 @@ class IdentityVerificationMixin:
         """
         Returns the cache key at which the identity verification code is stored.
         """
-        return f"IDENTITY_VERIFICATION_CODE__{self.id}"
+        return f"IDENTITY_VERIFICATION_CODE__{self.id}"  # type: ignore
 
     def _get_identity_verification_attempt_count_cache_key(self) -> str:
         """
@@ -75,7 +75,7 @@ class IdentityVerificationMixin:
         """Removes any verification codes from the cache so they can no longer be used."""
         logger.debug(
             "Removing cached identity verification code for record with ID: %s",
-            self.id,
+            self.id,  # type: ignore
         )
         cache = get_cache()
         cache.delete(self._get_identity_verification_cache_key())
@@ -86,20 +86,20 @@ class IdentityVerificationMixin:
         code: Optional[str] = self.get_cached_verification_code()
         if not code:
             raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
+                f"Identification code expired for {self.id}."  # type: ignore
             )
 
         attempt_count: int = self._get_cached_verification_code_attempt_count()
         if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
             logger.debug(
                 "Failed identity verification attempt limit exceeded for record with ID: %s",
-                self.id,
+                self.id,  # type: ignore
             )
             # When the attempt_count we can remove the verification code entirely
             # from the cache to ensure it can never be used again.
             self.purge_verification_code()
-            raise PermissionError(f"Attempt limit hit for '{self.id}'")
+            raise PermissionError(f"Attempt limit hit for '{self.id}'")  # type: ignore
 
         if code != provided_code:
             self._increment_verification_code_attempt_count()
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+            raise PermissionError(f"Incorrect identification code for '{self.id}'")  # type: ignore
