@@ -16,6 +16,7 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 ### Fixed
 
@@ -41,7 +42,6 @@ The types of changes are:
 * Integrate rate limiter with Saas Connectors. [#1433](https://github.com/ethyca/fides/pull/1433)
 * Config Wizard: Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
 * Config Wizard: Flow for runtime scanner option [#1640](https://github.com/ethyca/fides/pull/1640)
-* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 
 ### Changed

@@ -274,7 +274,7 @@ def twilio_conversations_erasure_data(
     message_id = message["sid"]
     participant_id = participant["sid"]
 
-    paricipant_delete_response = requests.delete(
+    participant_delete_response = requests.delete(
         url=f"{base_url}/v1/Conversations/"
         + conversation_id
         + "/Participants/"
@@ -294,8 +294,8 @@ def twilio_conversations_erasure_data(
     user_delete_response = requests.delete(
         url=f"{base_url}/v1/Users/" + user_id, auth=auth
     )
-    # # we expect 204 if resource doesn't exist
-    assert paricipant_delete_response.status_code == HTTP_204_NO_CONTENT
+    # we expect 204 if resource doesn't exist
+    assert participant_delete_response.status_code == HTTP_204_NO_CONTENT
     assert message_delete_response.status_code == HTTP_204_NO_CONTENT
     assert conversation_delete_response.status_code == HTTP_204_NO_CONTENT
     assert user_delete_response.status_code == HTTP_204_NO_CONTENT

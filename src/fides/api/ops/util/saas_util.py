@@ -301,7 +301,7 @@ def encode_file_contents(file_path: str) -> str:
         return bytes_to_b64_str(file.read())
 
 
-def change_string_to_camel_case(s: str) -> str:
+def to_pascal_case(s: str) -> str:
     s = s.title()
     s = s.replace("_", "")
     return s
