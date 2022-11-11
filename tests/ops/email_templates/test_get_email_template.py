@@ -3,11 +3,11 @@ from jinja2 import Template
 
 from fides.api.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.schemas.email.email import EmailActionType
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 
 
 def test_get_email_template_returns_template():
-    result = get_email_template(EmailActionType.SUBJECT_IDENTITY_VERIFICATION)
+    result = get_email_template(MessagingActionType.SUBJECT_IDENTITY_VERIFICATION)
     assert type(result) == Template
 
 
