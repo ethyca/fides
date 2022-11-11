@@ -1,13 +1,15 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Slack SaaS Config
-  type: slack
-  description: A sample schema representing the Slack connector for Fidesops
+  name: Slack Enterprise SaaS Config
+  type: slack_enterprise
+  description: A sample schema representing the Slack Enterprise connector for Fides
   version: 0.0.1
 
   connector_params:
     - name: domain
-    - name: access_token
+      default_value: slack.com
+    - name: user_oauth_token
+      label: User OAuth Token
 
   client_config:
     protocol: https
@@ -15,15 +17,11 @@ saas_config:
     authentication:
       strategy: bearer
       configuration:
-        token: <access_token>
+        token: <user_oauth_token>
 
   test_request:
     method: GET
     path: /api/api.test
-    query_params:
-      - name: email
-        value: test@test.com
-
 
   endpoints:
     - name: user
@@ -38,19 +36,22 @@ saas_config:
             - name: email
               identity: email
           data_path: user
-
-    - name: user_conversations
-      requests:
-        read:
-          method: GET
-          path: /api/users.conversations
-          query_params:
-            - name: user
-              value: <user_id>
+        delete:
+          method: POST
+          path: /api/admin.users.remove
+          body: |
+            {
+               "team_id": <user_team_id>
+               "user_id": <user_id>
+            }
           param_values:
+            - name: user_team_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.team_id
+                  direction: from
             - name: user_id
               references:
                 - dataset: <instance_fides_key>
                   field: user.id
                   direction: from
-          data_path: channels
