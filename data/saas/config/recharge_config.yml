@@ -36,6 +36,19 @@ saas_config:
             - name: email
               identity: email
           data_path: customers
+        update:
+          method: PUT
+          path: /customers/<customer_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: customers.customer_id
+                  direction: from
 
     - name: addresses
       requests:
@@ -52,4 +65,16 @@ saas_config:
                   field: customers.id
                   direction: from
           data_path: addresses
-
+        update:
+          method: PUT
+          path: /addresses/<address_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: address_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: addresses.address_id
+                  direction: from

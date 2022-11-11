@@ -152,7 +152,7 @@ extension-pkg-whitelist = ["pydantic", "zlib"]
 env = [
   "TESTING=True"
 ]
-log_cli=false
+log_cli=true
 filterwarnings = "ignore::DeprecationWarning:aiofiles.*:"
 testpaths="tests"
 log_level = "INFO"
