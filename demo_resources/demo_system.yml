@@ -32,6 +32,14 @@ system:
     data_responsibility_title: Processor
     system_dependencies:
     - demo_analytics_system
+    ingress:
+    - fides_key: hubspot
+      type: system
+    - fides_key: marketing_website
+      type: system
+    egress:
+    - fides_key: salesforce
+      type: system
     privacy_declarations:
       - name: Collect data for marketing
         data_categories:
