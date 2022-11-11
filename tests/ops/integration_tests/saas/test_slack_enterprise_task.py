@@ -53,13 +53,6 @@ async def test_slack_enterprise_access_request_task(
         db,
     )
 
-    update_dataset(
-        slack_enterprise_connection_config,
-        slack_enterprise_dataset_config,
-        v,
-        "generated_dataset.yml",
-    )
-
     assert_rows_match(
         v[f"{dataset_name}:user"],
         min_size=1,
