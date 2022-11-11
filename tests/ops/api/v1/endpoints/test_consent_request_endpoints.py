@@ -443,6 +443,48 @@ class TestSaveConsent:
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",
     )
+    def test_verify_then_set_consent_preferences(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert no existing consent preferences exist for this identity
+        assert response.json() == {"consent": None}
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json={
+                "code": verification_code,
+                "identity": {"email": "test@email.com"},
+                "consent": [{"data_use": "email", "opt_in": True}],
+            },
+        )
+        assert response.status_code == 200
+        # Assert nconsent preferences have successfully been set
+        assert response.json()["consent"][0]["data_use"] == "email"
+        assert response.json()["consent"][0]["opt_in"] == True
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert the code verification endpoint also returns existing consent preferences
+        assert response.json()["consent"][0]["data_use"] == "email"
+        assert response.json()["consent"][0]["opt_in"] == True
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
     def test_set_consent_preferences_invalid_code_respects_attempt_count(
         self,
         provided_identity_and_consent_request,
