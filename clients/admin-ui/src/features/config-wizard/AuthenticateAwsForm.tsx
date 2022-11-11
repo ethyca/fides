@@ -19,6 +19,7 @@ import {
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import {
   Dataset,
   GenerateResponse,
@@ -70,6 +71,7 @@ const ValidationSchema = Yup.object().shape({
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
+  const { successAlert } = useAlert();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
@@ -77,6 +79,11 @@ const AuthenticateAwsForm = () => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
     dispatch(changeStep());
+    successAlert(
+      `Your scan was successfully completed, with ${systems.length} new systems detected!`,
+      `Scan Successfully Completed`,
+      { isClosable: true }
+    );
   };
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
