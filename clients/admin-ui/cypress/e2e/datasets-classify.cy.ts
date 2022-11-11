@@ -19,7 +19,7 @@ describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
     stubDatasetCrud();
     stubPlus(true);
-    cy.intercept("GET", "/api/v1/plus/classify", {
+    cy.intercept("GET", "/api/v1/plus/classify?resource_type=datasets", {
       fixture: "classify/list.json",
     }).as("getClassifyList");
     cy.visit("/dataset/new");

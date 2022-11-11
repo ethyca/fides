@@ -55,9 +55,11 @@ describe.skip("Config wizard with plus settings", () => {
       // Stub systems, but replace the fides keys so they match up with ones that
       // @getClassifyList would return
       cy.fixture("classify/list-systems.json").then((systemClassifications) => {
-        cy.intercept("GET", "/api/v1/plus/classify*", systemClassifications).as(
-          "getClassifyList"
-        );
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/classify?resource_type=systems",
+          systemClassifications
+        ).as("getClassifyList");
         const keys = systemClassifications.map((sc) => sc.dataset_key);
         cy.fixture("systems.json").then((systems: System[]) => {
           const alteredSystems = systems.map((s, idx) => {
