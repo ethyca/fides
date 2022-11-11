@@ -148,20 +148,26 @@ def _build_sms(
             f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
         )
     if action_type == MessagingActionType.CONSENT_REQUEST:
-        return "Your consent request verification code is {{code}}. " \
-               "Please return to the consent request page and enter the code to continue. " \
-               "This code will expire in {{minutes}} minutes"
+        return (
+            "Your consent request verification code is {{code}}. "
+            "Please return to the consent request page and enter the code to continue. "
+            "This code will expire in {{minutes}} minutes"
+        )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
         if body_params.request_types.length > 1:
             return f"The following requests have been received: {separator.join(body_params.request_types)}"
         return f"Your {body_params.request_types[0]} request has been received"
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
         if body_params.download_links.length > 1:
-            return "Your data access has been completed and can be downloaded at the following links. " \
-                   "For security purposes, these secret links will expire in 24 hours: " \
-                   f"{separator.join(body_params.download_links)}"
-        return f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. " \
-               f"For security purposes, this secret link will expire in 24 hours."
+            return (
+                "Your data access has been completed and can be downloaded at the following links. "
+                "For security purposes, these secret links will expire in 24 hours: "
+                f"{separator.join(body_params.download_links)}"
+            )
+        return (
+            f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
+            f"For security purposes, this secret link will expire in 24 hours."
+        )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
