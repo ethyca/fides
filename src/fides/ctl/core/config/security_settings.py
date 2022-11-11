@@ -19,6 +19,7 @@ class SecuritySettings(FideslibSecuritySettings):
     subject_request_download_link_ttl_seconds: int = 432000  # 5 days
     request_rate_limit: str = "100/minute"
     rate_limit_prefix: str = "fides-"
+    identity_verification_attempt_limit: int = 3  # 3 attempts
 
     @validator("request_rate_limit")
     @classmethod

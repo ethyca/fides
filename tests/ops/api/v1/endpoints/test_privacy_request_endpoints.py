@@ -2926,6 +2926,46 @@ class TestVerifyIdentity:
         assert not mock_dispatch_message.called
 
     @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_too_many_attempts(
+        self,
+        mock_dispatch_message,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+    ):
+        VERIFICATION_CODE = "999999"
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(VERIFICATION_CODE)
+
+        request_body = {"code": self.code}
+        for _ in range(0, CONFIG.security.identity_verification_attempt_limit):
+            resp = api_client.post(url, headers={}, json=request_body)
+            assert resp.status_code == 403
+            assert (
+                resp.json()["detail"]
+                == f"Incorrect identification code for '{privacy_request.id}'"
+            )
+            assert not mock_dispatch_message.called
+
+        assert (
+            privacy_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+
+        request_body = {"code": VERIFICATION_CODE}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 403
+        assert resp.json()["detail"] == f"Attempt limit hit for '{privacy_request.id}'"
+        assert not mock_dispatch_message.called
+        assert privacy_request.get_cached_verification_code() is None
+        assert privacy_request._get_cached_verification_code_attempt_count() == 0
+
+    @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
