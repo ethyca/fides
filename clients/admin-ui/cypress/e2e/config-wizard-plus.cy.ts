@@ -1,7 +1,5 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { System } from "~/types/api";
-
 /**
  * Handy function to bring us straight to the runtime scanner.
  * This could be put in a beforeEach, but then you can't overwrite intercepts
@@ -32,9 +30,6 @@ describe.skip("Config wizard with plus settings", () => {
     cy.intercept("PUT", "/api/v1/organization**", {
       fixture: "organization.json",
     }).as("updateOrganization");
-  });
-
-  beforeEach(() => {
     stubPlus(true);
     cy.visit("/config-wizard");
     cy.getByTestId("guided-setup-btn").click();
@@ -54,25 +49,10 @@ describe.skip("Config wizard with plus settings", () => {
     it("Allows calling the runtime scanner with classify", () => {
       // Stub systems, but replace the fides keys so they match up with ones that
       // @getClassifyList would return
-      cy.fixture("classify/list-systems.json").then((systemClassifications) => {
-        cy.intercept(
-          "GET",
-          "/api/v1/plus/classify?resource_type=systems",
-          systemClassifications
-        ).as("getClassifyList");
-        const keys = systemClassifications.map((sc) => sc.dataset_key);
-        cy.fixture("systems.json").then((systems: System[]) => {
-          const alteredSystems = systems.map((s, idx) => {
-            if (idx < keys.length) {
-              return { ...s, fides_key: keys[idx], name: keys[idx] };
-            }
-            return s;
-          });
-          cy.intercept("GET", "/api/v1/system", alteredSystems).as(
-            "getSystems"
-          );
-        });
-      });
+      // let keys = [];
+      cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
+        fixture: "classify/list-systems.json",
+      }).as("getClassifyList");
 
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
@@ -98,15 +78,23 @@ describe.skip("Config wizard with plus settings", () => {
       });
       cy.getByTestId("systems-classify-table");
       cy.url().should("contain", "classify-systems");
-      cy.wait("@getClassifyList");
+
+      cy.wait("@getClassifyList").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("vzmgr-service");
+        expect(url).to.contain("kube-dns");
+      });
 
       // Check that the classified systems have a status
       cy.getByTestId("status-vzmgr-service").contains("Awaiting Review");
       cy.getByTestId("status-kube-dns").contains("Awaiting Review");
-      cy.getByTestId("status-demo_marketing_system").contains("Unknown");
+      cy.getByTestId("status-pl-elastic-es-transport").contains("Unknown");
     });
 
     it("Can register a subset of systems", () => {
+      cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
+        fixture: "classify/list-systems.json",
+      }).as("getClassifyList");
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
       cy.wait("@getScanResults");
@@ -116,7 +104,7 @@ describe.skip("Config wizard with plus settings", () => {
       cy.get("th").first().click();
       cy.getByTestId("register-btn").should("be.disabled");
       // Check just two systems
-      const systems = ["fidesctl-demo", "postgres"];
+      const systems = ["vzmgr-service", "kube-dns"];
       systems.forEach((s) => {
         cy.getByTestId(`checkbox-${s}`).click();
       });
@@ -126,6 +114,16 @@ describe.skip("Config wizard with plus settings", () => {
         const { body } = interception.request;
         expect(body.map((s) => s.fides_key)).to.eql(systems);
       });
+
+      // Make sure there are only two systems in this table
+      cy.getByTestId("systems-classify-table");
+      cy.getByTestId("status-vzmgr-service");
+      cy.getByTestId("status-kube-dns");
+      cy.get("table")
+        .find("tr")
+        .then((rows) => {
+          expect(rows.length).to.eql(3); // +1 for the header row
+        });
     });
 
     it("Can render an error", () => {
