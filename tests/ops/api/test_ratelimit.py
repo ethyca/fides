@@ -7,7 +7,7 @@ from slowapi.util import get_remote_address
 
 from fides.api.main import app
 from fides.api.ops.api.v1.urn_registry import HEALTH
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import SecuritySettings, get_config
 
 CONFIG = get_config()
 LIMIT = 2
@@ -38,7 +38,7 @@ def api_client_for_rate_limiting() -> Generator:
         )
 
 
-def test_requests_ratelimited(api_client_for_rate_limiting, cache):
+def test_requests_rate_limited(api_client_for_rate_limiting, cache):
     """
     Asserts that incremental HTTP requests above the ratelimit threshold are
     rebuffed from the API with a 429 response.
@@ -61,3 +61,19 @@ def test_requests_ratelimited(api_client_for_rate_limiting, cache):
         assert key.startswith(f"LIMITER/{CONFIG.security.rate_limit_prefix}")
         # Reset the cache to not interere with any other tests
         cache.delete(key)
+
+
+def test_rate_limit_validation():
+    """Tests `SecuritySettings.validate_request_rate_limit`"""
+    VALID_VALUES = [
+        "10 per hour",
+        "10/hour",
+        "10/hour;100/day;2000 per year",
+        "100/day, 500/7days",
+    ]
+    for value in VALID_VALUES:
+        assert SecuritySettings.validate_request_rate_limit(v=value)
+
+    INVALID_VALUE = "invalid-value"
+    with pytest.raises(ValueError) as exc:
+        SecuritySettings.validate_request_rate_limit(v=INVALID_VALUE)
