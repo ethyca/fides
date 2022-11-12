@@ -29,9 +29,7 @@ EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = tuple(
-    [MessagingServiceType.TWILIO_TEXT.value]
-)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -208,12 +206,14 @@ class MessagingConfigRequest(BaseModel):
 
     @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        # uppercase to match enums in database
-        values["service_type"] = values.get("service_type").upper()  # type: ignore
-        service_type: MessagingServiceType = values.get("service_type")  # type: ignore
-        if service_type == MessagingServiceType.MAILGUN.value:
-            if not values.get("details"):
-                raise ValueError("Mailgun messaging config must include details")
+        service_type_pre = values.get("service_type")
+        if service_type_pre:
+            # uppercase to match enums in database
+            values["service_type"] = service_type_pre.upper()
+            service_type: MessagingServiceType = values["service_type"]
+            if service_type == MessagingServiceType.MAILGUN.value:
+                if not values.get("details"):
+                    raise ValueError("Mailgun messaging config must include details")
         return values
 
 

@@ -239,10 +239,25 @@ def _get_email_messaging_config_service_type(db: Session) -> Optional[str]:
     if not messaging_configs:
         # let messaging dispatch service handle non-existent service
         return None
-    for messaging_config in messaging_configs:
-        if messaging_config.service_type == MessagingServiceType.TWILIO_EMAIL:
-            return MessagingServiceType.TWILIO_EMAIL.value
-        if messaging_config.service_type == MessagingServiceType.MAILGUN:
-            return MessagingServiceType.MAILGUN.value
-        return None
+    twilio_email_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.TWILIO_EMAIL
+        ),
+        None,
+    )
+    mailgun_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.MAILGUN
+        ),
+        None,
+    )
+    if twilio_email_config:
+        # we prefer twilio over mailgun
+        return MessagingServiceType.TWILIO_EMAIL.value
+    if mailgun_config:
+        return MessagingServiceType.MAILGUN.value
     return None

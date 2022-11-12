@@ -79,7 +79,7 @@ def dispatch_message(
         raise MessageDispatchException("No identity supplied.")
     if not service_type:
         logger.error("Message failed to send. No notification service type configured.")
-        raise MessageDispatchException(" No notification service type configured.")
+        raise MessageDispatchException("No notification service type configured.")
 
     logger.info("Retrieving message config")
     messaging_config: MessagingConfig = MessagingConfig.get_configuration(
@@ -315,12 +315,10 @@ def _twilio_sms_dispatcher(
     try:
         if messaging_service_id:
             client.messages.create(
-                to=to.strip(), messaging_service_sid=messaging_service_id, body=message
+                to=to, messaging_service_sid=messaging_service_id, body=message
             )
         elif sender_phone_number:
-            client.messages.create(
-                to=to.strip(), from_=sender_phone_number, body=message
-            )
+            client.messages.create(to=to, from_=sender_phone_number, body=message)
         else:
             logger.error(
                 "Message failed to send. Either sender phone number or messaging service sid must be provided."
