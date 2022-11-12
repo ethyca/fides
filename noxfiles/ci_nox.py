@@ -2,7 +2,6 @@
 from time import sleep
 
 import nox
-import requests
 
 from constants_nox import (
     CI_ARGS,
@@ -149,31 +148,11 @@ def minimal_config_startup(session: nox.Session) -> None:
         "-f",
         compose_file,
         "up",
+        "--wait",
         "-d",
         IMAGE_NAME,
     )
     session.run(*start_command, external=True)
-    timeout = 120
-    wait_time = 2
-    elapsed_time = 0
-    status_code = 0
-
-    while status_code != 200 and elapsed_time < timeout:
-        response = None
-        try:
-            response = requests.get("http://localhost:8080/health")
-        except Exception:  # requests.exceptions.ConnectionError:
-            pass
-
-        if response:
-            status_code = response.status_code
-
-        if status_code != 200:
-            sleep(wait_time)
-            elapsed_time += wait_time
-
-    if status_code != 200:
-        raise ValueError("Startup failed")
 
 
 # Pytest
