@@ -40,7 +40,7 @@ def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
     service_type: Optional[str],
-    to_identity: Identity,
+    to_identity: Dict[str, Any],
 ) -> None:
     """
     A wrapper function to dispatch a message task into the Celery queues
@@ -50,7 +50,7 @@ def dispatch_message_task(
         dispatch_message(
             db,
             schema.action_type,
-            to_identity,
+            Identity.parse_obj(to_identity),
             service_type,
             schema.body_params,
         )
@@ -154,11 +154,11 @@ def _build_sms(  # pylint: disable=too-many-return-statements
             "This code will expire in {{minutes}} minutes"
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
-        if body_params.request_types.length > 1:
+        if len(body_params.request_types) > 1:
             return f"The following requests have been received: {separator.join(body_params.request_types)}"
         return f"Your {body_params.request_types[0]} request has been received"
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
-        if body_params.download_links.length > 1:
+        if len(body_params.download_links) > 1:
             return (
                 "Your data access has been completed and can be downloaded at the following links. "
                 "For security purposes, these secret links will expire in 24 hours: "
