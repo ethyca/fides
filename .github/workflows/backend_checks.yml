@@ -101,7 +101,7 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run test suite
+      - name: Check startup
         run: nox -s minimal_config_startup
 
   ################
