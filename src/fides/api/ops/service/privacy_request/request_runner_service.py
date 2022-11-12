@@ -28,7 +28,6 @@ from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.messaging import get_messaging_method
 from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -456,9 +455,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_identity=to_identity,
-            messaging_method=get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
+            service_type=CONFIG.notifications.notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
@@ -468,9 +465,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
-            messaging_method=get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
+            service_type=CONFIG.notifications.notification_service_type,
             message_body_params=None,
         )
 

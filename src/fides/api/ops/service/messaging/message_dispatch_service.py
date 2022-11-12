@@ -10,7 +10,7 @@ from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
-    messaging_method: Optional[MessagingMethod],
+    service_type: Optional[str],
     to_identity: Identity,
 ) -> None:
     """
@@ -51,7 +51,7 @@ def dispatch_message_task(
             db,
             schema.action_type,
             to_identity,
-            messaging_method,
+            service_type,
             schema.body_params,
         )
 
@@ -60,7 +60,7 @@ def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
     to_identity: Optional[Identity],
-    messaging_method: Optional[MessagingMethod],
+    service_type: Optional[str],
     message_body_params: Optional[
         Union[
             AccessRequestCompleteBodyParams,
@@ -77,12 +77,18 @@ def dispatch_message(
     if not to_identity:
         logger.error("Message failed to send. No identity supplied.")
         raise MessageDispatchException("No identity supplied.")
+    if not service_type:
+        logger.error("Message failed to send. No notification service type configured.")
+        raise MessageDispatchException("No notification service type configured.")
 
     logger.info("Retrieving message config")
-    messaging_config: MessagingConfig = MessagingConfig.get_configuration(db=db)
+    messaging_config: MessagingConfig = MessagingConfig.get_configuration(
+        db=db, service_type=service_type
+    )
     logger.info(
         "Building appropriate message template for action type: %s", action_type
     )
+    messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
@@ -134,8 +140,12 @@ def _build_sms(
     action_type: MessagingActionType,
     body_params: Any,
 ) -> str:
-    if action_type == MessagingActionType.CONSENT_REQUEST:
-        return "Hello, this message was sent from Fides!"
+    if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
+        return (
+            f"Your privacy request verification code is {body_params.verification_code}. "
+            f"Please return to the Privacy Center and enter the code to continue. "
+            f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
+        )
     logger.error("Message action type %s is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"
