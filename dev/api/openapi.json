@@ -12927,11 +12927,11 @@
       "MessagingServiceType": {
         "title": "MessagingServiceType",
         "enum": [
-          "mailgun",
-          "twilio_text",
-          "twilio_email"
+          "MAILGUN",
+          "TWILIO_TEXT",
+          "TWILIO_EMAIL"
         ],
-        "description": "Enum for messaging service type"
+        "description": "Enum for messaging service type. Upper-cased in the database"
       },
       "MongoDBDocsSchema": {
         "title": "MongoDBDocsSchema",
