@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 * Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
+* Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
 
 ### Changed
 

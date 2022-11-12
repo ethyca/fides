@@ -28,10 +28,15 @@ class FidesopsRedis(Redis):
     """
 
     def set_with_autoexpire(
-        self, key: str, value: RedisValue, expire_time: int = None
+        self,
+        key: str,
+        value: RedisValue,
+        expire_time: int = CONFIG.redis.default_ttl_seconds,
     ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
         if not expire_time:
+            # We have to check this condition for the edge case where `None` is explicitly
+            # passed to this method.
             expire_time = CONFIG.redis.default_ttl_seconds
         return self.set(key, value, ex=expire_time)
 

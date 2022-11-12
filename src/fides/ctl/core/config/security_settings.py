@@ -15,6 +15,7 @@ class SecuritySettings(FideslibSecuritySettings):
 
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
     subject_request_download_link_ttl_seconds: int = 432000  # 5 days
+    identity_verification_attempt_limit: int = 3  # 3 attempts
 
     class Config:
         env_prefix = ENV_PREFIX

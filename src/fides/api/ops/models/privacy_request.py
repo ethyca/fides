@@ -56,6 +56,7 @@ from fides.api.ops.schemas.external_https import (
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import celery_app
+from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -142,7 +143,7 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
 
 
-class PrivacyRequest(Base):  # pylint: disable=R0904
+class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
     database record representing the request's progression within the Fides system.
@@ -315,14 +316,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
 
-        code: Optional[str] = self.get_cached_verification_code()
-        if not code:
-            raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
-            )
-
-        if code != provided_code:
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+        self._verify_identity(provided_code=provided_code)
 
         self.status = PrivacyRequestStatus.pending
         self.identity_verified_at = datetime.utcnow()
@@ -613,26 +607,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
-    def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
-        )
-
-    def get_cached_verification_code(self) -> Optional[str]:
-        """Retrieve the generated identity verification code if it exists"""
-        cache: FidesopsRedis = get_cache()
-        values: Optional[Dict[str, Any]] = (
-            cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
-        )
-        if not values:
-            return None
-
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
-
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
@@ -836,7 +810,7 @@ class Consent(Base):
     UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
 
-class ConsentRequest(Base):
+class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
 
     provided_identity_id = Column(
@@ -848,15 +822,6 @@ class ConsentRequest(Base):
         back_populates="consent_request",
     )
 
-    def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison."""
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
-        )
-
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
         prefix = f"id-{self.id}-identity-*"
@@ -864,27 +829,12 @@ class ConsentRequest(Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def get_cached_verification_code(self) -> Optional[str]:
-        """Retrieve the generated identity verification code if it exists"""
-        cache = get_cache()
-        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
-        if not values:
-            return None
-
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
-
-    def verify_identity(self, provided_code: str) -> ConsentRequest:
-        """Verify the identification code supplied by the user."""
-        code: Optional[str] = self.get_cached_verification_code()
-        if not code:
-            raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
-            )
-
-        if code != provided_code:
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
-
-        return self
+    def verify_identity(self, provided_code: str) -> None:
+        """
+        A method to call the internal identity verification method provided by the
+        `IdentityVerificationMixin`.
+        """
+        self._verify_identity(provided_code=provided_code)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
