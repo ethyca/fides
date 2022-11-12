@@ -1,6 +1,4 @@
 """Contains the nox sessions used during CI checks."""
-from time import sleep
-
 import nox
 
 from constants_nox import (
