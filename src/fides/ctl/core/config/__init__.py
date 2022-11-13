@@ -229,8 +229,8 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     except IOError:
         echo_red("Error reading config file")
 
+    print("Using default configuration values.")
     security_settings = SecuritySettings()
     config = FidesConfig(security=security_settings)
-    print("Using default configuration values.")
 
     return config
