@@ -7,7 +7,7 @@ import validators
 from fideslib.core.config import FidesSettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fideslib.exceptions import MissingConfig
-from pydantic import root_validator, validator
+from pydantic import validator
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
@@ -26,6 +26,15 @@ class SecuritySettings(FidesSettings):
     root_username: Optional[str] = None
     root_password: Optional[str] = None
     identity_verification_attempt_limit: int = 3  # 3 attempts
+    encoding: str = "UTF-8"
+
+    cors_origins: List[str] = []
+    oauth_root_client_id: str
+    oauth_root_client_secret: str
+    oauth_root_client_secret_hash: Optional[Tuple]
+    oauth_access_token_expire_minutes: int = 60 * 24 * 8
+    oauth_client_id_length_bytes = 16
+    oauth_client_secret_length_bytes = 16
 
     @validator("app_encryption_key")
     @classmethod
@@ -38,8 +47,6 @@ class SecuritySettings(FidesSettings):
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
             )
         return v
-
-    cors_origins: List[str] = []
 
     @validator("cors_origins", pre=True)
     @classmethod
@@ -63,18 +70,11 @@ class SecuritySettings(FidesSettings):
             return v
         raise ValueError(v)
 
-    encoding: str = "UTF-8"
-
-    oauth_root_client_id: str
-    oauth_root_client_secret: str
-    oauth_root_client_secret_hash: Optional[Tuple]
-    oauth_access_token_expire_minutes: int = 60 * 24 * 8
-    oauth_client_id_length_bytes = 16
-    oauth_client_secret_length_bytes = 16
-
-    @root_validator(pre=True)
+    @validator("oauth_root_client_secret_hash")
     @classmethod
-    def assemble_root_access_token(cls, values: Dict[str, str]) -> Dict[str, str]:
+    def assemble_root_access_token(
+        cls, v: Optional[str], values: Dict[str, str]
+    ) -> Tuple:
         """
         Sets a hashed value of the root access key.
         This is hashed as it is not wise to return a plaintext for of the
@@ -90,8 +90,8 @@ class SecuritySettings(FidesSettings):
 
         salt = generate_salt()
         hashed_client_id = hash_with_salt(value.encode(encoding), salt.encode(encoding))
-        values["oauth_root_client_secret_hash"] = (hashed_client_id, salt.encode(encoding))  # type: ignore
-        return values
+        oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
+        return oauth_root_client_secret_hash
 
     class Config:
         env_prefix = ENV_PREFIX

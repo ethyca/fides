@@ -43,7 +43,7 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings
+    security: Optional[SecuritySettings]
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
@@ -219,10 +219,10 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
         # This is required to set security settings from the environment
         # if that section of the config is missing
-        if not settings.get("security"):
-            settings["security"] = SecuritySettings()
+        security_settings = SecuritySettings.parse_obj(settings.get("security", {}))
 
         config = FidesConfig.parse_obj(settings)
+        config.security = security_settings
         return config
     except FileNotFoundError:
         print("No config file found")
