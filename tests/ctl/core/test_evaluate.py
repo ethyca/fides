@@ -268,7 +268,11 @@ def test_get_evaluation_policies_with_key_found_remote(test_client: TestClient) 
     assert len(policies) == 1
     assert policies[0] is server_policy
     get_server_resource_mock.assert_called_with(
-        url="url", resource_type="policy", resource_key="fides_key_1", headers={}
+        url="url",
+        resource_type="policy",
+        resource_key="fides_key_1",
+        headers={},
+        client=test_client,
     )
 
 
@@ -301,7 +305,10 @@ def test_get_evaluation_policies_with_no_key(
 
     assert len(policies) == 4
     get_all_server_policies_mock.assert_called_with(
-        url="url", headers={}, exclude=["fides_key_3", "fides_key_4"]
+        url="url",
+        headers={},
+        exclude=["fides_key_3", "fides_key_4"],
+        client=test_client,
     )
 
 
@@ -575,7 +582,7 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
 
 @pytest.mark.unit
 def test_failed_evaluation_error_message(
-    test_config: FidesConfig, capsys: pytest.CaptureFixture, client: TestClient
+    test_config: FidesConfig, capsys: pytest.CaptureFixture, test_client: TestClient
 ) -> None:
     """
     Check that the returned error message matches what is expected.
@@ -610,7 +617,7 @@ def test_failed_evaluation_error_message(
             manifests_dir="tests/ctl/data/failing_declaration_taxonomy.yml",
             headers=test_config.user.request_headers,
             local=True,
-            client=client,
+            client=test_client,
         )
     captured_out = string_cleaner(capsys.readouterr().out)
     print(f"Expected output:\n{expected_error_message}")
