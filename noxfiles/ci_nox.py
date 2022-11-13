@@ -136,8 +136,10 @@ def fides_db_scan(session: nox.Session) -> None:
 
 @nox.session()
 def minimal_config_startup(session: nox.Session) -> None:
-    """Check that the server can start successfully with a minimal configuration set
-    through environment vairables."""
+    """
+    Check that the server can start successfully with a minimal
+    configuration set through environment vairables.
+    """
     session.notify("teardown")
     compose_file = "docker/docker-compose.minimal-config.yml"
     start_command = (

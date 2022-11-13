@@ -3,7 +3,6 @@
 # pylint: disable=C0115,C0116, E0213
 from typing import Dict, List, Optional, Tuple, Union
 
-# from fideslib.core.config import SecuritySettings as FideslibSecuritySettings
 import validators
 from fideslib.core.config import FidesSettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
@@ -13,16 +12,6 @@ from pydantic import root_validator, validator
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
 ENV_PREFIX = "FIDES__SECURITY__"
-
-
-# class SecuritySettings(FideslibSecuritySettings):
-#     """Configuration settings for Security variables."""
-#
-#     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
-#     subject_request_download_link_ttl_seconds: int = 432000  # 5 days
-#
-#     class Config:
-#         env_prefix = ENV_PREFIX
 
 
 class SecuritySettings(FidesSettings):
@@ -76,7 +65,6 @@ class SecuritySettings(FidesSettings):
 
     encoding: str = "UTF-8"
 
-    # OAuth
     oauth_root_client_id: str
     oauth_root_client_secret: str
     oauth_root_client_secret_hash: Optional[Tuple]
@@ -87,7 +75,8 @@ class SecuritySettings(FidesSettings):
     @root_validator(pre=True)
     @classmethod
     def assemble_root_access_token(cls, values: Dict[str, str]) -> Dict[str, str]:
-        """Sets a hashed value of the root access key.
+        """
+        Sets a hashed value of the root access key.
         This is hashed as it is not wise to return a plaintext for of the
         root credential anywhere in the system.
         """
