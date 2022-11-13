@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 import yaml
 from fideslang.manifests import load_yaml_into_dict
+from starlette.testclient import TestClient
 
 from fides.cli.utils import print_divider
 from fides.ctl.core.api_helpers import get_server_resource, list_server_resources
@@ -19,7 +20,10 @@ def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
 
 
 def pull_existing_resources(
-    manifests_dir: str, url: str, headers: Dict[str, str]
+    manifests_dir: str,
+    url: str,
+    headers: Dict[str, str],
+    client: Optional[TestClient] = None,
 ) -> List[str]:
     """
     Update all of the pre-existing local resources to match their
@@ -44,7 +48,7 @@ def pull_existing_resources(
                 existing_keys.append(fides_key)
 
                 server_resource = get_server_resource(
-                    url, resource_type, fides_key, headers, raw=True
+                    url, resource_type, fides_key, headers, raw=True, client=client
                 )
 
                 if server_resource:
@@ -63,7 +67,11 @@ def pull_existing_resources(
 
 
 def pull_missing_resources(
-    manifest_path: str, url: str, headers: Dict[str, str], existing_keys: List[str]
+    manifest_path: str,
+    url: str,
+    headers: Dict[str, str],
+    existing_keys: List[str],
+    client: Optional[TestClient] = None,
 ) -> bool:
     """
     Writes all "system", "dataset" and "policy" resources out locally
@@ -79,6 +87,7 @@ def pull_missing_resources(
             resource_type=resource,
             exclude_keys=existing_keys,
             raw=True,
+            client=client,
         )
         for resource in resources_to_pull
     }
@@ -94,6 +103,7 @@ def pull(
     url: str,
     headers: Dict[str, str],
     all_resources: Optional[str],
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     If a resource in a local file has a matching resource on the server,
@@ -102,7 +112,7 @@ def pull(
     If the 'all' flag is passed, additionally pull all other server resources
     into local files as well.
     """
-    existing_keys = pull_existing_resources(manifests_dir, url, headers)
+    existing_keys = pull_existing_resources(manifests_dir, url, headers, client=client)
 
     if all_resources:
         pull_missing_resources(
@@ -110,6 +120,7 @@ def pull(
             url=url,
             headers=headers,
             existing_keys=existing_keys,
+            client=client,
         )
 
     echo_green("Pull complete.")

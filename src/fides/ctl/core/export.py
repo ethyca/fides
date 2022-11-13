@@ -2,10 +2,11 @@
 Exports various resources as data maps.
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 from fideslang.models import ContactDetails, FidesModel
+from starlette.testclient import TestClient
 
 from fides.ctl.core.api_helpers import (
     get_server_resource,
@@ -102,7 +103,12 @@ def generate_dataset_records(
 
 
 def export_dataset(
-    url: str, dataset_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
+    url: str,
+    dataset_list: List,
+    headers: Dict[str, str],
+    manifests_dir: str,
+    dry: bool,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Exports the required fields from a dataset resource to a csv file.
@@ -114,7 +120,7 @@ def export_dataset(
     existing_keys = [resource.fides_key for resource in dataset_list]
 
     server_resource_list = get_server_resources(
-        url, resource_type, existing_keys, headers
+        url, resource_type, existing_keys, headers, client=client
     )
 
     output_list = generate_dataset_records(server_resource_list)
@@ -246,7 +252,12 @@ def generate_system_records(
 
 
 def export_system(
-    url: str, system_list: List, headers: Dict[str, str], manifests_dir: str, dry: bool
+    url: str,
+    system_list: List,
+    headers: Dict[str, str],
+    manifests_dir: str,
+    dry: bool,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Exports the required fields from a system resource to a csv file.
@@ -261,7 +272,7 @@ def export_system(
     server_resources = {}
     existing_keys = [resource.fides_key for resource in system_list]
     server_resources[resource_type] = get_server_resources(
-        url, resource_type, existing_keys, headers
+        url, resource_type, existing_keys, headers, client=client
     )
 
     data_use_fides_keys = [
@@ -270,7 +281,7 @@ def export_system(
         for privacy_declaration in system.privacy_declarations
     ]
     server_resources["data_use"] = get_server_resources(
-        url, "data_use", list(set(data_use_fides_keys)), headers
+        url, "data_use", list(set(data_use_fides_keys)), headers, client=client
     )
 
     data_subject_fides_keys = [
@@ -281,7 +292,7 @@ def export_system(
     ]
 
     server_resources["data_subject"] = get_server_resources(
-        url, "data_subject", list(set(data_subject_fides_keys)), headers
+        url, "data_subject", list(set(data_subject_fides_keys)), headers, client=client
     )
 
     output_list = generate_system_records(server_resources)
@@ -350,6 +361,7 @@ def export_organization(
     headers: Dict[str, str],
     manifests_dir: str,
     dry: bool,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Exports the required fields from a system resource to a csv file.
@@ -362,7 +374,7 @@ def export_organization(
     existing_keys = [resource.fides_key for resource in organization_list]
 
     server_resource_list = get_server_resources(
-        url, resource_type, existing_keys, headers
+        url, resource_type, existing_keys, headers, client=client
     )
 
     output_list = generate_contact_records(server_resource_list)
@@ -464,6 +476,7 @@ def export_datamap(
     output_directory: str,
     dry: bool,
     to_csv: bool,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Exports the required fields from a system resource to a csv file.
@@ -475,16 +488,15 @@ def export_datamap(
     # load resources from server, filtered by organization
     server_resource_dict = {
         "organization": [
-            get_server_resource(url, "organization", organization_fides_key, headers)
+            get_server_resource(
+                url, "organization", organization_fides_key, headers, client=client
+            )
         ]
     }
     # Verify this isn't dropping records on the joins
     for resource_type in ["system", "dataset", "data_subject", "data_use"]:
         server_resources = list_server_resources(
-            url,
-            headers,
-            resource_type,
-            exclude_keys=[],
+            url, headers, resource_type, exclude_keys=[], client=client
         )
 
         if not server_resources:

@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Union
 
 from fideslang.models import DataSubject, DataUse, FidesModel, Organization, System
+from starlette.testclient import TestClient
 
 from fides.cli.utils import pretty_echo
 from fides.ctl.core.api_helpers import (
@@ -15,6 +16,7 @@ def audit_systems(
     url: str,
     headers: Dict[str, str],
     include_keys: Optional[List] = None,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Audits the system resources from the server for compliance.
@@ -27,10 +29,12 @@ def audit_systems(
     system_resources: Optional[Union[List[FidesModel], List[Dict]]]
 
     if include_keys:
-        system_resources = get_server_resources(url, "system", include_keys, headers)
+        system_resources = get_server_resources(
+            url, "system", include_keys, headers, client=client
+        )
     else:
         system_resources = list_server_resources(
-            url, headers, "system", exclude_keys=[]
+            url, headers, "system", exclude_keys=[], client=client
         )
 
     if not system_resources:
@@ -43,7 +47,7 @@ def audit_systems(
         pretty_echo(
             f"Auditing System: {system.name if isinstance(system, FidesModel) else system['name']}"
         )
-        new_findings = validate_system_attributes(system, url, headers)
+        new_findings = validate_system_attributes(system, url, headers, client=client)
         audit_findings = audit_findings + new_findings
 
     if audit_findings > 0:
@@ -58,6 +62,7 @@ def validate_system_attributes(
     system: System,
     url: str,
     headers: Dict[str, str],
+    client: Optional[TestClient] = None,
 ) -> int:
     """
     Validates one or multiple attributes are set on a system
@@ -72,13 +77,13 @@ def validate_system_attributes(
 
     for privacy_declaration in system.privacy_declarations:
         data_use = get_server_resource(
-            url, "data_use", privacy_declaration.data_use, headers
+            url, "data_use", privacy_declaration.data_use, headers, client=client
         )
         data_use_findings = audit_data_use_attributes(data_use, system.name)
         new_findings = new_findings + data_use_findings
         for data_subject_fides_key in privacy_declaration.data_subjects:
             data_subject = get_server_resource(
-                url, "data_subject", data_subject_fides_key, headers
+                url, "data_subject", data_subject_fides_key, headers, client=client
             )
             data_subject_findings = audit_data_subject_attributes(
                 data_subject, system.name
@@ -135,6 +140,7 @@ def audit_organizations(
     url: str,
     headers: Dict[str, str],
     include_keys: Optional[List] = None,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
     Validates the extra attributes for an Organization are
@@ -145,11 +151,11 @@ def audit_organizations(
 
     if include_keys:
         organization_resources = get_server_resources(
-            url, "organization", include_keys, headers
+            url, "organization", include_keys, headers, client=client
         )
     else:
         organization_resources = list_server_resources(
-            url, headers, "organization", exclude_keys=[]
+            url, headers, "organization", exclude_keys=[], client=client
         )
 
     if not organization_resources:

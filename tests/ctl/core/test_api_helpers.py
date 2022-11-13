@@ -21,7 +21,7 @@ PARAM_MODEL_LIST = [
 # Fixtures
 @pytest.fixture
 def created_resources(
-    test_config: FidesConfig, resources_dict: Dict, request: FixtureRequest
+    test_config: FidesConfig, resources_dict: Dict, request: FixtureRequest, test_client
 ) -> Generator:
     """
     Fixture that creates and tears down a set of resources for each test run.
@@ -39,6 +39,7 @@ def created_resources(
             resource_type=resource_type,
             json_resource=base_resource.json(exclude_none=True),
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         created_keys.append(base_resource.fides_key)
 
@@ -51,10 +52,13 @@ def created_resources(
             resource_type=resource_type,
             resource_id=created_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
 
-def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
+def delete_resource_type(
+    test_config: FidesConfig, resource_type: str, test_client
+) -> None:
     """Deletes all of the resources of a certain type."""
     url = test_config.cli.server_url
     fides_keys = [
@@ -63,6 +67,7 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
             url,
             resource_type,
             headers=test_config.user.request_headers,
+            client=test_client,
         ).json()
     ]
     for fides_key in fides_keys:
@@ -71,6 +76,7 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
             resource_type,
             fides_key,
             test_config.user.request_headers,
+            client=test_client,
         )
 
 
@@ -80,7 +86,7 @@ class TestGetServerResource:
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
     def test_get_server_resource_found_resource(
-        self, test_config: FidesConfig, created_resources: List
+        self, test_config: FidesConfig, created_resources: List, test_client
     ) -> None:
         """
         Tests that an existing resource is returned by helper
@@ -92,12 +98,13 @@ class TestGetServerResource:
             resource_type=resource_type,
             resource_key=resource_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert result.fides_key == resource_key
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resource_missing_resource(
-        self, test_config: FidesConfig, resource_type: str
+        self, test_config: FidesConfig, resource_type: str, test_client
     ) -> None:
         """
         Tests that a missing resource returns None
@@ -108,6 +115,7 @@ class TestGetServerResource:
             resource_type=resource_type,
             resource_key=resource_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert result is None
 
@@ -119,7 +127,7 @@ class TestGetServerResources:
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
     def test_get_server_resources_found_resources(
-        self, test_config: FidesConfig, created_resources: List
+        self, test_config: FidesConfig, created_resources: List, test_client
     ) -> None:
         """
         Tests that existing resources are returned by helper
@@ -131,12 +139,13 @@ class TestGetServerResources:
             resource_type=resource_type,
             existing_keys=resource_keys,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert set(resource_keys) == set(resource.fides_key for resource in result)
 
     @pytest.mark.parametrize("resource_type", PARAM_MODEL_LIST)
     def test_get_server_resources_missing_resources(
-        self, test_config: FidesConfig, resource_type: str
+        self, test_config: FidesConfig, resource_type: str, test_client
     ) -> None:
         """
         Tests that a missing resource returns an empty list
@@ -147,29 +156,36 @@ class TestGetServerResources:
             resource_type=resource_type,
             existing_keys=resource_keys,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert result == []
 
 
 @pytest.mark.integration
 class TestListServerResources:
-    def test_list_server_resources_passing(self, test_config: FidesConfig) -> None:
+    def test_list_server_resources_passing(
+        self, test_config: FidesConfig, test_client
+    ) -> None:
         resource_type = "data_category"
         result: List[FidesModel] = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             headers=test_config.user.request_headers,
             exclude_keys=[],
+            client=test_client,
         )
         assert len(result) > 1
 
-    def test_list_server_resources_none(self, test_config: FidesConfig) -> None:
+    def test_list_server_resources_none(
+        self, test_config: FidesConfig, test_client
+    ) -> None:
         resource_type = "system"
-        delete_resource_type(test_config, resource_type)
+        delete_resource_type(test_config, resource_type, test_client)
         result: List[FidesModel] = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             headers=test_config.user.request_headers,
             exclude_keys=[],
+            client=test_client,
         )
         assert result == []

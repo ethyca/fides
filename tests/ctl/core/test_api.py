@@ -18,10 +18,15 @@ TAXONOMY_ENDPOINTS = ["data_category", "data_subject", "data_use", "data_qualifi
 
 
 # Helper Functions
-def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
+def get_existing_key(
+    test_config: FidesConfig, resource_type: str, test_client: TestClient
+) -> int:
     """Get an ID that is known to exist."""
     return _api.ls(
-        test_config.cli.server_url, resource_type, test_config.user.request_headers
+        test_config.cli.server_url,
+        resource_type,
+        test_config.user.request_headers,
+        client=test_client,
     ).json()[-1]["fides_key"]
 
 
@@ -56,7 +61,7 @@ def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
 class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_create(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str, test_client
     ) -> None:
         manifest = resources_dict[endpoint]
         print(manifest.json(exclude_none=True))
@@ -65,35 +70,46 @@ class TestCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 201
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_ls(self, test_config: FidesConfig, endpoint: str) -> None:
+    def test_api_ls(
+        self, test_config: FidesConfig, endpoint: str, test_client: TestClient
+    ) -> None:
         result = _api.ls(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
-    def test_api_get(self, test_config: FidesConfig, endpoint: str) -> None:
-        existing_id = get_existing_key(test_config, endpoint)
+    def test_api_get(
+        self, test_config: FidesConfig, endpoint: str, test_client: TestClient
+    ) -> None:
+        existing_id = get_existing_key(test_config, endpoint, test_client)
         result = _api.get(
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resource_id=existing_id,
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_sent_is_received(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         """
         Confirm that the resource and values that we send are the
@@ -108,6 +124,7 @@ class TestCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resource_id=resource_key,
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 200
@@ -117,7 +134,11 @@ class TestCrud:
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_update(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         result = _api.update(
@@ -125,13 +146,18 @@ class TestCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         result = _api.upsert(
@@ -139,12 +165,17 @@ class TestCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resources=[loads(manifest.json())],
+            client=test_client,
         )
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_delete(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
@@ -154,6 +185,7 @@ class TestCrud:
             resource_type=endpoint,
             resource_id=resource_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         print(result.text)
         assert result.status_code == 200
@@ -163,7 +195,7 @@ class TestCrud:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str, test_client: TestClient
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
 
@@ -172,12 +204,13 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resource_id=resource.fides_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str, test_client: TestClient
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
@@ -188,12 +221,13 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             json_resource=json_resource,
+            client=test_client,
         )
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, endpoint: str, test_client: TestClient
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
@@ -202,12 +236,17 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resources=resources,
+            client=test_client,
         )
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -216,6 +255,7 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         assert result.status_code == 403
 
@@ -224,11 +264,16 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resource_id=manifest.fides_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -237,6 +282,7 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resources=[manifest.dict()],
+            client=test_client,
         )
         assert result.status_code == 403
 
@@ -245,11 +291,16 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resource_id=manifest.fides_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         _api.create(
@@ -257,6 +308,7 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
         manifest.is_default = True
@@ -265,12 +317,17 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
+            client=test_client,
         )
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        test_client: TestClient,
     ) -> None:
         manifest = resources_dict[endpoint]
         manifest.is_default = True
@@ -282,6 +339,7 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             json_resource=second_item.json(exclude_none=True),
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
         result = _api.upsert(
@@ -289,6 +347,7 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.request_headers,
             resource_type=endpoint,
             resources=[manifest.dict(), second_item.dict()],
+            client=test_client,
         )
         assert result.status_code == 403
 
@@ -297,12 +356,14 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resource_id=manifest.fides_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=second_item.fides_key,
             headers=test_config.user.request_headers,
+            client=test_client,
         )
 
 

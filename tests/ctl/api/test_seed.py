@@ -3,6 +3,7 @@ from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
+from starlette.testclient import TestClient
 
 from fides.api.ctl.database import seed
 from fides.ctl.core.api import generate_resource_url
@@ -10,7 +11,9 @@ from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture(scope="function", name="data_category")
-def fixture_data_category(test_config: FidesConfig, test_client) -> Generator:
+def fixture_data_category(
+    test_config: FidesConfig, test_client: TestClient
+) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.
     """

@@ -1,5 +1,6 @@
 import pytest
 from git.repo import Repo
+from starlette.testclient import TestClient
 
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.pull import pull_existing_resources
@@ -13,11 +14,16 @@ def git_reset(change_dir: str) -> None:
 
 
 @pytest.mark.unit
-def test_pull_existing_resources(test_config: FidesConfig) -> None:
+def test_pull_existing_resources(
+    test_config: FidesConfig, test_client: TestClient
+) -> None:
     """Placeholder test."""
     test_dir = ".fides/"
     existing_keys = pull_existing_resources(
-        test_dir, test_config.cli.server_url, test_config.user.request_headers
+        test_dir,
+        test_config.cli.server_url,
+        test_config.user.request_headers,
+        client=test_client,
     )
     git_reset(test_dir)
     assert len(existing_keys) > 1

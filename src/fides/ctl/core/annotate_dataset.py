@@ -1,13 +1,14 @@
 """
 This script is a utility for interactively annotating data categories in the dataset manifest
 """
-from typing import List, Union
+from typing import List, Optional, Union
 
 import click
 from fideslang import FidesModel, manifests
 from fideslang.manifests import ingest_manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField, FidesKey
 from fideslang.validation import FidesValidationError
+from starlette.testclient import TestClient
 
 from fides.ctl.core import api_helpers
 from fides.ctl.core.config import FidesConfig
@@ -89,20 +90,20 @@ def annotate_dataset(
     annotate_all: bool = False,
     validate: bool = True,
     include_null: bool = False,
+    client: Optional[TestClient] = None,
 ) -> None:
     """
-    Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
-    for members of the dataset that do not have any specified
-    Args:
-        dataset_file: the file name for the dataset to annotate
-        resource_type: the type of data resource to point to for assistance (via visualization web page)
-        annotate_all: flag to annotate all members of a dataset (default False: only annotate fields)
-        validate: flag to check user inputs for formatting and data category presence
-        include_null: flag to write out all empty attributes with null (default False: only write populated attributes)
-
-    Returns:
-        Write the amended dataset file in place
-    """
+        Given a dataset.yml-like file, walk the user through an interactive cli to provide data categories
+        for members of the dataset that do not have any specified
+        Args:
+            dataset_file: the file name for the dataset to annotate
+            resource_type: the type of data resource to point to for assistance (via visualization web page)
+            annotate_all: flag to annotate all members of a dataset (default False: only annotate fields)
+            validate: flag to check user inputs for formatting and data category presence
+            include_null: flag to write out all empty attributes with null (default False: only write populated attributes)
+        Returns:
+            Write the amended dataset file in place
+    x"""
     output_dataset = []
 
     datasets = ingest_manifests(dataset_file)["dataset"]
@@ -111,6 +112,7 @@ def annotate_dataset(
         resource_type=resource_type,
         headers=config.user.request_headers,
         exclude_keys=[],
+        client=client,
     )
 
     if not resources:

@@ -38,9 +38,12 @@ def annotate_dataset(
     Guided flow for annotating datasets. The dataset file will be edited in-place.
     """
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
+
     _annotate_dataset.annotate_dataset(
         config=config,
         dataset_file=input_filename,
         annotate_all=all_members,
         validate=validate,
+        client=client,
     )

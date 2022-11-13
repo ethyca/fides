@@ -20,6 +20,7 @@ from fideslang.relationships import get_referenced_missing_keys
 from fideslang.utils import get_resource_by_fides_key
 from fideslang.validation import FidesKey
 from pydantic import AnyHttpUrl
+from starlette.testclient import TestClient
 
 from fides.cli.utils import handle_cli_response, pretty_echo
 from fides.ctl.core import api
@@ -33,6 +34,7 @@ def get_evaluation_policies(
     evaluate_fides_key: Optional[str],
     url: AnyHttpUrl,
     headers: Dict[str, str],
+    client: Optional[TestClient] = None,
 ) -> List[Policy]:
     """
     Returns policies to be evaluated. If 'evaluate_fides_key' is
@@ -54,6 +56,7 @@ def get_evaluation_policies(
             resource_type="policy",
             resource_key=evaluate_fides_key,
             headers=headers,
+            client=client,
         )
         return [server_policy_found] if server_policy_found else []
 
@@ -61,13 +64,16 @@ def get_evaluation_policies(
         [policy.fides_key for policy in local_policies] if local_policies else None
     )
     all_policies = local_policies + get_all_server_policies(
-        url=url, headers=headers, exclude=local_policy_keys
+        url=url, headers=headers, exclude=local_policy_keys, client=client
     )
     return all_policies
 
 
 def get_all_server_policies(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
+    url: AnyHttpUrl,
+    headers: Dict[str, str],
+    exclude: Optional[List[FidesKey]] = None,
+    client: Optional[TestClient] = None,
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
@@ -77,7 +83,8 @@ def get_all_server_policies(
 
     exclude = exclude if exclude else []
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="policy", headers=headers), verbose=False
+        api.ls(url=url, resource_type="policy", headers=headers, client=client),
+        verbose=False,
     )
     policy_keys = [
         resource["fides_key"]
@@ -85,7 +92,11 @@ def get_all_server_policies(
         if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
-        url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
+        url=url,
+        resource_type="policy",
+        headers=headers,
+        existing_keys=policy_keys,
+        client=client,
     )
     return policy_list
 
@@ -440,6 +451,7 @@ def hydrate_missing_resources(
     headers: Dict[str, str],
     missing_resource_keys: List[FidesKey],
     dehydrated_taxonomy: Taxonomy,
+    client: Optional[TestClient] = None,
 ) -> Taxonomy:
     """
     Query the server for all of the missing resource keys and
@@ -452,6 +464,7 @@ def hydrate_missing_resources(
             resource_type=resource_name,
             headers=headers,
             existing_keys=missing_resource_keys,
+            client=client,
         )
         setattr(
             dehydrated_taxonomy,
@@ -466,6 +479,7 @@ def populate_referenced_keys(
     url: AnyHttpUrl,
     headers: Dict[str, str],
     last_keys: List[FidesKey],
+    client: Optional[TestClient] = None,
 ) -> Taxonomy:
     """
     Takes in a taxonomy with potentially missing references to fides keys.
@@ -485,9 +499,14 @@ def populate_referenced_keys(
             headers=headers,
             missing_resource_keys=missing_resource_keys,
             dehydrated_taxonomy=taxonomy,
+            client=client,
         )
         return populate_referenced_keys(
-            taxonomy=taxonomy, url=url, headers=headers, last_keys=missing_resource_keys
+            taxonomy=taxonomy,
+            url=url,
+            headers=headers,
+            last_keys=missing_resource_keys,
+            client=client,
         )
     return taxonomy
 
@@ -524,6 +543,7 @@ def evaluate(
     message: str = "",
     local: bool = False,
     dry: bool = False,
+    client: Optional[TestClient] = None,
 ) -> Evaluation:
     """
     Perform evaluation for a given Policy. If a policy key is not
@@ -546,6 +566,7 @@ def evaluate(
             evaluate_fides_key=policy_fides_key,
             url=url,
             headers=headers,
+            client=client,
         )
 
     validate_policies_exist(policies=policies, evaluate_fides_key=policy_fides_key)
@@ -574,6 +595,7 @@ def evaluate(
             resource_type="evaluation",
             json_resource=evaluation.json(exclude_none=True),
             headers=headers,
+            client=client,
         )
         handle_cli_response(response, verbose=False)
 

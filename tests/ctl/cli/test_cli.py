@@ -8,6 +8,7 @@ import pytest
 from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
+from starlette.testclient import TestClient
 
 from fides.cli import cli
 
@@ -28,18 +29,24 @@ def test_cli_runner() -> Generator:
 
 
 @pytest.mark.integration
-def test_init(test_cli_runner: CliRunner) -> None:
+def test_init(test_cli_runner: CliRunner, test_client: TestClient) -> None:
     result = test_cli_runner.invoke(
-        cli, ["init"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        cli,
+        ["init"],
+        env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"},
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.unit
-def test_view_config(test_cli_runner: CliRunner) -> None:
+def test_view_config(test_cli_runner: CliRunner, test_client: TestClient) -> None:
     result = test_cli_runner.invoke(
-        cli, ["view", "config"], env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"}
+        cli,
+        ["view", "config"],
+        env={"FIDES__USER__ANALYTICS_OPT_OUT": "true"},
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -57,59 +64,87 @@ def test_webserver() -> None:
 
 
 @pytest.mark.unit
-def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_parse(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "parse", "demo_resources/"]
+        cli,
+        ["-f", test_config_path, "parse", "demo_resources/"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_reset_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "reset", "-y"])
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_init_db(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "db", "init"])
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_reset_db(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "push", "demo_resources/"]
+        cli, ["-f", test_config_path, "db", "reset", "-y"], obj={"client": test_client}
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_dry_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_init_db(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "push", "--dry", "demo_resources/"]
+        cli, ["-f", test_config_path, "db", "init"], obj={"client": test_client}
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_diff_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_push(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "push", "--diff", "demo_resources/"]
+        cli,
+        ["-f", test_config_path, "push", "demo_resources/"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_dry_diff_push(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_dry_push(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli, ["-f", test_config_path, "push", "--dry", "--diff", "demo_resources/"]
+        cli,
+        ["-f", test_config_path, "push", "--dry", "demo_resources/"],
+        obj={"client": test_client},
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_diff_push(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "push", "--diff", "demo_resources/"],
+        obj={"client": test_client},
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_dry_diff_push(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "push", "--dry", "--diff", "demo_resources/"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -118,9 +153,7 @@ def test_dry_diff_push(test_config_path: str, test_cli_runner: CliRunner) -> Non
 @pytest.mark.integration
 class TestPull:
     def test_pull(
-        self,
-        test_config_path: str,
-        test_cli_runner: CliRunner,
+        self, test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
@@ -128,15 +161,15 @@ class TestPull:
         and then reset.
         """
         test_dir = ".fides/"
-        result = test_cli_runner.invoke(cli, ["-f", test_config_path, "pull", test_dir])
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "pull", test_dir], obj={"client": test_client}
+        )
         git_reset(test_dir)
         print(result.output)
         assert result.exit_code == 0
 
     def test_pull_all(
-        self,
-        test_config_path: str,
-        test_cli_runner: CliRunner,
+        self, test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
@@ -155,6 +188,7 @@ class TestPull:
                 "-a",
                 ".fides/test_resources.yml",
             ],
+            obj={"client": test_client},
         )
         git_reset(test_dir)
         os.remove(test_file)
@@ -163,32 +197,43 @@ class TestPull:
 
 
 @pytest.mark.integration
-def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "evaluate", "-a"])
-    print(result.output)
-    assert result.exit_code == 0
-
-
-@pytest.mark.integration
-def test_get(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_audit(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
     result = test_cli_runner.invoke(
-        cli,
-        ["-f", test_config_path, "get", "data_category", "user"],
+        cli, ["-f", test_config_path, "evaluate", "-a"], obj={"client": test_client}
     )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
-def test_ls(test_config_path: str, test_cli_runner: CliRunner) -> None:
-    result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
+def test_get(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "get", "data_category", "user"],
+        obj={"client": test_client},
+    )
+    print(result.output)
+    assert result.exit_code == 0
+
+
+@pytest.mark.integration
+def test_ls(
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
+) -> None:
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "ls", "system"], obj={"client": test_client}
+    )
     print(result.output)
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
 def test_evaluate_with_declaration_pass(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -198,6 +243,7 @@ def test_evaluate_with_declaration_pass(
             "evaluate",
             "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -205,11 +251,12 @@ def test_evaluate_with_declaration_pass(
 
 @pytest.mark.integration
 def test_evaluate_demo_resources_pass(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "evaluate", "demo_resources/"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -217,7 +264,7 @@ def test_evaluate_demo_resources_pass(
 
 @pytest.mark.integration
 def test_local_evaluate(
-    test_invalid_config_path: str, test_cli_runner: CliRunner
+    test_invalid_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -228,6 +275,7 @@ def test_local_evaluate(
             "evaluate",
             "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -235,7 +283,7 @@ def test_local_evaluate(
 
 @pytest.mark.integration
 def test_local_evaluate_demo_resources(
-    test_invalid_config_path: str, test_cli_runner: CliRunner
+    test_invalid_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -246,6 +294,7 @@ def test_local_evaluate_demo_resources(
             "evaluate",
             "demo_resources/",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -253,7 +302,7 @@ def test_local_evaluate_demo_resources(
 
 @pytest.mark.integration
 def test_evaluate_with_key_pass(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -265,6 +314,7 @@ def test_evaluate_with_key_pass(
             "primary_privacy_policy",
             "tests/ctl/data/passing_declaration_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -272,7 +322,7 @@ def test_evaluate_with_key_pass(
 
 @pytest.mark.integration
 def test_evaluate_with_declaration_failed(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -282,6 +332,7 @@ def test_evaluate_with_declaration_failed(
             "evaluate",
             "tests/ctl/data/failing_declaration_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 1
@@ -289,7 +340,7 @@ def test_evaluate_with_declaration_failed(
 
 @pytest.mark.integration
 def test_evaluate_with_dataset_failed(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -299,6 +350,7 @@ def test_evaluate_with_dataset_failed(
             "evaluate",
             "tests/ctl/data/failing_dataset_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 1
@@ -306,7 +358,7 @@ def test_evaluate_with_dataset_failed(
 
 @pytest.mark.integration
 def test_evaluate_with_dataset_field_failed(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -316,6 +368,7 @@ def test_evaluate_with_dataset_field_failed(
             "evaluate",
             "tests/ctl/data/failing_dataset_collection_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 1
@@ -323,7 +376,7 @@ def test_evaluate_with_dataset_field_failed(
 
 @pytest.mark.integration
 def test_evaluate_with_dataset_collection_failed(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -333,6 +386,7 @@ def test_evaluate_with_dataset_collection_failed(
             "evaluate",
             "tests/ctl/data/failing_dataset_field_taxonomy.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 1
@@ -346,6 +400,7 @@ def test_export_resources(
     test_config_path: str,
     test_cli_runner: CliRunner,
     export_resource: str,
+    test_client: TestClient,
 ) -> None:
     """
     Tests that each resource is successfully exported
@@ -360,13 +415,14 @@ def test_export_resources(
             export_resource,
             "--dry",
         ],
+        obj={"client": test_client},
     )
     assert result.exit_code == 0
 
 
 @pytest.mark.integration
 def test_nested_field_fails_evaluation(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     """
     Tests a taxonomy that is rigged to fail only due to
@@ -381,6 +437,7 @@ def test_nested_field_fails_evaluation(
             "evaluate",
             "tests/ctl/data/failing_nested_dataset.yml",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 1
@@ -391,6 +448,7 @@ def test_generate_dataset_db_with_connection_string(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
@@ -405,6 +463,7 @@ def test_generate_dataset_db_with_connection_string(
             "--connection-string",
             "postgresql+psycopg2://postgres:fides@fides-db:5432/fides_test",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -415,6 +474,7 @@ def test_generate_dataset_db_with_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     tmp_file = tmpdir.join("dataset.yml")
     result = test_cli_runner.invoke(
@@ -429,6 +489,7 @@ def test_generate_dataset_db_with_credentials_id(
             "--credentials-id",
             "postgres_1",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -436,7 +497,7 @@ def test_generate_dataset_db_with_credentials_id(
 
 @pytest.mark.integration
 def test_scan_dataset_db_input_connection_string(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -451,6 +512,7 @@ def test_scan_dataset_db_input_connection_string(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -458,7 +520,7 @@ def test_scan_dataset_db_input_connection_string(
 
 @pytest.mark.integration
 def test_scan_dataset_db_input_credentials_id(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -473,6 +535,7 @@ def test_scan_dataset_db_input_credentials_id(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -480,14 +543,13 @@ def test_scan_dataset_db_input_credentials_id(
 
 @pytest.mark.external
 def test_generate_system_aws_environment_credentials(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
-    tmpdir: LocalPath,
+    test_config_path: str, test_cli_runner: CliRunner, tmpdir: LocalPath, test_client
 ) -> None:
     tmp_file = tmpdir.join("system.yml")
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "generate", "system", "aws", f"{tmp_file}"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -495,7 +557,7 @@ def test_generate_system_aws_environment_credentials(
 
 @pytest.mark.external
 def test_scan_system_aws_environment_credentials(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -508,6 +570,7 @@ def test_scan_system_aws_environment_credentials(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -518,6 +581,7 @@ def test_generate_system_aws_input_credential_options(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     tmp_file = tmpdir.join("system.yml")
     result = test_cli_runner.invoke(
@@ -536,6 +600,7 @@ def test_generate_system_aws_input_credential_options(
             "--region",
             os.environ["AWS_DEFAULT_REGION"],
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -543,7 +608,7 @@ def test_generate_system_aws_input_credential_options(
 
 @pytest.mark.external
 def test_scan_system_aws_input_credential_options(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     result = test_cli_runner.invoke(
         cli,
@@ -562,6 +627,7 @@ def test_scan_system_aws_input_credential_options(
             "--region",
             os.environ["AWS_DEFAULT_REGION"],
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -572,6 +638,7 @@ def test_generate_system_aws_input_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     os.environ["FIDES__CREDENTIALS__AWS_1__AWS_ACCESS_KEY_ID"] = os.environ[
         "AWS_ACCESS_KEY_ID"
@@ -592,6 +659,7 @@ def test_generate_system_aws_input_credentials_id(
             "--credentials-id",
             "aws_1",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -599,7 +667,7 @@ def test_generate_system_aws_input_credentials_id(
 
 @pytest.mark.external
 def test_scan_system_aws_input_credentials_id(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     os.environ["FIDES__CREDENTIALS__AWS_1__AWS_ACCESS_KEY_ID"] = os.environ[
         "AWS_ACCESS_KEY_ID"
@@ -621,6 +689,7 @@ def test_scan_system_aws_input_credentials_id(
             "--credentials-id",
             "aws_1",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -631,6 +700,7 @@ def test_generate_system_okta_input_credential_options(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     tmp_file = tmpdir.join("system.yml")
     token = os.environ["OKTA_CLIENT_TOKEN"]
@@ -648,6 +718,7 @@ def test_generate_system_okta_input_credential_options(
             "--token",
             token,
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -655,7 +726,7 @@ def test_generate_system_okta_input_credential_options(
 
 @pytest.mark.external
 def test_scan_system_okta_input_credential_options(
-    test_config_path: str, test_cli_runner: CliRunner
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     token = os.environ["OKTA_CLIENT_TOKEN"]
     result = test_cli_runner.invoke(
@@ -673,6 +744,7 @@ def test_scan_system_okta_input_credential_options(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -680,15 +752,14 @@ def test_scan_system_okta_input_credential_options(
 
 @pytest.mark.external
 def test_generate_system_okta_environment_credentials(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
-    tmpdir: LocalPath,
+    test_config_path: str, test_cli_runner: CliRunner, tmpdir: LocalPath, test_client
 ) -> None:
     tmp_file = tmpdir.join("system.yml")
     os.environ["OKTA_CLIENT_ORGURL"] = OKTA_URL
     result = test_cli_runner.invoke(
         cli,
         ["-f", test_config_path, "generate", "system", "okta", f"{tmp_file}"],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -696,8 +767,7 @@ def test_generate_system_okta_environment_credentials(
 
 @pytest.mark.external
 def test_scan_system_okta_environment_credentials(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     os.environ["OKTA_CLIENT_ORGURL"] = OKTA_URL
     result = test_cli_runner.invoke(
@@ -711,6 +781,7 @@ def test_scan_system_okta_environment_credentials(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -721,6 +792,7 @@ def test_generate_system_okta_input_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
     tmp_file = tmpdir.join("system.yml")
     os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ["OKTA_CLIENT_TOKEN"]
@@ -736,6 +808,7 @@ def test_generate_system_okta_input_credentials_id(
             "--credentials-id",
             "okta_1",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -743,8 +816,7 @@ def test_generate_system_okta_input_credentials_id(
 
 @pytest.mark.external
 def test_scan_system_okta_input_credentials_id(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
+    test_config_path: str, test_cli_runner: CliRunner, test_client: TestClient
 ) -> None:
     os.environ["FIDES__CREDENTIALS__OKTA_1__TOKEN"] = os.environ["OKTA_CLIENT_TOKEN"]
     result = test_cli_runner.invoke(
@@ -760,6 +832,7 @@ def test_scan_system_okta_input_credentials_id(
             "--coverage-threshold",
             "0",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -770,6 +843,7 @@ def test_generate_dataset_bigquery_credentials_id(
     test_config_path: str,
     test_cli_runner: CliRunner,
     tmpdir: LocalPath,
+    test_client: TestClient,
 ) -> None:
 
     tmp_output_file = tmpdir.join("dataset.yml")
@@ -808,6 +882,7 @@ def test_generate_dataset_bigquery_credentials_id(
             "--credentials-id",
             "bigquery_1",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0
@@ -815,9 +890,7 @@ def test_generate_dataset_bigquery_credentials_id(
 
 @pytest.mark.external
 def test_generate_dataset_bigquery_keyfile_path(
-    test_config_path: str,
-    test_cli_runner: CliRunner,
-    tmpdir: LocalPath,
+    test_config_path: str, test_cli_runner: CliRunner, tmpdir: LocalPath, test_client
 ) -> None:
 
     tmp_output_file = tmpdir.join("dataset.yml")
@@ -841,6 +914,7 @@ def test_generate_dataset_bigquery_keyfile_path(
             "--keyfile-path",
             f"{tmp_keyfile}",
         ],
+        obj={"client": test_client},
     )
     print(result.output)
     assert result.exit_code == 0

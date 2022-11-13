@@ -8,6 +8,7 @@ from fideslang import FidesModel
 from fideslang.parse import parse_dict
 from fideslang.validation import FidesKey
 from requests import Response
+from starlette.testclient import TestClient
 
 from fides.ctl.core import api
 
@@ -17,6 +18,7 @@ def get_server_resources(
     resource_type: str,
     existing_keys: List[FidesKey],
     headers: Dict[str, str],
+    client: Optional[TestClient] = None,
 ) -> List[FidesModel]:
     """
     Get a list of resources from the server that match the provided keys.
@@ -33,6 +35,7 @@ def get_server_resources(
                     resource_type=resource_type,
                     resource_key=key,
                     headers=headers,
+                    client=client,
                 )
                 for key in existing_keys
             ],
@@ -47,6 +50,7 @@ def get_server_resource(
     resource_key: str,
     headers: Dict[str, str],
     raw: bool = False,
+    client: Optional[TestClient] = None,
 ) -> Optional[Union[FidesModel, Dict]]:
     """
     Attempt to get a given resource from the server.
@@ -58,7 +62,11 @@ def get_server_resource(
     a fides_key belongs to by allowing us to check without errors.
     """
     raw_server_response: Response = api.get(
-        url=url, resource_type=resource_type, resource_id=resource_key, headers=headers
+        url=url,
+        resource_type=resource_type,
+        resource_id=resource_key,
+        headers=headers,
+        client=client,
     )
 
     server_resource: Optional[FidesModel] = (
@@ -83,13 +91,16 @@ def list_server_resources(
     resource_type: str,
     exclude_keys: List[str],
     raw: bool = False,
+    client: Optional[TestClient] = None,
 ) -> Optional[Union[List[FidesModel], List[Dict]]]:
     """
     Get a list of resources from the server and return them as parsed objects.
 
     Returns an empty list if no resources are found or if the API returns an error.
     """
-    response: Response = api.ls(url=url, resource_type=resource_type, headers=headers)
+    response: Response = api.ls(
+        url=url, resource_type=resource_type, headers=headers, client=client
+    )
     server_resources = (
         [
             resource

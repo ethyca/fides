@@ -34,6 +34,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
 
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
     taxonomy = _parse.parse(manifests_dir)
     _push.push(
         url=config.cli.server_url,
@@ -41,6 +42,7 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
         headers=config.user.request_headers,
         dry=dry,
         diff=diff,
+        client=client,
     )
 
 
@@ -79,6 +81,7 @@ def evaluate(
     """
 
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
 
     if config.cli.local_mode:
         dry = True
@@ -89,6 +92,7 @@ def evaluate(
             taxonomy=taxonomy,
             headers=config.user.request_headers,
             dry=dry,
+            client=client,
         )
 
     _evaluate.evaluate(
@@ -99,6 +103,7 @@ def evaluate(
         message=message,
         local=config.cli.local_mode,
         dry=dry,
+        client=client,
     )
 
     if audit:
@@ -110,6 +115,7 @@ def evaluate(
             include_keys=[
                 organization.fides_key for organization in taxonomy.organization
             ],
+            client=client,
         )
         print_divider()
         pretty_echo("Auditing System Resource Compliance")
@@ -117,6 +123,7 @@ def evaluate(
             url=config.cli.server_url,
             headers=config.user.request_headers,
             include_keys=[system.fides_key for system in taxonomy.system],
+            client=client,
         )
 
 
@@ -158,6 +165,7 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
     """
 
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
     if git_is_dirty(manifests_dir):
@@ -170,4 +178,5 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
         manifests_dir=manifests_dir,
         headers=config.user.request_headers,
         all_resources=all_resources,
+        client=client,
     )

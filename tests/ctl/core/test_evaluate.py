@@ -17,6 +17,7 @@ from fideslang.models import (
     System,
     Taxonomy,
 )
+from starlette.testclient import TestClient
 
 from fides.ctl.core import evaluate
 from fides.ctl.core.config import FidesConfig
@@ -86,15 +87,21 @@ def create_policy_rule_with_keys(
 
 
 @pytest.mark.integration
-def test_get_all_server_policies(test_config: FidesConfig) -> None:
+def test_get_all_server_policies(
+    test_config: FidesConfig, test_client: TestClient
+) -> None:
     result = evaluate.get_all_server_policies(
-        url=test_config.cli.server_url, headers=test_config.user.request_headers
+        url=test_config.cli.server_url,
+        headers=test_config.user.request_headers,
+        client=test_client,
     )
     assert len(result) > 0
 
 
 @pytest.mark.integration
-def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
+def test_populate_referenced_keys_recursively(
+    test_config: FidesConfig, test_client: TestClient
+) -> None:
     """
     Test that populate_referenced_keys works recursively. It should be able to
     find the keys in the declaration and also populate any keys which those reference.
@@ -122,6 +129,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
         url=test_config.cli.server_url,
         headers=test_config.user.request_headers,
         last_keys=[],
+        client=test_client,
     )
 
     populated_categories = [
@@ -149,7 +157,7 @@ def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
 
 @pytest.mark.integration
 def test_populate_referenced_keys_fails_missing_keys(
-    test_config: FidesConfig,
+    test_config: FidesConfig, test_client: TestClient
 ) -> None:
     """
     Test that populate_referenced_keys will fail if missing keys
@@ -177,11 +185,14 @@ def test_populate_referenced_keys_fails_missing_keys(
             url=test_config.cli.server_url,
             headers=test_config.user.request_headers,
             last_keys=[],
+            client=test_client,
         )
 
 
 @pytest.mark.integration
-def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
+def test_hydrate_missing_resources(
+    test_config: FidesConfig, test_client: TestClient
+) -> None:
     dehydrated_taxonomy = Taxonomy(
         data_category=[
             DataCategory(
@@ -210,6 +221,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
             "user.credentials",
             "user",
         },
+        client=test_client,
     )
     assert len(actual_hydrated_taxonomy.data_category) == 3
 
@@ -236,7 +248,7 @@ def test_get_evaluation_policies_with_key_found_local() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_key_found_remote() -> None:
+def test_get_evaluation_policies_with_key_found_remote(test_client: TestClient) -> None:
     """
     Test that when a fides key is supplied and not found locally, it will be
     fetched from the server
@@ -250,6 +262,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
             evaluate_fides_key="fides_key_1",
             url="url",
             headers={},
+            client=test_client,
         )
 
     assert len(policies) == 1
@@ -260,7 +273,9 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
 
 
 @pytest.mark.unit
-def test_get_evaluation_policies_with_no_key(test_config: FidesConfig) -> None:
+def test_get_evaluation_policies_with_no_key(
+    test_config: FidesConfig, test_client
+) -> None:
     """
     Test that when no fides key is supplied all local and server policies are
     returned.
@@ -281,6 +296,7 @@ def test_get_evaluation_policies_with_no_key(test_config: FidesConfig) -> None:
             evaluate_fides_key="",
             url="url",
             headers={},
+            client=test_client,
         )
 
     assert len(policies) == 4
@@ -559,7 +575,7 @@ def test_get_fides_key_parent_hierarchy_missing_parent() -> None:
 
 @pytest.mark.unit
 def test_failed_evaluation_error_message(
-    test_config: FidesConfig, capsys: pytest.CaptureFixture
+    test_config: FidesConfig, capsys: pytest.CaptureFixture, client: TestClient
 ) -> None:
     """
     Check that the returned error message matches what is expected.
@@ -594,6 +610,7 @@ def test_failed_evaluation_error_message(
             manifests_dir="tests/ctl/data/failing_declaration_taxonomy.yml",
             headers=test_config.user.request_headers,
             local=True,
+            client=client,
         )
     captured_out = string_cleaner(capsys.readouterr().out)
     print(f"Expected output:\n{expected_error_message}")

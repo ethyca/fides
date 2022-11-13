@@ -159,6 +159,8 @@ def generate_system_okta(
     It will need to be run again if the tracked resources change.
     """
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
+
     okta_config = handle_okta_credentials_options(
         fides_config=config,
         token=token,
@@ -173,6 +175,7 @@ def generate_system_okta(
         organization_key=org_key,
         url=config.cli.server_url,
         headers=config.user.request_headers,
+        client=client,
     )
 
 
@@ -207,6 +210,8 @@ def generate_system_aws(
     It will need to be run again if the tracked resources change.
     """
     config = ctx.obj["CONFIG"]
+    client = ctx.obj.get("client")
+
     aws_config = handle_aws_credentials_options(
         fides_config=config,
         access_key_id=access_key_id,
@@ -222,4 +227,5 @@ def generate_system_aws(
         aws_config=aws_config,
         url=config.cli.server_url,
         headers=config.user.request_headers,
+        client=client,
     )
