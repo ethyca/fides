@@ -32,6 +32,7 @@ services:
       VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
       VAULT_TOKEN: ${VAULT_TOKEN:-}
 
+      # Required security env vars
       FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
@@ -105,8 +106,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - FIDES__DEV_MODE=True
-      - FIDES__CLI__ANALYTICS_ID=${FIDES__CLI__ANALYTICS_ID:-}
+      FIDES__DEV_MODE: True
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
+
+      # Required security env vars
+      FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
+      FIDES__SECURITY__DRP_JWT_SECRET: secret
 
   worker:
     image: ethyca/fides:local
