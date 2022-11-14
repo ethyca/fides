@@ -16,7 +16,7 @@ import ScannerLoading from "./ScannerLoading";
  * fides.toml. Eventually, we'll want to store those credentials via this form, but
  * since that flow doesn't exist yet, this is mostly just a loading screen for now.
  */
-const AuthenticateRuntimeForm = () => {
+const LoadRuntimeScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { data, error: queryError } = useGetScanResultsQuery({
@@ -82,4 +82,4 @@ const AuthenticateRuntimeForm = () => {
   );
 };
 
-export default AuthenticateRuntimeForm;
+export default LoadRuntimeScanner;
