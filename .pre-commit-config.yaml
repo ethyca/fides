@@ -1,6 +1,6 @@
 minimum_pre_commit_version: "2"
 
-# To use this pre-commit hooks on the pre-commit stage only, run
+# To use hooks on the pre-commit stage only, run
 # pre-commit install --hook-type pre-commit
 
 repos:
