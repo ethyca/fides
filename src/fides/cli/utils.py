@@ -44,7 +44,11 @@ from fides.ctl.core.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.ctl.core.config.utils import get_config_from_file, update_config_file
+from fides.ctl.core.config.utils import (
+    get_config_from_file,
+    get_dev_mode,
+    update_config_file,
+)
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
 FIDES_ASCII_ART = """
@@ -269,7 +273,7 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
     try:
         client = AnalyticsClient(
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
-            developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
+            developer_mode=get_dev_mode(),
             os=system(),
             product_name=app_name + "-cli",
             production_version=version(app_name),
