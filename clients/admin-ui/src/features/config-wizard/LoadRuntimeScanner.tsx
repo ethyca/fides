@@ -2,9 +2,13 @@ import { Box, Button, Stack, useToast } from "@fidesui/react";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import { ParsedError, parseError } from "~/features/common/helpers";
+import {
+  isErrorResult,
+  ParsedError,
+  parseError,
+} from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
-import { useGetScanResultsQuery } from "~/features/plus/plus.slice";
+import { useUpdateScanMutation } from "~/features/plus/plus.slice";
 import { RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
@@ -19,14 +23,8 @@ import ScannerLoading from "./ScannerLoading";
 const LoadRuntimeScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { data, error: queryError } = useGetScanResultsQuery({
-    classify: true,
-  });
+  const [updateScanMutation] = useUpdateScanMutation();
   const [scannerError, setScannerError] = useState<ParsedError>();
-
-  const handleCancel = () => {
-    dispatch(changeStep(2));
-  };
 
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -37,25 +35,29 @@ const LoadRuntimeScanner = () => {
     setScannerError(parsedError);
   };
 
-  // Handle success, which will redirect to another view
   useEffect(() => {
-    if (data) {
-      toast(
-        successToastParams(
-          `Your scan was successfully completed, with ${data.systems.length} new systems detected!`
-        )
-      );
-      dispatch(setSystemsForReview(data.systems));
-      dispatch(changeStep());
-    }
-  }, [data, dispatch, toast]);
+    const handleScan = async () => {
+      const result = await updateScanMutation({ classify: true });
+      if (isErrorResult(result)) {
+        handleError(result.error);
+      } else {
+        const { data } = result;
+        toast(
+          successToastParams(
+            `Your scan was successfully completed, with ${data.systems.length} new systems detected!`
+          )
+        );
+        dispatch(setSystemsForReview(data.systems));
+        dispatch(changeStep());
+      }
+    };
 
-  // Handle errors
-  useEffect(() => {
-    if (queryError) {
-      handleError(queryError);
-    }
-  }, [queryError]);
+    handleScan();
+  }, [updateScanMutation, dispatch, toast]);
+
+  const handleCancel = () => {
+    dispatch(changeStep(2));
+  };
 
   if (scannerError) {
     return (

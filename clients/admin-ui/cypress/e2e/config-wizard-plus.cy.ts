@@ -31,6 +31,8 @@ describe.skip("Config wizard with plus settings", () => {
       fixture: "organization.json",
     }).as("updateOrganization");
     stubPlus(true);
+
+    // Go through the initial config wizard steps
     cy.visit("/config-wizard");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
@@ -39,24 +41,21 @@ describe.skip("Config wizard with plus settings", () => {
   describe("Runtime scanner steps", () => {
     beforeEach(() => {
       // Stub scan endpoints
-      cy.intercept("GET", "/api/v1/plus/scan*", {
+      cy.intercept("PUT", "/api/v1/plus/scan*", {
         delay: 500,
         fixture: "runtime-scanner/list.json",
-      }).as("getScanResults");
+      }).as("putScanResults");
       cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
     });
 
     it("Allows calling the runtime scanner with classify", () => {
-      // Stub systems, but replace the fides keys so they match up with ones that
-      // @getClassifyList would return
-      // let keys = [];
       cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
         fixture: "classify/list-systems.json",
       }).as("getClassifyList");
 
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
-      cy.wait("@getScanResults").then((interception) => {
+      cy.wait("@putScanResults").then((interception) => {
         const { url } = interception.request;
         expect(url).to.contain("classify=true");
       });
@@ -97,7 +96,7 @@ describe.skip("Config wizard with plus settings", () => {
       }).as("getClassifyList");
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
-      cy.wait("@getScanResults");
+      cy.wait("@putScanResults");
       cy.getByTestId("scan-results");
 
       // Uncheck all of the systems by clicking the select all box
@@ -127,7 +126,7 @@ describe.skip("Config wizard with plus settings", () => {
     });
 
     it("Can render an error", () => {
-      cy.intercept("GET", "/api/v1/plus/scan*", {
+      cy.intercept("PUT", "/api/v1/plus/scan*", {
         statusCode: 404,
         body: {
           detail: "Item not found",

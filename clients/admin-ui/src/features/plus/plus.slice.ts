@@ -16,7 +16,6 @@ import {
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
   GenerateTypes,
-  System,
   SystemScanResponse,
 } from "~/types/api";
 
@@ -90,11 +89,11 @@ export const plusApi = createApi({
     }),
 
     // Kubernetes Cluster Scanner
-    getScanResults: build.query<SystemScanResponse, ScanParams>({
+    updateScan: build.mutation<SystemScanResponse, ScanParams>({
       query: (params: ScanParams) => ({
         url: `scan`,
         params,
-        method: "GET",
+        method: "PUT",
       }),
     }),
   }),
@@ -106,7 +105,7 @@ export const {
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
   useUpdateClassifyInstanceMutation,
-  useGetScanResultsQuery,
+  useUpdateScanMutation,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -201,19 +200,4 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
-);
-
-/**
- * Kubernetes cluster scanner
- */
-const emptySystems: System[] = [];
-
-export const selectScannedSystems = createSelector(
-  plusApi.endpoints.getScanResults.select({ classify: false }),
-  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
-);
-
-export const selectScannedAndClassifiedSystems = createSelector(
-  plusApi.endpoints.getScanResults.select({ classify: true }),
-  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
 );
