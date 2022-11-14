@@ -171,7 +171,7 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("PUT", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("putDataset");
-      cy.intercept("PUT", "/api/v1/plus/classify", {
+      cy.intercept("PUT", "/api/v1/plus/classify?resource_type=datasets", {
         fixture: "classify/update.json",
       }).as("putClassify");
     });

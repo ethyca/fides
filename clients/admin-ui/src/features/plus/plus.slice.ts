@@ -38,7 +38,7 @@ export const plusApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
   }),
-  tagTypes: ["Plus", "ClassifyInstances"],
+  tagTypes: ["Plus", "ClassifyInstancesDatasets", "ClassifyInstancesSystems"],
   endpoints: (build) => ({
     getHealth: build.query<HealthResponse, void>({
       query: () => "health",
@@ -55,15 +55,28 @@ export const plusApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["ClassifyInstances"],
+      invalidatesTags: ["ClassifyInstancesDatasets"],
     }),
-    updateClassifyInstance: build.mutation<void, ClassifyStatusUpdatePayload>({
-      query: (body) => ({
-        url: `classify/`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: ["ClassifyInstances"],
+    updateClassifyInstance: build.mutation<
+      void,
+      ClassifyStatusUpdatePayload & { resource_type?: GenerateTypes }
+    >({
+      query: (payload) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
+        return {
+          url: `classify/`,
+          method: "PUT",
+          params: { resource_type },
+          body,
+        };
+      },
+      invalidatesTags: (response, errors, args) => {
+        if (args.resource_type === GenerateTypes.SYSTEMS) {
+          return ["ClassifyInstancesSystems"];
+        }
+        return ["ClassifyInstancesDatasets"];
+      },
     }),
     getAllClassifyInstances: build.query<
       ClassifyInstanceResponseValues[],
@@ -80,12 +93,17 @@ export const plusApi = createApi({
           method: "GET",
         };
       },
-      providesTags: ["ClassifyInstances"],
+      providesTags: (response, errors, args) => {
+        if (args.resource_type === GenerateTypes.SYSTEMS) {
+          return ["ClassifyInstancesSystems"];
+        }
+        return ["ClassifyInstancesDatasets"];
+      },
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
       query: (dataset_fides_key: string) =>
         `classify/details/${dataset_fides_key}`,
-      providesTags: ["ClassifyInstances"],
+      providesTags: ["ClassifyInstancesDatasets"],
     }),
 
     // Kubernetes Cluster Scanner
@@ -95,6 +113,7 @@ export const plusApi = createApi({
         params,
         method: "PUT",
       }),
+      invalidatesTags: ["ClassifyInstancesSystems"],
     }),
   }),
 });
