@@ -1,6 +1,4 @@
-import logging
 import pytest
-import pdb
 import random
 
 from fides.api.ops.graph.graph import DatasetGraph
@@ -13,7 +11,7 @@ from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
-logger = logging.getLogger()
+
 
 @pytest.mark.integration_saas
 @pytest.mark.integration_recharge
@@ -21,15 +19,14 @@ def test_recharge_connection_test(recharge_connection_config) -> None:
     get_connector(recharge_connection_config).test_connection()
 
 
-@pytest.mark.skip(reason="testing previous code")
 @pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_access_request_task(
-        db,
-        policy,
-        recharge_connection_config,
-        recharge_dataset_config,
-        recharge_identity_email,
+    db,
+    policy,
+    recharge_connection_config,
+    recharge_dataset_config,
+    recharge_identity_email,
 ) -> None:
     """Full access request based on the recharge SaaS config"""
 
@@ -54,7 +51,7 @@ async def test_recharge_access_request_task(
         db,
     )
 
-    key = f'{dataset_name}:customers'
+    key = f"{dataset_name}:customers"
     assert_rows_match(
         v[key],
         min_size=1,
@@ -86,14 +83,14 @@ async def test_recharge_access_request_task(
             "status",
             "tax_exempt",
             "updated_at",
-        ]
+        ],
     )
     for item in v[key]:
-        assert item['email'] == recharge_identity_email
+        assert item["email"] == recharge_identity_email
 
-    customer_id = v[key][0]['id']
+    customer_id = v[key][0]["id"]
 
-    key = f'{dataset_name}:addresses'
+    key = f"{dataset_name}:addresses"
     assert_rows_match(
         v[key],
         min_size=1,
@@ -119,26 +116,25 @@ async def test_recharge_access_request_task(
             "shipping_lines_override",
             "updated_at",
             "zip",
-        ]
+        ],
     )
 
     for item in v[key]:
-        assert item['customer_id'] == customer_id
+        assert item["customer_id"] == customer_id
 
 
-# @pytest.mark.skip(reason="testing previous code")
 @pytest.mark.integration_saas
 @pytest.mark.integration_recharge
 @pytest.mark.asyncio
 async def test_recharge_erasure_request_task(
-        db,
-        policy,
-        erasure_policy_string_rewrite,
-        recharge_connection_config,
-        recharge_dataset_config,
-        recharge_erasure_identity_email,
-        recharge_erasure_data,
-        recharge_test_client,
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    recharge_connection_config,
+    recharge_dataset_config,
+    recharge_erasure_identity_email,
+    recharge_erasure_data,
+    recharge_test_client,
 ) -> None:
     privacy_request = PrivacyRequest(
         id=f"test_recharge_access_request_task_{random.randint(0, 1000)}"
@@ -162,7 +158,7 @@ async def test_recharge_erasure_request_task(
         db,
     )
 
-    key = f'{dataset_name}:customers'
+    key = f"{dataset_name}:customers"
     assert_rows_match(
         v[key],
         min_size=1,
@@ -193,14 +189,14 @@ async def test_recharge_erasure_request_task(
             "status",
             "tax_exempt",
             "updated_at",
-        ]
+        ],
     )
     for item in v[key]:
-        assert item['email'] == recharge_erasure_identity_email
+        assert item["email"] == recharge_erasure_identity_email
 
-    customer_id = v[key][0]['id']
+    customer_id = v[key][0]["id"]
 
-    key = f'{dataset_name}:addresses'
+    key = f"{dataset_name}:addresses"
     assert_rows_match(
         v[key],
         min_size=1,
@@ -226,14 +222,14 @@ async def test_recharge_erasure_request_task(
             "shipping_lines_override",
             "updated_at",
             "zip",
-        ]
+        ],
     )
 
     for item in v[key]:
-        assert item['customer_id'] == customer_id
+        assert item["customer_id"] == customer_id
 
     temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = True
+    CONFIG.execution.masking_strict = False
 
     x = await graph_task.run_erasure(
         privacy_request,
@@ -244,5 +240,15 @@ async def test_recharge_erasure_request_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    logger.info(msg=f"x = {x}")
+
+    assert sum(x.values()) == len(x.values())
+
+    address = recharge_test_client.get_addresses(
+        recharge_erasure_data[1].json().get("address", {}).get("id")
+    )
+    assert not address["addresses"]
+
+    customer = recharge_test_client.get_customer(recharge_erasure_identity_email)
+    assert not customer["customers"]
+
     CONFIG.execution.masking_strict = temp_masking

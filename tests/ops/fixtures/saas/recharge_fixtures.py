@@ -35,11 +35,11 @@ def recharge_secrets(saas_config):
 @pytest.fixture(scope="function")
 def recharge_identity_email(saas_config):
     return (
-            pydash.get(saas_config, "recharge.identity_email") or secrets["identity_email"]
+        pydash.get(saas_config, "recharge.identity_email") or secrets["identity_email"]
     )
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def recharge_erasure_identity_email():
     return f"{uuid.uuid4().hex}@email.com"
 
@@ -64,7 +64,7 @@ def recharge_dataset() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def recharge_connection_config(
-        db: session, recharge_config, recharge_secrets
+    db: session, recharge_config, recharge_secrets
 ) -> Generator:
     fides_key = recharge_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -84,9 +84,9 @@ def recharge_connection_config(
 
 @pytest.fixture
 def recharge_dataset_config(
-        db: Session,
-        recharge_connection_config: ConnectionConfig,
-        recharge_dataset: Dict[str, Any],
+    db: Session,
+    recharge_connection_config: ConnectionConfig,
+    recharge_dataset: Dict[str, Any],
 ) -> Generator:
     fides_key = recharge_dataset["fides_key"]
     recharge_connection_config.name = fides_key
@@ -108,11 +108,10 @@ class RechargeTestClient:
     """Helper to call various Recharge data management requests"""
 
     def __init__(self, recharge_connection_config: ConnectionConfig):
-
         self.recharge_secrets = recharge_connection_config.secrets
         self.headers = {
             "X-Recharge-Access-Token": self.recharge_secrets["api_key"],
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.base_url = f"https://{self.recharge_secrets['domain']}"
         self.faker = Faker()
@@ -144,7 +143,7 @@ class RechargeTestClient:
 
         return customer_response
 
-    def customer_exists(self, email):
+    def get_customer(self, email):
         customer_response: Response = requests.get(
             url=f"{self.base_url}/customers",
             params={"email": email},
@@ -152,14 +151,6 @@ class RechargeTestClient:
         )
         assert customer_response.ok
         return customer_response.json()
-
-    def delete_customer(self, customer_id):
-        delete_customer_response = requests.delete(
-            url=f"{self.base_url}/customers/{customer_id}",
-            headers=self.headers,
-            data={}
-        )
-        assert delete_customer_response.ok
 
     # 2: Creates, checks for existance and deletes address
     def create_address(self, customer_id) -> Response:
@@ -173,15 +164,10 @@ class RechargeTestClient:
             "country": "United States",
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "order_attributes": [
-                {
-                    "name": "custom name",
-                    "value": "custom value"
-                }
-            ],
+            "order_attributes": [{"name": "custom name", "value": "custom value"}],
             "phone": "5551234567",
             "province": "California",
-            "zip": "90001"
+            "zip": "90001",
         }
         address_response = requests.post(
             url=f"{self.base_url}/addresses",
@@ -191,7 +177,7 @@ class RechargeTestClient:
         assert address_response.ok
         return address_response
 
-    def address_exists(self, customer_id):
+    def get_addresses(self, customer_id):
         address_response: Response = requests.get(
             url=f"{self.base_url}/addresses",
             params={"customer_id": customer_id},
@@ -200,66 +186,37 @@ class RechargeTestClient:
         assert address_response.ok
         return address_response.json()
 
-    def delete_address(self, address_id):
-        delete_address_response = requests.delete(
-            url=f"{self.base_url}/addresses/{address_id}",
-            headers=self.headers,
-            data={}
-        )
-        assert delete_address_response.ok
-
-    # 3: Creates, checks for existance and deletes order
-    def create_order(self, ): pass
-    def order_exists(self, ): pass
-    def delete_order(self, ): pass
-
-    # 4: Creates, checks for existance and deletes payment_method
-    def create_payment_method(self): pass
-    def payment_method_exists(self): pass
-    def delete_payment_method(self): pass
-
-    # 5: Creates, checks for existance and deletes subscription
-    def create_subscription(self): pass
-    def subscription_exist(self): pass
-    def delete_subscription(self): pass
-
 
 @pytest.fixture(scope="function")
-def recharge_test_client(
-        recharge_connection_config: RechargeTestClient
-) -> Generator:
-    test_client = RechargeTestClient(recharge_connection_config=recharge_connection_config)
+def recharge_test_client(recharge_connection_config: RechargeTestClient) -> Generator:
+    test_client = RechargeTestClient(
+        recharge_connection_config=recharge_connection_config
+    )
     yield test_client
 
 
 @pytest.fixture(scope="function")
 def recharge_erasure_data(
-        recharge_test_client: RechargeTestClient, recharge_erasure_identity_email: str
+    recharge_test_client: RechargeTestClient, recharge_erasure_identity_email: str
 ) -> Generator:
-    customer_response = recharge_test_client.create_customer(recharge_erasure_identity_email)
-    error_message = (
-        f"customer with email {recharge_erasure_identity_email} could not be created in Recharge"
+    customer_response = recharge_test_client.create_customer(
+        recharge_erasure_identity_email
     )
+    error_message = f"customer with email {recharge_erasure_identity_email} could not be created in Recharge"
     poll_for_existence(
-        recharge_test_client.customer_exists,
+        recharge_test_client.get_customer,
         (recharge_erasure_identity_email,),
         error_message=error_message,
     )
     customer_id = customer_response.json()["customer"]["id"]
 
     address_response = recharge_test_client.create_address(customer_id)
-    error_message = (
-        f"address for customer '{recharge_erasure_identity_email}' could not be created in Recharge"
-    )
+    error_message = f"address for customer '{recharge_erasure_identity_email}' could not be created in Recharge"
     poll_for_existence(
-        recharge_test_client.address_exists,
+        recharge_test_client.get_addresses,
         args=(customer_id,),
         error_message=error_message,
     )
     address_id = address_response.json()["address"]["id"]
 
     yield customer_response, address_response
-
-
-    recharge_test_client.delete_address(address_id)
-    recharge_test_client.delete_customer(customer_id)
