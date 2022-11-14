@@ -302,39 +302,6 @@ async def async_session() -> AsyncSession:
     await async_engine.dispose()
 
 
-@pytest.fixture
-def oauth_client(db: Session) -> Generator:
-    """Return a client for authentication purposes."""
-
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPES,
-        fides_key="test_client",
-    )
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield client
-    client.delete(db)
-
-
-@pytest.fixture
-def auth_header(  # type: ignore
-    request: Any, oauth_client: ClientDetail, test_config: FidesConfig
-) -> Dict[str, str]:
-    client_id = oauth_client.id
-
-    payload = {
-        JWE_PAYLOAD_SCOPES: request.param,
-        JWE_PAYLOAD_CLIENT_ID: client_id,
-        JWE_ISSUED_AT: datetime.now().isoformat(),
-    }
-    jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
-
-    return {"Authorization": f"Bearer {jwe}"}
-
-
 def generate_auth_header_for_user(
     user: FidesUser, scopes: list[str], test_config: FidesConfig
 ) -> Dict[str, str]:
@@ -345,74 +312,6 @@ def generate_auth_header_for_user(
     }
     jwe = generate_jwe(json.dumps(payload), test_config.security.app_encryption_key)
     return {"Authorization": "Bearer " + jwe}
-
-
-@pytest.fixture
-def user(db: Session) -> Generator:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=SCOPES,
-        user_id=user.id,
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-    yield user
-    try:
-        user.delete(db)
-        client.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture
-def user_no_client(db: Session) -> Generator:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-        },
-    )
-
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
-    )
-
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def application_user(db: Session, oauth_client: ClientDetail) -> FidesUser:
-    unique_username = f"user-{uuid4()}"
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": unique_username,
-            "password": "test_password",
-            "first_name": "Test",
-            "last_name": "User",
-        },
-    )
-    oauth_client.user_id = user.id
-    oauth_client.save(db=db)
-    yield user
-    user.delete(db=db)
 
 
 @pytest.fixture(autouse=True)
