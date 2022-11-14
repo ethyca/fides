@@ -48,10 +48,7 @@ describe.skip("Config wizard with plus settings", () => {
         delay: 500,
         fixture: "runtime-scanner/list.json",
       }).as("getScanResults");
-      cy.intercept({
-        method: "POST",
-        url: "/api/v1/system/upsert",
-      }).as("upsertSystems");
+      cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
     });
 
     it("Allows calling the runtime scanner with classify", () => {
