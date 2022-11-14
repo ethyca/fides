@@ -3,12 +3,12 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectActiveClassifyDataset,
   selectClassifyInstanceCollection,
   useUpdateClassifyInstanceMutation,
 } from "~/features/plus/plus.slice";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ClassificationStatus } from "~/types/api";
 
 import { selectActiveDataset, useUpdateDatasetMutation } from "./dataset.slice";
