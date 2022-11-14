@@ -34,6 +34,10 @@ cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:
 encoding = "UTF-8"
 root_username = "root_user"
 root_password = "Testpassword1!"
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+oauth_root_client_id = "fidesadmin"
+oauth_root_client_secret = "fidesadminsecret"
+drp_jwt_secret = "secret"
 
 [execution]
 masking_strict = true
