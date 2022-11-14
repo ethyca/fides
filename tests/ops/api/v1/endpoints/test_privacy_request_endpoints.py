@@ -137,7 +137,7 @@ class TestCreatePrivacyRequest:
         policy,
     ):
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        TEST_PHONE_NUMBER = "+12345678910"
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1166,7 +1166,7 @@ class TestGetPrivacyRequests:
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE = "+1 234 567 8910"
+        TEST_PHONE = "+12345678910"
         privacy_request.cache_identity(
             {
                 "email": TEST_EMAIL,
@@ -3015,7 +3015,7 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
         assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
@@ -3123,7 +3123,7 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
         assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 

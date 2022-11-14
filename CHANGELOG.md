@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 * Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
 * Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
+* Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 
 ### Changed
