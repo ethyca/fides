@@ -43,6 +43,9 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
+    # Use 'construct' to avoid running validation
+    # This allows us to use the correct type but populate later
+    security: SecuritySettings = SecuritySettings.construct()
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
