@@ -3,9 +3,9 @@ import os
 from unittest.mock import patch
 
 import pytest
+from fideslib.exceptions import MissingConfig
 from pydantic import ValidationError
 
-from fideslib.exceptions import MissingConfig
 from fides.ctl.core.config import get_config
 from fides.ctl.core.config.database_settings import DatabaseSettings
 
