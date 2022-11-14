@@ -1,39 +1,23 @@
 minimum_pre_commit_version: "2"
 
+# To use this pre-commit hooks on the pre-commit stage only, run
+# pre-commit install
+
 repos:
   - repo: local
     hooks:
-      - id: docker
-        name: docker
-        entry: make build-local
-        files: "^fides/"
-        types_or: [file, python]
-        language: system
+      - id: gitleaks-pre-commit
+        name: gitleaks-pre-commit
+        description: Detect hardcoded secrets pre-commit using Gitleaks
+        entry: gitleaks protect --verbose --no-banner --redact --staged
+        language: golang
+        stages: [commit]
 
-      - id: black
-        name: black
-        entry: make black
-        files: "^fides/"
-        types_or: [file, python]
-        language: system
-
-      - id: mypy
-        name: mypy
-        entry: make mypy
-        files: "^fides/"
-        types_or: [file, python]
-        language: system
-
-      - id: xenon
-        name: xenon
-        entry: make xenon
-        files: "^fides/"
-        types_or: [file, python]
-        language: system
-
-      - id: pylint
-        name: pylint
-        entry: make pylint
-        files: "^fides/"
-        types_or: [file, python]
-        language: system
+      - id: gitleaks-pre-push
+        # To use this pre-push hook, run
+        # pre-commit install --hook-type pre-push
+        name: gitleaks-pre-push
+        description: Detect hardcoded secrets pre-push using Gitleaks
+        entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
+        language: golang
+        stages: [push]
