@@ -39,6 +39,10 @@ The types of changes are:
 
 * Bumped versions of packages that use OpenSSL [#1683](https://github.com/ethyca/fides/pull/1683)
 
+
+### Developer Experience
+* Write to the application db when running the app locally. Write to the test db when running pytest [#1731](https://github.com/ethyca/fides/pull/1731)
+
 ## [2.0.0](https://github.com/ethyca/fides/compare/1.9.6...2.0.0)
 
 ### Added
