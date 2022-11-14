@@ -323,7 +323,7 @@ def _send_privacy_request_receipt_message_to_user(
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
             "service_type": CONFIG.notifications.notification_service_type,
-            "to_identity": to_identity,
+            "to_identity": to_identity.dict(),
         },
     )
 
@@ -1175,7 +1175,7 @@ def _send_privacy_request_review_message_to_user(
                 else None,
             ).dict(),
             "service_type": CONFIG.notifications.notification_service_type,
-            "to_identity": to_identity,
+            "to_identity": to_identity.dict(),
         },
     )
 
