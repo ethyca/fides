@@ -1,7 +1,7 @@
 minimum_pre_commit_version: "2"
 
 # To use this pre-commit hooks on the pre-commit stage only, run
-# pre-commit install
+# pre-commit install --hook-type pre-commit
 
 repos:
   - repo: local
@@ -10,7 +10,7 @@ repos:
         name: gitleaks-pre-commit
         description: Detect hardcoded secrets pre-commit using Gitleaks
         entry: gitleaks protect --verbose --no-banner --redact --staged
-        language: golang
+        language: system
         stages: [commit]
 
       - id: gitleaks-pre-push
@@ -19,5 +19,5 @@ repos:
         name: gitleaks-pre-push
         description: Detect hardcoded secrets pre-push using Gitleaks
         entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
-        language: golang
+        language: system
         stages: [push]
