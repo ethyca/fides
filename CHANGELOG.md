@@ -29,6 +29,7 @@ The types of changes are:
 ### Developer Experience
 
 * Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
+* Enable remote debugging from VSCode of live dev app (#1780)(https://github.com/ethyca/fides/pull/1780)
 
 ### Removed
 
