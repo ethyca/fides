@@ -75,7 +75,6 @@ from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
-from fides.api.ops.models.messaging import get_messaging_method
 from fides.api.ops.models.policy import (
     ActionType,
     CurrentStep,
@@ -265,9 +264,9 @@ async def create_privacy_request(
                 queue_privacy_request(privacy_request.id)
         except MessageDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", exc)
+            logger.error("MessageDispatchException: %s", exc)
             failure = {
-                "message": "Verification email could not be sent.",
+                "message": "Verification message could not be sent.",
                 "data": kwargs,
             }
             failed.append(failure)
@@ -323,10 +322,8 @@ def _send_privacy_request_receipt_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "messaging_method": get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
-            "to_identity": to_identity,
+            "service_type": CONFIG.notifications.notification_service_type,
+            "to_identity": to_identity.dict(),
         },
     )
 
@@ -1177,10 +1174,8 @@ def _send_privacy_request_review_message_to_user(
                 if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "messaging_method": get_messaging_method(
-                CONFIG.notifications.notification_service_type
-            ),
-            "to_identity": to_identity,
+            "service_type": CONFIG.notifications.notification_service_type,
+            "to_identity": to_identity.dict(),
         },
     )
 

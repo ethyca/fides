@@ -16,6 +16,8 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
@@ -52,10 +54,15 @@ const ScanResults = () => {
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
   const method = useAppSelector(selectAddSystemsMethod);
+  const { handleError } = useAPIHelper();
 
   const confirmRegisterSelectedSystems = async () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    await upsertSystems(selectedSystems);
+    const response = await upsertSystems(selectedSystems);
+
+    if (isErrorResult(response)) {
+      return handleError(response.error);
+    }
 
     /*
      * Eventually, all scanners will go through some sort of classify flow.

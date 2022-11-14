@@ -95,14 +95,18 @@ class MessagingConfig(Base):
     )  # Type bytea in the db
 
     @classmethod
-    def get_configuration(cls, db: Session) -> Base:
+    def get_configuration(cls, db: Session, service_type: str) -> Base:
         """
-        Fetches the first configured MessagingConfig record. Once fetched this function validates that
+        Fetches the configured MessagingConfig record by service type. Once fetched this function validates that
         the MessagingConfig is configured with secrets.
         """
-        instance: Optional[Base] = cls.query(db=db).first()
+        instance: Optional[Base] = cls.get_by(
+            db=db, field="service_type", value=service_type
+        )
         if not instance:
-            raise MessageDispatchException("No messaging config found.")
+            raise MessageDispatchException(
+                f"No messaging config found for service_type {service_type}."
+            )
         if not instance.secrets:
             logger.warning(
                 "Messaging secrets not found for config with key: %s", instance.key
