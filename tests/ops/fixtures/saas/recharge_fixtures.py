@@ -1,5 +1,6 @@
-from typing import Any, Dict, Generator
 import uuid
+from typing import Any, Dict, Generator
+
 import pydash
 import pytest
 import requests

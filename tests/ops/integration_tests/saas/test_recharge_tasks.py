@@ -1,5 +1,6 @@
-import pytest
 import random
+
+import pytest
 
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
