@@ -5,14 +5,21 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
+from fideslib.exceptions import MissingConfig
 from fides.ctl.core.config import get_config
 from fides.ctl.core.config.database_settings import DatabaseSettings
 
+REQUIRED_ENV_VARS = {
+    "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
+    "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID": "fidesadmin",
+    "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
+    "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
+}
 
 # Unit
 @patch.dict(
     os.environ,
-    {},
+    REQUIRED_ENV_VARS,
     clear=True,
 )
 @pytest.mark.unit
@@ -29,9 +36,22 @@ def test_get_config(test_config_path: str) -> None:
     )
 
 
+# Unit
 @patch.dict(
     os.environ,
     {},
+    clear=True,
+)
+@pytest.mark.unit
+def test_get_config_fails_missing_required(test_config_path: str) -> None:
+    """Test that the actual config matches what the function returns."""
+    with pytest.raises(MissingConfig):
+        config = get_config(test_config_path)
+
+
+@patch.dict(
+    os.environ,
+    REQUIRED_ENV_VARS,
     clear=True,
 )
 @pytest.mark.unit
@@ -56,6 +76,7 @@ def test_get_deprecated_api_config_from_file(test_deprecated_config_path: str) -
         "FIDES__API__DATABASE_PORT": "1234",
         "FIDES__API__DATABASE_TEST_DATABASE_NAME": "test_test_db_name",
         "FIDES__API__DATABASE_USER": "phil_rules",
+        **REQUIRED_ENV_VARS,
     },
     clear=True,
 )
@@ -77,7 +98,7 @@ def test_get_deprecated_api_config_from_env(test_config_path: str) -> None:
 
 @patch.dict(
     os.environ,
-    {"FIDES__CONFIG_PATH": ""},
+    {"FIDES__CONFIG_PATH": "", **REQUIRED_ENV_VARS},
     clear=True,
 )
 @pytest.mark.unit
@@ -106,17 +127,6 @@ def test_get_config_cache() -> None:
     assert cache_info.misses == 2
 
 
-@pytest.mark.unit
-def test_default_config() -> None:
-    "Test building a config from default values."
-    os.environ["FIDES__CONFIG_PATH"] = ""
-    config = get_config()
-    os.chdir("/fides")
-
-    assert config.user.user_id == "1"
-    assert config.user.api_key == "test_api_key"
-
-
 @patch.dict(
     os.environ,
     {
@@ -124,6 +134,7 @@ def test_default_config() -> None:
         "FIDES__CLI__SERVER_HOST": "test",
         "FIDES__CLI__SERVER_PORT": "8080",
         "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
+        **REQUIRED_ENV_VARS,
     },
     clear=True,
 )
@@ -165,20 +176,6 @@ def test_database_url_test_mode_disabled() -> None:
 
 @patch.dict(
     os.environ,
-    {},
-    clear=True,
-)
-def test_config_from_default() -> None:
-    """Test building a config from the local project TOML."""
-    config = get_config()
-
-    assert config.database.server == "fides-db"
-    assert config.redis.host == "redis"
-    assert config.security.app_encryption_key == "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
-
-
-@patch.dict(
-    os.environ,
     {
         "FIDES__CONFIG_PATH": "src/fides/data/test_env/fides.test_env.toml",
     },
@@ -188,7 +185,6 @@ def test_config_from_path() -> None:
     """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     print(os.environ)
-    assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
     assert config.admin_ui.enabled == True
     assert config.execution.require_manual_request_approval == True
 
@@ -198,6 +194,7 @@ def test_config_from_path() -> None:
     {
         "FIDES__DATABASE__SERVER": "envserver",
         "FIDES__REDIS__HOST": "envhost",
+        **REQUIRED_ENV_VARS,
     },
     clear=True,
 )
@@ -217,6 +214,7 @@ def test_config_app_encryption_key_validation() -> None:
         os.environ,
         {
             "FIDES__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
+            **REQUIRED_ENV_VARS,
         },
         clear=True,
     ):
@@ -233,6 +231,7 @@ def test_config_app_encryption_key_validation_length_error(app_encryption_key) -
     with patch.dict(
         os.environ,
         {
+            **REQUIRED_ENV_VARS,
             "FIDES__SECURITY__APP_ENCRYPTION_KEY": app_encryption_key,
         },
         clear=True,
@@ -259,6 +258,7 @@ def test_config_log_level(log_level, expected_log_level):
         os.environ,
         {
             "FIDES__LOGGING__LEVEL": log_level,
+            **REQUIRED_ENV_VARS,
         },
         clear=True,
     ):
@@ -271,6 +271,7 @@ def test_config_log_level_invalid():
         os.environ,
         {
             "FIDES__LOGGING__LEVEL": "INVALID",
+            **REQUIRED_ENV_VARS,
         },
         clear=True,
     ):
