@@ -3930,7 +3930,9 @@
                     "system.fides_key": "System Fides Key",
                     "dataset.fides_key": "Dataset Fides Key (if applicable)",
                     "system.system_dependencies": "Related cross-system dependencies",
-                    "system.description": "Description of the System"
+                    "system.description": "Description of the System",
+                    "system.ingress": "Related Systems which receive data to this System",
+                    "system.egress": "Related Systems which send data to this System"
                   },
                   {
                     "system.name": "Demo Analytics System",
@@ -3959,7 +3961,9 @@
                     "system.fides_key": "",
                     "dataset.fides_key": "",
                     "system.system_dependencies": "",
-                    "system.description": ""
+                    "system.description": "",
+                    "system.ingress": [],
+                    "system.egress": []
                   }
                 ]
               }
