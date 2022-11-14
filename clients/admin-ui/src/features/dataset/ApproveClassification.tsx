@@ -7,7 +7,7 @@ import {
   selectActiveClassifyDataset,
   selectClassifyInstanceCollection,
   useUpdateClassifyInstanceMutation,
-} from "~/features/common/plus.slice";
+} from "~/features/plus/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ClassificationStatus } from "~/types/api";
 

@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { ParsedError, parseError } from "~/features/common/helpers";
-import { useGetScanResultsQuery } from "~/features/common/plus.slice";
 import { successToastParams } from "~/features/common/toast";
+import { useGetScanResultsQuery } from "~/features/plus/plus.slice";
 import { RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";

@@ -1,9 +1,9 @@
 import { Stack, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
-import ClassificationStatusBadge from "~/features/common/ClassificationStatusBadge";
-import { selectClassifyInstanceMap } from "~/features/common/plus.slice";
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
+import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
+import { selectClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { GenerateTypes, System } from "~/types/api";
 
 const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {

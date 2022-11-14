@@ -7,7 +7,7 @@ import Layout from "~/features/common/Layout";
 import {
   useGetAllClassifyInstancesQuery,
   useGetHealthQuery,
-} from "~/features/common/plus.slice";
+} from "~/features/plus/plus.slice";
 import { useGetAllSystemsQuery } from "~/features/system";
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
 import { ClassificationStatus } from "~/types/api";
