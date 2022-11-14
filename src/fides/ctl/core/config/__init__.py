@@ -43,7 +43,6 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = SecuritySettings()
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()

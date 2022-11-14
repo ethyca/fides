@@ -1,4 +1,6 @@
 """Contains the nox sessions used during CI checks."""
+from os import environ
+
 import nox
 
 from constants_nox import (
@@ -103,6 +105,15 @@ def check_install(session: nox.Session) -> None:
     """Check that fides installs works correctly."""
     session.install(".")
 
+    REQUIRED_ENV_VARS = {
+        "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID": "fidesadmin",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
+        "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
+    }
+    for key, value in REQUIRED_ENV_VARS.items():
+        environ[key] = value
+    
     run_command = ("fides", "--version")
     session.run(*run_command)
 
