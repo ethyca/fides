@@ -7,7 +7,7 @@ import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { selectClassifyInstanceField } from "../common/plus.slice";
+import { selectClassifyInstanceField } from "../plus/plus.slice";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DataCategoryWithConfidence } from "./types";

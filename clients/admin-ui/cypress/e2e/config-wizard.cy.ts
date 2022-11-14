@@ -75,10 +75,7 @@ describe.skip("Config Wizard", () => {
       }).as("putSystem");
 
       // assert that the systems do POST
-      cy.intercept({
-        method: "POST",
-        url: "/api/v1/system/upsert",
-      }).as("upsertSystems");
+      cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
 
       cy.getByTestId("warning-modal-confirm-btn").click();
 

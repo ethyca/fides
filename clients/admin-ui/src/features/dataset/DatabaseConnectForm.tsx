@@ -8,9 +8,9 @@ import ConfirmationModal from "~/features/common/ConfirmationModal";
 import { useFeatures } from "~/features/common/features.slice";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useCreateClassifyInstanceMutation } from "~/features/common/plus.slice";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
+import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
 import {
   ClassifyInstanceResponseValues,
   Dataset,

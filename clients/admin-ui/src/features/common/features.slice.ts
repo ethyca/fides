@@ -1,4 +1,4 @@
-import { useHasPlus } from "./plus.slice";
+import { useHasPlus } from "../plus/plus.slice";
 
 /**
  * Features are currently stateless and only use the Plus API. However, this a ".slice" file because

@@ -18,6 +18,9 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
 ### Added
+
+* Classification flow for system data flows
+  * Classification is now triggered as part of data flow scanning
 * Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
 * Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
 * Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
