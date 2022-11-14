@@ -1,5 +1,7 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { System } from "~/types/api";
+
 /**
  * Handy function to bring us straight to the runtime scanner.
  * This could be put in a beforeEach, but then you can't overwrite intercepts
@@ -22,6 +24,7 @@ const goToRuntimeScanner = () => {
  */
 describe.skip("Config wizard with plus settings", () => {
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
     }).as("getOrganization");
@@ -52,9 +55,25 @@ describe.skip("Config wizard with plus settings", () => {
     });
 
     it("Allows calling the runtime scanner with classify", () => {
-      cy.intercept("GET", "/api/v1/plus/classify*", {
-        fixture: "classify/list-systems.json",
-      }).as("getClassifyList");
+      // Stub systems, but replace the fides keys so they match up with ones that
+      // @getClassifyList would return
+      cy.fixture("classify/list-systems.json").then((systemClassifications) => {
+        cy.intercept("GET", "/api/v1/plus/classify*", systemClassifications).as(
+          "getClassifyList"
+        );
+        const keys = systemClassifications.map((sc) => sc.dataset_key);
+        cy.fixture("systems.json").then((systems: System[]) => {
+          const alteredSystems = systems.map((s, idx) => {
+            if (idx < keys.length) {
+              return { ...s, fides_key: keys[idx], name: keys[idx] };
+            }
+            return s;
+          });
+          cy.intercept("GET", "/api/v1/system", alteredSystems).as(
+            "getSystems"
+          );
+        });
+      });
 
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
@@ -85,7 +104,7 @@ describe.skip("Config wizard with plus settings", () => {
       // Check that the classified systems have a status
       cy.getByTestId("status-vzmgr-service").contains("Awaiting Review");
       cy.getByTestId("status-kube-dns").contains("Awaiting Review");
-      cy.getByTestId("status-pl-elastic-es-transport").contains("Unknown");
+      cy.getByTestId("status-demo_marketing_system").contains("Unknown");
     });
 
     it("Can register a subset of systems", () => {
