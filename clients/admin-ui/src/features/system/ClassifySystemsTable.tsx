@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import ClassificationStatusBadge from "~/features/common/ClassificationStatusBadge";
 import { selectClassifyInstanceMap } from "~/features/common/plus.slice";
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
-import { System } from "~/types/api";
+import { GenerateTypes, System } from "~/types/api";
 
 const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
@@ -35,7 +35,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
                 </Td>
                 <Td data-testid={`status-${system.fides_key}`}>
                   <ClassificationStatusBadge
-                    resource="system"
+                    resource={GenerateTypes.SYSTEMS}
                     status={classifyInstance?.status}
                   />
                 </Td>

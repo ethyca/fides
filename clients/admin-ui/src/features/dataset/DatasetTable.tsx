@@ -7,7 +7,7 @@ import {
   selectClassifyInstanceMap,
   useGetAllClassifyInstancesQuery,
 } from "~/features/common/plus.slice";
-import { Dataset } from "~/types/api";
+import { Dataset, GenerateTypes } from "~/types/api";
 
 import {
   selectActiveDatasetFidesKey,
@@ -76,7 +76,7 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.description}</Td>
               <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
                 <ClassificationStatusBadge
-                  resource="dataset"
+                  resource={GenerateTypes.DATASETS}
                   status={classifyDataset?.status}
                 />
               </Td>
