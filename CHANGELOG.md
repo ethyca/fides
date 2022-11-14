@@ -17,9 +17,21 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
 
+### Added
+* Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
+* Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
+* Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
+* Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
+* Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
+
 ### Changed
 
+* Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
 * All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+
+### Developer Experience
+
+* Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
 
 ### Removed
 
@@ -33,6 +45,8 @@ The types of changes are:
 * Removed local storage parsing that is redundant with redux-persist. [#1678](https://github.com/ethyca/fides/pull/1678)
 * Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
 * Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
+* Single-select taxonomy fields legal basis and special category can be cleared. [#1712](https://github.com/ethyca/fides/pull/1712)
+* Correctly handle response from adobe jwt auth endpoint as milliseconds, rather than seconds. [#1754](https://github.com/ethyca/fides/pull/1754)
 
 ### Security
 
@@ -54,6 +68,7 @@ The types of changes are:
 * Config Wizard: Added a column selector to the scan results page of the config wizard [#1590](https://github.com/ethyca/fides/pull/1590)
 * Config Wizard: Flow for runtime scanner option [#1640](https://github.com/ethyca/fides/pull/1640)
 * Access support for Twilio Conversations API [#1520](https://github.com/ethyca/fides/pull/1520)
+* Message Config: Adds Twilio Email/SMS support [#1519](https://github.com/ethyca/fides/pull/1519)
 
 ### Changed
 

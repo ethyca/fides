@@ -306,8 +306,8 @@ def privacy_request_complete_email_notification_disabled():
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_receipt_email_notification_disabled():
-    """Disable request receipt email for most tests unless overridden"""
+def privacy_request_receipt_notification_disabled():
+    """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
     CONFIG.notifications.send_request_receipt_notification = False
     yield
@@ -315,9 +315,18 @@ def privacy_request_receipt_email_notification_disabled():
 
 
 @pytest.fixture(autouse=True, scope="function")
-def privacy_request_review_email_notification_disabled():
-    """Disable request review email for most tests unless overridden"""
+def privacy_request_review_notification_disabled():
+    """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
     CONFIG.notifications.send_request_review_notification = False
     yield
     CONFIG.notifications.send_request_review_notification = original_value
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_notification_service_type_mailgun():
+    """Set default notification service type"""
+    original_value = CONFIG.notifications.notification_service_type
+    CONFIG.notifications.notification_service_type = MessagingServiceType.MAILGUN.value
+    yield
+    CONFIG.notifications.notification_service_type = original_value
