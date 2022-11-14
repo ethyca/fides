@@ -43,6 +43,7 @@ The types of changes are:
 * Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
 * Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
 * Single-select taxonomy fields legal basis and special category can be cleared. [#1712](https://github.com/ethyca/fides/pull/1712)
+* Correctly handle response from adobe jwt auth endpoint as milliseconds, rather than seconds. [#1754](https://github.com/ethyca/fides/pull/1754)
 
 ### Security
 
