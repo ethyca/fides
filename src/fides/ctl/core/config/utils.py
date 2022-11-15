@@ -52,13 +52,18 @@ def check_if_required_config_vars_are_configured() -> None:
         "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET"
     )
     try:
-        app_encryption_key = get_config_from_file("", "security", "app_encryption_key")
-        oauth_root_client_id = get_config_from_file(
-            "", "security", "oauth_root_client_id"
-        )
-        oauth_root_client_secret = get_config_from_file(
-            "", "security", "oauth_root_client_secret"
-        )
+        if not app_encryption_key:
+            app_encryption_key = get_config_from_file(
+                "", "security", "app_encryption_key"
+            )
+        if not oauth_root_client_id:
+            oauth_root_client_id = get_config_from_file(
+                "", "security", "oauth_root_client_id"
+            )
+        if not oauth_root_client_secret:
+            oauth_root_client_secret = get_config_from_file(
+                "", "security", "oauth_root_client_secret"
+            )
     except FileNotFoundError:
         pass
 
