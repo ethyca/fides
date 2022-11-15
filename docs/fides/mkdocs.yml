@@ -92,7 +92,6 @@ nav:
             - Updating the Database Diagram: development/update_erd_diagram.md
   - Fides UI:
       - Overview: ui/overview.md
-      - Configuration Wizard: ui/wizard.md
       - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
       - Manage Connections: ui/connections.md

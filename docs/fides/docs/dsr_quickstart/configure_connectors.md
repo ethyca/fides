@@ -26,7 +26,7 @@ Once you have filled in the necessary information, select **Save**, and Fides wi
 
 Manual connections are available for any data that cannot be processed automatically. Examples of manual connections might include physical storage locations, or third-party services without accessible APIs. Fides will pause processing a privacy request at any manual connection, and wait for administrator input before continuing.
 
-To add a manual connection, select **Manual connection** in the "Show all connectors" dropdown. 
+To add a manual connection, select **Manual connectors** in the "Show all connectors" dropdown. 
 
 ![manual connection](../img/admin_ui/manual_connection.png)
 
