@@ -4,16 +4,19 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
+  Divider,
   Heading,
   HStack,
   Stack,
+  Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import DocsLink from "~/features/common/DocsLink";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
   ParsedError,
@@ -28,45 +31,34 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
-import DocsLink from "../common/DocsLink";
 import {
   changeStep,
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-import {
-  AWS_REGION_OPTIONS,
-  DOCS_URL_AWS_PERMISSIONS,
-  DOCS_URL_IAM_POLICY,
-} from "./constants";
+import { DOCS_URL_OKTA_TOKEN } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
 const initialValues = {
-  aws_access_key_id: "",
-  aws_secret_access_key: "",
-  region_name: "",
+  orgUrl: "",
+  token: "",
 };
 
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
-  aws_access_key_id: Yup.string()
-    .required()
-    .trim()
-    .matches(/^\w+$/, "Cannot contain spaces or special characters")
-    .label("Access Key ID"),
-  aws_secret_access_key: Yup.string()
+  orgUrl: Yup.string().required().trim().url().label("URL"),
+  token: Yup.string()
     .required()
     .trim()
     .matches(/^[^\s]+$/, "Cannot contain spaces")
-    .label("Secret"),
-  region_name: Yup.string().required().label("Default Region"),
+    .label("Token"),
 });
 
-const AuthenticateAwsForm = () => {
+const AuthenticateOktaForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
   const { successAlert } = useAlert();
@@ -86,7 +78,7 @@ const AuthenticateAwsForm = () => {
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
       status: 500,
-      message: "Our system encountered a problem while connecting to AWS.",
+      message: "Our system encountered a problem while connecting to Okta.",
     });
     setScannerError(parsedError);
   };
@@ -103,7 +95,7 @@ const AuthenticateAwsForm = () => {
       organization_key: organizationKey,
       generate: {
         config: values,
-        target: ValidTargets.AWS,
+        target: ValidTargets.OKTA,
         type: GenerateTypes.SYSTEMS,
       },
     });
@@ -122,7 +114,7 @@ const AuthenticateAwsForm = () => {
       onSubmit={handleSubmit}
     >
       {({ isValid, isSubmitting, dirty }) => (
-        <Form data-testid="authenticate-aws-form">
+        <Form data-testid="authenticate-okta-form">
           <Stack spacing={10}>
             {isSubmitting ? (
               <ScannerLoading
@@ -131,9 +123,7 @@ const AuthenticateAwsForm = () => {
               />
             ) : null}
 
-            {scannerError ? (
-              <ScannerError error={scannerError} scanType="aws" />
-            ) : null}
+            {scannerError ? <ScannerError error={scannerError} /> : null}
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate Scanner</Heading>
@@ -142,9 +132,9 @@ const AuthenticateAwsForm = () => {
                     {({ isExpanded }) => (
                       <>
                         <h2>
-                          The scanner can be connected to your cloud
-                          infrastructure provider to automatically scan and
-                          create a list of all systems that may contain personal
+                          The scanner can be connected to your sign-on provider
+                          to automatically scan and create a list of all systems
+                          that your team are using that may contain personal
                           data.
                           <AccordionButton
                             display="inline"
@@ -157,46 +147,32 @@ const AuthenticateAwsForm = () => {
                           </AccordionButton>
                         </h2>
                         <AccordionPanel padding="0px" mt="20px">
-                          In order to run the scanner, please provide
-                          credentials for authenticating to AWS. Please note,
-                          the credentials must have the{" "}
-                          <DocsLink href={DOCS_URL_AWS_PERMISSIONS}>
-                            minimum permissions listed in the support
-                            documentation here
-                          </DocsLink>
-                          . You can{" "}
-                          <DocsLink href={DOCS_URL_IAM_POLICY}>
-                            copy the sample IAM policy here
-                          </DocsLink>
-                          .
+                          Currently the scanner supports certain Okta. We will
+                          be adding support for other sign-on providers (e.g.
+                          Auth0,Microsoft, Google) shortly, please let us know
+                          if you have specific requests.
                         </AccordionPanel>
                       </>
                     )}
                   </AccordionItem>
                 </Accordion>
-
+                <Divider m="20px 0px !important" />
+                <Text m="0px !important">
+                  In order to run the scanner, please provide your Okta token.
+                  You can find{" "}
+                  <DocsLink href={DOCS_URL_OKTA_TOKEN}>
+                    instructions here{" "}
+                  </DocsLink>{" "}
+                  on how to retrieve a suitable token from your Okta
+                  administration
+                </Text>
+                panel.
                 <Stack>
+                  <CustomTextInput name="orgUrl" label="Org URL:" />
                   <CustomTextInput
-                    name="aws_access_key_id"
-                    label="Access Key ID"
-                    // TODO(#724): These fields should link to the AWS docs, but that requires HTML
-                    // content instead of just a string label. The message would be:
-                    // "You can find more information about creating access keys and secrets on AWS docs here."
-                    tooltip="AWS Access Key ID is the AWS ID associated with the account you want to use for scanning."
-                  />
-                  <CustomTextInput
+                    name="token"
+                    label="Okta token:"
                     type="password"
-                    name="aws_secret_access_key"
-                    label="Secret"
-                    // "You can find more about creating access keys and secrets on AWS docs here."
-                    tooltip="The secret access key is generated when you create your new access key ID."
-                  />
-                  <CustomSelect
-                    name="region_name"
-                    label="Default Region"
-                    // "You can learn more about regions in AWS docs here."
-                    tooltip="Specify the default region in which your infrastructure is located. This is necessary for successful scanning."
-                    options={AWS_REGION_OPTIONS}
                   />
                 </Stack>
               </>
@@ -224,4 +200,4 @@ const AuthenticateAwsForm = () => {
   );
 };
 
-export default AuthenticateAwsForm;
+export default AuthenticateOktaForm;
