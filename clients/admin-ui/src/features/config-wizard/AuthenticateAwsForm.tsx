@@ -19,8 +19,8 @@ import {
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import {
-  Dataset,
   GenerateResponse,
   GenerateTypes,
   System,
@@ -39,11 +39,10 @@ import {
   DOCS_URL_AWS_PERMISSIONS,
   DOCS_URL_IAM_POLICY,
 } from "./constants";
+import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
-
-const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   aws_access_key_id: "",
@@ -70,6 +69,7 @@ const ValidationSchema = Yup.object().shape({
 const AuthenticateAwsForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
+  const { successAlert } = useAlert();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
@@ -77,6 +77,11 @@ const AuthenticateAwsForm = () => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
     dispatch(changeStep());
+    successAlert(
+      `Your scan was successfully completed, with ${systems.length} new systems detected!`,
+      `Scan Successfully Completed`,
+      { isClosable: true }
+    );
   };
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -126,7 +131,9 @@ const AuthenticateAwsForm = () => {
               />
             ) : null}
 
-            {scannerError ? <ScannerError error={scannerError} /> : null}
+            {scannerError ? (
+              <ScannerError error={scannerError} scanType="aws" />
+            ) : null}
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate Scanner</Heading>

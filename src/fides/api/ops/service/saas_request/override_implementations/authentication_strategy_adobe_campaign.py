@@ -84,6 +84,7 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
             if response.ok:
                 json_response = response.json()
                 access_token = json_response.get("access_token")
+                # note: `expires_in` is expressed in ms
                 expires_in = json_response.get("expires_in")
 
                 # merge the new values into the existing connection_config secrets
@@ -92,7 +93,9 @@ class AdobeAuthenticationStrategy(AuthenticationStrategy):
                     **secrets,
                     **{
                         "access_token": access_token,
-                        "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
+                        "expires_at": (
+                            datetime.utcnow() + timedelta(milliseconds=expires_in)
+                        ).timestamp(),
                     },
                 }
                 connection_config.update(db, data={"secrets": updated_secrets})

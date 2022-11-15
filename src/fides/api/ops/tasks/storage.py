@@ -106,7 +106,6 @@ def create_presigned_url_for_s3(
     :param object_name: string
     :return: Presigned URL as string.
     """
-
     response = s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket_name, "Key": object_name},
@@ -128,6 +127,7 @@ def upload_to_s3(  # pylint: disable=R0913
 ) -> str:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of %s", file_key)
+
     try:
         my_session = get_s3_session(auth_method, storage_secrets)
         s3_client = my_session.client("s3")

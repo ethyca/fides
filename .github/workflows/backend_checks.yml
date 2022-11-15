@@ -16,6 +16,7 @@ jobs:
   Build:
     strategy:
       matrix:
+        # NOTE: These are the currently supported/tested Python Versions
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
     runs-on: ubuntu-latest
     steps:
@@ -44,72 +45,71 @@ jobs:
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
 
-########################
-## Application Checks ##
-########################
-  Docs:
-    needs: Build
+  ###################
+  ## Static Checks ##
+  ###################
+  Static-Checks:
+    strategy:
+      matrix:
+        session_name:
+          ["isort", "black", "mypy", "pylint", "xenon", "check_install"]
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Check that the docs can build
-        run: nox -s docs_check
-
-  Fides-Checks:
-    needs: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
+      - name: Set Up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Check fides installation
-        run: nox -s check_install
+      - name: Run Static Check
+        run: nox -s ${{ matrix.session_name }}
 
-      - name: Run fides evaluation
-        run: nox -s check_fides_annotations
-
-      - name: Scan fides db
-        run: nox -s fides_db_scan
-
-################
-## Safe Tests ##
-################
-  Pytest-Ctl-Not-External:
+  #################
+  ## Safe Checks ##
+  #################
+  Safe-Tests:
     needs: Build
+
     strategy:
       matrix:
         python_version: ["3.8.14", "3.9.14", "3.10.7"]
+        test_selection:
+          - "pytest_ctl(not-external)"
+          - "pytest_ops(unit)"
+          - "pytest_ops(integration)"
+          - "check_fides_annotations"
+          - "fides_db_scan"
+          - "docs_check"
+          - "minimal_config_startup"
+        exclude:
+          # Not all jobs need to run against the Python matrix
+          - python_version: "3.8.14"
+            test_selection: "check_fides_annotations"
+          - python_version: "3.9.14"
+            test_selection: "check_fides_annotations"
+
+          - python_version: "3.8.14"
+            test_selection: "fides_db_scan"
+          - python_version: "3.9.14"
+            test_selection: "fides_db_scan"
+
+          - python_version: "3.8.14"
+            test_selection: "docs_check"
+          - python_version: "3.9.14"
+            test_selection: "docs_check"
+
+          - python_version: "3.8.14"
+            test_selection: "minimal_config_startup"
+          - python_version: "3.9.14"
+            test_selection: "minimal_config_startup"
+
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
@@ -126,70 +126,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run non-external test suite
-        run: nox -s "pytest_ctl(not-external)"
-
-
-  Pytest-Unit-Ops:
-    needs: Build
-    strategy:
-      matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
+      - name: Set Up Python
+        uses: actions/setup-python@v4
         with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run unit test suite
-        run: nox -s "pytest_ops(unit)"
+      - name: Run test suite
+        run: nox -s "${{ matrix.test_selection }}"
 
-  Pytest-Integration-Ops:
-    needs: Build
-    strategy:
-      matrix:
-        python_version: ["3.8.14", "3.9.14", "3.10.7"]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true
-    steps:
-      - name: Download container
-        uses: actions/download-artifact@v3
-        with:
-          name: python-${{ matrix.python_version }}
-          path: /tmp/
+  ##################
+  ## Unsafe Tests ##
+  ##################
+  # NOTE: Matrixes aren't used here due to the danger of race conditions for external resources
 
-      - name: Load image
-        run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run integration test suite
-        run: nox -s "pytest_ops(integration)"
-
-##################
-## Unsafe Tests ##
-##################
   Pytest-Ctl-External:
     needs: Build
     strategy:

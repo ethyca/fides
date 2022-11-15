@@ -1,7 +1,7 @@
 """Contains various utility-related nox sessions."""
 import nox
 
-from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE
+from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, TEST_ENV_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
 
 COMPOSE_DOWN = (
@@ -11,6 +11,8 @@ COMPOSE_DOWN = (
     COMPOSE_FILE,
     "-f",
     INTEGRATION_COMPOSE_FILE,
+    "-f",
+    TEST_ENV_COMPOSE_FILE,
     "-f",
     "docker/docker-compose.integration-mariadb.yml",
     "-f",
