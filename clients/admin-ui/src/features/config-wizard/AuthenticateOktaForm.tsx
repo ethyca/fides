@@ -183,6 +183,7 @@ const AuthenticateOktaForm = () => {
                     name="token"
                     label="Okta token:"
                     tooltip="Need text"
+                    type="password"
                   />
                 </Stack>
               </>
