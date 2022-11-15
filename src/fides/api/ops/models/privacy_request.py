@@ -56,7 +56,6 @@ from fides.api.ops.schemas.external_https import (
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import celery_app
-from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -69,6 +68,7 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
@@ -209,6 +209,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         lazy="dynamic",
         passive_deletes="all",
         primaryjoin="foreign(AuditLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
+    privacy_request_error = relationship(
+        "PrivacyRequestError",
+        back_populates="privacy_request",
+        cascade="delete, delete-orphan",
     )
 
     reviewer = relationship(
@@ -709,6 +715,25 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 "finished_processing_at": datetime.utcnow(),
             },
         )
+
+        PrivacyRequestError.create(
+            db=db, data={"message_sent": False, "privacy_request_id": self.id}
+        )
+
+
+class PrivacyRequestError(Base):
+    """The DB ORM model to track PrivacyRequests error message status."""
+
+    message_sent = Column(Boolean, nullable=False, default=False)
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+        nullable=False,
+    )
+
+    privacy_request = relationship(
+        PrivacyRequest, back_populates="privacy_request_error"
+    )
 
 
 def _get_manual_input_from_cache(
