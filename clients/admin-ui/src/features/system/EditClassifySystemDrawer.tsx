@@ -9,13 +9,14 @@ import {
 import { ReactNode } from "react";
 
 import EditDrawer from "~/features/common/EditDrawer";
-import { GenerateTypes, System } from "~/types/api";
-
-import ClassificationStatusBadge from "../plus/ClassificationStatusBadge";
+import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import {
   useGetClassifySystemQuery,
   useUpdateClassifyInstanceMutation,
-} from "../plus/plus.slice";
+} from "~/features/plus/plus.slice";
+import { GenerateTypes, System } from "~/types/api";
+
+import DataFlowForm from "./DataFlowForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
 interface Props {
@@ -142,6 +143,10 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
           </SimpleGrid>
 
           {description}
+          <DataFlowForm
+            system={system}
+            classificationInstance={classificationInstance}
+          />
         </Stack>
       )}
     </EditDrawer>
