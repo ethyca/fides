@@ -18,6 +18,7 @@ import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
+  OktaLogoIcon,
   QuestionIcon,
   RuntimeScannerLogo,
 } from "~/features/common/Icon";
@@ -87,6 +88,25 @@ const AddSystemForm = () => {
                 label="Infrastructure scanning allows you to connect to your cloud infrastructure and automatically identify systems that should be on your data map."
                 placement="right"
               >
+                <QuestionIcon boxSize={5} color="gray.400" />
+              </Tooltip>
+            </Stack>
+            <Stack direction="row" display="flex" alignItems="center">
+              <IconButton
+                aria-label="Okta"
+                boxSize={iconButtonSize}
+                minW={iconButtonSize}
+                boxShadow="base"
+                variant="ghost"
+                icon={<OktaLogoIcon boxSize="full" />}
+                onClick={() => {
+                  dispatch(setAddSystemsMethod(ValidTargets.OKTA));
+                  dispatch(changeStep());
+                }}
+                data-testid="okta-btn"
+              />
+              <Text>System Scan (Okta)</Text>
+              <Tooltip fontSize="md" label="Need text" placement="right">
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
