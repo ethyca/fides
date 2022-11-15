@@ -31,6 +31,7 @@ The types of changes are:
 
 * Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
 * All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+* Running the `webserver` command no longer prompts the user to opt out/in to analytics[#1724](https://github.com/ethyca/fides/pull/1724)
 
 ### Developer Experience
 
