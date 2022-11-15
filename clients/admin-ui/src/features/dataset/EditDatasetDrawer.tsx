@@ -61,17 +61,19 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
       onClose={onClose}
       description={DESCRIPTION}
       header={`Dataset Name: ${dataset.name}`}
-      onDelete={handleDelete}
-      deleteMessage={
-        <Text>
-          You are about to permanently delete the dataset named{" "}
-          <Text color="complimentary.500" as="span" fontWeight="bold">
-            {dataset.name}
+      deleteProps={{
+        onDelete: handleDelete,
+        title: "Delete Dataset",
+        message: (
+          <Text>
+            You are about to permanently delete the dataset named{" "}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {dataset.name}
+            </Text>
+            . Are you sure you would like to continue?
           </Text>
-          . Are you sure you would like to continue?
-        </Text>
-      }
-      deleteTitle="Delete Dataset"
+        ),
+      }}
       formId={FORM_ID}
     >
       <EditDatasetForm values={dataset} onSubmit={handleSubmit} />

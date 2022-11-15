@@ -68,17 +68,19 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
       onClose={onClose}
       header={`Field Name: ${field.name}`}
       description={DESCRIPTION}
-      onDelete={handleDelete}
-      deleteTitle="Delete Field"
-      deleteMessage={
-        <Text>
-          You are about to permanently delete the field named{" "}
-          <Text color="complimentary.500" as="span" fontWeight="bold">
-            {field.name}
-          </Text>{" "}
-          from this dataset. Are you sure you would like to continue?
-        </Text>
-      }
+      deleteProps={{
+        onDelete: handleDelete,
+        title: "Delete Field",
+        message: (
+          <Text>
+            You are about to permanently delete the field named{" "}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {field.name}
+            </Text>{" "}
+            from this dataset. Are you sure you would like to continue?
+          </Text>
+        ),
+      }}
       formId={FORM_ID}
     >
       <EditCollectionOrFieldForm
