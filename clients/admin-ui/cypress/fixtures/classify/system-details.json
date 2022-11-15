@@ -1,0 +1,42 @@
+{
+  "fides_key": "vizier-metadata-svc",
+  "name": "vizier-metadata-svc",
+  "status": "Complete",
+  "egress": [
+    {
+      "fides_key": "External",
+      "classifications": [
+        {
+          "label": "system",
+          "score": 1,
+          "aggregated_score": 0.55,
+          "classification_paradigm": "context"
+        }
+      ]
+    }
+  ],
+  "ingress": [
+    {
+      "fides_key": "External",
+      "classifications": [
+        {
+          "label": "system",
+          "score": 1,
+          "aggregated_score": 0.55,
+          "classification_paradigm": "context"
+        }
+      ]
+    },
+    {
+      "fides_key": "vizier-cloud-connector-svc",
+      "classifications": [
+        {
+          "label": "system",
+          "score": 1,
+          "aggregated_score": 0.55,
+          "classification_paradigm": "context"
+        }
+      ]
+    }
+  ]
+}

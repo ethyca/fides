@@ -28,7 +28,9 @@
       "is_required": false,
       "progress": null,
       "link": null
-    }
+    },
+    "ingress": [],
+    "egress": []
   },
   {
     "fides_key": "demo_analytics_system",
@@ -41,6 +43,14 @@
     "fidesctl_meta": null,
     "system_type": "Service",
     "data_responsibility_title": "Controller",
+    "egress": null,
+    "ingress": [
+      {
+        "fides_key": "demo_marketing_system",
+        "type": "system",
+        "data_categories": null
+      }
+    ],
     "privacy_declarations": [
       {
         "name": "Analyze customer behaviour for improvements.",
@@ -48,7 +58,9 @@
         "data_use": "improve.system",
         "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["customer"],
-        "dataset_references": ["demo_users_dataset"]
+        "dataset_references": ["demo_users_dataset"],
+        "egress": null,
+        "ingress": null
       }
     ],
     "system_dependencies": null,
@@ -72,6 +84,14 @@
     "fidesctl_meta": null,
     "system_type": "Service",
     "data_responsibility_title": "Processor",
+    "egress": [
+      {
+        "fides_key": "demo_analytics_system",
+        "type": "system",
+        "data_categories": null
+      }
+    ],
+    "ingress": null,
     "privacy_declarations": [
       {
         "name": "Collect data for marketing",
@@ -79,7 +99,9 @@
         "data_use": "advertising",
         "data_qualifier": "aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified",
         "data_subjects": ["customer"],
-        "dataset_references": null
+        "dataset_references": null,
+        "egress": null,
+        "ingress": null
       }
     ],
     "system_dependencies": ["demo_analytics_system"],

@@ -61,7 +61,11 @@ const EditDrawer = ({
         <DrawerOverlay />
         <DrawerContent data-testid="edit-drawer-content" py={2}>
           <Box display="flex" justifyContent="flex-end" mr={2}>
-            <Button variant="ghost" onClick={onClose}>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              data-testid="close-drawer-btn"
+            >
               <CloseSolidIcon />
             </Button>
           </Box>

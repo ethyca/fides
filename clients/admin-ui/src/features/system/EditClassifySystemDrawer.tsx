@@ -45,18 +45,22 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
     isLoading: isLoadingClassificationInstance,
   } = useGetClassifySystemQuery(system.fides_key);
 
-  const hasClassification = classificationInstance != null;
   const hasIngressClassification =
-    hasClassification && classificationInstance.ingress.length > 0;
+    classificationInstance != null && classificationInstance.ingress.length > 0;
   const hasEgressClassification =
-    hasClassification && classificationInstance.egress.length > 0;
-  const hasNoDataFlows = !hasIngressClassification && !hasEgressClassification;
+    classificationInstance != null && classificationInstance.egress.length > 0;
+  const hasNoDataFlowClassifications =
+    !hasIngressClassification && !hasEgressClassification;
+
+  const hasIngress = system.ingress != null && system.ingress.length > 0;
+  const hasEgress = system.egress != null && system.egress.length > 0;
+  const hasNoDataFlows = !hasIngress && !hasEgress;
 
   let description: JSX.Element;
   let resources: string;
-  if (hasIngressClassification && hasEgressClassification) {
+  if (hasIngress && hasEgress) {
     resources = "ingress and egress";
-  } else if (hasIngressClassification) {
+  } else if (hasIngress) {
     resources = "ingress";
   } else {
     resources = "egress";
@@ -68,7 +72,7 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
         your selected system.
       </Text>
     );
-  } else if (!hasClassification) {
+  } else if (hasNoDataFlowClassifications) {
     description = (
       <Text fontSize="sm" data-testid="no-classification">
         Fides classify has detected {resources} systems connected to your
@@ -94,7 +98,6 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
     hasIngressClassification,
     hasEgressClassification,
     hasNoDataFlows,
-    hasClassification,
     description,
     updateSystemMutation,
     updateClassificationMutation,
@@ -110,7 +113,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     classificationInstance,
   } = useClassifySystemDrawer({ system });
 
-  console.log({ classificationInstance });
+  console.log({ system, classificationInstance });
 
   return (
     <EditDrawer
