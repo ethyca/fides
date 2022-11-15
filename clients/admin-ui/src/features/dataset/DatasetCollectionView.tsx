@@ -7,7 +7,7 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
-import { useGetClassifyDatasetQuery } from "~/features/common/plus.slice";
+import { useGetClassifyDatasetQuery } from "~/features/plus/plus.slice";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetField } from "~/types/api";
 
