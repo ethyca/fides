@@ -42,9 +42,15 @@ def get_config_from_file(
 
 
 def check_if_required_config_vars_are_configured() -> None:
-    app_encryption_key = getenv("FIDES__SECURITY__APP_ENCRYPTION_KEY")
-    oauth_root_client_id = getenv("FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID")
-    oauth_root_client_secret = getenv("FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET")
+    app_encryption_key: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__APP_ENCRYPTION_KEY"
+    )
+    oauth_root_client_id: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID"
+    )
+    oauth_root_client_secret: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET"
+    )
     try:
         app_encryption_key = get_config_from_file("", "security", "app_encryption_key")
         oauth_root_client_id = get_config_from_file(
