@@ -37,11 +37,7 @@ import {
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-//   import {
-//     OKTA_REGION_OPTIONS,
-//     DOCS_URL_OKTA_PERMISSIONS,
-//     DOCS_URL_IAM_POLICY,
-//   } from "./constants";
+import { DOCS_URL_OKTA_TOKEN } from "./constants";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
@@ -170,7 +166,7 @@ const AuthenticateOktaForm = () => {
                 <Text m="0px !important">
                   In order to run the scanner, please provide your Okta token.
                   You can find{" "}
-                  <DocsLink href="https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm">
+                  <DocsLink href={DOCS_URL_OKTA_TOKEN}>
                     instructions here{" "}
                   </DocsLink>{" "}
                   on how to retrieve a suitable token from your Okta
@@ -179,12 +175,12 @@ const AuthenticateOktaForm = () => {
                 panel.
                 <Stack>
                   <CustomTextInput
-                    name="okta_org_url"
+                    name="orgUrl"
                     label="Org URL:"
                     tooltip="Need text"
                   />
                   <CustomTextInput
-                    name="okta_token"
+                    name="token"
                     label="Okta token:"
                     tooltip="Need text"
                   />
