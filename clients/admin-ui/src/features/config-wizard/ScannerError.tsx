@@ -25,7 +25,13 @@ const ErrorLog = ({ message }: { message: string }) => (
   </>
 );
 
-const ScannerError = ({ error }: { error: ParsedError }) => (
+const ScannerError = ({
+  error,
+  isAWSScan,
+}: {
+  error: ParsedError;
+  isAWSScan?: boolean;
+}) => (
   <Stack data-testid="scanner-error" spacing="4">
     <HStack>
       <Badge color="white" bg="red.500" py="2">
@@ -36,7 +42,7 @@ const ScannerError = ({ error }: { error: ParsedError }) => (
       </Heading>
     </HStack>
 
-    {error.status === 403 ? (
+    {error.status === 403 && isAWSScan ? (
       <>
         <Text data-testid="permission-msg">
           Fides was unable to scan AWS. It appears that the credentials were

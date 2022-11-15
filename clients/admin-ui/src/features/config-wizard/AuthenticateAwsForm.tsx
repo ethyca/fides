@@ -133,7 +133,9 @@ const AuthenticateAwsForm = () => {
               />
             ) : null}
 
-            {scannerError ? <ScannerError error={scannerError} /> : null}
+            {scannerError ? (
+              <ScannerError error={scannerError} isAWSScan />
+            ) : null}
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate Scanner</Heading>
