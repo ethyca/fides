@@ -66,6 +66,7 @@ from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingMethod,
+    MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
@@ -136,7 +137,7 @@ class TestCreatePrivacyRequest:
         policy,
     ):
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        TEST_PHONE_NUMBER = "+12345678910"
         data = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1165,7 +1166,7 @@ class TestGetPrivacyRequests:
         privacy_request.reviewed_by = user.id
         privacy_request.reviewed_at = reviewed_at
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE = "+1 234 567 8910"
+        TEST_PHONE = "+12345678910"
         privacy_request.cache_identity(
             {
                 "email": TEST_EMAIL,
@@ -1893,7 +1894,7 @@ class TestApprovePrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2023,7 +2024,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2094,7 +2095,7 @@ class TestDenyPrivacyRequest:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -2926,6 +2927,46 @@ class TestVerifyIdentity:
         assert not mock_dispatch_message.called
 
     @mock.patch(
+        "fides.api.ops.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_too_many_attempts(
+        self,
+        mock_dispatch_message,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+    ):
+        VERIFICATION_CODE = "999999"
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(VERIFICATION_CODE)
+
+        request_body = {"code": self.code}
+        for _ in range(0, CONFIG.security.identity_verification_attempt_limit):
+            resp = api_client.post(url, headers={}, json=request_body)
+            assert resp.status_code == 403
+            assert (
+                resp.json()["detail"]
+                == f"Incorrect identification code for '{privacy_request.id}'"
+            )
+            assert not mock_dispatch_message.called
+
+        assert (
+            privacy_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+
+        request_body = {"code": VERIFICATION_CODE}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 403
+        assert resp.json()["detail"] == f"Attempt limit hit for '{privacy_request.id}'"
+        assert not mock_dispatch_message.called
+        assert privacy_request.get_cached_verification_code() is None
+        assert privacy_request._get_cached_verification_code_attempt_count() == 0
+
+    @mock.patch(
         "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
     @mock.patch(
@@ -2974,9 +3015,9 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3082,9 +3123,9 @@ class TestVerifyIdentity:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
-            phone_number="+1 234 567 8910", email="test@example.com"
+            phone_number="+12345678910", email="test@example.com"
         )
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3129,7 +3170,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         assert resp.status_code == 200
         response_data = resp.json()["failed"]
         assert len(response_data) == 1
-        assert response_data[0]["message"] == "Verification email could not be sent."
+        assert response_data[0]["message"] == "Verification message could not be sent."
         assert (
             response_data[0]["data"]["status"]
             == PrivacyRequestStatus.identity_unverified.value
@@ -3184,7 +3225,7 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
             kwargs["action_type"] == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION
         )
         assert kwargs["to_identity"] == Identity(email="test@example.com")
-        assert kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert kwargs["service_type"] == MessagingServiceType.MAILGUN.value
         assert kwargs["message_body_params"] == SubjectIdentityVerificationBodyParams(
             verification_code=pr.get_cached_verification_code(),
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
@@ -3701,7 +3742,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
@@ -3752,7 +3793,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(email="test@example.com")
-        assert task_kwargs["messaging_method"] == MessagingMethod.EMAIL
+        assert task_kwargs["service_type"] == MessagingServiceType.MAILGUN.value
 
         message_meta = task_kwargs["message_meta"]
         assert (

@@ -24,7 +24,7 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def provided_identity_and_consent_request(db):
     provided_identity_data = {
         "privacy_request_id": None,
@@ -40,6 +40,8 @@ def provided_identity_and_consent_request(db):
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
     yield provided_identity, consent_request
+    provided_identity.delete(db=db)
+    consent_request.delete(db=db)
 
 
 @pytest.fixture
@@ -122,7 +124,7 @@ class TestConsentRequest:
         "subject_identity_verification_required",
     )
     def test_consent_request_no_email(self, api_client, url):
-        data = {"phone_number": "336-867-5309"}
+        data = {"phone_number": "+3368675309"}
         response = api_client.post(url, json=data)
         assert response.status_code == 400
         assert "email address is required" in response.json()["detail"]
@@ -418,7 +420,10 @@ class TestSaveConsent:
         "subject_identity_verification_required",
     )
     def test_set_consent_preferences_invalid_code(
-        self, provided_identity_and_consent_request, api_client, verification_code
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
     ):
         _, consent_request = provided_identity_and_consent_request
         consent_request.cache_identity_verification_code(verification_code)
@@ -434,6 +439,90 @@ class TestSaveConsent:
         )
         assert response.status_code == 403
         assert "Incorrect identification" in response.json()["detail"]
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_verify_then_set_consent_preferences(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert no existing consent preferences exist for this identity
+        assert response.json() == {"consent": None}
+
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json={
+                "code": verification_code,
+                "identity": {"email": "test@email.com"},
+                "consent": [{"data_use": "email", "opt_in": True}],
+            },
+        )
+        assert response.status_code == 200
+        # Assert nconsent preferences have successfully been set
+        assert response.json()["consent"][0]["data_use"] == "email"
+        assert response.json()["consent"][0]["opt_in"] == True
+
+        response = api_client.post(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_VERIFY.format(consent_request_id=consent_request.id)}",
+            json={"code": verification_code},
+        )
+        assert response.status_code == 200
+        # Assert the code verification endpoint also returns existing consent preferences
+        assert response.json()["consent"][0]["data_use"] == "email"
+        assert response.json()["consent"][0]["opt_in"] == True
+
+    @pytest.mark.usefixtures(
+        "subject_identity_verification_required",
+    )
+    def test_set_consent_preferences_invalid_code_respects_attempt_count(
+        self,
+        provided_identity_and_consent_request,
+        api_client,
+        verification_code,
+    ):
+        _, consent_request = provided_identity_and_consent_request
+        consent_request.cache_identity_verification_code(verification_code)
+
+        data = {
+            "code": "12345",
+            "identity": {"email": "test@email.com"},
+            "consent": [{"data_use": "email", "opt_in": True}],
+        }
+        for _ in range(0, CONFIG.security.identity_verification_attempt_limit):
+            response = api_client.patch(
+                f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+                json=data,
+            )
+            assert response.status_code == 403
+            assert "Incorrect identification" in response.json()["detail"]
+
+        assert (
+            consent_request._get_cached_verification_code_attempt_count()
+            == CONFIG.security.identity_verification_attempt_limit
+        )
+
+        data["code"] = verification_code
+        response = api_client.patch(
+            f"{V1_URL_PREFIX}{CONSENT_REQUEST_PREFERENCES_WITH_ID.format(consent_request_id=consent_request.id)}",
+            json=data,
+        )
+        assert response.status_code == 403
+        assert (
+            response.json()["detail"] == f"Attempt limit hit for '{consent_request.id}'"
+        )
+        assert consent_request.get_cached_verification_code() is None
+        assert consent_request._get_cached_verification_code_attempt_count() == 0
 
     @pytest.mark.usefixtures(
         "subject_identity_verification_required",

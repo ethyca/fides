@@ -93,6 +93,7 @@ async def acquire_access_token(
         raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
+
     access_code = client_detail.create_access_code_jwe(
         CONFIG.security.app_encryption_key
     )

@@ -48,4 +48,5 @@ venv/
 
 # Dev files
 .pre-commit-config.yaml
+docker/docker-compose.minimal-config.yml
 .fides/

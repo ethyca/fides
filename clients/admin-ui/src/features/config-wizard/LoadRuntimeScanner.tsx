@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { ParsedError, parseError } from "~/features/common/helpers";
-import { useGetScanResultsQuery } from "~/features/common/plus.slice";
 import { successToastParams } from "~/features/common/toast";
+import { useGetScanResultsQuery } from "~/features/plus/plus.slice";
 import { RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
@@ -16,10 +16,12 @@ import ScannerLoading from "./ScannerLoading";
  * fides.toml. Eventually, we'll want to store those credentials via this form, but
  * since that flow doesn't exist yet, this is mostly just a loading screen for now.
  */
-const AuthenticateRuntimeForm = () => {
+const LoadRuntimeScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { data, error: queryError } = useGetScanResultsQuery();
+  const { data, error: queryError } = useGetScanResultsQuery({
+    classify: true,
+  });
   const [scannerError, setScannerError] = useState<ParsedError>();
 
   const handleCancel = () => {
@@ -80,4 +82,4 @@ const AuthenticateRuntimeForm = () => {
   );
 };
 
-export default AuthenticateRuntimeForm;
+export default LoadRuntimeScanner;
