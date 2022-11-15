@@ -2738,6 +2738,18 @@ To learn more about configuring fides, see:
 <td style="text-align: left;">The number of seconds that a pre-signed download URL when using S3 storage will be valid.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><code>request_rate_limit</code></td>
+<td style="text-align: left;">str</td>
+<td style="text-align: left;"><code>100/minute</code></td>
+<td style="text-align: left;">The number of requests from a single IP address allowed to hit an endpoint within a rolling 60 second period.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rate_limit_prefix</code></td>
+<td style="text-align: left;">str</td>
+<td style="text-align: left;"><code>fides-</code></td>
+<td style="text-align: left;">The prefix given to keys in the Redis cache used by the rate limiter.</td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>identity_verification_attempt_limit</code></td>
 <td style="text-align: left;">int</td>
 <td style="text-align: left;"><code>3</code></td>
