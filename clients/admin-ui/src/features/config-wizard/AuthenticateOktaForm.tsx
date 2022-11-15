@@ -2,16 +2,20 @@ import {
   Accordion,
   AccordionButton,
   AccordionItem,
+  AccordionPanel,
   Button,
+  Divider,
   Heading,
   HStack,
   Stack,
+  Text,
 } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -141,7 +145,7 @@ const AuthenticateOktaForm = () => {
                           The scanner can be connected to your sign-on provider
                           to automatically scan and create a list of all systems
                           that your team are using that may contain personal
-                          data. (show more)
+                          data.
                           <AccordionButton
                             display="inline"
                             padding="0px"
@@ -152,26 +156,36 @@ const AuthenticateOktaForm = () => {
                             {isExpanded ? `(show less)` : `(show more)`}
                           </AccordionButton>
                         </h2>
-                        Currently the scanner supports certain Okta. We will be
-                        adding support for other sign-on providers (e.g.
-                        Auth0,Microsoft, Google) shortly, please let us know if
-                        you have specific requests. (show less)
+                        <AccordionPanel padding="0px" mt="20px">
+                          Currently the scanner supports certain Okta. We will
+                          be adding support for other sign-on providers (e.g.
+                          Auth0,Microsoft, Google) shortly, please let us know
+                          if you have specific requests.
+                        </AccordionPanel>
                       </>
                     )}
                   </AccordionItem>
                 </Accordion>
-                In order to run the scanner, please provide your Okta token. You
-                can find instructions here on how to retrieve a suitable token
-                from your Okta administration panel.
+                <Divider m="20px 0px !important" />
+                <Text m="0px !important">
+                  In order to run the scanner, please provide your Okta token.
+                  You can find{" "}
+                  <DocsLink href="https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm">
+                    instructions here{" "}
+                  </DocsLink>{" "}
+                  on how to retrieve a suitable token from your Okta
+                  administration
+                </Text>
+                panel.
                 <Stack>
                   <CustomTextInput
                     name="okta_org_url"
-                    label="URL"
+                    label="Org URL:"
                     tooltip="Need text"
                   />
                   <CustomTextInput
                     name="okta_token"
-                    label="Token"
+                    label="Okta token:"
                     tooltip="Need text"
                   />
                 </Stack>
