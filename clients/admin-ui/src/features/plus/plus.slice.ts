@@ -23,6 +23,10 @@ interface HealthResponse {
   status: "healthy";
 }
 
+interface ScanParams {
+  classify?: boolean;
+}
+
 export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
@@ -69,9 +73,10 @@ export const plusApi = createApi({
     }),
 
     // Kubernetes Cluster Scanner
-    getScanResults: build.query<SystemScanResponse, void>({
-      query: () => ({
+    getScanResults: build.query<SystemScanResponse, ScanParams>({
+      query: (params: ScanParams) => ({
         url: `scan`,
+        params,
         method: "GET",
       }),
     }),
@@ -168,6 +173,11 @@ export const selectClassifyInstanceField = createSelector(
 const emptySystems: System[] = [];
 
 export const selectScannedSystems = createSelector(
-  plusApi.endpoints.getScanResults.select(),
+  plusApi.endpoints.getScanResults.select({ classify: false }),
+  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
+);
+
+export const selectScannedAndClassifiedSystems = createSelector(
+  plusApi.endpoints.getScanResults.select({ classify: true }),
   ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
 );

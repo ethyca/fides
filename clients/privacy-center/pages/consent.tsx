@@ -44,6 +44,7 @@ const Consent: NextPage = () => {
     const getUserConsents = async () => {
       if (!consentRequestId) {
         router.push("/");
+        return;
       }
 
       const headers: Headers = new Headers();
@@ -66,7 +67,9 @@ const Consent: NextPage = () => {
         !verificationCode
       ) {
         router.push("/");
+        return;
       }
+
       const verifyUrl = privacyCenterConfig.identity_verification_required
         ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
         : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
@@ -89,7 +92,9 @@ const Consent: NextPage = () => {
           description: (data as any).detail,
           ...ErrorToastOptions,
         });
+
         router.push("/");
+        return;
       }
 
       const updatedConsentItems = makeConsentItems(
@@ -194,7 +199,7 @@ const Consent: NextPage = () => {
         </Flex>
       </header>
 
-      <main>
+      <main data-testid="consent">
         <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
           <Stack align="center" spacing={3}>
             <Heading
@@ -239,6 +244,7 @@ const Consent: NextPage = () => {
               onClick={() => {
                 saveUserConsentOptions();
               }}
+              data-testid="save-btn"
             >
               Save
             </Button>

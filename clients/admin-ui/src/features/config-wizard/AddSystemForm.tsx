@@ -23,15 +23,11 @@ import {
 } from "~/features/common/Icon";
 import { ValidTargets } from "~/types/api";
 
-import { changeStep } from "./config-wizard.slice";
+import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
-import { AddSystemMethods, SystemMethods } from "./types";
+import { SystemMethods } from "./types";
 
-const AddSystemForm = ({
-  onSelectMethod,
-}: {
-  onSelectMethod: (method: AddSystemMethods) => void;
-}) => {
+const AddSystemForm = () => {
   const dispatch = useAppDispatch();
   const { plus } = useFeatures();
 
@@ -80,7 +76,7 @@ const AddSystemForm = ({
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
                 onClick={() => {
-                  onSelectMethod(ValidTargets.AWS);
+                  dispatch(setAddSystemsMethod(ValidTargets.AWS));
                   dispatch(changeStep());
                 }}
                 data-testid="aws-btn"
@@ -106,7 +102,7 @@ const AddSystemForm = ({
                     icon={<RuntimeScannerLogo boxSize="10" />}
                     onClick={() => {
                       dispatch(changeStep());
-                      onSelectMethod(SystemMethods.RUNTIME);
+                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
                     }}
                     data-testid="runtime-scan-btn"
                   />
@@ -132,7 +128,7 @@ const AddSystemForm = ({
                   icon={<ManualSetupIcon boxSize="full" />}
                   onClick={() => {
                     dispatch(changeStep(5));
-                    onSelectMethod(SystemMethods.MANUAL);
+                    dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                   }}
                 />
               </HStack>

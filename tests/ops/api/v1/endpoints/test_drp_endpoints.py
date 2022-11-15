@@ -49,7 +49,7 @@ class TestCreateDrpPrivacyRequest:
         cache,
     ):
         TEST_EMAIL = "test@example.com"
-        TEST_PHONE_NUMBER = "+1 234 567 8910"
+        TEST_PHONE_NUMBER = "+12345678910"
         identity = {
             "email": TEST_EMAIL,
             "phone_number": TEST_PHONE_NUMBER,

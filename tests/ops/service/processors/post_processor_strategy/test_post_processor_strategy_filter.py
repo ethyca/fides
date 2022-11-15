@@ -135,7 +135,7 @@ def test_filter_nonexistent_field():
 
 
 def test_filter_by_nonexistent_identity_reference():
-    identity_data: Dict[str, Any] = {"phone": "123-1234-1235"}
+    identity_data: Dict[str, Any] = {"phone_number": "123-1234-1235"}
     config = FilterPostProcessorConfiguration(
         field="email_contact", value={"identity": "email"}
     )
