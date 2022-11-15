@@ -60,7 +60,6 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
       {activeSystem ? (
         <EditClassifySystemDrawer
           system={activeSystem}
-          classification={classifyInstanceMap.get(activeSystem.fides_key)}
           isOpen={activeSystem != null}
           onClose={() => setActiveSystem(undefined)}
         />

@@ -1,20 +1,25 @@
-import { GridItem, SimpleGrid, Stack, Text } from "@fidesui/react";
+import {
+  Center,
+  GridItem,
+  SimpleGrid,
+  Spinner,
+  Stack,
+  Text,
+} from "@fidesui/react";
 import { ReactNode } from "react";
 
 import EditDrawer from "~/features/common/EditDrawer";
-import {
-  ClassifyInstanceResponseValues,
-  GenerateTypes,
-  System,
-} from "~/types/api";
+import { GenerateTypes, System } from "~/types/api";
 
 import ClassificationStatusBadge from "../plus/ClassificationStatusBadge";
-import { useUpdateClassifyInstanceMutation } from "../plus/plus.slice";
+import {
+  useGetClassifySystemQuery,
+  useUpdateClassifyInstanceMutation,
+} from "../plus/plus.slice";
 import { useUpdateSystemMutation } from "./system.slice";
 
 interface Props {
   system: System;
-  classification?: ClassifyInstanceResponseValues;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -34,20 +39,24 @@ const SystemMetadata = ({
   </GridItem>
 );
 
-const useClassifySystemDrawer = ({
-  system,
-  classification,
-}: Pick<Props, "system" | "classification">) => {
-  const hasIngress = system.ingress != null && system.ingress.length > 0;
-  const hasEgress = system.egress != null && system.egress.length > 0;
-  const hasNoDataFlows = !hasIngress && !hasEgress;
-  const hasClassification = classification != null;
+const useClassifySystemDrawer = ({ system }: { system: System }) => {
+  const {
+    data: classificationInstance,
+    isLoading: isLoadingClassificationInstance,
+  } = useGetClassifySystemQuery(system.fides_key);
+
+  const hasClassification = classificationInstance != null;
+  const hasIngressClassification =
+    hasClassification && classificationInstance.ingress.length > 0;
+  const hasEgressClassification =
+    hasClassification && classificationInstance.egress.length > 0;
+  const hasNoDataFlows = !hasIngressClassification && !hasEgressClassification;
 
   let description: JSX.Element;
   let resources: string;
-  if (hasIngress && hasEgress) {
+  if (hasIngressClassification && hasEgressClassification) {
     resources = "ingress and egress";
-  } else if (hasIngress) {
+  } else if (hasIngressClassification) {
     resources = "ingress";
   } else {
     resources = "egress";
@@ -82,23 +91,26 @@ const useClassifySystemDrawer = ({
   const [updateClassificationMutation] = useUpdateClassifyInstanceMutation();
 
   return {
-    hasIngress,
-    hasEgress,
+    hasIngressClassification,
+    hasEgressClassification,
     hasNoDataFlows,
     hasClassification,
     description,
     updateSystemMutation,
     updateClassificationMutation,
+    classificationInstance,
+    isLoadingClassificationInstance,
   };
 };
 
-const EditClassifySystemDrawer = ({
-  system,
-  classification,
-  isOpen,
-  onClose,
-}: Props) => {
-  const { description } = useClassifySystemDrawer({ system, classification });
+const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
+  const {
+    description,
+    isLoadingClassificationInstance,
+    classificationInstance,
+  } = useClassifySystemDrawer({ system });
+
+  console.log({ classificationInstance });
 
   return (
     <EditDrawer
@@ -106,22 +118,29 @@ const EditClassifySystemDrawer = ({
       onClose={onClose}
       header="System classification details"
     >
-      <Stack spacing={4}>
-        <SimpleGrid columns={2} spacingY={2}>
-          <SystemMetadata label="System name" value={system.name} />
-          <SystemMetadata label="System type" value={system.system_type} />
-          <SystemMetadata
-            label="Classification status"
-            value={
-              <ClassificationStatusBadge
-                status={classification?.status}
-                resource={GenerateTypes.SYSTEMS}
-              />
-            }
-          />
-        </SimpleGrid>
-        {description}
-      </Stack>
+      {isLoadingClassificationInstance ? (
+        <Center>
+          <Spinner />
+        </Center>
+      ) : (
+        <Stack spacing={4}>
+          <SimpleGrid columns={2} spacingY={2}>
+            <SystemMetadata label="System name" value={system.name} />
+            <SystemMetadata label="System type" value={system.system_type} />
+            <SystemMetadata
+              label="Classification status"
+              value={
+                <ClassificationStatusBadge
+                  status={classificationInstance?.status}
+                  resource={GenerateTypes.SYSTEMS}
+                />
+              }
+            />
+          </SimpleGrid>
+
+          {description}
+        </Stack>
+      )}
     </EditDrawer>
   );
 };
