@@ -26,6 +26,7 @@ The types of changes are:
 * Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
+* Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 
 ### Changed
 
@@ -36,7 +37,11 @@ The types of changes are:
 ### Developer Experience
 
 * Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
-* Enable remote debugging from VSCode of live dev app (#1780)(https://github.com/ethyca/fides/pull/1780)
+* Enable remote debugging from VSCode of live dev app [#1780](https://github.com/ethyca/fides/pull/1780)
+
+### Removed
+
+* Removed the Privacy Center `cookieName` config introduced in 2.0.0. [#1756](https://github.com/ethyca/fides/pull/1756)
 
 ### Fixed
 
