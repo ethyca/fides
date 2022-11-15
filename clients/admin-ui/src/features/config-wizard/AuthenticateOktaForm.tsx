@@ -24,7 +24,6 @@ import {
 } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
-  Dataset,
   GenerateResponse,
   GenerateTypes,
   System,
@@ -38,11 +37,10 @@ import {
   setSystemsForReview,
 } from "./config-wizard.slice";
 import { DOCS_URL_OKTA_TOKEN } from "./constants";
+import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
-
-const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   orgUrl: "",
@@ -52,11 +50,7 @@ const initialValues = {
 type FormValues = typeof initialValues;
 
 const ValidationSchema = Yup.object().shape({
-  orgUrl: Yup.string()
-    .required()
-    .trim()
-    .matches(/^[^\s]+$/, "Cannot contain spaces")
-    .label("URL"),
+  orgUrl: Yup.string().required().trim().url().label("URL"),
   token: Yup.string()
     .required()
     .trim()
@@ -174,15 +168,10 @@ const AuthenticateOktaForm = () => {
                 </Text>
                 panel.
                 <Stack>
-                  <CustomTextInput
-                    name="orgUrl"
-                    label="Org URL:"
-                    tooltip="Need text"
-                  />
+                  <CustomTextInput name="orgUrl" label="Org URL:" />
                   <CustomTextInput
                     name="token"
                     label="Okta token:"
-                    tooltip="Need text"
                     type="password"
                   />
                 </Stack>

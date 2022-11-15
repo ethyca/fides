@@ -106,9 +106,6 @@ const AddSystemForm = () => {
                 data-testid="okta-btn"
               />
               <Text>System Scan (Okta)</Text>
-              <Tooltip fontSize="md" label="Need text" placement="right">
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
             </Stack>
             {plus ? (
               <Stack direction="row" display="flex" alignItems="center">
