@@ -8,6 +8,7 @@ from fideslib.core.config import FidesSettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from fideslib.exceptions import MissingConfig
 from pydantic import validator
+from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 
@@ -19,6 +20,8 @@ class SecuritySettings(FidesSettings):
 
     root_user_scopes: Optional[List[str]] = SCOPE_REGISTRY
     subject_request_download_link_ttl_seconds: int = 432000  # 5 days
+    request_rate_limit: str = "1000/minute"
+    rate_limit_prefix: str = "fides-"
     aes_encryption_key_length: int = 16
     aes_gcm_nonce_length: int = 12
     app_encryption_key: str
@@ -92,6 +95,27 @@ class SecuritySettings(FidesSettings):
         hashed_client_id = hash_with_salt(value.encode(encoding), salt.encode(encoding))
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
+
+    @validator("request_rate_limit")
+    @classmethod
+    def validate_request_rate_limit(
+        cls,
+        v: str,
+    ) -> str:
+        """Validate the formatting of `request_rate_limit`"""
+        try:
+            # Defer to `limits.parse_many` https://limits.readthedocs.io/en/stable/api.html#limits.parse_many
+            parse_many(v)
+        except ValueError:
+            message = """
+            Ratelimits must be specified in the format: [count] [per|/] [n (optional)] [second|minute|hour|day|month|year]
+            e.g. 10 per hour
+            e.g. 10/hour
+            e.g. 10/hour;100/day;2000 per year
+            e.g. 100/day, 500/7days
+            """
+            raise ValueError(message)
+        return v
 
     class Config:
         env_prefix = ENV_PREFIX

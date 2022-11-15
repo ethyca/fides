@@ -35,10 +35,11 @@ PyMySQL==1.0.2
 python-jose[cryptography]==3.3.0
 pyyaml>=5,<6
 redis==3.5.3
+slowapi==0.1.5
+snowflake-sqlalchemy==1.4.3
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-bigquery==1.4.4
 sqlalchemy-redshift==0.8.11
-snowflake-sqlalchemy==1.4.3
 sqlalchemy-stubs==0.4
 SQLAlchemy-Utils==0.38.3
 toml>=0.10.1
