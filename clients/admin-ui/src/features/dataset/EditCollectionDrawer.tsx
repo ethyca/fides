@@ -2,6 +2,7 @@ import { Text, useToast } from "@fidesui/react";
 import { errorToastParams, successToastParams } from "common/toast";
 import { useSelector } from "react-redux";
 
+import EditDrawer from "~/features/common/EditDrawer";
 import { DatasetCollection } from "~/types/api";
 
 import {
@@ -13,7 +14,6 @@ import {
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
-import EditDrawer from "./EditDrawer";
 import {
   getUpdatedDatasetFromCollection,
   removeCollectionFromDataset,

@@ -1,6 +1,7 @@
 import { Text, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
 
+import EditDrawer from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Dataset } from "~/types/api";
@@ -11,7 +12,6 @@ import {
   useUpdateDatasetMutation,
 } from "./dataset.slice";
 import EditDatasetForm, { FORM_ID } from "./EditDatasetForm";
-import EditDrawer from "./EditDrawer";
 
 const DESCRIPTION =
   "A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. Provide additional context to this dataset by filling out the fields below.";

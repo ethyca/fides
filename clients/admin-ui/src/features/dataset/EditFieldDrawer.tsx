@@ -1,6 +1,7 @@
 import { Text } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
+import EditDrawer from "~/features/common/EditDrawer";
 import { DatasetField } from "~/types/api";
 
 import {
@@ -12,7 +13,6 @@ import {
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
-import EditDrawer from "./EditDrawer";
 import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
 
 interface Props {
