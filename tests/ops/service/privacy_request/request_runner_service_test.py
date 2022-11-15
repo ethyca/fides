@@ -36,7 +36,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
     MessagingActionType,
-    MessagingMethod,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.policy import Rule
 from fides.api.ops.schemas.redis_cache import Identity
@@ -1973,7 +1973,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
                     to_identity=identity,
-                    messaging_method=MessagingMethod.EMAIL,
+                    service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=AccessRequestCompleteBodyParams(
                         download_links=[upload_mock.return_value]
                     ),
@@ -1982,7 +1982,7 @@ class TestPrivacyRequestsEmailNotifications:
                     db=ANY,
                     action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
                     to_identity=identity,
-                    messaging_method=MessagingMethod.EMAIL,
+                    service_type=MessagingServiceType.MAILGUN.value,
                     message_body_params=None,
                 ),
             ],
@@ -2053,7 +2053,7 @@ class TestPrivacyRequestsEmailNotifications:
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
-            "identity": {"phone": "1231231233"},
+            "identity": {"phone_number": "1231231233"},
         }
 
         pr = get_privacy_request_results(

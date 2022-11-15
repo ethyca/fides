@@ -124,7 +124,7 @@ class TestConsentRequest:
         "subject_identity_verification_required",
     )
     def test_consent_request_no_email(self, api_client, url):
-        data = {"phone_number": "336-867-5309"}
+        data = {"phone_number": "+3368675309"}
         response = api_client.post(url, json=data)
         assert response.status_code == 400
         assert "email address is required" in response.json()["detail"]

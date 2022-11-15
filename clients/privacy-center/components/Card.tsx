@@ -41,6 +41,7 @@ const Card: React.FC<CardProps> = ({
     onClick={() => {
       onClick();
     }}
+    data-testid="card"
   >
     <Stack spacing={7}>
       <HStack justifyContent="center">
