@@ -1,6 +1,6 @@
 # Privacy Center
 
-The Fides [Privacy Center](privacy_center.md) is a configurable webpage where users can request to download or delete their data. The Privacy Center also provides configurable consent settings for regulatory compliance, allowing users to access and edit their data use preferences.
+The Fides Privacy Center is a configurable webpage where users can request to download or delete their data. The Privacy Center also provides configurable consent settings for regulatory compliance, allowing users to access and edit their data use preferences.
 
 ![privacy center](../img/admin_ui/privacy_center.png)
 
