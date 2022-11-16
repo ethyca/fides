@@ -10,7 +10,7 @@ import {
   useDeleteDatasetMutation,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
-import EditDatasetForm from "./EditDatasetForm";
+import EditDatasetForm, { FORM_ID } from "./EditDatasetForm";
 import EditDrawer from "./EditDrawer";
 
 const DESCRIPTION =
@@ -72,12 +72,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         </Text>
       }
       deleteTitle="Delete Dataset"
+      formId={FORM_ID}
     >
-      <EditDatasetForm
-        values={dataset}
-        onClose={onClose}
-        onSubmit={handleSubmit}
-      />
+      <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
     </EditDrawer>
   );
 };
