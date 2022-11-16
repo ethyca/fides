@@ -86,7 +86,7 @@ def check_if_required_config_vars_are_configured() -> None:
 
     if len(missing_required_config_vars) > 0:
         print(
-            "There are missing required config variables. Please add the following to start Fides: "
+            "There are missing required config variables. Please add the following config variables to either the `fides.toml` file or your environment variable to start Fides: "
         )
         for missing_var in missing_required_config_vars:
             print(f"fides.toml: {missing_var[0]} or ENV VAR: {missing_var[1]}")
