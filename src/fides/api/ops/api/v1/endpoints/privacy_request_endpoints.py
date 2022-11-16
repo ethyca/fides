@@ -122,6 +122,7 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.service.messaging.message_dispatch_service import (
+    check_and_dispatch_error_notifications,
     dispatch_message_task,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
@@ -245,6 +246,10 @@ async def create_privacy_request(
                 privacy_request_data.identity,
                 privacy_request_data.encryption_key,
                 None,
+            )
+
+            check_and_dispatch_error_notifications(
+                db=db, privacy_request=privacy_request
             )
 
             if CONFIG.execution.subject_identity_verification_required:

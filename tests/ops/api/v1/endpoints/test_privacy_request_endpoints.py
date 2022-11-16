@@ -122,6 +122,7 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 200
+        print(resp.json())
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])

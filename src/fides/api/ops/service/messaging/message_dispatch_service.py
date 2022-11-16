@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
@@ -11,9 +11,15 @@ from twilio.rest import Client
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
 from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
+from fides.api.ops.models.privacy_request import (
+    CheckpointActionRequired,
+    PrivacyRequest,
+    PrivacyRequestError,
+)
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
+    ErrorNotificaitonBodyParams,
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
@@ -25,16 +31,56 @@ from fides.api.ops.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.tasks import DatabaseTask, celery_app
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
-
-if TYPE_CHECKING:
-    from fides.api.ops.models.privacy_request import CheckpointActionRequired
 
 CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
+
+
+def check_and_dispatch_error_notifications(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
+    privacy_request_notifications = privacy_request.all(db=db)
+    if not privacy_request_notifications:
+        return None
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+    if not unsent_errors:
+        return None
+
+    email_config = CONFIG.notifications.notification_service_type in (
+        MessagingServiceType.MAILGUN.value,
+        MessagingServiceType.TWILIO_EMAIL.value,
+    )
+
+    if (
+        email_config
+        and len(unsent_errors) >= privacy_request_notifications[0].notify_after_failures
+    ):
+        for email in privacy_request_notifications[0].email.split(", "):
+            dispatch_message_task.apply_async(
+                queue=MESSAGING_QUEUE_NAME,
+                kwargs={
+                    "message_meta": FidesopsMessage(
+                        action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
+                        body_params=ErrorNotificaitonBodyParams(
+                            unsent_errors=len(unsent_errors)
+                        ),
+                    ).dict(),
+                    "service_type": CONFIG.notifications.notification_service_type,
+                    "to_identity": {"email": email},
+                },
+            )
+
+        for error in unsent_errors:
+            error.update(db=db, data={"message_sent": True})
+
+    return None
 
 
 @celery_app.task(base=DatabaseTask, bind=True)

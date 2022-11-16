@@ -54,17 +54,8 @@ from fides.api.ops.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.ops.schemas.messaging.messaging import (
-    ErrorNotificaitonBodyParams,
-    FidesopsMessage,
-    MessagingActionType,
-    MessagingServiceType,
-)
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.service.messaging.message_dispatch_service import (
-    dispatch_message_task,
-)
-from fides.api.ops.tasks import MESSAGING_QUEUE_NAME, celery_app
+from fides.api.ops.tasks import celery_app
 from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -82,6 +73,7 @@ from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 CONFIG = get_config()
+
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -728,41 +720,6 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         PrivacyRequestError.create(
             db=db, data={"message_sent": False, "privacy_request_id": self.id}
         )
-
-        unsent_errors = PrivacyRequestError.filter(
-            db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
-        ).all()
-
-        privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
-
-        email_config = CONFIG.notifications.notification_service_type in (
-            MessagingServiceType.MAILGUN.value,
-            MessagingServiceType.TWILIO_EMAIL.value,
-        )
-
-        if (
-            email_config
-            and privacy_request_notifications
-            and len(unsent_errors)
-            >= privacy_request_notifications[0].notify_after_failures
-        ):
-            for email in privacy_request_notifications[0].email.split(", "):
-                dispatch_message_task.apply_async(
-                    queue=MESSAGING_QUEUE_NAME,
-                    kwargs={
-                        "message_meta": FidesopsMessage(
-                            action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                            body_params=ErrorNotificaitonBodyParams(
-                                unsent_errors=len(unsent_errors)
-                            ),
-                        ).dict(),
-                        "service_type": CONFIG.notifications.notification_service_type,
-                        "to_identity": {"email": email},
-                    },
-                )
-
-            for error in unsent_errors:
-                error.update(db=db, data={"message_sent": True})
 
 
 class PrivacyRequestError(Base):
