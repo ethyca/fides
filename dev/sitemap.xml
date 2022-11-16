@@ -131,6 +131,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://ethyca.github.io/fides/dev/development/vscode_debugging/</loc>
+         <lastmod>2022-11-16</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://ethyca.github.io/fides/dev/development/postman/using_postman/</loc>
          <lastmod>2022-11-16</lastmod>
          <changefreq>daily</changefreq>

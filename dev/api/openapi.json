@@ -4161,6 +4161,26 @@
         }
       }
     },
+    "/view/evaluations": {
+      "get": {
+        "tags": [
+          "View"
+        ],
+        "summary": "Evaluation View",
+        "description": "Returns an html document with a list of evaluations",
+        "operationId": "evaluation_view_view_evaluations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/user": {
       "get": {
         "tags": [
