@@ -4,6 +4,25 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        // Ensure your local dev server/container is configured remote debugging.
+        // See VSCode docs for some more information about remote debugging python apps:
+        // https://code.visualstudio.com/docs/python/debugging#_debugging-by-attaching-over-a-network-connection
+        {
+            "name": "Python debugger: Remote Attach Fides",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "0.0.0.0",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "."
+                }
+            ],
+            "justMyCode": false
+        },
         {
             "name": "Launch Chrome: Admin UI",
             "request": "launch",
@@ -21,6 +40,3 @@
         }
     ]
 }
-
-
-        
