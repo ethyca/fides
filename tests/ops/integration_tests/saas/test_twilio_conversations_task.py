@@ -285,12 +285,12 @@ async def test_twilio_conversations_erasure_request_task(
     }
 
     # Verifying field is masked
-    twilio_conversation_secrets = twilio_conversations_connection_config.secrets
+    twilio_conversations_secrets = twilio_conversations_connection_config.secrets
 
-    base_url = f"https://{twilio_conversation_secrets['domain']}"
+    base_url = f"https://{twilio_conversations_secrets['domain']}"
     auth = (
-        twilio_conversation_secrets["account_id"],
-        twilio_conversation_secrets["password"],
+        twilio_conversations_secrets["account_id"],
+        twilio_conversations_secrets["password"],
     )
     user_id = v[f"{dataset_name}:user"][0]["sid"]
 

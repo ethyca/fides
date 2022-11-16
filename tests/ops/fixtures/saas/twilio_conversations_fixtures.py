@@ -231,7 +231,7 @@ def twilio_conversations_erasure_data(
     user = users_response.json()
     assert users_response.ok
 
-    # Create Conversation
+    # Create conversation
     conversation_body = {"FriendlyName": "friendly_conversation"}
     conversations_response = requests.post(
         url=f"{base_url}/v1/Conversations", data=conversation_body, auth=auth
@@ -240,7 +240,7 @@ def twilio_conversations_erasure_data(
     assert conversations_response.ok
 
     conversation_id = conversation["sid"]
-    # Add Conversation participant
+    # Add conversation participant
     participant_body = {
         "FriendlyName": "friendly_conversation_participant",
         "Identity": twilio_conversations_erasure_identity_name,
@@ -254,7 +254,7 @@ def twilio_conversations_erasure_data(
 
     assert conversations_response.ok
 
-    # Add conversation Message
+    # Add conversation message
     message_body = {
         "Author": twilio_conversations_erasure_identity_name,
         "Body": "Test Body",
@@ -274,18 +274,12 @@ def twilio_conversations_erasure_data(
     message_id = message["sid"]
     participant_id = participant["sid"]
 
-    paricipant_delete_response = requests.delete(
-        url=f"{base_url}/v1/Conversations/"
-        + conversation_id
-        + "/Participants/"
-        + participant_id,
+    participant_delete_response = requests.delete(
+        url=f"{base_url}/v1/Conversations/{conversation_id}/Participants/{participant_id}",
         auth=auth,
     )
     message_delete_response = requests.delete(
-        url=f"{base_url}/v1/Conversations/"
-        + conversation_id
-        + "/Messages/"
-        + message_id,
+        url=f"{base_url}/v1/Conversations/{conversation_id}/Messages/{message_id}",
         auth=auth,
     )
     conversation_delete_response = requests.delete(
@@ -294,8 +288,8 @@ def twilio_conversations_erasure_data(
     user_delete_response = requests.delete(
         url=f"{base_url}/v1/Users/" + user_id, auth=auth
     )
-    # # we expect 204 if resource doesn't exist
-    assert paricipant_delete_response.status_code == HTTP_204_NO_CONTENT
+    # we expect 204 if resource doesn't exist
+    assert participant_delete_response.status_code == HTTP_204_NO_CONTENT
     assert message_delete_response.status_code == HTTP_204_NO_CONTENT
     assert conversation_delete_response.status_code == HTTP_204_NO_CONTENT
     assert user_delete_response.status_code == HTTP_204_NO_CONTENT
