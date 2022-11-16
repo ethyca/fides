@@ -32,7 +32,8 @@ import Flags from "~/flags.json";
 import { login, selectToken, useLoginMutation } from "../features/auth";
 
 const useLogin = () => {
-  const { data: systems } = useGetAllSystemsQuery();
+  const { data: systems, isLoading: isSystemsLoading } =
+    useGetAllSystemsQuery();
   const [loginRequest, { isLoading }] = useLoginMutation();
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -91,7 +92,7 @@ const useLogin = () => {
     );
 
     if (configWizardFlagIsActive) {
-      if (!isLoading && systems && systems.length > 0) {
+      if (!isSystemsLoading && systems && systems.length > 0) {
         const datamapRoute = resolveLink({
           href: DATAMAP_ROUTE,
           basePath: "/",
