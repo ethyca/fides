@@ -1,3 +1,4 @@
+import sys
 from os import getenv
 from typing import Any, Dict, Union
 
@@ -38,6 +39,64 @@ def get_config_from_file(
             return config_option
 
     return None
+
+
+def check_if_required_config_vars_are_configured() -> None:
+    app_encryption_key: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__APP_ENCRYPTION_KEY"
+    )
+    oauth_root_client_id: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID"
+    )
+    oauth_root_client_secret: Union[str, int, None] = getenv(
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET"
+    )
+    try:
+        if not app_encryption_key:
+            app_encryption_key = get_config_from_file(
+                "", "security", "app_encryption_key"
+            )
+        if not oauth_root_client_id:
+            oauth_root_client_id = get_config_from_file(
+                "", "security", "oauth_root_client_id"
+            )
+        if not oauth_root_client_secret:
+            oauth_root_client_secret = get_config_from_file(
+                "", "security", "oauth_root_client_secret"
+            )
+    except FileNotFoundError:
+        pass
+
+    missing_required_config_vars = []
+    if app_encryption_key is None:
+        missing_required_config_vars.append(
+            ("security.app_encryption_key", "FIDES__SECURITY__APP_ENCRYPTION_KEY")
+        )
+    if oauth_root_client_id is None:
+        missing_required_config_vars.append(
+            ("security.oauth_root_client_id", "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID")
+        )
+    if oauth_root_client_secret is None:
+        missing_required_config_vars.append(
+            (
+                "security.oauth_root_client_secret",
+                "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
+            )
+        )
+
+    if len(missing_required_config_vars) > 0:
+        print(
+            "There are missing required config variables. Please add the following config variables to either the "
+            "`fides.toml` file or your environment variables to start Fides: \n"
+        )
+        for missing_var in missing_required_config_vars:
+            print(f"fides.toml: {missing_var[0]} or ENV VAR: {missing_var[1]}")
+
+        print(
+            "\nVisit the Fides deployment documentation for more information: "
+            "https://ethyca.github.io/fides/deployment/"
+        )
+        sys.exit(1)
 
 
 def update_config_file(  # type: ignore
