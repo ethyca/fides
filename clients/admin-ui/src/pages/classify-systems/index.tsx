@@ -1,7 +1,7 @@
 import { Heading, Spinner, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
@@ -18,6 +18,17 @@ import { useGetAllSystemsQuery } from "~/features/system";
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
+const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
+  <Layout title="Classify Systems">
+    <Stack spacing={4}>
+      <Heading fontSize="2xl" fontWeight="semibold">
+        Classified systems
+      </Heading>
+      {children}
+    </Stack>
+  </Layout>
+);
+
 const ClassifySystems: NextPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -26,8 +37,8 @@ const ClassifySystems: NextPage = () => {
    * TODO: fides#1744
    * Because there is currently no way to associate a scan with its classification,
    * we attempt to get the classification results for only the systems in review.
-   * However, because this is a page that is waiting for results and so will likely
-   * be refreshed, we can't necessarily rely on knowing the systems we put into review
+   * However, because this is its own page that can be navigated to directly,
+   * we can't necessarily rely on knowing which systems were put into review
    * Therefore, as a fallback, query all systems.
    */
   const systemsForReview = useAppSelector(selectSystemsForReview);
@@ -68,26 +79,37 @@ const ClassifySystems: NextPage = () => {
       )
     : false;
 
-  return (
-    <Layout title="Classify Systems">
-      <Stack spacing={4}>
-        <Heading fontSize="2xl" fontWeight="semibold">
-          Classified systems
-        </Heading>
-        <Text>
-          {isClassificationFinished
-            ? "All systems have been classifed by Fides."
-            : "Systems are still being classified by Fides."}
-        </Text>
+  if (isLoading) {
+    return (
+      <ClassifySystemsLayout>
+        <Spinner />
+      </ClassifySystemsLayout>
+    );
+  }
 
-        {isLoading ? <Spinner /> : null}
-        {systems && systems.length && classifications ? (
-          <ClassifySystemsTable systems={systems} />
-        ) : (
-          "No systems with classifications found"
-        )}
-      </Stack>
-    </Layout>
+  if (!classifications || classifications.length === 0) {
+    return (
+      <ClassifySystemsLayout>
+        <Text data-testid="no-classifications">
+          No classifications found. Have you run a scan?
+        </Text>
+      </ClassifySystemsLayout>
+    );
+  }
+
+  return (
+    <ClassifySystemsLayout>
+      <Text>
+        {isClassificationFinished
+          ? "All systems have been classifed by Fides."
+          : "Systems are still being classified by Fides."}
+      </Text>
+      {systems && systems.length ? (
+        <ClassifySystemsTable systems={systems} />
+      ) : (
+        "No systems with classifications found"
+      )}
+    </ClassifySystemsLayout>
   );
 };
 
