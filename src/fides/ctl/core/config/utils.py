@@ -92,8 +92,10 @@ def check_if_required_config_vars_are_configured() -> None:
         for missing_var in missing_required_config_vars:
             print(f"fides.toml: {missing_var[0]} or ENV VAR: {missing_var[1]}")
 
-        print("\nVisit the Fides deployment documentation for more information: "
-              "https://ethyca.github.io/fides/deployment/")
+        print(
+            "\nVisit the Fides deployment documentation for more information: "
+            "https://ethyca.github.io/fides/deployment/"
+        )
         sys.exit(1)
 
 
