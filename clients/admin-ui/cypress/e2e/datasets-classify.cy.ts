@@ -13,16 +13,21 @@ import { ClassificationResponse, ClassificationStatus } from "~/types/api";
  */
 describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
+    cy.login();
+  });
+
+  beforeEach(() => {
     stubDatasetCrud();
     stubPlus(true);
     cy.intercept("GET", "/api/v1/plus/classify", {
       fixture: "classify/list.json",
     }).as("getClassifyList");
+    cy.visit("/dataset/new");
+    cy.wait("@getPlusHealth");
   });
 
   describe("Creating datasets", () => {
     it("Shows the classify switch", () => {
-      cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
 
       cy.getByTestId("input-classify").find("input").should("be.checked");
@@ -32,7 +37,6 @@ describe("Datasets with Fides Classify", () => {
 
     it("Classifies the dataset after generating it", () => {
       // Fill out the form.
-      cy.visit("/dataset/new");
       cy.getByTestId("connect-db-btn").click();
       cy.getByTestId("input-url").type(CONNECTION_STRING);
       cy.getByTestId("create-dataset-btn").click();
@@ -188,10 +192,7 @@ describe("Datasets with Fides Classify", () => {
         }
       );
 
-      cy.getByTestId("approve-classification-btn")
-        .should("be.enabled")
-        .click()
-        .should("be.disabled");
+      cy.getByTestId("approve-classification-btn").should("be.enabled").click();
 
       // The mutations should run.
       cy.wait("@putDataset");

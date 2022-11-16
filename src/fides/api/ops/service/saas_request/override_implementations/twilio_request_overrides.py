@@ -13,7 +13,7 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.ops.util.saas_util import change_string_to_camel_case
+from fides.api.ops.util.saas_util import to_pascal_case
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -38,10 +38,9 @@ def twilio_user_update(
         # regardless of the masking strategy in use
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        if "user.name" in policy.get_erasure_target_categories():
-            for k in masked_object_fields.copy().keys():
-                new_key = change_string_to_camel_case(k)
-                masked_object_fields[new_key] = masked_object_fields.pop(k)
+        for k in masked_object_fields.copy().keys():
+            new_key = to_pascal_case(k)
+            masked_object_fields[new_key] = masked_object_fields.pop(k)
 
         update_body = masked_object_fields
 
@@ -60,10 +59,10 @@ def twilio_user_update(
         except Exception as e:
             if CONFIG.dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
-                    f"Operational Error connecting to Twilio API with error: {e}"
+                    f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )
             else:
-                raise ConnectionException("Operational Error connecting to Twilio API.")
+                raise ConnectionException("Operational Error connecting to Twilio Conversations API.")
         if not response.ok:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 
@@ -90,10 +89,9 @@ def twilio_conversation_message_update(
         # regardless of the masking strategy in use
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        if "user.name" in policy.get_erasure_target_categories():
-            for k in masked_object_fields.copy().keys():
-                new_key = change_string_to_camel_case(k)
-                masked_object_fields[new_key] = masked_object_fields.pop(k)
+        for k in masked_object_fields.copy().keys():
+            new_key = to_pascal_case(k)
+            masked_object_fields[new_key] = masked_object_fields.pop(k)
 
         update_body = masked_object_fields
 
@@ -111,10 +109,12 @@ def twilio_conversation_message_update(
         except Exception as e:
             if CONFIG.dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
-                    f"Operational Error connecting to Twilio API with error: {e}"
+                    f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )
             else:
-                raise ConnectionException("Operational Error connecting to Twilio API.")
+                raise ConnectionException(
+                    "Operational Error connecting to Twilio Conversations API."
+                )
         if not response.ok:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 

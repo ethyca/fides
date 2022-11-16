@@ -37,7 +37,7 @@ class TestGetIdentityVerificationConfig:
         url,
         db,
         api_client: TestClient,
-        email_config,
+        messaging_config,
         subject_identity_verification_required,
     ):
         resp = api_client.get(url)
@@ -51,7 +51,7 @@ class TestGetIdentityVerificationConfig:
         url,
         db,
         api_client: TestClient,
-        email_config,
+        messaging_config,
     ):
         resp = api_client.get(url)
         assert resp.status_code == 200

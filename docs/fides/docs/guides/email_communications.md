@@ -21,11 +21,11 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 
 ## Configuration
 
-### Create the email configuration
+### Create the messaging configuration
 
-```json title="<code>POST api/v1/email/config"
+```json title="<code>POST api/v1/messaging/config"
 {
-    "key": "{{email_config_key}}",
+    "key": "{{messaging_config_key}}",
     "name": "mailgun",
     "service_type": "mailgun",
     "details": {
@@ -36,8 +36,8 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 
 | Field | Description |
 |----|----|
-| `key` | *Optional.* A unique key used to manage your email config. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`. |
-| `name` | A unique user-friendly name for your email config. |
+| `key` | *Optional.* A unique key used to manage your messaging config. This is auto-generated from `name` if left blank. Accepted values are alphanumeric, `_`, and `.`. |
+| `name` | A unique user-friendly name for your messaging config. |
 | `service_type` | The email service to configure. Currently, Fides supports `mailgun`. |
 | `details` | A dict of key/val config vars specific to Mailgun. |
 | `domain` | Your unique Mailgun domain. |
@@ -45,9 +45,9 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 | `api_version` | *Optional.* A string that denotes the API version. Defaults to `v3`. |
 
 
-### Add the email configuration secrets 
+### Add the messaging configuration secrets 
 
-```json title="<code>POST api/v1/email/config/{{email_config_key}}/secret"
+```json title="<code>POST api/v1/messaging/config/{{messaging_config_key}}/secret"
 {
     "mailgun_api_key": "nc123849ycnpq98fnu"
 }

@@ -8,12 +8,16 @@ on:
   pull_request:
     paths-ignore:
       - "**.md"
+  push:
+    branches:
+      - "main"
+
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10.7"
 
 jobs:
-  Nox-Test-Env:
+  Test-Envs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -28,7 +32,7 @@ jobs:
 
   Fides-Deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v3

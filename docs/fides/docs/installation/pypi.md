@@ -26,10 +26,11 @@ fides --version
 
 A correct installation will print the current version of Fides to your console.
 
+### Install dangerous dependencies
 
-### Install optional dependencies
+Fides is designed to ship with all possible dependencies, however there are some packages which may break on certain machines. To solve this, Fides supports optional requirements for potentially dangerous dependencies that aren't required to run the application, but may restrict certain functionality.
 
-Fides ships with a number of optional dependencies that extend its functionality. To install these, use the following syntax:
+To install optional dependencies, use the following syntax:
 
 ```sh
 pipx install "fides[extra_1]"
@@ -41,15 +42,9 @@ For multiple dependencies:
 pipx install "fides[extra_1, extra_2]"
 ```
 
-The optional dependencies are as follows:
+The optional "dangerous" dependencies are as follows:
 
-* `all`: includes all of the optional dependencies except for `mssql` due to platform-specific issues.
-* `aws`: includes the boto3 package to connect to AWS.
 * `mssql`: includes the MSSQL database connector.
-* `mysql`: includes the MySQL database connector.
-* `postgres`: includes the Postgres database connector.
-* `redshift`: includes the Redshift database connector.
-* `snowflake`: includes the Snowflake database connector.
 
 When installing database adapters, additional dependencies may be required (e.g. [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html) for Postgres, or the [Microsoft ODBC Driver](https://docs.microsoft.com/en-us/sql/connect/odbc/microsoft-odbc-driver-for-sql-server) for SQL Server).
 
@@ -80,7 +75,8 @@ Fides initialization complete.
 ```
 
 ### Run standalone mode
-Once Fides is installed and initialized, it is possible to run the project in "standalone mode," which requires zero dependencies outside of Python. This does not provide webserver connectivity, but allows you to experiment with local evaluation commands in the CLI. 
+
+Once Fides is installed and initialized, it is possible to run the project in "standalone mode," which requires zero dependencies outside of the pip installation. This does not provide webserver connectivity or database persistence, but allows you to experiment with CLI commands.
 
 Use one of the following methods to enable standalone mode:
 
@@ -92,15 +88,18 @@ fides --local <subcommand>
 [cli]
 local_mode = true
 ```
+
 ## Set up your database
 
 Configure your own Postgres database according to the configuration of your choice, ensuring it satisfies the project [requirements](./requirements.md). Enable a username and password, and keep track of your connection credentials.
 
 ## Set up your cache
+
 Configure your own Redis cache according to the configuration of your choice, ensuring it satisfies the project [requirements](./requirements.md). Enable a password (via Redis [`AUTH`](https://redis.io/commands/auth)) to provide additional security, and keep track of your connection credentials.
+
 ## Configure Fides
 
-Fides provides a `fides.toml` file to store your configuration settings. Initializing Fides creates this file and populates it with default values, which should be replaced with the connection credentials for your Postgres and Redis instances, as well as any other information unique to your deployment. 
+Fides provides a `fides.toml` file to store your configuration settings. Initializing Fides creates this file and populates it with default values, which should be replaced with the connection credentials for your Postgres and Redis instances, as well as any other information unique to your deployment.
 
 See the [Configuration guide](../installation/configuration.md) for a full list of settings, and a sample `fides.toml`.
 
@@ -112,4 +111,4 @@ In a shell, run the following command:
 fides webserver
 ```
 
-With the Fides webserver running, the hosted UI is available at `http://{server_url}/` (e.g. `http://localhost:8080/`). 
+With the Fides webserver running, the hosted UI is available at `http://{server_url}/` (e.g. `http://localhost:8080/`).
