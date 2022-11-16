@@ -1,5 +1,6 @@
 """Contains various utility-related nox sessions."""
 import nox
+from jinja2 import Environment, FileSystemLoader
 
 from constants_nox import COMPOSE_FILE, INTEGRATION_COMPOSE_FILE, TEST_ENV_COMPOSE_FILE
 from run_infrastructure import run_infrastructure
@@ -60,3 +61,34 @@ def teardown(session: nox.Session) -> None:
 def install_requirements(session: nox.Session) -> None:
     session.install("-r", "requirements.txt")
     session.install("-r", "dev-requirements.txt")
+
+
+@nox.session()
+def init_saas_connector(session: nox.Session) -> None:
+    connector_id = session.posargs[0]
+    variable_map = {"connector_id": connector_id}
+
+    # create empty config and dataset files
+    open(f"data/saas/config/{variable_map['connector_id']}_config.yml", "w")
+    open(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml", "w")
+
+    # location of Jinja templates
+    environment = Environment(
+        loader=FileSystemLoader("data/saas/saas_connector_scaffolding/")
+    )
+
+    # render fixtures file
+    fixtures_template = environment.get_template("new_fixtures.jinja")
+    filename = f"tests/ops/fixtures/{variable_map['connector_id']}_fixtures.py"
+    contents = fixtures_template.render(variable_map)
+    with open(filename, mode="w", encoding="utf-8") as fixtures:
+        fixtures.write(contents)
+        fixtures.close()
+
+    # render tests file
+    test_template = environment.get_template("test_new_task.jinja")
+    filename = f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
+    contents = test_template.render(variable_map)
+    with open(filename, mode="w", encoding="utf-8") as tests:
+        tests.write(contents)
+        tests.close()

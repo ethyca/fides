@@ -1,0 +1,86 @@
+import random
+
+import pytest
+
+from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
+from fides.api.ops.task import graph_task
+from fides.api.ops.task.graph_task import get_cached_data_for_erasures
+from fides.ctl.core.config import get_config
+from tests.ops.graph.graph_test_util import assert_rows_match
+
+CONFIG = get_config()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_{{ connector_id }}
+def test_{{ connector_id }}_connection_test({{ connector_id }}_connection_config) -> None:
+    get_connector({{ connector_id }}_connection_config).test_connection()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_{{ connector_id }}
+async def test_{{ connector_id }}_access_request_task(
+    db,
+    policy,
+    {{ connector_id }}_connection_config,
+    {{ connector_id }}_dataset_config,
+    {{ connector_id }}_identity_email,
+    {{ connector_id }}_access_data,
+) -> None:
+    """Full access request based on the {{ connector_id }} SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_{{ connector_id }}_access_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": {{ connector_id }}_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = {{ connector_id }}_connection_config.get_saas_config().fides_key
+    merged_graph = {{ connector_id }}_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    access_result = await graph_task.run_access_request(
+        privacy_request,
+        policy,
+        graph,
+        [{{ connector_id }}_connection_config],
+        {"email": {{ connector_id }}_identity_email},
+        db,
+    )
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_{{ connector_id }}
+async def test_{{ connector_id }}_erasure_request_task(
+    db,
+    policy,
+    erasure_policy_string_rewrite,
+    {{ connector_id }}_connection_config,
+    {{ connector_id }}_dataset_config,
+    {{ connector_id }}_erasure_identity_email,
+    {{ connector_id }}_erasure_data,
+) -> None:
+    """Full erasure request based on the {{ connector_id }} SaaS config"""
+
+    privacy_request = PrivacyRequest(
+        id=f"test_{{ connector_id }}_erasure_request_task_{random.randint(0, 1000)}"
+    )
+    identity = Identity(**{"email": {{ connector_id }}_erasure_identity_email})
+    privacy_request.cache_identity(identity)
+
+    dataset_name = {{ connector_id }}_connection_config.get_saas_config().fides_key
+    merged_graph = {{ connector_id }}_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    erasure_result = await graph_task.run_erasure(
+        privacy_request,
+        erasure_policy_string_rewrite,
+        graph,
+        [{{ connector_id }}_connection_config],
+        {"email": {{ connector_id }}_erasure_identity_email},
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )

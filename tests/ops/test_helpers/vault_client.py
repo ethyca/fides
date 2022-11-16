@@ -1,5 +1,6 @@
 import logging
 import os
+from functools import cache
 from typing import Any, Dict, Optional
 
 from hvac import Client
@@ -28,6 +29,7 @@ if all(params.values()):
         raise FidesopsException(f"Unable to create Vault client: {str(exc)}")
 
 
+@cache
 def get_secrets(connector: str) -> Optional[Dict[str, Any]]:
     """Returns a map of secrets for the given connector."""
     if not _client:
