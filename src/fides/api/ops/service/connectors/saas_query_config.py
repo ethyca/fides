@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from itertools import product
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Literal, Optional, TypeVar
 
 import pydash
 
@@ -51,42 +51,76 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.data_protection_request = data_protection_request
         self.privacy_request = privacy_request
         self.action: Optional[str] = None
+        self.current_request: Optional[SaaSRequest] = None
 
-    def get_request_by_action(self, action: str) -> Optional[SaaSRequest]:
+    def get_read_requests_by_identity(self) -> List[SaaSRequest]:
         """
-        Returns the appropriate request config based on the
-        current collection and preferred action (read, update, delete)
+        Returns the appropriate request configs based on the current collection and identity
         """
         try:
-            # store action name for logging purposes
-            self.action = action
             collection_name = self.node.address.collection
-            request = self.endpoints[collection_name].requests[action]  # type: ignore
-            logger.info(
-                "Found matching endpoint to %s '%s' collection", action, collection_name
+            requests = self.endpoints[collection_name].requests
+            read_requests = (
+                requests.read if isinstance(requests.read, list) else [requests.read]
             )
-            return request
+            filtered_requests = self._requests_using_identity(read_requests)
+            # return all the requests if none contained an identity reference
+            return read_requests if not filtered_requests else filtered_requests
         except KeyError:
             logger.info(
-                "The '%s' action is not defined for the '%s' endpoint in %s",
-                action,
+                "The 'read' action is not defined for the '%s' endpoint in %s",
                 collection_name,
                 self.node.node.dataset.connection_key,
             )
-            return None
+            return []
 
-    def get_masking_request(self) -> Optional[SaaSRequest]:
-        """Returns a tuple of the preferred action and SaaSRequest to use for masking.
-        An update request is preferred, but we can use a gdpr delete endpoint or delete endpoint if not MASKING_STRICT.
+    def _requests_using_identity(
+        self, requests: List[SaaSRequest]
+    ) -> List[SaaSRequest]:
+        """Filters for the requests using the provided identity"""
+
+        return [
+            request
+            for request in requests
+            if any(
+                param_value
+                for param_value in request.param_values or []
+                if param_value.identity == self._get_identity()
+            )
+        ]
+
+    def get_erasure_request_by_action(
+        self, action: Literal["update", "delete"]
+    ) -> Optional[SaaSRequest]:
+        """
+        Returns the appropriate request config based on the
+        current collection and preferred erasure action (update or delete)
         """
 
-        update: Optional[SaaSRequest] = self.get_request_by_action("update")
+        collection_name = self.node.address.collection
+        request: Optional[SaaSRequest] = getattr(
+            self.endpoints[collection_name].requests, action
+        )
+        if request:
+            logger.info(
+                "Found matching endpoint to %s '%s' collection", action, collection_name
+            )
+        return request
+
+    def get_masking_request(self) -> Optional[SaaSRequest]:
+        """
+        Returns a tuple of the preferred action and SaaSRequest to use for masking.
+        An update request is preferred, but we can use a gdpr delete endpoint or
+        delete endpoint if not MASKING_STRICT.
+        """
+
+        update: Optional[SaaSRequest] = self.get_erasure_request_by_action("update")
         gdpr_delete: Optional[SaaSRequest] = None
         delete: Optional[SaaSRequest] = None
 
         if not CONFIG.execution.masking_strict:
             gdpr_delete = self.data_protection_request
-            delete = self.get_request_by_action("delete")
+            delete = self.get_erasure_request_by_action("delete")
 
         try:
             # Return first viable option
@@ -121,40 +155,55 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         a list of request params.
         """
 
-        current_request: Optional[SaaSRequest] = self.get_request_by_action("read")
-        if not current_request:
-            raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}' "
-                f"endpoint in {self.node.node.dataset.connection_key}"
-            )
-
-        request_params = []
-
-        filtered_secrets = self._filtered_secrets(current_request)
-        grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
-
-        # unpack the inputs
-        # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
-        for param_value in current_request.param_values or []:
-            if param_value.unpack:
-                value = param_value.name
-                input_data[value] = pydash.flatten(input_data.get(value))
-
-        # we want to preserve the grouped_input relationships so we take each
-        # individual group and generate the product with the ungrouped inputs
-        for grouped_inputs in grouped_inputs_list or [{}]:
-            param_value_maps = self._generate_product_list(
-                input_data, filtered_secrets, grouped_inputs
-            )
-            for param_value_map in param_value_maps:
-                request_params.append(
-                    self.generate_query(
-                        {name: [value] for name, value in param_value_map.items()},
-                        policy,
-                    )
+        read_requests: List[SaaSRequest] = self.get_read_requests_by_identity()
+        for current_request in read_requests:
+            if not current_request:
+                raise FidesopsException(
+                    f"The 'read' action is not defined for the '{self.collection_name}' "
+                    f"endpoint in {self.node.node.dataset.connection_key}"
                 )
+            self.current_request = current_request
+            request_params = []
+
+            filtered_secrets = self._filtered_secrets(current_request)
+            grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
+
+            # unpack the inputs
+            # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
+            for param_value in current_request.param_values or []:
+                if param_value.unpack:
+                    value = param_value.name
+                    input_data[value] = pydash.flatten(input_data.get(value))
+
+            # we want to preserve the grouped_input relationships so we take each
+            # individual group and generate the product with the ungrouped inputs
+            for grouped_inputs in grouped_inputs_list or [{}]:
+                param_value_maps = self._generate_product_list(
+                    input_data, filtered_secrets, grouped_inputs
+                )
+                for param_value_map in param_value_maps:
+                    request_params.append(
+                        self.generate_query(
+                            {name: [value] for name, value in param_value_map.items()},
+                            policy,
+                        )
+                    )
 
         return request_params
+
+    def _get_identity(self) -> Optional[str]:
+        """
+        Returns a single identity or raises an exception if more than one identity is defined
+        """
+
+        identities: List[str] = []
+        if self.privacy_request:
+            identities = list(self.privacy_request.get_cached_identity_data().keys())
+            if len(identities) > 1:
+                raise FidesopsException(
+                    "Only one identity can be specified for SaaS connector traversal"
+                )
+        return identities[0] if identities else None
 
     def _filtered_secrets(self, current_request: SaaSRequest) -> Dict[str, Any]:
         """Return a filtered map of secrets used by the request"""
@@ -218,7 +267,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         ]
 
     def generate_query(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy],
     ) -> SaaSRequestParams:
         """
         This returns the method, path, header, query, and body params needed to make an API call.
@@ -226,8 +277,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         query statement (select statement, where clause, limit, offset, etc.)
         """
 
-        current_request: Optional[SaaSRequest] = self.get_request_by_action("read")
-        if not current_request:
+        if not self.current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
                 f"endpoint in {self.node.node.dataset.connection_key}"
@@ -236,7 +286,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
         param_values: Dict[str, Any] = {}
-        for param_value in current_request.param_values or []:
+        for param_value in self.current_request.param_values or []:
             if param_value.references or param_value.identity:
                 input_list = input_data.get(param_value.name)
                 if input_list:
@@ -251,10 +301,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, current_request, param_values  # type: ignore
+            self.action, self.collection_name, self.current_request, param_values  # type: ignore
         )
 
-        logger.info("Populated request params for %s", current_request.path)
+        logger.info("Populated request params for %s", self.current_request.path)
 
         return saas_request_params
 
