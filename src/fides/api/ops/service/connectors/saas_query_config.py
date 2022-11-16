@@ -147,47 +147,51 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             return None
 
     def generate_requests(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy],
+        read_request: SaaSRequest,
     ) -> List[SaaSRequestParams]:
         """
         Takes the identity and reference values from input_data and combines them
-        with the connector_param values in use by the current request to generate
+        with the connector_param values in use by the read request to generate
         a list of request params.
         """
 
-        read_requests: List[SaaSRequest] = self.get_read_requests_by_identity()
-        for current_request in read_requests:
-            if not current_request:
-                raise FidesopsException(
-                    f"The 'read' action is not defined for the '{self.collection_name}' "
-                    f"endpoint in {self.node.node.dataset.connection_key}"
-                )
-            self.current_request = current_request
-            request_params = []
+        if not read_request:
+            raise FidesopsException(
+                f"The 'read' action is not defined for the '{self.collection_name}' "
+                f"endpoint in {self.node.node.dataset.connection_key}"
+            )
+        request_params = []
 
-            filtered_secrets = self._filtered_secrets(current_request)
-            grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
+        filtered_secrets = self._filtered_secrets(read_request)
+        grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
 
-            # unpack the inputs
-            # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
-            for param_value in current_request.param_values or []:
-                if param_value.unpack:
-                    value = param_value.name
-                    input_data[value] = pydash.flatten(input_data.get(value))
+        # unpack the inputs
+        # list_ids: [[1,2,3]] -> list_ids: [1,2,3]
+        for param_value in read_request.param_values or []:
+            if param_value.unpack:
+                value = param_value.name
+                input_data[value] = pydash.flatten(input_data.get(value))
 
-            # we want to preserve the grouped_input relationships so we take each
-            # individual group and generate the product with the ungrouped inputs
-            for grouped_inputs in grouped_inputs_list or [{}]:
-                param_value_maps = self._generate_product_list(
-                    input_data, filtered_secrets, grouped_inputs
-                )
-                for param_value_map in param_value_maps:
-                    request_params.append(
-                        self.generate_query(
-                            {name: [value] for name, value in param_value_map.items()},
-                            policy,
-                        )
+        # set the read_request as the current request so it is available in
+        # generate_query (conform to the interface for QueryConfig)
+        self.current_request = read_request
+
+        # we want to preserve the grouped_input relationships so we take each
+        # individual group and generate the product with the ungrouped inputs
+        for grouped_inputs in grouped_inputs_list or [{}]:
+            param_value_maps = self._generate_product_list(
+                input_data, filtered_secrets, grouped_inputs
+            )
+            for param_value_map in param_value_maps:
+                request_params.append(
+                    self.generate_query(
+                        {name: [value] for name, value in param_value_map.items()},
+                        policy,
                     )
+                )
 
         return request_params
 

@@ -298,11 +298,11 @@ class TestSaaSConnectorMethods:
         segment_user_endpoint = next(
             end for end in connector.saas_config.endpoints if end.name == "segment_user"
         )
-        saas_request: SaaSRequest = segment_user_endpoint.requests["read"]
+        saas_request: SaaSRequest = segment_user_endpoint.requests.read
         connector.set_saas_request_state(saas_request)
 
         client = connector.create_client()
-        # ClientConfig on read segment user request uses basic auth, updating the state should result in the new stategy for client
+        # ClientConfig on read segment user request uses basic auth, updating the state should result in the new strategy for client
         assert client.client_config.authentication.strategy == "basic"
         assert connector.get_client_config().authentication.strategy == "basic"
 

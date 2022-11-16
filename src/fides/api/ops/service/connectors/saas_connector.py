@@ -200,7 +200,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 )
 
             prepared_requests: List[SaaSRequestParams] = query_config.generate_requests(
-                input_data, policy
+                input_data, policy, read_request
             )
 
             # Iterates through initial list of prepared requests and through subsequent
