@@ -751,8 +751,8 @@ def get_privacy_request_notification_info(
         )
 
     return PrivacyRequestNotificationInfo(
-        email_addresses=[x for x in info.email_addresses.split(",")],
-        notify_after_failures=info.notify_after_failures,
+        email_addresses=[x for x in info[0].email.split(",")],
+        notify_after_failures=info[0].notify_after_failures,
     )
 
 
@@ -770,7 +770,7 @@ def get_privacy_request_notification_info(
 def create_or_update_privacy_request_notifications(
     *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
 ) -> PrivacyRequestNotificationInfo:
-    """Create or update list list of email addresses and number of failures for privacy request notifications."""
+    """Create or update list of email addresses and number of failures for privacy request notifications."""
     notification_info = {
         "email": ", ".join(request_body.email_addresses),
         "notify_after_failures": request_body.notify_after_failures,

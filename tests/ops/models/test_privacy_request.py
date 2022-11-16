@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -20,6 +21,8 @@ from fides.api.ops.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
+    PrivacyRequestError,
+    PrivacyRequestNotifications,
     PrivacyRequestStatus,
     ProvidedIdentity,
     can_run_checkpoint,
@@ -800,3 +803,117 @@ def test_consent_request(db):
 
     assert Consent.get(db, object_id=consent_1.id) is None
     assert Consent.get(db, object_id=consent_2.id) is None
+
+
+@pytest.mark.usefixtures("messaging_config")
+@patch("fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher")
+def test_privacy_request_error_notification(patch_dispatch_message, db, policy):
+    PrivacyRequestNotifications.create(
+        db=db,
+        data={
+            "email": "some@email.com, another@email.com",
+            "notify_after_failures": 2,
+        },
+    )
+
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request.error_processing(db)
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 1
+
+    privacy_request_2 = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request_2.error_processing(db)
+    assert patch_dispatch_message.called
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 0
+
+    sent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(True))
+    ).all()
+
+    assert len(sent_errors) == 2
+
+    privacy_request_3 = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request_3.error_processing(db)
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 1
+
+    privacy_request_4 = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 1, 1),
+            "finished_processing_at": datetime(2021, 1, 1),
+            "requested_at": datetime(2021, 1, 1),
+            "status": PrivacyRequestStatus.error,
+            "origin": "https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+
+    privacy_request_4.error_processing(db)
+    assert patch_dispatch_message.called
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+
+    assert len(unsent_errors) == 0
+
+    sent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(True))
+    ).all()
+
+    assert len(sent_errors) == 4

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import requests
 from sqlalchemy.orm import Session
@@ -11,7 +11,6 @@ from twilio.rest import Client
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
 from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
-from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     EmailForActionType,
@@ -29,6 +28,9 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
+
+if TYPE_CHECKING:
+    from fides.api.ops.models.privacy_request import CheckpointActionRequired
 
 CONFIG = get_config()
 
@@ -236,6 +238,12 @@ def _build_email(  # pylint: disable=too-many-return-statements
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Your data has been deleted",
+            body=base_template.render(),
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Privacy Request Error Alert",
             body=base_template.render(),
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
