@@ -46,15 +46,35 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
     isLoading: isLoadingClassificationInstance,
   } = useGetClassifySystemQuery(system.fides_key);
 
-  const hasIngressClassification =
-    classificationInstance != null && classificationInstance.ingress.length > 0;
-  const hasEgressClassification =
-    classificationInstance != null && classificationInstance.egress.length > 0;
+  const systemIngresses = system.ingress || [];
+  const systemEgresses = system.egress || [];
+  if (classificationInstance?.ingress.length) {
+    console.log(
+      "ingresses classified!",
+      classificationInstance,
+      "system",
+      system.ingress
+    );
+  }
+
+  // Classification can return some data flows that don't exist on the system object.
+  // We should only show the ones that do exist on the system
+  const classifiedIngresses =
+    classificationInstance?.ingress.filter((i) =>
+      systemIngresses.find((si) => si.fides_key === i.fides_key)
+    ) || [];
+  const classifiedEgresses =
+    classificationInstance?.egress.filter((e) =>
+      systemEgresses.find((se) => se.fides_key === e.fides_key)
+    ) || [];
+
+  const hasIngressClassification = classifiedIngresses.length > 0;
+  const hasEgressClassification = classifiedEgresses.length > 0;
   const hasNoDataFlowClassifications =
     !hasIngressClassification && !hasEgressClassification;
 
-  const hasIngress = system.ingress != null && system.ingress.length > 0;
-  const hasEgress = system.egress != null && system.egress.length > 0;
+  const hasIngress = systemIngresses.length > 0;
+  const hasEgress = systemEgresses.length > 0;
   const hasNoDataFlows = !hasIngress && !hasEgress;
 
   let description: JSX.Element;
@@ -113,8 +133,6 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     isLoadingClassificationInstance,
     classificationInstance,
   } = useClassifySystemDrawer({ system });
-
-  console.log({ system, classificationInstance });
 
   return (
     <EditDrawer
