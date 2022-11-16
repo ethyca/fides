@@ -36,7 +36,7 @@ const Setup = () => {
           width="50%"
         >
           <Heading as="h3" size="lg">
-            Generate your DataMap
+            Generate your Data Map
           </Heading>
           <div>
             Privacy engineering can seem like an endlessly complex confluence of
