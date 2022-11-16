@@ -5,7 +5,7 @@
 import logging
 from typing import Dict, Optional
 
-from fideslib.core.config import DatabaseSettings as FideslibDatabaseSettings
+from fideslib.core.config import FidesSettings
 from pydantic import PostgresDsn, validator
 
 from fides.ctl.core.config.utils import get_test_mode
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 ENV_PREFIX = "FIDES__DATABASE__"
 
 
-class DatabaseSettings(FideslibDatabaseSettings):
+class DatabaseSettings(FidesSettings):
     """Configuration settings for Postgres."""
 
     user: str = "defaultuser"
@@ -24,6 +24,9 @@ class DatabaseSettings(FideslibDatabaseSettings):
     port: str = "5432"
     db: str = "default_db"
     test_db: str = "default_test_db"
+
+    sqlalchemy_database_uri: Optional[str] = None
+    sqlalchemy_test_database_uri: Optional[str] = None
 
     # These values are set by validators, and are never empty strings within the
     # application. The default values here are required in order to prevent the
@@ -72,6 +75,42 @@ class DatabaseSettings(FideslibDatabaseSettings):
                 host=values["server"],
                 port=values.get("port"),
                 path=f"/{db_name or ''}",
+            )
+        )
+
+    @validator("sqlalchemy_database_uri", pre=True)
+    @classmethod
+    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
+        """Join DB connection credentials into a connection string"""
+        if isinstance(v, str):
+            return v
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql",
+                user=values["user"],
+                password=values["password"],
+                host=values["server"],
+                port=values.get("port"),
+                path=f"/{values.get('db') or ''}",
+            )
+        )
+
+    @validator("sqlalchemy_test_database_uri", pre=True)
+    @classmethod
+    def assemble_test_db_connection(
+        cls, v: Optional[str], values: Dict[str, str]
+    ) -> str:
+        """Join DB connection credentials into a connection string"""
+        if isinstance(v, str):
+            return v
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql",
+                user=values["user"],
+                password=values["password"],
+                host=values["server"],
+                port=values["port"],
+                path=f"/{values.get('test_db') or ''}",
             )
         )
 
