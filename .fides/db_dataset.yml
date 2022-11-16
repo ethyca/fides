@@ -105,7 +105,7 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: cls_classification_detail
-    description: 'A table to store results of Fidescls classification runs'
+    description: 'A table to store results of classification runs'
     data_categories: null
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
@@ -119,7 +119,7 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: dataset
-      description: 'The dataset to which the classification target belongs'
+      description: 'The resource to which the classification target belongs'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -133,17 +133,17 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: instance_id
-      description: 'Fides Generated Description for Column: instance_id'
+      description: 'The unique instance in time of the act of classifying a resource. Foreign key to the ID in cls_classification_instance'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: labels
-      description: 'Fides Generated Description for Column: labels'
+      description: 'The suggested data categories and metadata for a resource detail as suggested by the classifier'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: status
-      description: 'Fides Generated Description for Column: status'
+      description: 'State management for the classification of a resource detail'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
@@ -152,7 +152,7 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
   - name: cls_classification_instance
-    description: 'Fides Generated Description for Table: cls_classification_instance'
+    description: 'A table to manage the metadata and state of executing classifications'
     data_categories: null
     data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     fields:
@@ -161,36 +161,37 @@ dataset:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: id
+      description: 'The unique ID for an instance in time of classifying a resource, to be referenced by the detail output of a classification'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: organization_key
-      description: 'Fides Generated Description for Column: organization_key'
+      description: 'The organization fides_key of the resources being classified'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: dataset_key
-      description: 'Fides Generated Description for Column: dataset_key'
+      description: 'The fides_key of the resource being classified'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: dataset_name
-      description: 'Fides Generated Description for Column: dataset_name'
+      description: 'The name of the resource being classified'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: status
-      description: 'Fides Generated Description for Column: status'
+      description: 'State of the classify instance during classification and review post completion'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: target
-      description: 'Fides Generated Description for Column: target'
+      description: 'The target type of the resource being classified'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: type
-      description: 'Fides Generated Description for Column: type'
+      description: 'The type of resource being classified (e.g., systems, datasets)'
       data_categories:
       - system.operations
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
