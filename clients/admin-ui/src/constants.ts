@@ -119,9 +119,9 @@ export const LOGIN_ROUTE = "/login";
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
-export const DATAMAP_ROUTE = "/datamap";
-export const SYSTEM_ROUTE = "/system";
-export const CONFIG_WIZARD_ROUTE = "/config-wizard";
 
 // UI ROUTES
+export const CONFIG_WIZARD_ROUTE = "/config-wizard";
+export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
+export const SYSTEM_ROUTE = "/system";

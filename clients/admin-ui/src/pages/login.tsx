@@ -81,27 +81,33 @@ const useLogin = () => {
     return errors;
   };
 
-  if (token) {
+  const getRedirectRoute = () => {
+    if (!token) {
+      return undefined;
+    }
+
     const configWizardFlagIsActive = Flags.some(
       (flag) => flag.name === "configWizardFlag" && flag.isActive
     );
 
     if (configWizardFlagIsActive) {
-      if (systems && systems.length > 0) {
+      if (!isLoading && systems && systems.length > 0) {
         const datamapRoute = resolveLink({
           href: DATAMAP_ROUTE,
           basePath: "/",
         });
 
-        return features.plus
-          ? router.push(datamapRoute.href)
-          : router.push(SYSTEM_ROUTE);
-      } 
-        router.push(CONFIG_WIZARD_ROUTE);
-      
-    } else {
-      router.push(INDEX_ROUTE);
+        return features.plus ? datamapRoute.href : SYSTEM_ROUTE;
+      }
+      return CONFIG_WIZARD_ROUTE;
     }
+    return INDEX_ROUTE;
+  };
+
+  const redirectRoute = getRedirectRoute();
+
+  if (redirectRoute) {
+    router.push(redirectRoute);
   }
 
   return {
