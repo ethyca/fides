@@ -7,7 +7,7 @@
  *
  * CREATED: The initial state of an attempt to classify
  * PROCESSING: Attempting to classify dataset(s)
- * COMPLETED: The classify process completed successfully
+ * COMPLETE: The classify process completed successfully
  * FAILED: The classify process failed (at some point)
  * REVIEWED: The output classification has been reviewd
  * along with the generated dataset, passed from UI
