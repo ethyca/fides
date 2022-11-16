@@ -751,7 +751,7 @@ def get_privacy_request_notification_info(
         )
 
     return PrivacyRequestNotificationInfo(
-        email_addresses=[x for x in info[0].email.split(",")],
+        email_addresses=[x for x in info[0].email.split(", ")],
         notify_after_failures=info[0].notify_after_failures,
     )
 

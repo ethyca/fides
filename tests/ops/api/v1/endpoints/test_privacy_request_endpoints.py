@@ -28,6 +28,8 @@ from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
 from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -42,6 +44,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
+    PRIVACY_REQUEST_NOTIFICATIONS,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -59,6 +62,7 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     ManualAction,
     PrivacyRequest,
+    PrivacyRequestNotifications,
     PrivacyRequestStatus,
 )
 from fides.api.ops.schemas.dataset import DryRunDatasetResponse
@@ -3806,3 +3810,101 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         assert queue == MESSAGING_QUEUE_NAME
 
         pr.delete(db=db)
+
+
+class TestCreatePrivacyRequestErrorNotification:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return f"{V1_URL_PREFIX}{PRIVACY_REQUEST_NOTIFICATIONS}"
+
+    def test_get_privacy_request_notification_info(
+        self,
+        url,
+        generate_auth_header,
+        db,
+        api_client,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_NOTIFICATIONS_READ])
+        data = {
+            "email": "some@email.com, another@email.com",
+            "notify_after_failures": 5,
+        }
+
+        expected = {
+            "email_addresses": ["some@email.com", "another@email.com"],
+            "notify_after_failures": 5,
+        }
+
+        PrivacyRequestNotifications.create(db=db, data=data)
+
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == expected
+
+    def test_get_privacy_requests_notification_info_unauthenticated(
+        self, api_client, url
+    ):
+        response = api_client.get(url)
+        assert response.status_code == 401
+
+    def test_get_privacy_requests_notification_info_wrong_scope(
+        self, api_client, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_create_privacy_request_notification_info(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE]
+        )
+
+        data = {
+            "email_addresses": ["some@email.com", "another@email.com"],
+            "notify_after_failures": 5,
+        }
+
+        response = api_client.put(url, json=data, headers=auth_header)
+        print(response.json())
+        assert response.status_code == 200
+        assert response.json() == data
+
+    def test_create_privacy_requests_notification_info_unauthenticated(
+        self, api_client, url
+    ):
+        response = api_client.put(url)
+        assert response.status_code == 401
+
+    def test_create_privacy_requests_notification_info_wrong_scope(
+        self, api_client, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_update_privacy_request_notification_info(
+        self,
+        url,
+        db,
+        generate_auth_header,
+        api_client,
+    ):
+        PrivacyRequestNotifications.create(
+            db=db, data={"email": "me@email.com", "notify_after_failures": 1}
+        )
+        auth_header = generate_auth_header(
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE]
+        )
+        data = {
+            "email_addresses": ["some@email.com", "another@email.com"],
+            "notify_after_failures": 5,
+        }
+
+        response = api_client.put(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == data
