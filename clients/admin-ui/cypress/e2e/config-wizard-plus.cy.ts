@@ -66,9 +66,9 @@ describe.skip("Config wizard with plus settings", () => {
       cy.getByTestId("checkbox-fidesctl-demo");
       cy.getByTestId("checkbox-postgres");
       cy.get("table")
-        .find("tr")
+        .find("tbody > tr")
         .then((rows) => {
-          expect(rows.length).to.eql(numSystems + 1); // +1 for the header row
+          expect(rows.length).to.eql(numSystems);
         });
       cy.getByTestId("register-btn").click();
       cy.wait("@upsertSystems").then((interception) => {
@@ -119,9 +119,9 @@ describe.skip("Config wizard with plus settings", () => {
       cy.getByTestId("status-vzmgr-service");
       cy.getByTestId("status-kube-dns");
       cy.get("table")
-        .find("tr")
+        .find("tbody > tr")
         .then((rows) => {
-          expect(rows.length).to.eql(3); // +1 for the header row
+          expect(rows.length).to.eql(2);
         });
     });
 
