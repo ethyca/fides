@@ -2,16 +2,18 @@
 This module is responsible for combining all of the different
 config sections into a single config.
 """
-import logging
+
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, MutableMapping, Optional, Tuple
 
 import toml
 from fideslib.core.config import load_toml
 from loguru import logger as log
 from pydantic import BaseModel
+from pydantic.class_validators import _FUNCS
+from pydantic.env_settings import SettingsSourceCallable
 
 from fides.ctl.core.utils import echo_red
 
@@ -29,15 +31,10 @@ from .utils import DEFAULT_CONFIG_PATH, get_test_mode
 
 
 class FidesConfig(BaseModel):
-    """Umbrella class that encapsulates all of the config subsections."""
+    """
+    Composite class that encapsulates all of the config subsections.
+    """
 
-    # Pydantic doesn't initialise subsections automatically if
-    # only environment variables are provided at runtime. If the
-    # config subclass is instantiated with no args, Pydantic runs
-    # validation before loading in environment variables, which
-    # always fails if any config vars in the subsection are non-optional.
-    # Using the empty dict allows Python to load in the environment
-    # variables _before_ validating them against the Pydantic schema.
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
@@ -46,7 +43,9 @@ class FidesConfig(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     notifications: NotificationSettings = NotificationSettings()
     redis: RedisSettings = RedisSettings()
-    security: SecuritySettings = {}  # type: ignore
+    # Use 'construct' to avoid running validation
+    # This allows us to use the correct type but populate later
+    security: SecuritySettings = SecuritySettings.construct()
     user: UserSettings = UserSettings()
 
     test_mode: bool = get_test_mode()
@@ -57,6 +56,16 @@ class FidesConfig(BaseModel):
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
+
+        @classmethod
+        def customise_sources(
+            cls,
+            init_settings: SettingsSourceCallable,
+            env_settings: SettingsSourceCallable,
+            file_secret_settings: SettingsSourceCallable,
+        ) -> Tuple[SettingsSourceCallable, ...]:
+            """Set environment variables to take precedence over init values."""
+            return env_settings, init_settings, file_secret_settings
 
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
@@ -178,10 +187,14 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     """
     Attempt to load user-defined configuration.
 
-    This will fail if the first encountered conf file is invalid.
+    This will fail if the first encountered configuration file is invalid.
 
     On failure, returns default configuration.
     """
+
+    # This prevents a Pydantic validator reuse error. For context see
+    # https://github.com/streamlit/streamlit/issues/3218
+    _FUNCS.clear()
 
     env_config_path = getenv("FIDES__CONFIG_PATH")
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
@@ -206,13 +219,20 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
             credentials_dict=config_environment_dict
         )
 
+        # This is required to set security settings from the environment
+        # if that section of the config is missing
+        security_settings = SecuritySettings.parse_obj(settings.get("security", {}))
+
         config = FidesConfig.parse_obj(settings)
+        config.security = security_settings
         return config
     except FileNotFoundError:
         print("No config file found")
     except IOError:
         echo_red("Error reading config file")
 
-    config = FidesConfig()
     print("Using default configuration values.")
+    security_settings = SecuritySettings()
+    config = FidesConfig(security=security_settings)
+
     return config

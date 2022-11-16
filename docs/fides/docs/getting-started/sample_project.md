@@ -9,7 +9,7 @@ To Fides in your own infrastructure, see the provided [DSR Automation](../dsr_qu
 ### Minimum requirements 
 
 *  [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-*  [Python](https://www.python.org/downloads/) (version 3.9 or later) 
+*  [Python](https://www.python.org/downloads/) (version 3.8 through 3.10) 
 ### Download and install Fides
 You can easily download and install the Fides demo using `pip`. Run the following command to get started:
 

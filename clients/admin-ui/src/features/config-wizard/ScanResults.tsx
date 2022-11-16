@@ -16,6 +16,8 @@ import {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { useFeatures } from "~/features/common/features.slice";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
@@ -25,8 +27,10 @@ import { System } from "~/types/api";
 import {
   changeStep,
   chooseSystemsForReview,
+  selectAddSystemsMethod,
   selectSystemsForReview,
 } from "./config-wizard.slice";
+import { SystemMethods } from "./types";
 
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Name", attribute: "name" },
@@ -34,10 +38,11 @@ const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Resource ID", attribute: "fidesctl_meta.resource_id" },
 ];
 
-const ScanResultsForm = () => {
+const ScanResults = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const router = useRouter();
+
   const {
     isOpen: isWarningOpen,
     onOpen: onWarningOpen,
@@ -48,10 +53,24 @@ const ScanResultsForm = () => {
   const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
+  const method = useAppSelector(selectAddSystemsMethod);
+  const { handleError } = useAPIHelper();
 
   const confirmRegisterSelectedSystems = async () => {
     dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
-    await upsertSystems(selectedSystems);
+    const response = await upsertSystems(selectedSystems);
+
+    if (isErrorResult(response)) {
+      return handleError(response.error);
+    }
+
+    /*
+     * Eventually, all scanners will go through some sort of classify flow.
+     * But for now, only the runtime scanner does
+     */
+    if (method === SystemMethods.RUNTIME) {
+      return router.push("/classify-systems");
+    }
 
     const datamapRoute = resolveLink({
       href: "/datamap",
@@ -139,4 +158,4 @@ const ScanResultsForm = () => {
   );
 };
 
-export default ScanResultsForm;
+export default ScanResults;

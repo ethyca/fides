@@ -106,7 +106,6 @@ def create_presigned_url_for_s3(
     :param object_name: string
     :return: Presigned URL as string.
     """
-
     response = s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket_name, "Key": object_name},

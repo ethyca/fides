@@ -363,7 +363,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
                     "identity": identity.dict(),
-                    "derived_identity": {"phone_number": "555-555-5555"},
+                    "derived_identity": {"phone_number": "+5555555555"},
                     "halt": False,
                 },
                 status_code=200,
@@ -373,7 +373,7 @@ class TestPrivacyRequestTriggerWebhooks:
             assert privacy_request.status == PrivacyRequestStatus.in_processing
             assert privacy_request.get_cached_identity_data() == {
                 "email": "customer-1@example.com",
-                "phone_number": "555-555-5555",
+                "phone_number": "+5555555555",
             }
 
     def test_two_way_validation_issues(

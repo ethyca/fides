@@ -1,0 +1,67 @@
+services:
+  fides:
+    image: ethyca/fides:local
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8080:8080"
+    depends_on:
+      fides-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    expose:
+      - 8080
+    environment:
+      FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DATABASE__USER: "postgres"
+      FIDES__DATABASE__PASSWORD: "fides"
+      FIDES__DATABASE__PORT: "5432"
+      FIDES__DATABASE__DB: "fides"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      FIDES__SECURITY__APP_ENCRYPTION_KEY: "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: "fidesadminsecret"
+      FIDES__SECRUITY__DRP_JWT_SECRET: "secret"
+
+  fides-db:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "fides"
+      POSTGRES_DB: "fides"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.fides.app-db-data == true
+
+  redis:
+    image: "redis:6.2.5-alpine"
+    command: redis-server --requirepass testpassword
+    environment:
+      - REDIS_PASSWORD=testpassword
+    expose:
+      - 6379
+    ports:
+      - "0.0.0.0:6379:6379"
+
+volumes:
+  postgres: null
+
+networks:
+  fides_network:
