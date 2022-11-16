@@ -1,14 +1,12 @@
 from enum import Enum
 from re import compile as regex
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Extra, root_validator
 
+from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-
-if TYPE_CHECKING:
-    from fides.api.ops.models.privacy_request import CheckpointActionRequired
 
 
 class MessagingMethod(Enum):
@@ -100,7 +98,7 @@ class FidesopsMessage(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
-            List["CheckpointActionRequired"],
+            List[CheckpointActionRequired],
         ]
     ]
 
