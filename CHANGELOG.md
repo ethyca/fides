@@ -26,6 +26,7 @@ The types of changes are:
 * Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 
 ### Changed
 
