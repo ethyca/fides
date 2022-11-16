@@ -21,12 +21,7 @@ from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
 from fides.api.ops.models.policy import DrpAction, Policy
-from fides.api.ops.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestError,
-    PrivacyRequestNotifications,
-    PrivacyRequestStatus,
-)
+from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import (
     DRP_VERSION,
     DrpDataRightsResponse,
@@ -34,17 +29,11 @@ from fides.api.ops.schemas.drp_privacy_request import (
     DrpPrivacyRequestCreate,
     DrpRevokeRequest,
 )
-from fides.api.ops.schemas.messaging.messaging import (
-    ErrorNotificaitonBodyParams,
-    FidesopsMessage,
-    MessagingActionType,
-    MessagingServiceType,
-)
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
 from fides.api.ops.service.messaging.message_dispatch_service import (
-    dispatch_message_task,
+    check_and_dispatch_error_notifications,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -53,7 +42,6 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
@@ -125,40 +113,7 @@ async def create_drp_privacy_request(
             identity=mapped_identity,
         )
 
-        unsent_errors = PrivacyRequestError.filter(
-            db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
-        ).all()
-
-        privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
-
-        email_config = CONFIG.notifications.notification_service_type in (
-            MessagingServiceType.MAILGUN.value,
-            MessagingServiceType.TWILIO_EMAIL.value,
-        )
-
-        if (
-            email_config
-            and privacy_request_notifications
-            and len(unsent_errors)
-            >= privacy_request_notifications[0].notify_after_failures
-        ):
-            for email in privacy_request_notifications[0].email.split(", "):
-                dispatch_message_task.apply_async(
-                    queue=MESSAGING_QUEUE_NAME,
-                    kwargs={
-                        "message_meta": FidesopsMessage(
-                            action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                            body_params=ErrorNotificaitonBodyParams(
-                                unsent_errors=len(unsent_errors)
-                            ),
-                        ).dict(),
-                        "service_type": CONFIG.notifications.notification_service_type,
-                        "to_identity": {"email": email},
-                    },
-                )
-
-            for error in unsent_errors:
-                error.update(db=db, data={"message_sent": True})
+        check_and_dispatch_error_notifications(db=db)
 
         logger.info(
             "Decrypting identity for DRP privacy request %s", privacy_request.id

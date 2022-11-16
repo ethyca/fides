@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from random import randint
 from typing import List
 from unittest import mock
+from uuid import uuid4
 
 import pytest
 from dateutil.parser import parse
@@ -62,6 +63,7 @@ from fides.api.ops.models.privacy_request import (
     ExecutionLogStatus,
     ManualAction,
     PrivacyRequest,
+    PrivacyRequestError,
     PrivacyRequestNotifications,
     PrivacyRequestStatus,
 )
@@ -69,7 +71,6 @@ from fides.api.ops.schemas.dataset import DryRunDatasetResponse
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
 from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingMethod,
     MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
@@ -495,6 +496,77 @@ class TestCreatePrivacyRequest:
         approval_audit_log.delete(db=db)
         pr = PrivacyRequest.get(db=db, object_id=response_data["id"])
         pr.delete(db=db)
+
+    @pytest.mark.usefixtures("messaging_config")
+    @mock.patch(
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    @mock.patch(
+        "fides.api.ops.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_create_privacy_request_error_notification(
+        self,
+        mailgun_dispatcher_mock,
+        run_access_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy,
+    ):
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+12345678910"
+        data = [
+            {
+                "requested_at": "2021-08-30T16:09:37.359Z",
+                "policy_key": policy.key,
+                "identity": {
+                    "email": TEST_EMAIL,
+                    "phone_number": TEST_PHONE_NUMBER,
+                },
+            }
+        ]
+
+        PrivacyRequestNotifications.create(
+            db=db,
+            data={
+                "email": "some@email.com, another@email.com",
+                "notify_after_failures": 1,
+            },
+        )
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid4())}",
+                "started_processing_at": datetime(2021, 1, 1),
+                "finished_processing_at": datetime(2021, 1, 1),
+                "requested_at": datetime(2021, 1, 1),
+                "status": PrivacyRequestStatus.error,
+                "origin": "https://example.com/",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        privacy_request.error_processing(db)
+
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        persisted_identity = pr.get_persisted_identity()
+        assert persisted_identity.email == TEST_EMAIL
+        assert persisted_identity.phone_number == TEST_PHONE_NUMBER
+
+        sent_errors = PrivacyRequestError.filter(
+            db=db, conditions=(PrivacyRequestError.message_sent.is_(True))
+        ).all()
+
+        assert len(sent_errors) == 1
+
+        assert run_access_request_mock.called
+        assert mailgun_dispatcher_mock.called
 
 
 class TestGetPrivacyRequests:
@@ -3871,7 +3943,6 @@ class TestCreatePrivacyRequestErrorNotification:
         }
 
         response = api_client.put(url, json=data, headers=auth_header)
-        print(response.json())
         assert response.status_code == 200
         assert response.json() == data
 

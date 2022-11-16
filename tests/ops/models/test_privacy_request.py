@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
-from unittest.mock import patch
 from uuid import uuid4
 
 import pytest

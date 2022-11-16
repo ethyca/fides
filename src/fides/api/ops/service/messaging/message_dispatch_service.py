@@ -13,8 +13,8 @@ from fides.api.ops.email_templates import get_email_template
 from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
-    PrivacyRequest,
     PrivacyRequestError,
+    PrivacyRequestNotifications,
 )
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -40,10 +40,8 @@ CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
-def check_and_dispatch_error_notifications(
-    db: Session, privacy_request: PrivacyRequest
-) -> None:
-    privacy_request_notifications = privacy_request.all(db=db)
+def check_and_dispatch_error_notifications(db: Session) -> None:
+    privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
     if not privacy_request_notifications:
         return None
 

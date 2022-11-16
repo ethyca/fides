@@ -248,9 +248,7 @@ async def create_privacy_request(
                 None,
             )
 
-            check_and_dispatch_error_notifications(
-                db=db, privacy_request=privacy_request
-            )
+            check_and_dispatch_error_notifications(db=db)
 
             if CONFIG.execution.subject_identity_verification_required:
                 send_verification_code_to_user(
