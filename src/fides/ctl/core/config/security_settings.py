@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Tuple, Union
 import validators
 from fideslib.core.config import FidesSettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fideslib.exceptions import MissingConfig
 from pydantic import validator
 from slowapi.wrappers import parse_many  # type: ignore
 
@@ -24,7 +23,7 @@ class SecuritySettings(FidesSettings):
     rate_limit_prefix: str = "fides-"
     aes_encryption_key_length: int = 16
     aes_gcm_nonce_length: int = 12
-    app_encryption_key: str
+    app_encryption_key: str = ""
     drp_jwt_secret: Optional[str] = None
     root_username: Optional[str] = None
     root_password: Optional[str] = None
@@ -32,8 +31,8 @@ class SecuritySettings(FidesSettings):
     encoding: str = "UTF-8"
 
     cors_origins: List[str] = []
-    oauth_root_client_id: str
-    oauth_root_client_secret: str
+    oauth_root_client_id: str = ""
+    oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
     oauth_access_token_expire_minutes: int = 60 * 24 * 8
     oauth_client_id_length_bytes = 16
@@ -45,6 +44,11 @@ class SecuritySettings(FidesSettings):
         cls, v: Optional[str], values: Dict[str, str]
     ) -> Optional[str]:
         """Validate the encryption key is exactly 32 characters"""
+
+        # If the value is the default value, return immediately to prevent unwanted errors
+        if v == "":
+            return v
+
         if v is None or len(v.encode(values.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
@@ -77,17 +81,16 @@ class SecuritySettings(FidesSettings):
     @classmethod
     def assemble_root_access_token(
         cls, v: Optional[str], values: Dict[str, str]
-    ) -> Tuple:
+    ) -> Optional[Tuple]:
         """
         Sets a hashed value of the root access key.
         This is hashed as it is not wise to return a plaintext for of the
         root credential anywhere in the system.
         """
-        value = values.get("oauth_root_client_secret")
+        value = values.get("oauth_root_client_secret", "")
+
         if not value:
-            raise MissingConfig(
-                "oauth_root_client_secret is required", SecuritySettings
-            )
+            return None
 
         encoding = values.get("encoding", "UTF-8")
 
