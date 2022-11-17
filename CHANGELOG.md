@@ -16,7 +16,6 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
-* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 ### Added
 
@@ -28,6 +27,7 @@ The types of changes are:
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 ### Changed
 
