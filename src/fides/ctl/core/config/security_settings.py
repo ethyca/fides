@@ -45,6 +45,11 @@ class SecuritySettings(FidesSettings):
         cls, v: Optional[str], values: Dict[str, str]
     ) -> Optional[str]:
         """Validate the encryption key is exactly 32 characters"""
+
+        # If the value is the default value, return immediately to prevent unwanted errors
+        if v == "":
+            return v
+
         if v is None or len(v.encode(values.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
@@ -77,17 +82,16 @@ class SecuritySettings(FidesSettings):
     @classmethod
     def assemble_root_access_token(
         cls, v: Optional[str], values: Dict[str, str]
-    ) -> Tuple:
+    ) -> Optional[Tuple]:
         """
         Sets a hashed value of the root access key.
         This is hashed as it is not wise to return a plaintext for of the
         root credential anywhere in the system.
         """
-        value = values.get("oauth_root_client_secret")
+        value = values.get("oauth_root_client_secret", "")
+
         if not value:
-            raise MissingConfig(
-                "oauth_root_client_secret is required", SecuritySettings
-            )
+            return None
 
         encoding = values.get("encoding", "UTF-8")
 

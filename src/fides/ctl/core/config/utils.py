@@ -1,10 +1,10 @@
-import sys
 from os import getenv
 from typing import Any, Dict, Union
 
 from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
+from fides.ctl.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 
@@ -41,62 +41,52 @@ def get_config_from_file(
     return None
 
 
-def check_if_required_config_vars_are_configured() -> None:
-    app_encryption_key: Union[str, int, None] = getenv(
-        "FIDES__SECURITY__APP_ENCRYPTION_KEY"
-    )
-    oauth_root_client_id: Union[str, int, None] = getenv(
-        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID"
-    )
-    oauth_root_client_secret: Union[str, int, None] = getenv(
-        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET"
-    )
-    try:
-        if not app_encryption_key:
-            app_encryption_key = get_config_from_file(
-                "", "security", "app_encryption_key"
-            )
-        if not oauth_root_client_id:
-            oauth_root_client_id = get_config_from_file(
-                "", "security", "oauth_root_client_id"
-            )
-        if not oauth_root_client_secret:
-            oauth_root_client_secret = get_config_from_file(
-                "", "security", "oauth_root_client_secret"
-            )
-    except FileNotFoundError:
-        pass
+def check_required_webserver_config_values() -> None:
+    """Check for required env vars and print a user-friendly error message."""
+    required_config_dict = {
+        "app_encryption_key": {
+            "env_var": "FIDES__SECURITY__APP_ENCRYPTION_KEY",
+            "config_subsection": "security",
+        },
+        "oauth_root_client_id": {
+            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID",
+            "config_subsection": "security",
+        },
+        "oauth_root_client_secret": {
+            "env_var": "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
+            "config_subsection": "security",
+        },
+    }
 
     missing_required_config_vars = []
-    if app_encryption_key is None:
-        missing_required_config_vars.append(
-            ("security.app_encryption_key", "FIDES__SECURITY__APP_ENCRYPTION_KEY")
-        )
-    if oauth_root_client_id is None:
-        missing_required_config_vars.append(
-            ("security.oauth_root_client_id", "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID")
-        )
-    if oauth_root_client_secret is None:
-        missing_required_config_vars.append(
-            (
-                "security.oauth_root_client_secret",
-                "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET",
+    for key in required_config_dict:
+        try:
+            config_value = getenv(
+                required_config_dict[key]["env_var"]
+            ) or get_config_from_file(
+                "",
+                required_config_dict[key]["config_subsection"],
+                key,
             )
-        )
+        except FileNotFoundError:
+            config_value = None
 
-    if len(missing_required_config_vars) > 0:
-        print(
-            "There are missing required config variables. Please add the following config variables to either the "
+        if not config_value:
+            missing_required_config_vars.append(key)
+
+    if len(missing_required_config_vars):
+        echo_red(
+            "\nThere are missing required configuration variables. Please add the following config variables to either the "
             "`fides.toml` file or your environment variables to start Fides: \n"
         )
-        for missing_var in missing_required_config_vars:
-            print(f"fides.toml: {missing_var[0]} or ENV VAR: {missing_var[1]}")
-
+        for missing_value in missing_required_config_vars:
+            print(f"- {missing_value}")
         print(
             "\nVisit the Fides deployment documentation for more information: "
             "https://ethyca.github.io/fides/deployment/"
         )
-        sys.exit(1)
+
+        raise SystemExit(1)
 
 
 def update_config_file(  # type: ignore
