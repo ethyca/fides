@@ -24,7 +24,7 @@ class SecuritySettings(FidesSettings):
     rate_limit_prefix: str = "fides-"
     aes_encryption_key_length: int = 16
     aes_gcm_nonce_length: int = 12
-    app_encryption_key: str
+    app_encryption_key: str = ""
     drp_jwt_secret: Optional[str] = None
     root_username: Optional[str] = None
     root_password: Optional[str] = None
@@ -32,8 +32,8 @@ class SecuritySettings(FidesSettings):
     encoding: str = "UTF-8"
 
     cors_origins: List[str] = []
-    oauth_root_client_id: str
-    oauth_root_client_secret: str
+    oauth_root_client_id: str = ""
+    oauth_root_client_secret: str = ""
     oauth_root_client_secret_hash: Optional[Tuple]
     oauth_access_token_expire_minutes: int = 60 * 24 * 8
     oauth_client_id_length_bytes = 16
