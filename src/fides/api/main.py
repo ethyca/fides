@@ -322,5 +322,6 @@ def read_other_paths(request: Request) -> Response:
 
 def start_webserver() -> None:
     "Run the webserver."
+    # Check for required variables here
     server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
     server.run()
