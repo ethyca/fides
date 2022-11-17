@@ -101,7 +101,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'mailgun', 'twilio_text', 'twilio_email'"
+            == "value is not a valid enumeration member; permitted: 'MAILGUN', 'TWILIO_TEXT', 'TWILIO_EMAIL'"
         )
 
     def test_post_email_config_with_no_key(
@@ -602,7 +602,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 400
         assert (
-            f"Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied. ('__root__',)"
+            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied. ('__root__',)"
             in response.json()["detail"]
         )
 

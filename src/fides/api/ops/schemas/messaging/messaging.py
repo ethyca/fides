@@ -17,19 +17,19 @@ class MessagingMethod(Enum):
 
 
 class MessagingServiceType(Enum):
-    """Enum for messaging service type"""
+    """Enum for messaging service type. Upper-cased in the database"""
 
-    MAILGUN = "mailgun"
+    MAILGUN = "MAILGUN"
 
-    TWILIO_TEXT = "twilio_text"
-    TWILIO_EMAIL = "twilio_email"
+    TWILIO_TEXT = "TWILIO_TEXT"
+    TWILIO_EMAIL = "TWILIO_EMAIL"
 
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.MAILGUN.value,
     MessagingServiceType.TWILIO_EMAIL.value,
 )
-SMS_MESSAGING_SERVICES: Tuple[str, ...] = tuple(MessagingServiceType.TWILIO_TEXT.value)
+SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.TWILIO_TEXT.value,)
 
 
 class MessagingActionType(str, Enum):
@@ -170,7 +170,7 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
         sender_phone = values.get("twilio_sender_phone_number")
         if not values.get("twilio_messaging_service_sid") and not sender_phone:
             raise ValueError(
-                "Either the twilio_messaging_service_id or the twilio_sender_phone_number should be supplied."
+                "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
             )
         if sender_phone:
             pattern = regex(r"^\+\d+$")
@@ -204,12 +204,16 @@ class MessagingConfigRequest(BaseModel):
         use_enum_values = False
         orm_mode = True
 
-    @root_validator
+    @root_validator(pre=True)
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        service_type: MessagingServiceType = values.get("service_type")  # type: ignore
-        if service_type == MessagingServiceType.MAILGUN:
-            if not values.get("details"):
-                raise ValueError("Mailgun messaging config must include details")
+        service_type_pre = values.get("service_type")
+        if service_type_pre:
+            # uppercase to match enums in database
+            values["service_type"] = service_type_pre.upper()
+            service_type: MessagingServiceType = values["service_type"]
+            if service_type == MessagingServiceType.MAILGUN.value:
+                if not values.get("details"):
+                    raise ValueError("Mailgun messaging config must include details")
         return values
 
 

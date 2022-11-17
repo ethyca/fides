@@ -10,7 +10,7 @@ from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.models.messaging import MessagingConfig
+from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
@@ -39,8 +39,8 @@ logger = logging.getLogger(__name__)
 def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
-    messaging_method: Optional[MessagingMethod],
-    to_identity: Identity,
+    service_type: Optional[str],
+    to_identity: Dict[str, Any],
 ) -> None:
     """
     A wrapper function to dispatch a message task into the Celery queues
@@ -50,8 +50,8 @@ def dispatch_message_task(
         dispatch_message(
             db,
             schema.action_type,
-            to_identity,
-            messaging_method,
+            Identity.parse_obj(to_identity),
+            service_type,
             schema.body_params,
         )
 
@@ -60,7 +60,7 @@ def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
     to_identity: Optional[Identity],
-    messaging_method: Optional[MessagingMethod],
+    service_type: Optional[str],
     message_body_params: Optional[
         Union[
             AccessRequestCompleteBodyParams,
@@ -77,12 +77,18 @@ def dispatch_message(
     if not to_identity:
         logger.error("Message failed to send. No identity supplied.")
         raise MessageDispatchException("No identity supplied.")
+    if not service_type:
+        logger.error("Message failed to send. No notification service type configured.")
+        raise MessageDispatchException("No notification service type configured.")
 
     logger.info("Retrieving message config")
-    messaging_config: MessagingConfig = MessagingConfig.get_configuration(db=db)
+    messaging_config: MessagingConfig = MessagingConfig.get_configuration(
+        db=db, service_type=service_type
+    )
     logger.info(
         "Building appropriate message template for action type: %s", action_type
     )
+    messaging_method = get_messaging_method(service_type)
     message: Optional[Union[EmailForActionType, str]] = None
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
@@ -130,12 +136,46 @@ def dispatch_message(
     )
 
 
-def _build_sms(
+def _build_sms(  # pylint: disable=too-many-return-statements
     action_type: MessagingActionType,
     body_params: Any,
 ) -> str:
+    separator = ","
+    if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
+        return (
+            f"Your privacy request verification code is {body_params.verification_code}. "
+            f"Please return to the Privacy Center and enter the code to continue. "
+            f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
+        )
     if action_type == MessagingActionType.CONSENT_REQUEST:
-        return "Hello, this message was sent from Fides!"
+        return (
+            "Your consent request verification code is {{code}}. "
+            "Please return to the consent request page and enter the code to continue. "
+            "This code will expire in {{minutes}} minutes"
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
+        if len(body_params.request_types) > 1:
+            return f"The following requests have been received: {separator.join(body_params.request_types)}"
+        return f"Your {body_params.request_types[0]} request has been received"
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        if len(body_params.download_links) > 1:
+            return (
+                "Your data access has been completed and can be downloaded at the following links. "
+                "For security purposes, these secret links will expire in 24 hours: "
+                f"{separator.join(body_params.download_links)}"
+            )
+        return (
+            f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
+            f"For security purposes, this secret link will expire in 24 hours."
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+        return "Your privacy request for deletion has been completed."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+        return "Your privacy request has been approved and is currently processing."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
+        if body_params.rejection_reason:
+            return f"Your privacy request has been denied for the following reason: {body_params.rejection_reason}"
+        return "Your privacy request has been denied."
     logger.error("Message action type %s is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"

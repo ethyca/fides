@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "652de86a-b40e-4711-b488-4b26252683ab",
+		"_postman_id": "1329eef2-2d7e-462d-b8f0-f185557f144c",
 		"name": "Fidesops",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "13396647"
@@ -2423,7 +2423,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"read\",\n    \"email_service_type\": \"mailgun\"\n}]",
+							"raw": "[\n    {\"name\": \"Email ConnectionConfig\",\n    \"key\": \"{{email_connection_config_key}}\",\n    \"connection_type\": \"email\",\n    \"access\": \"read\"\n}]",
 							"options": {
 								"raw": {
 									"language": "json"

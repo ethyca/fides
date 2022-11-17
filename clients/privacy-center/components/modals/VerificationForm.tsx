@@ -172,7 +172,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         Enter verification code
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="verification-form">
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
             We have sent a verification code to your email address. Please check

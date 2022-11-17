@@ -1,0 +1,19 @@
+{
+  "consent": [
+    {
+      "data_use": "advertising",
+      "data_use_description": "Data Sales or Sharing",
+      "opt_in": false
+    },
+    {
+      "data_use": "advertising.first_party",
+      "data_use_description": "Email Marketing",
+      "opt_in": false
+    },
+    {
+      "data_use": "improve",
+      "description": "Product Analytics",
+      "opt_in": true
+    }
+  ]
+}

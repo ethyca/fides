@@ -56,7 +56,6 @@ from fides.api.ops.schemas.external_https import (
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import celery_app
-from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.api.ops.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
@@ -69,6 +68,7 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)

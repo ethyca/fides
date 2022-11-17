@@ -45,6 +45,7 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
+WITHOUT_ANALYTICS_COMMANDS = ["init", "deploy", "webserver"]
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -98,7 +99,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     create_config_file(ctx)
 
     # init also handles this workflow
-    if ctx.invoked_subcommand not in ["init", "deploy"]:
+    if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:
         check_and_update_analytics_config(ctx, config_path)
 
         # Analytics requires explicit opt-in
