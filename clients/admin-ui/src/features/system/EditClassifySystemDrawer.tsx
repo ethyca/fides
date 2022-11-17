@@ -44,7 +44,13 @@ const SystemMetadata = ({
   </GridItem>
 );
 
-const useClassifySystemDrawer = ({ system }: { system: System }) => {
+const useClassifySystemDrawer = ({
+  system,
+  onClose,
+}: {
+  system: System;
+  onClose: () => void;
+}) => {
   const toast = useToast();
 
   // Subscriptions
@@ -130,13 +136,15 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
       const statusResult = await updateClassificationMutation({
         dataset_fides_key: updatedSystem.fides_key,
         status: ClassificationStatus.REVIEWED,
+        resource_type: GenerateTypes.SYSTEMS,
       });
       if (isErrorResult(statusResult)) {
         toast(errorToastParams(getErrorMessage(statusResult.error)));
         return;
       }
 
-      toast(successToastParams("Dataset classified and approved"));
+      toast(successToastParams("System data flows classified and approved"));
+      onClose();
     } catch (error) {
       toast(errorToastParams(`${error}`));
     }
@@ -161,7 +169,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     isLoadingClassificationInstance,
     classificationInstance,
     handleSave,
-  } = useClassifySystemDrawer({ system });
+  } = useClassifySystemDrawer({ system, onClose });
 
   const handleUpdateSystem = ({ ingress, egress }: IngressEgress) => {
     handleSave({ ...system, ingress, egress });
@@ -196,6 +204,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
 
           {description}
           <DataFlowForm
+            onClose={onClose}
             system={system}
             onSave={handleUpdateSystem}
             classificationInstance={classificationInstance}

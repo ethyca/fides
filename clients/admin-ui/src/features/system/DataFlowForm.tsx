@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Box,
+  Button,
   Heading,
   Stack,
   Text,
@@ -134,12 +135,14 @@ const DataFlows = ({
 };
 
 const DataFlowForm = ({
+  onClose,
   system,
   onSave,
   classificationInstance,
 }: {
   system: System;
   onSave: (flows: IngressEgress) => void;
+  onClose: () => void;
   classificationInstance?: ClassifySystem;
 }) => {
   const hasNoDataFlows =
@@ -170,6 +173,19 @@ const DataFlowForm = ({
               type="egress"
             />
           </Accordion>
+          <Box>
+            <Button onClick={onClose} mr={2} size="sm" variant="outline">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              data-testid="save-btn"
+            >
+              Save
+            </Button>
+          </Box>
         </Stack>
       </Form>
     </Formik>
