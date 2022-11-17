@@ -4,6 +4,7 @@ from typing import Any, Dict, Union
 from click import echo
 from fideslib.core.config import load_file
 from toml import dump, load
+
 from fides.ctl.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
@@ -59,13 +60,11 @@ def check_required_webserver_config_values() -> None:
     }
 
     missing_required_config_vars = []
-    for key in required_config_dict:
+    for key, value in required_config_dict.items():
         try:
-            config_value = getenv(
-                required_config_dict[key]["env_var"]
-            ) or get_config_from_file(
+            config_value = getenv(value["env_var"]) or get_config_from_file(
                 "",
-                required_config_dict[key]["config_subsection"],
+                value["config_subsection"],
                 key,
             )
         except FileNotFoundError:
@@ -74,7 +73,7 @@ def check_required_webserver_config_values() -> None:
         if not config_value:
             missing_required_config_vars.append(key)
 
-    if len(missing_required_config_vars):
+    if missing_required_config_vars:
         echo_red(
             "\nThere are missing required configuration variables. Please add the following config variables to either the "
             "`fides.toml` file or your environment variables to start Fides: \n"

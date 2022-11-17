@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Tuple, Union
 import validators
 from fideslib.core.config import FidesSettings
 from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fideslib.exceptions import MissingConfig
 from pydantic import validator
 from slowapi.wrappers import parse_many  # type: ignore
 
