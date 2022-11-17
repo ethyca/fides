@@ -9,8 +9,15 @@ import {
   Stack,
   Text,
 } from "@fidesui/react";
-import { ReactNode, useState } from "react";
+import { Form, Formik, useFormikContext } from "formik";
+import { ReactNode } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import ClassifiedDataCategoryDropdown from "~/features/dataset/ClassifiedDataCategoryDropdown";
+import {
+  selectDataCategories,
+  selectDataCategoriesMap,
+} from "~/features/taxonomy";
 import {
   ClassifyDataFlow,
   ClassifySystem,
@@ -18,8 +25,10 @@ import {
   System,
 } from "~/types/api";
 
-import ClassifiedDataCategoryDropdown from "../dataset/ClassifiedDataCategoryDropdown";
-import { useGetAllDataCategoriesQuery } from "../taxonomy";
+export interface IngressEgress {
+  ingress: DataFlow[];
+  egress: DataFlow[];
+}
 
 const AccordionItemContents = ({
   headingLevel,
@@ -50,25 +59,19 @@ const AccordionItemContents = ({
 );
 
 const DataFlows = ({
-  dataFlows,
   classifyDataFlows,
   type,
 }: {
-  dataFlows?: DataFlow[];
   classifyDataFlows?: ClassifyDataFlow[];
   type: "ingress" | "egress";
 }) => {
-  // Subscriptions
-  const { data: dataCategories } = useGetAllDataCategoriesQuery();
-  const dataCategoryMap = new Map(
-    (dataCategories || []).map((dc) => [dc.fides_key, dc])
-  );
+  const { values, setFieldValue } = useFormikContext<IngressEgress>();
+  const flows = values[type];
 
-  const [selectedDataCategories, setSelectedDataCategories] = useState<
-    string[]
-  >([]);
+  const dataCategories = useAppSelector(selectDataCategories);
+  const dataCategoriesMap = useAppSelector(selectDataCategoriesMap);
 
-  if (dataFlows == null || dataFlows.length === 0) {
+  if (flows.length === 0) {
     return <Text p={4}>No {type}es found.</Text>;
   }
 
@@ -80,18 +83,34 @@ const DataFlows = ({
           type[0].toLocaleUpperCase() + type.slice(1)
         } Systems`}
       >
-        {dataFlows.map((flow) => {
+        {flows.map((flow, idx) => {
+          const handleChecked = (newChecked: string[]) => {
+            setFieldValue(`${type}[${idx}].data_categories`, newChecked);
+          };
           const classifyDataFlow = classifyDataFlows?.find(
             (cdf) => cdf.fides_key === flow.fides_key
           );
 
           const mostLikelyCategories = classifyDataFlow?.classifications.map(
             ({ label, aggregated_score }) => ({
-              ...dataCategoryMap.get(label),
+              ...dataCategoriesMap.get(label),
               fides_key: label,
               confidence: aggregated_score,
             })
           );
+          let checked = flow.data_categories ?? [];
+          if (checked.length === 0) {
+            // If there are classifier suggestions, choose the highest-confidence option.
+            if (mostLikelyCategories?.length) {
+              const topCategory = mostLikelyCategories.reduce(
+                (maxCat, nextCat) =>
+                  (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0)
+                    ? nextCat
+                    : maxCat
+              );
+              checked = [topCategory.fides_key];
+            }
+          }
           return (
             <AccordionItem key={flow.fides_key} pl={4} borderBottom="none">
               <AccordionItemContents headingLevel="h3" title={flow.fides_key}>
@@ -100,8 +119,8 @@ const DataFlows = ({
                     <ClassifiedDataCategoryDropdown
                       mostLikelyCategories={mostLikelyCategories || []}
                       dataCategories={dataCategories}
-                      checked={selectedDataCategories}
-                      onChecked={setSelectedDataCategories}
+                      checked={checked}
+                      onChecked={handleChecked}
                     />
                   </Box>
                 ) : null}
@@ -116,13 +135,13 @@ const DataFlows = ({
 
 const DataFlowForm = ({
   system,
+  onSave,
   classificationInstance,
 }: {
   system: System;
+  onSave: (flows: IngressEgress) => void;
   classificationInstance?: ClassifySystem;
 }) => {
-  console.log({ system });
-
   const hasNoDataFlows =
     (system.ingress == null || system.ingress.length === 0) &&
     (system.egress == null || system.egress.length === 0);
@@ -131,22 +150,29 @@ const DataFlowForm = ({
     return <Text>No data flows found on this system.</Text>;
   }
 
+  const initialValues: IngressEgress = {
+    egress: system.egress ?? [],
+    ingress: system.ingress ?? [],
+  };
+
   return (
-    <Stack>
-      <Text fontWeight="semibold">{system.name}</Text>
-      <Accordion allowMultiple pl={2}>
-        <DataFlows
-          dataFlows={system.ingress}
-          classifyDataFlows={classificationInstance?.ingress}
-          type="ingress"
-        />
-        <DataFlows
-          dataFlows={system.egress}
-          classifyDataFlows={classificationInstance?.egress}
-          type="egress"
-        />
-      </Accordion>
-    </Stack>
+    <Formik initialValues={initialValues} onSubmit={onSave}>
+      <Form>
+        <Stack>
+          <Text fontWeight="semibold">{system.name}</Text>
+          <Accordion allowMultiple pl={2}>
+            <DataFlows
+              classifyDataFlows={classificationInstance?.ingress}
+              type="ingress"
+            />
+            <DataFlows
+              classifyDataFlows={classificationInstance?.egress}
+              type="egress"
+            />
+          </Accordion>
+        </Stack>
+      </Form>
+    </Formik>
   );
 };
 

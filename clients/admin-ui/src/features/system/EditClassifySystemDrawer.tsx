@@ -5,18 +5,22 @@ import {
   Spinner,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
 import { ReactNode } from "react";
 
 import EditDrawer from "~/features/common/EditDrawer";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import {
   useGetClassifySystemQuery,
   useUpdateClassifyInstanceMutation,
 } from "~/features/plus/plus.slice";
-import { GenerateTypes, System } from "~/types/api";
+import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
+import { ClassificationStatus, GenerateTypes, System } from "~/types/api";
 
-import DataFlowForm from "./DataFlowForm";
+import DataFlowForm, { IngressEgress } from "./DataFlowForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
 interface Props {
@@ -41,6 +45,10 @@ const SystemMetadata = ({
 );
 
 const useClassifySystemDrawer = ({ system }: { system: System }) => {
+  const toast = useToast();
+
+  // Subscriptions
+  useGetAllDataCategoriesQuery();
   const {
     data: classificationInstance,
     isLoading: isLoadingClassificationInstance,
@@ -48,14 +56,6 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
 
   const systemIngresses = system.ingress || [];
   const systemEgresses = system.egress || [];
-  if (classificationInstance?.ingress.length) {
-    console.log(
-      "ingresses classified!",
-      classificationInstance,
-      "system",
-      system.ingress
-    );
-  }
 
   // Classification can return some data flows that don't exist on the system object.
   // We should only show the ones that do exist on the system
@@ -115,6 +115,33 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
   const [updateSystemMutation] = useUpdateSystemMutation();
   const [updateClassificationMutation] = useUpdateClassifyInstanceMutation();
 
+  const handleSave = async (updatedSystem: System) => {
+    if (isLoadingClassificationInstance || !classificationInstance) {
+      return;
+    }
+
+    try {
+      const updateResult = await updateSystemMutation(updatedSystem);
+      if (isErrorResult(updateResult)) {
+        toast(errorToastParams(getErrorMessage(updateResult.error)));
+        return;
+      }
+
+      const statusResult = await updateClassificationMutation({
+        dataset_fides_key: updatedSystem.fides_key,
+        status: ClassificationStatus.REVIEWED,
+      });
+      if (isErrorResult(statusResult)) {
+        toast(errorToastParams(getErrorMessage(statusResult.error)));
+        return;
+      }
+
+      toast(successToastParams("Dataset classified and approved"));
+    } catch (error) {
+      toast(errorToastParams(`${error}`));
+    }
+  };
+
   return {
     hasIngressClassification,
     hasEgressClassification,
@@ -124,6 +151,7 @@ const useClassifySystemDrawer = ({ system }: { system: System }) => {
     updateClassificationMutation,
     classificationInstance,
     isLoadingClassificationInstance,
+    handleSave,
   };
 };
 
@@ -132,7 +160,12 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     description,
     isLoadingClassificationInstance,
     classificationInstance,
+    handleSave,
   } = useClassifySystemDrawer({ system });
+
+  const handleUpdateSystem = ({ ingress, egress }: IngressEgress) => {
+    handleSave({ ...system, ingress, egress });
+  };
 
   return (
     <EditDrawer
@@ -155,6 +188,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
                 <ClassificationStatusBadge
                   status={classificationInstance?.status}
                   resource={GenerateTypes.SYSTEMS}
+                  display="inline"
                 />
               }
             />
@@ -163,6 +197,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
           {description}
           <DataFlowForm
             system={system}
+            onSave={handleUpdateSystem}
             classificationInstance={classificationInstance}
           />
         </Stack>
