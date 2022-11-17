@@ -1,6 +1,6 @@
-import pytest
 from typing import Generator
 
+import pytest
 from fastapi.testclient import TestClient
 from slowapi.extension import Limiter
 from slowapi.util import get_remote_address
