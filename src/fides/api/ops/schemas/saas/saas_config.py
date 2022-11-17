@@ -348,11 +348,15 @@ class SaaSConfig(SaaSConfigBase):
         collections = []
         for endpoint in self.endpoints:
             fields: List[Field] = []
-            read_requests = (
-                endpoint.requests.read
-                if isinstance(endpoint.requests.read, list)
-                else [endpoint.requests.read]
-            )
+
+            read_requests: List[SaaSRequest] = []
+            if endpoint.requests.read:
+                read_requests = (
+                    endpoint.requests.read
+                    if isinstance(endpoint.requests.read, list)
+                    else [endpoint.requests.read]
+                )
+
             delete_request = endpoint.requests.delete
 
             for read_request in read_requests:
@@ -369,10 +373,8 @@ class SaaSConfig(SaaSConfigBase):
 
             if fields:
                 grouped_inputs: Set[str] = set()
-                for read_request in read_requests:
-                    grouped_inputs = grouped_inputs.union(
-                        read_request.grouped_inputs or []
-                    )
+                if read_requests:
+                    grouped_inputs = set(read_requests[0].grouped_inputs or [])
                 collections.append(
                     Collection(
                         name=endpoint.name,

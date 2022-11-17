@@ -63,7 +63,7 @@ class TestSaaSQueryConfig:
         saas_example_connection_config,
     ):
         mock_identity_data.return_value = {"email": "customer-1@example.com"}
-        saas_config = saas_example_connection_config.get_saas_config()
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -84,7 +84,9 @@ class TestSaaSQueryConfig:
             member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
         )
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["member"].requests.read[0],
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
@@ -99,6 +101,7 @@ class TestSaaSQueryConfig:
                 "placeholder": ["adaptors.india@ethyca.com"],
             },
             policy,
+            endpoints["conversations"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
@@ -108,7 +111,9 @@ class TestSaaSQueryConfig:
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
         prepared_request = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]}, policy
+            {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]},
+            policy,
+            endpoints["messages"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
@@ -122,7 +127,9 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["payment_methods"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
@@ -144,7 +151,9 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["payment_methods"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
@@ -159,7 +168,7 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config = saas_example_connection_config.get_saas_config()
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
         update_request = endpoints["member"].requests.update
 
@@ -344,7 +353,7 @@ class TestSaaSQueryConfig:
     @mock.patch(
         "fides.api.ops.models.privacy_request.PrivacyRequest.get_cached_identity_data"
     )
-    def test_get_read_requests_by_action(
+    def test_get_read_requests_by_identity(
         self,
         mock_identity_data: Mock,
         combined_traversal,
@@ -486,6 +495,7 @@ class TestSaaSQueryConfig:
                 ],
             },
             policy,
+            endpoints["accounts"].requests.read,
         )
         assert len(prepared_requests) == 3
 
@@ -507,6 +517,7 @@ class TestSaaSQueryConfig:
                 ],
             },
             policy,
+            endpoints["accounts"].requests.read,
         )
         assert len(prepared_requests) == 1
 
@@ -544,6 +555,7 @@ class TestSaaSQueryConfig:
                 "list_id": [[1, 2, 3]],
             },
             policy,
+            endpoints["mailing_lists"].requests.read,
         )
         assert len(prepared_requests) == 3
 

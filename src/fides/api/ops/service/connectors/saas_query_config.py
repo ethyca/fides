@@ -57,22 +57,23 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         """
         Returns the appropriate request configs based on the current collection and identity
         """
+        collection_name = self.node.address.collection
+
         try:
-            collection_name = self.node.address.collection
             requests = self.endpoints[collection_name].requests
-            read_requests = (
-                requests.read if isinstance(requests.read, list) else [requests.read]
-            )
-            filtered_requests = self._requests_using_identity(read_requests)
-            # return all the requests if none contained an identity reference
-            return read_requests if not filtered_requests else filtered_requests
         except KeyError:
-            logger.info(
-                "The 'read' action is not defined for the '%s' endpoint in %s",
-                collection_name,
-                self.node.node.dataset.connection_key,
-            )
+            logger.error("The '%s' endpoint is not defined", collection_name)
             return []
+
+        if not requests.read:
+            return []
+
+        read_requests = (
+            requests.read if isinstance(requests.read, list) else [requests.read]
+        )
+        filtered_requests = self._requests_using_identity(read_requests)
+        # return all the requests if none contained an identity reference
+        return read_requests if not filtered_requests else filtered_requests
 
     def _requests_using_identity(
         self, requests: List[SaaSRequest]
@@ -104,6 +105,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if request:
             logger.info(
                 "Found matching endpoint to %s '%s' collection", action, collection_name
+            )
+        else:
+            logger.error(
+                "Unable to find matching endpoint to %s '%s' collection",
+                action,
+                collection_name,
             )
         return request
 
@@ -158,13 +165,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         a list of request params.
         """
 
-        if not read_request:
-            raise FidesopsException(
-                f"The 'read' action is not defined for the '{self.collection_name}' "
-                f"endpoint in {self.node.node.dataset.connection_key}"
-            )
         request_params = []
-
         filtered_secrets = self._filtered_secrets(read_request)
         grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
 
