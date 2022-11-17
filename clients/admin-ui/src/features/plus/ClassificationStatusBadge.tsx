@@ -1,4 +1,4 @@
-import { Badge, Tooltip } from "@fidesui/react";
+import { Badge, BadgeProps, Tooltip } from "@fidesui/react";
 
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
@@ -9,7 +9,7 @@ const classificationStatuses = (resource: GenerateTypes) => {
     [ClassificationStatus.PROCESSING]: {
       title: "Processing",
       tooltip: `This ${resourceSingular} is currently being ${
-        resourceSingular === "dataset" && "generated and"
+        resourceSingular === "dataset" ? "generated and" : ""
       } classified. You will be notified when this process is complete`,
       color: "orange",
     },
@@ -46,14 +46,21 @@ const classificationStatuses = (resource: GenerateTypes) => {
 const ClassificationStatusBadge = ({
   status,
   resource,
+  ...badgeProps
 }: {
   status: ClassificationStatus | undefined;
   resource: GenerateTypes;
-}) => {
+} & BadgeProps) => {
   const statusDisplay = classificationStatuses(resource)[status ?? "unknown"];
   return (
     <Tooltip label={statusDisplay.tooltip}>
-      <Badge variant="solid" colorScheme={statusDisplay.color}>
+      <Badge
+        variant="solid"
+        colorScheme={statusDisplay.color}
+        w="100%"
+        textAlign="center"
+        {...badgeProps}
+      >
         {statusDisplay.title}
       </Badge>
     </Tooltip>
