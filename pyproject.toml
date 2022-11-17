@@ -58,7 +58,8 @@ module = [
   "sqlalchemy.future.*",
   "sqlalchemy_utils.*",
   "twilio.*",
-  "uvicorn.*"
+  "uvicorn.*",
+  "validators.*",
 ]
 ignore_missing_imports = true
 

@@ -1,5 +1,7 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { System } from "~/types/api";
+
 /**
  * Handy function to bring us straight to the runtime scanner.
  * This could be put in a beforeEach, but then you can't overwrite intercepts
@@ -22,6 +24,7 @@ const goToRuntimeScanner = () => {
  */
 describe.skip("Config wizard with plus settings", () => {
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
     }).as("getOrganization");
@@ -45,16 +48,36 @@ describe.skip("Config wizard with plus settings", () => {
         delay: 500,
         fixture: "runtime-scanner/list.json",
       }).as("getScanResults");
-      cy.intercept({
-        method: "POST",
-        url: "/api/v1/system/upsert",
-      }).as("upsertSystems");
+      cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
     });
 
-    it("Allows calling the runtime scanner", () => {
+    it("Allows calling the runtime scanner with classify", () => {
+      // Stub systems, but replace the fides keys so they match up with ones that
+      // @getClassifyList would return
+      cy.fixture("classify/list-systems.json").then((systemClassifications) => {
+        cy.intercept("GET", "/api/v1/plus/classify*", systemClassifications).as(
+          "getClassifyList"
+        );
+        const keys = systemClassifications.map((sc) => sc.dataset_key);
+        cy.fixture("systems.json").then((systems: System[]) => {
+          const alteredSystems = systems.map((s, idx) => {
+            if (idx < keys.length) {
+              return { ...s, fides_key: keys[idx], name: keys[idx] };
+            }
+            return s;
+          });
+          cy.intercept("GET", "/api/v1/system", alteredSystems).as(
+            "getSystems"
+          );
+        });
+      });
+
       goToRuntimeScanner();
       cy.getByTestId("scanner-loading");
-      cy.wait("@getScanResults");
+      cy.wait("@getScanResults").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("classify=true");
+      });
       cy.getByTestId("scan-results");
 
       // Check that the systems we expect are in the results table
@@ -71,11 +94,14 @@ describe.skip("Config wizard with plus settings", () => {
         const { body } = interception.request;
         expect(body.length).to.eql(numSystems);
       });
-      /* This will redirect to localhost:3000/datamap instead of localhost:4000/datamap
-       * which is not actually what we want.
-       * However, it is difficult to test across zones, so all we can do is assert the path is right
-       */
-      cy.url().should("contain", "datamap");
+      cy.getByTestId("systems-classify-table");
+      cy.url().should("contain", "classify-systems");
+      cy.wait("@getClassifyList");
+
+      // Check that the classified systems have a status
+      cy.getByTestId("status-vzmgr-service").contains("Awaiting Review");
+      cy.getByTestId("status-kube-dns").contains("Awaiting Review");
+      cy.getByTestId("status-demo_marketing_system").contains("Unknown");
     });
 
     it("Can register a subset of systems", () => {
@@ -101,7 +127,7 @@ describe.skip("Config wizard with plus settings", () => {
     });
 
     it("Can render an error", () => {
-      cy.intercept("GET", "/api/v1/plus/scan", {
+      cy.intercept("GET", "/api/v1/plus/scan*", {
         statusCode: 404,
         body: {
           detail: "Item not found",

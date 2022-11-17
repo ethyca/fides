@@ -121,4 +121,7 @@ export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
 
 // UI ROUTES
+export const CONFIG_WIZARD_ROUTE = "/config-wizard";
+export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
+export const SYSTEM_ROUTE = "/system";

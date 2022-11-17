@@ -7,7 +7,7 @@ import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { selectClassifyInstanceField } from "../common/plus.slice";
+import { selectClassifyInstanceField } from "../plus/plus.slice";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DataCategoryWithConfidence } from "./types";
@@ -46,10 +46,6 @@ const EditCollectionOrFieldForm = ({
   };
   const allDataCategories = useSelector(selectDataCategories);
 
-  const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
-    initialValues.data_categories ?? []
-  );
-
   // This data is only relevant for editing a field. Maybe another reason to split the field/
   // collection cases into two components.
   const classifyField = useSelector(selectClassifyInstanceField);
@@ -74,6 +70,26 @@ const EditCollectionOrFieldForm = ({
         }
       );
     }, [allDataCategories, classifyField]);
+
+  const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
+    () => {
+      if (initialValues.data_categories?.length) {
+        return initialValues.data_categories;
+      }
+
+      // If there are classifier suggestions, choose the highest-confidence option.
+      if (mostLikelyCategories?.length) {
+        const topCategory = mostLikelyCategories.reduce((maxCat, nextCat) =>
+          (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0)
+            ? nextCat
+            : maxCat
+        );
+        return [topCategory.fides_key];
+      }
+
+      return [];
+    }
+  );
 
   const descriptionTooltip =
     dataType === "collection"

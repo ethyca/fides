@@ -18,10 +18,3 @@ export type ApiUserConsent = {
 export type ApiUserConsents = {
   consent?: ApiUserConsent[];
 };
-
-/**
- * A mapping from the cookie keys (defined in config.json) to the resolved consent value.
- */
-export type CookieKeyConsent = {
-  [cookieKey: string]: boolean | undefined;
-};

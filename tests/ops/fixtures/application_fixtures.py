@@ -980,7 +980,7 @@ def _create_privacy_request_for_policy(
         db=db,
         identity=Identity(
             email=email_identity,
-            phone_number="+1 234 567 8910",
+            phone_number="+12345678910",
         ),
     )
     return pr

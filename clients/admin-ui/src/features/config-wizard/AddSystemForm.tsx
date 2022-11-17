@@ -18,20 +18,17 @@ import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
+  OktaLogoIcon,
   QuestionIcon,
   RuntimeScannerLogo,
 } from "~/features/common/Icon";
 import { ValidTargets } from "~/types/api";
 
-import { changeStep } from "./config-wizard.slice";
+import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
-import { AddSystemMethods, SystemMethods } from "./types";
+import { SystemMethods } from "./types";
 
-const AddSystemForm = ({
-  onSelectMethod,
-}: {
-  onSelectMethod: (method: AddSystemMethods) => void;
-}) => {
+const AddSystemForm = () => {
   const dispatch = useAppDispatch();
   const { plus } = useFeatures();
 
@@ -80,7 +77,7 @@ const AddSystemForm = ({
                 variant="ghost"
                 icon={<AWSLogoIcon boxSize="full" />}
                 onClick={() => {
-                  onSelectMethod(ValidTargets.AWS);
+                  dispatch(setAddSystemsMethod(ValidTargets.AWS));
                   dispatch(changeStep());
                 }}
                 data-testid="aws-btn"
@@ -94,6 +91,22 @@ const AddSystemForm = ({
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
             </Stack>
+            <Stack direction="row" display="flex" alignItems="center">
+              <IconButton
+                aria-label="Okta"
+                boxSize={iconButtonSize}
+                minW={iconButtonSize}
+                boxShadow="base"
+                variant="ghost"
+                icon={<OktaLogoIcon boxSize="full" />}
+                onClick={() => {
+                  dispatch(setAddSystemsMethod(ValidTargets.OKTA));
+                  dispatch(changeStep());
+                }}
+                data-testid="okta-btn"
+              />
+              <Text>System Scan (Okta)</Text>
+            </Stack>
             {plus ? (
               <Stack direction="row" display="flex" alignItems="center">
                 <HStack>
@@ -106,7 +119,7 @@ const AddSystemForm = ({
                     icon={<RuntimeScannerLogo boxSize="10" />}
                     onClick={() => {
                       dispatch(changeStep());
-                      onSelectMethod(SystemMethods.RUNTIME);
+                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
                     }}
                     data-testid="runtime-scan-btn"
                   />
@@ -132,7 +145,7 @@ const AddSystemForm = ({
                   icon={<ManualSetupIcon boxSize="full" />}
                   onClick={() => {
                     dispatch(changeStep(5));
-                    onSelectMethod(SystemMethods.MANUAL);
+                    dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                   }}
                 />
               </HStack>

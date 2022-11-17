@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Button,
   chakra,
@@ -12,18 +11,25 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import React, { useEffect, useState } from "react";
 
 import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
+import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import { PrivacyRequestStatus } from "~/types";
-import { addCommonHeaders } from "~/common/CommonHeaders";
 
+import config from "~/config/config.json";
 import { hostUrl } from "~/constants";
-import config from "../../../config/config.json";
 
+import dynamic from "next/dynamic";
+import * as Yup from "yup";
 import { ModalViews } from "../types";
+
+const PhoneInput = dynamic(() => import("react-phone-number-input/input"), {
+  ssr: false,
+});
 
 const usePrivacyRequestForm = ({
   onClose,
@@ -130,30 +136,34 @@ const usePrivacyRequestForm = ({
         onClose();
       }
     },
-    validate: (values) => {
-      if (!action) {
-        return {};
-      }
-      const errors: {
-        name?: string;
-        email?: string;
-        phone?: string;
-      } = {};
-
-      if (!values.email && action.identity_inputs.email === "required") {
-        errors.email = "Required";
-      }
-
-      if (!values.name && action.identity_inputs.name === "required") {
-        errors.name = "Required";
-      }
-
-      if (!values.phone && action.identity_inputs.phone === "required") {
-        errors.phone = "Required";
-      }
-
-      return errors;
-    },
+    validationSchema: Yup.object().shape({
+      name: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.name === "required") {
+          validation = validation.required("Name is required");
+        }
+        return validation;
+      })(),
+      email: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.email === "required") {
+          validation = validation
+            .email("Email is invalid")
+            .required("Email is required");
+        }
+        return validation;
+      })(),
+      phone: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.phone === "required") {
+          validation = validation
+            .required("Phone is required")
+            // E.164 international standard format
+            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
+        }
+        return validation;
+      })(),
+    }),
   });
 
   return { ...formik, isLoading };
@@ -185,6 +195,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     handleBlur,
     handleChange,
     handleSubmit,
+    setFieldValue,
     touched,
     values,
     isValid,
@@ -229,11 +240,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                       ? "Name*"
                       : "Name"
                   }
-                  isRequired={action.identity_inputs.name === "required"}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.name}
-                  isInvalid={touched.name && Boolean(errors.name)}
                 />
                 <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
@@ -253,11 +262,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                       ? "Email*"
                       : "Email"
                   }
-                  isRequired={action.identity_inputs.email === "required"}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
-                  isInvalid={touched.email && Boolean(errors.email)}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -268,20 +275,21 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
                 <Input
+                  as={PhoneInput}
                   id="phone"
                   name="phone"
-                  type="phone"
+                  type="tel"
                   focusBorderColor="primary.500"
                   placeholder={
                     action.identity_inputs.phone === "required"
                       ? "Phone*"
                       : "Phone"
                   }
-                  isRequired={action.identity_inputs.phone === "required"}
-                  onChange={handleChange}
+                  onChange={(value) => {
+                    setFieldValue("phone", value, true);
+                  }}
                   onBlur={handleBlur}
                   value={values.phone}
-                  isInvalid={touched.phone && Boolean(errors.phone)}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>

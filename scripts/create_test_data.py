@@ -200,7 +200,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
                 db=db,
                 identity=Identity(
                     email="test@example.com",
-                    phone_number="+1 234 567 8910",
+                    phone_number="+12345678910",
                 ),
             )
             for action_type in [

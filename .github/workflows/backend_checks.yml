@@ -71,9 +71,9 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
-  ################
-  ## Safe Tests ##
-  ################
+  #################
+  ## Safe Checks ##
+  #################
   Safe-Tests:
     needs: Build
 
@@ -87,6 +87,7 @@ jobs:
           - "check_fides_annotations"
           - "fides_db_scan"
           - "docs_check"
+          - "minimal_config_startup"
         exclude:
           # Not all jobs need to run against the Python matrix
           - python_version: "3.8.14"
@@ -104,6 +105,11 @@ jobs:
           - python_version: "3.9.14"
             test_selection: "docs_check"
 
+          - python_version: "3.8.14"
+            test_selection: "minimal_config_startup"
+          - python_version: "3.9.14"
+            test_selection: "minimal_config_startup"
+
     runs-on: ubuntu-latest
     timeout-minutes: 15
     continue-on-error: true
@@ -119,6 +125,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
