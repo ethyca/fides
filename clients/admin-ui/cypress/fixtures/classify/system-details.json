@@ -4,7 +4,7 @@
   "status": "Complete",
   "egress": [
     {
-      "fides_key": "External",
+      "fides_key": "demo_analytics_system",
       "classifications": [
         {
           "label": "system",
@@ -17,7 +17,7 @@
   ],
   "ingress": [
     {
-      "fides_key": "External",
+      "fides_key": "demo_marketing_system",
       "classifications": [
         {
           "label": "system",

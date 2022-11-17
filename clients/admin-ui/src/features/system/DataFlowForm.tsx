@@ -77,7 +77,7 @@ const DataFlows = ({
   }
 
   return (
-    <AccordionItem p={0}>
+    <AccordionItem p={0} data-testid={`accordion-item-${type}`}>
       <AccordionItemContents
         headingLevel="h2"
         title={`Connected ${
@@ -113,7 +113,12 @@ const DataFlows = ({
             }
           }
           return (
-            <AccordionItem key={flow.fides_key} pl={4} borderBottom="none">
+            <AccordionItem
+              key={flow.fides_key}
+              pl={4}
+              borderBottom="none"
+              data-testid={`accordion-item-${flow.fides_key}`}
+            >
               <AccordionItemContents headingLevel="h3" title={flow.fides_key}>
                 {dataCategories ? (
                   <Box pr={2}>

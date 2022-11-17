@@ -1,4 +1,8 @@
-import { stubHomePage, stubPlus } from "cypress/support/stubs";
+import {
+  stubHomePage,
+  stubPlus,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import { System } from "~/types/api";
 
@@ -20,6 +24,7 @@ describe("Classify systems page", () => {
   describe("With plus enabled", () => {
     beforeEach(() => {
       stubPlus(true);
+      stubTaxonomyEntities();
       // Stub both GET systems and GET classifications such that they will have overlap
       cy.fixture("classify/list-systems.json").then((systemClassifications) => {
         cy.intercept("GET", "/api/v1/plus/classify*", systemClassifications).as(
@@ -88,6 +93,48 @@ describe("Classify systems page", () => {
       cy.getByTestId("row-demo_marketing_system").click();
       cy.wait("@getClassifyDetailsEmpty");
       cy.getByTestId("no-classification");
+    });
+
+    it("Can edit a system's data flows", () => {
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+        fixture: "classify/system-details.json",
+      });
+      cy.intercept("PUT", "/api/v1/plus/classify/*", { body: undefined }).as(
+        "putClassifyInstance"
+      );
+      cy.intercept("PUT", "/api/v1/system*", { fixture: "system.json" }).as(
+        "putSystem"
+      );
+      cy.visit("/classify-systems");
+
+      // Open up an ingress
+      cy.getByTestId("row-kube-dns").click();
+      cy.getByTestId("accordion-item-ingress").click();
+      cy.getByTestId("accordion-item-demo_marketing_system").click();
+      // Should have the classified suggestion
+      cy.getByTestId("classified-select").contains("system");
+      // Select a category from the taxonomy.
+      cy.getByTestId("data-category-dropdown").click();
+      cy.getByTestId("data-category-checkbox-tree")
+        .contains("User Data")
+        .click();
+      cy.getByTestId("data-category-done-btn").click();
+      cy.getByTestId("classified-select").contains("user");
+
+      // Trigger a save
+      cy.getByTestId("save-btn").click();
+      cy.wait("@putSystem").then((interception) => {
+        const { body } = interception.request;
+        expect(body.ingress[0].data_categories).to.eql(["system", "user"]);
+      });
+      cy.wait("@putClassifyInstance").then((interception) => {
+        const { body } = interception.request;
+        expect(body).to.eql({
+          dataset_fides_key: "kube-dns",
+          status: "Reviewed",
+        });
+      });
+      cy.getByTestId("toast-success-msg");
     });
   });
 });
