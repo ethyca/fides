@@ -29,7 +29,7 @@ async def test_recharge_access_request_task(
     recharge_dataset_config,
     recharge_identity_email,
 ) -> None:
-    """Full access request based on the recharge SaaS config"""
+    """Full access request based on the Recharge SaaS config"""
 
     privacy_request = PrivacyRequest(
         id=f"test_recharge_access_request_task_{random.randint(0, 1000)}"
@@ -52,7 +52,7 @@ async def test_recharge_access_request_task(
         db,
     )
 
-    key = f"{dataset_name}:customers"
+    key = f"{dataset_name}:customer"
     assert_rows_match(
         v[key],
         min_size=1,
@@ -138,7 +138,7 @@ async def test_recharge_erasure_request_task(
     recharge_test_client,
 ) -> None:
     privacy_request = PrivacyRequest(
-        id=f"test_recharge_access_request_task_{random.randint(0, 1000)}"
+        id=f"test_recharge_erasure_request_task_{random.randint(0, 1000)}"
     )
     identity_attribute = "email"
     identity_value = recharge_erasure_identity_email
@@ -159,7 +159,7 @@ async def test_recharge_erasure_request_task(
         db,
     )
 
-    key = f"{dataset_name}:customers"
+    key = f"{dataset_name}:customer"
     assert_rows_match(
         v[key],
         min_size=1,

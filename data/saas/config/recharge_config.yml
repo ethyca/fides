@@ -7,6 +7,7 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: api.rechargeapps.com
     - name: api_key
 
   client_config:
@@ -24,7 +25,7 @@ saas_config:
     path: /
 
   endpoints:
-    - name: customers
+    - name: customer
       requests:
         read:
           method: GET
@@ -43,7 +44,7 @@ saas_config:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
-                  field: customers.id
+                  field: customer.id
                   direction: from
 
     - name: addresses
@@ -58,7 +59,7 @@ saas_config:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
-                  field: customers.id
+                  field: customer.id
                   direction: from
           data_path: addresses
         delete:
