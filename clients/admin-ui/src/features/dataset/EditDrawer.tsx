@@ -25,7 +25,8 @@ interface Props {
   deleteTitle: string;
   deleteMessage: ReactNode;
   children: ReactNode;
-  /* Associates the submit button with a form, which is useful for when the button
+  /**
+   * Associates the submit button with a form, which is useful for when the button
    * does not live directly inside the form hierarchy
    */
   formId?: string;
