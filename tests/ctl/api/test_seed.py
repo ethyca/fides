@@ -1,26 +1,26 @@
-from json import dumps
 from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
-from fides.ctl.core.api import generate_resource_url
+from fides.ctl.core import api as _api
 from fides.ctl.core.config import FidesConfig
 
 
 @pytest.fixture(scope="function", name="data_category")
-def fixture_data_category(test_config: FidesConfig, test_client) -> Generator:
+def fixture_data_category(test_config: FidesConfig) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.
     """
     fides_key = "foo"
     yield DataCategory(fides_key=fides_key, parent_key=None)
 
-    test_client.delete(
-        generate_resource_url(
-            test_config.cli.server_url, "data_category", resource_id=fides_key
-        ),
+    _api.delete(
+        url=test_config.cli.server_url,
+        resource_type="data_category",
+        resource_id=fides_key,
         headers=test_config.user.request_headers,
     )
 
@@ -145,16 +145,13 @@ class TestLoadDefaultTaxonomy:
         monkeypatch: pytest.MonkeyPatch,
         test_config: FidesConfig,
         data_category: DataCategory,
-        test_client,
-        async_session,
+        async_session: AsyncSession,
     ) -> None:
         """Should be able to add to the existing default taxonomy"""
-        result = test_client.get(
-            generate_resource_url(
-                test_config.cli.server_url,
-                resource_type="data_category",
-                resource_id=data_category.fides_key,
-            ),
+        result = _api.get(
+            test_config.cli.server_url,
+            "data_category",
+            data_category.fides_key,
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 404
@@ -165,18 +162,16 @@ class TestLoadDefaultTaxonomy:
         monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
         await seed.load_default_resources(async_session)
 
-        result = test_client.get(
-            generate_resource_url(
-                test_config.cli.server_url,
-                resource_type="data_category",
-                resource_id=data_category.fides_key,
-            ),
+        result = _api.get(
+            test_config.cli.server_url,
+            "data_category",
+            data_category.fides_key,
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 200
 
     async def test_does_not_override_user_changes(
-        self, test_config: FidesConfig, test_client, async_session
+        self, test_config: FidesConfig, async_session: AsyncSession
     ) -> None:
         """
         Loading the default taxonomy should not override user changes
@@ -185,23 +180,19 @@ class TestLoadDefaultTaxonomy:
         default_category = DEFAULT_TAXONOMY.data_category[0].copy()
         new_description = "foo description"
         default_category.description = new_description
-
-        result = test_client.put(
-            generate_resource_url(test_config.cli.server_url, "data_category"),
+        result = _api.update(
+            test_config.cli.server_url,
+            "data_category",
+            json_resource=default_category.json(),
             headers=test_config.user.request_headers,
-            data=default_category.json(),
         )
-
         assert result.status_code == 200
 
         await seed.load_default_resources(async_session)
-
-        result = test_client.get(
-            generate_resource_url(
-                test_config.cli.server_url,
-                resource_type="data_category",
-                resource_id=default_category.fides_key,
-            ),
+        result = _api.get(
+            test_config.cli.server_url,
+            "data_category",
+            default_category.fides_key,
             headers=test_config.user.request_headers,
         )
         assert result.json()["description"] == new_description
@@ -210,27 +201,25 @@ class TestLoadDefaultTaxonomy:
         self,
         test_config: FidesConfig,
         data_category: DataCategory,
-        test_client,
-        async_session,
+        async_session: AsyncSession,
     ) -> None:
         """
         Loading the default taxonomy should not delete user additions
         to their default taxonomy
         """
-        test_client.post(
-            generate_resource_url(test_config.cli.server_url, "data_category"),
+        _api.create(
+            test_config.cli.server_url,
+            "data_category",
+            json_resource=data_category.json(),
             headers=test_config.user.request_headers,
-            data=data_category.json(),
         )
 
         await seed.load_default_resources(async_session)
 
-        result = test_client.get(
-            generate_resource_url(
-                test_config.cli.server_url,
-                resource_type="data_category",
-                resource_id=data_category.fides_key,
-            ),
+        result = _api.get(
+            test_config.cli.server_url,
+            "data_category",
+            data_category.fides_key,
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 200

@@ -42,8 +42,8 @@ from fides.api.ops.analytics import (
     in_docker_container,
     send_analytics_event,
 )
+from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.deps import get_db as get_ctl_db
-from fides.api.ops.api.deps import get_sync_session
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
@@ -221,7 +221,7 @@ async def setup_server() -> None:
     log.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
     try:
-        db = get_sync_session()
+        db = get_api_session()
         update_saas_configs(registry, db)
     finally:
         db.close()

@@ -7,47 +7,44 @@ from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 
 from fides.ctl.connectors.models import OktaConfig
+from fides.ctl.core import api
 from fides.ctl.core import system as _system
-from fides.ctl.core.api import generate_resource_url
 from fides.ctl.core.config import FidesConfig
 
 
-def create_server_systems(
-    test_config: FidesConfig, systems: List[System], test_client
-) -> None:
+def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
     for system in systems:
-        test_client.post(
-            generate_resource_url(test_config.cli.server_url, "system"),
+        api.create(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            json_resource=system.json(exclude_none=True),
             headers=test_config.user.request_headers,
-            data=system.json(exclude_none=True),
         )
 
 
-def delete_server_systems(
-    test_config: FidesConfig, systems: List[System], test_client
-) -> None:
+def delete_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
     for system in systems:
-        test_client.delete(
-            generate_resource_url(
-                test_config.cli.server_url, "system", resource_id=system.fides_key
-            ),
+        api.delete(
+            url=test_config.cli.server_url,
+            resource_type="system",
+            resource_id=system.fides_key,
             headers=test_config.user.request_headers,
         )
 
 
 @pytest.fixture(scope="function")
 def create_test_server_systems(
-    test_config: FidesConfig, redshift_systems: List[System], test_client
+    test_config: FidesConfig, redshift_systems: List[System]
 ) -> Generator:
     systems = redshift_systems
-    delete_server_systems(test_config, systems, test_client)
-    create_server_systems(test_config, systems, test_client)
+    delete_server_systems(test_config, systems)
+    create_server_systems(test_config, systems)
     yield
-    delete_server_systems(test_config, systems, test_client)
+    delete_server_systems(test_config, systems)
 
 
 @pytest.fixture(scope="function")
-def create_external_server_systems(test_config: FidesConfig, test_client) -> Generator:
+def create_external_server_systems(test_config: FidesConfig) -> Generator:
     systems = (
         _system.generate_redshift_systems(
             organization_key="default_organization",
@@ -62,10 +59,10 @@ def create_external_server_systems(test_config: FidesConfig, test_client) -> Gen
             aws_config={},
         )
     )
-    delete_server_systems(test_config, systems, test_client)
-    create_server_systems(test_config, systems, test_client)
+    delete_server_systems(test_config, systems)
+    create_server_systems(test_config, systems)
     yield
-    delete_server_systems(test_config, systems, test_client)
+    delete_server_systems(test_config, systems)
 
 
 @pytest.fixture()

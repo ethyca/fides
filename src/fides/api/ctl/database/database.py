@@ -8,7 +8,6 @@ from alembic.config import Config
 from alembic.runtime import migration
 from fideslib.db.base import Base
 from loguru import logger as log
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -17,7 +16,7 @@ from fides.ctl.core.config import get_config
 from fides.ctl.core.utils import get_db_engine
 
 from .seed import load_default_resources
-from .session import get_async_session
+from .session import async_session
 
 CONFIG = get_config()
 
@@ -49,9 +48,8 @@ async def init_db(database_url: str) -> None:
     alembic_config = get_alembic_config(database_url)
     upgrade_db(alembic_config)
 
-    db: AsyncSession = await get_async_session()
-    await load_default_resources(db)
-    await db.close()
+    async with async_session() as session:
+        await load_default_resources(session)
 
 
 def create_db_if_not_exists(database_url: str) -> None:

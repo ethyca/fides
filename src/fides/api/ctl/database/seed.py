@@ -10,6 +10,7 @@ from fideslib.utils.text import to_snake_case
 from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
@@ -22,7 +23,6 @@ from fides.api.ops.schemas.storage.storage import (
 )
 from fides.ctl.core.config import get_config
 
-from ...ops.api.deps import get_sync_session
 from .crud import create_resource, list_resource
 
 CONFIG = get_config()
@@ -70,7 +70,7 @@ async def load_default_dsr_policies() -> None:
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
     """
-    with get_sync_session() as db_session:  # type: ignore[attr-defined]
+    with sync_session() as db_session:  # type: ignore[attr-defined]
 
         client = ClientDetail.get_by(
             db=db_session,

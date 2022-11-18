@@ -13,29 +13,44 @@ from typing import Dict, Generator, Union
 import pytest
 import requests
 import yaml
+from _pytest.monkeypatch import MonkeyPatch
 from fideslang import models
 from fideslib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.orm.exc import ObjectDeletedError
+from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
-from fides.api.ctl.routes.util import API_PREFIX
-from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
+from fides.api.ctl.sql_models import FidesUser
+from fides.ctl.core import api
 from fides.ctl.core.config import FidesConfig, get_config
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 CONFIG = get_config()
+
+
+@pytest.fixture(scope="session")
+def monkeysession():
+    """monkeypatch fixture at the session level instead of the function level"""
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(autouse=True, scope="session")
+def monkeypatch_requests(test_client, monkeysession) -> None:
+    monkeysession.setattr(requests, "get", test_client.get)
+    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "put", test_client.put)
+    monkeysession.setattr(requests, "patch", test_client.patch)
+    monkeysession.setattr(requests, "delete", test_client.delete)
 
 
 @pytest.fixture(scope="session")
@@ -72,10 +87,13 @@ def test_client() -> Generator:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesConfig, test_client) -> Generator:
-    """Sets up the database for testing."""
+def setup_db(test_config: FidesConfig, test_client, monkeypatch_requests) -> Generator:
+    "Sets up the database for testing."
     assert CONFIG.test_mode
-    yield test_client.post(url=f"{CONFIG.cli.server_url}{API_PREFIX}/admin/db/reset")
+    assert (
+        requests.post == test_client.post
+    )  # Sanity check to make sure monkeypatch_requests fixture has run
+    yield api.db_action(test_config.cli.server_url, "reset")
 
 
 @pytest.fixture(scope="function")
@@ -327,12 +345,3 @@ def event_loop() -> Generator:
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()
-
-
-@pytest.fixture(autouse=True)
-def monkeypatch_requests(test_client, monkeypatch) -> None:
-    monkeypatch.setattr(requests, "get", test_client.get)
-    monkeypatch.setattr(requests, "post", test_client.post)
-    monkeypatch.setattr(requests, "put", test_client.put)
-    monkeypatch.setattr(requests, "patch", test_client.patch)
-    monkeypatch.setattr(requests, "delete", test_client.delete)

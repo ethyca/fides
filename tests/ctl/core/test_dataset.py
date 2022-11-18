@@ -9,26 +9,24 @@ from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from py._path.local import LocalPath
 
+from fides.ctl.core import api
 from fides.ctl.core import dataset as _dataset
-from fides.ctl.core.api import generate_resource_url
 from fides.ctl.core.config import FidesConfig
 
 
-def create_server_datasets(
-    test_config: FidesConfig, datasets: List[Dataset], test_client
-) -> None:
+def create_server_datasets(test_config: FidesConfig, datasets: List[Dataset]) -> None:
     for dataset in datasets:
-        test_client.delete(
-            generate_resource_url(
-                test_config.cli.server_url, "dataset", resource_id=dataset.fides_key
-            ),
+        api.delete(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            resource_id=dataset.fides_key,
             headers=test_config.user.request_headers,
         )
-
-        test_client.post(
-            generate_resource_url(test_config.cli.server_url, "dataset"),
+        api.create(
+            url=test_config.cli.server_url,
+            resource_type="dataset",
+            json_resource=dataset.json(exclude_none=True),
             headers=test_config.user.request_headers,
-            data=dataset.json(exclude_none=True),
         )
 
 
