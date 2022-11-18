@@ -255,11 +255,7 @@ def test_get_evaluation_policies_with_key_found_remote() -> None:
     assert len(policies) == 1
     assert policies[0] is server_policy
     get_server_resource_mock.assert_called_with(
-        url="url",
-        resource_type="policy",
-        resource_key="fides_key_1",
-        headers={},
-        client=test_client,
+        url="url", resource_type="policy", resource_key="fides_key_1", headers={}
     )
 
 
@@ -289,10 +285,7 @@ def test_get_evaluation_policies_with_no_key(test_config: FidesConfig) -> None:
 
     assert len(policies) == 4
     get_all_server_policies_mock.assert_called_with(
-        url="url",
-        headers={},
-        exclude=["fides_key_3", "fides_key_4"],
-        client=test_client,
+        url="url", headers={}, exclude=["fides_key_3", "fides_key_4"]
     )
 
 
