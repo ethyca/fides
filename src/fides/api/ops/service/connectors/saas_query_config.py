@@ -107,7 +107,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 "Found matching endpoint to %s '%s' collection", action, collection_name
             )
         else:
-            logger.error(
+            logger.info(
                 "Unable to find matching endpoint to %s '%s' collection",
                 action,
                 collection_name,
