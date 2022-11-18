@@ -44,6 +44,14 @@ def square_identity_email(saas_config):
     return pydash.get(saas_config, "square.identity_email") or secrets["identity_email"]
 
 
+@pytest.fixture(scope="session")
+def square_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "square.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
+
+
 @pytest.fixture(scope="function")
 def square_erasure_identity_email() -> str:
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
@@ -149,7 +157,6 @@ class SquareTestClient:
             "birthday": str(faker.date_of_birth()),
             "family_name": faker.first_name(),
             "given_name": faker.last_name(),
-            "phone_number": faker.phone_number(),
         }
         customer_response: Response = requests.post(
             url=f"{self.base_url}/customers", json=body, headers=self.headers
