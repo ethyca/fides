@@ -1,3 +1,4 @@
+import { ClassifiedDataCategoryDropdown } from "@fidesui/components";
 import {
   AccordionButton,
   AccordionIcon,
@@ -11,13 +12,13 @@ import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import ClassifiedDataCategoryDropdown from "~/features/dataset/ClassifiedDataCategoryDropdown";
 import {
   selectDataCategories,
   selectDataCategoriesMap,
 } from "~/features/taxonomy";
 import { ClassifyDataFlow } from "~/types/api";
 
+import { initialDataCategories } from "../plus/helpers";
 import type { IngressEgress } from "./DataFlowForm";
 
 const AccordionItemContents = ({
@@ -89,19 +90,10 @@ const DataFlowsAccordionItem = ({
               confidence: aggregated_score,
             })
           );
-          let checked = flow.data_categories ?? [];
-          if (checked.length === 0) {
-            // If there are classifier suggestions, choose the highest-confidence option.
-            if (mostLikelyCategories?.length) {
-              const topCategory = mostLikelyCategories.reduce(
-                (maxCat, nextCat) =>
-                  (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0)
-                    ? nextCat
-                    : maxCat
-              );
-              checked = [topCategory.fides_key];
-            }
-          }
+          const checked = initialDataCategories({
+            dataCategories: flow.data_categories,
+            mostLikelyCategories,
+          });
           return (
             <AccordionItem
               key={flow.fides_key}
