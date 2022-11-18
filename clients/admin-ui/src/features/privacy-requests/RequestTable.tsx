@@ -1,5 +1,5 @@
 import { Checkbox, Flex, Table, Tbody, Th, Thead, Tr } from "@fidesui/react";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 
@@ -9,24 +9,18 @@ import {
   selectRetryRequests,
   setPage,
   setRetryRequests,
+  useGetAllPrivacyRequestsQuery,
 } from "./privacy-requests.slice";
 import RequestRow from "./RequestRow";
 import SortRequestButton from "./SortRequestButton";
-import { PrivacyRequest, PrivacyRequestResponse } from "./types";
+import { PrivacyRequest } from "./types";
 
-type RequestTableProps = {
-  isFetching: boolean;
-  data: PrivacyRequestResponse | undefined;
-};
-
-const RequestTable: React.FC<RequestTableProps> = ({
-  isFetching = false,
-  data = { items: [], total: 0 },
-}) => {
+const RequestTable: React.FC = () => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector(selectPrivacyRequestFilters);
   const { checkAll, errorRequests } = useAppSelector(selectRetryRequests);
-  const { items: requests, total } = data;
+  const { data, isFetching } = useGetAllPrivacyRequestsQuery(filters);
+  const { items: requests, total } = data || { items: [], total: 0 };
 
   const getErrorRequests = useCallback(
     () => requests.filter((r) => r.status === "error").map((r) => r.id),
@@ -65,6 +59,12 @@ const RequestTable: React.FC<RequestTableProps> = ({
       })
     );
   };
+
+  useEffect(() => {
+    if (isFetching && filters.status?.includes("error")) {
+      dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
+    }
+  }, [dispatch, filters.status, isFetching]);
 
   return (
     <>
