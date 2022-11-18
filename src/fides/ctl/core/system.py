@@ -6,7 +6,6 @@ from typing import Dict, List, Optional
 from fideslang import manifests
 from fideslang.models import Organization, System
 from pydantic import AnyHttpUrl
-from starlette.testclient import TestClient
 
 from fides.cli.utils import handle_cli_response
 from fides.ctl.connectors.models import AWSConfig, OktaConfig
@@ -76,7 +75,6 @@ def get_organization(
     manifest_organizations: List[Organization],
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> Optional[Organization]:
     """
     Attempts to find a given organization by key. Prioritizing a manifest organization
@@ -95,7 +93,6 @@ def get_organization(
         resource_type="organization",
         resource_key=organization_key,
         headers=headers,
-        client=client,
     )
 
     if not server_organization:
@@ -157,7 +154,6 @@ def generate_system_aws(
     aws_config: Optional[AWSConfig],
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> str:
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
@@ -169,7 +165,6 @@ def generate_system_aws(
         manifest_organizations=[],
         url=url,
         headers=headers,
-        client=client,
     )
     aws_systems = generate_aws_systems(organization, aws_config=aws_config)
 
@@ -206,7 +201,6 @@ def generate_system_okta(
     include_null: bool,
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> str:
     """
     Generates a system manifest from existing Okta applications.
@@ -217,7 +211,6 @@ def generate_system_okta(
         manifest_organizations=[],
         url=url,
         headers=headers,
-        client=client,
     )
 
     okta_systems = asyncio.run(
@@ -231,18 +224,14 @@ def generate_system_okta(
 
 
 def get_all_server_systems(
-    url: AnyHttpUrl,
-    headers: Dict[str, str],
-    exclude_systems: List[System],
-    client: Optional[TestClient] = None,
+    url: AnyHttpUrl, headers: Dict[str, str], exclude_systems: List[System]
 ) -> List[System]:
     """
     Get a list of all of the Systems that exist on the server. Excludes any systems
     provided in exclude_systems
     """
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="system", headers=headers, client=client),
-        verbose=False,
+        api.ls(url=url, resource_type="system", headers=headers), verbose=False
     )
     exclude_system_keys = [system.fides_key for system in exclude_systems]
     system_keys = [
@@ -251,11 +240,7 @@ def get_all_server_systems(
         if resource["fides_key"] not in exclude_system_keys
     ]
     system_list = get_server_resources(
-        url=url,
-        resource_type="system",
-        headers=headers,
-        existing_keys=system_keys,
-        client=client,
+        url=url, resource_type="system", headers=headers, existing_keys=system_keys
     )
     return system_list
 
@@ -372,7 +357,6 @@ def scan_system_aws(
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> None:
     """
     Connect to an aws account by leveraging a valid boto3 environment varible
@@ -382,7 +366,7 @@ def scan_system_aws(
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
-        url=url, headers=headers, exclude_systems=manifest_systems, client=client
+        url=url, headers=headers, exclude_systems=manifest_systems
     )
     existing_systems = manifest_systems + server_systems
 
@@ -393,7 +377,6 @@ def scan_system_aws(
         else [],
         url=url,
         headers=headers,
-        client=client,
     )
 
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
@@ -420,7 +403,6 @@ def scan_system_okta(
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> None:
     """
     Fetches Okta applications and compares them against existing
@@ -430,7 +412,7 @@ def scan_system_okta(
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_systems = manifest_taxonomy.system if manifest_taxonomy else []
     server_systems = get_all_server_systems(
-        url=url, headers=headers, exclude_systems=manifest_systems, client=client
+        url=url, headers=headers, exclude_systems=manifest_systems
     )
 
     organization = get_organization(
@@ -440,7 +422,6 @@ def scan_system_okta(
         else [],
         url=url,
         headers=headers,
-        client=client,
     )
 
     okta_systems = asyncio.run(

@@ -6,7 +6,6 @@ from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
-from starlette.testclient import TestClient
 
 from fides.ctl.connectors.bigquery import get_bigquery_engine
 from fides.ctl.connectors.models import BigQueryConfig
@@ -25,10 +24,7 @@ SCHEMA_EXCLUSION = {
 
 
 def get_all_server_datasets(
-    url: AnyHttpUrl,
-    headers: Dict[str, str],
-    exclude_datasets: List[Dataset],
-    client: Optional[TestClient] = None,
+    url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
 ) -> Optional[List[Dataset]]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
@@ -40,7 +36,6 @@ def get_all_server_datasets(
         resource_type="dataset",
         exclude_keys=exclude_dataset_keys,
         headers=headers,
-        client=client,
     )
     if not dataset_list:
         return None
@@ -231,7 +226,6 @@ def scan_dataset_db(
     coverage_threshold: int,
     url: AnyHttpUrl,
     headers: Dict[str, str],
-    client: Optional[TestClient] = None,
 ) -> None:
     """
     Given a database connection string, fetches collections
@@ -241,7 +235,7 @@ def scan_dataset_db(
     manifest_taxonomy = parse(manifest_dir) if manifest_dir else None
     manifest_datasets = manifest_taxonomy.dataset if manifest_taxonomy else []
     server_datasets = get_all_server_datasets(
-        url=url, headers=headers, exclude_datasets=manifest_datasets, client=client
+        url=url, headers=headers, exclude_datasets=manifest_datasets
     )
 
     if not server_datasets:

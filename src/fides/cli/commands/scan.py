@@ -66,8 +66,6 @@ def scan_dataset_db(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     actual_connection_string = handle_database_credentials_options(
         fides_config=config,
         connection_string=connection_string,
@@ -80,7 +78,6 @@ def scan_dataset_db(
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        client=client,
     )
 
 
@@ -122,8 +119,6 @@ def scan_system_okta(
     """
 
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     okta_config = handle_okta_credentials_options(
         fides_config=config, token=token, org_url=org_url, credentials_id=credentials_id
     )
@@ -135,7 +130,6 @@ def scan_system_okta(
         manifest_dir=manifests_dir,
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        client=client,
     )
 
 
@@ -169,8 +163,6 @@ def scan_system_aws(
     under the stated threshold.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     aws_config = handle_aws_credentials_options(
         fides_config=config,
         access_key_id=access_key_id,
@@ -186,5 +178,4 @@ def scan_system_aws(
         coverage_threshold=coverage_threshold,
         url=config.cli.server_url,
         headers=config.user.request_headers,
-        client=client,
     )

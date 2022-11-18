@@ -23,10 +23,11 @@ def db_init(ctx: click.Context) -> None:
     Initialize the fides database.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     handle_cli_response(
-        _api.db_action(server_url=config.cli.server_url, action="init", client=client)
+        _api.db_action(
+            server_url=config.cli.server_url,
+            action="init",
+        )
     )
 
 
@@ -39,8 +40,6 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
     Wipes all user-created data and resets the database back to its freshly initialized state.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     if yes:
         are_you_sure = "y"
     else:
@@ -52,7 +51,8 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
     if are_you_sure.lower() == "y":
         handle_cli_response(
             _api.db_action(
-                server_url=config.cli.server_url, action="reset", client=client
+                server_url=config.cli.server_url,
+                action="reset",
             )
         )
     else:

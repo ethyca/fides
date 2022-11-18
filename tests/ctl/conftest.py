@@ -72,7 +72,7 @@ def test_client() -> Generator:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(test_config: FidesConfig, test_client: TestClient) -> Generator:
+def setup_db(test_config: FidesConfig, test_client) -> Generator:
     """Sets up the database for testing."""
     assert CONFIG.test_mode
     yield test_client.post(url=f"{CONFIG.cli.server_url}{API_PREFIX}/admin/db/reset")
@@ -289,7 +289,7 @@ async def async_session() -> AsyncSession:
     assert CONFIG.test_mode
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
-        echo=False,
+        echo=True,
     )
 
     session_maker = sessionmaker(
@@ -298,8 +298,8 @@ async def async_session() -> AsyncSession:
 
     async with session_maker() as session:
         yield session
-
-    await async_engine.dispose()
+        session.close()
+        async_engine.dispose()
 
 
 def generate_auth_header_for_user(

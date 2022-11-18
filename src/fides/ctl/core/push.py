@@ -1,11 +1,10 @@
 """This module handles the logic required for pushing manifest files to the server."""
 from json import loads
 from pprint import pprint
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from deepdiff import DeepDiff
 from fideslang import FidesModel, Taxonomy
-from starlette.testclient import TestClient
 
 from fides.cli.utils import handle_cli_response
 from fides.ctl.core import api
@@ -102,7 +101,6 @@ def push(
     headers: Dict[str, str],
     dry: bool = False,
     diff: bool = False,
-    client: Optional[TestClient] = None,
 ) -> None:
     """
     Push the current manifest file state to the server.
@@ -124,7 +122,7 @@ def push(
         if diff or dry:
             existing_keys = [resource.fides_key for resource in resource_list]
             server_resource_list = get_server_resources(
-                url, resource_type, existing_keys, headers, client=client
+                url, resource_type, existing_keys, headers
             )
 
             # Determine which resources should be created, updated, or are unchanged
@@ -143,7 +141,6 @@ def push(
                 resource_type=resource_type,
                 url=url,
                 resources=[loads(resource.json()) for resource in resource_list],
-                client=client,
             ),
             verbose=False,
         )

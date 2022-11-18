@@ -34,8 +34,6 @@ def export_system(
     Export a system in a data map format.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     taxonomy = _parse.parse(manifests_dir)
     _export.export_system(
         url=config.cli.server_url,
@@ -43,7 +41,6 @@ def export_system(
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
         dry=dry,
-        client=client,
     )
 
 
@@ -61,8 +58,6 @@ def export_dataset(
     Export a dataset in a data map format.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     taxonomy = _parse.parse(manifests_dir)
     _export.export_dataset(
         url=config.cli.server_url,
@@ -70,7 +65,6 @@ def export_dataset(
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
         dry=dry,
-        client=client,
     )
 
 
@@ -88,8 +82,6 @@ def export_organization(
     Export an organization in a data map format.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     taxonomy = _parse.parse(manifests_dir)
     _export.export_organization(
         url=config.cli.server_url,
@@ -97,7 +89,6 @@ def export_organization(
         headers=config.user.request_headers,
         manifests_dir=manifests_dir,
         dry=dry,
-        client=client,
     )
 
 
@@ -133,8 +124,6 @@ def export_datamap(
     flag can be used to return data to the console instead.
     """
     config = ctx.obj["CONFIG"]
-    client = ctx.obj.get("client")
-
     _export.export_datamap(
         url=config.cli.server_url,
         headers=config.user.request_headers,
@@ -142,5 +131,4 @@ def export_datamap(
         output_directory=output_dir,
         dry=dry,
         to_csv=csv,
-        client=client,
     )
