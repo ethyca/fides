@@ -6,7 +6,6 @@ import logging
 from typing import Any, Callable, Dict, Generator, List
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 from fastapi.testclient import TestClient
 from fideslib.core.config import load_toml
 from fideslib.cryptography.schemas.jwt import (
@@ -25,7 +24,6 @@ from fides.api.ops.db.base import Base
 from fides.api.ops.models.privacy_request import generate_request_callback_jwe
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.api import db_action
 from fides.ctl.core.config import get_config
 
 from .fixtures.application_fixtures import *
@@ -72,32 +70,12 @@ logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
-@pytest.fixture(scope="session")
-def monkeysession():
-    """monkeypatch fixture at the session level instead of the function level"""
-    mpatch = MonkeyPatch()
-    yield mpatch
-    mpatch.undo()
-
-
-@pytest.fixture(autouse=True, scope="session")
-def monkeypatch_requests(api_client, monkeysession) -> None:
-    monkeysession.setattr(requests, "get", api_client.get)
-    monkeysession.setattr(requests, "post", api_client.post)
-    monkeysession.setattr(requests, "put", api_client.put)
-    monkeysession.setattr(requests, "patch", api_client.patch)
-    monkeysession.setattr(requests, "delete", api_client.delete)
-
-
 @pytest.fixture(scope="session", autouse=True)
-def setup_db(monkeypatch_requests, api_client):
+def setup_db(api_client):
     """Apply migrations at beginning and end of testing session"""
     logger.debug("Setting up the database...")
     assert CONFIG.test_mode
-    assert (
-        requests.post == api_client.post
-    )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield db_action(CONFIG.cli.server_url, "reset")
+    yield api_client.post(url=f"{CONFIG.cli.server_url}/v1/admin/db/reset")
     logger.debug("Migrations successfully applied")
 
 

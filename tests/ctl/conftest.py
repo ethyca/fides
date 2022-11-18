@@ -36,6 +36,13 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 CONFIG = get_config()
 
 
+orig_requests_get = requests.get
+orig_requests_post = requests.post
+orig_requests_put = requests.put
+orig_requests_patch = requests.patch
+orig_requests_delete = requests.delete
+
+
 @pytest.fixture(scope="session")
 def monkeysession():
     """monkeypatch fixture at the session level instead of the function level"""
