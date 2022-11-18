@@ -41,6 +41,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: true
           - name: attributes
             data_categories: [system.operations]
             fidesops_meta:
@@ -54,9 +55,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: links
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string[]
+            fields:
+              - name: user_conversations
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
       - name: user_conversations
         fields:
           - name: notification_level
@@ -187,6 +190,7 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+              primary_key: true
           - name: attributes
             data_categories: [system.operations]
             fidesops_meta:

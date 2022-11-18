@@ -15,7 +15,12 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
+
+...
+
+## [2.1.0](https://github.com/ethyca/fides/compare/2.0.0...2.1.0)
 
 ### Added
 
@@ -27,6 +32,7 @@ The types of changes are:
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 
 ### Changed
@@ -56,6 +62,7 @@ The types of changes are:
 * Fixes the issue where the security config is not properly loading from environment variables. [#1718](https://github.com/ethyca/fides/pull/1718)
 * Fixes the issue where the CLI can't run without the config values required by the webserver. [#1811](https://github.com/ethyca/fides/pull/1811)
 * Correctly handle response from adobe jwt auth endpoint as milliseconds, rather than seconds. [#1754](https://github.com/ethyca/fides/pull/1754)
+* Fixed styling issues with the `EditDrawer` component. [#1803](https://github.com/ethyca/fides/pull/1803)
 
 ### Security
 

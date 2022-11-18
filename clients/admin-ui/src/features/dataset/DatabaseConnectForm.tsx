@@ -11,13 +11,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
-import {
-  ClassifyInstanceResponseValues,
-  Dataset,
-  GenerateTypes,
-  System,
-  ValidTargets,
-} from "~/types/api";
+import { Dataset, GenerateTypes, System, ValidTargets } from "~/types/api";
 
 import {
   setActiveDatasetFidesKey,
@@ -139,7 +133,7 @@ const DatabaseConnectForm = () => {
         error: string;
       }
     | {
-        classifyInstances: ClassifyInstanceResponseValues[];
+        classifyInstances: Record<string, string>[];
       }
   > => {
     const result = await classifyMutation({
