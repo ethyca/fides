@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { System } from "~/types/api";
+import type { System } from "./System";
 
 export type SystemScanResponse = {
   systems: Array<System>;

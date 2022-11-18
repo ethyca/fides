@@ -154,5 +154,7 @@ def test_env(session: Session) -> None:
 def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
+    build(session, "privacy_center")
+    build(session, "admin_ui")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)

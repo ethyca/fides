@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useFeatures } from "~/features/common/features.slice";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import {
-  selectClassifyInstanceMap,
+  selectDatasetClassifyInstanceMap,
   useGetAllClassifyInstancesQuery,
 } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
@@ -21,10 +21,13 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(undefined, {
-    skip: !features.plus,
-  });
-  const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
+  useGetAllClassifyInstancesQuery(
+    { resource_type: GenerateTypes.DATASETS },
+    {
+      skip: !features.plus,
+    }
+  );
+  const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset

@@ -9,7 +9,9 @@ import {
   selectActiveFieldIndex,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
-import EditCollectionOrFieldForm from "./EditCollectionOrFieldForm";
+import EditCollectionOrFieldForm, {
+  FORM_ID,
+} from "./EditCollectionOrFieldForm";
 import EditDrawer from "./EditDrawer";
 import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
 
@@ -77,10 +79,10 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
           from this dataset. Are you sure you would like to continue?
         </Text>
       }
+      formId={FORM_ID}
     >
       <EditCollectionOrFieldForm
         values={field}
-        onClose={onClose}
         onSubmit={handleSubmit}
         dataType="field"
       />

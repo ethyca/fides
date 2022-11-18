@@ -1,4 +1,4 @@
-import { Box, Button, Stack } from "@fidesui/react";
+import { Stack } from "@fidesui/react";
 import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
@@ -11,6 +11,8 @@ import { selectClassifyInstanceField } from "../plus/plus.slice";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DataCategoryWithConfidence } from "./types";
+
+export const FORM_ID = "edit-collection-or-field-form";
 
 const IDENTIFIER_OPTIONS = DATA_QUALIFIERS.map((dq) => ({
   value: dq.key,
@@ -26,19 +28,13 @@ type FormValues =
 
 interface Props {
   values: FormValues;
-  onClose: () => void;
   onSubmit: (values: FormValues) => void;
   // NOTE: If you're adding more checks on dataType, refactor this into two
   // components instead and remove this prop.
   dataType: "collection" | "field";
 }
 
-const EditCollectionOrFieldForm = ({
-  values,
-  onClose,
-  onSubmit,
-  dataType,
-}: Props) => {
+const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
     data_qualifier: values.data_qualifier,
@@ -115,50 +111,30 @@ const EditCollectionOrFieldForm = ({
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      <Form>
-        <Box
-          display="flex"
-          flexDirection="column"
-          justifyContent="space-between"
-          height="75vh"
-        >
-          <Stack>
-            <CustomTextInput
-              name="description"
-              label="Description"
-              tooltip={descriptionTooltip}
-              data-testid="description-input"
-            />
-            <CustomSelect
-              name="data_qualifier"
-              label="Identifiability"
-              options={IDENTIFIER_OPTIONS}
-              tooltip={dataQualifierTooltip}
-              isSearchable={false}
-              data-testid="identifiability-input"
-            />
-            <DataCategoryInput
-              dataCategories={allDataCategories}
-              mostLikelyCategories={mostLikelyCategories}
-              checked={checkedDataCategories}
-              onChecked={setCheckedDataCategories}
-              tooltip={dataCategoryTooltip}
-            />
-          </Stack>
-          <Box>
-            <Button onClick={onClose} mr={2} size="sm" variant="outline">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              colorScheme="primary"
-              size="sm"
-              data-testid="save-btn"
-            >
-              Save
-            </Button>
-          </Box>
-        </Box>
+      <Form id={FORM_ID}>
+        <Stack>
+          <CustomTextInput
+            name="description"
+            label="Description"
+            tooltip={descriptionTooltip}
+            data-testid="description-input"
+          />
+          <CustomSelect
+            name="data_qualifier"
+            label="Identifiability"
+            options={IDENTIFIER_OPTIONS}
+            tooltip={dataQualifierTooltip}
+            isSearchable={false}
+            data-testid="identifiability-input"
+          />
+          <DataCategoryInput
+            dataCategories={allDataCategories}
+            mostLikelyCategories={mostLikelyCategories}
+            checked={checkedDataCategories}
+            onChecked={setCheckedDataCategories}
+            tooltip={dataCategoryTooltip}
+          />
+        </Stack>
       </Form>
     </Formik>
   );
