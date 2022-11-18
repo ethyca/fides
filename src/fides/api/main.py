@@ -30,6 +30,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
+from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
@@ -228,9 +229,10 @@ async def setup_server() -> None:
 
     log.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
+    create_or_update_parent_user()
     try:
         db = get_api_session()
-        create_or_update_parent_user(db)
+        # create_or_update_parent_user(db)
         update_saas_configs(registry, db)
     finally:
         db.close()
@@ -331,46 +333,46 @@ def read_other_paths(request: Request) -> Response:
     return get_admin_index_as_response()
 
 
-def create_or_update_parent_user(db: Session) -> None:
-    if (
-        not CONFIG.security.parent_server_username
-        and not CONFIG.security.parent_server_password
-    ):
-        return
-
-    if (
-        CONFIG.security.parent_server_username
-        and not CONFIG.security.parent_server_password
-        or CONFIG.security.parent_server_password
-        and not CONFIG.security.parent_server_username
-    ):
-        log.error(
-            "Both a parent_server_user and parent_server_password must be set to create a parent server user"
-        )
-        return
-
-    user_data = UserCreate(
-        username=CONFIG.security.parent_server_username,
-        password=CONFIG.security.parent_server_password,
-    )
-    user = FidesUser.get_by(
-        db, field="username", value=CONFIG.security.parent_server_username
-    )
-
-    if user:
-        log.info("Updating parent user")
-        user.update(db, data=user_data.dict())
-        return
-
-    log.info("Creating parent user")
-    user = FidesUser.create(db=db, data=user_data.dict())
-    FidesUserPermissions.create(
-        db=db,
-        data={
-            "user_id": user.id,
-            "scopes": [PRIVACY_REQUEST_CREATE, PRIVACY_REQUEST_READ],
-        },
-    )
+# def create_or_update_parent_user(db: Session) -> None:
+#     if (
+#         not CONFIG.security.parent_server_username
+#         and not CONFIG.security.parent_server_password
+#     ):
+#         return
+#
+#     if (
+#         CONFIG.security.parent_server_username
+#         and not CONFIG.security.parent_server_password
+#         or CONFIG.security.parent_server_password
+#         and not CONFIG.security.parent_server_username
+#     ):
+#         log.error(
+#             "Both a parent_server_user and parent_server_password must be set to create a parent server user"
+#         )
+#         return
+#
+#     user_data = UserCreate(
+#         username=CONFIG.security.parent_server_username,
+#         password=CONFIG.security.parent_server_password,
+#     )
+#     user = FidesUser.get_by(
+#         db, field="username", value=CONFIG.security.parent_server_username
+#     )
+#
+#     if user:
+#         log.info("Updating parent user")
+#         user.update(db, data=user_data.dict())
+#         return
+#
+#     log.info("Creating parent user")
+#     user = FidesUser.create(db=db, data=user_data.dict())
+#     FidesUserPermissions.create(
+#         db=db,
+#         data={
+#             "user_id": user.id,
+#             "scopes": [PRIVACY_REQUEST_CREATE, PRIVACY_REQUEST_READ],
+#         },
+#     )
 
 
 def start_webserver() -> None:
