@@ -8,10 +8,10 @@ import asyncio
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, Generator, Union
-from uuid import uuid4
+from typing import Dict, Generator, Union
 
 import pytest
+import requests
 import yaml
 from fideslang import models
 from fideslib.cryptography.schemas.jwt import (
@@ -289,7 +289,7 @@ async def async_session() -> AsyncSession:
     assert CONFIG.test_mode
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
-        echo=True,
+        echo=False,
     )
 
     session_maker = sessionmaker(
@@ -327,3 +327,12 @@ def event_loop() -> Generator:
         loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def monkeypatch_requests(test_client, monkeypatch) -> None:
+    monkeypatch.setattr(requests, "get", test_client.get)
+    monkeypatch.setattr(requests, "post", test_client.post)
+    monkeypatch.setattr(requests, "put", test_client.put)
+    monkeypatch.setattr(requests, "patch", test_client.patch)
+    monkeypatch.setattr(requests, "delete", test_client.delete)

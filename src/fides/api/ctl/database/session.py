@@ -28,6 +28,6 @@ def get_async_sessionmaker() -> sessionmaker:
     if not _async_engine:
         _async_engine = create_async_engine(
             config.database.async_database_uri,
-            echo=True,
+            echo=False,
         )
     return sessionmaker(_async_engine, class_=AsyncSession, expire_on_commit=False)
