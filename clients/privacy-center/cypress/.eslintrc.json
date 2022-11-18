@@ -1,0 +1,11 @@
+{
+  "extends": ["plugin:cypress/recommended"],
+  "plugins": ["no-only-tests"],
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": "cypress"
+  },
+  "rules": {
+    "no-only-tests/no-only-tests": "error"
+  }
+}

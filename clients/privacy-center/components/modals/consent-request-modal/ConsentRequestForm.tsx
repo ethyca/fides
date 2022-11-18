@@ -161,7 +161,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         Manage your consent
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
           {isVerificationRequired ? (
             <Text fontSize="sm" color="gray.500" mb={4}>

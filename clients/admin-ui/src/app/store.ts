@@ -34,7 +34,6 @@ import {
 } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { plusApi } from "~/features/common/plus.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -54,6 +53,7 @@ import {
   organizationApi,
   reducer as organizationReducer,
 } from "~/features/organization";
+import { plusApi } from "~/features/plus/plus.slice";
 import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
 

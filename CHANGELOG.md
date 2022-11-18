@@ -15,16 +15,39 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
+
+...
+
+## [2.1.0](https://github.com/ethyca/fides/compare/2.0.0...2.1.0)
+
+### Added
+
+* Classification flow for system data flows
+  * Classification is now triggered as part of data flow scanning
+* Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
+* Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
+* Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
+* Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
+* Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
+* Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 
 ### Changed
 
 * Optional dependencies are no longer used for 3rd-party connectivity. Instead they are used to isolate dangerous dependencies. [#1679](https://github.com/ethyca/fides/pull/1679)
 * All Next pages now automatically require login. [#1670](https://github.com/ethyca/fides/pull/1670)
+* Running the `webserver` command no longer prompts the user to opt out/in to analytics[#1724](https://github.com/ethyca/fides/pull/1724)
+
+### Developer Experience
+
+* Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
+* Enable remote debugging from VSCode of live dev app [#1780](https://github.com/ethyca/fides/pull/1780)
 
 ### Removed
 
-* Removed the `view` endpoint for evaluations [#1703](https://github.com/ethyca/fides/pull/1703)
+* Removed the Privacy Center `cookieName` config introduced in 2.0.0. [#1756](https://github.com/ethyca/fides/pull/1756)
 
 ### Fixed
 
@@ -34,6 +57,10 @@ The types of changes are:
 * Removed local storage parsing that is redundant with redux-persist. [#1678](https://github.com/ethyca/fides/pull/1678)
 * Show a helpful error message if Docker daemon is not running during "fides deploy" [#1694](https://github.com/ethyca/fides/pull/1694)
 * Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
+* Single-select taxonomy fields legal basis and special category can be cleared. [#1712](https://github.com/ethyca/fides/pull/1712)
+* Fixes the issue where the security config is not properly loading from environment variables. [#1718](https://github.com/ethyca/fides/pull/1718)
+* Fixes the issue where the CLI can't run without the config values required by the webserver. [#1811](https://github.com/ethyca/fides/pull/1811)
+* Correctly handle response from adobe jwt auth endpoint as milliseconds, rather than seconds. [#1754](https://github.com/ethyca/fides/pull/1754)
 
 ### Security
 

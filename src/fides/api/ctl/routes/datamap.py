@@ -23,6 +23,8 @@ API_EXTRA_COLUMNS = {
     "dataset.fides_key": "Dataset Fides Key (if applicable)",
     "system.system_dependencies": "Related cross-system dependencies",
     "system.description": "Description of the System",
+    "system.ingress": "Related Systems which receive data to this System",
+    "system.egress": "Related Systems which send data to this System",
 }
 DATAMAP_COLUMNS_API = {**DATAMAP_COLUMNS, **API_EXTRA_COLUMNS}
 
@@ -66,6 +68,8 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
                             "dataset.fides_key": "",
                             "system.system_dependencies": "",
                             "system.description": "",
+                            "system.ingress": [],
+                            "system.egress": [],
                         },
                     ]
                 }

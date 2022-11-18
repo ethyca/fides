@@ -5,6 +5,7 @@ import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { Organization, System } from "~/types/api";
 
 import { REVIEW_STEPS, STEPS } from "./constants";
+import { AddSystemMethods, SystemMethods } from "./types";
 
 export interface State {
   step: number;
@@ -21,11 +22,13 @@ export interface State {
    * the next `systemForReview` is swapped in, if any.
    */
   systemInReview?: System;
+  addSystemsMethod: AddSystemMethods;
 }
 
 const initialState: State = {
   step: 0,
   reviewStep: 1,
+  addSystemsMethod: SystemMethods.MANUAL,
 };
 
 export const slice = createSlice({
@@ -143,6 +146,12 @@ export const slice = createSlice({
       // eslint-disable-next-line prefer-destructuring
       draftState.systemInReview = draftState.systemsForReview[0];
     },
+    setAddSystemsMethod: (
+      draftState,
+      action: PayloadAction<AddSystemMethods>
+    ) => {
+      draftState.addSystemsMethod = action.payload;
+    },
     /**
      * Reset the wizard to its initial state, except for the organization which will probably
      * be the same if the user comes back.
@@ -164,6 +173,7 @@ export const {
   setOrganization,
   setSystemsForReview,
   chooseSystemsForReview,
+  setAddSystemsMethod,
 } = slice.actions;
 
 export const { reducer } = slice;
@@ -193,4 +203,9 @@ export const selectSystemInReview = createSelector(
 export const selectSystemsForReview = createSelector(
   selectConfigWizard,
   (state) => state.systemsForReview ?? []
+);
+
+export const selectAddSystemsMethod = createSelector(
+  selectConfigWizard,
+  (state) => state.addSystemsMethod
 );

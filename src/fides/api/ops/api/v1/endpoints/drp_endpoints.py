@@ -48,6 +48,7 @@ from fides.ctl.core.config import get_config
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 CONFIG = get_config()
+
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -67,7 +68,7 @@ async def create_drp_privacy_request(
     a corresponding Fidesops PrivacyRequest
     """
 
-    jwt_key: str = CONFIG.security.drp_jwt_secret
+    jwt_key = CONFIG.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

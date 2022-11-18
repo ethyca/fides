@@ -154,6 +154,8 @@ export const CustomSelect = ({
             onChange={(newValue) => {
               if (newValue) {
                 field.onChange(props.name)(newValue.value);
+              } else if (isClearable) {
+                field.onChange(props.name)("");
               }
             }}
             name={props.name}

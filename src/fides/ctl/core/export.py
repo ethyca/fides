@@ -155,6 +155,8 @@ def generate_system_records(
             "system.administrating_department",
             "system.third_country_transfers",
             "system.system_dependencies",
+            "system.ingress",
+            "system.egress",
             "system.privacy_declaration.name",
             "system.privacy_declaration.data_categories",
             "system.privacy_declaration.data_use.name",
@@ -177,6 +179,10 @@ def generate_system_records(
     for system in server_resources["system"]:
         third_country_list = ", ".join(system.third_country_transfers or [])
         system_dependencies = ", ".join(system.system_dependencies or [])
+        system_ingress = ", ".join(
+            [ingress.fides_key for ingress in system.ingress or []]
+        )
+        system_egress = ", ".join([egress.fides_key for egress in system.egress or []])
         data_protection_impact_assessment = (
             get_formatted_data_protection_impact_assessment(
                 system.data_protection_impact_assessment.dict()
@@ -202,6 +208,8 @@ def generate_system_records(
                         system.administrating_department,
                         third_country_list,
                         system_dependencies,
+                        system_ingress,
+                        system_egress,
                         declaration.name,
                         category,
                         data_use["name"],
@@ -233,12 +241,14 @@ def generate_system_records(
                 system.administrating_department,
                 third_country_list,
                 system_dependencies,
+                system_ingress,
+                system_egress,
                 data_protection_impact_assessment["is_required"],
                 data_protection_impact_assessment["progress"],
                 data_protection_impact_assessment["link"],
             ]
             num_privacy_declaration_fields = 12
-            privacy_declaration_start_index = 7
+            privacy_declaration_start_index = 9
             for i in range(num_privacy_declaration_fields):
                 system_row.insert(
                     i + privacy_declaration_start_index, EMPTY_COLUMN_PLACEHOLDER
