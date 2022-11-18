@@ -22,7 +22,7 @@ import {
   makeConsentItems,
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
-import { setConsentCookie } from "~/features/consent/cookie";
+import { setConsentCookie } from "fides-consent";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
 
 import { hostUrl } from "~/constants";

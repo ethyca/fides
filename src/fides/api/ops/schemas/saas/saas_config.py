@@ -374,6 +374,8 @@ class SaaSConfig(SaaSConfigBase):
             if fields:
                 grouped_inputs: Set[str] = set()
                 if read_requests:
+                    # the endpoint validator enforces that grouped inputs are the same
+                    # for all read requests so we can just take the first one
                     grouped_inputs = set(read_requests[0].grouped_inputs or [])
                 collections.append(
                     Collection(

@@ -16,10 +16,15 @@ from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
+from slowapi.errors import RateLimitExceeded  # type: ignore
+from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
+from slowapi.middleware import SlowAPIMiddleware  # type: ignore
+from slowapi.util import get_remote_address  # type: ignore
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
+from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
@@ -57,6 +62,7 @@ from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
+from fides.ctl.core.config.utils import check_required_webserver_config_values
 
 CONFIG: FidesConfig = get_ctl_config()
 
@@ -65,12 +71,23 @@ logging.setLogRecordFactory(get_fides_log_record_factory())
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
+app.state.limiter = Limiter(
+    default_limits=[CONFIG.security.request_rate_limit],
+    headers_enabled=True,
+    key_prefix=CONFIG.security.rate_limit_prefix,
+    key_func=get_remote_address,
+    retry_after="http-date",
+    storage_uri=CONFIG.redis.connection_url,
+)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     admin.router,
     datamap.router,
     generate.router,
     health.router,
     validate.router,
+    view.router,
 ]
 
 
@@ -180,6 +197,7 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+
     log.warning(
         f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
@@ -311,5 +329,6 @@ def read_other_paths(request: Request) -> Response:
 
 def start_webserver() -> None:
     "Run the webserver."
+    check_required_webserver_config_values()
     server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
     server.run()

@@ -13,10 +13,7 @@ port = 6379
 db_index = 0
 
 [security]
-app_encryption_key = "examplevalidprojectencryptionkey"
 cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
-oauth_root_client_id = "fidesadmin"
-oauth_root_client_secret = "fidesadminsecret"
 
 [execution]
 require_manual_request_approval = true

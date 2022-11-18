@@ -1,15 +1,11 @@
-import React from "react";
-
 import { useAppSelector } from "~/app/hooks";
 import { ValidTargets } from "~/types/api";
 
 import AuthenticateAwsForm from "./AuthenticateAwsForm";
+import AuthenticateOktaForm from "./AuthenticateOktaForm";
 import { selectAddSystemsMethod } from "./config-wizard.slice";
 import LoadRuntimeScanner from "./LoadRuntimeScanner";
 import { SystemMethods } from "./types";
-
-// TODO(#577)
-const AuthenticateOktaForm = () => null;
 
 const AuthenticateScanner = () => {
   const infrastructure = useAppSelector(selectAddSystemsMethod);

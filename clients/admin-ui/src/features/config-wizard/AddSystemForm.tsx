@@ -18,6 +18,7 @@ import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
   ManualSetupIcon,
+  OktaLogoIcon,
   QuestionIcon,
   RuntimeScannerLogo,
 } from "~/features/common/Icon";
@@ -89,6 +90,22 @@ const AddSystemForm = () => {
               >
                 <QuestionIcon boxSize={5} color="gray.400" />
               </Tooltip>
+            </Stack>
+            <Stack direction="row" display="flex" alignItems="center">
+              <IconButton
+                aria-label="Okta"
+                boxSize={iconButtonSize}
+                minW={iconButtonSize}
+                boxShadow="base"
+                variant="ghost"
+                icon={<OktaLogoIcon boxSize="full" />}
+                onClick={() => {
+                  dispatch(setAddSystemsMethod(ValidTargets.OKTA));
+                  dispatch(changeStep());
+                }}
+                data-testid="okta-btn"
+              />
+              <Text>System Scan (Okta)</Text>
             </Stack>
             {plus ? (
               <Stack direction="row" display="flex" alignItems="center">
