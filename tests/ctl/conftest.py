@@ -312,6 +312,7 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
 @pytest.mark.asyncio
 async def async_session() -> AsyncSession:
     assert CONFIG.test_mode
+    assert requests.post == test_client.post
     async_engine = create_async_engine(
         CONFIG.database.async_database_uri,
         echo=False,
