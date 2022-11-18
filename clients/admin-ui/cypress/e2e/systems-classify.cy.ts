@@ -83,7 +83,7 @@ describe("Classify systems page", () => {
       );
       cy.getByTestId("close-drawer-btn").click();
 
-      // No classification exists
+      // No classifications determined, though classify did run
       cy.visit("/classify-systems"); // visit again to clear the redux cache
       cy.fixture("classify/system-details.json").then((details) => {
         cy.intercept("GET", "/api/v1/plus/classify/details/*", {
@@ -93,6 +93,25 @@ describe("Classify systems page", () => {
       cy.getByTestId("row-demo_marketing_system").click();
       cy.wait("@getClassifyDetailsEmpty");
       cy.getByTestId("no-classification");
+
+      // Classification is still in progress
+      cy.visit("/classify-systems");
+      cy.fixture("classify/system-details.json").then((details) => {
+        cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+          body: { ...details, ingress: [], egress: [], status: "Processing" },
+        }).as("getClassifyDetailsProcessing");
+      });
+      cy.getByTestId("row-demo_marketing_system").click();
+      cy.getByTestId("processing");
+
+      // No classification ever occurred
+      cy.visit("/classify-systems");
+      cy.intercept("GET", "/api/v1/plus/classify/details/*", {
+        body: {},
+      }).as("getClassifyEmpty");
+      cy.getByTestId("row-demo_marketing_system").click();
+      cy.getByTestId("no-classification-instance");
+      cy.getByTestId("classification-status-badge").contains("Unknown");
     });
 
     it("Can edit a system's data flows", () => {
