@@ -12,13 +12,13 @@ import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { initialDataCategories } from "~/features/plus/helpers";
 import {
   selectDataCategories,
   selectDataCategoriesMap,
 } from "~/features/taxonomy";
 import { ClassifyDataFlow } from "~/types/api";
 
-import { initialDataCategories } from "../plus/helpers";
 import type { IngressEgress } from "./DataFlowForm";
 
 const AccordionItemContents = ({

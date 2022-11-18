@@ -20,7 +20,7 @@ import {
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { ClassificationStatus, GenerateTypes, System } from "~/types/api";
 
-import DataFlowForm, { IngressEgress } from "./DataFlowForm";
+import DataFlowForm, { FORM_ID, IngressEgress } from "./DataFlowForm";
 import { useUpdateSystemMutation } from "./system.slice";
 
 interface Props {
@@ -180,6 +180,7 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
       isOpen={isOpen}
       onClose={onClose}
       header="System classification details"
+      formId={FORM_ID}
     >
       {isLoadingClassificationInstance ? (
         <Center>
@@ -204,7 +205,6 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
 
           {description}
           <DataFlowForm
-            onClose={onClose}
             system={system}
             onSave={handleUpdateSystem}
             classificationInstance={classificationInstance}
