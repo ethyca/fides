@@ -158,7 +158,7 @@ enabled = true
 
 The `fides.toml` file should specify the following variables:
 
-#### Posgtres database
+#### Postgres database
 
 | Name | Type | Default | Description |
 | :---- | :---- | :------- | :----------- |
@@ -282,7 +282,6 @@ The following environment variables are not included in the default `fides.toml`
 | `FIDES__HOT_RELOAD` | `False` | If `True`, the Fides server will reload code changes without needing to restart the server. This variable should always be set to `False` in production systems.|
 | `FIDES__DEV_MODE` | `False` | If `True`, the Fides server will log error tracebacks, and log details of third party requests. This variable should always be set to `False` in production systems.|
 | `FIDES_CONFIG_PATH` | None | If this is set to a path, that path will be used to load `.toml` files first. Any .toml files on this path will override any installed .toml files. |
-| `FIDES__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 
 ## Celery configuration
 
