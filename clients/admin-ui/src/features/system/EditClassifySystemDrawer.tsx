@@ -106,13 +106,14 @@ const useClassifySystemDrawer = ({
     const hasEgress = systemEgresses.length > 0;
     const hasNoDataFlows = !hasIngress && !hasEgress;
 
-    let resources: string;
+    let dataFlowDescription: string;
     if (hasIngress && hasEgress) {
-      resources = "ingress and egress";
+      dataFlowDescription =
+        "which send or receive data from your selected system";
     } else if (hasIngress) {
-      resources = "ingress";
+      dataFlowDescription = "from which your selected system receives data";
     } else {
-      resources = "egress";
+      dataFlowDescription = "to which your selected system sends data";
     }
     if (classificationInstance?.status === ClassificationStatus.PROCESSING) {
       description = (
@@ -123,26 +124,25 @@ const useClassifySystemDrawer = ({
     } else if (hasNoDataFlows) {
       description = (
         <Text fontSize="sm" data-testid="no-data-flows">
-          Fides classify did not find any ingress or egress systems connected to
-          your selected system.
+          Fides classify did not detect any additional systems sending or
+          receiving data from your selected system.
         </Text>
       );
     } else if (hasNoDataFlowClassifications) {
       description = (
         <Text fontSize="sm" data-testid="no-classification">
-          Fides classify has detected {resources} systems connected to your
-          selected system. However, it was unable to classify the data flows
-          based on a system scan. You may still manually classify the data
-          flows.
+          Fides classify has detected additional systems which send or receive
+          data from your selected system, but was unable to classify these data
+          flows. You may classify these data flows manually below.
         </Text>
       );
     } else {
       description = (
         <Text fontSize="sm" data-testid="data-flow-with-classification">
-          Fides classify has detected {resources} systems connected to your
-          selected system. Each system has been automatically assigned data
-          categories. Choose to keep the assigned data category selection or
-          review more classification recommendations.
+          Fides classify has detected additional systems {dataFlowDescription}.
+          Each system has been automatically assigned data categories. Choose to
+          keep the assigned data category selection or review more
+          classification recommendations.
         </Text>
       );
     }

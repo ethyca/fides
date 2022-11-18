@@ -71,16 +71,12 @@ describe("Classify systems page", () => {
 
       // Only ingresses exist
       cy.getByTestId("row-kube-dns").click();
-      cy.getByTestId("data-flow-with-classification").contains(
-        "has detected ingress systems"
-      );
+      cy.getByTestId("data-flow-with-classification").contains("receives data");
       cy.getByTestId("close-drawer-btn").click();
 
       // Only egresses exist
       cy.getByTestId("row-demo_marketing_system").click();
-      cy.getByTestId("data-flow-with-classification").contains(
-        "has detected egress systems"
-      );
+      cy.getByTestId("data-flow-with-classification").contains("sends data");
       cy.getByTestId("close-drawer-btn").click();
 
       // No classifications determined, though classify did run
