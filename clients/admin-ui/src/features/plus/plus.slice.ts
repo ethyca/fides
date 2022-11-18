@@ -11,6 +11,7 @@ import {
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
+  ClassifyEmpty,
   ClassifyField,
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
@@ -108,7 +109,7 @@ export const plusApi = createApi({
       }),
       providesTags: ["ClassifyInstancesDatasets"],
     }),
-    getClassifySystem: build.query<ClassifySystem, string>({
+    getClassifySystem: build.query<ClassifySystem | ClassifyEmpty, string>({
       query: (fidesKey: string) => ({
         url: `classify/details/${fidesKey}`,
         params: { resource_type: GenerateTypes.SYSTEMS },

@@ -60,6 +60,7 @@ const ClassificationStatusBadge = ({
         w="100%"
         textAlign="center"
         {...badgeProps}
+        data-testid="classification-status-badge"
       >
         {statusDisplay.title}
       </Badge>
