@@ -27,6 +27,7 @@ The types of changes are:
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
+* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 
 ### Changed
 
