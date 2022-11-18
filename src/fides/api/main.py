@@ -9,13 +9,10 @@ from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.oauth.api.deps import get_config as lib_get_config
 from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
-from fideslib.oauth.schemas.user import UserCreate
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
@@ -23,7 +20,6 @@ from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 from slowapi.util import get_remote_address  # type: ignore
-from sqlalchemy.orm import Session
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
@@ -51,10 +47,6 @@ from fides.api.ops.api.deps import get_api_session
 from fides.api.ops.api.deps import get_db as get_ctl_db
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
-from fides.api.ops.api.v1.scope_registry import (
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_READ,
-)
 from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
     RedisConnectionError,
