@@ -10,7 +10,6 @@ export type Config = {
     icon_path: string;
     title: string;
     description: string;
-    cookieName?: string;
     consentOptions: ConfigConsentOption[];
   };
 };

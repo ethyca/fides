@@ -8,6 +8,7 @@ from constants_nox import (
     RUN,
     RUN_NO_DEPS,
     START_APP,
+    START_APP_REMOTE_DEBUG,
     START_TEST_ENV,
 )
 from docker_nox import build
@@ -38,16 +39,25 @@ def dev(session: Session) -> None:
         session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
 
     open_shell = "shell" in session.posargs
+    remote_debug = "remote_debug" in session.posargs
     if not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
             session.run(*RUN, "/bin/bash", external=True)
         else:
-            session.run("docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True)
+            if remote_debug:
+                session.run(*START_APP_REMOTE_DEBUG, external=True)
+            else:
+                session.run(
+                    "docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True
+                )
     else:
         # Run the webserver with additional datastores
         run_infrastructure(
-            open_shell=open_shell, run_application=True, datastores=datastores
+            open_shell=open_shell,
+            run_application=True,
+            datastores=datastores,
+            remote_debug=remote_debug,
         )
 
 
@@ -144,5 +154,7 @@ def test_env(session: Session) -> None:
 def quickstart(session: Session) -> None:
     """Run the quickstart tutorial."""
     build(session, "dev")
+    build(session, "privacy_center")
+    build(session, "admin_ui")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)

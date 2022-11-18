@@ -1,11 +1,7 @@
+import { CookieKeyConsent } from "fides-consent";
 import { ConfigConsentOption } from "~/types/config";
 
-import {
-  ConsentItem,
-  ApiUserConsents,
-  ApiUserConsent,
-  CookieKeyConsent,
-} from "./types";
+import { ConsentItem, ApiUserConsents, ApiUserConsent } from "./types";
 
 export const makeConsentItems = (
   data: ApiUserConsents,

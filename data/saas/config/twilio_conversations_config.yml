@@ -3,16 +3,13 @@ saas_config:
   name: Twilio Conversations SaaS Config
   type: twilio_conversations
   description: A sample schema representing the Twilio Conversations connector for Fidesops
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: conversations.twilio.com
     - name: account_id
     - name: password
-    - name: page_size
-      default_value: 1000
-      description: The maximum number of records to return per page
 
   external_references:
     - name: twilio_user_id
@@ -45,6 +42,14 @@ saas_config:
             - name: sid
               references:
                 - twilio_user_id
+        update:
+          request_override: twilio_user_update
+          param_values:
+            - name: sid
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.sid
+                  direction: from
     - name: user_conversations
       requests:
         read:
@@ -52,7 +57,7 @@ saas_config:
           path: /v1/Users/<user_id>/Conversations
           query_params:
             - name: PageSize
-              value: <page_size>
+              value: 1000
           param_values:
             - name: user_id
               references:
@@ -72,7 +77,7 @@ saas_config:
           path: /v1/Conversations/<conversation_id>/Messages
           query_params:
             - name: PageSize
-              value: <page_size>
+              value: 1000
           param_values:
             - name: conversation_id
               references:
@@ -85,6 +90,19 @@ saas_config:
               source: body
               path: meta.next_page_url
           data_path: messages
+        update:
+          request_override: twilio_conversation_message_update
+          param_values:
+            - name: conversation_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: conversation_messages.conversation_sid
+                  direction: from
+            - name: message_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: conversation_messages.sid
+                  direction: from
     - name: conversation_participants
       requests:
         read:
@@ -92,7 +110,7 @@ saas_config:
           path: /v1/Conversations/<conversation_id>/Participants
           query_params:
             - name: PageSize
-              value: <page_size>
+              value: 1000
           param_values:
             - name: conversation_id
               references:

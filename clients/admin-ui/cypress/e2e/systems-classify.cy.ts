@@ -10,6 +10,7 @@ describe("Classify systems page", () => {
 
   it("Should reroute if not in plus", () => {
     stubHomePage();
+    stubPlus(false);
     cy.visit("/classify-systems");
     cy.url().should("eql", `${Cypress.config().baseUrl}/`);
   });
@@ -25,6 +26,14 @@ describe("Classify systems page", () => {
     it("Should be accessible to plus users", () => {
       cy.visit("/classify-systems");
       cy.getByTestId("systems-classify-table");
+    });
+
+    it("Should render an empty state if no classifications are found", () => {
+      cy.intercept("GET", "/api/v1/plus/classify*", {
+        body: [],
+      }).as("getEmptyClassifyList");
+      cy.visit("/classify-systems");
+      cy.getByTestId("no-classifications");
     });
   });
 });

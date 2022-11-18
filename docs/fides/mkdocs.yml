@@ -87,6 +87,7 @@ nav:
             - Pull Requests: development/pull_requests.md
             - Releases: development/releases.md
             - Release Checklist: development/release_checklist.md
+            - VSCode Debugging: development/vscode_debugging.md
             - Jetbrains Debugging: development/jetbrains_debugging.md
             - Using Postman: development/postman/using_postman.md
             - Updating the Database Diagram: development/update_erd_diagram.md

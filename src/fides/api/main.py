@@ -24,6 +24,7 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
+from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
@@ -61,6 +62,7 @@ from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
+from fides.ctl.core.config.utils import check_required_webserver_config_values
 
 CONFIG: FidesConfig = get_ctl_config()
 
@@ -85,6 +87,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     generate.router,
     health.router,
     validate.router,
+    view.router,
 ]
 
 
@@ -194,6 +197,7 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+
     log.warning(
         f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
@@ -320,5 +324,6 @@ def read_other_paths(request: Request) -> Response:
 
 def start_webserver() -> None:
     "Run the webserver."
+    check_required_webserver_config_values()
     server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
     server.run()
