@@ -1,22 +1,26 @@
 import { Stack, Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
-import { useState } from "react";
-import { useSelector } from "react-redux";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import { selectSystemClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { GenerateTypes, System } from "~/types/api";
 
 import EditClassifySystemDrawer from "./EditClassifySystemDrawer";
+import {
+  selectActiveClassifySystem,
+  setActiveClassifySystemFidesKey,
+  useGetAllSystemsQuery,
+} from "./system.slice";
 
 const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
-  const classifyInstanceMap = useSelector(selectSystemClassifyInstanceMap);
-  const [activeSystem, setActiveSystem] = useState<System | undefined>(
-    undefined
-  );
+  const dispatch = useAppDispatch();
+  const classifyInstanceMap = useAppSelector(selectSystemClassifyInstanceMap);
+  const activeSystem = useAppSelector(selectActiveClassifySystem);
+  useGetAllSystemsQuery();
 
   const handleClick = (system: System) => {
-    setActiveSystem(system);
+    dispatch(setActiveClassifySystemFidesKey(system.fides_key));
   };
 
   return (
@@ -61,7 +65,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
         <EditClassifySystemDrawer
           system={activeSystem}
           isOpen={activeSystem != null}
-          onClose={() => setActiveSystem(undefined)}
+          onClose={() => dispatch(setActiveClassifySystemFidesKey(undefined))}
         />
       ) : null}
     </Stack>
