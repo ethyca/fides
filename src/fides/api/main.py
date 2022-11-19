@@ -325,48 +325,6 @@ def read_other_paths(request: Request) -> Response:
     return get_admin_index_as_response()
 
 
-# def create_or_update_parent_user(db: Session) -> None:
-#     if (
-#         not CONFIG.security.parent_server_username
-#         and not CONFIG.security.parent_server_password
-#     ):
-#         return
-#
-#     if (
-#         CONFIG.security.parent_server_username
-#         and not CONFIG.security.parent_server_password
-#         or CONFIG.security.parent_server_password
-#         and not CONFIG.security.parent_server_username
-#     ):
-#         log.error(
-#             "Both a parent_server_user and parent_server_password must be set to create a parent server user"
-#         )
-#         return
-#
-#     user_data = UserCreate(
-#         username=CONFIG.security.parent_server_username,
-#         password=CONFIG.security.parent_server_password,
-#     )
-#     user = FidesUser.get_by(
-#         db, field="username", value=CONFIG.security.parent_server_username
-#     )
-#
-#     if user:
-#         log.info("Updating parent user")
-#         user.update(db, data=user_data.dict())
-#         return
-#
-#     log.info("Creating parent user")
-#     user = FidesUser.create(db=db, data=user_data.dict())
-#     FidesUserPermissions.create(
-#         db=db,
-#         data={
-#             "user_id": user.id,
-#             "scopes": [PRIVACY_REQUEST_CREATE, PRIVACY_REQUEST_READ],
-#         },
-#     )
-
-
 def start_webserver() -> None:
     "Run the webserver."
     check_required_webserver_config_values()
