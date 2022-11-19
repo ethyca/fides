@@ -18,6 +18,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
 
+### Docs
+
+* Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
+* Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+
 ...
 
 ## [2.1.0](https://github.com/ethyca/fides/compare/2.0.0...2.1.0)

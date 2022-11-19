@@ -223,9 +223,14 @@ async def setup_server() -> None:
     registry = load_registry(registry_file)
     create_or_update_parent_user()
     try:
+        registry = load_registry(registry_file)
         db = get_api_session()
-        # create_or_update_parent_user(db)
         update_saas_configs(registry, db)
+    except Exception as e:
+        log.error(
+            f"Error occurred during SaaS connector template validation: {str(e)}",
+        )
+        return
     finally:
         db.close()
 
