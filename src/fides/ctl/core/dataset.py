@@ -123,20 +123,19 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
     return dataset
 
 
-def make_dataset_fides_key_unique(
-    datasets: List[Dataset], database_host: str, database_name: str
-) -> List[Dataset]:
+def make_dataset_key_unique(
+    dataset: Dataset, database_host: str, database_name: str
+) -> Dataset:
     """
-    Ensure each generated dataset has a repeatable unique ID appended to the end
+    Ensure the dataset has a repeatable unique ID appended to the end
     to avoid naming collisions.
     """
 
-    for dataset in datasets:
-        dataset.fides_key = generate_unique_fides_key(
-            dataset.fides_key, database_host, database_name
-        )
-        dataset.meta = {"database_host": database_host, "database_name": database_name}
-    return datasets
+    dataset.fides_key = generate_unique_fides_key(
+        dataset.fides_key, database_host, database_name
+    )
+    dataset.meta = {"database_host": database_host, "database_name": database_name}
+    return dataset
 
 
 def find_uncategorized_dataset_fields(
@@ -301,9 +300,10 @@ def generate_db_datasets(connection_string: str) -> List[Dataset]:
     db_engine = get_db_engine(connection_string)
     db_schemas = get_db_schemas(engine=db_engine)
     db_datasets = create_db_datasets(db_schemas=db_schemas)
-    unique_db_datasets = make_dataset_fides_key_unique(
-        db_datasets, db_engine.url.host, db_engine.url.database
-    )
+    unique_db_datasets = [
+        make_dataset_key_unique(dataset, db_engine.url.host, db_engine.url.database)
+        for dataset in db_datasets
+    ]
     return unique_db_datasets
 
 
@@ -344,7 +344,10 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
     bigquery_engine = get_bigquery_engine(bigquery_config)
     bigquery_schemas = get_db_schemas(engine=bigquery_engine)
     bigquery_datasets = create_db_datasets(db_schemas=bigquery_schemas)
-    unique_bigquery_datasets = make_dataset_fides_key_unique(
-        bigquery_datasets, bigquery_engine.url.host, bigquery_engine.url.database
-    )
+    unique_bigquery_datasets = [
+        make_dataset_key_unique(
+            dataset, bigquery_engine.url.host, bigquery_engine.url.database
+        )
+        for dataset in bigquery_datasets
+    ]
     return unique_bigquery_datasets
