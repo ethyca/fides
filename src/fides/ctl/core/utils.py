@@ -141,7 +141,7 @@ def generate_unique_fides_key(
     proposed_fides_key: str, database_host: str, database_name: str
 ) -> str:
     """
-    Uses host and name to generates a UUID to be
+    Uses host and name to generate a UUID to be
     appended to the fides_key of a dataset
     """
     fides_key_uuid = sha1(
