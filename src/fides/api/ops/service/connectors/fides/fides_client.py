@@ -1,0 +1,174 @@
+from __future__ import annotations
+
+import time
+from typing import Any, Dict, List, Optional
+
+import requests
+from fideslib.oauth.schemas.user import UserLogin
+from loguru import logger as log
+from requests import PreparedRequest, Request, Session
+
+from fides.api.ctl.utils.errors import FidesError
+from fides.api.ops.api.v1 import urn_registry as urls
+from fides.api.ops.models.privacy_request import PrivacyRequestStatus
+from fides.api.ops.schemas.privacy_request import PrivacyRequestCreate
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.ctl.core.config import get_config
+
+CONFIG = get_config()
+
+COMPLETION_STATUSES = [
+    PrivacyRequestStatus.complete,
+    PrivacyRequestStatus.canceled,
+    PrivacyRequestStatus.error,
+    PrivacyRequestStatus.denied,
+]
+
+
+class FidesClient:
+    """
+    A helper client class to broker communications between Fides servers.
+    """
+
+    def __init__(
+        self,
+        uri: str,
+        username: str,
+        password: str,
+    ):
+        self.session = Session()
+        self.uri = uri
+        self.username = username
+        self.password = password
+        self.token = None
+
+    def login(self) -> None:
+        ul: UserLogin = UserLogin(username=self.username, password=self.password)
+        response = requests.post(
+            self.uri + urls.V1_URL_PREFIX + urls.LOGIN, json=ul.dict()
+        )
+        if response.ok:
+            self.token = response.json()["token_data"]["access_token"]
+        else:
+            log.error(f"Error logging in on remote Fides {self.uri}")
+            response.raise_for_status()
+
+    def authenticated_request(
+        self,
+        method: str,
+        path: str,
+        headers: Dict[str, Any] = {},
+        query_params: Dict[str, Any] = {},
+        data: Optional[Any] = None,
+        json: Optional[Any] = None,
+    ) -> PreparedRequest:
+
+        if not self.token:
+            raise FidesError(
+                f"Unable to create authenticated request. No token for Fides connector for server {self.uri}"
+            )
+
+        req: PreparedRequest = Request(
+            method=method,
+            url=f"{self.uri}{path}",
+            headers=headers,
+            params=query_params,
+            data=data,
+            json=json,
+        ).prepare()
+        req.headers["Authorization"] = "Bearer " + self.token
+        return req
+
+    def create_privacy_request(
+        self, privacy_request_id: str, identity: Identity, policy_key: str
+    ) -> str:
+        """
+        Create privacy request on remote fides by hitting privacy request endpoint
+        Retruns the created privacy request ID
+        """
+        pr: PrivacyRequestCreate = PrivacyRequestCreate(
+            external_id=privacy_request_id, identity=identity, policy_key=policy_key
+        )
+
+        request: PreparedRequest = self.authenticated_request(
+            method="POST",
+            path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUEST_AUTHENTICATED,
+            json=[pr.dict()],
+        )
+        response = self.session.send(request)
+        if response.ok:
+            if response.json()["failed"]:
+                # TODO better exception here?
+                raise FidesError(
+                    f"Failed privacy request creation on remote Fides {self.uri} with failure message: {response.json()['failed']['message']}"
+                )
+            return response.json()["succeeded"][0]["id"]
+
+        log.error(f"Error creating privacy request on remote Fides {self.uri}")
+        response.raise_for_status()
+        return None
+
+    def poll_for_request_completion(
+        self, privacy_request_id: str, retries: int = 0, interval: int = 1
+    ) -> dict[str, Any]:
+        """
+        Poll remote fides for status of privacy request with the given ID until it is complete.
+        This is effectively a blocking call, i.e. it will block the current thread until
+        it determines completion, or until timeout is reached.
+
+        Returns storage location, or error
+        """
+        while (status := self.request_status(privacy_request_id)[0])[
+            "status"
+        ] not in COMPLETION_STATUSES:
+            # if we've hit 0, we've run out of retries.
+            # an input arg of 0 is effectively infinite retries
+            if retries == 0:
+                raise FidesError(
+                    f"Polling for status of privacy request [{privacy_request_id}] on remote Fides {self.uri} has timed out. Request was last observed with status {status.status}"
+                )
+            retries -= 1
+            time.sleep(interval)
+
+        if status["status"] == PrivacyRequestStatus.error:
+            raise FidesError(
+                f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} encountered an error. Look at the remote Fides for more information."
+            )
+        if status["status"] == PrivacyRequestStatus.canceled:
+            raise FidesError(
+                f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} was canceled. Look at the remote Fides for more information."
+            )
+        if status["status"] == PrivacyRequestStatus.denied:
+            raise FidesError(
+                f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} was denied. Look at the remote Fides for more information."
+            )
+        if status["status"] == PrivacyRequestStatus.complete:
+            log.debug(
+                f"Privacy request [{privacy_request_id}] is complete on remote Fides {self.uri}!",
+            )
+            return status
+
+        raise FidesError(
+            f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} is in an unknown state. Look at the remote Fides for more information."
+        )
+
+    def request_status(self, privacy_request_id: str = None) -> List:
+        """
+        Return privacy request object that tracks its status
+        """
+        request: PreparedRequest = self.authenticated_request(
+            method="GET",
+            path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
+            query_params={"request_id": privacy_request_id}
+            if privacy_request_id
+            else None,
+        )
+        response = self.session.send(request)
+        if response.ok:
+            return response.json()["items"]
+
+        log.error(
+            f"Error retrieving status of privacy request [{privacy_request_id}] on remote Fides {self.uri}",
+        )
+        response.raise_for_status()
+        return None
