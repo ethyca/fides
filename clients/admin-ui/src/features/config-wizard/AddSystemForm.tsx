@@ -119,9 +119,9 @@ const AddSystemForm = () => {
                     icon={<DataFlowScannerLogo boxSize="10" />}
                     onClick={() => {
                       dispatch(changeStep());
-                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
+                      dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
                     }}
-                    data-testid="runtime-scan-btn"
+                    data-testid="data-flow-scan-btn"
                   />
                 </HStack>
                 <Text>Data Flow Scan</Text>
