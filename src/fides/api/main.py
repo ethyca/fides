@@ -219,7 +219,11 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    create_or_update_parent_user()
+    try:
+        create_or_update_parent_user()
+    except Exception as e:
+        log.error(f"Error creating parent user: {str(e)}")
+        raise FidesError(f"Error creating parent user: {str(e)}")
 
     log.info("Validating SaaS connector templates...")
     try:
