@@ -47,12 +47,14 @@ export const EditDrawerHeader = ({
 export const EditDrawerFooter = ({
   onClose,
   formId,
+  isSaving,
 }: {
   /**
    * Associates the submit button with a form, which is useful for when the button
    * does not live directly inside the form hierarchy
    */
   formId?: string;
+  isSaving?: boolean;
 } & Pick<Props, "onClose">) => (
   <DrawerFooter justifyContent="flex-start">
     <Button onClick={onClose} mr={2} size="sm" variant="outline">
@@ -64,6 +66,7 @@ export const EditDrawerFooter = ({
       size="sm"
       data-testid="save-btn"
       form={formId}
+      isLoading={isSaving}
     >
       Save
     </Button>

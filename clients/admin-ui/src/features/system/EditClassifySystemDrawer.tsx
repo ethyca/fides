@@ -7,6 +7,7 @@ import {
   Text,
   useToast,
 } from "@fidesui/react";
+import { Form, Formik } from "formik";
 import { narrow } from "narrow-minded";
 import { ReactNode } from "react";
 
@@ -30,8 +31,10 @@ import {
   System,
 } from "~/types/api";
 
-import DataFlowForm, { FORM_ID, IngressEgress } from "./DataFlowForm";
+import DataFlowsAccordion, { IngressEgress } from "./DataFlowsAccordion";
 import { useUpdateSystemMutation } from "./system.slice";
+
+const FORM_ID = "data-flow-form";
 
 interface Props {
   system: System;
@@ -199,62 +202,79 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     handleSave,
   } = useClassifySystemDrawer({ system, onClose });
 
-  const handleUpdateSystem = ({ ingress, egress }: IngressEgress) => {
-    handleSave({ ...system, ingress, egress });
+  const handleUpdateSystem = async ({ ingress, egress }: IngressEgress) => {
+    await handleSave({ ...system, ingress, egress });
+  };
+
+  const initialValues = {
+    egress: system.egress ?? [],
+    ingress: system.ingress ?? [],
   };
 
   const status = isClassifySystem(classificationInstance)
     ? classificationInstance.status
     : undefined;
-  const showDataFlowForm = status !== ClassificationStatus.PROCESSING;
+  const showDataFlowsAccordion = status !== ClassificationStatus.PROCESSING;
 
   return (
-    <EditDrawer
-      isOpen={isOpen}
-      onClose={onClose}
-      header={<EditDrawerHeader title="System classification details" />}
-      footer={
-        status !== ClassificationStatus.PROCESSING ? (
-          <EditDrawerFooter onClose={onClose} formId={FORM_ID} />
-        ) : undefined
-      }
-    >
-      {isLoadingClassificationInstance ? (
-        <Center>
-          <Spinner />
-        </Center>
-      ) : (
-        <Stack spacing={4}>
-          <SimpleGrid columns={2} spacingY={2}>
-            <SystemMetadata label="System name" value={system.name} />
-            <SystemMetadata label="System type" value={system.system_type} />
-            <SystemMetadata
-              label="Classification status"
-              value={
-                <ClassificationStatusBadge
-                  status={status}
-                  resource={GenerateTypes.SYSTEMS}
-                  display="inline"
+    <Formik initialValues={initialValues} onSubmit={handleUpdateSystem}>
+      {({ isSubmitting }) => (
+        <Form id={FORM_ID}>
+          <EditDrawer
+            isOpen={isOpen}
+            onClose={onClose}
+            header={<EditDrawerHeader title="System classification details" />}
+            footer={
+              status !== ClassificationStatus.PROCESSING ? (
+                <EditDrawerFooter
+                  onClose={onClose}
+                  formId={FORM_ID}
+                  isSaving={isSubmitting}
                 />
-              }
-            />
-          </SimpleGrid>
+              ) : undefined
+            }
+          >
+            {isLoadingClassificationInstance ? (
+              <Center>
+                <Spinner />
+              </Center>
+            ) : (
+              <Stack spacing={4}>
+                <SimpleGrid columns={2} spacingY={2}>
+                  <SystemMetadata label="System name" value={system.name} />
+                  <SystemMetadata
+                    label="System type"
+                    value={system.system_type}
+                  />
+                  <SystemMetadata
+                    label="Classification status"
+                    value={
+                      <ClassificationStatusBadge
+                        status={status}
+                        resource={GenerateTypes.SYSTEMS}
+                        display="inline"
+                      />
+                    }
+                  />
+                </SimpleGrid>
 
-          {description}
-          {showDataFlowForm ? (
-            <DataFlowForm
-              system={system}
-              onSave={handleUpdateSystem}
-              classificationInstance={
-                isClassifySystem(classificationInstance)
-                  ? classificationInstance
-                  : undefined
-              }
-            />
-          ) : null}
-        </Stack>
+                {description}
+                {showDataFlowsAccordion ? (
+                  <DataFlowsAccordion
+                    system={system}
+                    classificationInstance={
+                      isClassifySystem(classificationInstance)
+                        ? classificationInstance
+                        : undefined
+                    }
+                  />
+                ) : null}
+              </Stack>
+            )}
+          </EditDrawer>
+        </Form>
       )}
-    </EditDrawer>
+    </Formik>
   );
 };
 

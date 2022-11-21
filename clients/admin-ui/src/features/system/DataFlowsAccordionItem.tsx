@@ -19,7 +19,7 @@ import {
 } from "~/features/taxonomy";
 import { ClassifyDataFlow, DataFlow } from "~/types/api";
 
-import type { IngressEgress } from "./DataFlowForm";
+import type { IngressEgress } from "./DataFlowsAccordion";
 
 interface Props {
   classifyDataFlows?: ClassifyDataFlow[];
