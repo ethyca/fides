@@ -2,8 +2,8 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Braze SaaS Config
   type: braze
-  description: A sample schema representing the Braze connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Braze connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
@@ -25,54 +25,99 @@ saas_config:
         value: test@test.com
 
   endpoints:
-    - name: users
+    - name: user
       requests:
         read:
-          method: POST
-          path: /users/export/ids
-          body: |
-            {
-              "email_address": "<email>",
-              "fields_to_export": [
-                  "apps",
-                  "attributed_campaign",
-                  "attributed_source",
-                  "attributed_adgroup",
-                  "attributed_ad",
-                  "braze_id",
-                  "campaigns_received",
-                  "canvases_received",
-                  "cards_clicked",
-                  "country",
-                  "created_at",
-                  "custom_attributes",
-                  "custom_events",
-                  "devices",
-                  "dob",
-                  "email",
-                  "email_subscribe",
-                  "external_id",
-                  "first_name",
-                  "gender",
-                  "home_city",
-                  "language",
-                  "last_coordinates",
-                  "last_name",
-                  "phone",
-                  "purchases",
-                  "push_subscribe",
-                  "push_tokens",
-                  "random_bucket",
-                  "time_zone",
-                  "total_revenue",
-                  "uninstalled_at",
-                  "user_aliases"
-              ]
-            }
-          param_values:
-            - name: email
-              identity: email
-          data_path: users
+          - method: POST
+            path: /users/export/ids
+            body: |
+              {
+                "email_address": "<email>",
+                "fields_to_export": [
+                    "apps",
+                    "attributed_campaign",
+                    "attributed_source",
+                    "attributed_adgroup",
+                    "attributed_ad",
+                    "braze_id",
+                    "campaigns_received",
+                    "canvases_received",
+                    "cards_clicked",
+                    "country",
+                    "created_at",
+                    "custom_attributes",
+                    "custom_events",
+                    "devices",
+                    "dob",
+                    "email",
+                    "email_subscribe",
+                    "external_id",
+                    "first_name",
+                    "gender",
+                    "home_city",
+                    "language",
+                    "last_coordinates",
+                    "last_name",
+                    "phone",
+                    "purchases",
+                    "push_subscribe",
+                    "push_tokens",
+                    "random_bucket",
+                    "time_zone",
+                    "total_revenue",
+                    "uninstalled_at",
+                    "user_aliases"
+                ]
+              }
+            param_values:
+              - name: email
+                identity: email
+            data_path: users
+          - method: POST
+            path: /users/export/ids
+            body: |
+              {
+                "phone": "<phone_number>",
+                "fields_to_export": [
+                    "apps",
+                    "attributed_campaign",
+                    "attributed_source",
+                    "attributed_adgroup",
+                    "attributed_ad",
+                    "braze_id",
+                    "campaigns_received",
+                    "canvases_received",
+                    "cards_clicked",
+                    "country",
+                    "created_at",
+                    "custom_attributes",
+                    "custom_events",
+                    "devices",
+                    "dob",
+                    "email",
+                    "email_subscribe",
+                    "external_id",
+                    "first_name",
+                    "gender",
+                    "home_city",
+                    "language",
+                    "last_coordinates",
+                    "last_name",
+                    "phone",
+                    "purchases",
+                    "push_subscribe",
+                    "push_tokens",
+                    "random_bucket",
+                    "time_zone",
+                    "total_revenue",
+                    "uninstalled_at",
+                    "user_aliases"
+                ]
+              }
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: users
         update:
           method: POST
           path: /users/track
@@ -84,15 +129,24 @@ saas_config:
                 }
               ]
             }
-    - name: subscription_groups_email
+    - name: subscription_groups
       requests:
         read:
-          method: GET
-          path: /subscription/user/status
-          query_params:
-            - name: email
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
-          data_path: users
+          - method: GET
+            path: /subscription/user/status
+            query_params:
+              - name: email
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: users
+          - method: GET
+            path: /subscription/user/status
+            query_params:
+              - name: phone
+                value: <phone_number>
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: users
