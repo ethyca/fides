@@ -78,6 +78,8 @@ def create_or_update_parent_user() -> None:
                 log.info("Updating parent user")
                 user.update_password(db_session, CONFIG.security.parent_server_password)
                 return
+            # clean exit if parent user already exists and credentials match
+            return
 
         log.info("Creating parent user")
         user = FidesUser.create(

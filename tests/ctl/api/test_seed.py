@@ -279,6 +279,28 @@ def test_create_or_update_parent_user(db):
 
 
 @pytest.mark.usefixtures("parent_server_config")
+def test_create_or_update_parent_user_called_twice(db):
+    """
+    Ensure seed method can be called twice with same parent user config,
+    since this is effectively what happens on server restart.
+    """
+    seed.create_or_update_parent_user()
+    user = FidesUser.get_by(
+        db, field="username", value=CONFIG.security.parent_server_username
+    )
+
+    assert user is not None
+
+    seed.create_or_update_parent_user()
+    user = FidesUser.get_by(
+        db, field="username", value=CONFIG.security.parent_server_username
+    )
+
+    assert user is not None
+    user.delete(db)
+
+
+@pytest.mark.usefixtures("parent_server_config")
 def test_create_or_update_parent_user_change_password(db):
     user = FidesUser.create(
         db=db,
