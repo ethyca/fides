@@ -219,9 +219,9 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    log.info("Validating SaaS connector templates...")
-    registry = load_registry(registry_file)
     create_or_update_parent_user()
+
+    log.info("Validating SaaS connector templates...")
     try:
         registry = load_registry(registry_file)
         db = get_api_session()
