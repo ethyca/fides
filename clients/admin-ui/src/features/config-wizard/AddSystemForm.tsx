@@ -36,17 +36,18 @@ const AddSystemForm = () => {
     <chakra.form w="100%" data-testid="add-system-form">
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Scan for Systems
+          Add Systems
         </Heading>
         <Accordion allowToggle border="transparent">
           <AccordionItem>
             {({ isExpanded }) => (
               <>
                 <h2>
-                  The building blocks of your data map are the list of systems
-                  that exist in your organization. Think of systems as anything
-                  that might store or process data in your organization, from a
-                  web application, to a database or data warehouse.
+                  Systems describe any services that store or process data for
+                  your organization, including third-party APIs, web applications,
+                  databases, and data warehouses. System discovery allows Fides to
+                  identify and build a data map from the list of systems that exist
+                  within your organization.
                   <AccordionButton
                     display="inline"
                     padding="0px"
