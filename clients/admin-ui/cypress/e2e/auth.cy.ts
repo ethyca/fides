@@ -79,10 +79,13 @@ describe("User Authentication", () => {
       cy.getByTestId("setup");
     });
 
-    it("/login redirects to the index page if the user has systems", () => {
-      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" });
+    it("/login redirects to the systems page if the user has systems", () => {
+      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
+        "getSystems"
+      );
       cy.visit("/login");
-      cy.getByTestId("Privacy Requests");
+      cy.wait("@getSystems");
+      cy.getByTestId("system-management");
     });
   });
 });
