@@ -17,10 +17,18 @@ import {
   selectDataCategories,
   selectDataCategoriesMap,
 } from "~/features/taxonomy";
-import { ClassifyDataFlow } from "~/types/api";
+import { ClassifyDataFlow, DataFlow } from "~/types/api";
 
 import type { IngressEgress } from "./DataFlowForm";
 
+interface Props {
+  classifyDataFlows?: ClassifyDataFlow[];
+  type: "ingress" | "egress";
+}
+
+/**
+ * AccordionItem styling wrapper
+ */
 const AccordionItemContents = ({
   headingLevel,
   title,
@@ -49,18 +57,67 @@ const AccordionItemContents = ({
   </>
 );
 
-const DataFlowsAccordionItem = ({
+/**
+ * The individual accordion item for either an Ingress or Egress
+ */
+const DataFlowAccordionItem = ({
+  flow,
+  index,
   classifyDataFlows,
   type,
-}: {
-  classifyDataFlows?: ClassifyDataFlow[];
-  type: "ingress" | "egress";
-}) => {
-  const { values, setFieldValue } = useFormikContext<IngressEgress>();
-  const flows = values[type];
-
+}: { flow: DataFlow; index: number } & Props) => {
+  const { setFieldValue } = useFormikContext<IngressEgress>();
   const dataCategories = useAppSelector(selectDataCategories);
   const dataCategoriesMap = useAppSelector(selectDataCategoriesMap);
+
+  const handleChecked = (newChecked: string[]) => {
+    // Use formik's method of indexing into array fields to update the value
+    setFieldValue(`${type}[${index}].data_categories`, newChecked);
+  };
+  const classifyDataFlow = classifyDataFlows?.find(
+    (cdf) => cdf.fides_key === flow.fides_key
+  );
+
+  const mostLikelyCategories = classifyDataFlow?.classifications.map(
+    ({ label, aggregated_score }) => ({
+      ...dataCategoriesMap.get(label),
+      fides_key: label,
+      confidence: aggregated_score,
+    })
+  );
+  const checked = initialDataCategories({
+    dataCategories: flow.data_categories,
+    mostLikelyCategories,
+  });
+
+  return (
+    <AccordionItem
+      pl={4}
+      borderBottom="none"
+      data-testid={`accordion-item-${flow.fides_key}`}
+    >
+      <AccordionItemContents headingLevel="h3" title={flow.fides_key}>
+        {dataCategories ? (
+          <Box pr={2}>
+            <ClassifiedDataCategoryDropdown
+              mostLikelyCategories={mostLikelyCategories || []}
+              dataCategories={dataCategories}
+              checked={checked}
+              onChecked={handleChecked}
+            />
+          </Box>
+        ) : null}
+      </AccordionItemContents>
+    </AccordionItem>
+  );
+};
+
+/**
+ * The entire list of Ingresses or Egresses, rendered as an AccordionItem
+ */
+const DataFlowsAccordionItem = ({ classifyDataFlows, type }: Props) => {
+  const { values } = useFormikContext<IngressEgress>();
+  const flows = values[type];
 
   if (flows.length === 0) {
     return <Text p={4}>No {type}es found.</Text>;
@@ -74,48 +131,15 @@ const DataFlowsAccordionItem = ({
           type[0].toLocaleUpperCase() + type.slice(1)
         } Systems`}
       >
-        {flows.map((flow, idx) => {
-          const handleChecked = (newChecked: string[]) => {
-            // Use formik's method of indexing into array fields to update the value
-            setFieldValue(`${type}[${idx}].data_categories`, newChecked);
-          };
-          const classifyDataFlow = classifyDataFlows?.find(
-            (cdf) => cdf.fides_key === flow.fides_key
-          );
-
-          const mostLikelyCategories = classifyDataFlow?.classifications.map(
-            ({ label, aggregated_score }) => ({
-              ...dataCategoriesMap.get(label),
-              fides_key: label,
-              confidence: aggregated_score,
-            })
-          );
-          const checked = initialDataCategories({
-            dataCategories: flow.data_categories,
-            mostLikelyCategories,
-          });
-          return (
-            <AccordionItem
-              key={flow.fides_key}
-              pl={4}
-              borderBottom="none"
-              data-testid={`accordion-item-${flow.fides_key}`}
-            >
-              <AccordionItemContents headingLevel="h3" title={flow.fides_key}>
-                {dataCategories ? (
-                  <Box pr={2}>
-                    <ClassifiedDataCategoryDropdown
-                      mostLikelyCategories={mostLikelyCategories || []}
-                      dataCategories={dataCategories}
-                      checked={checked}
-                      onChecked={handleChecked}
-                    />
-                  </Box>
-                ) : null}
-              </AccordionItemContents>
-            </AccordionItem>
-          );
-        })}
+        {flows.map((flow, idx) => (
+          <DataFlowAccordionItem
+            flow={flow}
+            index={idx}
+            classifyDataFlows={classifyDataFlows}
+            type={type}
+            key={flow.fides_key}
+          />
+        ))}
       </AccordionItemContents>
     </AccordionItem>
   );

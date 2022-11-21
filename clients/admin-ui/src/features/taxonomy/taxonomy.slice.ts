@@ -88,8 +88,7 @@ export const selectDataCategoriesMap: (
   state: RootState
 ) => Map<string, DataCategory> = createSelector(
   selectDataCategories,
-  (dataCategories) =>
-    new Map((dataCategories || []).map((dc) => [dc.fides_key, dc]))
+  (dataCategories) => new Map(dataCategories.map((dc) => [dc.fides_key, dc]))
 );
 
 const selectTaxonomy = (state: RootState) => state.taxonomy;
