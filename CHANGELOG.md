@@ -18,6 +18,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
 
+### Added
+* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
+
+### Fixed
+* Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
+
 ### Docs
 
 * Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
@@ -39,7 +45,6 @@ The types of changes are:
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
-* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 
 ### Changed
 
