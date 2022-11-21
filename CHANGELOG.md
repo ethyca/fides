@@ -39,6 +39,7 @@ The types of changes are:
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
+* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 
 ### Changed
 

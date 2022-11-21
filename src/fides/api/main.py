@@ -26,6 +26,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
+from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
@@ -217,6 +218,8 @@ async def setup_server() -> None:
         raise FidesError("No database uri provided")
 
     await configure_db(CONFIG.database.sync_database_uri)
+
+    create_or_update_parent_user()
 
     log.info("Validating SaaS connector templates...")
     try:

@@ -27,6 +27,8 @@ class SecuritySettings(FidesSettings):
     drp_jwt_secret: Optional[str] = None
     root_username: Optional[str] = None
     root_password: Optional[str] = None
+    parent_server_username: Optional[str] = None
+    parent_server_password: Optional[str] = None
     identity_verification_attempt_limit: int = 3  # 3 attempts
     encoding: str = "UTF-8"
 

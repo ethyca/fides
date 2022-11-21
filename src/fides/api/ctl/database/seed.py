@@ -6,12 +6,18 @@ from typing import List
 from fideslang import DEFAULT_TAXONOMY
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from fideslib.models.client import ClientDetail
+from fideslib.models.fides_user import FidesUser
+from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fideslib.utils.text import to_snake_case
 from loguru import logger as log
 
 from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
+from fides.api.ops.api.v1.scope_registry import (
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_READ,
+)
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.storage.storage import (
@@ -32,6 +38,62 @@ DEFAULT_ACCESS_POLICY_RULE = "default_access_policy_rule"
 DEFAULT_ERASURE_POLICY = "default_erasure_policy"
 DEFAULT_ERASURE_POLICY_RULE = "default_erasure_policy_rule"
 DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
+
+
+def create_or_update_parent_user() -> None:
+    with sync_session() as db_session:
+        if (
+            not CONFIG.security.parent_server_username
+            and not CONFIG.security.parent_server_password
+        ):
+            return
+
+        if (
+            CONFIG.security.parent_server_username
+            and not CONFIG.security.parent_server_password
+            or CONFIG.security.parent_server_password
+            and not CONFIG.security.parent_server_username
+        ):
+            # Both log and raise are here because the raise message is not showing.
+            # It could potentially be related to https://github.com/ethyca/fides/issues/1228
+            log.error(
+                "Both a parent_server_user and parent_server_password must be set to create a parent server user"
+            )
+            raise ValueError(
+                "Both a parent_server_user and parent_server_password must be set to create a parent server user"
+            )
+
+        user = (
+            FidesUser.get_by(
+                db_session,
+                field="username",
+                value=CONFIG.security.parent_server_username,
+            )
+            if CONFIG.security.parent_server_username
+            else None
+        )
+
+        if user and CONFIG.security.parent_server_password:
+            if not user.credentials_valid(CONFIG.security.parent_server_password):
+                log.info("Updating parent user")
+                user.update_password(db_session, CONFIG.security.parent_server_password)
+                return
+
+        log.info("Creating parent user")
+        user = FidesUser.create(
+            db=db_session,
+            data={
+                "username": CONFIG.security.parent_server_username,
+                "password": CONFIG.security.parent_server_password,
+            },
+        )
+        FidesUserPermissions.create(
+            db=db_session,
+            data={
+                "user_id": user.id,
+                "scopes": [PRIVACY_REQUEST_CREATE, PRIVACY_REQUEST_READ],
+            },
+        )
 
 
 def filter_data_categories(
