@@ -1,9 +1,6 @@
 import { Flex } from "@fidesui/react";
 import dynamic from "next/dynamic";
 import React from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { Flags } from "react-feature-flags";
 
 import {
   DATASTORE_CONNECTION_ROUTE,
@@ -38,7 +35,7 @@ const NavBar = () => {
         {features.plus ? <NavLink title="Data Map" href="/datamap" /> : null}
 
         <NavLink title="Taxonomy" href="/taxonomy" />
-        <NavLink title="Config Wizard" href="/config-wizard" />
+        <NavLink title="Add Systems" href="/add-systems" />
       </nav>
     </Flex>
   );

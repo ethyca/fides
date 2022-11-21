@@ -13,7 +13,7 @@ describe("Config Wizard", () => {
   });
 
   beforeEach(() => {
-    cy.visit("/config-wizard");
+    cy.visit("/add-systems");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
   });

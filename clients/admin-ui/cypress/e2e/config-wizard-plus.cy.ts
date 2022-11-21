@@ -31,7 +31,7 @@ describe("Config wizard with plus settings", () => {
     stubPlus(true);
 
     // Go through the initial config wizard steps
-    cy.visit("/config-wizard");
+    cy.visit("/add-systems");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
   });
