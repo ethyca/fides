@@ -50,7 +50,7 @@ describe.skip("Config wizard with plus settings", () => {
 
     it("Allows calling the runtime scanner with classify", () => {
       cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
-        fixture: "classify/list-systems.json",
+        fixture: "runtime-scanner/list-classify-systems.json",
       }).as("getClassifyList");
 
       goToRuntimeScanner();

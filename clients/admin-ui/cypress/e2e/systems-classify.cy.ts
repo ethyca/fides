@@ -4,8 +4,6 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { System } from "~/types/api";
-
 describe("Classify systems page", () => {
   beforeEach(() => {
     cy.login();
@@ -25,24 +23,12 @@ describe("Classify systems page", () => {
     beforeEach(() => {
       stubPlus(true);
       stubTaxonomyEntities();
-      // Stub both GET systems and GET classifications such that they will have overlap
-      cy.fixture("classify/list-systems.json").then((systemClassifications) => {
-        cy.intercept("GET", "/api/v1/plus/classify*", systemClassifications).as(
-          "getClassifyList"
-        );
-        const keys = systemClassifications.map((sc) => sc.dataset_key);
-        cy.fixture("systems.json").then((systems: System[]) => {
-          const alteredSystems = systems.map((s, idx) => {
-            if (idx < keys.length) {
-              return { ...s, fides_key: keys[idx], name: keys[idx] };
-            }
-            return s;
-          });
-          cy.intercept("GET", "/api/v1/system", alteredSystems).as(
-            "getSystems"
-          );
-        });
-      });
+      cy.intercept("GET", "/api/v1/plus/classify*", {
+        fixture: "classify/list-systems.json",
+      }).as("getClassifyList");
+      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
+        "getSystems"
+      );
     });
 
     it("Should be accessible to plus users", () => {
@@ -65,12 +51,12 @@ describe("Classify systems page", () => {
       cy.visit("/classify-systems");
 
       // No data flows exist on the system
-      cy.getByTestId("row-vzmgr-service").click();
+      cy.getByTestId("row-fidesctl_system").click();
       cy.getByTestId("no-data-flows");
       cy.getByTestId("close-drawer-btn").click();
 
       // Only ingresses exist
-      cy.getByTestId("row-kube-dns").click();
+      cy.getByTestId("row-demo_analytics_system").click();
       cy.getByTestId("data-flow-with-classification").contains("receives data");
       cy.getByTestId("close-drawer-btn").click();
 
@@ -89,6 +75,7 @@ describe("Classify systems page", () => {
       cy.getByTestId("row-demo_marketing_system").click();
       cy.wait("@getClassifyDetailsEmpty");
       cy.getByTestId("no-classification");
+      cy.getByTestId("close-drawer-btn").click();
 
       // Classification is still in progress
       cy.visit("/classify-systems");
@@ -97,8 +84,11 @@ describe("Classify systems page", () => {
           body: { ...details, ingress: [], egress: [], status: "Processing" },
         }).as("getClassifyDetailsProcessing");
       });
+      cy.wait("@getSystems");
       cy.getByTestId("row-demo_marketing_system").click();
+      cy.wait("@getClassifyDetailsProcessing");
       cy.getByTestId("processing");
+      cy.getByTestId("close-drawer-btn").click();
 
       // No classification ever occurred
       cy.visit("/classify-systems");
@@ -106,6 +96,7 @@ describe("Classify systems page", () => {
         body: {},
       }).as("getClassifyEmpty");
       cy.getByTestId("row-demo_marketing_system").click();
+      cy.wait("@getClassifyEmpty");
       cy.getByTestId("no-classification-instance");
       cy.getByTestId("classification-status-badge").contains("Unknown");
     });
@@ -123,7 +114,7 @@ describe("Classify systems page", () => {
       cy.visit("/classify-systems");
 
       // Open up an ingress
-      cy.getByTestId("row-kube-dns").click();
+      cy.getByTestId("row-demo_analytics_system").click();
       cy.getByTestId("accordion-item-ingress").click();
       cy.getByTestId("accordion-item-demo_marketing_system").click();
       // Should have the classified suggestion
@@ -145,7 +136,7 @@ describe("Classify systems page", () => {
       cy.wait("@putClassifyInstance").then((interception) => {
         const { body } = interception.request;
         expect(body).to.eql({
-          dataset_fides_key: "kube-dns",
+          dataset_fides_key: "demo_analytics_system",
           status: "Reviewed",
         });
       });
