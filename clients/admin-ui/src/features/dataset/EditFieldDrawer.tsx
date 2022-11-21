@@ -1,7 +1,11 @@
-import { Text } from "@fidesui/react";
+import { ConfirmationModal } from "@fidesui/components";
+import { Text, useDisclosure } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
-import EditDrawer from "~/features/common/EditDrawer";
+import EditDrawer, {
+  EditDrawerFooter,
+  EditDrawerHeader,
+} from "~/features/common/EditDrawer";
 import { DatasetField } from "~/types/api";
 
 import {
@@ -29,6 +33,11 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
   const [updateDataset] = useUpdateDatasetMutation();
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const handleSubmit = (
     values: Pick<
@@ -63,15 +72,31 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   };
 
   return (
-    <EditDrawer
-      isOpen={isOpen}
-      onClose={onClose}
-      header={`Field Name: ${field.name}`}
-      description={DESCRIPTION}
-      deleteProps={{
-        onDelete: handleDelete,
-        title: "Delete Field",
-        message: (
+    <>
+      <EditDrawer
+        isOpen={isOpen}
+        onClose={onClose}
+        description={DESCRIPTION}
+        header={
+          <EditDrawerHeader
+            title={`Field Name: ${field.name}`}
+            onDelete={onDeleteOpen}
+          />
+        }
+        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
+      >
+        <EditCollectionOrFieldForm
+          values={field}
+          onSubmit={handleSubmit}
+          dataType="field"
+        />
+      </EditDrawer>
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={onDeleteClose}
+        onConfirm={handleDelete}
+        title="Delete Field"
+        message={
           <Text>
             You are about to permanently delete the field named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
@@ -79,16 +104,9 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
             </Text>{" "}
             from this dataset. Are you sure you would like to continue?
           </Text>
-        ),
-      }}
-      formId={FORM_ID}
-    >
-      <EditCollectionOrFieldForm
-        values={field}
-        onSubmit={handleSubmit}
-        dataType="field"
+        }
       />
-    </EditDrawer>
+    </>
   );
 };
 

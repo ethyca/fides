@@ -1,7 +1,11 @@
-import { Text, useToast } from "@fidesui/react";
+import { ConfirmationModal } from "@fidesui/components";
+import { Text, useDisclosure, useToast } from "@fidesui/react";
 import { useRouter } from "next/router";
 
-import EditDrawer from "~/features/common/EditDrawer";
+import EditDrawer, {
+  EditDrawerFooter,
+  EditDrawerHeader,
+} from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Dataset } from "~/types/api";
@@ -25,6 +29,11 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   const [deleteDataset] = useDeleteDatasetMutation();
   const router = useRouter();
   const toast = useToast();
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const handleSubmit = async (values: Partial<Dataset>) => {
     const updatedDataset = { ...dataset, ...values };
@@ -56,15 +65,27 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   };
 
   return (
-    <EditDrawer
-      isOpen={isOpen}
-      onClose={onClose}
-      description={DESCRIPTION}
-      header={`Dataset Name: ${dataset.name}`}
-      deleteProps={{
-        onDelete: handleDelete,
-        title: "Delete Dataset",
-        message: (
+    <>
+      <EditDrawer
+        isOpen={isOpen}
+        onClose={onClose}
+        description={DESCRIPTION}
+        header={
+          <EditDrawerHeader
+            title={`Dataset Name: ${dataset.name}`}
+            onDelete={onDeleteOpen}
+          />
+        }
+        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
+      >
+        <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
+      </EditDrawer>
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={onDeleteClose}
+        onConfirm={handleDelete}
+        title="Delete Dataset"
+        message={
           <Text>
             You are about to permanently delete the dataset named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
@@ -72,12 +93,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
             </Text>
             . Are you sure you would like to continue?
           </Text>
-        ),
-      }}
-      formId={FORM_ID}
-    >
-      <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
-    </EditDrawer>
+        }
+      />
+    </>
   );
 };
 

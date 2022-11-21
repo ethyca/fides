@@ -10,7 +10,10 @@ import {
 import { narrow } from "narrow-minded";
 import { ReactNode } from "react";
 
-import EditDrawer from "~/features/common/EditDrawer";
+import EditDrawer, {
+  EditDrawerFooter,
+  EditDrawerHeader,
+} from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
@@ -209,9 +212,12 @@ const EditClassifySystemDrawer = ({ system, isOpen, onClose }: Props) => {
     <EditDrawer
       isOpen={isOpen}
       onClose={onClose}
-      header="System classification details"
-      formId={FORM_ID}
-      withFooter={status !== ClassificationStatus.PROCESSING}
+      header={<EditDrawerHeader title="System classification details" />}
+      footer={
+        status !== ClassificationStatus.PROCESSING ? (
+          <EditDrawerFooter onClose={onClose} formId={FORM_ID} />
+        ) : undefined
+      }
     >
       {isLoadingClassificationInstance ? (
         <Center>

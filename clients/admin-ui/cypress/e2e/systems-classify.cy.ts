@@ -53,16 +53,19 @@ describe("Classify systems page", () => {
       // No data flows exist on the system
       cy.getByTestId("row-fidesctl_system").click();
       cy.getByTestId("no-data-flows");
+      cy.getByTestId("save-btn").should("exist");
       cy.getByTestId("close-drawer-btn").click();
 
       // Only ingresses exist
       cy.getByTestId("row-demo_analytics_system").click();
       cy.getByTestId("data-flow-with-classification").contains("receives data");
+      cy.getByTestId("save-btn").should("exist");
       cy.getByTestId("close-drawer-btn").click();
 
       // Only egresses exist
       cy.getByTestId("row-demo_marketing_system").click();
       cy.getByTestId("data-flow-with-classification").contains("sends data");
+      cy.getByTestId("save-btn").should("exist");
       cy.getByTestId("close-drawer-btn").click();
 
       // No classifications determined, though classify did run
@@ -75,6 +78,7 @@ describe("Classify systems page", () => {
       cy.getByTestId("row-demo_marketing_system").click();
       cy.wait("@getClassifyDetailsEmpty");
       cy.getByTestId("no-classification");
+      cy.getByTestId("save-btn").should("exist");
       cy.getByTestId("close-drawer-btn").click();
 
       // Classification is still in progress
@@ -88,6 +92,7 @@ describe("Classify systems page", () => {
       cy.getByTestId("row-demo_marketing_system").click();
       cy.wait("@getClassifyDetailsProcessing");
       cy.getByTestId("processing");
+      cy.getByTestId("save-btn").should("not.exist");
       cy.getByTestId("close-drawer-btn").click();
 
       // No classification ever occurred
@@ -99,6 +104,7 @@ describe("Classify systems page", () => {
       cy.wait("@getClassifyEmpty");
       cy.getByTestId("no-classification-instance");
       cy.getByTestId("classification-status-badge").contains("Unknown");
+      cy.getByTestId("save-btn").should("exist");
     });
 
     it("Can edit a system's data flows", () => {
