@@ -24,7 +24,7 @@ const NavBar = () => {
       py={1}
       borderColor="gray.100"
     >
-      <nav>
+      <nav data-testid="nav-bar">
         <NavLink title="Privacy Requests" href={INDEX_ROUTE} exact />
         <NavLink title="Connections" href={DATASTORE_CONNECTION_ROUTE} />
         <NavLink title="User Management" href={USER_MANAGEMENT_ROUTE} />

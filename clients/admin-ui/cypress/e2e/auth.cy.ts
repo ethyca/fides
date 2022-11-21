@@ -22,6 +22,7 @@ describe("User Authentication", () => {
       cy.getByTestId("Login");
 
       stubHomePage();
+      cy.intercept("GET", "/api/v1/system", { body: [] });
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/login", body).as("postLogin");
         cy.intercept("/api/v1/user/*/permission", {
@@ -36,7 +37,7 @@ describe("User Authentication", () => {
       cy.get("#email").type("cypress-user@ethyca.com");
       cy.get("#password").type("FakePassword123!{Enter}");
 
-      cy.getByTestId("Privacy Requests");
+      cy.getByTestId("nav-bar");
     });
   });
 
@@ -70,6 +71,18 @@ describe("User Authentication", () => {
 
       cy.location("pathname").should("eq", "/login");
       cy.getByTestId("Login");
+    });
+
+    it("/login redirects to the onboarding flow if the user has no systems", () => {
+      cy.intercept("GET", "/api/v1/system", { body: [] });
+      cy.visit("/login");
+      cy.getByTestId("setup");
+    });
+
+    it("/login redirects to the index page if the user has systems", () => {
+      cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" });
+      cy.visit("/login");
+      cy.getByTestId("Privacy Requests");
     });
   });
 });
