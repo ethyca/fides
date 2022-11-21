@@ -38,13 +38,7 @@ const NavBar = () => {
         {features.plus ? <NavLink title="Data Map" href="/datamap" /> : null}
 
         <NavLink title="Taxonomy" href="/taxonomy" />
-        {/* This is a temporary link to the config wizard while it's still in progress */}
-        <Flags
-          authorizedFlags={["configWizardFlag"]}
-          renderOn={() => (
-            <NavLink title="Config Wizard" href="/config-wizard" />
-          )}
-        />
+        <NavLink title="Config Wizard" href="/config-wizard" />
       </nav>
     </Flex>
   );
