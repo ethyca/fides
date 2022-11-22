@@ -37,9 +37,13 @@ saas_config:
             - name: email
               identity: email
           data_path: customers
-        delete:
-          method: DELETE
+        update:
+          method: PUT
           path: /customers/<customer_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
           param_values:
             - name: customer_id
               references:
@@ -62,9 +66,13 @@ saas_config:
                   field: customer.id
                   direction: from
           data_path: addresses
-        delete:
-          method: DELETE
+        update:
+          method: PUT
           path: /addresses/<address_id>
+          body: |
+            {
+              "address": {<masked_object_fields>}
+            }
           param_values:
             - name: address_id
               references:

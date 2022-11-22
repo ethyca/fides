@@ -153,6 +153,12 @@ class RechargeTestClient:
         assert customer_response.ok
         return customer_response.json()
 
+    def delete_customer(self, customer_id):
+        customer_response: Response = requests.delete(
+            url=f"{self.base_url}/customers/{customer_id}", headers=self.headers
+        )
+        assert customer_response.ok
+
     # 2: Creates, checks for existance and deletes address
     def create_address(self, customer_id) -> Response:
         address_body = {
@@ -186,6 +192,12 @@ class RechargeTestClient:
         )
         assert address_response.ok
         return address_response.json()
+
+    def delete_address(self, address_id):
+        address_response: Response = requests.delete(
+            url=f"{self.base_url}/addresses/{address_id}", headers=self.headers
+        )
+        assert address_response.ok
 
 
 @pytest.fixture(scope="function")
@@ -221,3 +233,6 @@ def recharge_erasure_data(
     address_id = address_response.json()["address"]["id"]
 
     yield customer_response, address_response
+
+    recharge_test_client.delete_address(address_id)
+    recharge_test_client.delete_customer(customer_id)
