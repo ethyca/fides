@@ -1,6 +1,5 @@
 import { ItemOption } from "common/dropdown/types";
 
-import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
 import { SystemType } from "~/types/api";
 
 import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
