@@ -143,7 +143,7 @@ describe.skip("Config Wizard", () => {
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");
-      cy.getByTestId("input-orgUrl").type("fakeOrgUrl");
+      cy.getByTestId("input-orgUrl").type("https://ethyca.com/");
       cy.getByTestId("input-token").type("fakeToken");
     });
 
@@ -188,7 +188,7 @@ describe.skip("Config Wizard", () => {
       cy.wait("@postGenerate403");
       // Expect the custom message for this specific error.
       cy.getByTestId("scanner-error");
-      cy.getByTestId("permission-msg");
+      cy.getByTestId("generic-msg");
 
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 500,
