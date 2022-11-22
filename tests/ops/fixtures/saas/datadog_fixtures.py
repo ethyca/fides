@@ -38,6 +38,14 @@ def datadog_identity_email(saas_config):
     )
 
 
+@pytest.fixture(scope="session")
+def datadog_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "datadog.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
+
+
 @pytest.fixture
 def datadog_config() -> Dict[str, Any]:
     return load_config_with_replacement(
@@ -100,44 +108,53 @@ def datadog_dataset_config(
 
 
 @pytest.fixture(scope="session")
-def datadog_access_data(datadog_secrets, datadog_identity_email):
+def datadog_access_data(
+    datadog_secrets, datadog_identity_email, datadog_identity_phone_number
+):
     """
-    Checks if logs exist for the identity email, logs are created if they
+    Checks if logs exist for the identities, logs are created if they
     don't exist and we poll until the logs are present in the events endpoint
     """
 
     if not _logs_exist(datadog_identity_email, datadog_secrets):
-        url = "https://http-intake.logs.datadoghq.com/api/v2/logs"
-        payload = [
-            {
-                "ddsource": "nginx",
-                "ddtags": "env:staging,version:5.1",
-                "hostname": "i-012345678",
-                "message": f"2019-11-19T14:37:58,995 INFO [process.name][20081{i}] Hello {datadog_identity_email}",
-                "service": "payment",
-            }
-            for i in range(25)
-        ]
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "DD-API-KEY": datadog_secrets.get("api_key"),
+        _create_logs_for_identity(datadog_identity_email, datadog_secrets)
+
+    if not _logs_exist(datadog_identity_phone_number, datadog_secrets):
+        _create_logs_for_identity(datadog_identity_phone_number, datadog_secrets)
+
+
+def _create_logs_for_identity(datadog_identity: str, datadog_secrets: Dict[str, Any]):
+    url = "https://http-intake.logs.datadoghq.com/api/v2/logs"
+    payload = [
+        {
+            "ddsource": "nginx",
+            "ddtags": "env:staging,version:5.1",
+            "hostname": "i-012345678",
+            "message": f"2019-11-19T14:37:58,995 INFO [process.name][20081{i}] Hello {datadog_identity}",
+            "service": "payment",
         }
-        requests.request("POST", url, headers=headers, json=payload)
+        for i in range(25)
+    ]
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "DD-API-KEY": datadog_secrets.get("api_key"),
+    }
+    requests.request("POST", url, headers=headers, json=payload)
 
-        poll_for_existence(
-            _logs_exist,
-            (datadog_identity_email, datadog_secrets),
-        )
+    poll_for_existence(
+        _logs_exist,
+        (datadog_identity, datadog_secrets),
+    )
 
 
-def _logs_exist(datadog_identity_email: str, datadog_secrets):
-    """Checks if logs exist for the given identity email"""
+def _logs_exist(datadog_identity: str, datadog_secrets):
+    """Checks if logs exist for the given identity"""
 
     url = "https://api.datadoghq.com/api/v2/logs/events"
     params = {
         "filter[from]": 0,
-        "filter[query]": datadog_identity_email,
+        "filter[query]": datadog_identity,
         "filter[to]": "now",
         "page[limit]": 1000,
     }
@@ -147,7 +164,7 @@ def _logs_exist(datadog_identity_email: str, datadog_secrets):
     }
     response = requests.request("GET", url, params=params, headers=headers)
 
-    if datadog_identity_email not in response.text:
+    if datadog_identity not in response.text:
         return None
 
     return response.json()

@@ -27,16 +27,16 @@ secrets = get_secrets("salesforce")
 def salesforce_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "salesforce.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "salesforce.username")
-        or secrets["username"],
-        "password": pydash.get(saas_config, "salesforce.password")
-        or secrets["password"],
         "client_id": pydash.get(saas_config, "salesforce.client_id")
         or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "salesforce.client_secret")
         or secrets["client_secret"],
+        "redirect_uri": pydash.get(saas_config, "salesforce.redirect_uri")
+        or secrets["redirect_uri"],
         "access_token": pydash.get(saas_config, "salesforce.access_token")
         or secrets["access_token"],
+        "refresh_token": pydash.get(saas_config, "salesforce.refresh_token")
+        or secrets["refresh_token"],
     }
 
 
@@ -49,23 +49,16 @@ def salesforce_identity_email(saas_config):
 
 
 @pytest.fixture(scope="session")
-def salesforce_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+def salesforce_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "salesforce.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="session")
-def salesforce_token(salesforce_secrets) -> str:
-    body = {
-        "client_id": salesforce_secrets["client_id"],
-        "client_secret": salesforce_secrets["client_secret"],
-        "grant_type": "password",
-        "username": salesforce_secrets["username"],
-        "password": salesforce_secrets["password"],
-    }
-    response = requests.post(
-        "https://" + salesforce_secrets["domain"] + "/services/oauth2/token", body
-    )
-    return response.json()["access_token"]
+def salesforce_erasure_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
 @pytest.fixture
@@ -82,7 +75,7 @@ def salesforce_dataset() -> Dict[str, Any]:
     return load_dataset_with_replacement(
         "data/saas/dataset/salesforce_dataset.yml",
         "<instance_fides_key>",
-        "salesforce_dataset",
+        "salesforce_instance",
     )[0]
 
 
@@ -91,10 +84,8 @@ def salesforce_connection_config(
     db: session,
     salesforce_config,
     salesforce_secrets,
-    salesforce_token,
 ) -> Generator:
     fides_key = salesforce_config["fides_key"]
-    salesforce_secrets["access_token"] = salesforce_token
     connection_config = ConnectionConfig.create(
         db=db,
         data={

@@ -16,11 +16,11 @@ import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
 /**
- * Currently, runtime scanning is configured before the server starts via
+ * Currently, data flow scanning is configured before the server starts via
  * fides.toml. Eventually, we'll want to store those credentials via this form, but
  * since that flow doesn't exist yet, this is mostly just a loading screen for now.
  */
-const LoadRuntimeScanner = () => {
+const LoadDataFlowScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [updateScanMutation] = useUpdateScanMutation();
@@ -84,4 +84,4 @@ const LoadRuntimeScanner = () => {
   );
 };
 
-export default LoadRuntimeScanner;
+export default LoadDataFlowScanner;
