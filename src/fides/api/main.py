@@ -26,6 +26,7 @@ from uvicorn import Config, Server
 
 from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
+from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
@@ -218,11 +219,22 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    log.info("Validating SaaS connector templates...")
-    registry = load_registry(registry_file)
     try:
+        create_or_update_parent_user()
+    except Exception as e:
+        log.error(f"Error creating parent user: {str(e)}")
+        raise FidesError(f"Error creating parent user: {str(e)}")
+
+    log.info("Validating SaaS connector templates...")
+    try:
+        registry = load_registry(registry_file)
         db = get_api_session()
         update_saas_configs(registry, db)
+    except Exception as e:
+        log.error(
+            f"Error occurred during SaaS connector template validation: {str(e)}",
+        )
+        return
     finally:
         db.close()
 

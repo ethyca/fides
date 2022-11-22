@@ -3,6 +3,7 @@ import glob
 import logging
 import re
 from functools import partial
+from hashlib import sha1
 from json.decoder import JSONDecodeError
 from os.path import isfile
 from typing import Dict, Iterator, List
@@ -134,6 +135,19 @@ def sanitize_fides_key(proposed_fides_key: str) -> str:
     """
     sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", proposed_fides_key)
     return sanitized_fides_key
+
+
+def generate_unique_fides_key(
+    proposed_fides_key: str, database_host: str, database_name: str
+) -> str:
+    """
+    Uses host and name to generate a UUID to be
+    appended to the fides_key of a dataset
+    """
+    fides_key_uuid = sha1(
+        "-".join([database_host, database_name, proposed_fides_key]).encode()
+    )
+    return f"{proposed_fides_key}_{fides_key_uuid.hexdigest()[:10]}"
 
 
 def git_is_dirty(dir_to_check: str = ".") -> bool:
