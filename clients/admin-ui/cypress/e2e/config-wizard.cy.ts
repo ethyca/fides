@@ -1,7 +1,6 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-// skipping while configWizardFlag exists
-describe.skip("Config Wizard", () => {
+describe("Config Wizard", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -14,7 +13,7 @@ describe.skip("Config Wizard", () => {
   });
 
   beforeEach(() => {
-    cy.visit("/config-wizard");
+    cy.visit("/add-systems");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
   });
@@ -143,7 +142,7 @@ describe.skip("Config Wizard", () => {
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");
-      cy.getByTestId("input-orgUrl").type("fakeOrgUrl");
+      cy.getByTestId("input-orgUrl").type("https://ethyca.com/");
       cy.getByTestId("input-token").type("fakeToken");
     });
 
@@ -186,9 +185,9 @@ describe.skip("Config Wizard", () => {
       }).as("postGenerate403");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate403");
-      // Expect the custom message for this specific error.
+      // Expect the general message with a log.
       cy.getByTestId("scanner-error");
-      cy.getByTestId("permission-msg");
+      cy.getByTestId("generic-msg");
 
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 500,

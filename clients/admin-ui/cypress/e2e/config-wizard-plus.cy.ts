@@ -1,26 +1,24 @@
 import { stubPlus } from "cypress/support/stubs";
 
 /**
- * Handy function to bring us straight to the runtime scanner.
+ * Handy function to bring us straight to the data flow scanner.
  * This could be put in a beforeEach, but then you can't overwrite intercepts
  */
-const goToRuntimeScanner = () => {
+const goToDataFlowScanner = () => {
   // Move past organization step.
   cy.getByTestId("organization-info-form");
   cy.getByTestId("submit-btn").click();
 
-  // Select Runtime scanner to move to scan step.
+  // Select data flow scanner to move to scan step.
   cy.getByTestId("add-system-form");
-  cy.getByTestId("runtime-scan-btn").click();
+  cy.getByTestId("data-flow-scan-btn").click();
 };
 
 /**
  * This test suite is a parallel of config-wizard.cy.ts for testing the config wizard flow
  * when the user has access to the Fides+.
- *
- * We skip these tests while the config wizard feature flag is set to false.
  */
-describe.skip("Config wizard with plus settings", () => {
+describe("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -33,27 +31,27 @@ describe.skip("Config wizard with plus settings", () => {
     stubPlus(true);
 
     // Go through the initial config wizard steps
-    cy.visit("/config-wizard");
+    cy.visit("/add-systems");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
   });
 
-  describe("Runtime scanner steps", () => {
+  describe("Data flow scanner steps", () => {
     beforeEach(() => {
       // Stub scan endpoints
       cy.intercept("PUT", "/api/v1/plus/scan*", {
         delay: 500,
-        fixture: "runtime-scanner/list.json",
+        fixture: "data-flow-scanner/list.json",
       }).as("putScanResults");
       cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
     });
 
-    it("Allows calling the runtime scanner with classify", () => {
+    it("Allows calling the data flow scanner with classify", () => {
       cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
-        fixture: "runtime-scanner/list-classify-systems.json",
+        fixture: "data-flow-scanner/list-classify-systems.json",
       }).as("getClassifyList");
 
-      goToRuntimeScanner();
+      goToDataFlowScanner();
       cy.getByTestId("scanner-loading");
       cy.wait("@putScanResults").then((interception) => {
         const { url } = interception.request;
@@ -94,7 +92,7 @@ describe.skip("Config wizard with plus settings", () => {
       cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
         fixture: "classify/list-systems.json",
       }).as("getClassifyList");
-      goToRuntimeScanner();
+      goToDataFlowScanner();
       cy.getByTestId("scanner-loading");
       cy.wait("@putScanResults");
       cy.getByTestId("scan-results");
@@ -132,7 +130,7 @@ describe.skip("Config wizard with plus settings", () => {
           detail: "Item not found",
         },
       }).as("getScanError");
-      goToRuntimeScanner();
+      goToDataFlowScanner();
 
       cy.wait("@getScanError");
       cy.getByTestId("scanner-error");

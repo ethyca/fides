@@ -17,10 +17,10 @@ import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
+  DataFlowScannerLogo,
   ManualSetupIcon,
   OktaLogoIcon,
   QuestionIcon,
-  RuntimeScannerLogo,
 } from "~/features/common/Icon";
 import { ValidTargets } from "~/types/api";
 
@@ -116,12 +116,12 @@ const AddSystemForm = () => {
                     minW={iconButtonSize}
                     boxShadow="base"
                     variant="ghost"
-                    icon={<RuntimeScannerLogo boxSize="10" />}
+                    icon={<DataFlowScannerLogo boxSize="10" />}
                     onClick={() => {
                       dispatch(changeStep());
-                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
+                      dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
                     }}
-                    data-testid="runtime-scan-btn"
+                    data-testid="data-flow-scan-btn"
                   />
                 </HStack>
                 <Text>Data Flow Scan</Text>

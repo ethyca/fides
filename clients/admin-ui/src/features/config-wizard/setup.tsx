@@ -10,7 +10,7 @@ const Setup = () => {
   const dispatch = useAppDispatch();
 
   return (
-    <Stack>
+    <Stack data-testid="setup">
       <Container
         height="35vh"
         maxW="100vw"

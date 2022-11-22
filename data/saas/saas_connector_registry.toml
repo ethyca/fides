@@ -50,7 +50,7 @@ human_readable = "Outreach"
 config = "data/saas/config/salesforce_config.yml"
 dataset = "data/saas/dataset/salesforce_dataset.yml"
 icon = "data/saas/icon/salesforce.svg"
-human_readable = "Salesforce"
+human_readable = "Salesforce Classic"
 
 [segment]
 config = "data/saas/config/segment_config.yml"
