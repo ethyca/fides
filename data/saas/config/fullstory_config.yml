@@ -13,7 +13,6 @@ saas_config:
     - name: fullstory_user_id
       label: Fullstory User ID
       description: Dataset reference to the location of Fullstory user IDs
-
   client_config:
     protocol: https
     host: <domain>

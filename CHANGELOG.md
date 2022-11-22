@@ -17,6 +17,7 @@ The types of changes are:
 
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
+* Access and Erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 
 ### Added
 
