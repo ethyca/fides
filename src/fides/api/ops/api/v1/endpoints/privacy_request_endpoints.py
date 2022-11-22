@@ -33,13 +33,13 @@ from starlette.status import (
 from fides.api.ops import common_exceptions
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
 from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -48,6 +48,7 @@ from fides.api.ops.api.v1.scope_registry import (
 from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
@@ -56,7 +57,10 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
+    PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
+    REQUEST_STATUS_LOGS,
+    V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import (
     FunctionalityNotConfigured,
@@ -137,7 +141,7 @@ from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_cl
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
+router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 CONFIG = get_config()
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
@@ -160,7 +164,7 @@ def get_privacy_request_or_error(
 
 
 @router.post(
-    urls.PRIVACY_REQUESTS,
+    PRIVACY_REQUESTS,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
@@ -175,122 +179,29 @@ async def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
-    if not CONFIG.redis.enabled:
-        raise FunctionalityNotConfigured(
-            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
-        )
+    return _create_privacy_request(db, data, False)
 
-    created = []
-    failed = []
-    # Optional fields to validate here are those that are both nullable in the DB, and exist
-    # on the Pydantic schema
 
-    logger.info("Starting creation for %s privacy requests", len(data))
+@router.post(
+    PRIVACY_REQUEST_AUTHENTICATED,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
+    response_model=BulkPostPrivacyRequests,
+)
+async def create_privacy_request_authenticated(
+    *,
+    db: Session = Depends(deps.get_db),
+    data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
+) -> BulkPostPrivacyRequests:
+    """
+    Given a list of privacy request data elements, create corresponding PrivacyRequest objects
+    or report failure and execute them within the Fidesops system.
 
-    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
-    for privacy_request_data in data:
-        if not any(privacy_request_data.identity.dict().values()):
-            logger.warning(
-                "Create failed for privacy request with no identity provided"
-            )
-            failure = {
-                "message": "You must provide at least one identity to process",
-                "data": privacy_request_data,
-            }
-            failed.append(failure)
-            continue
+    You cannot update privacy requests after they've been created.
 
-        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
-        policy: Optional[Policy] = Policy.get_by(
-            db=db,
-            field="key",
-            value=privacy_request_data.policy_key,
-        )
-        if policy is None:
-            logger.warning(
-                "Create failed for privacy request with invalid policy key %s'",
-                privacy_request_data.policy_key,
-            )
-
-            failure = {
-                "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
-                "data": privacy_request_data,
-            }
-            failed.append(failure)
-            continue
-
-        kwargs = build_required_privacy_request_kwargs(
-            privacy_request_data.requested_at, policy.id
-        )
-        for field in optional_fields:
-            attr = getattr(privacy_request_data, field)
-            if attr is not None:
-                kwargs[field] = attr
-
-        try:
-            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
-            privacy_request.persist_identity(
-                db=db, identity=privacy_request_data.identity
-            )
-
-            cache_data(
-                privacy_request,
-                policy,
-                privacy_request_data.identity,
-                privacy_request_data.encryption_key,
-                None,
-            )
-
-            if CONFIG.execution.subject_identity_verification_required:
-                send_verification_code_to_user(
-                    db, privacy_request, privacy_request_data.identity
-                )
-                created.append(privacy_request)
-                continue  # Skip further processing for this privacy request
-            if CONFIG.notifications.send_request_receipt_notification:
-                _send_privacy_request_receipt_message_to_user(
-                    policy, privacy_request_data.identity
-                )
-            if not CONFIG.execution.require_manual_request_approval:
-                AuditLog.create(
-                    db=db,
-                    data={
-                        "user_id": "system",
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.approved,
-                        "message": "",
-                    },
-                )
-                queue_privacy_request(privacy_request.id)
-        except MessageDispatchException as exc:
-            kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("MessageDispatchException: %s", exc)
-            failure = {
-                "message": "Verification message could not be sent.",
-                "data": kwargs,
-            }
-            failed.append(failure)
-        except common_exceptions.RedisConnectionError as exc:
-            logger.error("RedisConnectionError: %s", Pii(str(exc)))
-            # Thrown when cache.ping() fails on cache connection retrieval
-            raise HTTPException(
-                status_code=HTTP_424_FAILED_DEPENDENCY,
-                detail=exc.args[0],
-            )
-        except Exception as exc:
-            logger.error("Exception: %s", Pii(str(exc)))
-            failure = {
-                "message": "This record could not be added",
-                "data": kwargs,
-            }
-            failed.append(failure)
-        else:
-            created.append(privacy_request)
-
-    return BulkPostPrivacyRequests(
-        succeeded=created,
-        failed=failed,
-    )
+    This route requires authentication instead of using verification codes.
+    """
+    return _create_privacy_request(db, data, True)
 
 
 def _send_privacy_request_receipt_message_to_user(
@@ -601,7 +512,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
 
 
 @router.get(
-    urls.PRIVACY_REQUESTS,
+    PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
     response_model=Page[
         Union[
@@ -693,7 +604,7 @@ def get_request_status(
 
 
 @router.get(
-    urls.REQUEST_STATUS_LOGS,
+    REQUEST_STATUS_LOGS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
     response_model=Page[ExecutionLogDetailResponse],
 )
@@ -1485,6 +1396,139 @@ async def resume_privacy_request_from_requires_input(
     )
 
     return privacy_request
+
+
+def _create_privacy_request(
+    db: Session,
+    data: conlist(PrivacyRequestCreate),  # type: ignore
+    authenticated: bool = False,
+) -> BulkPostPrivacyRequests:
+    """Creates privacy requests.
+
+    If authenticated is True the identity verification step is bypassed.
+    """
+    if not CONFIG.redis.enabled:
+        raise FunctionalityNotConfigured(
+            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+        )
+
+    created = []
+    failed = []
+    # Optional fields to validate here are those that are both nullable in the DB, and exist
+    # on the Pydantic schema
+
+    logger.info("Starting creation for %s privacy requests", len(data))
+
+    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
+    for privacy_request_data in data:
+        if not any(privacy_request_data.identity.dict().values()):
+            logger.warning(
+                "Create failed for privacy request with no identity provided"
+            )
+            failure = {
+                "message": "You must provide at least one identity to process",
+                "data": privacy_request_data,
+            }
+            failed.append(failure)
+            continue
+
+        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
+        policy: Optional[Policy] = Policy.get_by(
+            db=db,
+            field="key",
+            value=privacy_request_data.policy_key,
+        )
+        if policy is None:
+            logger.warning(
+                "Create failed for privacy request with invalid policy key %s'",
+                privacy_request_data.policy_key,
+            )
+
+            failure = {
+                "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
+                "data": privacy_request_data,
+            }
+            failed.append(failure)
+            continue
+
+        kwargs = build_required_privacy_request_kwargs(
+            privacy_request_data.requested_at, policy.id
+        )
+        for field in optional_fields:
+            attr = getattr(privacy_request_data, field)
+            if attr is not None:
+                kwargs[field] = attr
+
+        try:
+            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request.persist_identity(
+                db=db, identity=privacy_request_data.identity
+            )
+
+            cache_data(
+                privacy_request,
+                policy,
+                privacy_request_data.identity,
+                privacy_request_data.encryption_key,
+                None,
+            )
+
+            if (
+                not authenticated
+                and CONFIG.execution.subject_identity_verification_required
+            ):
+                send_verification_code_to_user(
+                    db, privacy_request, privacy_request_data.identity
+                )
+                created.append(privacy_request)
+                continue  # Skip further processing for this privacy request
+            if (
+                not authenticated
+                and CONFIG.notifications.send_request_receipt_notification
+            ):
+                _send_privacy_request_receipt_message_to_user(
+                    policy, privacy_request_data.identity
+                )
+            if not CONFIG.execution.require_manual_request_approval:
+                AuditLog.create(
+                    db=db,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.approved,
+                        "message": "",
+                    },
+                )
+                queue_privacy_request(privacy_request.id)
+        except MessageDispatchException as exc:
+            kwargs["privacy_request_id"] = privacy_request.id
+            logger.error("MessageDispatchException: %s", exc)
+            failure = {
+                "message": "Verification message could not be sent.",
+                "data": kwargs,
+            }
+            failed.append(failure)
+        except common_exceptions.RedisConnectionError as exc:
+            logger.error("RedisConnectionError: %s", Pii(str(exc)))
+            # Thrown when cache.ping() fails on cache connection retrieval
+            raise HTTPException(
+                status_code=HTTP_424_FAILED_DEPENDENCY,
+                detail=exc.args[0],
+            )
+        except Exception as exc:
+            logger.error("Exception: %s", Pii(str(exc)))
+            failure = {
+                "message": "This record could not be added",
+                "data": kwargs,
+            }
+            failed.append(failure)
+        else:
+            created.append(privacy_request)
+
+    return BulkPostPrivacyRequests(
+        succeeded=created,
+        failed=failed,
+    )
 
 
 def _process_privacy_request_restart(

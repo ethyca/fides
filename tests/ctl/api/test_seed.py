@@ -2,11 +2,14 @@ from typing import Generator
 
 import pytest
 from fideslang import DEFAULT_TAXONOMY, DataCategory
+from fideslib.models.fides_user import FidesUser
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.ctl.database import seed
 from fides.ctl.core import api as _api
-from fides.ctl.core.config import FidesConfig
+from fides.ctl.core.config import FidesConfig, get_config
+
+CONFIG = get_config()
 
 
 @pytest.fixture(scope="function", name="data_category")
@@ -23,6 +26,50 @@ def fixture_data_category(test_config: FidesConfig) -> Generator:
         resource_id=fides_key,
         headers=test_config.user.request_headers,
     )
+
+
+@pytest.fixture
+def parent_server_config():
+    original_username = CONFIG.security.parent_server_username
+    original_password = CONFIG.security.parent_server_password
+    CONFIG.security.parent_server_username = "test_user"
+    CONFIG.security.parent_server_password = "Atestpassword1!"
+    yield
+    CONFIG.security.parent_server_username = original_username
+    CONFIG.security.parent_server_password = original_password
+
+
+@pytest.fixture
+def parent_server_config_none():
+    original_username = CONFIG.security.parent_server_username
+    original_password = CONFIG.security.parent_server_password
+    CONFIG.security.parent_server_username = None
+    CONFIG.security.parent_server_password = None
+    yield
+    CONFIG.security.parent_server_username = original_username
+    CONFIG.security.parent_server_password = original_password
+
+
+@pytest.fixture
+def parent_server_config_username_only():
+    original_username = CONFIG.security.parent_server_username
+    original_password = CONFIG.security.parent_server_password
+    CONFIG.security.parent_server_username = "test_user"
+    CONFIG.security.parent_server_password = None
+    yield
+    CONFIG.security.parent_server_username = original_username
+    CONFIG.security.parent_server_password = original_password
+
+
+@pytest.fixture
+def parent_server_config_password_only():
+    original_username = CONFIG.security.parent_server_username
+    original_password = CONFIG.security.parent_server_password
+    CONFIG.security.parent_server_username = None
+    CONFIG.security.parent_server_password = "Atestpassword1!"
+    yield
+    CONFIG.security.parent_server_username = original_username
+    CONFIG.security.parent_server_password = original_password
 
 
 @pytest.mark.unit
@@ -223,3 +270,74 @@ class TestLoadDefaultTaxonomy:
             headers=test_config.user.request_headers,
         )
         assert result.status_code == 200
+
+
+@pytest.mark.usefixtures("parent_server_config")
+def test_create_or_update_parent_user(db):
+    seed.create_or_update_parent_user()
+    user = FidesUser.get_by(
+        db, field="username", value=CONFIG.security.parent_server_username
+    )
+
+    assert user is not None
+    user.delete(db)
+
+
+@pytest.mark.usefixtures("parent_server_config")
+def test_create_or_update_parent_user_called_twice(db):
+    """
+    Ensure seed method can be called twice with same parent user config,
+    since this is effectively what happens on server restart.
+    """
+    seed.create_or_update_parent_user()
+    user = FidesUser.get_by(
+        db, field="username", value=CONFIG.security.parent_server_username
+    )
+
+    assert user is not None
+
+    seed.create_or_update_parent_user()
+    user = FidesUser.get_by(
+        db, field="username", value=CONFIG.security.parent_server_username
+    )
+
+    assert user is not None
+    user.delete(db)
+
+
+@pytest.mark.usefixtures("parent_server_config")
+def test_create_or_update_parent_user_change_password(db):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": CONFIG.security.parent_server_username,
+            "password": "Somepassword1!",
+        },
+    )
+
+    seed.create_or_update_parent_user()
+    db.refresh(user)
+
+    assert user.password_reset_at is not None
+    assert user.credentials_valid(CONFIG.security.parent_server_password) is True
+    user.delete(db)
+
+
+@pytest.mark.usefixtures("parent_server_config_none")
+def test_create_or_update_parent_user_no_settings(db):
+    seed.create_or_update_parent_user()
+    user = FidesUser.all(db)
+
+    assert user == []
+
+
+@pytest.mark.usefixtures("parent_server_config_username_only")
+def test_create_or_update_parent_user_username_only():
+    with pytest.raises(ValueError):
+        seed.create_or_update_parent_user()
+
+
+@pytest.mark.usefixtures("parent_server_config_password_only")
+def test_create_or_update_parent_user_password_only():
+    with pytest.raises(ValueError):
+        seed.create_or_update_parent_user()

@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+import { selectSystemsForReview } from "~/features/config-wizard/config-wizard.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -14,9 +15,9 @@ import {
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
-  System,
+  GenerateTypes,
+  SystemScanResponse,
 } from "~/types/api";
-import { SystemScanResponse } from "~/types/plus/models/SystemScanResponse";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -27,12 +28,17 @@ interface ScanParams {
   classify?: boolean;
 }
 
+interface ClassifyInstancesParams {
+  fides_keys?: string[];
+  resource_type: GenerateTypes;
+}
+
 export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
   }),
-  tagTypes: ["Plus", "ClassifyInstances"],
+  tagTypes: ["Plus", "ClassifyInstancesDatasets", "ClassifyInstancesSystems"],
   endpoints: (build) => ({
     getHealth: build.query<HealthResponse, void>({
       query: () => "health",
@@ -49,36 +55,65 @@ export const plusApi = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["ClassifyInstances"],
+      invalidatesTags: ["ClassifyInstancesDatasets"],
     }),
-    updateClassifyInstance: build.mutation<void, ClassifyStatusUpdatePayload>({
-      query: (body) => ({
-        url: `classify/`,
-        method: "PUT",
-        body,
-      }),
-      invalidatesTags: ["ClassifyInstances"],
+    updateClassifyInstance: build.mutation<
+      void,
+      ClassifyStatusUpdatePayload & { resource_type?: GenerateTypes }
+    >({
+      query: (payload) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
+        return {
+          url: `classify/`,
+          method: "PUT",
+          params: { resource_type },
+          body,
+        };
+      },
+      invalidatesTags: (response, errors, args) => {
+        if (args.resource_type === GenerateTypes.SYSTEMS) {
+          return ["ClassifyInstancesSystems"];
+        }
+        return ["ClassifyInstancesDatasets"];
+      },
     }),
     getAllClassifyInstances: build.query<
       ClassifyInstanceResponseValues[],
-      void
+      ClassifyInstancesParams
     >({
-      query: () => `classify/`,
-      providesTags: ["ClassifyInstances"],
+      query: (params) => {
+        const urlParams = new URLSearchParams();
+        urlParams.append("resource_type", params.resource_type);
+        params.fides_keys?.forEach((key) => {
+          urlParams.append("fides_keys", key);
+        });
+        return {
+          url: `classify/?${urlParams.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: (response, errors, args) => {
+        if (args.resource_type === GenerateTypes.SYSTEMS) {
+          return ["ClassifyInstancesSystems"];
+        }
+        return ["ClassifyInstancesDatasets"];
+      },
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
       query: (dataset_fides_key: string) =>
         `classify/details/${dataset_fides_key}`,
-      providesTags: ["ClassifyInstances"],
+      providesTags: ["ClassifyInstancesDatasets"],
     }),
 
     // Kubernetes Cluster Scanner
-    getScanResults: build.query<SystemScanResponse, ScanParams>({
+    updateScan: build.mutation<SystemScanResponse, ScanParams>({
       query: (params: ScanParams) => ({
         url: `scan`,
         params,
-        method: "GET",
+        method: "PUT",
       }),
+      invalidatesTags: ["ClassifyInstancesSystems"],
     }),
   }),
 });
@@ -89,7 +124,7 @@ export const {
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
   useUpdateClassifyInstanceMutation,
-  useGetScanResultsQuery,
+  useUpdateScanMutation,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -98,27 +133,46 @@ export const useHasPlus = () => {
 };
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
-export const selectClassifyInstances = createSelector(
-  plusApi.endpoints.getAllClassifyInstances.select(),
+export const selectDatasetClassifyInstances = createSelector(
+  plusApi.endpoints.getAllClassifyInstances.select({
+    resource_type: GenerateTypes.DATASETS,
+  }),
   ({ data: instances }) => instances ?? emptyClassifyInstances
+);
+
+export const selectSystemClassifyInstances = createSelector(
+  [(state) => state, selectSystemsForReview],
+  (state, systems) =>
+    plusApi.endpoints.getAllClassifyInstances.select({
+      resource_type: GenerateTypes.SYSTEMS,
+      fides_keys: systems.map((s) => s.fides_key),
+    })(state)?.data ?? emptyClassifyInstances
 );
 
 const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =
   new Map();
-export const selectClassifyInstanceMap = createSelector(
-  selectClassifyInstances,
-  (instances) => {
-    const map = new Map<string, ClassifyInstanceResponseValues>();
-    instances.forEach((ci) => {
-      map.set(ci.dataset_key, ci);
-    });
 
-    if (map.size === 0) {
-      return emptyClassifyInstanceMap;
-    }
+const instancesToMap = (instances: ClassifyInstanceResponseValues[]) => {
+  const map = new Map<string, ClassifyInstanceResponseValues>();
+  instances.forEach((ci) => {
+    map.set(ci.dataset_key, ci);
+  });
 
-    return map;
+  if (map.size === 0) {
+    return emptyClassifyInstanceMap;
   }
+
+  return map;
+};
+
+export const selectDatasetClassifyInstanceMap = createSelector(
+  selectDatasetClassifyInstances,
+  (instances) => instancesToMap(instances)
+);
+
+export const selectSystemClassifyInstanceMap = createSelector(
+  selectSystemClassifyInstances,
+  (instances) => instancesToMap(instances)
 );
 
 /**
@@ -165,19 +219,4 @@ export const selectClassifyInstanceFieldMap = createSelector(
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
   (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
-);
-
-/**
- * Kubernetes cluster scanner
- */
-const emptySystems: System[] = [];
-
-export const selectScannedSystems = createSelector(
-  plusApi.endpoints.getScanResults.select({ classify: false }),
-  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
-);
-
-export const selectScannedAndClassifiedSystems = createSelector(
-  plusApi.endpoints.getScanResults.select({ classify: true }),
-  ({ data }: { data?: SystemScanResponse }) => data?.systems ?? emptySystems
 );

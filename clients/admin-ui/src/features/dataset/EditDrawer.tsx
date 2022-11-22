@@ -4,6 +4,7 @@ import {
   Drawer,
   DrawerBody,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
   IconButton,
@@ -24,6 +25,11 @@ interface Props {
   deleteTitle: string;
   deleteMessage: ReactNode;
   children: ReactNode;
+  /**
+   * Associates the submit button with a form, which is useful for when the button
+   * does not live directly inside the form hierarchy
+   */
+  formId?: string;
 }
 
 const EditDrawer = ({
@@ -35,6 +41,7 @@ const EditDrawer = ({
   deleteTitle,
   deleteMessage,
   children,
+  formId,
 }: Props) => {
   const {
     isOpen: deleteIsOpen,
@@ -46,30 +53,42 @@ const EditDrawer = ({
     <>
       <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="lg">
         <DrawerOverlay />
-        <DrawerContent data-testid="edit-drawer-content">
-          <Box py={2}>
-            <Box display="flex" justifyContent="flex-end" mr={2}>
-              <Button variant="ghost" onClick={onClose}>
-                <CloseSolidIcon />
-              </Button>
-            </Box>
-            <DrawerHeader py={2} display="flex" alignItems="center">
-              <Text mr="2">{header}</Text>
-              <IconButton
-                aria-label="delete"
-                icon={<TrashCanSolidIcon />}
-                size="xs"
-                onClick={onDeleteOpen}
-                data-testid="delete-btn"
-              />
-            </DrawerHeader>
-            <DrawerBody>
-              <Text fontSize="sm" mb={4}>
-                {description}
-              </Text>
-              {children}
-            </DrawerBody>
+        <DrawerContent data-testid="edit-drawer-content" py={2}>
+          <Box display="flex" justifyContent="flex-end" mr={2}>
+            <Button variant="ghost" onClick={onClose}>
+              <CloseSolidIcon />
+            </Button>
           </Box>
+          <DrawerHeader py={2} display="flex" alignItems="center">
+            <Text mr="2">{header}</Text>
+            <IconButton
+              aria-label="delete"
+              icon={<TrashCanSolidIcon />}
+              size="xs"
+              onClick={onDeleteOpen}
+              data-testid="delete-btn"
+            />
+          </DrawerHeader>
+          <DrawerBody>
+            <Text fontSize="sm" mb={4}>
+              {description}
+            </Text>
+            {children}
+          </DrawerBody>
+          <DrawerFooter justifyContent="flex-start">
+            <Button onClick={onClose} mr={2} size="sm" variant="outline">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              colorScheme="primary"
+              size="sm"
+              data-testid="save-btn"
+              form={formId}
+            >
+              Save
+            </Button>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
       <ConfirmationModal

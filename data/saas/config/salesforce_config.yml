@@ -1,12 +1,13 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Salesforce SaaS Config
+  name: Salesforce Classic SaaS Config
   type: salesforce
-  description: A sample schema representing the Salesforce connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Salesforce Classic connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
+      description: yourdomain.my.salesforce.com
     - name: client_id
     - name: client_secret
     - name: redirect_uri
@@ -70,15 +71,24 @@ saas_config:
     - name: contact_list
       requests:
         read:
-          method: GET
-          path: /services/data/v54.0/query
-          query_params:
-            - name: q
-              value: SELECT Id FROM Contact WHERE Email='<email>'
-          param_values:
-            - name: email
-              identity: email
-          data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM Contact WHERE Email='<email>'
+            param_values:
+              - name: email
+                identity: email
+            data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM Contact WHERE Phone='<phone_number>' OR MobilePhone='<phone_number>' OR HomePhone='<phone_number>'
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: records
     - name: contacts
       requests:
         read:
@@ -145,15 +155,24 @@ saas_config:
     - name: lead_list
       requests:
         read:
-          method: GET
-          path: /services/data/v54.0/query
-          query_params:
-            - name: q
-              value: SELECT Id FROM Lead WHERE Email='<email>'
-          param_values:
-            - name: email
-              identity: email
-          data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM Lead WHERE Email='<email>'
+            param_values:
+              - name: email
+                identity: email
+            data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM Lead WHERE Phone='<phone_number>' OR MobilePhone='<phone_number>'
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: records
     - name: leads
       requests:
         read:
@@ -204,15 +223,24 @@ saas_config:
     - name: campaign_member_list
       requests:
         read:
-          method: GET
-          path: /services/data/v54.0/query
-          query_params:
-            - name: q
-              value: SELECT Id FROM CampaignMember WHERE Email='<email>'
-          param_values:
-            - name: email
-              identity: email
-          data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM CampaignMember WHERE Email='<email>'
+            param_values:
+              - name: email
+                identity: email
+            data_path: records
+          - method: GET
+            path: /services/data/v54.0/query
+            query_params:
+              - name: q
+                value: SELECT Id FROM CampaignMember WHERE Phone='<phone_number>' OR MobilePhone='<phone_number>'
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: records
     - name: campaign_members
       requests:
         read:

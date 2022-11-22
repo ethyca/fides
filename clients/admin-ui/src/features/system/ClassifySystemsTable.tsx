@@ -3,11 +3,11 @@ import { useSelector } from "react-redux";
 
 import { SystemTableCell } from "~/features/common/SystemsCheckboxTable";
 import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
-import { selectClassifyInstanceMap } from "~/features/plus/plus.slice";
+import { selectSystemClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { GenerateTypes, System } from "~/types/api";
 
 const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
-  const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
+  const classifyInstanceMap = useSelector(selectSystemClassifyInstanceMap);
 
   return (
     <Stack>

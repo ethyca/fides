@@ -17,7 +17,6 @@ cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
 
 [execution]
 require_manual_request_approval = true
-celery_config_path = "/fides/src/fides/data/sample_project/celery.toml"
 
 [cli]
 server_host = "fides"

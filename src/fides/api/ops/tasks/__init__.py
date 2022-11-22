@@ -38,8 +38,11 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
         # Defaults for the celery config
         "broker_url": CONFIG.redis.connection_url,
         "result_backend": CONFIG.redis.connection_url,
+        "event_queue_prefix": "fides_worker",
+        "task_always_eager": True,
         # Fidesops requires this to route emails to separate queues
         "task_create_missing_queues": True,
+        "task_default_queue": "fides",
     }
 
     try:
