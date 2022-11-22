@@ -24,6 +24,9 @@ The types of changes are:
 * Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 
+### Changed
+* The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+
 ### Fixed
 
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
