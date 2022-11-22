@@ -66,9 +66,9 @@ const ScanResults = () => {
 
     /*
      * Eventually, all scanners will go through some sort of classify flow.
-     * But for now, only the runtime scanner does
+     * But for now, only the data flow scanner does
      */
-    if (method === SystemMethods.RUNTIME) {
+    if (method === SystemMethods.DATA_FLOW) {
       return router.push("/classify-systems");
     }
 
