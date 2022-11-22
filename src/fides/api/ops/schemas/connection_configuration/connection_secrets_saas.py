@@ -10,8 +10,8 @@ from fides.api.ops.models.datasetconfig import validate_dataset_reference
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
+from fideslang import FidesDatasetReference
 
 
 class SaaSSchema(BaseModel, abc.ABC):
@@ -119,7 +119,7 @@ class SaaSSchemaFactory:
         if self.saas_config.external_references:
             for external_reference in self.saas_config.external_references:
                 field_definitions[external_reference.name] = (
-                    FidesopsDatasetReference,
+                    FidesDatasetReference,
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,

@@ -12,7 +12,6 @@ from fides.api.ops.graph.config import ScalarField
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.ops.service.connectors.query_config import QueryConfig
@@ -26,6 +25,8 @@ from fides.api.ops.util.saas_util import (
     unflatten_dict,
 )
 from fides.ctl.core.config import get_config
+from fideslang import FidesDatasetReference
+
 
 CONFIG = get_config()
 logger = logging.getLogger(__name__)
@@ -305,7 +306,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 # however, `references` in update requests can, currently, only reference
                 # the same collection the same collection, and so it is highly unlikely
                 # that this would be an external reference at this point.
-                reference: FidesopsDatasetReference = (
+                reference: FidesDatasetReference = (
                     SaaSConfig.resolve_param_reference(
                         param_value.references[0], self.secrets
                     )

@@ -48,9 +48,9 @@ from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetTraversalDetails,
-    FidesopsDataset,
     ValidateDatasetResponse,
 )
+from fideslang import Dataset
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -83,7 +83,7 @@ def _get_connection_config(
     response_model=ValidateDatasetResponse,
 )
 def validate_dataset(
-    dataset: FidesopsDataset,
+    dataset: Dataset,
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> ValidateDatasetResponse:
     """
@@ -146,7 +146,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(FidesopsDataset, max_items=50),  # type: ignore
+    datasets: conlist(Dataset, max_items=50),  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -160,7 +160,7 @@ def patch_datasets(
     Otherwise, a new dataset will be created.
     """
 
-    created_or_updated: List[FidesopsDataset] = []
+    created_or_updated: List[Dataset] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for %s datasets", len(datasets))
 
@@ -216,7 +216,7 @@ async def patch_yaml_datasets(
     datasets = (
         yaml_request_body.get("dataset") if isinstance(yaml_request_body, dict) else []
     )
-    created_or_updated: List[FidesopsDataset] = []
+    created_or_updated: List[Dataset] = []
     failed: List[BulkUpdateFailed] = []
     if isinstance(datasets, list):
         for dataset in datasets:  # type: ignore
@@ -241,7 +241,7 @@ async def patch_yaml_datasets(
 
 def create_or_update_dataset(
     connection_config: ConnectionConfig,
-    created_or_updated: List[FidesopsDataset],
+    created_or_updated: List[Dataset],
     data: dict,
     dataset: dict,
     db: Session,
@@ -284,7 +284,7 @@ def create_or_update_dataset(
 
 
 def _validate_saas_dataset(
-    connection_config: ConnectionConfig, dataset: FidesopsDataset
+    connection_config: ConnectionConfig, dataset: Dataset
 ) -> None:
     if connection_config.saas_config is None:
         raise SaaSConfigNotFoundException(
@@ -313,13 +313,13 @@ def _validate_saas_dataset(
 @router.get(
     DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=Page[FidesopsDataset],
+    response_model=Page[Dataset],
 )
 def get_datasets(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> AbstractPage[FidesopsDataset]:
+) -> AbstractPage[Dataset]:
     """Returns all datasets in the database."""
 
     logger.info(
@@ -332,7 +332,7 @@ def get_datasets(
     ).order_by(DatasetConfig.created_at.desc())
 
     # Generate the paginated results, but don't return them as-is. Instead,
-    # modify the items array to be just the FidesopsDataset instead of the full
+    # modify the items array to be just the Dataset instead of the full
     # DatasetConfig. This has to be done *afterwards* to ensure that the
     # paginated query is handled by paginate()
     paginated_results = paginate(dataset_configs, params=params)
@@ -345,13 +345,13 @@ def get_datasets(
 @router.get(
     DATASET_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=FidesopsDataset,
+    response_model=Dataset,
 )
 def get_dataset(
     fides_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> FidesopsDataset:
+) -> Dataset:
     """Returns a single dataset based on the given key."""
 
     logger.info(

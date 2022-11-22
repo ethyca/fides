@@ -16,10 +16,10 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fideslang import Dataset
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.saas_util import (
     load_config,
@@ -54,7 +54,12 @@ class ConnectorTemplate(BaseModel):
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        FidesopsDataset(**load_dataset(dataset)[0])
+        print(f"about to load: {dataset}")
+        try:
+            Dataset(**load_dataset(dataset)[0])
+        except Exception as e:
+            print(f"failed to load file: {e}")
+        print(f"finished loading: {dataset}")
         return dataset
 
     @validator("icon")
@@ -139,9 +144,18 @@ def upsert_dataset_config_from_template(
 
 def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
+    print("HELLO!!!!!")
     global _registry  # pylint: disable=W0603
+    print("About to part in the toml file")
     if _registry is None:
-        _registry = ConnectorRegistry.parse_obj(load_toml([config_file]))
+        print("inside if check")
+        toml_file = load_toml([config_file])
+        # print(toml_file)
+        print("finished parsing toml file")
+        _registry = ConnectorRegistry.parse_obj(toml_file)
+        print("after creating registry")
+    else:
+        print("inside else")
     return _registry
 
 

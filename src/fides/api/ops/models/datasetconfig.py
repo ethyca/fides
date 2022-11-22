@@ -19,11 +19,9 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.dataset import (
-    FidesopsDataset,
-    FidesopsDatasetField,
-    FidesopsDatasetReference,
-)
+
+from fideslang import  FidesDatasetReference, DatasetField
+from fideslang import Dataset as FidesDataset
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
 
@@ -81,7 +79,7 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            FidesopsDataset(**self.dataset), self.connection_config.key  # type: ignore
+            FidesDataset(**self.dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -102,7 +100,7 @@ class DatasetConfig(Base):
 
 
 def to_graph_field(
-    field: FidesopsDatasetField, return_all_elements: Optional[bool] = None
+    field: DatasetField, return_all_elements: Optional[bool] = None
 ) -> Field:
     """Flattens the dataset field type into its graph representation"""
 
@@ -182,7 +180,7 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: FidesopsDataset, connection_key: FidesOpsKey
+    dataset: FidesDataset, connection_key: FidesOpsKey
 ) -> Dataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
@@ -228,10 +226,10 @@ def convert_dataset_to_graph(
 
 
 def validate_dataset_reference(
-    db: Session, dataset_reference: FidesopsDatasetReference
+    db: Session, dataset_reference: FidesDatasetReference
 ) -> None:
     """
-    Validates that the provided FidesopsDatasetReference refers
+    Validates that the provided FidesDatasetReference refers
     to a `Dataset`, `Collection` and `Field` that actually exist in the DB.
     Raises a `ValidationError` if not.
     """
@@ -245,7 +243,7 @@ def validate_dataset_reference(
             f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
         )
     dataset: Dataset = convert_dataset_to_graph(
-        FidesopsDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        FidesDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

@@ -216,6 +216,7 @@ async def setup_server() -> None:
 
     log.info("Validating SaaS connector templates...")
     registry = load_registry(registry_file)
+    log.info("Finished loading saas templates")
     try:
         db = get_api_session()
         update_saas_configs(registry, db)
