@@ -1,12 +1,11 @@
 from typing import Any, Dict, Generator
 
-import requests
 import pydash
 import pytest
+import requests
 from fideslib.db import session
 from sqlalchemy.orm import Session
-from sqlalchemy_utils.functions import drop_database
-from sqlalchemy_utils.functions import create_database, database_exists
+from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -28,8 +27,7 @@ secrets = get_secrets("fullstory")
 def fullstory_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "fullstory.domain") or secrets["domain"],
-        "access_token": pydash.get(saas_config, "fullstory.access_token")
-        or secrets["access_token"],
+        "api_key": pydash.get(saas_config, "fullstory.api_key") or secrets["api_key"],
         "fullstory_user_id": {
             "dataset": "fullstory_postgres",
             "field": "fullstory_users.fullstory_user_id",
@@ -186,7 +184,7 @@ class FullstoryTestClient:
     def __init__(self, connection_config_fullstory: ConnectionConfig):
         fullstory_secrets = connection_config_fullstory.secrets
         self.headers = {
-            "Authorization": f"Basic {fullstory_secrets['access_token']}",
+            "Authorization": f"Basic {fullstory_secrets['api_key']}",
         }
         self.base_url = f"https://{fullstory_secrets['domain']}"
 
