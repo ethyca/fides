@@ -17,10 +17,8 @@ const goToDataFlowScanner = () => {
 /**
  * This test suite is a parallel of config-wizard.cy.ts for testing the config wizard flow
  * when the user has access to the Fides+.
- *
- * We skip these tests while the config wizard feature flag is set to false.
  */
-describe.skip("Config wizard with plus settings", () => {
+describe("Config wizard with plus settings", () => {
   beforeEach(() => {
     cy.login();
     cy.intercept("GET", "/api/v1/organization/*", {
@@ -33,7 +31,7 @@ describe.skip("Config wizard with plus settings", () => {
     stubPlus(true);
 
     // Go through the initial config wizard steps
-    cy.visit("/config-wizard");
+    cy.visit("/add-systems");
     cy.getByTestId("guided-setup-btn").click();
     cy.wait("@getOrganization");
   });
