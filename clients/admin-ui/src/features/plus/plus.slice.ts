@@ -19,6 +19,7 @@ import {
   ClassifySystem,
   GenerateTypes,
   SystemScanResponse,
+  SystemsDiff,
 } from "~/types/api";
 
 interface HealthResponse {
@@ -40,7 +41,12 @@ export const plusApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
   }),
-  tagTypes: ["Plus", "ClassifyInstancesDatasets", "ClassifyInstancesSystems"],
+  tagTypes: [
+    "Plus",
+    "ClassifyInstancesDatasets",
+    "ClassifyInstancesSystems",
+    "LatestScan",
+  ],
   endpoints: (build) => ({
     getHealth: build.query<HealthResponse, void>({
       query: () => "health",
@@ -124,7 +130,15 @@ export const plusApi = createApi({
         params,
         method: "PUT",
       }),
-      invalidatesTags: ["ClassifyInstancesSystems"],
+      invalidatesTags: ["ClassifyInstancesSystems", "LatestScan"],
+    }),
+    getLatestScanDiff: build.query<SystemsDiff, void>({
+      query: () => ({
+        url: `scan/latest`,
+        params: { diff: true },
+        method: "GET",
+      }),
+      providesTags: ["LatestScan"],
     }),
   }),
 });
@@ -137,6 +151,7 @@ export const {
   useGetClassifySystemQuery,
   useUpdateClassifyInstanceMutation,
   useUpdateScanMutation,
+  useGetLatestScanDiffQuery,
 } = plusApi;
 
 export const useHasPlus = () => {

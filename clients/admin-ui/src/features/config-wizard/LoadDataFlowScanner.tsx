@@ -8,8 +8,11 @@ import {
   parseError,
 } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
-import { useUpdateScanMutation } from "~/features/plus/plus.slice";
-import { RTKErrorResult } from "~/types/errors";
+import {
+  useGetLatestScanDiffQuery,
+  useUpdateScanMutation,
+} from "~/features/plus/plus.slice";
+import { isAPIError, RTKErrorResult } from "~/types/errors";
 
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
 import ScannerError from "./ScannerError";
@@ -23,8 +26,17 @@ import ScannerLoading from "./ScannerLoading";
 const LoadDataFlowScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
+  const { data: latestScan, error: latestScanError } =
+    useGetLatestScanDiffQuery();
   const [updateScanMutation] = useUpdateScanMutation();
   const [scannerError, setScannerError] = useState<ParsedError>();
+
+  const isFirstScan =
+    latestScanError &&
+    isAPIError(latestScanError) &&
+    latestScanError.status === 404;
+
+  console.log({ latestScan, latestScanError, isFirstScan });
 
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
