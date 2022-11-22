@@ -1,5 +1,6 @@
 import { ItemOption } from "common/dropdown/types";
 
+import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
 import { SystemType } from "~/types/api";
 
 import { DATASTORE_CONNECTION_ROUTE } from "../../../constants";
@@ -61,8 +62,6 @@ export const STEPS: AddConnectionStep[] = [
     stepId: 1,
     label: "Choose your connection",
     href: `${DATASTORE_CONNECTION_ROUTE}/new?step=1`,
-    description:
-      "Systems describe any services that store or process data for your organization, including third-party APIs, web applications, databases, and data warehouses. System discovery allows Fides to identify and build a data map from the list of systems that exist within your organization.",
     parentStepId: 0,
   },
   {

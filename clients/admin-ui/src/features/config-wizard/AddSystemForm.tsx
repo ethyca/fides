@@ -22,6 +22,7 @@ import {
   QuestionIcon,
   RuntimeScannerLogo,
 } from "~/features/common/Icon";
+import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -43,11 +44,7 @@ const AddSystemForm = () => {
             {({ isExpanded }) => (
               <>
                 <h2>
-                  Systems describe any services that store or process data for
-                  your organization, including third-party APIs, web
-                  applications, databases, and data warehouses. System discovery
-                  allows Fides to identify and build a data map from the list of
-                  systems that exist within your organization.
+                  {ADD_SYSTEM_DESCRIPTION}
                   <AccordionButton
                     display="inline"
                     padding="0px"
