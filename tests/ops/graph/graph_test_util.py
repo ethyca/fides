@@ -95,7 +95,9 @@ def assert_rows_match(rows: List[Row], min_size: int, keys: Iterable[str]) -> No
 
     assert len(rows) >= min_size
     for row in rows:
-        assert contains_keys(row, *keys)
+        assert contains_keys(
+            row, *keys
+        ), f"assert_rows_match differs by [{','.join(set(keys).difference(set(row.keys())))}]"
 
 
 # Helper methods
