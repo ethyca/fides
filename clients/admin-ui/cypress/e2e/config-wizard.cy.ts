@@ -186,7 +186,7 @@ describe.skip("Config Wizard", () => {
       }).as("postGenerate403");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate403");
-      // Expect the custom message for this specific error.
+      // Expect the general message with a log.
       cy.getByTestId("scanner-error");
       cy.getByTestId("generic-msg");
 
