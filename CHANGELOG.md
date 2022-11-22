@@ -19,9 +19,12 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
 
 ### Added
+
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
+* Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 
 ### Fixed
+
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
 
 ### Docs
