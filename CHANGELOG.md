@@ -22,6 +22,7 @@ The types of changes are:
 ### Added
 
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
+* Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 
 ### Fixed
