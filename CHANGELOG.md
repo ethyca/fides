@@ -35,6 +35,7 @@ The types of changes are:
 
 * Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
 * Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+* Update documentation to reflect configs necessary for mailgun, twilio_sms and twilio_email service types [#1846](https://github.com/ethyca/fides/pull/1846)
 
 ...
 
