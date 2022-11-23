@@ -425,6 +425,10 @@ To view a list of all available connection types, visit `GET /api/v1/connection_
             "type": "saas"
         },
         {
+            "identifier": "fullstory",
+            "type": "saas"
+        },
+        {
             "identifier": "hubspot",
             "type": "saas"
         },

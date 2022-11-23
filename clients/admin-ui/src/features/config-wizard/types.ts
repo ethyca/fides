@@ -1,7 +1,7 @@
 import { ValidTargets } from "~/types/api";
 
 export enum SystemMethods {
-  RUNTIME = "runtime",
+  DATA_FLOW = "data-flow",
   MANUAL = "manual",
 }
 
