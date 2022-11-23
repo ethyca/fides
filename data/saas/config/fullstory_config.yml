@@ -7,12 +7,14 @@ saas_config:
 
   connector_params:
     - name: domain
+      default_value: api.fullstory.com
     - name: api_key
 
   external_references:
     - name: fullstory_user_id
       label: Fullstory User ID
       description: Dataset reference to the location of Fullstory user IDs
+
   client_config:
     protocol: https
     host: <domain>
