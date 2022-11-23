@@ -38,7 +38,16 @@ class RedisSettings(FidesSettings):
             return v
 
         db_index = values.get("db_index") if values.get("db_index") is not None else ""
-        return f"redis://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}"
+        connection_protocol = "redis"
+        params = ""
+        use_tls = values.get("ssl", False)
+        if use_tls:
+            # If using TLS update the connection URL format
+            connection_protocol = "rediss"
+            cert_reqs = values.get("ssl_cert_reqs", "none")
+            params = f"?ssl_cert_reqs={quote_plus(cert_reqs)}"
+
+        return f"{connection_protocol}://{quote_plus(values.get('user', ''))}:{quote_plus(values.get('password', ''))}@{values.get('host', '')}:{values.get('port', '')}/{db_index}{params}"
 
     class Config:
         env_prefix = ENV_PREFIX
