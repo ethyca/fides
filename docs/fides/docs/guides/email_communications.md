@@ -47,7 +47,7 @@ Fides currently supports Mailgun for email integrations. Ensure you register or 
 
 ### Add the messaging configuration secrets 
 
-```json title="<code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret"
+```json title="<code>POST api/v1/messaging/config/{{messaging_config_key}}/secret"
 {
     "mailgun_api_key": "nc123849ycnpq98fnu"
 }
