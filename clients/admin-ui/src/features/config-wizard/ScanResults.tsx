@@ -94,9 +94,6 @@ const ScanResults = () => {
     dispatch(changeStep(2));
   };
 
-  // TODO: Store the region the user submitted through the form.
-  const region = "the specified region";
-
   const warningMessage = (
     <Text color="gray.500" mb={3}>
       You’re registering {selectedSystems.length} of {systems.length} systems
@@ -114,8 +111,9 @@ const ScanResults = () => {
 
         <Box>
           <Text>
-            Below are search results for {region}. Please select and register
-            the systems you would like to maintain in your mapping and reports.
+            Below are the results of your infrastructure scan. To continue,
+            select the systems you would like registered in your data map and
+            reports.
           </Text>
           <Box display="flex" justifyContent="end">
             <ColumnDropdown
