@@ -28,15 +28,13 @@ const LoadDataFlowScanner = () => {
   const toast = useToast();
   const { data: latestScan, error: latestScanError } =
     useGetLatestScanDiffQuery();
-  const [updateScanMutation] = useUpdateScanMutation();
+  const [updateScanMutation, { data: scanResults }] = useUpdateScanMutation();
   const [scannerError, setScannerError] = useState<ParsedError>();
 
   const isFirstScan =
-    latestScanError &&
+    !!latestScanError &&
     isAPIError(latestScanError) &&
     latestScanError.status === 404;
-
-  console.log({ latestScan, latestScanError, isFirstScan });
 
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -47,25 +45,36 @@ const LoadDataFlowScanner = () => {
     setScannerError(parsedError);
   };
 
+  // Call scan as soon as this component mounts
   useEffect(() => {
     const handleScan = async () => {
       const result = await updateScanMutation({ classify: true });
       if (isErrorResult(result)) {
         handleError(result.error);
-      } else {
-        const { data } = result;
-        toast(
-          successToastParams(
-            `Your scan was successfully completed, with ${data.systems.length} new systems detected!`
-          )
-        );
-        dispatch(setSystemsForReview(data.systems));
-        dispatch(changeStep());
       }
     };
 
     handleScan();
-  }, [updateScanMutation, dispatch, toast]);
+  }, [updateScanMutation]);
+
+  /**
+   * When the scan is finished, handle the results. This is separated into two useEffects
+   * in order not to trigger the initial scan again.
+   */
+  useEffect(() => {
+    if (scanResults) {
+      const systemsToRegister = isFirstScan
+        ? scanResults.systems
+        : latestScan?.added_systems || [];
+      toast(
+        successToastParams(
+          `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`
+        )
+      );
+      dispatch(setSystemsForReview(systemsToRegister));
+      dispatch(changeStep());
+    }
+  }, [scanResults, latestScan, toast, dispatch, isFirstScan]);
 
   const handleCancel = () => {
     dispatch(changeStep(2));
