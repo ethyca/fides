@@ -4,11 +4,11 @@ from celery import Celery, Task
 from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_session
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.ctl.core.config import get_config
 
-logger = get_task_logger(__name__)
 
 CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
