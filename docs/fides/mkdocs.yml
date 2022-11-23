@@ -36,7 +36,7 @@ nav:
           - Create Policies: guides/policies.md
           - Extend the Taxonomy: guides/extend_taxonomy.md
           - Generate Data Maps: guides/generate_datamaps.md
-          - Configure Email Communications: guides/email_communications.md
+          - Configure Messaging: guides/messaging.md
           - View Available Connection Types: guides/connection_types.md
           - Annotate Complex Fields: guides/complex_fields.md
           - Configure Data Masking: guides/masking_strategies.md

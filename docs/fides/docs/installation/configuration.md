@@ -95,6 +95,13 @@ Fides will filter out any sensitive configuration variables. The full list of va
 - `require_manual_request_approval`
 - `masking_strict`
 
+#### Notification settings
+
+- `send_request_completion_notification`
+- `send_request_receipt_notification`
+- `send_request_review_notification`
+- `notification_service_type`
+
 For more information, see the [API docs](../api/index.md).
 
 ## Configuration file
@@ -255,6 +262,15 @@ The credentials section uses custom keys which can be referenced in certain comm
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `enabled` | bool | `True` | Toggle whether the Admin UI is served from `/`. |
+
+#### Notifications
+
+| Name | Type   | Default | Description                                                                                                       |
+|:---- |:-------|:--------|:------------------------------------------------------------------------------------------------------------------|
+| `send_request_completion_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request completion.                                |
+| `send_request_receipt_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request receipt.                                   |
+| `send_request_review_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request review.                                    |
+| `notification_service_type` | String | N/A     | Sets the notification service type used to send notifications. Accepts `mailgun`, `twilio_sms`, or `twilio_email`.|
 
 ## Set environment variables
 
