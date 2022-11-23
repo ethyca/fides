@@ -1,7 +1,6 @@
 from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
-from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_session
 from loguru import logger
