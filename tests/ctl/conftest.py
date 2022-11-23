@@ -26,6 +26,7 @@ from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 
 from fides.api import main
+from fides.api.ctl.database.session import sync_session
 from fides.api.ctl.sql_models import FidesUser
 from fides.ctl.core import api
 from fides.ctl.core.config import FidesConfig, get_config
@@ -306,6 +307,13 @@ def populated_nested_manifest_dir(test_manifests: Dict, tmp_path: str) -> str:
         with open(f"{nested_manifest_dir}/{manifest}.yml", "w") as manifest_file:
             yaml.dump(test_manifests[manifest], manifest_file)
     return manifest_dir
+
+
+@pytest.fixture
+def db() -> Generator:
+    session = sync_session()
+    yield session
+    session.close()
 
 
 @pytest.fixture(scope="session")
