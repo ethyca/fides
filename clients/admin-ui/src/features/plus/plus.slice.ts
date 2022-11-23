@@ -1,12 +1,12 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { selectSystemsForReview } from "~/features/config-wizard/config-wizard.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
+import { selectSystemsToClassify } from "~/features/system";
 import {
   ClassificationResponse,
   ClassifyCollection,
@@ -168,7 +168,7 @@ export const selectDatasetClassifyInstances = createSelector(
 );
 
 export const selectSystemClassifyInstances = createSelector(
-  [(state) => state, selectSystemsForReview],
+  [(state) => state, selectSystemsToClassify],
   (state, systems) =>
     plusApi.endpoints.getAllClassifyInstances.select({
       resource_type: GenerateTypes.SYSTEMS,

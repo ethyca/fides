@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -21,12 +21,15 @@ import { useAPIHelper } from "~/features/common/hooks";
 import { resolveLink } from "~/features/common/nav/zone-config";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
-import { useUpsertSystemsMutation } from "~/features/system";
+import {
+  setSystemsToClassify,
+  useUpsertSystemsMutation,
+} from "~/features/system";
 import { System } from "~/types/api";
 
 import {
   changeStep,
-  chooseSystemsForReview,
+  reset,
   selectAddSystemsMethod,
   selectSystemsForReview,
 } from "./config-wizard.slice";
@@ -56,8 +59,15 @@ const ScanResults = () => {
   const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
 
+  useEffect(
+    () => () => {
+      // This is the last step, so, on unmount, reset so the flow is ready for the next time
+      dispatch(reset());
+    },
+    [dispatch]
+  );
+
   const confirmRegisterSelectedSystems = async () => {
-    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     const response = await upsertSystems(selectedSystems);
 
     if (isErrorResult(response)) {
@@ -69,6 +79,7 @@ const ScanResults = () => {
      * But for now, only the data flow scanner does
      */
     if (method === SystemMethods.DATA_FLOW) {
+      dispatch(setSystemsToClassify(selectedSystems));
       return router.push("/classify-systems");
     }
 
@@ -109,40 +120,46 @@ const ScanResults = () => {
           Scan results
         </Heading>
 
-        <Box>
-          <Text>
-            Below are the results of your infrastructure scan. To continue,
-            select the systems you would like registered in your data map and
-            reports.
-          </Text>
-          <Box display="flex" justifyContent="end">
-            <ColumnDropdown
-              allColumns={ALL_COLUMNS}
-              selectedColumns={selectedColumns}
-              onChange={setSelectedColumns}
+        {systems.length === 0 ? (
+          <Text>No results were found for your infrastructure scan.</Text>
+        ) : (
+          <>
+            <Box>
+              <Text>
+                Below are the results of your infrastructure scan. To continue,
+                select the systems you would like registered in your data map
+                and reports.
+              </Text>
+              <Box display="flex" justifyContent="end">
+                <ColumnDropdown
+                  allColumns={ALL_COLUMNS}
+                  selectedColumns={selectedColumns}
+                  onChange={setSelectedColumns}
+                />
+              </Box>
+            </Box>
+            <SystemsCheckboxTable
+              allSystems={systems}
+              checked={selectedSystems}
+              onChange={setSelectedSystems}
+              columns={selectedColumns}
             />
-          </Box>
-        </Box>
-        <SystemsCheckboxTable
-          allSystems={systems}
-          checked={selectedSystems}
-          onChange={setSelectedSystems}
-          columns={selectedColumns}
-        />
 
-        <HStack>
-          <Button variant="outline" onClick={handleCancel}>
-            Back
-          </Button>
-          <Button
-            variant="primary"
-            isDisabled={selectedSystems.length === 0}
-            data-testid="register-btn"
-            onClick={handleSubmit}
-          >
-            Register selected systems
-          </Button>
-        </HStack>
+            <HStack>
+              <Button variant="outline" onClick={handleCancel}>
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                isDisabled={selectedSystems.length === 0}
+                data-testid="register-btn"
+                onClick={handleSubmit}
+              >
+                Register selected systems
+              </Button>
+            </HStack>
+          </>
+        )}
       </Stack>
 
       <WarningModal

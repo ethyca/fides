@@ -7,14 +7,14 @@ import { useDispatch } from "react-redux";
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
 import {
-  selectSystemsForReview,
-  setSystemsForReview,
-} from "~/features/config-wizard/config-wizard.slice";
-import {
   useGetAllClassifyInstancesQuery,
   useGetHealthQuery,
 } from "~/features/plus/plus.slice";
-import { useGetAllSystemsQuery } from "~/features/system";
+import {
+  selectSystemsToClassify,
+  setSystemsToClassify,
+  useGetAllSystemsQuery,
+} from "~/features/system";
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
@@ -41,15 +41,15 @@ const ClassifySystems: NextPage = () => {
    * we can't necessarily rely on knowing which systems were put into review
    * Therefore, as a fallback, query all systems.
    */
-  const systemsForReview = useAppSelector(selectSystemsForReview);
+  const systemsToClassify = useAppSelector(selectSystemsToClassify);
   const { isLoading: isLoadingSystems, data: allSystems } =
     useGetAllSystemsQuery(undefined, {
-      skip: !hasPlus || systemsForReview.length > 0,
+      skip: !hasPlus || systemsToClassify.length > 0,
     });
-  const systems = systemsForReview || allSystems;
+  const systems = systemsToClassify || allSystems;
   useEffect(() => {
     if (allSystems && allSystems.length) {
-      dispatch(setSystemsForReview(allSystems));
+      dispatch(setSystemsToClassify(allSystems));
     }
   }, [dispatch, allSystems]);
 

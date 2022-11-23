@@ -108,8 +108,9 @@ export const {
 export interface State {
   activeSystem?: System;
   activeClassifySystemFidesKey?: string;
+  systemsToClassify: System[];
 }
-const initialState: State = {};
+const initialState: State = { systemsToClassify: [] };
 
 export const systemSlice = createSlice({
   name: "system",
@@ -127,11 +128,17 @@ export const systemSlice = createSlice({
     ) => {
       draftState.activeClassifySystemFidesKey = action.payload;
     },
+    setSystemsToClassify: (draftState, action: PayloadAction<System[]>) => {
+      draftState.systemsToClassify = action.payload;
+    },
   },
 });
 
-export const { setActiveSystem, setActiveClassifySystemFidesKey } =
-  systemSlice.actions;
+export const {
+  setActiveSystem,
+  setActiveClassifySystemFidesKey,
+  setSystemsToClassify,
+} = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
@@ -157,4 +164,9 @@ export const selectActiveClassifySystem = createSelector(
     const system = allSystems?.find((s) => s.fides_key === fidesKey);
     return system;
   }
+);
+
+export const selectSystemsToClassify = createSelector(
+  selectSystem,
+  (state) => state.systemsToClassify
 );
