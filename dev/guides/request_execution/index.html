@@ -798,8 +798,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../email_communications/" class="md-nav__link">
-        Configure Email Communications
+      <a href="../messaging/" class="md-nav__link">
+        Configure Messaging
       </a>
     </li>
   
@@ -2071,7 +2071,7 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><strong>Notify</strong></td>
-<td>If configured, the user will receive an <a href="../email_communications/">email</a> verifying that their request has been received.</td>
+<td>If configured, the user will receive an <a href="../messaging/">email</a> verifying that their request has been received.</td>
 </tr>
 <tr>
 <td><strong>Approve</strong></td>
@@ -2131,7 +2131,7 @@ that had fields masked in temporary storage.</p>
 <p>The masking request might involve an <code>update</code> database query or an <code>update</code> or <code>delete</code> HTTP request depending on the <a href="../connection_types/">Connection Type</a>. The Email Connector type doesn't mask any data itself, but instead persists how to locate and mask that Collection in temporary storage for use later.</p>
 <p>If masking fails on a given Collection, Fides retries the requests for a configured number of times, and then request execution will exit with a status of <code>error</code>. Fides will cache both the failed Collection and that the failure occurred on the <code>erasure</code> step. Retrying the privacy request will resume from the <code>erasure</code> step at the failed Collection. Previously masked Collections will not be masked again.</p>
 <h3 id="send-erasure-request-emails">Send erasure request emails</h3>
-<p>After the access and erasure steps have both executed, Fides checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See <a href="../email_communications/#Email-third-party-services-to-mask-data">emailing third party services to mask data</a> for more information.</p>
+<p>After the access and erasure steps have both executed, Fides checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See <a href="../messaging/#Email-third-party-services-to-mask-data">emailing third party services to mask data</a> for more information.</p>
 <p>Fides retrieves any masking instructions cached by Email Connectors in the erasure request step, and combines them into a single email per Dataset.</p>
 <p>This step is only performed if you have Email Connectors configured. If the email send fails for any reason, the request will exit with status <code>error</code>.  Fides will cache this step in temporary storage, so retrying the request will resume from this point.</p>
 <h3 id="run-policy-post-execution-webhooks">Run policy post-execution webhooks</h3>

@@ -537,6 +537,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-settings" class="md-nav__link">
+    Notification settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -621,6 +628,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifications" class="md-nav__link">
+    Notifications
   </a>
   
 </li>
@@ -1009,8 +1023,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/email_communications/" class="md-nav__link">
-        Configure Email Communications
+      <a href="../../guides/messaging/" class="md-nav__link">
+        Configure Messaging
       </a>
     </li>
   
@@ -2162,6 +2176,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-settings" class="md-nav__link">
+    Notification settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2246,6 +2267,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifications" class="md-nav__link">
+    Notifications
   </a>
   
 </li>
@@ -2398,6 +2426,13 @@ To learn more about configuring fides, see:
 <li><code>task_retry_backoff</code></li>
 <li><code>require_manual_request_approval</code></li>
 <li><code>masking_strict</code></li>
+</ul>
+<h4 id="notification-settings">Notification settings</h4>
+<ul>
+<li><code>send_request_completion_notification</code></li>
+<li><code>send_request_receipt_notification</code></li>
+<li><code>send_request_review_notification</code></li>
+<li><code>notification_service_type</code></li>
 </ul>
 <p>For more information, see the <a href="../../api/">API docs</a>.</p>
 <h2 id="configuration-file">Configuration file</h2>
@@ -2916,6 +2951,43 @@ To learn more about configuring fides, see:
 <td>bool</td>
 <td><code>True</code></td>
 <td>Toggle whether the Admin UI is served from <code>/</code>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="notifications">Notifications</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>send_request_completion_notification</code></td>
+<td style="text-align: left;">bool</td>
+<td style="text-align: left;"><code>False</code></td>
+<td style="text-align: left;">When set to <code>True</code>, enables subject notifications upon privacy request completion.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>send_request_receipt_notification</code></td>
+<td style="text-align: left;">bool</td>
+<td style="text-align: left;"><code>False</code></td>
+<td style="text-align: left;">When set to <code>True</code>, enables subject notifications upon privacy request receipt.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>send_request_review_notification</code></td>
+<td style="text-align: left;">bool</td>
+<td style="text-align: left;"><code>False</code></td>
+<td style="text-align: left;">When set to <code>True</code>, enables subject notifications upon privacy request review.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>notification_service_type</code></td>
+<td style="text-align: left;">String</td>
+<td style="text-align: left;">N/A</td>
+<td style="text-align: left;">Sets the notification service type used to send notifications. Accepts <code>mailgun</code>, <code>twilio_sms</code>, or <code>twilio_email</code>.</td>
 </tr>
 </tbody>
 </table>

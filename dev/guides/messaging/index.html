@@ -15,7 +15,7 @@
     
     
       
-        <title>Configure Email/SMS Messaging - Fides</title>
+        <title>Configure Messaging - Fides</title>
       
     
     
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure Email/SMS Messaging
+              Configure Messaging
             
           </span>
         </div>
@@ -217,13 +217,15 @@ You're not viewing the latest version.
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link md-tabs__link--active">
         Fides
       </a>
     </li>
@@ -323,12 +325,14 @@ You're not viewing the latest version.
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
       
       
       
@@ -714,12 +718,14 @@ You're not viewing the latest version.
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" checked>
       
       
       
@@ -796,11 +802,140 @@ You're not viewing the latest version.
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../email_communications/" class="md-nav__link">
-        Configure Email Communications
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Configure Messaging
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Configure Messaging
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-emailsms-used-for" class="md-nav__link">
+    What is email/SMS used for?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add-necessary-config-variables" class="md-nav__link">
+    Add necessary config variables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-messaging-configuration" class="md-nav__link">
+    Create the messaging configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Create the messaging configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mailgun-config" class="md-nav__link">
+    Mailgun Config
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-sms-config" class="md-nav__link">
+    Twilio SMS Config
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-the-messaging-configuration-secrets" class="md-nav__link">
+    Add the messaging configuration secrets
+  </a>
+  
+    <nav class="md-nav" aria-label="Add the messaging configuration secrets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mailgun-secrets" class="md-nav__link">
+    Mailgun Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-sms-secrets" class="md-nav__link">
+    Twilio SMS Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-email-secrets" class="md-nav__link">
+    Twilio Email Secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1923,9 +2058,36 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#add-necessary-config-variables" class="md-nav__link">
+    Add necessary config variables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#create-the-messaging-configuration" class="md-nav__link">
     Create the messaging configuration
   </a>
+  
+    <nav class="md-nav" aria-label="Create the messaging configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mailgun-config" class="md-nav__link">
+    Mailgun Config
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-sms-config" class="md-nav__link">
+    Twilio SMS Config
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1933,6 +2095,33 @@ You're not viewing the latest version.
   <a href="#add-the-messaging-configuration-secrets" class="md-nav__link">
     Add the messaging configuration secrets
   </a>
+  
+    <nav class="md-nav" aria-label="Add the messaging configuration secrets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mailgun-secrets" class="md-nav__link">
+    Mailgun Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-sms-secrets" class="md-nav__link">
+    Twilio SMS Secrets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#twilio-email-secrets" class="md-nav__link">
+    Twilio Email Secrets
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1964,10 +2153,14 @@ You're not viewing the latest version.
 <p>Fides supports email and SMS server configurations for sending processing notices to privacy request subjects. Future updates will support outbound email communications with data processors.</p>
 <p>Supported modes of use:</p>
 <ul>
-<li>Subject Identity Verification - for more information on identity verification in subject requests, see the <a href="../../getting-started/privacy_requests/#subject-identity-verification">Privacy Requests</a> guide.</li>
+<li>Subject Identity Verification - Used to verify subject identity before proceeding with their privacy request. For more information on identity verification in subject requests, see the <a href="../../getting-started/privacy_requests/#subject-identity-verification">Privacy Requests</a> guide.</li>
+<li>Request Receipt Notification - Used to send subject notifications upon privacy request receipt.</li>
+<li>Request Review Notification - Used to send subject notifications upon privacy request review. Includes denial reason of the request, if applicable.</li>
+<li>Request Completion Notification - Used to send subject notifications upon privacy request completion. Includes link to download data package, if applicable.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites</h2>
-<p>Fides currently supports Mailgun for email integrations. Ensure you register or use an existing Mailgun account in order to get up and running with email communications.</p>
+<p>Fides currently supports both Mailgun for email messaging and either Mailgun or Twilio fo SMS messaging.</p>
+<p>For Mailgun, ensure you register or use an existing Mailgun account in order to get up and running with email communications.</p>
 <ol>
 <li>
 <p>Generate a Mailgun Domain Sending Key</p>
@@ -1979,7 +2172,28 @@ You're not viewing the latest version.
 </li>
 </ol>
 <h2 id="configuration">Configuration</h2>
+<h3 id="add-necessary-config-variables">Add necessary config variables</h3>
+<p>You'll need to set up config variables to send out messages from Fides. Refer to <a href="../../installation/configuration/#configuration-variable-reference">the config variable reference</a> for more details.</p>
+<p>Here's an example set of relevant configs to enable all notification types with a Mailgun service type.</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nx">FIDES__EXECUTION__SUBJECT_IDENTITY_VERIFICATION_REQUIRED</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
+<span class="nx">FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE</span><span class="o">=</span><span class="nx">mailgun</span><span class="w"></span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_COMPLETION_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_RECEIPT_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
+<span class="nx">FIDES__NOTIFICATIONS__SEND_REQUEST_REVIEW_NOTIFICATION</span><span class="o">=</span><span class="kc">true</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<p>For the <code>FIDES__NOTIFICATIONS__NOTIFICATION_SERVICE_TYPE</code> variable, we currently support the following service types:</p>
+<ul>
+<li><code>mailgun</code></li>
+<li><code>twilio_sms</code></li>
+<li><code>twilio_email</code></li>
+</ul>
+<p>These service types must correspond to the <code>service_type</code> in one of your messaging configs in the database.</p>
 <h3 id="create-the-messaging-configuration">Create the messaging configuration</h3>
+<h4 id="mailgun-config">Mailgun Config</h4>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/messaging/config</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -1994,6 +2208,17 @@ You're not viewing the latest version.
 <span class="w">    </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">        </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;your.mailgun.domain&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h4 id="twilio-sms-config">Twilio SMS Config</h4>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/messaging/config</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_config_key}}&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;service_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;twilio_text&quot;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <table>
@@ -2014,11 +2239,11 @@ You're not viewing the latest version.
 </tr>
 <tr>
 <td><code>service_type</code></td>
-<td>The email service to configure. Currently, Fides supports <code>mailgun</code>.</td>
+<td>The email service to configure. Currently, Fides supports <code>mailgun</code>, <code>twilio_email</code>, and <code>twilio_sms</code>.</td>
 </tr>
 <tr>
 <td><code>details</code></td>
-<td>A dict of key/val config vars specific to Mailgun.</td>
+<td>A dict of key/val config vars specific to the messaging service.</td>
 </tr>
 <tr>
 <td><code>domain</code></td>
@@ -2035,10 +2260,29 @@ You're not viewing the latest version.
 </tbody>
 </table>
 <h3 id="add-the-messaging-configuration-secrets">Add the messaging configuration secrets</h3>
-<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<h4 id="mailgun-secrets">Mailgun Secrets</h4>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="nt">&quot;mailgun_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nc123849ycnpq98fnu&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;mailgun_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{mailgun_api_key}}&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h4 id="twilio-sms-secrets">Twilio SMS Secrets</h4>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;twilio_account_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_account_sid}}&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;twilio_auth_token&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_auth_token}}&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;twilio_messaging_service_sid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_messaging_service_id}}&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div></td></tr></table></div>
+<h4 id="twilio-email-secrets">Twilio Email Secrets</h4>
+<div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>PUT api/v1/messaging/config/{{messaging_config_key}}/secret</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;twilio_api_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;{{twilio_api_key}}&quot;</span><span class="p">,</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <table>
@@ -2052,6 +2296,26 @@ You're not viewing the latest version.
 <tr>
 <td><code>mailgun_api_key</code></td>
 <td>Your Mailgun Domain Sending Key.</td>
+</tr>
+<tr>
+<td><code>twilio_account_sid</code></td>
+<td>Your Twilio Account SID.</td>
+</tr>
+<tr>
+<td><code>twilio_auth_token</code></td>
+<td>Your Twilio Auth Token.</td>
+</tr>
+<tr>
+<td><code>twilio_messaging_service_sid</code></td>
+<td>Your Twilio Messaging Service SID. One of <code>twilio_messaging_service_sid</code> or <code>twilio_sender_phone_number</code> must be provided.</td>
+</tr>
+<tr>
+<td><code>twilio_sender_phone_number</code></td>
+<td>Your Twilio Sender Phone Number. One of <code>twilio_messaging_service_sid</code> or <code>twilio_sender_phone_number</code> must be provided.</td>
+</tr>
+<tr>
+<td><code>twilio_api_key</code></td>
+<td>Your Twilio API Key.</td>
 </tr>
 </tbody>
 </table>
@@ -2096,6 +2360,59 @@ You're not viewing the latest version.
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+      <div class="nav-wrap">
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../generate_datamaps/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Generate Data Maps"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Generate Data Maps
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../connection_types/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: View Available Connection Types"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              View Available Connection Types
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </div>
+    </nav>
   
 
   </div>

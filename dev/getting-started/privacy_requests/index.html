@@ -926,8 +926,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/email_communications/" class="md-nav__link">
-        Configure Email Communications
+      <a href="../../guides/messaging/" class="md-nav__link">
+        Configure Messaging
       </a>
     </li>
   
@@ -2197,9 +2197,9 @@ You're not viewing the latest version.
 <p>Verifying user identity prior to processing their privacy request requires the following:</p>
 <ol>
 <li>Set the <code>subject_identity_verification_required</code> variable in your <code>fides.toml</code> to <code>TRUE</code>. </li>
-<li><a href="../../guides/email_communications/">Configure Emails</a> that lets Fides send automated emails to your users.</li>
+<li><a href="../../guides/messaging/">Configure Messaging</a> that lets Fides send automated emails or text messages to your users.</li>
 </ol>
-<p>With identify verification enabled, a user will be emailed a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  </p>
+<p>With identify verification enabled, a user will be sent a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  </p>
 <p>Until the Privacy Request identity is verified, it will have a status of <code>identity_unverified</code>:</p>
 <div class="highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename"><code>POST api/v1/privacy-request/<privacy_request_id>/verify</code></span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;verification code here&gt;&quot;</span><span class="p">}</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
