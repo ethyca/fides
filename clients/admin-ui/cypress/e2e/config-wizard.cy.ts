@@ -138,7 +138,7 @@ describe("Config Wizard", () => {
           cy.getByTestId("close-scan-in-progress").click();
           cy.contains("Cancel Scan!");
           cy.contains("Yes, Cancel").click();
-          cy.contains("Scan for Systems");
+          cy.contains("Add Systems");
         });
     });
   });
