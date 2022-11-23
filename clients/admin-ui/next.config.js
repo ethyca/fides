@@ -21,7 +21,7 @@ const nextConfig = {
         return config;
     },
     experimental: {
-        proxyTimeout: 60000
+        proxyTimeout: 120000
     },
     async rewrites() {
         // The tests run without a server. Rewrites cause Next to continually try to connect,
