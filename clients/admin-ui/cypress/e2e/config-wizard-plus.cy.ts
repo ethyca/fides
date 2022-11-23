@@ -44,7 +44,7 @@ describe("Config wizard with plus settings", () => {
 
     it("Allows calling the data flow scanner with classify", () => {
       cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
-        fixture: "classify/list-systems.json",
+        fixture: "data-flow-scanner/list-classify-systems.json",
       }).as("getClassifyList");
 
       goToDataFlowScanner();
