@@ -6,22 +6,27 @@ describe("Config Wizard", () => {
     cy.intercept("GET", "/api/v1/organization/*", {
       fixture: "organization.json",
     }).as("getOrganization");
-
-    cy.intercept("PUT", "/api/v1/organization**", {
-      fixture: "organization.json",
-    }).as("updateOrganization");
-  });
-
-  beforeEach(() => {
-    cy.visit("/add-systems");
-    cy.getByTestId("guided-setup-btn").click();
-    cy.wait("@getOrganization");
   });
 
   describe("Organization setup", () => {
-    it("Fills in the default organization", () => {
+    beforeEach(() => {
+      cy.intercept("PUT", "/api/v1/organization**", {
+        fixture: "organization.json",
+      }).as("updateOrganization");
+    });
+
+    it("Can fill in an organization", () => {
+      cy.fixture("organization.json").then((org) => {
+        cy.intercept("GET", "/api/v1/organization/*", {
+          body: { org, name: null, description: null },
+        }).as("getEmptyOrganization");
+      });
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.wait("@getEmptyOrganization");
+
       cy.getByTestId("organization-info-form");
-      cy.getByTestId("input-name").should("have.value", "Demo Organization");
+      cy.getByTestId("input-name").type("Updated name");
       cy.getByTestId("input-description")
         .clear()
         .type("Updated description")
@@ -32,6 +37,13 @@ describe("Config Wizard", () => {
         expect(body.fides_key).to.eq("default_organization");
         expect(body.description).to.eq("Updated description");
       });
+      cy.getByTestId("add-system-form");
+    });
+
+    it("Can skip the org flow if an organization already exists", () => {
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.getByTestId("add-system-form");
     });
   });
 
@@ -41,8 +53,9 @@ describe("Config Wizard", () => {
       stubTaxonomyEntities();
 
       // Move past organization step.
-      cy.getByTestId("organization-info-form");
-      cy.getByTestId("submit-btn").click();
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.wait("@getOrganization");
       // Select AWS to move to form step.
       cy.getByTestId("add-system-form");
       cy.getByTestId("aws-btn").click();
@@ -135,8 +148,9 @@ describe("Config Wizard", () => {
       stubTaxonomyEntities();
 
       // Move past organization step.
-      cy.getByTestId("organization-info-form");
-      cy.getByTestId("submit-btn").click();
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.wait("@getOrganization");
       // Select Okta to move to form step.
       cy.getByTestId("add-system-form");
       cy.getByTestId("okta-btn").click();

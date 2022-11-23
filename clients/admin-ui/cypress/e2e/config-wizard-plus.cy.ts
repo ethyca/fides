@@ -5,11 +5,7 @@ import { stubPlus } from "cypress/support/stubs";
  * This could be put in a beforeEach, but then you can't overwrite intercepts
  */
 const goToDataFlowScanner = () => {
-  // Move past organization step.
-  cy.getByTestId("organization-info-form");
-  cy.getByTestId("submit-btn").click();
-
-  // Select data flow scanner to move to scan step.
+  // Select Runtime scanner to move to scan step.
   cy.getByTestId("add-system-form");
   cy.getByTestId("data-flow-scan-btn").click();
 };

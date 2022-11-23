@@ -22,6 +22,12 @@ dataset = "data/saas/dataset/doordash_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Doordash"
 
+[fullstory]
+config = "data/saas/config/fullstory_config.yml"
+dataset = "data/saas/dataset/fullstory_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Fullstory"
+
 [firebase_auth]
 config = "data/saas/config/firebase_auth_config.yml"
 dataset = "data/saas/dataset/firebase_auth_dataset.yml"
