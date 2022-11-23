@@ -9,7 +9,7 @@ import {
 } from "~/features/common/helpers";
 import { successToastParams } from "~/features/common/toast";
 import {
-  useGetLatestScanDiffQuery,
+  useLazyGetLatestScanDiffQuery,
   useUpdateScanMutation,
 } from "~/features/plus/plus.slice";
 import { isAPIError, RTKErrorResult } from "~/types/errors";
@@ -26,15 +26,10 @@ import ScannerLoading from "./ScannerLoading";
 const LoadDataFlowScanner = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { data: latestScan, error: latestScanError } =
-    useGetLatestScanDiffQuery();
+  const [triggerGetDiff] = useLazyGetLatestScanDiffQuery();
   const [updateScanMutation, { data: scanResults }] = useUpdateScanMutation();
   const [scannerError, setScannerError] = useState<ParsedError>();
-
-  const isFirstScan =
-    !!latestScanError &&
-    isAPIError(latestScanError) &&
-    latestScanError.status === 404;
+  const [isRescan, setIsRescan] = useState(false);
 
   const handleError = (error: RTKErrorResult["error"]) => {
     const parsedError = parseError(error, {
@@ -48,6 +43,14 @@ const LoadDataFlowScanner = () => {
   // Call scan as soon as this component mounts
   useEffect(() => {
     const handleScan = async () => {
+      // Check whether or not this is the user's first scan
+      const { error: latestScanError } = await triggerGetDiff();
+      const isFirstScan =
+        !!latestScanError &&
+        isAPIError(latestScanError) &&
+        latestScanError.status === 404;
+      setIsRescan(!isFirstScan);
+
       const result = await updateScanMutation({ classify: true });
       if (isErrorResult(result)) {
         handleError(result.error);
@@ -55,26 +58,31 @@ const LoadDataFlowScanner = () => {
     };
 
     handleScan();
-  }, [updateScanMutation]);
+  }, [updateScanMutation, triggerGetDiff]);
 
   /**
    * When the scan is finished, handle the results. This is separated into two useEffects
    * in order not to trigger the initial scan again.
    */
   useEffect(() => {
-    if (scanResults) {
-      const systemsToRegister = isFirstScan
-        ? scanResults.systems
-        : latestScan?.added_systems || [];
-      toast(
-        successToastParams(
-          `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`
-        )
-      );
-      dispatch(setSystemsForReview(systemsToRegister));
-      dispatch(changeStep());
-    }
-  }, [scanResults, latestScan, toast, dispatch, isFirstScan]);
+    const handleResults = async () => {
+      if (scanResults) {
+        const { data: diff } = await triggerGetDiff();
+        const systemsToRegister = isRescan
+          ? diff?.added_systems || []
+          : scanResults.systems;
+
+        toast(
+          successToastParams(
+            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`
+          )
+        );
+        dispatch(setSystemsForReview(systemsToRegister));
+        dispatch(changeStep());
+      }
+    };
+    handleResults();
+  }, [scanResults, toast, dispatch, isRescan, triggerGetDiff]);
 
   const handleCancel = () => {
     dispatch(changeStep(2));

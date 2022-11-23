@@ -152,6 +152,7 @@ export const {
   useUpdateClassifyInstanceMutation,
   useUpdateScanMutation,
   useGetLatestScanDiffQuery,
+  useLazyGetLatestScanDiffQuery,
 } = plusApi;
 
 export const useHasPlus = () => {
