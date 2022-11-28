@@ -1,4 +1,3 @@
-import logging
 from typing import Dict
 
 from setup.database_connector import (
@@ -6,9 +5,6 @@ from setup.database_connector import (
     update_database_connector_secrets,
 )
 from setup.dataset import create_dataset
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def create_fides_connector(

@@ -12,11 +12,6 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors import FidesConnector
-from fides.ctl.core.config import get_config
-
-logger = logging.getLogger(__name__)
-
-CONFIG = get_config()
 
 from .application_fixtures import integration_secrets
 
