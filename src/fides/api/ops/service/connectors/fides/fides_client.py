@@ -45,7 +45,7 @@ class FidesClient:
     def login(self) -> None:
         ul: UserLogin = UserLogin(username=self.username, password=self.password)
         response = requests.post(
-            self.uri + urls.V1_URL_PREFIX + urls.LOGIN, json=ul.dict()
+            f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
         )
         if response.ok:
             self.token = response.json()["token_data"]["access_token"]
@@ -76,7 +76,7 @@ class FidesClient:
             data=data,
             json=json,
         ).prepare()
-        req.headers["Authorization"] = "Bearer " + self.token
+        req.headers["Authorization"] = f"Bearer {self.token}"
         return req
 
     def create_privacy_request(
