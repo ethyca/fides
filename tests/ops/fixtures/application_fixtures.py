@@ -113,6 +113,11 @@ integration_secrets = {
         "username": pydash.get(integration_config, "timescale_example.user"),
         "password": pydash.get(integration_config, "timescale_example.password"),
     },
+    "fides_example": {
+        "uri": pydash.get(integration_config, "fides_example.uri"),
+        "username": pydash.get(integration_config, "fides_example.username"),
+        "password": pydash.get(integration_config, "fides_example.password"),
+    },
 }
 
 
@@ -1241,6 +1246,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/bigquery_example_test_dataset.yml",
         "data/dataset/manual_dataset.yml",
         "data/dataset/email_dataset.yml",
+        "data/dataset/remote_fides_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

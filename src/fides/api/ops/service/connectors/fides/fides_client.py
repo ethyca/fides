@@ -57,8 +57,8 @@ class FidesClient:
         self,
         method: str,
         path: str,
-        headers: Dict[str, Any] = {},
-        query_params: Dict[str, Any] = {},
+        headers: Optional[Dict[str, Any]] = {},
+        query_params: Optional[Dict[str, Any]] = {},
         data: Optional[Any] = None,
         json: Optional[Any] = None,
     ) -> PreparedRequest:
@@ -80,14 +80,16 @@ class FidesClient:
         return req
 
     def create_privacy_request(
-        self, privacy_request_id: str, identity: Identity, policy_key: str
+        self, external_id: Optional[str], identity: Identity, policy_key: str
     ) -> str:
         """
         Create privacy request on remote fides by hitting privacy request endpoint
         Retruns the created privacy request ID
         """
         pr: PrivacyRequestCreate = PrivacyRequestCreate(
-            external_id=privacy_request_id, identity=identity, policy_key=policy_key
+            external_id=external_id,
+            identity=identity,
+            policy_key=policy_key,
         )
 
         request: PreparedRequest = self.authenticated_request(
@@ -96,38 +98,36 @@ class FidesClient:
             json=[pr.dict()],
         )
         response = self.session.send(request)
-        if response.ok:
-            if response.json()["failed"]:
-                # TODO better exception here?
-                raise FidesError(
-                    f"Failed privacy request creation on remote Fides {self.uri} with failure message: {response.json()['failed']['message']}"
-                )
-            return response.json()["succeeded"][0]["id"]
-
-        log.error(f"Error creating privacy request on remote Fides {self.uri}")
-        response.raise_for_status()
-        return None
+        if not response.ok:
+            log.error(f"Error creating privacy request on remote Fides {self.uri}")
+            response.raise_for_status()
+        if response.json()["failed"]:
+            # TODO better handle errored state here?
+            raise FidesError(
+                f"Failed privacy request creation on remote Fides {self.uri} with failure message: {response.json()['failed'][0]['message']}"
+            )
+        return response.json()["succeeded"][0]["id"]
 
     def poll_for_request_completion(
-        self, privacy_request_id: str, retries: int = 0, interval: int = 1
+        self, privacy_request_id: str, retries: int, interval: int
     ) -> dict[str, Any]:
         """
         Poll remote fides for status of privacy request with the given ID until it is complete.
         This is effectively a blocking call, i.e. it will block the current thread until
         it determines completion, or until timeout is reached.
 
-        Returns storage location, or error
+        Returns the privacy request record, or error
         """
         while (status := self.request_status(privacy_request_id)[0])[
             "status"
         ] not in COMPLETION_STATUSES:
             # if we've hit 0, we've run out of retries.
             # an input arg of 0 is effectively infinite retries
+            retries -= 1
             if retries == 0:
                 raise FidesError(
-                    f"Polling for status of privacy request [{privacy_request_id}] on remote Fides {self.uri} has timed out. Request was last observed with status {status.status}"
+                    f"Polling for status of privacy request [{privacy_request_id}] on remote Fides {self.uri} has timed out. Request was last observed with status {status['status']}"
                 )
-            retries -= 1
             time.sleep(interval)
 
         if status["status"] == PrivacyRequestStatus.error:
@@ -152,7 +152,7 @@ class FidesClient:
             f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} is in an unknown state. Look at the remote Fides for more information."
         )
 
-    def request_status(self, privacy_request_id: str = None) -> List:
+    def request_status(self, privacy_request_id: str = None) -> List[Dict[str, Any]]:
         """
         Return privacy request object that tracks its status
         """
@@ -164,11 +164,10 @@ class FidesClient:
             else None,
         )
         response = self.session.send(request)
-        if response.ok:
-            return response.json()["items"]
+        if not response.ok:
+            log.error(
+                f"Error retrieving status of privacy request [{privacy_request_id}] on remote Fides {self.uri}",
+            )
+            response.raise_for_status()
 
-        log.error(
-            f"Error retrieving status of privacy request [{privacy_request_id}] on remote Fides {self.uri}",
-        )
-        response.raise_for_status()
-        return None
+        return response.json()["items"]

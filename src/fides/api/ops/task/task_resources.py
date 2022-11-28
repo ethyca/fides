@@ -51,7 +51,7 @@ class Connections:
         return self.connections[key]
 
     @staticmethod
-    def build_connector(  # pylint: disable=R0911
+    def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
     ) -> BaseConnector:
         """Factory method to build the appropriately typed connector from the config."""

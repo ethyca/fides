@@ -23,8 +23,8 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_email imp
     EmailSchema as EmailSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
+    FidesConnectorSchema,
     FidesDocsSchema,
-    FidesSchema,
 )
 from fides.api.ops.schemas.connection_configuration.connection_secrets_manual_webhook import (
     ManualWebhookSchema as ManualWebhookSchema,
@@ -105,7 +105,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.email.value: EmailSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.timescale.value: TimescaleSchema,
-    ConnectionType.fides.value: FidesSchema,
+    ConnectionType.fides.value: FidesConnectorSchema,
 }
 
 
