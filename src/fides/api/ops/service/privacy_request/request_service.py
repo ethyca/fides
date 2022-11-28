@@ -101,7 +101,7 @@ async def poll_server_for_completion(
         else:
             async with AsyncClient() as async_client:
                 response = await async_client.get(
-                    url, headers={"Authorizetion": f"Bearer {token}"}
+                    url, headers={"Authorization": f"Bearer {token}"}
                 )
         response.raise_for_status()
 
