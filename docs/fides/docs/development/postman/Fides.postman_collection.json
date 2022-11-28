@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "1329eef2-2d7e-462d-b8f0-f185557f144c",
+		"_postman_id": "e0febd85-4b14-49fb-9b71-a34c728407ec",
 		"name": "Fidesops",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13396647"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -942,6 +941,68 @@
 								"privacy-request",
 								"{{privacy_request_id}}",
 								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Privacy Request Notification Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/privacy-request/notification/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"notification",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Insert/Update Privacy Request Notification Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{client_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_addresses\": [\"test@email.com\", \"another@email.com\"],\n    \"notify_after_failures\": 5\n}"
+						},
+						"url": {
+							"raw": "{{host}}/privacy-request/notification/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"privacy-request",
+								"notification",
+								""
 							]
 						}
 					},

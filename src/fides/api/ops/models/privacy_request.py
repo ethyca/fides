@@ -1,4 +1,4 @@
-# pylint: disable=R0401
+# pylint: disable=R0401, C0302
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Session, backref, relationship
@@ -73,6 +73,7 @@ from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 CONFIG = get_config()
+
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -209,6 +210,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         lazy="dynamic",
         passive_deletes="all",
         primaryjoin="foreign(AuditLog.privacy_request_id)==PrivacyRequest.id",
+    )
+
+    privacy_request_error = relationship(
+        "PrivacyRequestError",
+        back_populates="privacy_request",
+        cascade="delete, delete-orphan",
     )
 
     reviewer = relationship(
@@ -710,6 +717,25 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             },
         )
 
+        PrivacyRequestError.create(
+            db=db, data={"message_sent": False, "privacy_request_id": self.id}
+        )
+
+
+class PrivacyRequestError(Base):
+    """The DB ORM model to track PrivacyRequests error message status."""
+
+    message_sent = Column(Boolean, nullable=False, default=False)
+    privacy_request_id = Column(
+        String,
+        ForeignKey(PrivacyRequest.id_field_path),
+        nullable=False,
+    )
+
+    privacy_request = relationship(
+        PrivacyRequest, back_populates="privacy_request_error"
+    )
+
 
 def _get_manual_input_from_cache(
     privacy_request: PrivacyRequest, manual_webhook: AccessManualWebhook
@@ -725,6 +751,11 @@ def _get_manual_input_from_cache(
     if cached_results:
         return list(cached_results.values())[0]
     return None
+
+
+class PrivacyRequestNotifications(Base):
+    email = Column(String, nullable=False)
+    notify_after_failures = Column(Integer, nullable=False)
 
 
 class ProvidedIdentityType(EnumType):

@@ -25,6 +25,10 @@ PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
     "privacy-request:resume"  # User has permission to resume a privacy request
 )
+PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = (
+    "privacy-request-notifications:create_or_update"
+)
+PRIVACY_REQUEST_NOTIFICATIONS_READ = "privacy-request-notifications:read"
 PRIVACY_REQUEST_REVIEW = "privacy-request:review"
 PRIVACY_REQUEST_UPLOAD_DATA = "privacy-request:upload_data"
 PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data"
@@ -92,6 +96,8 @@ SCOPE_REGISTRY = [
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
     RULE_CREATE_OR_UPDATE,
