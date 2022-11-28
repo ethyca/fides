@@ -26,6 +26,7 @@ The types of changes are:
 
 ### Changed
 * The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+* Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
 
 ### Fixed
 
