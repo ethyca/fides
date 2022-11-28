@@ -31,6 +31,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
@@ -47,6 +48,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
@@ -75,6 +77,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
     get_encryption_cache_key,
@@ -4268,3 +4271,70 @@ class TestCreatePrivacyRequestAuthenticated:
         assert approval_audit_log is not None
         assert approval_audit_log.user_id == "system"
         assert run_access_request_mock.called
+
+
+class TestPrivacyReqeustDataTransfer:
+    def test_privacy_request_data_transfer(
+        self,
+        api_client: TestClient,
+        privacy_request,
+        generate_auth_header,
+        policy,
+        integration_manual_config,
+        db,
+    ):
+        pr = privacy_request.save(db=db)
+        resources = TaskResources(
+            privacy_request, policy, [integration_manual_config], db
+        )
+
+        assert resources.get_all_cached_objects() == {}
+
+        resources.cache_object(
+            "access_request__postgres_example:customer", [{"id": 1, "last_name": "Doe"}]
+        )
+        resources.cache_object(
+            "access_request__postgres_example:payment",
+            [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}",
+            headers=auth_header,
+        )
+
+        assert response.json() == {
+            "postgres_example:payment": [
+                {"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}
+            ],
+            "postgres_example:customer": [{"id": 1, "last_name": "Doe"}],
+        }
+
+    def test_privacy_request_data_transfer_wrong_scope(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+        db,
+    ):
+        pr = privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}",
+            headers=auth_header,
+        )
+
+        assert response.status_code == 403
+
+    def test_privacy_request_data_transfer_not_authenticated(
+        self,
+        api_client: TestClient,
+        privacy_request,
+        db,
+    ):
+        pr = privacy_request.save(db)
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}"
+        )
+
+        assert response.status_code == 401

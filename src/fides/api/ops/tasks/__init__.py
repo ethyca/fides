@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from fides.ctl.core.config import get_config
 
-
 CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 

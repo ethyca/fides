@@ -42,6 +42,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
@@ -56,6 +57,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
@@ -1284,6 +1286,40 @@ def upload_manual_webhook_data(
         access_manual_webhook,
         privacy_request,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
+    response_model=Dict[str, Optional[List[Row]]],
+)
+def privacy_request_data_transfer(
+    *,
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> Dict[str, Optional[List[Row]]]:
+    """Transfer access request iinformation to the parent server."""
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"No privacy request with id {privacy_request_id} found",
+        )
+
+    value_dict = cache.get_encoded_objects_by_prefix(
+        f"{privacy_request_id}__access_request"
+    )
+
+    if not value_dict:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"No access request information found for privacy request id {privacy_request_id}",
+        )
+
+    return {k.split("__")[-1]: v for k, v in value_dict.items()}
 
 
 @router.get(
