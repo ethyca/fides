@@ -121,7 +121,20 @@ const ScanResults = () => {
         </Heading>
 
         {systems.length === 0 ? (
-          <Text>No results were found for your infrastructure scan.</Text>
+          <>
+            <Text data-testid="no-results">
+              No results were found for your infrastructure scan.
+            </Text>
+            <HStack>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                data-testid="back-btn"
+              >
+                Back
+              </Button>
+            </HStack>
+          </>
         ) : (
           <>
             <Box>
