@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "@fidesui/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
@@ -59,13 +59,17 @@ const ScanResults = () => {
   const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
 
-  useEffect(
-    () => () => {
-      // This is the last step, so, on unmount, reset so the flow is ready for the next time
+  /**
+   * Wrapper around router.push which also cleans up the config wizard state
+   * so that if we navigate back, the flow will start over. This is useful here
+   * as this is the last step of the wizard, so when we navigate away, we can
+   * reset the state.
+   */
+  const navigateAndReset = (route: string) => {
+    router.push(route).then(() => {
       dispatch(reset());
-    },
-    [dispatch]
-  );
+    });
+  };
 
   const confirmRegisterSelectedSystems = async () => {
     const response = await upsertSystems(selectedSystems);
@@ -80,7 +84,7 @@ const ScanResults = () => {
      */
     if (method === SystemMethods.DATA_FLOW) {
       dispatch(setSystemsToClassify(selectedSystems));
-      return router.push("/classify-systems");
+      return navigateAndReset("/classify-systems");
     }
 
     const datamapRoute = resolveLink({
@@ -89,8 +93,8 @@ const ScanResults = () => {
     });
 
     return features.plus
-      ? router.push(datamapRoute.href)
-      : router.push("/system");
+      ? navigateAndReset(datamapRoute.href)
+      : navigateAndReset("/system");
   };
 
   const handleSubmit = () => {

@@ -132,6 +132,9 @@ describe("Config wizard with plus settings", () => {
         }).as("getLatestScanDiff");
         numAddedSystems = diff.added_systems.length;
       });
+      cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
+        fixture: "classify/list-systems.json",
+      }).as("getClassifyList");
 
       goToDataFlowScanner();
       cy.getByTestId("scanner-loading");
@@ -171,6 +174,16 @@ describe("Config wizard with plus settings", () => {
       // No results message
       cy.getByTestId("no-results");
       cy.getByTestId("back-btn").click();
+      cy.getByTestId("add-system-form");
+    });
+
+    it("Resets the flow when it is completed", () => {
+      goToDataFlowScanner();
+      cy.wait("@putScanResults");
+      cy.getByTestId("scan-results");
+      cy.getByTestId("register-btn").click();
+      cy.getByTestId("nav-link-Add Systems").click();
+      cy.getByTestId("setup");
     });
 
     it("Can render an error", () => {
