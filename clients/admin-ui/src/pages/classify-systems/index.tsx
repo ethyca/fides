@@ -1,10 +1,12 @@
-import { Heading, Spinner, Stack, Text } from "@fidesui/react";
+import { Button, Heading, HStack, Spinner, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { ReactNode, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import Layout from "~/features/common/Layout";
 import {
   useGetAllClassifyInstancesQuery,
@@ -32,6 +34,7 @@ const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
 const ClassifySystems: NextPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { systemOrDatamapRoute } = useInterzoneNav();
   const { isSuccess: hasPlus, isLoading: isLoadingPlus } = useGetHealthQuery();
   /**
    * TODO: fides#1744
@@ -109,6 +112,13 @@ const ClassifySystems: NextPage = () => {
       ) : (
         "No systems with classifications found"
       )}
+      <HStack>
+        <NextLink href={systemOrDatamapRoute} passHref>
+          <Button variant="primary" size="sm">
+            Finish
+          </Button>
+        </NextLink>
+      </HStack>
     </ClassifySystemsLayout>
   );
 };
