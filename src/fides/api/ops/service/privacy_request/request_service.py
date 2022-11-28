@@ -109,10 +109,10 @@ async def poll_server_for_completion(
         # privacy reqeust there should only be one value present in items.
         status = PrivacyRequestResponse(**response.json()["items"][0])
         if status.status and status.status in (
-            "denied",
-            "complete",
-            "canceled",
-            "error",
+            PrivacyRequestStatus.complete,
+            PrivacyRequestStatus.canceled,
+            PrivacyRequestStatus.error,
+            PrivacyRequestStatus.denied,
         ):
             return status
 
