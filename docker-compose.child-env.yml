@@ -40,24 +40,6 @@ services:
         target: /fides
         read_only: False
 
-  fides-child-ui:
-    image: ethyca/fides:local-ui
-    command: npm run dev
-    expose:
-      - 3000
-    ports:
-      - "3002:3000"
-    volumes:
-      - type: bind
-        source: .
-        target: /fides
-        read_only: False
-      # do not volume mount over the node_modules
-      - /fides/clients/admin-ui/node_modules
-    environment:
-      - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides-child:8080
-      - NEXT_PUBLIC_FIDESOPS_API=http://fides-child:8080
-
   fides-child-db:
     image: postgres:12
     healthcheck:
