@@ -24,6 +24,9 @@ The types of changes are:
 * Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 
+### Changed
+* The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+
 ### Fixed
 
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
@@ -32,6 +35,7 @@ The types of changes are:
 
 * Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
 * Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+* Update documentation to reflect configs necessary for mailgun, twilio_sms and twilio_email service types [#1846](https://github.com/ethyca/fides/pull/1846)
 
 ...
 

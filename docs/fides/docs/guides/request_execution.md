@@ -8,12 +8,12 @@ Once a privacy request has been submitted via the [Privacy Center](../ui/privacy
 
 Based on your [configuration](../installation/configuration.md), Fides can perform a number of other actions: 
 
-| Step | Description |
-| --- | --- |
-| **Persist** |  Fides creates a privacy request in long-term storage to capture high-level information (e.g. date created, current status). Fides saves the identity of the subject to both short- and long-term storage. |
-| **Verify** | If configured, Fides sends an [email](../getting-started/privacy_requests.md#subject-identity-verification) to the user to verify their identity before proceeding. |
-| **Notify** | If configured, the user will receive an [email](./email_communications.md) verifying that their request has been received. |
-| **Approve** | If configured, Fides will require a system administrator to [approve](../installation/configuration.md) the request before proceeding. |
+| Step | Description                                                                                                                                                                                               |
+| --- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Persist** | Fides creates a privacy request in long-term storage to capture high-level information (e.g. date created, current status). Fides saves the identity of the subject to both short- and long-term storage. |
+| **Verify** | If configured, Fides sends an [email](../getting-started/privacy_requests.md#subject-identity-verification) to the user to verify their identity before proceeding.                                       |
+| **Notify** | If configured, the user will receive an [email](./messaging.md) verifying that their request has been received.                                                                                           |
+| **Approve** | If configured, Fides will require a system administrator to [approve](../installation/configuration.md) the request before proceeding.                                                                    |
 
 ## Privacy request execution
 
@@ -98,7 +98,7 @@ If masking fails on a given Collection, Fides retries the requests for a configu
 
 
 ### Send erasure request emails
-After the access and erasure steps have both executed, Fides checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See [emailing third party services to mask data](email_communications.md#Email-third-party-services-to-mask-data) for more information.
+After the access and erasure steps have both executed, Fides checks if there are any third parties that need to be additionally emailed to complete erasure requests on your behalf. See [emailing third party services to mask data](messaging.md#Email-third-party-services-to-mask-data) for more information.
 
 Fides retrieves any masking instructions cached by Email Connectors in the erasure request step, and combines them into a single email per Dataset.
 

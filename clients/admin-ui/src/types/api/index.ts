@@ -17,6 +17,7 @@ export type { ClassifyDataFlow } from "./models/ClassifyDataFlow";
 export type { ClassifyDataset } from "./models/ClassifyDataset";
 export type { ClassifyDatasetResponse } from "./models/ClassifyDatasetResponse";
 export type { ClassifyField } from "./models/ClassifyField";
+export type { ClassifyEmpty } from "./models/ClassifyEmpty";
 export type { ClassifyInstanceResponseValues } from "./models/ClassifyInstanceResponseValues";
 export type { ClassifyParams } from "./models/ClassifyParams";
 export type { ClassifyRequestPayload } from "./models/ClassifyRequestPayload";

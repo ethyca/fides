@@ -11,10 +11,12 @@ import {
   ClassificationResponse,
   ClassifyCollection,
   ClassifyDatasetResponse,
+  ClassifyEmpty,
   ClassifyField,
   ClassifyInstanceResponseValues,
   ClassifyRequestPayload,
   ClassifyStatusUpdatePayload,
+  ClassifySystem,
   GenerateTypes,
   SystemScanResponse,
 } from "~/types/api";
@@ -101,9 +103,18 @@ export const plusApi = createApi({
       },
     }),
     getClassifyDataset: build.query<ClassificationResponse, string>({
-      query: (dataset_fides_key: string) =>
-        `classify/details/${dataset_fides_key}`,
+      query: (dataset_fides_key: string) => ({
+        url: `classify/details/${dataset_fides_key}`,
+        params: { resource_type: GenerateTypes.DATASETS },
+      }),
       providesTags: ["ClassifyInstancesDatasets"],
+    }),
+    getClassifySystem: build.query<ClassifySystem | ClassifyEmpty, string>({
+      query: (fidesKey: string) => ({
+        url: `classify/details/${fidesKey}`,
+        params: { resource_type: GenerateTypes.SYSTEMS },
+      }),
+      providesTags: ["ClassifyInstancesSystems"],
     }),
 
     // Kubernetes Cluster Scanner
@@ -123,6 +134,7 @@ export const {
   useCreateClassifyInstanceMutation,
   useGetAllClassifyInstancesQuery,
   useGetClassifyDatasetQuery,
+  useGetClassifySystemQuery,
   useUpdateClassifyInstanceMutation,
   useUpdateScanMutation,
 } = plusApi;

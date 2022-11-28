@@ -41,9 +41,9 @@ A full list of attributes available to set on a privacy request can be found in 
 Verifying user identity prior to processing their privacy request requires the following:
 
 1. Set the `subject_identity_verification_required` variable in your `fides.toml` to `TRUE`. 
-2. [Configure Emails](../guides/email_communications.md) that lets Fides send automated emails to your users.
+2. [Configure Messaging](../guides/messaging.md) that lets Fides send automated emails or text messages to your users.
 
-With identify verification enabled, a user will be emailed a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  
+With identify verification enabled, a user will be sent a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  
 
 Until the Privacy Request identity is verified, it will have a status of `identity_unverified`:
 
