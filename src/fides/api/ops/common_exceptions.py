@@ -183,7 +183,3 @@ class NoSuchSaaSRequestOverrideException(ValueError):
 
 class IdentityVerificationException(FidesopsException):
     """Custom exceptions for when we cannot verify the identity of a subjct"""
-
-
-class TimeoutError(Exception):
-    """The operation has timed out."""

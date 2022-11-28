@@ -4,7 +4,6 @@ from httpx import HTTPStatusError
 
 from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ops.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
-from fides.api.ops.common_exceptions import TimeoutError
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.privacy_request.request_service import (
     poll_server_for_completion,

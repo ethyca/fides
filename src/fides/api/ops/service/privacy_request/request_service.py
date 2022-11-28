@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Set
 from httpx import AsyncClient
 
 from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
-from fides.api.ops.common_exceptions import TimeoutError
 from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
