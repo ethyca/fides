@@ -335,7 +335,11 @@ def read_other_paths(request: Request) -> Response:
 
 
 def start_webserver(port: int = 8080) -> None:
-    "Run the webserver."
+    """Run the webserver."""
     check_required_webserver_config_values()
-    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
+    server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
+
+    log.info(
+        f"Starting webserver - Host: {server.config.host}, Port: {server.config.port}, Log Level: {server.config.log_level}"
+    )
     server.run()
