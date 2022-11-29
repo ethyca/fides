@@ -1,0 +1,80 @@
+services:
+  fides-child:
+    image: ethyca/fides:local
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src fides.api.main:app
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8081:8080"
+    depends_on:
+      fides-child-db:
+        condition: service_healthy
+      redis-child:
+        condition: service_started
+    expose:
+      - 8080
+    env_file:
+      - .env
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID:-}
+      FIDES__CLI__SERVER_HOST: "fides-child"
+      FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__SERVER: "fides-child-db"
+      FIDES__DATABASE__DB: "fides-child"
+      FIDES__DEV_MODE: "True"
+      FIDES__REDIS__ENABLED: "True"
+      FIDES__REDIS__HOST: "redis-child"
+      FIDES__TEST_MODE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      VAULT_ADDR: ${VAULT_ADDR:-}
+      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
+      VAULT_TOKEN: ${VAULT_TOKEN:-}
+      FIDES__SECURITY__PARENT_SERVER_USERNAME: parent
+      FIDES__SECURITY__PARENT_SERVER_PASSWORD: parentpassword1!
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
+
+  fides-child-db:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "fides"
+      POSTGRES_DB: "fides"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.fides.app-db-data == true
+
+  redis-child:
+    image: "redis:6.2.5-alpine"
+    command: redis-server --requirepass testpassword
+    environment:
+      - REDIS_PASSWORD=testpassword
+    expose:
+      - 6379
+    ports:
+      - "0.0.0.0:6380:6379"
+
+volumes:
+  postgres: null
+
+networks:
+  fides_network:

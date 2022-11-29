@@ -56,6 +56,7 @@ def get_connection_types(
                     ConnectionType.manual,
                     ConnectionType.email,
                     ConnectionType.manual_webhook,
+                    ConnectionType.fides,
                 ]
                 and is_match(conn_type.value)
             ]

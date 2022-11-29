@@ -127,6 +127,7 @@ class FidesClient:
         Poll remote fides for status of privacy request with the given ID until it is complete.
         This is effectively a blocking call, i.e. it will block the current thread until
         it determines completion, or until timeout is reached.
+
         Returns the privacy request record, or error
         """
 
