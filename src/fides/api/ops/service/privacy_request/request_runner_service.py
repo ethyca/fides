@@ -1,8 +1,9 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
+import requests
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -12,6 +13,10 @@ from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
 from fides.api.ops import common_exceptions
+from fides.api.ops.api.v1.urn_registry import (
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    V1_URL_PREFIX,
+)
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     IdentityNotFoundException,
@@ -68,6 +73,7 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
+from fides.api.opslservicelconnectorslfides.fides_client import FidesClient
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -178,11 +184,48 @@ def upload_access_results(
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
+    fides_connectors_by_dataset: List[Tuple[str, ConnectionConfig]],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
+
+    child_data = []
+
+    if fides_connectors_by_dataset:
+        for child in fides_connectors_by_dataset:
+            client = FidesClient(
+                uri=fides_connectors_by_dataset[1].uri,
+                username=fides_connectors_by_dataset[1].username,
+                password=fides_connectors_by_dataset[1].password,
+            )
+            try:
+                client.login()
+            except requests.errors.HTTPError as e:
+                logger.error(
+                    f"Error logging into to child server for privacy request {fides_connectors_by_dataset[0]}: {e}"
+                )
+
+            try:
+                request = client.authenticated_request(
+                    method="get",
+                    path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(child[0])}",
+                    headers={"Authorization": f"Bearer {client.token}"},
+                )
+                response = client.session.send(request)
+            except requests.errors.HTTPError as e:
+                logger.error(
+                    f"Error retrieving data from child server for privacy request {fides_connectors_by_dataset[0]}: {e}"
+                )
+
+            if response.status == 200:
+                child_data.append(response.json())
+            else:
+                logger.error(
+                    f"Error retrieving data from child server for privacy request {fides_connectors_by_dataset[0]}: {response.json()}"
+                )
+
     for rule in policy.get_rules_for_action(action_type=ActionType.access):
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
