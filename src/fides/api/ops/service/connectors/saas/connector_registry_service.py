@@ -141,7 +141,7 @@ def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
     global _registry  # pylint: disable=W0603
     if _registry is None:
-        _registry = ConnectorRegistry.parse_obj(load_toml([config_file]))
+        _registry = ConnectorRegistry.parse_obj(load_toml(config_file))
     return _registry
 
 

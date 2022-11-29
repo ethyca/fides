@@ -44,7 +44,7 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
     }
 
     try:
-        celery_config_overrides: MutableMapping[str, Any] = load_toml([config_path])
+        celery_config_overrides: MutableMapping[str, Any] = load_toml(config_path)
     except FileNotFoundError as e:
         logger.warning(f"{config_path} could not be loaded: %s", e)
     else:
