@@ -97,6 +97,7 @@ class TestFidesConnectorIntegration:
     def test_test_connection(self, test_fides_connector: FidesConnector):
         assert test_fides_connector.test_connection() == ConnectionTestStatus.succeeded
 
+    @pytest.mark.skip(reason="exploring best option for integration test")
     def test_retrieve_data(
         self,
         test_fides_connector: FidesConnector,

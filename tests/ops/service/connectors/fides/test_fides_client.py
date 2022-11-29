@@ -265,7 +265,7 @@ class TestFidesClientUnit:
         )
         with pytest.raises(TimeoutError):
             pr_record = authenticated_fides_client.poll_for_request_completion(
-                privacy_request_id="p", interval=1, timeout=4
+                privacy_request_id="p", interval=1, timeout=1
             )
 
 
