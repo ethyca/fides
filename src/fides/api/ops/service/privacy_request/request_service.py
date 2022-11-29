@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
 
-from fides.api.ops.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -90,7 +90,9 @@ async def poll_server_for_completion(
     denied, or error. By default the polling will time out if not completed in 30
     minutes, time can be overridden by setting the timeout_seconds.
     """
-    url = f"{server_url}{V1_URL_PREFIX}/privacy-request?request_id={privacy_request_id}"
+    url = (
+        f"{server_url}{V1_URL_PREFIX}{PRIVACY_REQUESTS}?request_id={privacy_request_id}"
+    )
     start_time = datetime.now()
     elapsed_time = 0.0
     while elapsed_time < timeout_seconds:
@@ -120,5 +122,5 @@ async def poll_server_for_completion(
         time_delta = datetime.now() - start_time
         elapsed_time = time_delta.seconds
     raise TimeoutError(
-        f"Timeout of {timeout_seconds} minutes has been exceeded while waiting for privacy request {privacy_request_id}"
+        f"Timeout of {timeout_seconds} seconds has been exceeded while waiting for privacy request {privacy_request_id}"
     )
