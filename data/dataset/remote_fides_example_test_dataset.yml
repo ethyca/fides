@@ -9,5 +9,3 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               identity: email
-          - name: id # this is intented to store the resulting privacy request ID
-            data_categories: [user.contact.email]
