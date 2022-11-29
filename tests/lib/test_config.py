@@ -51,7 +51,7 @@ def test_config_app_encryption_key_validation_error(app_encryption_key) -> None:
 
 @pytest.fixture
 def config_dict(fides_toml_path):
-    yield load_toml([fides_toml_path])
+    yield load_toml(fides_toml_path)
 
 
 @patch.dict(

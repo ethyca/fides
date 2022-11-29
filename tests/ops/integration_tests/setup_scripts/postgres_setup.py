@@ -16,7 +16,7 @@ from fides.lib.core.config import load_toml
 from fides.lib.db.session import get_db_engine, get_db_session
 
 CONFIG = get_config()
-integration_config = load_toml(["tests/ops/integration_test_config.toml"])
+integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 
 def seed_postgres_data(db: Session, query_file_path: str) -> Session:

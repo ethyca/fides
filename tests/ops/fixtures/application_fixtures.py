@@ -63,7 +63,7 @@ from fides.lib.models.fides_user_permissions import FidesUserPermissions
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
 faker = Faker()
-integration_config = load_toml(["tests/ops/integration_test_config.toml"])
+integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 CONFIG = get_config()
 logger = logging.getLogger(__name__)
