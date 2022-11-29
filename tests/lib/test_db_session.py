@@ -3,8 +3,8 @@
 from copy import deepcopy
 
 import pytest
-from fideslib.db.session import get_db_engine, get_db_session
-from fideslib.exceptions import MissingConfig
+from fides.lib.db.session import get_db_engine, get_db_session
+from fides.lib.exceptions import MissingConfig
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 from typing import Dict
 
 import pytest
-from fideslib.db.base_class import KeyOrNameAlreadyExists
+from fides.lib.db.base_class import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.storage import StorageConfig

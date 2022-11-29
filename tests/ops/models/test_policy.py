@@ -1,5 +1,5 @@
 import pytest
-from fideslib.models.client import ClientDetail
+from fides.lib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (

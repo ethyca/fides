@@ -2,7 +2,7 @@ from os import getenv
 from typing import Any, Dict, Union
 
 from click import echo
-from fideslib.core.config import load_file
+from fides.lib.core.config import load_file
 from toml import dump, load
 
 from fides.ctl.core.utils import echo_red

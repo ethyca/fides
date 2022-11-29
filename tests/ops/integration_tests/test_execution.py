@@ -2,7 +2,7 @@ import uuid
 from unittest import mock
 
 import pytest
-from fideslib.db.session import get_db_session
+from fides.lib.db.session import get_db_session
 from pydantic import ValidationError
 from sqlalchemy.exc import InvalidRequestError
 

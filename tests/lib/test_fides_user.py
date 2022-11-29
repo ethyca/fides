@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from fideslib.models.fides_user import FidesUser
+from fides.lib.models.fides_user import FidesUser
 
 
 def test_create_user():

@@ -1,5 +1,5 @@
 import pytest
-from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 from requests import PreparedRequest, Request
 
 from fides.api.ops.common_exceptions import ValidationError as FidesopsValidationError

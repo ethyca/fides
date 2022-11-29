@@ -3,7 +3,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import yaml
-from fideslib.core.config import load_file
+from fides.lib.core.config import load_file
 
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.service.connectors.saas.connector_registry_service import (

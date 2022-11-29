@@ -1,5 +1,5 @@
 import pytest
-from fideslib.models.fides_user import FidesUser
+from fides.lib.models.fides_user import FidesUser
 from sqlalchemy.orm import Session
 
 

@@ -4,7 +4,7 @@ import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
-from fideslib.core.config import load_toml
+from fides.lib.core.config import load_toml
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator

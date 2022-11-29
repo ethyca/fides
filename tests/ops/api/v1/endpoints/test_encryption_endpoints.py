@@ -3,7 +3,7 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
+from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (

@@ -2,7 +2,7 @@ import json
 from uuid import uuid4
 
 import pytest
-from fideslib.models.client import ClientDetail
+from fides.lib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1 import scope_registry as scopes

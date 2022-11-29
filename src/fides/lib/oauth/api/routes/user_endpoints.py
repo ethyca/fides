@@ -6,21 +6,21 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.core.config import FidesConfig
-from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fideslib.oauth.api import urn_registry as urls
-from fideslib.oauth.api.deps import get_config, get_db, verify_oauth_client
-from fideslib.oauth.schemas.oauth import AccessToken
-from fideslib.oauth.schemas.user import (
+from fides.lib.core.config import FidesConfig
+from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.api import urn_registry as urls
+from fides.lib.oauth.api.deps import get_config, get_db, verify_oauth_client
+from fides.lib.oauth.schemas.oauth import AccessToken
+from fides.lib.oauth.schemas.user import (
     UserCreate,
     UserCreateResponse,
     UserLogin,
     UserLoginResponse,
     UserResponse,
 )
-from fideslib.oauth.scopes import (
+from fides.lib.oauth.scopes import (
     PRIVACY_REQUEST_READ,
     USER_CREATE,
     USER_DELETE,

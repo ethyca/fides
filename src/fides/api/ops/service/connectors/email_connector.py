@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (

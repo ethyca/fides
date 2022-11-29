@@ -7,8 +7,8 @@ from typing import Any, Type, TypeVar
 from uuid import uuid4
 
 from fideslang.models import FidesKey  # type: ignore
-from fideslib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fideslib.utils.text import to_snake_case
+from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
+from fides.lib.utils.text import to_snake_case
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import Query, Session

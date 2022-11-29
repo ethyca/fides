@@ -5,13 +5,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from fideslib.core.config import (
+from fides.lib.core.config import (
     DatabaseSettings,
     SecuritySettings,
     get_config,
     load_toml,
 )
-from fideslib.exceptions import MissingConfig
+from fides.lib.exceptions import MissingConfig
 from pydantic import ValidationError
 
 ROOT_PATH = Path().absolute()

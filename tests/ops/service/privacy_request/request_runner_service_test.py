@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pydash
 import pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from pydantic import ValidationError
 from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session

@@ -3,7 +3,7 @@ import os
 from typing import Generator
 
 import pytest
-from fideslib.core.config import load_toml
+from fides.lib.core.config import load_toml
 from sqlalchemy import inspect
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType

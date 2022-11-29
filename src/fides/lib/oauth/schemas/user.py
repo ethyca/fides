@@ -2,9 +2,9 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from fideslib.cryptography.cryptographic_util import decode_password
-from fideslib.oauth.schemas.oauth import AccessToken
-from fideslib.schemas.base_class import BaseSchema
+from fides.lib.cryptography.cryptographic_util import decode_password
+from fides.lib.oauth.schemas.oauth import AccessToken
+from fides.lib.schemas.base_class import BaseSchema
 from pydantic import validator
 
 

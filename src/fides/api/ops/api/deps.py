@@ -1,6 +1,6 @@
 from typing import Generator
 
-from fideslib.db.session import get_db_engine, get_db_session
+from fides.lib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FunctionalityNotConfigured

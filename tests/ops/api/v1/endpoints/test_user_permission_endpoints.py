@@ -1,9 +1,9 @@
 import json
 
 import pytest
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,

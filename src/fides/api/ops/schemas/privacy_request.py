@@ -2,8 +2,8 @@ from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
-from fideslib.models.audit_log import AuditLogAction
-from fideslib.oauth.schemas.user import PrivacyRequestReviewer
+from fides.lib.models.audit_log import AuditLogAction
+from fides.lib.oauth.schemas.user import PrivacyRequestReviewer
 from pydantic import Field, validator
 
 from fides.api.ops.models.policy import ActionType

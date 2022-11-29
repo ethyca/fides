@@ -1,13 +1,13 @@
 from typing import List
 
 from fastapi import HTTPException
-from fideslib.oauth.schemas.user_permission import (
+from fides.lib.oauth.schemas.user_permission import (
     UserPermissionsCreate as UserPermissionsCreateLib,
 )
-from fideslib.oauth.schemas.user_permission import (
+from fides.lib.oauth.schemas.user_permission import (
     UserPermissionsEdit as UserPermissionsEditLib,
 )
-from fideslib.oauth.schemas.user_permission import (
+from fides.lib.oauth.schemas.user_permission import (
     UserPermissionsResponse as UserPermissionsResponseLib,
 )
 from pydantic import validator

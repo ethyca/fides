@@ -4,20 +4,20 @@ import json
 from datetime import datetime
 from typing import Any
 
-from fideslib.core.config import FidesConfig
-from fideslib.cryptography.cryptographic_util import (
+from fides.lib.core.config import FidesConfig
+from fides.lib.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
     hash_with_salt,
 )
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.db.base_class import Base
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.jwt import generate_jwe
+from fides.lib.db.base_class import Base
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.jwt import generate_jwe
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session

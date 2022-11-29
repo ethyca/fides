@@ -1,5 +1,5 @@
 import pytest
-from fideslib.models.client import ClientDetail
+from fides.lib.models.client import ClientDetail
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
 

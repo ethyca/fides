@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from fideslib.db.base import Base
+from fides.lib.db.base import Base
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB

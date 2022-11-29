@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from fideslib.models.client import ClientDetail
+from fides.lib.models.client import ClientDetail
 from pymongo import MongoClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session

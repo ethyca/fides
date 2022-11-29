@@ -7,15 +7,15 @@ from typing import Any, Callable, Dict, Generator, List
 
 import pytest
 from fastapi.testclient import TestClient
-from fideslib.core.config import load_toml
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.core.config import load_toml
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.db.session import Session, get_db_engine, get_db_session
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
+from fides.lib.db.session import Session, get_db_engine, get_db_session
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.main import app

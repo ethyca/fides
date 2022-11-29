@@ -2,8 +2,8 @@ from uuid import uuid4
 
 import pydash
 import sqlalchemy
-from fideslib.core.config import load_toml
-from fideslib.db.session import get_db_engine, get_db_session
+from fides.lib.core.config import load_toml
+from fides.lib.db.session import get_db_engine, get_db_session
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,

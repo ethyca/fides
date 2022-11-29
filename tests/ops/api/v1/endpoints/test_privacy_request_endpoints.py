@@ -11,14 +11,14 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (

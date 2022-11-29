@@ -1,8 +1,8 @@
 # pylint: disable=missing-function-docstring
 
 import pytest
-from fideslib.cryptography.cryptographic_util import str_to_b64_str
-from fideslib.oauth.schemas.user import UserCreate, UserLogin
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.lib.oauth.schemas.user import UserCreate, UserLogin
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest as pytest
-from fideslib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph

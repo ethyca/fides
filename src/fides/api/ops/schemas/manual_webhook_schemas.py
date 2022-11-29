@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
-from fideslib.utils.text import to_snake_case
+from fides.lib.utils.text import to_snake_case
 from pydantic import ConstrainedStr, conlist, validator
 
 from fides.api.ops.schemas.base_class import BaseSchema

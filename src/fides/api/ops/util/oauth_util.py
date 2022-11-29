@@ -5,16 +5,16 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.exceptions import AuthenticationError, AuthorizationError
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.oauth_util import extract_payload, is_token_expired
-from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
+from fides.lib.exceptions import AuthenticationError, AuthorizationError
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
+from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from jose import exceptions
 from jose.constants import ALGORITHMS
 from pydantic import ValidationError

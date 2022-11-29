@@ -4,8 +4,8 @@ from typing import Any
 
 import pytest
 from fideslang.validation import FidesValidationError
-from fideslib.db.base_class import get_key_from_data
-from fideslib.exceptions import KeyValidationError
+from fides.lib.db.base_class import get_key_from_data
+from fides.lib.exceptions import KeyValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.storage import StorageConfig

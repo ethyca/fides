@@ -2,7 +2,7 @@ import base64
 from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
+from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fides.ctl.core.config import get_config
 

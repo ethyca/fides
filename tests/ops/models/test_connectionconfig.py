@@ -1,5 +1,5 @@
 import pytest
-from fideslib.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
+from fides.lib.db.base_class import KeyOrNameAlreadyExists, KeyValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (

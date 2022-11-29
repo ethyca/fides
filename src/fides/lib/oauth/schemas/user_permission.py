@@ -1,6 +1,6 @@
 from typing import List
 
-from fideslib.schemas.base_class import BaseSchema
+from fides.lib.schemas.base_class import BaseSchema
 
 
 class UserPermissionsCreate(BaseSchema):

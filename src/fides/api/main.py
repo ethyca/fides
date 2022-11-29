@@ -9,10 +9,10 @@ from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fideslib.oauth.api.deps import get_config as lib_get_config
-from fideslib.oauth.api.deps import get_db as lib_get_db
-from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
-from fideslib.oauth.api.routes.user_endpoints import router as user_router
+from fides.lib.oauth.api.deps import get_config as lib_get_config
+from fides.lib.oauth.api.deps import get_db as lib_get_db
+from fides.lib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
+from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError

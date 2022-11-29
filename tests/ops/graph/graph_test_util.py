@@ -1,7 +1,7 @@
 import random
 from typing import Iterable
 
-from fideslib.db.base_class import FidesBase
+from fides.lib.db.base_class import FidesBase
 from sqlalchemy.engine import Engine
 
 from fides.api.ops.graph.config import *

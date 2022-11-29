@@ -5,8 +5,8 @@ from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Type, Union
 
 import tomli
 import validators
-from fideslib.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fideslib.exceptions import MissingConfig
+from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.lib.exceptions import MissingConfig
 from pydantic import (
     BaseSettings,
     Extra,

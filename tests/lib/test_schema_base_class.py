@@ -1,6 +1,6 @@
 # pylint: disable=missing-function-docstring
 
-from fideslib.schemas.base_class import FidesSchema, NoValidationSchema
+from fides.lib.schemas.base_class import FidesSchema, NoValidationSchema
 
 
 def test_get_field_names():

@@ -9,13 +9,13 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
 
 from celery.result import AsyncResult
-from fideslib.cryptography.cryptographic_util import hash_with_salt
-from fideslib.db.base import Base
-from fideslib.db.base_class import FidesBase
-from fideslib.models.audit_log import AuditLog
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.jwt import generate_jwe
+from fides.lib.cryptography.cryptographic_util import hash_with_salt
+from fides.lib.db.base import Base
+from fides.lib.db.base_class import FidesBase
+from fides.lib.models.audit_log import AuditLog
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.jwt import generate_jwe
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String, UniqueConstraint

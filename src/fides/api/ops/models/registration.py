@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-from fideslib.db.base_class import Base, FidesBase
+from fides.lib.db.base_class import Base, FidesBase
 from fideslog.sdk.python.registration import Registration
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session

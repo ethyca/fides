@@ -4,17 +4,17 @@ from typing import List
 
 import pytest
 from fastapi_pagination import Params
-from fideslib.cryptography.cryptographic_util import str_to_b64_str
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.models.client import ADMIN_UI_ROOT, ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
-from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.oauth_util import extract_payload
+from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.oauth_util import extract_payload
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,

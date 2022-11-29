@@ -2,13 +2,13 @@ from typing import Generator
 
 from fastapi import Depends, Security
 from fastapi.security import SecurityScopes
-from fideslib.core.config import FidesConfig
-from fideslib.core.config import get_config as core_get_config
-from fideslib.db.session import get_db_session
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.api.urn_registry import TOKEN, V1_URL_PREFIX
-from fideslib.oauth.oauth_util import verify_oauth_client as verify
-from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
+from fides.lib.core.config import FidesConfig
+from fides.lib.core.config import get_config as core_get_config
+from fides.lib.db.session import get_db_session
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.api.urn_registry import TOKEN, V1_URL_PREFIX
+from fides.lib.oauth.oauth_util import verify_oauth_client as verify
+from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from sqlalchemy.orm import Session
 
 

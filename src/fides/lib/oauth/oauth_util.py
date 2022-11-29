@@ -4,14 +4,14 @@ import json
 from datetime import datetime
 
 from fastapi.security import SecurityScopes
-from fideslib.core.config import FidesConfig
-from fideslib.cryptography.schemas.jwt import (
+from fides.lib.core.config import FidesConfig
+from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fideslib.exceptions import AuthorizationError
-from fideslib.models.client import ClientDetail
+from fides.lib.exceptions import AuthorizationError
+from fides.lib.models.client import ClientDetail
 from jose import exceptions, jwe
 from sqlalchemy.orm import Session
 

@@ -1,9 +1,9 @@
 from typing import List, Tuple
 
-from fideslib.db.base_class import Base
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.privileges import privileges
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ
+from fides.lib.db.base_class import Base
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.privileges import privileges
+from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.orm import backref, relationship
 
