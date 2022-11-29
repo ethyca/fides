@@ -158,6 +158,25 @@ def storage_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def storage_config_local(db: Session) -> Generator:
+    name = str(uuid4())
+    storage_config = StorageConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "type": StorageType.local,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
+            "key": "my_test_config_local",
+            "format": ResponseFormat.json,
+        },
+    )
+    yield storage_config
+    storage_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def messaging_config(db: Session) -> Generator:
     name = str(uuid4())
     messaging_config = MessagingConfig.create(
@@ -621,6 +640,60 @@ def policy(
             "name": "Access Request Rule",
             "policy_id": access_request_policy.id,
             "storage_destination_id": storage_config.id,
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user").value,
+            "rule_id": access_request_rule.id,
+        },
+    )
+    yield access_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def policy_local_storage(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config_local: StorageConfig,
+) -> Generator:
+    """
+    A basic example policy fixture that uses a local storage config
+    in cases where end-to-end request execution must actually succeed
+    """
+    access_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access request policy",
+            "key": "example_access_request_policy",
+            "client_id": oauth_client.id,
+            "execution_timeframe": 7,
+        },
+    )
+
+    access_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule",
+            "policy_id": access_request_policy.id,
+            "storage_destination_id": storage_config_local.id,
         },
     )
 

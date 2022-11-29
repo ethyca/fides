@@ -97,35 +97,43 @@ class TestFidesConnectorIntegration:
     def test_test_connection(self, test_fides_connector: FidesConnector):
         assert test_fides_connector.test_connection() == ConnectionTestStatus.succeeded
 
-    @pytest.mark.skip(reason="exploring best option for integration test")
+    @pytest.mark.usefixtures(
+        "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
+    )
     def test_retrieve_data(
         self,
         test_fides_connector: FidesConnector,
-        integration_postgres_config,  # we load this fixture so that our request actually executes
-        example_datasets,
-        policy: Policy,
+        policy_local_storage: Policy,
     ):
         # not working currently - need to look more closely.
         # maybe this type of integration would be better with a proper
         # integration setup of two separate fides apps running
 
-        pass
-
-        # privacy_request = PrivacyRequest(
-        #     id=f"test_fides_connector_retrieve_data{uuid.uuid4()}",
-        #     policy=policy,
-        # )
-        # privacy_request.cache_identity(
-        #    identity={"email": "customer-1@example.com"},
-        # )
+        privacy_request = PrivacyRequest(
+            id=f"test_fides_connector_retrieve_data{uuid.uuid4()}",
+            policy=policy_local_storage,
+            status=PrivacyRequestStatus.pending,
+        )
+        privacy_request.cache_identity(
+            identity={"email": "customer-1@example.com"},
+        )
 
         # fides connector functionality does not really make use of the node
         # so we can create just a placehodler
-        # node = TraversalNode(
-        #     generate_node("fides_dataset", "fides_collection", "test_field")
-        # )
+        node = TraversalNode(
+            generate_node("fides_dataset", "fides_collection", "test_field")
+        )
 
-        # result = test_fides_connector.retrieve_data(
-        #    node=node, policy=policy, privacy_request=privacy_request, input_data=[]
-        # )
-        # len(result) == 1
+        result = test_fides_connector.retrieve_data(
+            node=node,
+            policy=policy_local_storage,
+            privacy_request=privacy_request,
+            input_data=[],
+        )
+
+        # there should be only one "row" per connnector result
+        len(result) == 1
+        for connector_result in result[0].items():
+            # second element in tuple is the PrivacyRequestResponse as a dict
+            # retrieve its status, which should be "complete"
+            connector_result[1]["status"] == PrivacyRequestStatus.complete
