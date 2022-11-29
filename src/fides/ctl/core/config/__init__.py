@@ -201,11 +201,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
     if verbose:
         print(f"Loading config from: {config_path}")
     try:
-        settings = (
-            toml.load(config_path)
-            if config_path_override
-            else load_toml(file_names=[config_path])
-        )
+        settings = toml.load(config_path)
 
         # credentials specific logic for populating environment variable configs.
         # this is done to allow overrides without hard typed pydantic models

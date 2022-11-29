@@ -164,6 +164,19 @@ def minimal_config_startup(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
+def pytest_lib(session: nox.Session) -> None:
+    """Runs fidesctl tests."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        "tests/lib/",
+    )
+    session.run(*run_command, external=True)
+
+
+@nox.session()
 @nox.parametrize(
     "mark",
     [

@@ -222,25 +222,18 @@ def load_file(file_names: Union[List[Path], List[str]]) -> str:
     raise FileNotFoundError
 
 
-def load_toml(file_names: Union[List[Path], List[str]]) -> MutableMapping[str, Any]:
+def load_toml(file_name: str) -> MutableMapping[str, Any]:
     """Load toml file from possible locations specified in load_file.
 
     Will raise FileNotFoundError or ValidationError on missing or
     bad file
     """
-    file_name = load_file(file_names)
     with open(file_name, "rb") as f:
         return tomli.load(f)
 
 
 def get_config(
-    class_name: Type[FidesConfig] = FidesConfig,
-    *,
-    file_names: Union[List[Path], List[str]] = [
-        "fidesops.toml",
-        "fidesctl.toml",
-        "fides.toml",
-    ],
+    class_name: Type[FidesConfig] = FidesConfig, *, file_name: str = ".fides/fides.toml"
 ) -> FidesConfig:
     """
     Attempt to read config file named fidesops.toml, fidesctl.toml, or fides.toml from:
@@ -251,15 +244,12 @@ def get_config(
     This will fail on the first encountered bad conf file.
     """
     try:
-        filenames_as_str = " or ".join([str(x) for x in file_names])
-        logger.info(
-            "Attempting to load application config from files: %s", filenames_as_str
-        )
-        return class_name.parse_obj(load_toml(file_names))
+        logger.info("Attempting to load application config from files: %s", file_name)
+        return class_name.parse_obj(load_toml(file_name))
     except (FileNotFoundError) as e:
         logger.warning(
             "Application config could not be loaded from files: %s due to error: %s",
-            filenames_as_str,
+            file_name,
             e,
         )
         # If no path is specified Pydantic will attempt to read settings from
