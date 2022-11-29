@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 import requests
 from fideslib.oauth.schemas.user import UserLogin
 from loguru import logger as log
-from requests import PreparedRequest, Request, Session
+from requests import PreparedRequest, Request, RequestException, Session
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.api.v1 import urn_registry as urls
@@ -50,9 +50,14 @@ class FidesClient:
 
     def login(self) -> None:
         ul: UserLogin = UserLogin(username=self.username, password=self.password)
-        response = requests.post(
-            f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
-        )
+        try:
+            response = requests.post(
+                f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
+            )
+        except RequestException as e:
+            log.error(f"Error logging in on remote Fides {self.uri}: {str(e)}")
+            raise e
+
         if response.ok:
             self.token = response.json()["token_data"]["access_token"]
         else:

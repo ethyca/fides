@@ -62,8 +62,8 @@ class FidesConnector(BaseConnector[FidesClient]):
         by attempting an authorized API call and ensuring success
         """
         log.info(f"Starting test connection to {self.configuration.key}")
-        client: FidesClient = self.client()
         try:
+            client: FidesClient = self.client()
             client.request_status()
         except Exception as e:
             log.error(f"Error testing connection to remote Fides {str(e)}")
