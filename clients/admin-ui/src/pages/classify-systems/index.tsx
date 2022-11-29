@@ -44,7 +44,7 @@ const ClassifySystems: NextPage = () => {
   const systemsToClassify = useAppSelector(selectSystemsToClassify);
   const { isLoading: isLoadingSystems, data: allSystems } =
     useGetAllSystemsQuery(undefined, {
-      skip: !hasPlus || systemsToClassify.length > 0,
+      skip: !hasPlus || (systemsToClassify && systemsToClassify.length > 0),
     });
   const systems = systemsToClassify || allSystems;
   useEffect(() => {
@@ -57,7 +57,7 @@ const ClassifySystems: NextPage = () => {
     useGetAllClassifyInstancesQuery(
       {
         resource_type: GenerateTypes.SYSTEMS,
-        fides_keys: systems.map((s) => s.fides_key),
+        fides_keys: systems?.map((s) => s.fides_key),
       },
       { skip: !hasPlus }
     );

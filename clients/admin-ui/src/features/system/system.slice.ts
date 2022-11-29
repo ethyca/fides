@@ -108,9 +108,9 @@ export const {
 export interface State {
   activeSystem?: System;
   activeClassifySystemFidesKey?: string;
-  systemsToClassify: System[];
+  systemsToClassify?: System[];
 }
-const initialState: State = { systemsToClassify: [] };
+const initialState: State = {};
 
 export const systemSlice = createSlice({
   name: "system",
@@ -128,7 +128,10 @@ export const systemSlice = createSlice({
     ) => {
       draftState.activeClassifySystemFidesKey = action.payload;
     },
-    setSystemsToClassify: (draftState, action: PayloadAction<System[]>) => {
+    setSystemsToClassify: (
+      draftState,
+      action: PayloadAction<System[] | undefined>
+    ) => {
       draftState.systemsToClassify = action.payload;
     },
   },

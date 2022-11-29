@@ -173,7 +173,7 @@ export const selectSystemClassifyInstances = createSelector(
   (state, systems) =>
     plusApi.endpoints.getAllClassifyInstances.select({
       resource_type: GenerateTypes.SYSTEMS,
-      fides_keys: systems.map((s) => s.fides_key),
+      fides_keys: systems?.map((s) => s.fides_key),
     })(state)?.data ?? emptyClassifyInstances
 );
 
