@@ -1,3 +1,6 @@
+from fideslib.oauth.scopes import FIDESPLUS_ENABLED
+
+
 CLIENT_CREATE = "client:create"
 CLIENT_UPDATE = "client:update"
 CLIENT_READ = "client:read"
@@ -66,8 +69,6 @@ USER_PASSWORD_RESET = "user:reset-password"
 USER_PERMISSION_CREATE = "user-permission:create"
 USER_PERMISSION_UPDATE = "user-permission:update"
 USER_PERMISSION_READ = "user-permission:read"
-
-FIDESPLUS_ENABLED = "fidesplus:access"
 
 SCOPE_REGISTRY = [
     CLIENT_CREATE,
