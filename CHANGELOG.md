@@ -24,9 +24,9 @@ The types of changes are:
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 * Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
-* DSR Notifications (toast) [#1218](https://github.com/ethyca/fides/pull/1895)
-* DSR configure alerts btn [#1491](https://github.com/ethyca/fides/pull/1895)
-* DSR configure alters (FE) [#1492](https://github.com/ethyca/fides/pull/1895)
+* DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
 
 ### Changed
 
