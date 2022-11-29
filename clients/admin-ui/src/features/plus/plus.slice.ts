@@ -1,12 +1,12 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { selectSystemsForReview } from "~/features/config-wizard/config-wizard.slice";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
   selectActiveField,
 } from "~/features/dataset/dataset.slice";
+import { selectSystemsToClassify } from "~/features/system";
 import {
   ClassificationResponse,
   ClassifyCollection,
@@ -19,6 +19,7 @@ import {
   ClassifySystem,
   GenerateTypes,
   SystemScanResponse,
+  SystemsDiff,
 } from "~/types/api";
 
 interface HealthResponse {
@@ -40,7 +41,12 @@ export const plusApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
   }),
-  tagTypes: ["Plus", "ClassifyInstancesDatasets", "ClassifyInstancesSystems"],
+  tagTypes: [
+    "Plus",
+    "ClassifyInstancesDatasets",
+    "ClassifyInstancesSystems",
+    "LatestScan",
+  ],
   endpoints: (build) => ({
     getHealth: build.query<HealthResponse, void>({
       query: () => "health",
@@ -124,7 +130,15 @@ export const plusApi = createApi({
         params,
         method: "PUT",
       }),
-      invalidatesTags: ["ClassifyInstancesSystems"],
+      invalidatesTags: ["ClassifyInstancesSystems", "LatestScan"],
+    }),
+    getLatestScanDiff: build.query<SystemsDiff, void>({
+      query: () => ({
+        url: `scan/latest`,
+        params: { diff: true },
+        method: "GET",
+      }),
+      providesTags: ["LatestScan"],
     }),
   }),
 });
@@ -137,6 +151,8 @@ export const {
   useGetClassifySystemQuery,
   useUpdateClassifyInstanceMutation,
   useUpdateScanMutation,
+  useGetLatestScanDiffQuery,
+  useLazyGetLatestScanDiffQuery,
 } = plusApi;
 
 export const useHasPlus = () => {
@@ -153,11 +169,11 @@ export const selectDatasetClassifyInstances = createSelector(
 );
 
 export const selectSystemClassifyInstances = createSelector(
-  [(state) => state, selectSystemsForReview],
+  [(state) => state, selectSystemsToClassify],
   (state, systems) =>
     plusApi.endpoints.getAllClassifyInstances.select({
       resource_type: GenerateTypes.SYSTEMS,
-      fides_keys: systems.map((s) => s.fides_key),
+      fides_keys: systems?.map((s) => s.fides_key),
     })(state)?.data ?? emptyClassifyInstances
 );
 

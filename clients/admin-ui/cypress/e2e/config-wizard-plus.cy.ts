@@ -40,6 +40,10 @@ describe("Config wizard with plus settings", () => {
         fixture: "data-flow-scanner/list.json",
       }).as("putScanResults");
       cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
+      cy.intercept("GET", "/api/v1/plus/scan/latest?diff=true", {
+        statusCode: 404,
+        body: { detail: "No saved system scans found." },
+      }).as("getLatestScanDiff");
     });
 
     it("Allows calling the data flow scanner with classify", () => {
@@ -53,6 +57,7 @@ describe("Config wizard with plus settings", () => {
         const { url } = interception.request;
         expect(url).to.contain("classify=true");
       });
+      cy.wait("@getLatestScanDiff");
       cy.getByTestId("scan-results");
 
       // Check that the systems we expect are in the results table
@@ -117,6 +122,68 @@ describe("Config wizard with plus settings", () => {
         .then((rows) => {
           expect(rows.length).to.eql(2);
         });
+    });
+
+    it("Can rescan", () => {
+      let numAddedSystems = 0;
+      cy.fixture("data-flow-scanner/diff.json").then((diff) => {
+        cy.intercept("GET", "/api/v1/plus/scan/latest?diff=true", {
+          body: diff,
+        }).as("getLatestScanDiff");
+        numAddedSystems = diff.added_systems.length;
+      });
+      cy.intercept("GET", "/api/v1/plus/classify?resource_type=systems*", {
+        fixture: "classify/list-systems.json",
+      }).as("getClassifyList");
+
+      goToDataFlowScanner();
+      cy.getByTestId("scanner-loading");
+      cy.wait("@putScanResults");
+      cy.wait("@getLatestScanDiff");
+      cy.getByTestId("scan-results");
+
+      // Should render just the added systems discovered from the diff
+      cy.get("table")
+        .find("tbody > tr")
+        .then((rows) => {
+          expect(rows.length).to.eql(numAddedSystems);
+        });
+
+      cy.getByTestId("register-btn").click();
+      cy.wait("@upsertSystems");
+      cy.getByTestId("systems-classify-table")
+        .find("tbody > tr")
+        .then((rows) => {
+          expect(rows.length).to.eql(numAddedSystems);
+        });
+    });
+
+    it("Renders an empty state", () => {
+      // No newly added systems
+      cy.fixture("data-flow-scanner/diff.json").then((diff) => {
+        cy.intercept("GET", "/api/v1/plus/scan/latest?diff=true", {
+          body: { ...diff, added_systems: [] },
+        }).as("getLatestScanDiff");
+      });
+      goToDataFlowScanner();
+      cy.getByTestId("scanner-loading");
+      cy.wait("@putScanResults");
+      cy.wait("@getLatestScanDiff");
+      cy.getByTestId("scan-results");
+
+      // No results message
+      cy.getByTestId("no-results");
+      cy.getByTestId("back-btn").click();
+      cy.getByTestId("add-system-form");
+    });
+
+    it("Resets the flow when it is completed", () => {
+      goToDataFlowScanner();
+      cy.wait("@putScanResults");
+      cy.getByTestId("scan-results");
+      cy.getByTestId("register-btn").click();
+      cy.getByTestId("nav-link-Add Systems").click();
+      cy.getByTestId("setup");
     });
 
     it("Can render an error", () => {
