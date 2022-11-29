@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from redis import Redis
+from redis.exceptions import ConnectionError
 from redis.client import Script  # type: ignore
 
 from fides.api.ops import common_exceptions
@@ -114,8 +115,16 @@ def get_cache() -> FidesopsRedis:
             ssl=CONFIG.redis.ssl,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
+        logger.debug("New Redis connection created.")
 
-    connected = _connection.ping()
+    logger.debug("Testing Redis connection...")
+    try:
+        connected = _connection.ping()
+    except ConnectionError:
+        connected = False
+    else:
+        logger.debug("Redis connection succeeded.")
+
     if not connected:
         logger.debug("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
