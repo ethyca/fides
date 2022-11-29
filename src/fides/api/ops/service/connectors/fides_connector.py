@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from loguru import logger as log
 
+from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import (
     ConnectionConfig,
@@ -79,12 +80,17 @@ class FidesConnector(BaseConnector[FidesClient]):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Execute access request and handle response on remote Fides"""
+        identity_data = privacy_request.get_cached_identity_data()
+        if not identity_data:
+            raise FidesError(
+                f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"
+            )
 
         client: FidesClient = self.client()
 
         pr_id: str = client.create_privacy_request(
             external_id=privacy_request.external_id or privacy_request.id,
-            identity=Identity(**privacy_request.get_cached_identity_data()),
+            identity=Identity(**identity_data),
             policy_key=policy.key,
         )
         privacy_request_response: PrivacyRequestResponse = (
@@ -106,12 +112,18 @@ class FidesConnector(BaseConnector[FidesClient]):
         input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute an erasure request on remote fides"""
+        identity_data = privacy_request.get_cached_identity_data()
+        if not identity_data:
+            raise FidesError(
+                f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"
+            )
+
         client: FidesClient = self.client()
         update_ct = 0
         for _ in rows:
             pr_id = client.create_privacy_request(
                 external_id=privacy_request.external_id,
-                identity=Identity(**privacy_request.get_cached_identity_data()),
+                identity=Identity(**identity_data),
                 policy_key=policy.key,
             )
             client.poll_for_request_completion(
