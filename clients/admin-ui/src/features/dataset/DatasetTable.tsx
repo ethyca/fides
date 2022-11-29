@@ -41,6 +41,7 @@ const DatasetsTable = () => {
   if (!datasets) {
     return <div>Empty state</div>;
   }
+
   return (
     <Table size="sm" data-testid="dataset-table">
       <Thead>
@@ -48,7 +49,7 @@ const DatasetsTable = () => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
-          <Th pl={1}>Status</Th>
+          {features.plus ? <Th pl={1}>Status</Th> : null}
         </Tr>
       </Thead>
       <Tbody>
