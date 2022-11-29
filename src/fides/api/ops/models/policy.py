@@ -4,8 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from fides.lib.db.base_class import Base, FidesBase
-from fides.lib.models.client import ClientDetail
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -24,6 +22,8 @@ from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.ctl.core.config import get_config
+from fides.lib.db.base_class import Base, FidesBase
+from fides.lib.models.client import ClientDetail
 
 CONFIG = get_config()
 

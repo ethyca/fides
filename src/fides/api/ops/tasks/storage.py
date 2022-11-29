@@ -12,7 +12,6 @@ from typing import Any, Dict, Union
 import pandas as pd
 from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
-from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 from fides.api.ops.schemas.storage.storage import (
     ResponseFormat,
@@ -25,6 +24,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.api.ops.util.storage_authenticator import get_s3_session
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 logger = logging.getLogger(__name__)
 

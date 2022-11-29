@@ -4,9 +4,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set
 
 from celery.utils.log import get_task_logger
-from fides.lib.db.session import get_db_session
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
-from fides.lib.schemas.base_class import BaseSchema
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -69,6 +66,9 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.ctl.core.config import get_config
+from fides.lib.db.session import get_db_session
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.schemas.base_class import BaseSchema
 
 CONFIG = get_config()
 logger = get_task_logger(__name__)

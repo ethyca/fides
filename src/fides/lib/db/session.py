@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import logging
 
-from fides.lib.core.config import FidesConfig
-from fides.lib.exceptions import MissingConfig
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, sessionmaker
+
+from fides.lib.core.config import FidesConfig
+from fides.lib.exceptions import MissingConfig
 
 logger = logging.getLogger(__name__)
 

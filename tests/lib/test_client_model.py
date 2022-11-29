@@ -3,6 +3,7 @@
 from copy import deepcopy
 
 import pytest
+
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.models.client import ClientDetail, _get_root_client_detail
 from fides.lib.oauth.scopes import SCOPES

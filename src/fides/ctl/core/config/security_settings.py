@@ -4,12 +4,12 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 import validators
-from fides.lib.core.config import FidesSettings
-from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 from pydantic import validator
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
+from fides.lib.core.config import FidesSettings
+from fides.lib.cryptography.cryptographic_util import generate_salt, hash_with_salt
 
 ENV_PREFIX = "FIDES__SECURITY__"
 

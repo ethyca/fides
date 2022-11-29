@@ -3,7 +3,6 @@ from unittest import mock
 from unittest.mock import Mock
 
 import pytest
-from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
@@ -21,6 +20,7 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_verify_secret_length,
 )
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
 CONFIG = get_config()
 

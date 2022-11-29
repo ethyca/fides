@@ -1,6 +1,7 @@
 # pylint: disable=missing-function-docstring, redefined-outer-name
 
 import pytest
+
 from fides.lib.cryptography.cryptographic_util import (
     b64_str_to_bytes,
     b64_str_to_str,

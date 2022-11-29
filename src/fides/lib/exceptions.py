@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import HTTPException, status
+
 from fides.lib.oauth.scopes import SCOPES
 
 

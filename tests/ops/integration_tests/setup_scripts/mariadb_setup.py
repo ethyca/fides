@@ -2,8 +2,6 @@ from uuid import uuid4
 
 import pydash
 import sqlalchemy
-from fides.lib.core.config import load_toml
-from fides.lib.db.session import get_db_engine, get_db_session
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -12,6 +10,8 @@ from fides.api.ops.models.connectionconfig import (
 )
 from fides.api.ops.service.connectors.sql_connector import MariaDBConnector
 from fides.ctl.core.config import get_config
+from fides.lib.core.config import load_toml
+from fides.lib.db.session import get_db_engine, get_db_session
 
 CONFIG = get_config()
 integration_config = load_toml(["tests/ops/integration_test_config.toml"])

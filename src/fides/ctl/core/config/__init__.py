@@ -9,13 +9,13 @@ from re import compile as regex
 from typing import Any, Dict, MutableMapping, Optional, Tuple
 
 import toml
-from fides.lib.core.config import load_toml
 from loguru import logger as log
 from pydantic import BaseModel
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
 from fides.ctl.core.utils import echo_red
+from fides.lib.core.config import load_toml
 
 from .admin_ui_settings import AdminUISettings
 from .cli_settings import CLISettings

@@ -4,6 +4,9 @@ import json
 from datetime import datetime
 
 from fastapi.security import SecurityScopes
+from jose import exceptions, jwe
+from sqlalchemy.orm import Session
+
 from fides.lib.core.config import FidesConfig
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -12,8 +15,6 @@ from fides.lib.cryptography.schemas.jwt import (
 )
 from fides.lib.exceptions import AuthorizationError
 from fides.lib.models.client import ClientDetail
-from jose import exceptions, jwe
-from sqlalchemy.orm import Session
 
 
 def extract_payload(jwe_string: str, encryption_key: str) -> str:

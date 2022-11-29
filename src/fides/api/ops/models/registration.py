@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-from fides.lib.db.base_class import Base, FidesBase
 from fideslog.sdk.python.registration import Registration
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
@@ -9,6 +8,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from fides.ctl.core.config import get_config
+from fides.lib.db.base_class import Base, FidesBase
 
 CONFIG = get_config()
 

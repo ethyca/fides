@@ -7,7 +7,6 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
-from fides.lib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -30,6 +29,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
+from fides.lib.models.client import ClientDetail
 
 page_size = Params().size
 

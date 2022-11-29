@@ -1,6 +1,7 @@
 import pytest
-from fides.lib.models.fides_user import FidesUser
 from sqlalchemy.orm import Session
+
+from fides.lib.models.fides_user import FidesUser
 
 
 class TestFidesUser:

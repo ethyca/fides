@@ -9,10 +9,6 @@ from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fides.lib.oauth.api.deps import get_config as lib_get_config
-from fides.lib.oauth.api.deps import get_db as lib_get_db
-from fides.lib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
-from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
 from redis.exceptions import ResponseError
@@ -64,6 +60,10 @@ from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 from fides.ctl.core.config.utils import check_required_webserver_config_values
+from fides.lib.oauth.api.deps import get_config as lib_get_config
+from fides.lib.oauth.api.deps import get_db as lib_get_db
+from fides.lib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
+from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
 CONFIG: FidesConfig = get_ctl_config()
 

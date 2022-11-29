@@ -4,6 +4,10 @@ import json
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import ARRAY, Column, ForeignKey, String
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import Session
+
 from fides.lib.core.config import FidesConfig
 from fides.lib.cryptography.cryptographic_util import (
     generate_salt,
@@ -18,9 +22,6 @@ from fides.lib.cryptography.schemas.jwt import (
 from fides.lib.db.base_class import Base
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.oauth.jwt import generate_jwe
-from sqlalchemy import ARRAY, Column, ForeignKey, String
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session
 
 ADMIN_UI_ROOT = "admin_ui_root"
 DEFAULT_SCOPES: list[str] = []

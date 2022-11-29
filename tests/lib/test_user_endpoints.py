@@ -7,6 +7,17 @@ from unittest.mock import patch
 
 import pytest
 from fastapi_pagination import Params
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
+
 from fides.lib.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from fides.lib.cryptography.schemas.jwt import (
@@ -25,16 +36,6 @@ from fides.lib.oauth.scopes import (
     USER_CREATE,
     USER_DELETE,
     USER_READ,
-)
-from starlette.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 page_size = Params().size

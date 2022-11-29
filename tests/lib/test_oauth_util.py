@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pytest
 from fastapi.security import SecurityScopes
+
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

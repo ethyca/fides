@@ -2,6 +2,7 @@
 
 import pytest
 from fideslang.validation import FidesValidationError  # type: ignore
+
 from fides.lib.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyValidationError
 

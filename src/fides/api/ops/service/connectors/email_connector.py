@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
@@ -33,6 +32,7 @@ from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.util.collection_util import Row, append
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 logger = logging.getLogger(__name__)
 

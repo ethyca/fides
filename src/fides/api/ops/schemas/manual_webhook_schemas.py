@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
-from fides.lib.utils.text import to_snake_case
 from pydantic import ConstrainedStr, conlist, validator
 
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
 )
+from fides.lib.utils.text import to_snake_case
 
 
 class PIIFieldType(ConstrainedStr):

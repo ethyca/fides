@@ -2,10 +2,11 @@ import re
 from datetime import datetime
 from typing import Optional
 
+from pydantic import validator
+
 from fides.lib.cryptography.cryptographic_util import decode_password
 from fides.lib.oauth.schemas.oauth import AccessToken
 from fides.lib.schemas.base_class import BaseSchema
-from pydantic import validator
 
 
 class PrivacyRequestReviewer(BaseSchema):

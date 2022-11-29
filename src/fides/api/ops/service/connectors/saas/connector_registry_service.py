@@ -4,7 +4,6 @@ import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
-from fides.lib.core.config import load_toml
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
@@ -27,6 +26,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset,
     load_dataset_with_replacement,
 )
+from fides.lib.core.config import load_toml
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"

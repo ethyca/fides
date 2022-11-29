@@ -1,7 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fides.lib.db.base_class import Base
-from fides.lib.schemas.base_class import BaseSchema
 from pydantic import BaseConfig, create_model
 from sqlalchemy import Column, ForeignKey, String, text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -9,6 +7,8 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig
+from fides.lib.db.base_class import Base
+from fides.lib.schemas.base_class import BaseSchema
 
 
 class AccessManualWebhook(Base):

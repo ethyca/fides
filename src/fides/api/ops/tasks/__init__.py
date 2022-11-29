@@ -1,12 +1,12 @@
 from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
-from fides.lib.core.config import load_toml
-from fides.lib.db.session import get_db_session
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.ctl.core.config import get_config
+from fides.lib.core.config import load_toml
+from fides.lib.db.session import get_db_session
 
 CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"

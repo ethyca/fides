@@ -5,16 +5,6 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fides.lib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fides.lib.exceptions import AuthenticationError, AuthorizationError
-from fides.lib.models.client import ClientDetail
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
-from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from jose import exceptions
 from jose.constants import ALGORITHMS
 from pydantic import ValidationError
@@ -27,6 +17,16 @@ from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.exceptions import AuthenticationError, AuthorizationError
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
+from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
 CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM

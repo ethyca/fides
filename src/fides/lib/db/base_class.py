@@ -7,13 +7,14 @@ from typing import Any, Type, TypeVar
 from uuid import uuid4
 
 from fideslang.models import FidesKey  # type: ignore
-from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
-from fides.lib.utils.text import to_snake_case
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import BinaryExpression, BooleanClauseList
+
+from fides.lib.exceptions import KeyOrNameAlreadyExists, KeyValidationError
+from fides.lib.utils.text import to_snake_case
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
 ALLOWED_CHARS = re.compile(r"[A-z0-9\-_]")

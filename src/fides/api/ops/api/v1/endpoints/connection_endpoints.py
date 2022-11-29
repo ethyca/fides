@@ -8,7 +8,6 @@ from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fides.lib.exceptions import KeyOrNameAlreadyExists
 from pydantic import ValidationError, conlist
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -73,6 +72,7 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

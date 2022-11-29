@@ -4,9 +4,10 @@ from fastapi import Form
 from fastapi.openapi.models import OAuthFlows
 from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
-from fides.lib.exceptions import InvalidAuthorizationSchemeError
 from pydantic import BaseModel
 from starlette.requests import Request
+
+from fides.lib.exceptions import InvalidAuthorizationSchemeError
 
 
 class AccessToken(BaseModel):
