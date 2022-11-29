@@ -23,6 +23,10 @@ The types of changes are:
 * Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 * Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
+* DSR Notifications (toast) [#1218](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alerts btn [#1491](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alters (FE) [#1492](https://github.com/ethyca/fides/pull/1895)
 
 ### Changed
 
@@ -54,7 +58,6 @@ The types of changes are:
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
-* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * Webserver port can now be configured via the CLI command [#1858](https://github.com/ethyca/fides/pull/1858)
 
 ### Changed
