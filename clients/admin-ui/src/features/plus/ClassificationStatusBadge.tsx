@@ -53,7 +53,10 @@ const ClassificationStatusBadge = ({
 } & BadgeProps) => {
   const statusDisplay = classificationStatuses(resource)[status ?? "unknown"];
   return (
-    <Tooltip label={statusDisplay.tooltip}>
+    <Tooltip
+      data-testid="classification-status-badge"
+      label={statusDisplay.tooltip}
+    >
       <Badge
         variant="solid"
         colorScheme={statusDisplay.color}

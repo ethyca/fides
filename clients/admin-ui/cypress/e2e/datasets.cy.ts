@@ -25,6 +25,9 @@ describe("Dataset", () => {
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
+
+      cy.getByTestId("dataset-table__status-table-header").should("not.exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
@@ -582,5 +585,30 @@ describe("Dataset", () => {
         "user.unique_id"
       );
     });
+  });
+});
+
+describe("Dataset Plus Enabled", () => {
+  beforeEach(() => {
+    cy.login();
+    stubDatasetCrud();
+    // Ensure these tests all run with Plus features enabled.
+    stubPlus(true);
+  });
+
+  it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
+    stubHomePage();
+    cy.visit("/");
+    cy.getByTestId("nav-link-Datasets").click();
+    cy.wait("@getDatasets");
+    cy.getByTestId("dataset-table");
+    cy.getByTestId("dataset-row-demo_users_dataset_4");
+    cy.url().should("contain", "/dataset");
+
+    cy.getByTestId("dataset-table__status-table-header").should(
+      "have.text",
+      "Status"
+    );
+    cy.getByTestId("classification-status-badge").should("exist");
   });
 });

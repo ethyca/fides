@@ -49,7 +49,11 @@ const DatasetsTable = () => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
-          {features.plus ? <Th pl={1}>Status</Th> : null}
+          {features.plus ? (
+            <Th data-testid="dataset-table__status-table-header" pl={1}>
+              Status
+            </Th>
+          ) : null}
         </Tr>
       </Thead>
       <Tbody>
