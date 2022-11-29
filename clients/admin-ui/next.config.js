@@ -21,6 +21,9 @@ const nextConfig = {
         return config;
     },
     experimental: {
+        /**
+         * Data flow scanning sometimes takes longer than the default of 30 seconds
+         */
         proxyTimeout: 120000
     },
     async rewrites() {
