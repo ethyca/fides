@@ -16,6 +16,7 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
+from httpx import AsyncClient
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.main import app
@@ -140,6 +141,25 @@ def api_client() -> Generator:
     """Return a client used to make API requests"""
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture(scope="session")
+async def async_api_client() -> Generator:
+    """Return an async client used to make API requests"""
+    async with AsyncClient(
+        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+    ) as client:
+        yield client
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop() -> Generator:
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="function")
