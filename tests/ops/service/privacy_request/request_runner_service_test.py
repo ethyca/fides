@@ -2225,6 +2225,7 @@ class TestUploadAccessRequestResults:
         privacy_request,
         db,
     ):
+        # look at sql task tests
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )

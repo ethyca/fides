@@ -57,7 +57,13 @@ from fides.api.ops.api.v1.urn_registry import (
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import ActionType, CurrentStep, Policy
+from fides.api.ops.models.policy import (
+    ActionType,
+    CurrentStep,
+    Policy,
+    Rule,
+    RuleTarget,
+)
 from fides.api.ops.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -77,6 +83,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.task.graph_task import run_access_request
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.cache import (
@@ -4274,14 +4281,16 @@ class TestCreatePrivacyRequestAuthenticated:
 
 
 class TestPrivacyReqeustDataTransfer:
-    def test_privacy_request_data_transfer(
+    async def test_privacy_request_data_transfer(
         self,
         api_client: TestClient,
         privacy_request,
         generate_auth_header,
+        example_datasets,
         policy,
         integration_manual_config,
         db,
+        dataset_config,
     ):
         pr = privacy_request.save(db=db)
         resources = TaskResources(
@@ -4290,18 +4299,68 @@ class TestPrivacyReqeustDataTransfer:
 
         assert resources.get_all_cached_objects() == {}
 
-        resources.cache_object(
-            "access_request__postgres_example:customer", [{"id": 1, "last_name": "Doe"}]
+        # rule = Rule.create(
+        #     db=db,
+        #     data={
+        #         "action_type": ActionType.access.value,
+        #         "client_id": policy.client_id,
+        #         "name": "Valid Access Rule",
+        #         "policy_id": policy.id,
+        #         "storage_destination_id": policy.rules[0].storage_destination.id,
+        #     },
+        # )
+
+        # RuleTarget.create(
+        #     db,
+        #     data={
+        #         "name": "Test Rule 1",
+        #         "key": "test_rule_1",
+        #         "data_category": "user.contact.address.street",
+        #         "rule_id": rule.id,
+        #     },
+        # )
+
+        # RuleTarget.create(
+        #     db,
+        #     data={
+        #         "name": "Test Rule 2",
+        #         "key": "test_rule_2",
+        #         "data_category": "user.name.last",
+        #         "rule_id": rule.id,
+        #     },
+        # )
+
+        dataset = FidesopsDataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        access_request_results = await run_access_request(
+            privacy_request,
+            policy,
+            dataset_graph,
+            [postgres_config],
+            {"email": "customer-1@example.com"},
+            db,
         )
-        resources.cache_object(
-            "access_request__postgres_example:payment",
-            [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
-        )
+
+        # resources.cache_object("access_request__postgres_example:service_request", [
+        #     {"alt_email": "customer-1-alt@example.com"}
+        # ])
+        # resources.cache_object("access_request__postgres_example:customer", [{"email": "customer-1@example.com"}])
+
+        # resources.cache_object(
+        #     "access_request__postgres_example:customer", [{"id": 1, "last_name": "Doe"}]
+        # )
+        # resources.cache_object(
+        #     "access_request__postgres_example:payment",
+        #     [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
+        # )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
         response = api_client.get(
             f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}",
             headers=auth_header,
         )
+
+        print(response.json())
 
         assert response.json() == {
             "postgres_example:payment": [

@@ -194,7 +194,47 @@ def upload_access_results(
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
 
-    child_data = []
+    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+        if not rule.storage_destination:
+            raise common_exceptions.RuleValidationError(
+                f"No storage destination configured on rule {rule.key}"
+            )
+        target_categories: Set[str] = {target.data_category for target in rule.targets}
+        filtered_results: Dict[
+            str, List[Dict[str, Optional[Any]]]
+        ] = filter_data_categories(
+            access_result,
+            target_categories,
+            dataset_graph.data_category_field_mapping,
+        )
+
+        filtered_results.update(
+            manual_data
+        )  # Add manual data directly to each upload packet
+
+        logging.info(
+            "Starting access request upload for rule %s for privacy request %s",
+            rule.key,
+            privacy_request.id,
+        )
+        try:
+            download_url: Optional[str] = upload(
+                db=session,
+                request_id=privacy_request.id,
+                data=filtered_results,
+                storage_key=rule.storage_destination.key,  # type: ignore
+            )
+            if download_url:
+                download_urls.append(download_url)
+        except common_exceptions.StorageUploadError as exc:
+            logging.error(
+                "Error uploading subject access data for rule %s on policy %s and privacy request %s : %s",
+                rule.key,
+                policy.key,
+                privacy_request.id,
+                Pii(str(exc)),
+            )
+            privacy_request.status = PrivacyRequestStatus.error
 
     if fides_connectors_by_dataset:
         for child in fides_connectors_by_dataset:
@@ -251,53 +291,28 @@ def upload_access_results(
                 )
 
             if response.status_code == 200:
-                child_data.append(response.json())
+                for pr in response.json():
+                    try:
+                        download_url: Optional[str] = upload(
+                            db=session,
+                            request_id=pr.id,
+                            data=pr,
+                            storage_key=rule.storage_destination.key,  # type: ignore
+                        )
+                        if download_url:
+                            download_urls.append(download_url)
+                    except common_exceptions.StorageUploadError as exc:
+                        logging.error(
+                            "Error uploading subject access data for privacy request %s: %s",
+                            pr.id,
+                            Pii(str(exc)),
+                        )
+                        privacy_request.status = PrivacyRequestStatus.error
             else:
                 logger.error(
                     f"Error retrieving data from child server for privacy request {fides_connectors_by_dataset[0]}: {response.json()}"
                 )
 
-    for rule in policy.get_rules_for_action(action_type=ActionType.access):
-        if not rule.storage_destination:
-            raise common_exceptions.RuleValidationError(
-                f"No storage destination configured on rule {rule.key}"
-            )
-        target_categories: Set[str] = {target.data_category for target in rule.targets}
-        filtered_results: Dict[
-            str, List[Dict[str, Optional[Any]]]
-        ] = filter_data_categories(
-            access_result,
-            target_categories,
-            dataset_graph.data_category_field_mapping,
-        )
-
-        filtered_results.update(
-            manual_data
-        )  # Add manual data directly to each upload packet
-
-        logging.info(
-            "Starting access request upload for rule %s for privacy request %s",
-            rule.key,
-            privacy_request.id,
-        )
-        try:
-            download_url: Optional[str] = upload(
-                db=session,
-                request_id=privacy_request.id,
-                data=filtered_results,
-                storage_key=rule.storage_destination.key,  # type: ignore
-            )
-            if download_url:
-                download_urls.append(download_url)
-        except common_exceptions.StorageUploadError as exc:
-            logging.error(
-                "Error uploading subject access data for rule %s on policy %s and privacy request %s : %s",
-                rule.key,
-                policy.key,
-                privacy_request.id,
-                Pii(str(exc)),
-            )
-            privacy_request.status = PrivacyRequestStatus.error
     return download_urls
 
 

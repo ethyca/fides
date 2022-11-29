@@ -131,6 +131,7 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
@@ -1292,14 +1293,14 @@ def upload_manual_webhook_data(
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
-    response_model=Dict[str, Optional[List[Row]]],
+    response_model=List[Dict[str, Optional[List[Row]]]],
 )
 def privacy_request_data_transfer(
     *,
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-) -> Dict[str, Optional[List[Row]]]:
+) -> List[Dict[str, Optional[List[Row]]]]:
     """Transfer access request iinformation to the parent server."""
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
 
@@ -1307,6 +1308,14 @@ def privacy_request_data_transfer(
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"No privacy request with id {privacy_request_id} found",
+        )
+
+    policy = Policy.get(db=db, object_id=privacy_request.policy_id)
+
+    if not policy:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="No policies found found",
         )
 
     value_dict = cache.get_encoded_objects_by_prefix(
@@ -1319,7 +1328,42 @@ def privacy_request_data_transfer(
             detail=f"No access request information found for privacy request id {privacy_request_id}",
         )
 
-    return {k.split("__")[-1]: v for k, v in value_dict.items()}
+    access_result = {k.split("__")[-1]: v for k, v in value_dict.items()}
+    filtered_results = []
+    datasets = DatasetConfig.all(db=db)
+    if not datasets:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No datasets found for privacy request {privacy_request_id}",
+        )
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    if not dataset_graphs:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset graphs found for privacy request {privacy_request_id}",
+        )
+    dataset_graph = DatasetGraph(*dataset_graphs)
+    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+        if not rule.storage_destination:
+            raise common_exceptions.RuleValidationError(
+                f"No storage destination configured on rule {rule.key}"
+            )
+        target_categories = {target.data_category for target in rule.targets}
+        filtered_categries = filter_data_categories(
+            access_result,
+            target_categories,
+            dataset_graph.data_category_field_mapping,
+        )
+        if filtered_categries:
+            filtered_results.append(filtered_categries)
+
+    if not filtered_results:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No results found for privacy request {privacy_request_id}",
+        )
+
+    return filtered_results
 
 
 @router.get(

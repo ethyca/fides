@@ -78,7 +78,7 @@ def status(ctx: click.Context) -> None:
 @click.command()
 @click.pass_context
 @click.option("--port", "-p", type=int, default=8080)
-def webserver(ctx: click.Context, port: int=8080) -> None:
+def webserver(ctx: click.Context, port: int = 8080) -> None:
     """
     Starts the fides API server using Uvicorn.
     """
