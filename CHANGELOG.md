@@ -15,7 +15,6 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
 
 ### Added
@@ -23,8 +22,10 @@ The types of changes are:
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 * Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
+* Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
 
 ### Changed
+
 * The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
 
 ### Fixed
@@ -54,6 +55,7 @@ The types of changes are:
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
+* Webserver port can now be configured via the CLI command [#1858](https://github.com/ethyca/fides/pull/1858)
 
 ### Changed
 
