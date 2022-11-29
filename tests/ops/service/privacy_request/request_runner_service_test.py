@@ -53,6 +53,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
+    upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
@@ -2211,3 +2212,30 @@ class TestPrivacyRequestsManualWebhooks:
         assert mock_upload.call_args.kwargs["data"] == {
             "manual_webhook_example": [{"email": None, "last_name": None}]
         }
+
+
+class TestUploadAccessRequestResults:
+    @pytest.mark.usefixtures("cached_input")
+    @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
+    def test_pass_on_manually_added_input(
+        self,
+        mock_upload,
+        policy,
+        run_privacy_request_task,
+        privacy_request,
+        db,
+    ):
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        assert 0
+
+        # db.refresh(privacy_request)
+        # assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        # assert mock_upload.called
+        # assert mock_upload.call_args.kwargs["data"] == {
+        #     "manual_webhook_example": [
+        #         {"email": "customer-1@example.com", "last_name": "McCustomer"}
+        #     ]
+        # }
