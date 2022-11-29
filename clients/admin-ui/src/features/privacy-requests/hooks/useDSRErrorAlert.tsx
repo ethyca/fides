@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
 
-import { useGetAllPrivacyRequestsQuery } from "../privacy-requests.slice";
+import {
+  useGetAllPrivacyRequestsQuery,
+  useGetNotificationQuery,
+} from "../privacy-requests.slice";
 
 type Requests = {
   /**
@@ -23,27 +26,39 @@ export const useDSRErrorAlert = () => {
     count: 0,
     total: 0,
   });
+  const [skip, setSkip] = useState(true);
   const TOAST_ID = "dsrErrorAlert";
   const DEFAULT_POLLING_INTERVAL = 15000;
   const STATUS = "error";
 
+  const { data: notification } = useGetNotificationQuery();
   const { data } = useGetAllPrivacyRequestsQuery(
     {
       status: [STATUS],
     },
-    { pollingInterval: DEFAULT_POLLING_INTERVAL }
+    {
+      pollingInterval: DEFAULT_POLLING_INTERVAL,
+      skip,
+    }
   );
+
+  useEffect(() => {
+    setSkip(!(notification && notification.notify_after_failures > 0));
+  }, [notification]);
 
   useEffect(() => {
     const total = data?.total || 0;
 
-    if (total > requests.total) {
+    if (
+      total >= (notification?.notify_after_failures || 0) &&
+      total > requests.total
+    ) {
       setRequests({ count: total - requests.total, total });
       setHasAlert(true);
     } else {
       setHasAlert(false);
     }
-  }, [data?.total, requests.total]);
+  }, [data?.total, notification?.notify_after_failures, requests.total]);
 
   const processing = () => {
     if (!hasAlert) {

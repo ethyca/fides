@@ -34,10 +34,17 @@ import {
   FormikHelpers,
   FormikProps,
 } from "formik";
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 
-import EmailChipList from "./EmailChipList";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
+
+import EmailChipList from "../EmailChipList";
+import {
+  useGetNotificationQuery,
+  useSaveNotificationMutation,
+} from "../privacy-requests.slice";
 
 const DEFAULT_MIN_ERROR_COUNT = 1;
 
@@ -50,20 +57,51 @@ const validationSchema = Yup.object().shape({
 
 const ConfigureAlerts = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const initialValues = {
+  const [formValues, setFormValues] = useState({
     emails: [] as string[],
     notify: false,
     minErrorCount: DEFAULT_MIN_ERROR_COUNT,
-  };
+  });
   const firstField = useRef(null);
+  const { errorAlert, successAlert } = useAlert();
+  const [skip, setSkip] = useState(true);
+
+  const { data } = useGetNotificationQuery(undefined, { skip });
+  const [saveNotification] = useSaveNotificationMutation();
 
   const handleSubmit = async (
-    values: typeof initialValues,
-    helpers: FormikHelpers<typeof initialValues>
+    values: typeof formValues,
+    helpers: FormikHelpers<typeof formValues>
   ) => {
+    helpers.setSubmitting(true);
+    const payload = await saveNotification({
+      email_addresses: values.emails,
+      notify_after_failures: values.notify ? values.minErrorCount : 0,
+    });
+    if ("error" in payload) {
+      errorAlert(
+        getErrorMessage(payload.error),
+        `Configure alerts and notifications has failed to save due to the following:`
+      );
+    } else {
+      successAlert(`Configure alerts and notifications saved successfully.`);
+    }
     helpers.setSubmitting(false);
     onClose();
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      setSkip(false);
+    }
+    if (data) {
+      setFormValues({
+        emails: data.email_addresses,
+        notify: data.notify_after_failures !== 0,
+        minErrorCount: data.notify_after_failures,
+      });
+    }
+  }, [data, isOpen]);
 
   return (
     <>
@@ -75,11 +113,11 @@ const ConfigureAlerts = () => {
       </MenuItem>
       <Formik
         enableReinitialize
-        initialValues={initialValues}
+        initialValues={formValues}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {(props: FormikProps<typeof initialValues>) => (
+        {(props: FormikProps<typeof formValues>) => (
           <Drawer
             isOpen={isOpen}
             placement="right"
@@ -136,7 +174,7 @@ const ConfigureAlerts = () => {
                             <Switch
                               {...field}
                               colorScheme="secondary"
-                              isChecked={field.checked}
+                              isChecked={props.values.notify}
                               onChange={(
                                 event: ChangeEvent<HTMLInputElement>
                               ) => {
@@ -179,7 +217,7 @@ const ConfigureAlerts = () => {
                             <NumberInput
                               allowMouseWheel
                               color="gray.700"
-                              defaultValue={DEFAULT_MIN_ERROR_COUNT}
+                              defaultValue={props.values.minErrorCount}
                               min={DEFAULT_MIN_ERROR_COUNT}
                               ml="8px"
                               mr="8px"
