@@ -17,6 +17,7 @@ from fides.api.ops.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     EmailConnector,
+    FidesConnector,
     ManualConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
@@ -50,7 +51,7 @@ class Connections:
         return self.connections[key]
 
     @staticmethod
-    def build_connector(  # pylint: disable=R0911
+    def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
     ) -> BaseConnector:
         """Factory method to build the appropriately typed connector from the config."""
@@ -78,6 +79,8 @@ class Connections:
             return EmailConnector(connection_config)
         if connection_config.connection_type == ConnectionType.timescale:
             return TimescaleConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.fides:
+            return FidesConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

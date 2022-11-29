@@ -1,7 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
@@ -49,6 +49,9 @@ from fides.api.ops.schemas.messaging.messaging import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
+)
+from fides.api.ops.service.connectors.fides_connector import (
+    filter_fides_connector_datasets,
 )
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.service.storage.storage_uploader_service import upload
@@ -178,6 +181,7 @@ def upload_access_results(
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
+    fides_connectors_by_dataset: List[Tuple[str, ConnectionConfig]],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
@@ -317,6 +321,9 @@ async def run_privacy_request(
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
+            fides_connectors_by_dataset: List[
+                Tuple[str, ConnectionConfig]
+            ] = filter_fides_connector_datasets(connection_configs)
             access_result_urls: List[str] = []
 
             if can_run_checkpoint(
@@ -337,6 +344,7 @@ async def run_privacy_request(
                     dataset_graph,
                     privacy_request,
                     manual_webhook_results.manual_data,
+                    fides_connectors_by_dataset,
                 )
 
             if policy.get_rules_for_action(
