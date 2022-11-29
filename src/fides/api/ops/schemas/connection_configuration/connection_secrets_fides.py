@@ -1,12 +1,9 @@
-from typing import List
+from typing import List, Optional
 
 from fides.api.ops.schemas.base_class import NoValidationSchema
 from fides.api.ops.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
-
-DEFAULT_POLLING_RETRIES: int = 100
-DEFAULT_POLLING_INTERVAL: int = 10
 
 
 class FidesConnectorSchema(ConnectionConfigSecretsSchema):
@@ -15,8 +12,8 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
     uri: str
     username: str
     password: str
-    polling_retries: int = DEFAULT_POLLING_RETRIES
-    polling_interval: int = DEFAULT_POLLING_INTERVAL
+    polling_timeout: Optional[int] = None
+    polling_interval: Optional[int] = None
 
     _required_components: List[str] = ["uri", "username", "password"]
 

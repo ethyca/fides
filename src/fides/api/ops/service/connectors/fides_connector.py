@@ -13,11 +13,15 @@ from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
 )
+from fides.api.ops.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
+
+DEFAULT_POLLING_TIMEOUT: int = 1800
+DEFAULT_POLLING_INTERVAL: int = 30
 
 
 class FidesConnector(BaseConnector[FidesClient]):
@@ -26,8 +30,16 @@ class FidesConnector(BaseConnector[FidesClient]):
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
         config = FidesConnectorSchema(**self.configuration.secrets or {})
-        self.polling_retries = config.polling_retries
-        self.polling_interval = config.polling_interval
+        self.polling_timeout = (
+            config.polling_timeout
+            if config.polling_timeout
+            else DEFAULT_POLLING_TIMEOUT
+        )
+        self.polling_interval = (
+            config.polling_interval
+            if config.polling_interval
+            else DEFAULT_POLLING_INTERVAL
+        )
 
     def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
@@ -75,15 +87,15 @@ class FidesConnector(BaseConnector[FidesClient]):
             identity=Identity(**privacy_request.get_cached_identity_data()),
             policy_key=policy.key,
         )
-        return [
-            {
-                node.address.value: client.poll_for_request_completion(
-                    privacy_request_id=pr_id,
-                    retries=self.polling_retries,
-                    interval=self.polling_interval,
-                )
-            }
-        ]
+        privacy_request_response: PrivacyRequestResponse = (
+            client.poll_for_request_completion(
+                privacy_request_id=pr_id,
+                timeout=self.polling_timeout or None,
+                interval=self.polling_interval or None,
+            )
+        )
+
+        return [{node.address.value: privacy_request_response.__dict__}]
 
     def mask_data(
         self,
@@ -104,7 +116,7 @@ class FidesConnector(BaseConnector[FidesClient]):
             )
             client.poll_for_request_completion(
                 privacy_request_id=pr_id,
-                retries=self.polling_retries,
+                timeout=self.polling_timeout,
                 interval=self.polling_interval,
             )
             update_ct += 1

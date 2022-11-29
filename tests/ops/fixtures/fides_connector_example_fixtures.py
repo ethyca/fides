@@ -23,7 +23,7 @@ def fides_connector_example_secrets():
 
 @pytest.fixture(scope="function")
 def fides_connector_polling_overrides():
-    return (200, 20)
+    return (1000, 5)
 
 
 @pytest.fixture(scope="function")
@@ -59,7 +59,7 @@ def test_fides_connector_overriden_polling(
     fides_connector_polling_overrides: Tuple[int, int],
 ) -> FidesConnector:
     fides_connector_connection_config.secrets[
-        "polling_retries"
+        "polling_timeout"
     ] = fides_connector_polling_overrides[0]
     fides_connector_connection_config.secrets[
         "polling_interval"

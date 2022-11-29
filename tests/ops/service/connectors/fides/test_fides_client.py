@@ -210,134 +210,63 @@ class TestFidesClientUnit:
         )
         assert request.body == b'[{"field1": "value1"}]'
 
-    # The below polling tests need to rely on response mocking, since we can't control
-    # the status of a given privacy request on a remote server.
-    # As such, they make some assumptions about the status API and are susceptible to
-    # false positives if the status API changes, and we don't adjust our tests here!
-
-    @mock.patch(
-        "requests.Session.send",
-        side_effect=[
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(status=PrivacyRequestStatus.complete).__dict__
-                    ]
-                },
-            )
-        ],
-    )
+    @pytest.mark.asyncio
     def test_poll_for_completion(
-        self, mock_privacy_request_status, authenticated_fides_client: FidesClient
+        self, db, policy, authenticated_fides_client: FidesClient
     ):
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": None,
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.complete,
+            },
+        )
+
         pr_record = authenticated_fides_client.poll_for_request_completion(
-            privacy_request_id="some_successful_request",
-            retries=10,
+            privacy_request_id=pr.id,
+            timeout=10,
             interval=1,
         )
-        assert pr_record["status"] == PrivacyRequestStatus.complete.value
-        assert mock_privacy_request_status.call_count == 1
+        assert pr_record.status == PrivacyRequestStatus.complete.value
 
-    @mock.patch(
-        "requests.Session.send",
-        side_effect=[
-            MockResponse(
-                True,
-                {"items": [PrivacyRequest(status=PrivacyRequestStatus.error).__dict__]},
-            )
-        ],
-    )
+    @pytest.mark.asyncio
     def test_poll_for_completion_errored(
-        self, mock_privacy_request_status, authenticated_fides_client: FidesClient
+        self, db, policy, authenticated_fides_client: FidesClient
     ):
+
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": None,
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.error,
+            },
+        )
         with pytest.raises(FidesError) as exc:
-            pr_record = authenticated_fides_client.poll_for_request_completion(
-                privacy_request_id="some_errored_request",
-                retries=10,
+            authenticated_fides_client.poll_for_request_completion(
+                privacy_request_id=pr.id,
+                timeout=10,
                 interval=1,
             )
-        assert mock_privacy_request_status.call_count == 1
         assert "encountered an error" in str(exc)
 
-    @mock.patch(
-        "requests.Session.send",
-        side_effect=[
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(
-                            status=PrivacyRequestStatus.in_processing
-                        ).__dict__
-                    ]
-                },
-            ),
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(
-                            status=PrivacyRequestStatus.in_processing
-                        ).__dict__
-                    ]
-                },
-            ),
-        ],
-    )
+    @pytest.mark.asyncio
     def test_poll_for_completion_timeout(
-        self, mock_privacy_request_status, authenticated_fides_client: FidesClient
+        self, db, policy, authenticated_fides_client: FidesClient
     ):
-        with pytest.raises(FidesError) as exc:
-            pr_record = authenticated_fides_client.poll_for_request_completion(
-                privacy_request_id="some_pending_request", interval=1, retries=2
-            )
-        assert mock_privacy_request_status.call_count == 2
-        assert "has timed out" in str(
-            exc
-        ) and PrivacyRequestStatus.pending.value in str(exc)
-
-    @mock.patch(
-        "requests.Session.send",
-        side_effect=[
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(
-                            status=PrivacyRequestStatus.in_processing
-                        ).__dict__
-                    ]
-                },
-            ),
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(
-                            status=PrivacyRequestStatus.in_processing
-                        ).__dict__
-                    ]
-                },
-            ),
-            MockResponse(
-                True,
-                {
-                    "items": [
-                        PrivacyRequest(status=PrivacyRequestStatus.complete).__dict__
-                    ]
-                },
-            ),
-        ],
-    )
-    def test_poll_for_completion_blocks_till_complete(
-        self, mock_privacy_request_status, authenticated_fides_client: FidesClient
-    ):
-        pr_record = authenticated_fides_client.poll_for_request_completion(
-            privacy_request_id="some_pending_request", interval=1, retries=3
+        pr = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": None,
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.in_processing,
+            },
         )
-        assert mock_privacy_request_status.call_count == 3
-        assert pr_record["status"] == PrivacyRequestStatus.complete.value
+        with pytest.raises(TimeoutError):
+            pr_record = authenticated_fides_client.poll_for_request_completion(
+                privacy_request_id="p", interval=1, timeout=4
+            )
 
 
 @pytest.mark.integration

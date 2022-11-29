@@ -8,12 +8,10 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTe
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
-    DEFAULT_POLLING_INTERVAL,
-    DEFAULT_POLLING_RETRIES,
-)
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.connectors.fides_connector import (
+    DEFAULT_POLLING_INTERVAL,
+    DEFAULT_POLLING_TIMEOUT,
     FidesConnector,
     filter_fides_connector_datasets,
 )
@@ -30,7 +28,7 @@ class TestFidesConnectorUnit:
         self, test_fides_connector: FidesConnector
     ):
         assert test_fides_connector.polling_interval == DEFAULT_POLLING_INTERVAL
-        assert test_fides_connector.polling_retries == DEFAULT_POLLING_RETRIES
+        assert test_fides_connector.polling_timeout == DEFAULT_POLLING_TIMEOUT
 
     def test_connector_attributes_assigned(
         self,
@@ -38,7 +36,7 @@ class TestFidesConnectorUnit:
         fides_connector_polling_overrides: Tuple[int, int],
     ):
         assert (
-            test_fides_connector_overriden_polling.polling_retries
+            test_fides_connector_overriden_polling.polling_timeout
             == fides_connector_polling_overrides[0]
         )
         assert (

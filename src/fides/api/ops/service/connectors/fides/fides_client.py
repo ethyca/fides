@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -11,8 +10,15 @@ from requests import PreparedRequest, Request, Session
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.models.privacy_request import PrivacyRequestStatus
-from fides.api.ops.schemas.privacy_request import PrivacyRequestCreate
+from fides.api.ops.schemas.privacy_request import (
+    PrivacyRequestCreate,
+    PrivacyRequestResponse,
+)
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.privacy_request.request_service import (
+    poll_server_for_completion,
+)
+from fides.api.ops.util.wrappers import sync
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
@@ -108,9 +114,10 @@ class FidesClient:
             )
         return response.json()["succeeded"][0]["id"]
 
-    def poll_for_request_completion(
-        self, privacy_request_id: str, retries: int, interval: int
-    ) -> dict[str, Any]:
+    @sync
+    async def poll_for_request_completion(
+        self, privacy_request_id: str, timeout: int, interval: int
+    ) -> PrivacyRequestResponse:
         """
         Poll remote fides for status of privacy request with the given ID until it is complete.
         This is effectively a blocking call, i.e. it will block the current thread until
@@ -118,31 +125,32 @@ class FidesClient:
 
         Returns the privacy request record, or error
         """
-        while (status := self.request_status(privacy_request_id)[0])[
-            "status"
-        ] not in COMPLETION_STATUSES:
-            # if we've hit 0, we've run out of retries.
-            # an input arg of 0 is effectively infinite retries
-            retries -= 1
-            if retries == 0:
-                raise FidesError(
-                    f"Polling for status of privacy request [{privacy_request_id}] on remote Fides {self.uri} has timed out. Request was last observed with status {status['status']}"
-                )
-            time.sleep(interval)
 
-        if status["status"] == PrivacyRequestStatus.error:
+        if not self.token:
+            raise FidesError(
+                f"Unable to poll for request completion. No token for Fides connector for server {self.uri}"
+            )
+
+        status: PrivacyRequestResponse = await poll_server_for_completion(
+            privacy_request_id=privacy_request_id,
+            server_url=self.uri,
+            token=self.token,
+            poll_interval_seconds=interval,
+            timeout_seconds=timeout,
+        )
+        if status.status == PrivacyRequestStatus.error:
             raise FidesError(
                 f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} encountered an error. Look at the remote Fides for more information."
             )
-        if status["status"] == PrivacyRequestStatus.canceled:
+        if status.status == PrivacyRequestStatus.canceled:
             raise FidesError(
                 f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} was canceled. Look at the remote Fides for more information."
             )
-        if status["status"] == PrivacyRequestStatus.denied:
+        if status.status == PrivacyRequestStatus.denied:
             raise FidesError(
                 f"Privacy request [{privacy_request_id}] on remote Fides {self.uri} was denied. Look at the remote Fides for more information."
             )
-        if status["status"] == PrivacyRequestStatus.complete:
+        if status.status == PrivacyRequestStatus.complete:
             log.debug(
                 f"Privacy request [{privacy_request_id}] is complete on remote Fides {self.uri}!",
             )
