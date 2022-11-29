@@ -3,7 +3,6 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
-from fides.lib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import drop_database
 
@@ -21,6 +20,7 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.service.connectors import PostgreSQLConnector
 from fides.ctl.core.config import get_config
+from fides.lib.db.session import get_db_engine, get_db_session
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets

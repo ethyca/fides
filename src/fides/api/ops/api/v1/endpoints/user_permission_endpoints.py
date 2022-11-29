@@ -2,8 +2,6 @@ import logging
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fides.lib.models.fides_user import FidesUser
-from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
@@ -28,6 +26,8 @@ from fides.api.ops.util.oauth_util import (
     verify_oauth_client,
 )
 from fides.ctl.core.config import get_config
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
 
 CONFIG = get_config()
 logger = logging.getLogger(__name__)

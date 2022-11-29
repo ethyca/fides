@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fides.lib.cryptography import cryptographic_util
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -16,6 +15,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("adobe_campaign")

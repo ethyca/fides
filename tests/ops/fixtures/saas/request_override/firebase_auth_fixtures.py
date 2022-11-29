@@ -2,8 +2,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fides.lib.cryptography import cryptographic_util
-from fides.lib.db import session
 from firebase_admin import auth
 from firebase_admin.auth import UserNotFoundError
 from firebase_admin.exceptions import FirebaseError
@@ -22,6 +20,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("firebase_auth")

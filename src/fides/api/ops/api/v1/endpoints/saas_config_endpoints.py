@@ -3,7 +3,6 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from fides.lib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -60,6 +59,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

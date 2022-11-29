@@ -4,7 +4,6 @@ generated programmatically for each resource.
 """
 from typing import Dict, List, Tuple
 
-from fides.lib.db.base import Base
 from loguru import logger as log
 from sqlalchemy import column
 from sqlalchemy import delete as _delete
@@ -16,6 +15,7 @@ from sqlalchemy.future import select
 
 from fides.api.ctl.database.session import async_session
 from fides.api.ctl.utils import errors
+from fides.lib.db.base import Base
 
 
 # CRUD Functions

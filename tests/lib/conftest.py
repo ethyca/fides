@@ -9,7 +9,6 @@ from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
-from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 
@@ -26,6 +25,7 @@ from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api.routes.user_endpoints import router
 from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 
 logger = logging.getLogger(__name__)
 

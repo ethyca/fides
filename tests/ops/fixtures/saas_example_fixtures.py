@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, Generator
 
 import pytest
-from fides.lib.core.config import load_toml
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -16,6 +15,7 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
 from fides.api.ops.util.saas_util import load_config
+from fides.lib.core.config import load_toml
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)

@@ -3,11 +3,11 @@ import os
 from unittest.mock import patch
 
 import pytest
-from fides.lib.exceptions import MissingConfig
 from pydantic import ValidationError
 
 from fides.ctl.core.config import get_config
 from fides.ctl.core.config.database_settings import DatabaseSettings
+from fides.lib.exceptions import MissingConfig
 
 REQUIRED_ENV_VARS = {
     "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
