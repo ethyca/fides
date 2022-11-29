@@ -24,6 +24,7 @@ services:
       FIDES__CLI__SERVER_HOST: "fides-child"
       FIDES__CLI__SERVER_PORT: "8080"
       FIDES__DATABASE__SERVER: "fides-child-db"
+      FIDES__DATABASE__DB: "fides-child"
       FIDES__DEV_MODE: "True"
       FIDES__REDIS__ENABLED: "True"
       FIDES__REDIS__HOST: "redis-child"
@@ -48,7 +49,6 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      # TODO - can we update this to not share the volume mount with primary Fides?
       - postgres:/var/lib/postgresql/data
     expose:
       - 5432
