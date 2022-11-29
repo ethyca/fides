@@ -9,7 +9,7 @@ Create Date: 2022-07-29 17:54:53.719453
 """
 import logging
 
-from fideslib.db.session import get_db_session
+from fides.lib.db.session import get_db_session
 from sqlalchemy.exc import ProgrammingError
 
 from fides.api.ops.db.base import DatasetConfig

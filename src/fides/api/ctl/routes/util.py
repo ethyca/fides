@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from fideslang import FidesModelType
-from fideslib.db.base import Base
+from fides.lib.db.base import Base
 
 from fides.api.ctl.database.crud import get_resource, list_resource
 from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]

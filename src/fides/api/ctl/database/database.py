@@ -6,7 +6,7 @@ from os import path
 from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
-from fideslib.db.base import Base
+from fides.lib.db.base import Base
 from loguru import logger as log
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists

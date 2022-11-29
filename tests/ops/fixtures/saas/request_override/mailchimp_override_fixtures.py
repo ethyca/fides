@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, Generator
 
 import pytest
-from fideslib.db import session
+from fides.lib.db import session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (

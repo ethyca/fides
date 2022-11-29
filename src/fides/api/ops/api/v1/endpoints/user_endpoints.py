@@ -4,13 +4,13 @@ from typing import Optional
 
 import jose.exceptions
 from fastapi import Depends, HTTPException, Security
-from fideslib.cryptography.cryptographic_util import b64_str_to_str
-from fideslib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
-from fideslib.exceptions import AuthenticationError
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.oauth_util import extract_payload
-from fideslib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
+from fides.lib.cryptography.cryptographic_util import b64_str_to_str
+from fides.lib.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
+from fides.lib.exceptions import AuthenticationError
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.oauth_util import extract_payload
+from fides.lib.oauth.schemas.user import UserPasswordReset, UserResponse, UserUpdate
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

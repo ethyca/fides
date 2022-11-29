@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
+from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy_utils.functions import create_database, database_exists
 from starlette.testclient import TestClient
 

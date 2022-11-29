@@ -2,7 +2,7 @@ from typing import Generator
 from uuid import uuid4
 
 import pytest
-from fideslib.db.session import get_db_engine, get_db_session
+from fides.lib.db.session import get_db_engine, get_db_session
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import create_database, database_exists, drop_database

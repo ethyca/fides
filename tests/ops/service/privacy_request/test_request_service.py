@@ -1,5 +1,5 @@
 import pytest
-from fideslib.cryptography.cryptographic_util import str_to_b64_str
+from fides.lib.cryptography.cryptographic_util import str_to_b64_str
 from httpx import HTTPStatusError
 
 from fides.api.ctl.database.seed import create_or_update_parent_user

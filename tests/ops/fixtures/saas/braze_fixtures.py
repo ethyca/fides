@@ -5,8 +5,8 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (

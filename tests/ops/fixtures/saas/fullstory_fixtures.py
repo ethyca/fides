@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.db import session
+from fides.lib.db import session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 

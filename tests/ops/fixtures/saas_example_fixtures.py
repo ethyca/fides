@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Generator
 
 import pytest
-from fideslib.core.config import load_toml
+from fides.lib.core.config import load_toml
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (

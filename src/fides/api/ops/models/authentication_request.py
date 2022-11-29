@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from fideslib.db.base_class import Base
+from fides.lib.db.base_class import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session
 

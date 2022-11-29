@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 import sqlalchemy
-from fideslib.db.session import get_db_engine, get_db_session
+from fides.lib.db.session import get_db_engine, get_db_session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (

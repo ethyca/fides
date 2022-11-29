@@ -6,8 +6,8 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
-from fideslib.db.base import Base, ClientDetail, FidesUser, FidesUserPermissions
-from fideslib.db.base_class import FidesBase as FideslibBase
+from fides.lib.db.base import Base, ClientDetail, FidesUser, FidesUserPermissions
+from fides.lib.db.base_class import FidesBase as FideslibBase
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,

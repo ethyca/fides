@@ -5,8 +5,8 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.db.base_class import get_key_from_data
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.db.base_class import get_key_from_data
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException

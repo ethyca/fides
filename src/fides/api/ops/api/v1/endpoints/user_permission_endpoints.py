@@ -2,8 +2,8 @@ import logging
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fideslib.models.fides_user import FidesUser
-from fideslib.models.fides_user_permissions import FidesUserPermissions
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 

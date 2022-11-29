@@ -3,7 +3,7 @@ import os
 from unittest.mock import patch
 
 import pytest
-from fideslib.exceptions import MissingConfig
+from fides.lib.exceptions import MissingConfig
 from pydantic import ValidationError
 
 from fides.ctl.core.config import get_config

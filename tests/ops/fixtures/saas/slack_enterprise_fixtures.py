@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.db import session
+from fides.lib.db import session
 from requests import Response
 from sqlalchemy.orm import Session
 

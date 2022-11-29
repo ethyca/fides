@@ -3,8 +3,8 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
 from starlette.status import HTTP_204_NO_CONTENT

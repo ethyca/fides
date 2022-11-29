@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,

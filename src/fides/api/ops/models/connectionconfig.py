@@ -4,9 +4,9 @@ import enum
 from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
-from fideslib.db.base import Base
-from fideslib.db.base_class import get_key_from_data
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.db.base import Base
+from fides.lib.db.base_class import get_key_from_data
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
