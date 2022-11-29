@@ -28,6 +28,8 @@ The types of changes are:
 ### Changed
 
 * The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+* Upgraded FastAPI to 0.85.1 [#1899](https://github.com/ethyca/fides/pull/1899)
+
 
 ### Fixed
 
