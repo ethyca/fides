@@ -1,9 +1,13 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from loguru import logger as log
 
 from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.ops.models.connectionconfig import (
+    ConnectionConfig,
+    ConnectionTestStatus,
+    ConnectionType,
+)
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
@@ -110,3 +114,21 @@ class FidesConnector(BaseConnector[FidesClient]):
     def close(self) -> None:
         """Close any held resources"""
         # no held resources for Fides client
+
+
+def filter_fides_connector_datasets(
+    connector_configs: List[ConnectionConfig],
+) -> List[Tuple[str, ConnectionConfig]]:
+    """
+    Helper function to retrieve the `fides_key`s of any `Dataset`s associated
+    with any Fides connectors in the provided `List` of `ConnectionConfig`s.
+
+    Returns a `List` of `Tuple`s whose first element is the `fides_key`
+    of the `Dataset`, and whose second element is the `ConnectionConfig` itself
+    """
+    return [
+        (dataset.fides_key, connector_config)
+        for connector_config in connector_configs
+        for dataset in connector_config.datasets
+        if connector_config.connection_type == ConnectionType.fides
+    ]

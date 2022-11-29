@@ -4,7 +4,8 @@ from typing import Tuple
 import pytest
 
 from fides.api.ops.graph.traversal import TraversalNode
-from fides.api.ops.models.connectionconfig import ConnectionTestStatus
+from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
@@ -12,7 +13,10 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets_fides imp
     DEFAULT_POLLING_RETRIES,
 )
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
-from fides.api.ops.service.connectors.fides_connector import FidesConnector
+from fides.api.ops.service.connectors.fides_connector import (
+    FidesConnector,
+    filter_fides_connector_datasets,
+)
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -48,6 +52,33 @@ class TestFidesConnectorUnit:
         assert client.uri == test_fides_connector.configuration.secrets["uri"]
         assert client.username == test_fides_connector.configuration.secrets["username"]
         assert client.password == test_fides_connector.configuration.secrets["password"]
+
+    @pytest.mark.usefixtures(
+        "saas_example_connection_config",  # an example of a non-fides config/dataset
+        "saas_example_dataset_config",
+    )
+    def test_filter_fides_connector_datasets(
+        self,
+        fides_connector_connection_config,
+        fides_connector_example_test_dataset_config: DatasetConfig,
+        db,
+    ):
+
+        connectors_by_dataset = filter_fides_connector_datasets(
+            ConnectionConfig.all(db=db)
+        )
+        assert len(connectors_by_dataset) == 1
+        assert (
+            connectors_by_dataset[0][0]
+            == fides_connector_example_test_dataset_config.fides_key
+        )
+        assert connectors_by_dataset[0][1] == fides_connector_connection_config
+
+        fides_connector_connection_config.delete(db)
+        connectors_by_dataset = filter_fides_connector_datasets(
+            ConnectionConfig.all(db=db)
+        )
+        assert not connectors_by_dataset
 
 
 @pytest.mark.integration

@@ -67,21 +67,21 @@ def test_fides_connector_overriden_polling(
     return FidesConnector(configuration=fides_connector_connection_config)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def fides_connector_example_test_dataset_config(
-    connection_config: ConnectionConfig,
+    fides_connector_connection_config: ConnectionConfig,
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
     fides_connector_dataset = example_datasets[10]
     fides_key = fides_connector_dataset["fides_key"]
-    connection_config.name = fides_key
-    connection_config.key = fides_key
-    connection_config.save(db=db)
+    fides_connector_connection_config.name = fides_key
+    fides_connector_connection_config.key = fides_key
+    fides_connector_connection_config.save(db=db)
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": connection_config.id,
+            "connection_config_id": fides_connector_connection_config.id,
             "fides_key": fides_key,
             "dataset": fides_connector_dataset,
         },
