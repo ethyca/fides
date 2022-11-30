@@ -15,10 +15,9 @@ import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
-import { useFeatures } from "~/features/common/features.slice";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import { resolveLink } from "~/features/common/nav/zone-config";
+import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
 import {
@@ -45,6 +44,7 @@ const ScanResults = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { systemOrDatamapRoute } = useInterzoneNav();
 
   const {
     isOpen: isWarningOpen,
@@ -53,7 +53,6 @@ const ScanResults = () => {
   } = useDisclosure();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
-  const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
   const method = useAppSelector(selectAddSystemsMethod);
@@ -87,14 +86,7 @@ const ScanResults = () => {
       return navigateAndReset("/classify-systems");
     }
 
-    const datamapRoute = resolveLink({
-      href: "/datamap",
-      basePath: "/",
-    });
-
-    return features.plus
-      ? navigateAndReset(datamapRoute.href)
-      : navigateAndReset("/system");
+    return navigateAndReset(systemOrDatamapRoute);
   };
 
   const handleSubmit = () => {
