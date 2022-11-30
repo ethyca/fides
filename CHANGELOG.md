@@ -20,7 +20,7 @@ The types of changes are:
 
 ### Added
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
-* Adds Access and Erasure Endpoints for Recharge Connector [1709](https://github.com/ethyca/fides/pull/1709)
+* Adds access and erasure support for Recharge [#1709](https://github.com/ethyca/fides/pull/1709)
 
 ### Fixed
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
