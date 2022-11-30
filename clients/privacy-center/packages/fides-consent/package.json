@@ -2,7 +2,7 @@
   "name": "fides-consent",
   "version": "0.0.1",
   "description": "Fides consent script",
-  "source": "src/index.ts",
+  "source": "src/lib/index.ts",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
