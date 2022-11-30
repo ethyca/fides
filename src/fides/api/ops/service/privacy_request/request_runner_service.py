@@ -52,6 +52,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -537,39 +538,15 @@ def _retrieve_child_results(  # pylint: disable=R0911
     fides_connector: Tuple[str, ConnectionConfig], rule_key: str
 ) -> Optional[Dict[str, Optional[List[Row]]]]:
     """Get child access request results to add to upload."""
-    secrets = fides_connector[1].secrets
-    if not secrets:
-        logger.error(
-            "No server secrets present for privacy request %s", fides_connector[0]
-        )
-        return None
-
-    uri = secrets.get("uri")
-    if not uri:
-        logger.error("No server uri present for privacy request %s", fides_connector[0])
-        return None
-
-    username = secrets.get("username")
-    if not username:
-        logger.error(
-            "No server user name present for privacy request %s", fides_connector[0]
-        )
-        return None
-
-    password = secrets.get("password")
-    if not password:
-        logger.error(
-            "No server password present for privacy request %s", fides_connector[0]
-        )
-        return None
-
-    client = FidesClient(
-        uri=uri,
-        username=username,
-        password=password,
-    )
     try:
-        client.login()
+        connector = FidesConnector(fides_connector[1])
+    except Exception as e:
+        logger.error(
+            "Error create client for child server %s: %s", fides_connector[0], e
+        )
+
+    try:
+        client = connector.create_client()
     except requests.exceptions.HTTPError as e:
         logger.error(
             "Error logging into to child server for privacy request %s: %s",
