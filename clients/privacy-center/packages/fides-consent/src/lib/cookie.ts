@@ -1,4 +1,3 @@
-// import config from "config/config.json";
 import { getCookie, setCookie, Types } from "typescript-cookie";
 
 /**
