@@ -25,6 +25,7 @@ The types of changes are:
 * Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
 * Added rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
+* Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
 
 ### Changed
 
