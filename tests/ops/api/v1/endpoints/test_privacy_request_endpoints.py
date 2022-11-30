@@ -56,6 +56,7 @@ from fides.api.ops.api.v1.urn_registry import (
 )
 from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
+from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.models.policy import (
     ActionType,
@@ -4281,42 +4282,34 @@ class TestCreatePrivacyRequestAuthenticated:
         assert run_access_request_mock.called
 
 
+@pytest.mark.integration
 class TestPrivacyReqeustDataTransfer:
+    @pytest.mark.usefixtures("postgres_integration_db")
     async def test_privacy_request_data_transfer(
         self,
         api_client: TestClient,
         privacy_request,
         generate_auth_header,
         policy,
-        integration_manual_config,
         db,
-        dataset_config,
+        postgres_example_test_dataset_config_read_access,
     ):
         pr = privacy_request.save(db=db)
-        resources = TaskResources(
-            privacy_request, policy, [integration_manual_config], db
-        )
-        merged_graph = dataset_config.get_graph()
+        merged_graph = postgres_example_test_dataset_config_read_access.get_graph()
         graph = DatasetGraph(merged_graph)
 
+        # execute the privacy request to mimic the expected workflow on the "child"
+        # this will populate the access results in the cache, which is required for the
+        # transfer endpoint to work
         r = await graph_task.run_access_request(
             privacy_request,
             policy,
             graph,
-            dataset_config.all(db=db),
-            {"email": "test@email.com"},
+            ConnectionConfig.all(db=db),
+            {"email": "customer-1@example.com"},
             db,
         )
 
-        assert resources.get_all_cached_objects() == {}
-
-        # resources.cache_object(
-        #     "access_request__postgres_example:user", [{"id": 1, "last_name": "Doe"}]
-        # )
-        # resources.cache_object(
-        #     "access_request__postgres_example:payment",
-        #     [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
-        # )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
         rules = policy.get_rules_for_action(action_type=ActionType.access)
         response = api_client.get(
@@ -4324,9 +4317,30 @@ class TestPrivacyReqeustDataTransfer:
             headers=auth_header,
         )
 
-        assert response.json() == {
-            "postgres_example:user": [{"id": 1, "last_name": "Doe"}],
-        }
+        # assert we've got some of our expected data in the response,
+        # in the shape we expect
+        response_data: dict = response.json()
+        assert "postgres_example_test_dataset:address" in response_data.keys()
+        assert response_data["postgres_example_test_dataset:address"] == [
+            {
+                "city": "Exampletown",
+                "state": "NY",
+                "street": "Example Street",
+                "zip": "12345",
+                "house": 123,
+            },
+            {
+                "city": "Exampletown",
+                "state": "NY",
+                "street": "Example Lane",
+                "zip": "12321",
+                "house": 4,
+            },
+        ]
+        assert "postgres_example_test_dataset:customer" in response_data.keys()
+        assert response_data["postgres_example_test_dataset:customer"] == [
+            {"name": "John Customer", "email": "customer-1@example.com", "id": 1}
+        ]
 
     def test_privacy_request_data_transfer_wrong_scope(
         self,
@@ -4338,7 +4352,7 @@ class TestPrivacyReqeustDataTransfer:
         pr = privacy_request.save(db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}",
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}",
             headers=auth_header,
         )
 
@@ -4352,7 +4366,7 @@ class TestPrivacyReqeustDataTransfer:
     ):
         pr = privacy_request.save(db)
         response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}"
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}"
         )
 
         assert response.status_code == 401
