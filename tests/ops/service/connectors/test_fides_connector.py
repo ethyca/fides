@@ -132,8 +132,5 @@ class TestFidesConnectorIntegration:
         )
 
         # there should be only one "row" per connnector result
-        len(result) == 1
-        for connector_result in result[0].items():
-            # second element in tuple is the PrivacyRequestResponse as a dict
-            # retrieve its status, which should be "complete"
-            connector_result[1]["status"] == PrivacyRequestStatus.complete
+        assert len(result) == 1
+        assert result[0]["status"] == PrivacyRequestStatus.complete
