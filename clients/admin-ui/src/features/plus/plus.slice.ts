@@ -1,6 +1,9 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { addCommonHeaders } from "common/CommonHeaders";
 
+import type { RootState } from "~/app/store";
+import { selectToken } from "~/features/auth";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -40,6 +43,11 @@ export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
   }),
   tagTypes: [
     "Plus",

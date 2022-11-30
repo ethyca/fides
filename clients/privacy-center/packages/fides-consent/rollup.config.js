@@ -7,11 +7,11 @@ const name = require("./package.json").name;
 
 export default [
   {
-    input: `src/index.ts`,
+    input: `src/${name}.ts`,
     plugins: [
       nodeResolve(),
       esbuild({
-        minify: process.env.NODE_ENV === "development",
+        minify: process.env.NODE_ENV !== "development",
       }),
       copy({
         // Automatically add the built script to the privacy center's static files for testing:
@@ -31,7 +31,7 @@ export default [
     ],
   },
   {
-    input: `src/cookie.ts`,
+    input: `src/lib/index.ts`,
     plugins: [nodeResolve(), esbuild()],
     output: [
       {
@@ -43,7 +43,7 @@ export default [
     ],
   },
   {
-    input: `src/cookie.ts`,
+    input: `src/lib/index.ts`,
     plugins: [dts()],
     output: [
       {
