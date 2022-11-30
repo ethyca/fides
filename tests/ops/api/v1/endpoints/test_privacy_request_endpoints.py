@@ -4301,7 +4301,7 @@ class TestPrivacyReqeustDataTransfer:
         # execute the privacy request to mimic the expected workflow on the "child"
         # this will populate the access results in the cache, which is required for the
         # transfer endpoint to work
-        r = await graph_task.run_access_request(
+        await graph_task.run_access_request(
             privacy_request,
             policy,
             graph,
