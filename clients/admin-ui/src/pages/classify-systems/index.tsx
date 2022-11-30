@@ -2,7 +2,7 @@ import { Button, Heading, HStack, Spinner, Stack, Text } from "@fidesui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
@@ -56,13 +56,15 @@ const ClassifySystems: NextPage = () => {
     }
   }, [dispatch, allSystems]);
 
+  // Poll for updates to classification until all classifications are finished
+  const [shouldPoll, setShouldPoll] = useState(true);
   const { isLoading: isLoadingClassifications, data: classifications } =
     useGetAllClassifyInstancesQuery(
       {
         resource_type: GenerateTypes.SYSTEMS,
         fides_keys: systems?.map((s) => s.fides_key),
       },
-      { skip: !hasPlus }
+      { skip: !hasPlus, pollingInterval: shouldPoll ? 20 * 1000 : undefined }
     );
 
   useEffect(() => {
@@ -81,6 +83,12 @@ const ClassifySystems: NextPage = () => {
           c.status === ClassificationStatus.REVIEWED
       )
     : false;
+
+  useEffect(() => {
+    if (isClassificationFinished) {
+      setShouldPoll(false);
+    }
+  }, [isClassificationFinished]);
 
   if (isLoading) {
     return (
