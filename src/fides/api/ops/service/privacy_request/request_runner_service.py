@@ -194,9 +194,9 @@ def upload_access_results(  # pylint: disable=R0912
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
 
-    for rule in policy.get_rules_for_action(
+    for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
-    ):  # pylint: disable=F1702
+    ):
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
