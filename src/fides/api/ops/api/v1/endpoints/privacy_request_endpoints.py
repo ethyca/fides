@@ -86,6 +86,7 @@ from fides.api.ops.models.policy import (
     CurrentStep,
     Policy,
     PolicyPreWebhook,
+    Rule,
 )
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -1298,6 +1299,7 @@ def upload_manual_webhook_data(
 def privacy_request_data_transfer(
     *,
     privacy_request_id: str,
+    rule_key: str,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
 ) -> List[Dict[str, Optional[List[Row]]]]:
@@ -1315,10 +1317,17 @@ def privacy_request_data_transfer(
     if not policy:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail="No policies found found",
+            detail="No policies found",
         )
 
-    value_dict = cache.get_encoded_objects_by_prefix(
+    rule = policy.filter(Rule.key == rule_key)
+    if not rule:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Rule key {rule_key} not found",
+        )
+
+    value_dict: Dict[str, Optional[List[Row]]] = cache.get_encoded_objects_by_prefix(
         f"{privacy_request_id}__access_request"
     )
 
@@ -1329,13 +1338,13 @@ def privacy_request_data_transfer(
         )
 
     access_result = {k.split("__")[-1]: v for k, v in value_dict.items()}
-    filtered_results = []
     datasets = DatasetConfig.all(db=db)
     if not datasets:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No datasets found for privacy request {privacy_request_id}",
         )
+
     dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
     if not dataset_graphs:
         raise HTTPException(
@@ -1343,19 +1352,14 @@ def privacy_request_data_transfer(
             detail=f"No dataset graphs found for privacy request {privacy_request_id}",
         )
     dataset_graph = DatasetGraph(*dataset_graphs)
-    for rule in policy.get_rules_for_action(action_type=ActionType.access):
-        if not rule.storage_destination:
-            raise common_exceptions.RuleValidationError(
-                f"No storage destination configured on rule {rule.key}"
-            )
-        target_categories = {target.data_category for target in rule.targets}
-        filtered_categries = filter_data_categories(
-            access_result,
-            target_categories,
-            dataset_graph.data_category_field_mapping,
-        )
-        if filtered_categries:
-            filtered_results.append(filtered_categries)
+    target_categories = {target.data_category for target in rule.targets}
+    filtered_results: Optional[
+        List[Dict[str, Optional[List[Row]]]]
+    ] = filter_data_categories(
+        access_result,
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
 
     if not filtered_results:
         raise HTTPException(
