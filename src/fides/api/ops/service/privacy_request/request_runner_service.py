@@ -3,6 +3,7 @@ import random
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import requests
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -12,6 +13,10 @@ from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
 from fides.api.ops import common_exceptions
+from fides.api.ops.api.v1.urn_registry import (
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    V1_URL_PREFIX,
+)
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
     IdentityNotFoundException,
@@ -24,6 +29,7 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
+from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -47,6 +53,7 @@ from fides.api.ops.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
@@ -174,7 +181,7 @@ def run_webhooks_and_report_status(
     return True
 
 
-def upload_access_results(
+def upload_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
     access_result: Dict[str, List[Row]],
@@ -187,7 +194,10 @@ def upload_access_results(
     download_urls: List[str] = []
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
-    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+
+    for rule in policy.get_rules_for_action(  # pylint: disable=R1702
+        action_type=ActionType.access
+    ):
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
@@ -204,6 +214,28 @@ def upload_access_results(
         filtered_results.update(
             manual_data
         )  # Add manual data directly to each upload packet
+
+        if fides_connectors_by_dataset:
+            for child in fides_connectors_by_dataset:
+                child_results: Optional[
+                    List[Dict[str, Optional[List[Row]]]]
+                ] = _retrieve_child_results(child, rule.key, access_result)
+
+                if child_results:
+                    for result in child_results:
+                        try:
+                            filtered_results.update(result)  # type: ignore
+                        except ValueError:
+                            for key, value in result.items():
+                                filtered: Optional[
+                                    List[Dict[str, Optional[Any]]]
+                                ] = filtered_results.get(key)
+                                if not filtered:
+                                    filtered_results[key] = value  # type: ignore
+                                else:
+                                    if value:
+                                        logger.info("Appending child rows to %s", key)
+                                        filtered.extend(value)  # type: ignore
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
@@ -228,6 +260,7 @@ def upload_access_results(
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
+
     return download_urls
 
 
@@ -516,3 +549,74 @@ def generate_id_verification_code() -> str:
     Generate one-time identity verification code
     """
     return str(random.choice(range(100000, 999999)))
+
+
+def _retrieve_child_results(  # pylint: disable=R0911
+    fides_connector: Tuple[str, ConnectionConfig],
+    rule_key: str,
+    access_result: Dict[str, List[Row]],
+) -> Optional[List[Dict[str, Optional[List[Row]]]]]:
+    """Get child access request results to add to upload."""
+    try:
+        connector = FidesConnector(fides_connector[1])
+    except Exception as e:
+        logger.error(
+            "Error create client for child server %s: %s", fides_connector[0], e
+        )
+        return None
+
+    results = []
+
+    for key, rows in access_result.items():
+        address = CollectionAddress.from_string(key)
+        if address.dataset == fides_connector[0]:
+            if not rows:
+                logger.info("No rows found for result entry %s", key)
+                continue
+            privacy_request_id = rows[0]["id"]
+
+        if not privacy_request_id:
+            logger.error(
+                "No privacy request found for connector key %s", fides_connector[0]
+            )
+            continue
+
+        try:
+            client = connector.create_client()
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error logging into to child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        try:
+            request = client.authenticated_request(
+                method="get",
+                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
+                headers={"Authorization": f"Bearer {client.token}"},
+            )
+            response = client.session.send(request)
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        if response.status_code != 200:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                response.json(),
+            )
+            continue
+
+        results.append(response.json())
+
+    if not results:
+        return None
+
+    return results
