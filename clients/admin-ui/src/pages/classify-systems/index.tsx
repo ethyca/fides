@@ -20,7 +20,7 @@ import {
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
-const POLL_INTERVAL_SECONDS = 5;
+const POLL_INTERVAL_SECONDS = 3;
 
 const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
   <Layout title="Classify Systems">
