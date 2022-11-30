@@ -1,8 +1,9 @@
-import { addCommonHeaders } from "common/CommonHeaders";
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { RootState } from "~/app/store";
+import { addCommonHeaders } from "common/CommonHeaders";
 
+import type { RootState } from "~/app/store";
+import { selectToken } from "~/features/auth";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -23,7 +24,6 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-import { selectToken } from "../auth";
 
 interface HealthResponse {
   core_fidesctl_version: string;
