@@ -4299,11 +4299,11 @@ class TestPrivacyReqeustDataTransfer:
         merged_graph = dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
 
-        await graph_task.run_access_request(
+        r = await graph_task.run_access_request(
             privacy_request,
             policy,
             graph,
-            dataset_config.all(),
+            dataset_config.all(db=db),
             {"email": "test@email.com"},
             db,
         )

@@ -215,7 +215,7 @@ def upload_access_results(
 
         if fides_connectors_by_dataset:
             for child in fides_connectors_by_dataset:
-                child_data = _retrieve_child_results(child, rule.key)
+                child_data = _retrieve_child_results(child, rule.key, access_result)
 
                 if child_data:
                     filtered_results.update(child_data)  # type: ignore
@@ -535,7 +535,9 @@ def generate_id_verification_code() -> str:
 
 
 def _retrieve_child_results(  # pylint: disable=R0911
-    fides_connector: Tuple[str, ConnectionConfig], rule_key: str
+    fides_connector: Tuple[str, ConnectionConfig],
+    rule_key: str,
+    access_result: Dict[str, List[Row]],
 ) -> Optional[Dict[str, Optional[List[Row]]]]:
     """Get child access request results to add to upload."""
     try:
@@ -544,13 +546,26 @@ def _retrieve_child_results(  # pylint: disable=R0911
         logger.error(
             "Error create client for child server %s: %s", fides_connector[0], e
         )
+        return None
+
+    key = next(iter(access_result))
+    for row in access_result[key]:
+        privacy_request_id = row[fides_connector[0]]
+        if privacy_request_id:
+            break
+
+    if not privacy_request_id:
+        logger.error(
+            "No privacy request found for connector key %s", fides_connector[0]
+        )
+        return None
 
     try:
         client = connector.create_client()
     except requests.exceptions.HTTPError as e:
         logger.error(
             "Error logging into to child server for privacy request %s: %s",
-            fides_connector[0],
+            privacy_request_id,
             e,
         )
         return None
@@ -558,14 +573,14 @@ def _retrieve_child_results(  # pylint: disable=R0911
     try:
         request = client.authenticated_request(
             method="get",
-            path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=fides_connector[0], rule_key=rule_key)}",
+            path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
             headers={"Authorization": f"Bearer {client.token}"},
         )
         response = client.session.send(request)
     except requests.exceptions.HTTPError as e:
         logger.error(
             "Error retrieving data from child server for privacy request %s: %s",
-            fides_connector[0],
+            privacy_request_id,
             e,
         )
         return None
@@ -573,7 +588,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
     if response.status_code != 200:
         logger.error(
             "Error retrieving data from child server for privacy request %s: %s",
-            fides_connector[0],
+            privacy_request_id,
             response.json(),
         )
         return None
