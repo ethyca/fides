@@ -4300,15 +4300,6 @@ class TestPrivacyReqeustDataTransfer:
         assert resources.get_all_cached_objects() == {}
 
         resources.cache_object(
-            "access_request__postgres_example:service_request",
-            [{"alt_email": "customer-1-alt@example.com"}],
-        )
-        resources.cache_object(
-            "access_request__postgres_example:customer",
-            [{"email": "customer-1@example.com"}],
-        )
-
-        resources.cache_object(
             "access_request__postgres_example:customer", [{"id": 1, "last_name": "Doe"}]
         )
         resources.cache_object(
@@ -4316,8 +4307,9 @@ class TestPrivacyReqeustDataTransfer:
             [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
         )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
+        rules = policy.get_rules_for_action(action_type=ActionType.access)
         response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id)}",
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key=rules[0].key)}",
             headers=auth_header,
         )
 

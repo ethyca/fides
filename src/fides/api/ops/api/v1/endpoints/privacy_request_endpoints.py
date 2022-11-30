@@ -1312,15 +1312,8 @@ def privacy_request_data_transfer(
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
-    policy = Policy.get(db=db, object_id=privacy_request.policy_id)
-
-    if not policy:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="No policies found",
-        )
-
-    rule = policy.filter(Rule.key == rule_key)
+    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
+    print(rule.__dict__)
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
