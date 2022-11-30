@@ -81,7 +81,7 @@ def client():
 
 @pytest.fixture
 def fides_toml_path():
-    yield ROOT_PATH / "fides.toml"
+    yield ROOT_PATH / ".fides" / "fides.toml"
 
 
 @pytest.fixture

@@ -57,12 +57,12 @@ def config_dict(fides_toml_path):
 @patch.dict(
     os.environ,
     {
-        "FIDES__CONFIG_PATH": str(ROOT_PATH / "tests" / "assets"),
+        "FIDES__CONFIG_PATH": str(ROOT_PATH / "tests" / "lib" / "assets"),
     },
     clear=True,
 )
 def test_config_from_path() -> None:
-    """Test reading config using the FIDESOPS__CONFIG_PATH option."""
+    """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     assert config.database.server == "testserver"
     assert config.security.app_encryption_key == "atestencryptionkeythatisvalidlen"
@@ -84,19 +84,17 @@ def test_database_settings_sqlalchemy_test_database_uri_str(config_dict):
     assert settings.sqlalchemy_test_database_uri == expected
 
 
-@pytest.mark.parametrize(
-    "file_names", ["bad.toml", ["bad.toml"], ["bad.toml", "file.toml"]]
-)
-def test_get_config_bad_files(file_names, caplog):
+@pytest.mark.parametrize("file_name", ["bad.toml", "bad.toml", "bad.toml", "file.toml"])
+def test_get_config_bad_files(file_name, caplog):
     with pytest.raises(MissingConfig):
-        get_config(file_names=file_names)
+        get_config(file_name=file_name)
 
     assert "could not be loaded" in caplog.text
 
 
 def test_missing_config_file():
     with pytest.raises(MissingConfig):
-        get_config(file_names=["bad.toml"])
+        get_config(file_name="bad.toml")
 
 
 def test_security_cors_str(config_dict):
