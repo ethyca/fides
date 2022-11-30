@@ -56,7 +56,6 @@ from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
-from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.connectors.fides_connector import (
     filter_fides_connector_datasets,
 )
@@ -181,7 +180,7 @@ def run_webhooks_and_report_status(
     return True
 
 
-def upload_access_results(
+def upload_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
     access_result: Dict[str, List[Row]],
@@ -195,7 +194,9 @@ def upload_access_results(
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
 
-    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+    for rule in policy.get_rules_for_action(
+        action_type=ActionType.access
+    ):  # pylint: disable=F1702
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
@@ -215,10 +216,24 @@ def upload_access_results(
 
         if fides_connectors_by_dataset:
             for child in fides_connectors_by_dataset:
-                child_data = _retrieve_child_results(child, rule.key, access_result)
+                child_results = _retrieve_child_results(child, rule.key, access_result)
 
-                if child_data:
-                    filtered_results.update(child_data)  # type: ignore
+                if child_results:
+                    for result in child_results:
+                        try:
+                            filtered_results.update(result)  # type: ignore
+                        except ValueError:
+                            key = next(iter(result))
+                            filtered = filtered_results.get(key)
+                            if not filtered:
+                                logger.error(
+                                    "Error adding child result %s to downloads", key
+                                )
+                            else:
+                                data = result[key]
+                                if data:
+                                    logger.info("Appending child rows to %s", key)
+                                    filtered.append(data)  # type: ignore
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
@@ -538,7 +553,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
     fides_connector: Tuple[str, ConnectionConfig],
     rule_key: str,
     access_result: Dict[str, List[Row]],
-) -> Optional[Dict[str, Optional[List[Row]]]]:
+) -> Optional[List[Dict[str, Optional[List[Row]]]]]:
     """Get child access request results to add to upload."""
     try:
         connector = FidesConnector(fides_connector[1])
@@ -548,49 +563,59 @@ def _retrieve_child_results(  # pylint: disable=R0911
         )
         return None
 
-    key = next(iter(access_result))
-    for row in access_result[key]:
-        privacy_request_id = row[fides_connector[0]]
-        if privacy_request_id:
-            break
+    results = []
 
-    if not privacy_request_id:
-        logger.error(
-            "No privacy request found for connector key %s", fides_connector[0]
-        )
+    for key, rows in access_result.items():
+        if key.startswith(
+            f"{fides_connector[0]}:"
+        ):  # TODO - look for address parsing method
+            if not rows:
+                logger.info("No rows found for result entry %s", key)
+                continue
+            privacy_request_id = rows[0]["id"]
+
+        if not privacy_request_id:
+            logger.error(
+                "No privacy request found for connector key %s", fides_connector[0]
+            )
+            continue
+
+        try:
+            client = connector.create_client()
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error logging into to child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        try:
+            request = client.authenticated_request(
+                method="get",
+                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
+                headers={"Authorization": f"Bearer {client.token}"},
+            )
+            response = client.session.send(request)
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        if response.status_code != 200:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                response.json(),
+            )
+            continue
+
+        results.append(response.json())
+
+    if not results:
         return None
 
-    try:
-        client = connector.create_client()
-    except requests.exceptions.HTTPError as e:
-        logger.error(
-            "Error logging into to child server for privacy request %s: %s",
-            privacy_request_id,
-            e,
-        )
-        return None
-
-    try:
-        request = client.authenticated_request(
-            method="get",
-            path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
-            headers={"Authorization": f"Bearer {client.token}"},
-        )
-        response = client.session.send(request)
-    except requests.exceptions.HTTPError as e:
-        logger.error(
-            "Error retrieving data from child server for privacy request %s: %s",
-            privacy_request_id,
-            e,
-        )
-        return None
-
-    if response.status_code != 200:
-        logger.error(
-            "Error retrieving data from child server for privacy request %s: %s",
-            privacy_request_id,
-            response.json(),
-        )
-        return None
-
-    return {fides_connector[1].key: response.json()}
+    return results

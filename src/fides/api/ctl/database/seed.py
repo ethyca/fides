@@ -17,6 +17,7 @@ from fides.api.ctl.utils.errors import AlreadyExistsError, QueryError
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_TRANSFER,
 )
 from fides.api.ops.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.ops.models.storage import StorageConfig
@@ -93,7 +94,11 @@ def create_or_update_parent_user() -> None:
             db=db_session,
             data={
                 "user_id": user.id,
-                "scopes": [PRIVACY_REQUEST_CREATE, PRIVACY_REQUEST_READ],
+                "scopes": [
+                    PRIVACY_REQUEST_CREATE,
+                    PRIVACY_REQUEST_READ,
+                    PRIVACY_REQUEST_TRANSFER,
+                ],
             },
         )
 
