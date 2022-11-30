@@ -428,7 +428,7 @@ class TestPatchConnections:
         email_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:
