@@ -22,10 +22,10 @@ The types of changes are:
 ### Added
 
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
-* Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
+* Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 * Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
-* Added rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 * Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
 
