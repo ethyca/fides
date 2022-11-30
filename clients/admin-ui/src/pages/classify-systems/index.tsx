@@ -20,6 +20,8 @@ import {
 import ClassifySystemsTable from "~/features/system/ClassifySystemsTable";
 import { ClassificationStatus, GenerateTypes } from "~/types/api";
 
+const POLL_INTERVAL_SECONDS = 5;
+
 const ClassifySystemsLayout = ({ children }: { children: ReactNode }) => (
   <Layout title="Classify Systems">
     <Stack spacing={4}>
@@ -64,7 +66,10 @@ const ClassifySystems: NextPage = () => {
         resource_type: GenerateTypes.SYSTEMS,
         fides_keys: systems?.map((s) => s.fides_key),
       },
-      { skip: !hasPlus, pollingInterval: shouldPoll ? 20 * 1000 : undefined }
+      {
+        skip: !hasPlus,
+        pollingInterval: shouldPoll ? POLL_INTERVAL_SECONDS * 1000 : undefined,
+      }
     );
 
   useEffect(() => {
