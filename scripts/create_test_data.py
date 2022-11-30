@@ -4,10 +4,10 @@ import string
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from fideslib.db.session import get_db_session
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
+from fides.lib.db.session import get_db_session
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
 from sqlalchemy import orm
 
 from fides.api.ctl.database.database import init_db
