@@ -33,6 +33,7 @@ The types of changes are:
 ### Fixed
 
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
+* Fix DSR error due to unfiltered empty identities [#1901] (https://github.com/ethyca/fides/pull/1907)
 
 ### Docs
 
