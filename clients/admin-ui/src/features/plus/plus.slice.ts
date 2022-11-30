@@ -1,5 +1,7 @@
+import { addCommonHeaders } from "common/CommonHeaders";
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { RootState } from "~/app/store";
 
 import {
   selectActiveCollection,
@@ -21,6 +23,7 @@ import {
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
+import { selectToken } from "../auth";
 
 interface HealthResponse {
   core_fidesctl_version: string;
@@ -40,6 +43,11 @@ export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
   }),
   tagTypes: [
     "Plus",
