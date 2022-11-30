@@ -1294,7 +1294,7 @@ def upload_manual_webhook_data(
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
-    response_model=List[Dict[str, Optional[List[Row]]]],
+    response_model=Dict[str, Optional[List[Row]]],
 )
 def privacy_request_data_transfer(
     *,
@@ -1302,13 +1302,13 @@ def privacy_request_data_transfer(
     rule_key: str,
     db: Session = Depends(deps.get_db),
     cache: FidesopsRedis = Depends(deps.get_cache),
-) -> List[Dict[str, Optional[List[Row]]]]:
+) -> Dict[str, Optional[List[Row]]]:
     """Transfer access request iinformation to the parent server."""
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
 
     if not privacy_request:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_404_NOT_FOUND,
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
@@ -1316,14 +1316,14 @@ def privacy_request_data_transfer(
 
     if not policy:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_404_NOT_FOUND,
             detail="No policies found",
         )
 
     rule = policy.filter(Rule.key == rule_key)
     if not rule:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_404_NOT_FOUND,
             detail=f"Rule key {rule_key} not found",
         )
 
@@ -1333,7 +1333,7 @@ def privacy_request_data_transfer(
 
     if not value_dict:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
+            status_code=HTTP_404_NOT_FOUND,
             detail=f"No access request information found for privacy request id {privacy_request_id}",
         )
 
@@ -1353,10 +1353,8 @@ def privacy_request_data_transfer(
         )
     dataset_graph = DatasetGraph(*dataset_graphs)
     target_categories = {target.data_category for target in rule.targets}
-    filtered_results: Optional[
-        List[Dict[str, Optional[List[Row]]]]
-    ] = filter_data_categories(
-        access_result,
+    filtered_results: Optional[Dict[str, Optional[List[Row]]]] = filter_data_categories(
+        access_result,  # type: ignore
         target_categories,
         dataset_graph.data_category_field_mapping,
     )

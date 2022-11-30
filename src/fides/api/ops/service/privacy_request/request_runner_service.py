@@ -214,10 +214,10 @@ def upload_access_results(
 
         if fides_connectors_by_dataset:
             for child in fides_connectors_by_dataset:
-                child_data = _retrieve_child_results(child)
+                child_data = _retrieve_child_results(child, rule.key)
 
                 if child_data:
-                    filtered_results.update(child_data, rule.key)
+                    filtered_results.update(child_data)  # type: ignore
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
@@ -533,35 +533,35 @@ def generate_id_verification_code() -> str:
     return str(random.choice(range(100000, 999999)))
 
 
-def _retrieve_child_results(
+def _retrieve_child_results(  # pylint: disable=R0911
     fides_connector: Tuple[str, ConnectionConfig], rule_key: str
-) -> None:
+) -> Optional[Dict[str, Optional[List[Row]]]]:
     """Get child access request results to add to upload."""
     secrets = fides_connector[1].secrets
     if not secrets:
         logger.error(
-            "No server secrets present for privacy request {privacy_request_id}"
+            "No server secrets present for privacy request %s", fides_connector[0]
         )
-        return
+        return None
 
     uri = secrets.get("uri")
     if not uri:
-        logger.error("No server uri present for privacy request {privacy_request_id}")
-        return
+        logger.error("No server uri present for privacy request %s", fides_connector[0])
+        return None
 
     username = secrets.get("username")
     if not username:
         logger.error(
-            "No server user name present for privacy request {privacy_request_id}"
+            "No server user name present for privacy request %s", fides_connector[0]
         )
-        return
+        return None
 
     password = secrets.get("password")
     if not password:
         logger.error(
-            "No server password present for privacy request {privacy_request_id}"
+            "No server password present for privacy request %s", fides_connector[0]
         )
-        return
+        return None
 
     client = FidesClient(
         uri=uri,
@@ -572,9 +572,11 @@ def _retrieve_child_results(
         client.login()
     except requests.exceptions.HTTPError as e:
         logger.error(
-            f"Error logging into to child server for privacy request {fides_connector[0]}: {e}"
+            "Error logging into to child server for privacy request %s: %s",
+            fides_connector[0],
+            e,
         )
-        return
+        return None
 
     try:
         request = client.authenticated_request(
@@ -585,14 +587,18 @@ def _retrieve_child_results(
         response = client.session.send(request)
     except requests.exceptions.HTTPError as e:
         logger.error(
-            f"Error retrieving data from child server for privacy request {fides_connector[0]}: {e}"
+            "Error retrieving data from child server for privacy request %s: %s",
+            fides_connector[0],
+            e,
         )
-        return
+        return None
 
     if response.status_code != 200:
         logger.error(
-            f"Error retrieving data from child server for privacy request {fides_connector[0]}: {response.json()}"
+            "Error retrieving data from child server for privacy request %s: %s",
+            fides_connector[0],
+            response.json(),
         )
-        return
+        return None
 
-    return response.json()
+    return {fides_connector[1].key: response.json()}
