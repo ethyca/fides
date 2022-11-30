@@ -83,6 +83,7 @@ from fides.api.ops.schemas.messaging.messaging import (
 )
 from fides.api.ops.schemas.policy import PolicyResponse
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import run_access_request
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
@@ -4286,7 +4287,6 @@ class TestPrivacyReqeustDataTransfer:
         api_client: TestClient,
         privacy_request,
         generate_auth_header,
-        example_datasets,
         policy,
         integration_manual_config,
         db,
@@ -4296,16 +4296,27 @@ class TestPrivacyReqeustDataTransfer:
         resources = TaskResources(
             privacy_request, policy, [integration_manual_config], db
         )
+        merged_graph = dataset_config.get_graph()
+        graph = DatasetGraph(merged_graph)
+
+        await graph_task.run_access_request(
+            privacy_request,
+            policy,
+            graph,
+            dataset_config.all(),
+            {"email": "test@email.com"},
+            db,
+        )
 
         assert resources.get_all_cached_objects() == {}
 
-        resources.cache_object(
-            "access_request__postgres_example:customer", [{"id": 1, "last_name": "Doe"}]
-        )
-        resources.cache_object(
-            "access_request__postgres_example:payment",
-            [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
-        )
+        # resources.cache_object(
+        #     "access_request__postgres_example:user", [{"id": 1, "last_name": "Doe"}]
+        # )
+        # resources.cache_object(
+        #     "access_request__postgres_example:payment",
+        #     [{"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}],
+        # )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
         rules = policy.get_rules_for_action(action_type=ActionType.access)
         response = api_client.get(
@@ -4314,10 +4325,7 @@ class TestPrivacyReqeustDataTransfer:
         )
 
         assert response.json() == {
-            "postgres_example:payment": [
-                {"id": 2, "ccn": "111-111-1111-1111", "customer_id": 1}
-            ],
-            "postgres_example:customer": [{"id": 1, "last_name": "Doe"}],
+            "postgres_example:user": [{"id": 1, "last_name": "Doe"}],
         }
 
     def test_privacy_request_data_transfer_wrong_scope(

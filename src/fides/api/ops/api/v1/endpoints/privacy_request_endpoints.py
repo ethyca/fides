@@ -1313,7 +1313,6 @@ def privacy_request_data_transfer(
         )
 
     rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
-    print(rule.__dict__)
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
