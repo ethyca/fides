@@ -4977,6 +4977,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
                   }
                 ]
               }
@@ -10802,7 +10805,8 @@
           "manual",
           "email",
           "manual_webhook",
-          "timescale"
+          "timescale",
+          "fides"
         ],
         "description": "Supported types to which we can connect fidesops."
       },
@@ -12064,6 +12068,43 @@
           "user.political_opinion"
         ],
         "description": "An enumeration."
+      },
+      "FidesDocsSchema": {
+        "title": "FidesDocsSchema",
+        "required": [
+          "uri",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "uri": {
+            "title": "Uri",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "polling_timeout": {
+            "title": "Polling Timeout",
+            "type": "integer"
+          },
+          "polling_interval": {
+            "title": "Polling Interval",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Fides Child Secrets Schema for API docs"
       },
       "FidesopsCollectionMeta": {
         "title": "FidesopsCollectionMeta",
@@ -14910,6 +14951,9 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
               }
             ]
           },

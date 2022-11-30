@@ -2240,7 +2240,7 @@ db.refresh()
 <h3 id="alembic-migrations">Alembic migrations</h3>
 <p>Some common Alembic commands are listed below. For a comprehensive guide see: <a href="https://alembic.sqlalchemy.org/en/latest/tutorial.html">https://alembic.sqlalchemy.org/en/latest/tutorial.html</a>.</p>
 <p>The commands will need to be run inside a shell on your Docker containers, which can be opened with <code>nox -s dev -- shell</code>.</p>
-<p>In the <code>/src/fides</code> directory:</p>
+<p>In the <code>/src/fides/api/ctl</code> directory:</p>
 <ul>
 <li>Migrate your database to the latest state: <code>alembic upgrade head</code></li>
 <li>Get revision id of previous migration: <code>alembic current</code></li>
