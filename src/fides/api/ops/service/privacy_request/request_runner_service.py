@@ -29,6 +29,7 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
+from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -567,9 +568,8 @@ def _retrieve_child_results(  # pylint: disable=R0911
     results = []
 
     for key, rows in access_result.items():
-        if key.startswith(
-            f"{fides_connector[0]}:"
-        ):  # TODO - look for address parsing method
+        address = CollectionAddress.from_string(key)
+        if address.dataset == fides_connector[0]:
             if not rows:
                 logger.info("No rows found for result entry %s", key)
                 continue
