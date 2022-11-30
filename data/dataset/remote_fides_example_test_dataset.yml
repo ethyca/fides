@@ -1,0 +1,11 @@
+dataset:
+  - fides_key: fides_example_child_test_dataset
+    name: Fides Child Example Test Dataset
+    description: Example of a Remote Fides Child Dataset
+    collections:
+      - name: privacy_request
+        fields:
+          - name: placeholder
+            data_categories: [system.operations]
+            fidesops_meta:
+              identity: email

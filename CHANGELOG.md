@@ -27,6 +27,8 @@ The types of changes are:
 * DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
+* Added rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 
 ### Changed
 
