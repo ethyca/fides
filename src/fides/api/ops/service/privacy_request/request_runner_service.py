@@ -216,24 +216,25 @@ def upload_access_results(  # pylint: disable=R0912
 
         if fides_connectors_by_dataset:
             for child in fides_connectors_by_dataset:
-                child_results = _retrieve_child_results(child, rule.key, access_result)
+                child_results: Optional[
+                    List[Dict[str, Optional[List[Row]]]]
+                ] = _retrieve_child_results(child, rule.key, access_result)
 
                 if child_results:
                     for result in child_results:
                         try:
                             filtered_results.update(result)  # type: ignore
                         except ValueError:
-                            key = next(iter(result))
-                            filtered = filtered_results.get(key)
-                            if not filtered:
-                                logger.error(
-                                    "Error adding child result %s to downloads", key
-                                )
-                            else:
-                                data = result[key]
-                                if data:
-                                    logger.info("Appending child rows to %s", key)
-                                    filtered.append(data)  # type: ignore
+                            for key, value in result.items():
+                                filtered: Optional[
+                                    List[Dict[str, Optional[Any]]]
+                                ] = filtered_results.get(key)
+                                if not filtered:
+                                    filtered_results[key] = value  # type: ignore
+                                else:
+                                    if value:
+                                        logger.info("Appending child rows to %s", key)
+                                        filtered.extend(value)  # type: ignore
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
