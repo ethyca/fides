@@ -8459,6 +8459,72 @@
         ]
       }
     },
+    "/api/v1/privacy-request/transfer/{privacy_request_id}/{rule_key}": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Privacy Request Data Transfer",
+        "description": "Transfer access request iinformation to the parent server.",
+        "operationId": "privacy_request_data_transfer_api_v1_privacy_request_transfer__privacy_request_id___rule_key__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Privacy Request Id",
+              "type": "string"
+            },
+            "name": "privacy_request_id",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Rule Key",
+              "type": "string"
+            },
+            "name": "rule_key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Privacy Request Data Transfer Api V1 Privacy Request Transfer  Privacy Request Id   Rule Key  Get",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:transfer"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/resume_from_requires_input": {
       "post": {
         "tags": [
