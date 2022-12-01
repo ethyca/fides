@@ -101,7 +101,7 @@ class FidesConnector(BaseConnector[FidesClient]):
             )
         )
 
-        return [{node.address.value: privacy_request_response.__dict__}]
+        return [privacy_request_response.__dict__]
 
     def mask_data(
         self,

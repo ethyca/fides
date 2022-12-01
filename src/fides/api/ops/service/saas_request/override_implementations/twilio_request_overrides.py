@@ -62,7 +62,9 @@ def twilio_user_update(
                     f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )
             else:
-                raise ConnectionException("Operational Error connecting to Twilio Conversations API.")
+                raise ConnectionException(
+                    "Operational Error connecting to Twilio Conversations API."
+                )
         if not response.ok:
             raise ClientUnsuccessfulException(status_code=response.status_code)
 

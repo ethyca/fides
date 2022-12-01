@@ -29,8 +29,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
         <Thead>
           <Tr>
             <Th>System Name</Th>
-            <Th>Description</Th>
-            <Th>Classification Status</Th>
+            <Th maxWidth="100px">Classification Status</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -46,9 +45,6 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
               >
                 <Td>
                   <SystemTableCell system={system} attribute="name" />
-                </Td>
-                <Td>
-                  <SystemTableCell system={system} attribute="description" />
                 </Td>
                 <Td data-testid={`status-${system.fides_key}`}>
                   <ClassificationStatusBadge
