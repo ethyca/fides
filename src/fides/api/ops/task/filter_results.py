@@ -14,6 +14,8 @@ def filter_data_categories(
     access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
+    rule_key: str = "",
+    fides_connector_datasets: Set[str] = None,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
@@ -34,6 +36,22 @@ def filter_data_categories(
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for node_address, results in access_request_results.items():
         if not results:
+            continue
+
+        # Results from fides connectors are a special case:
+        # they've already been filtered and stored in a dict keyed by rule key.
+        # So here, we simply find the results corresponding to our current rule
+        # and unpack the result so that its stored at the "top level"
+        # of the results dict
+        if fides_connector_datasets and (
+            CollectionAddress.from_string(node_address).dataset
+            in fides_connector_datasets
+        ):
+            unpack_fides_connector_results(
+                results, filtered_access_results, rule_key, node_address
+            )
+            # do not do any further processing on fides connector results
+            # as they have already been pre-filtered
             continue
 
         # Gets all FieldPaths on this traversal_node associated with the requested data
@@ -138,3 +156,45 @@ def remove_empty_containers(row: RecursiveRow) -> RecursiveRow:
                 row.pop(index)
 
     return row
+
+
+def unpack_fides_connector_results(
+    connector_results: List[Dict[str, Any]],
+    filtered_access_results: Dict[str, List[Dict[str, Any]]],
+    rule_key: str,
+    node_address: str,
+) -> None:
+    """
+    Unpacks the pre-filtered results from a Fides connector
+    that are associated with the given `rule_key`.
+    These results are stored in the provided aggregate `filtered_acces_results` dict.
+    """
+    # there should only ever be one element in the list here, since the
+    # "real" data is nested one level deeper. but we will iterate through
+    # anyway, just to be safe.
+    for results in connector_results:
+        try:
+            rule_results = results[rule_key]
+        except KeyError:
+            logger.error(
+                "Did not find a result entry on Fides connector %s for rule %s",
+                node_address,
+                rule_key,
+            )
+            continue
+
+        try:
+            filtered_access_results.update(rule_results)
+        except ValueError:
+            # if we get a ValueError, a given CollectionAddress key
+            # already exists in the results dict. Handle that here.
+            for key, value in rule_results.items():
+                filtered: Optional[
+                    List[Dict[str, Optional[Any]]]
+                ] = filtered_access_results.get(key)
+                if not filtered:
+                    filtered_access_results[key] = value  # type: ignore
+                else:
+                    if value:
+                        logger.info("Appending child rows to %s", key)
+                        filtered.extend(value)  # type: ignore
