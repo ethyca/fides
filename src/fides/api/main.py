@@ -65,6 +65,7 @@ from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 from fides.ctl.core.config.utils import check_required_webserver_config_values
 
+# Don't load the config like this
 CONFIG: FidesConfig = get_ctl_config()
 
 logging.basicConfig(level=CONFIG.logging.level)
