@@ -6,7 +6,7 @@ const LandingPage = () => {
   return (
     <>
       <Head>
-        <title>Welcome to Fides 2.0</title>
+        <title>Welcome to Fides</title>
         <meta name="description" content="Sample Project used within Fides (github.com/ethyca/fides)" />
         <link rel="icon" href="/favicon.ico" />
         <meta charSet="utf-8" />
