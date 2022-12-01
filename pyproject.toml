@@ -126,7 +126,6 @@ disable=[
     "unnecessary-comprehension",
     "unnecessary-lambda-assignment",
     "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
-    "unused-argument", #  This is required due to CLI code expecting `ctx` and more
 ]
 
 [tool.pylint.reports]

@@ -35,7 +35,7 @@ def encrypt_access_request_results(
     data: Union[str, bytes],
     request_id: str,
     encoding: str = get_config().security.encoding,
-    aes_gcm_nonce_length: int = get_config().security.aes_gcm_nonce_length,
+    aes_gcm_nonce_length=get_config().security.aes_gcm_nonce_length,
 ) -> str:
     """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
     cache = get_cache()

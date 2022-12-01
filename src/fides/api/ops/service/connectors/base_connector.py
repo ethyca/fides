@@ -30,9 +30,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     connector.test_connection()
     """
 
-    def __init__(
-        self, configuration: ConnectionConfig, dev_mode: bool = get_config().dev_mode
-    ):
+    def __init__(self, configuration: ConnectionConfig, dev_mode: bool=get_config().dev_mode):
         self.configuration = configuration
         # If Fidesops is running in dev mode, it's OK to show
         # parameters inside queries for debugging purposes.

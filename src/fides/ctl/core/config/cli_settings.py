@@ -25,7 +25,7 @@ class CLISettings(FidesSettings):
 
     @validator("server_url", always=True)
     @classmethod
-    def get_server_url(cls, _: str, values: Dict) -> str:
+    def get_server_url(cls, value: str, values: Dict) -> str:
         "Create the server_url."
         host = values["server_host"]
         port = int(values["server_port"])

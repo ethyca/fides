@@ -82,7 +82,7 @@ class SecuritySettings(FidesSettings):
     @validator("oauth_root_client_secret_hash")
     @classmethod
     def assemble_root_access_token(
-        cls, _: Optional[str], values: Dict[str, str]
+        cls, v: Optional[str], values: Dict[str, str]
     ) -> Optional[Tuple]:
         """
         Sets a hashed value of the root access key.

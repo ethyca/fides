@@ -25,7 +25,7 @@ class UserSettings(FidesSettings):
     # Automatically generate the request_headers on object creation
     @validator("request_headers", pre=True, always=True)
     @classmethod
-    def get_request_headers(cls, _: Optional[Dict], values: Dict) -> Dict[str, str]:
+    def get_request_headers(cls, value: Optional[Dict], values: Dict) -> Dict[str, str]:
         return generate_request_headers(values["user_id"], values["api_key"])
 
     class Config:

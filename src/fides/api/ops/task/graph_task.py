@@ -627,14 +627,12 @@ async def run_access_request(
             if not tn.is_root_node():
                 data[tn.address] = GraphTask(tn, resources)
 
-        def termination_fn() -> Dict[str, Optional[List[Row]]]:
-            """
-            A termination function that returns its inputs
-            mapped to their source addresses. This needs to wait
-            for all dependent keys because this is how dask is
-            informed to wait for all terminating addresses
-            before calling this.
-            """
+        def termination_fn(
+            *dependent_values: List[Row],
+        ) -> Dict[str, Optional[List[Row]]]:
+            """A termination function that just returns its inputs mapped to their source addresses.
+            This needs to wait for all dependent keys because this is how dask is informed to wait for
+            all terminating addresses before calling this."""
 
             return resources.get_all_cached_objects()
 

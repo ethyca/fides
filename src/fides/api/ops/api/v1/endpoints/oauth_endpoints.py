@@ -130,9 +130,7 @@ def create_client(
 @router.delete(
     CLIENT_BY_ID, dependencies=[Security(verify_oauth_client, scopes=[CLIENT_DELETE])]
 )
-def delete_client(
-    client_id: str, db: Session = Depends(get_db), config: FidesConfig = get_config()
-) -> None:
+def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
     client = ClientDetail.get(db, object_id=client_id, config=config)

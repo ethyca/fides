@@ -93,7 +93,7 @@ def update_user_password(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserPasswordReset,
-    security_encoding: str = get_config().security.encoding,
+    security_encoding: str= get_config().security.encoding,
 ) -> FidesUser:
     """
     Update a user's password given a `user_id`. By default this is limited to users

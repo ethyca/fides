@@ -52,9 +52,7 @@ async def send_analytics_event(
         log.info(f"Analytics event sent with client id: {analytics_client.client_id}")
 
 
-async def send_registration(
-    registration: UserRegistration, config: FidesConfig = get_config()
-) -> None:
+async def send_registration(registration: UserRegistration, config: FidesConfig=get_config()) -> None:
     if config.user.analytics_opt_out:
         return
     try:
