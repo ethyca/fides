@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 from loguru import logger as log
 
@@ -9,12 +9,11 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
 )
-from fides.api.ops.schemas.privacy_request import PrivacyRequestResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
@@ -79,7 +78,7 @@ class FidesConnector(BaseConnector[FidesClient]):
         privacy_request: PrivacyRequest,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """Execute access request and handle response on remote Fides"""
+        """Execute access request and fetch access data from remote Fides"""
         identity_data = privacy_request.get_cached_identity_data()
         if not identity_data:
             raise FidesError(
@@ -88,20 +87,30 @@ class FidesConnector(BaseConnector[FidesClient]):
 
         client: FidesClient = self.client()
 
+        # initiate privacy request execution on child
         pr_id: str = client.create_privacy_request(
             external_id=privacy_request.external_id or privacy_request.id,
             identity=Identity(**identity_data),
             policy_key=policy.key,
         )
-        privacy_request_response: PrivacyRequestResponse = (
-            client.poll_for_request_completion(
-                privacy_request_id=pr_id,
-                timeout=self.polling_timeout or None,
-                interval=self.polling_interval or None,
-            )
+
+        # block till privacy request completes on child
+        client.poll_for_request_completion(
+            privacy_request_id=pr_id,
+            timeout=self.polling_timeout or None,
+            interval=self.polling_interval or None,
         )
 
-        return [privacy_request_response.__dict__]
+        # for each rule, get appropriate results from the child
+        # store in a dict keyed by rule.key, to be unpacked later by request framework
+        results: Dict[str, Dict[str, List[Row]]] = {
+            rule.key: client.retrieve_request_results(
+                privacy_request_id=pr_id, rule_key=rule.key
+            )
+            for rule in policy.get_rules_for_action(action_type=ActionType.access)
+        }
+
+        return [results]
 
     def mask_data(
         self,
@@ -142,17 +151,17 @@ class FidesConnector(BaseConnector[FidesClient]):
 
 def filter_fides_connector_datasets(
     connector_configs: List[ConnectionConfig],
-) -> List[Tuple[str, ConnectionConfig]]:
+) -> Set[str]:
     """
     Helper function to retrieve the `fides_key`s of any `Dataset`s associated
     with any Fides connectors in the provided `List` of `ConnectionConfig`s.
 
-    Returns a `List` of `Tuple`s whose first element is the `fides_key`
-    of the `Dataset`, and whose second element is the `ConnectionConfig` itself
+    Returns a `Set` of `str`s containing the `fides_key`
+    of the `Dataset`
     """
-    return [
-        (dataset.fides_key, connector_config)
+    return {
+        dataset.fides_key
         for connector_config in connector_configs
         for dataset in connector_config.datasets
         if connector_config.connection_type == ConnectionType.fides
-    ]
+    }

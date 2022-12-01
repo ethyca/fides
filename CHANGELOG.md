@@ -33,10 +33,12 @@ The types of changes are:
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 * Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
 
+
 ### Changed
 
 * The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
 * Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
+* Retrieve child results during fides connector execution [#1967](https://github.com/ethyca/fides/pull/1967)
 
 ### Fixed
 

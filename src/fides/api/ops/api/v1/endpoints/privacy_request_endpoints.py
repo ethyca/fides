@@ -1351,7 +1351,7 @@ def privacy_request_data_transfer(
         dataset_graph.data_category_field_mapping,
     )
 
-    if not filtered_results:
+    if filtered_results is None:
         raise HTTPException(
             status_code=404,
             detail=f"No results found for privacy request {privacy_request_id}",

@@ -6,7 +6,7 @@ import pytest
 from fides.api.ops.graph.traversal import TraversalNode
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.policy import Policy
+from fides.api.ops.models.policy import ActionType, Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.connectors.fides_connector import (
@@ -15,7 +15,7 @@ from fides.api.ops.service.connectors.fides_connector import (
     FidesConnector,
     filter_fides_connector_datasets,
 )
-from tests.ops.graph.graph_test_util import generate_node
+from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 
 @pytest.mark.unit
@@ -62,21 +62,16 @@ class TestFidesConnectorUnit:
         db,
     ):
 
-        connectors_by_dataset = filter_fides_connector_datasets(
-            ConnectionConfig.all(db=db)
-        )
-        assert len(connectors_by_dataset) == 1
+        datasets = filter_fides_connector_datasets(ConnectionConfig.all(db=db))
+        assert len(datasets) == 1
         assert (
-            connectors_by_dataset[0][0]
+            next(iter(datasets))
             == fides_connector_example_test_dataset_config.fides_key
         )
-        assert connectors_by_dataset[0][1] == fides_connector_connection_config
 
         fides_connector_connection_config.delete(db)
-        connectors_by_dataset = filter_fides_connector_datasets(
-            ConnectionConfig.all(db=db)
-        )
-        assert not connectors_by_dataset
+        datasets = filter_fides_connector_datasets(ConnectionConfig.all(db=db))
+        assert not datasets
 
 
 @pytest.mark.integration
@@ -133,4 +128,33 @@ class TestFidesConnectorIntegration:
 
         # there should be only one "row" per connnector result
         assert len(result) == 1
-        assert result[0]["status"] == PrivacyRequestStatus.complete
+        for rule in policy_local_storage.get_rules_for_action(
+            action_type=ActionType.access
+        ):
+            result_data = result[0][rule.key]
+            assert_rows_match(
+                result_data["postgres_example_test_dataset:address"],
+                min_size=2,
+                keys=["street", "city", "state", "zip"],
+            )
+            assert_rows_match(
+                result_data["postgres_example_test_dataset:orders"],
+                min_size=1,
+                keys=["customer_id"],
+            )
+            assert_rows_match(
+                result_data["postgres_example_test_dataset:payment_card"],
+                min_size=1,
+                keys=["name", "ccn", "customer_id"],
+            )
+            assert_rows_match(
+                result_data["postgres_example_test_dataset:customer"],
+                min_size=1,
+                keys=["name", "email"],
+            )
+
+            # links
+            assert (
+                result_data["postgres_example_test_dataset:customer"][0]["email"]
+                == "customer-1@example.com"
+            )

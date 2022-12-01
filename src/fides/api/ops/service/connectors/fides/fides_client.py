@@ -18,6 +18,7 @@ from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.privacy_request.request_service import (
     poll_server_for_completion,
 )
+from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.wrappers import sync
 from fides.ctl.core.config import get_config
 
@@ -184,3 +185,36 @@ class FidesClient:
             response.raise_for_status()
 
         return response.json()["items"]
+
+    def retrieve_request_results(
+        self, privacy_request_id: str, rule_key: str
+    ) -> Dict[str, List[Row]]:
+        """
+        Retrieve the filtered access results on the remote fides associated with
+        the given `privacy_request_id` and `rule_key`, by invoking the
+        `privacy_request_data_transfer` endpoint on the remote Fides.
+
+        Returns the filtered access results as a `Dict[str, List[Row]]
+        """
+        try:
+            request = self.authenticated_request(
+                method="get",
+                path=f"{urls.V1_URL_PREFIX}{urls.PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            response = self.session.send(request)
+        except requests.exceptions.HTTPError as e:
+            log.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+
+        if response.status_code != 200:
+            log.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                response.json(),
+            )
+
+        return response.json()
