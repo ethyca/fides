@@ -29,9 +29,40 @@ import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
 import { SystemMethods } from "./types";
 
+const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
+  const { plus, dataFlowScanning } = useFeatures();
+  // If Plus is not enabled, do not show this feature at all
+  if (!plus) {
+    return null;
+  }
+  const tooltip = dataFlowScanning
+    ? "The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
+    : "The data flow scanner is not enabled, please check your configuration.";
+  return (
+    <Stack direction="row" display="flex" alignItems="center">
+      <HStack>
+        <IconButton
+          aria-label="Data flow scan"
+          boxSize={iconButtonSize}
+          minW={iconButtonSize}
+          boxShadow="base"
+          variant="ghost"
+          icon={<DataFlowScannerLogo boxSize="10" />}
+          onClick={onClick}
+          data-testid="data-flow-scan-btn"
+          disabled={!dataFlowScanning}
+        />
+      </HStack>
+      <Text>Data Flow Scan</Text>
+      <Tooltip fontSize="md" label={tooltip} placement="right">
+        <QuestionIcon boxSize={5} color="gray.400" />
+      </Tooltip>
+    </Stack>
+  );
+};
+
 const AddSystemForm = () => {
   const dispatch = useAppDispatch();
-  const { plus } = useFeatures();
 
   return (
     <chakra.form w="100%" data-testid="add-system-form">
@@ -105,33 +136,12 @@ const AddSystemForm = () => {
               />
               <Text>System Scan (Okta)</Text>
             </Stack>
-            {plus ? (
-              <Stack direction="row" display="flex" alignItems="center">
-                <HStack>
-                  <IconButton
-                    aria-label="Data flow scan"
-                    boxSize={iconButtonSize}
-                    minW={iconButtonSize}
-                    boxShadow="base"
-                    variant="ghost"
-                    icon={<DataFlowScannerLogo boxSize="10" />}
-                    onClick={() => {
-                      dispatch(changeStep());
-                      dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
-                    }}
-                    data-testid="data-flow-scan-btn"
-                  />
-                </HStack>
-                <Text>Data Flow Scan</Text>
-                <Tooltip
-                  fontSize="md"
-                  label="The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
-                  placement="right"
-                >
-                  <QuestionIcon boxSize={5} color="gray.400" />
-                </Tooltip>
-              </Stack>
-            ) : null}
+            <DataFlowScannerOption
+              onClick={() => {
+                dispatch(changeStep());
+                dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
+              }}
+            />
             <Stack direction="row" display="flex" alignItems="center">
               <HStack>
                 <IconButton

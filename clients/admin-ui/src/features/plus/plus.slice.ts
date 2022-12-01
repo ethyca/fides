@@ -21,14 +21,10 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   GenerateTypes,
+  HealthCheck,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-
-interface HealthResponse {
-  core_fidesctl_version: string;
-  status: "healthy";
-}
 
 interface ScanParams {
   classify?: boolean;
@@ -56,7 +52,7 @@ export const plusApi = createApi({
     "LatestScan",
   ],
   endpoints: (build) => ({
-    getHealth: build.query<HealthResponse, void>({
+    getHealth: build.query<HealthCheck, void>({
       query: () => "health",
     }),
     /**
@@ -167,6 +163,9 @@ export const useHasPlus = () => {
   const { isSuccess: hasPlus } = useGetHealthQuery();
   return hasPlus;
 };
+
+export const selectHealth: (state: RootState) => HealthCheck | undefined =
+  createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(
