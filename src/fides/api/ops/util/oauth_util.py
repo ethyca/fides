@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 import json
 from datetime import datetime
@@ -26,9 +27,8 @@ from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
 from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
 
@@ -43,6 +43,8 @@ async def get_current_user(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    oauth_root_client_id: str = get_config().security.oauth_root_client_id,
+    root_username: str | None = get_config().security.root_username,
 ) -> FidesUser:
     """A wrapper around verify_oauth_client that returns that client's user if one exists."""
     client = await verify_oauth_client(
@@ -51,17 +53,20 @@ async def get_current_user(
         db=db,
     )
 
-    if client.id == CONFIG.security.oauth_root_client_id:
+    if client.id == oauth_root_client_id:
         return FidesUser(
-            id=CONFIG.security.oauth_root_client_id,
-            username=CONFIG.security.root_username,
+            id=oauth_root_client_id,
+            username=root_username,
             created_at=datetime.utcnow(),
         )
 
     return client.user
 
 
-def is_callback_token_expired(issued_at: datetime | None) -> bool:
+def is_callback_token_expired(
+    issued_at: datetime | None,
+    privacy_request_delay_timeout: int = get_config().execution.privacy_request_delay_timeout,
+) -> bool:
     """Returns True if the token is older than the expiration of the redis cache.  We
     can't resume executing the privacy request if the identity data is gone.
     """
@@ -70,13 +75,14 @@ def is_callback_token_expired(issued_at: datetime | None) -> bool:
 
     return (
         datetime.now() - issued_at
-    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
+    ).total_seconds() / 60.0 > privacy_request_delay_timeout
 
 
 def verify_callback_oauth(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    app_encryption_key: str = get_config().security.app_encryption_key,
 ) -> PolicyPreWebhook:
     """
     Verifies the specific token that accompanies a request when a user wants to resume executing
@@ -89,9 +95,7 @@ def verify_callback_oauth(
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
-    token_data = json.loads(
-        extract_payload(authorization, CONFIG.security.app_encryption_key)
-    )
+    token_data = json.loads(extract_payload(authorization, app_encryption_key))
     try:
         token = WebhookJWE(**token_data)
     except ValidationError:
@@ -118,6 +122,9 @@ async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    app_encryption_key: str = get_config().security.app_encryption_key,
+    oauth_access_token_expire_minutes: int = get_config().security.oauth_access_token_expire_minutes,
+    config: FidesConfig = get_config(),
 ) -> ClientDetail:
     """
     Verifies that the access token provided in the authorization header contains
@@ -128,9 +135,7 @@ async def verify_oauth_client(
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
-        token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
-        )
+        token_data = json.loads(extract_payload(authorization, app_encryption_key))
     except exceptions.JWEParseError as exc:
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
@@ -140,7 +145,7 @@ async def verify_oauth_client(
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        CONFIG.security.oauth_access_token_expire_minutes,
+        oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 
@@ -154,7 +159,7 @@ async def verify_oauth_client(
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
     )
 
     if not client:

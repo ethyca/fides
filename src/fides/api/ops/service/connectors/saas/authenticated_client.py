@@ -30,7 +30,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-CONFIG = get_config()
 
 
 class AuthenticatedClient:
@@ -87,6 +86,7 @@ class AuthenticatedClient:
         retry_count: int,
         backoff_factor: float,
         retry_status_codes: List[int] = [429, 502, 503, 504],
+        dev_mode: bool = get_config().dev_mode,
     ) -> Callable:
         """
         Retry decorator for http requests, backing off exponentially or listening to server retry-after header
@@ -125,7 +125,7 @@ class AuthenticatedClient:
                             retry_after_time if retry_after_time else sleep_time
                         )
                     except Exception as exc:  # pylint: disable=W0703
-                        dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
+                        dev_mode_log = f" with error: {exc}" if dev_mode else ""
                         last_exception = ConnectionException(
                             f"Operational Error connecting to '{self.configuration.key}'{dev_mode_log}"
                         )
@@ -208,10 +208,12 @@ class RequestFailureResponseException(FidesopsException):
 
 
 def log_request_and_response_for_debugging(
-    prepared_request: PreparedRequest, response: Response
+    prepared_request: PreparedRequest,
+    response: Response,
+    dev_mode: bool = get_config().dev_mode,
 ) -> None:
     """Log SaaS request and response in dev mode only"""
-    if CONFIG.dev_mode:
+    if dev_mode:
         logger.info(
             "\n\n-----------SAAS REQUEST-----------"
             "\n%s %s"

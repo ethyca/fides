@@ -20,8 +20,6 @@ from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrat
 from fides.api.ops.util.encryption.secrets_util import SecretsUtil
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 class HashMaskingStrategy(MaskingStrategy):
     """Masks a value by hashing it"""
@@ -103,16 +101,16 @@ class HashMaskingStrategy(MaskingStrategy):
     # Helpers
 
     @staticmethod
-    def _hash_sha256(value: str, salt: str) -> str:
-        return hashlib.sha256(
-            (value + salt).encode(CONFIG.security.encoding)
-        ).hexdigest()
+    def _hash_sha256(
+        value: str, salt: str, encoding: str = get_config().security.encoding
+    ) -> str:
+        return hashlib.sha256((value + salt).encode(encoding)).hexdigest()
 
     @staticmethod
-    def _hash_sha512(value: str, salt: str) -> str:
-        return hashlib.sha512(
-            (value + salt).encode(CONFIG.security.encoding)
-        ).hexdigest()
+    def _hash_sha512(
+        value: str, salt: str, encoding: str = get_config().security.encoding
+    ) -> str:
+        return hashlib.sha512((value + salt).encode(encoding)).hexdigest()
 
     @classmethod
     def _build_masking_secret_meta(

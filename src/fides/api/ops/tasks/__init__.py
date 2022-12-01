@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
+from typing import Any, ContextManager, Dict, List, MutableMapping, Optional
 
 from celery import Celery, Task
 from fideslib.core.config import load_toml
@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
 
@@ -19,13 +18,16 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     def session(self) -> ContextManager[Session]:
         """Creates Session once per process"""
         if self._session is None:
-            SessionLocal = get_db_session(CONFIG)
+            SessionLocal = get_db_session(get_config())
             self._session = SessionLocal()
 
         return self._session
 
 
-def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Celery:
+def _create_celery(
+    config_path: str = get_config().execution.celery_config_path,
+    redis_connection_url: Optional[str] = get_config().redis.connection_url,
+) -> Celery:
     """
     Returns a configured version of the Celery application
     """
@@ -34,8 +36,8 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 
     celery_config: Dict[str, Any] = {
         # Defaults for the celery config
-        "broker_url": CONFIG.redis.connection_url,
-        "result_backend": CONFIG.redis.connection_url,
+        "broker_url": redis_connection_url,
+        "result_backend": redis_connection_url,
         "event_queue_prefix": "fides_worker",
         "task_always_eager": True,
         # Fidesops requires this to route emails to separate queues

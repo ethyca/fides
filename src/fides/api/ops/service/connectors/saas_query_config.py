@@ -27,7 +27,6 @@ from fides.api.ops.util.saas_util import (
 )
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -114,7 +113,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             )
         return request
 
-    def get_masking_request(self) -> Optional[SaaSRequest]:
+    def get_masking_request(
+        self, masking_strict: bool = get_config().execution.masking_strict
+    ) -> Optional[SaaSRequest]:
         """
         Returns a tuple of the preferred action and SaaSRequest to use for masking.
         An update request is preferred, but we can use a gdpr delete endpoint or
@@ -125,7 +126,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         gdpr_delete: Optional[SaaSRequest] = None
         delete: Optional[SaaSRequest] = None
 
-        if not CONFIG.execution.masking_strict:
+        if not masking_strict:
             gdpr_delete = self.data_protection_request
             delete = self.get_erasure_request_by_action("delete")
 

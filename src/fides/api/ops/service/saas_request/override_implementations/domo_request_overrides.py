@@ -9,7 +9,6 @@ from fides.api.ops.common_exceptions import (
     ConnectionException,
 )
 from fides.api.ops.models.policy import Policy
-from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -17,7 +16,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
 from fides.api.ops.util.saas_util import PRIVACY_REQUEST_ID
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -25,8 +23,8 @@ logger = logging.getLogger(__name__)
 def domo_user_update(
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
-    privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
+    dev_mode: bool=get_config().dev_mode
 ) -> int:
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
@@ -60,7 +58,7 @@ def domo_user_update(
         # by the AuthenticatedClient. Extenders can chose to handle errors within
         # their implementation as they wish.
         except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
+            if dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to Domo API with error: {e}"
                 )

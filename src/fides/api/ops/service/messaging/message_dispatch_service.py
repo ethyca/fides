@@ -30,8 +30,6 @@ from fides.api.ops.tasks import DatabaseTask, celery_app
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 logger = logging.getLogger(__name__)
 
 
@@ -70,6 +68,9 @@ def dispatch_message(
             List[CheckpointActionRequired],
         ]
     ] = None,
+    notification_service_type: Optional[
+        str
+    ] = get_config().notifications.notification_service_type,
 ) -> None:
     """
     Sends a message to `to_identity` with content supplied in `message_body_params`
@@ -103,10 +104,10 @@ def dispatch_message(
     else:
         logger.error(
             "Notification service type is not valid: %s",
-            CONFIG.notifications.notification_service_type,
+            notification_service_type,
         )
         raise MessageDispatchException(
-            f"Notification service type is not valid: {CONFIG.notifications.notification_service_type}"
+            f"Notification service type is not valid: {notification_service_type}"
         )
     messaging_service: MessagingServiceType = messaging_config.service_type  # type: ignore
     logger.info(

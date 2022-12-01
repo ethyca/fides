@@ -28,11 +28,15 @@ from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 
-def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> str:
+def encrypt_access_request_results(
+    data: Union[str, bytes],
+    request_id: str,
+    encoding: str = get_config().security.encoding,
+    aes_gcm_nonce_length=get_config().security.aes_gcm_nonce_length,
+) -> str:
     """Encrypt data with encryption key if provided, otherwise return unencrypted data"""
     cache = get_cache()
     encryption_cache_key = get_encryption_cache_key(
@@ -40,16 +44,14 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
         encryption_attr="key",
     )
     if isinstance(data, bytes):
-        data = data.decode(CONFIG.security.encoding)
+        data = data.decode(encoding)
 
     encryption_key: str | None = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 
-    bytes_encryption_key: bytes = encryption_key.encode(
-        encoding=CONFIG.security.encoding
-    )
-    nonce: bytes = secrets.token_bytes(CONFIG.security.aes_gcm_nonce_length)
+    bytes_encryption_key: bytes = encryption_key.encode(encoding=encoding)
+    nonce: bytes = secrets.token_bytes(aes_gcm_nonce_length)
     # b64encode the entire nonce and the encrypted message together
     return bytes_to_b64_str(
         nonce
@@ -58,7 +60,10 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 
 
 def write_to_in_memory_buffer(
-    resp_format: str, data: Dict[str, Any], request_id: str
+    resp_format: str,
+    data: Dict[str, Any],
+    request_id: str,
+    encoding: str = get_config().security.encoding,
 ) -> BytesIO:
     """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
@@ -72,9 +77,7 @@ def write_to_in_memory_buffer(
     if resp_format == ResponseFormat.json.value:
         json_str = json.dumps(data, indent=2, default=_handle_json_encoding)
         return BytesIO(
-            encrypt_access_request_results(json_str, request_id).encode(
-                CONFIG.security.encoding
-            )
+            encrypt_access_request_results(json_str, request_id).encode(encoding)
         )
 
     if resp_format == ResponseFormat.csv.value:
@@ -83,7 +86,7 @@ def write_to_in_memory_buffer(
             for key in data:
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+                df.to_csv(buffer, index=False, encoding=encoding)
                 buffer.seek(0)
                 f.writestr(
                     f"{key}.csv",
@@ -97,7 +100,10 @@ def write_to_in_memory_buffer(
 
 
 def create_presigned_url_for_s3(
-    s3_client: Session, bucket_name: str, object_name: str
+    s3_client: Session,
+    bucket_name: str,
+    object_name: str,
+    subject_request_download_link_ttl_seconds: int = get_config().security.subject_request_download_link_ttl_seconds,
 ) -> str:
     """ "Generate a presigned URL to share an S3 object
 
@@ -109,7 +115,7 @@ def create_presigned_url_for_s3(
     response = s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket_name, "Key": object_name},
-        ExpiresIn=CONFIG.security.subject_request_download_link_ttl_seconds,
+        ExpiresIn=subject_request_download_link_ttl_seconds,
     )
 
     # The response contains the presigned URL

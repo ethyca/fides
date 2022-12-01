@@ -78,9 +78,8 @@ from fides.api.ops.util.cache import (
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG = get_config()
 logger = get_task_logger(__name__)
 
 
@@ -296,6 +295,8 @@ async def run_privacy_request(
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
+    dev_mode: bool = get_config().dev_mode,
+    send_request_completion_notification: bool = get_config().notifications.send_request_completion_notification,
 ) -> None:
     # pylint: disable=too-many-statements, too-many-return-statements, too-many-branches
     """
@@ -400,7 +401,7 @@ async def run_privacy_request(
 
         except PrivacyRequestPaused as exc:
             privacy_request.pause_processing(session)
-            _log_warning(exc, CONFIG.dev_mode)
+            _log_warning(exc, dev_mode)
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
@@ -410,7 +411,7 @@ async def run_privacy_request(
                 failed_graph_analytics_event(privacy_request, exc)
             )
             # If dev mode, log traceback
-            _log_exception(exc, CONFIG.dev_mode)
+            _log_exception(exc, dev_mode)
             return
 
         # Send erasure requests via email to third parties where applicable
@@ -431,7 +432,7 @@ async def run_privacy_request(
                     failed_graph_analytics_event(privacy_request, exc)
                 )
                 # If dev mode, log traceback
-                _log_exception(exc, CONFIG.dev_mode)
+                _log_exception(exc, dev_mode)
                 return
 
         # Run post-execution webhooks
@@ -442,7 +443,7 @@ async def run_privacy_request(
         )
         if not proceed:
             return
-        if CONFIG.notifications.send_request_completion_notification:
+        if send_request_completion_notification:
             try:
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
@@ -453,7 +454,7 @@ async def run_privacy_request(
                 await fideslog_graph_failure(
                     failed_graph_analytics_event(privacy_request, e)
                 )
-                _log_exception(e, CONFIG.dev_mode)
+                _log_exception(e, dev_mode)
                 return
         privacy_request.finished_processing_at = datetime.utcnow()
         AuditLog.create(
@@ -475,6 +476,9 @@ def initiate_privacy_request_completion_email(
     policy: Policy,
     access_result_urls: List[str],
     identity_data: Dict[str, Any],
+    notification_service_type: Optional[
+        str
+    ] = get_config().notifications.notification_service_type,
 ) -> None:
     """
     :param session: SQLAlchemy Session
@@ -496,7 +500,7 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=notification_service_type,
             message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
@@ -506,12 +510,15 @@ def initiate_privacy_request_completion_email(
             db=session,
             action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
             to_identity=to_identity,
-            service_type=CONFIG.notifications.notification_service_type,
+            service_type=notification_service_type,
             message_body_params=None,
         )
 
 
-def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) -> None:
+def initiate_paused_privacy_request_followup(
+    privacy_request: PrivacyRequest,
+    default_ttl_seconds: int = get_config().redis.default_ttl_seconds,
+) -> None:
     """Initiates scheduler to expire privacy request when the redis cache expires"""
     scheduler.add_job(
         func=mark_paused_privacy_request_as_expired,
@@ -519,13 +526,15 @@ def initiate_paused_privacy_request_followup(privacy_request: PrivacyRequest) ->
         id=privacy_request.id,
         replace_existing=True,
         trigger="date",
-        run_date=(datetime.now() + timedelta(seconds=CONFIG.redis.default_ttl_seconds)),
+        run_date=(datetime.now() + timedelta(seconds=default_ttl_seconds)),
     )
 
 
-def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
+def mark_paused_privacy_request_as_expired(
+    privacy_request_id: str, config: FidesConfig = get_config()
+) -> None:
     """Mark "paused" PrivacyRequest as "errored" after its associated identity data in the redis cache has expired."""
-    SessionLocal = get_db_session(CONFIG)
+    SessionLocal = get_db_session(config)
     db = SessionLocal()
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:

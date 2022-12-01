@@ -16,7 +16,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
 from fides.api.ops.util.saas_util import to_pascal_case
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -26,6 +25,7 @@ def twilio_user_update(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
+    dev_mode: bool = get_config().dev_mode,
 ) -> int:
     rows_updated = 0
 
@@ -57,7 +57,7 @@ def twilio_user_update(
         # by the AuthenticatedClient. Extenders can chose to handle errors within
         # their implementation as they wish.
         except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
+            if dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )
@@ -78,6 +78,7 @@ def twilio_conversation_message_update(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
+    dev_mode: bool = get_config().dev_mode,
 ) -> int:
     rows_updated = 0
 
@@ -109,7 +110,7 @@ def twilio_conversation_message_update(
         # by the AuthenticatedClient. Extenders can chose to handle errors within
         # their implementation as they wish.
         except Exception as e:
-            if CONFIG.dev_mode:  # pylint: disable=R1720
+            if dev_mode:  # pylint: disable=R1720
                 raise ConnectionException(
                     f"Operational Error connecting to Twilio Conversations API with error: {e}"
                 )

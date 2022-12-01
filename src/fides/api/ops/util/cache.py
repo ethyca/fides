@@ -8,11 +8,10 @@ from redis.client import Script  # type: ignore
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed
@@ -31,13 +30,9 @@ class FidesopsRedis(Redis):
         self,
         key: str,
         value: RedisValue,
-        expire_time: int = CONFIG.redis.default_ttl_seconds,
+        expire_time: int = get_config().redis.default_ttl_seconds,
     ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
-        if not expire_time:
-            # We have to check this condition for the edge case where `None` is explicitly
-            # passed to this method.
-            expire_time = CONFIG.redis.default_ttl_seconds
         return self.set(key, value, ex=expire_time)
 
     def get_keys_by_prefix(self, prefix: str, chunk_size: int = 1000) -> List[str]:
@@ -100,19 +95,19 @@ class FidesopsRedis(Redis):
         return None
 
 
-def get_cache() -> FidesopsRedis:
+def get_cache(config: FidesConfig=get_config()) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
     global _connection  # pylint: disable=W0603
     if _connection is None:
         _connection = FidesopsRedis(  # type: ignore[call-overload]
-            charset=CONFIG.redis.charset,
-            decode_responses=CONFIG.redis.decode_responses,
-            host=CONFIG.redis.host,
-            port=CONFIG.redis.port,
-            db=CONFIG.redis.db_index,
-            password=CONFIG.redis.password,
-            ssl=CONFIG.redis.ssl,
-            ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+            charset=config.redis.charset,
+            decode_responses=config.redis.decode_responses,
+            host=config.redis.host,
+            port=config.redis.port,
+            db=config.redis.db_index,
+            password=config.redis.password,
+            ssl=config.redis.ssl,
+            ssl_cert_reqs=config.redis.ssl_cert_reqs,
         )
 
     connected = _connection.ping()

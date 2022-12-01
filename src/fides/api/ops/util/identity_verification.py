@@ -6,7 +6,6 @@ from fides.api.ops.util.cache import FidesopsRedis, get_cache
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-CONFIG = get_config()
 
 
 class IdentityVerificationMixin:
@@ -76,7 +75,11 @@ class IdentityVerificationMixin:
         cache.delete(self._get_identity_verification_cache_key())
         cache.delete(self._get_identity_verification_attempt_count_cache_key())
 
-    def _verify_identity(self, provided_code: str) -> None:
+    def _verify_identity(
+        self,
+        provided_code: str,
+        identity_verification_attempt_limit: int = get_config().security.identity_verification_attempt_limit,
+    ) -> None:
         """Verify the identification code supplied by the user."""
         code: Optional[str] = self.get_cached_verification_code()
         if not code:
@@ -85,7 +88,7 @@ class IdentityVerificationMixin:
             )
 
         attempt_count: int = self._get_cached_verification_code_attempt_count()
-        if attempt_count >= CONFIG.security.identity_verification_attempt_limit:
+        if attempt_count >= identity_verification_attempt_limit:
             logger.debug(
                 "Failed identity verification attempt limit exceeded for record with ID: %s",
                 self.id,  # type: ignore
