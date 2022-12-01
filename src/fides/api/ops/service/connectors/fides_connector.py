@@ -156,8 +156,8 @@ def filter_fides_connector_datasets(
     Helper function to retrieve the `fides_key`s of any `Dataset`s associated
     with any Fides connectors in the provided `List` of `ConnectionConfig`s.
 
-    Returns a `List` of `Tuple`s whose first element is the `fides_key`
-    of the `Dataset`, and whose second element is the `ConnectionConfig` itself
+    Returns a `Set` of `str`s containing the `fides_key`
+    of the `Dataset`
     """
     return {
         dataset.fides_key
