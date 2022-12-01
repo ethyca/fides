@@ -5,8 +5,6 @@ from typing import Callable
 from fides.api.ops.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 def hmac_encrypt_return_bytes(
     value: str,
@@ -56,9 +54,15 @@ def _hmac_sha512(value: str, hmac_key: str, salt: str) -> hmac.HMAC:
     return _hmac(value=value, hmac_key=hmac_key, salt=salt, hashing_alg=hashlib.sha512)
 
 
-def _hmac(value: str, hmac_key: str, salt: str, hashing_alg: Callable) -> hmac.HMAC:
+def _hmac(
+    value: str,
+    hmac_key: str,
+    salt: str,
+    hashing_alg: Callable,
+    encoding: str = get_config().security.encoding,
+) -> hmac.HMAC:
     return hmac.new(
-        key=hmac_key.encode(CONFIG.security.encoding),
-        msg=(value + salt).encode(CONFIG.security.encoding),
+        key=hmac_key.encode(encoding),
+        msg=(value + salt).encode(encoding),
         digestmod=hashing_alg,
     )
