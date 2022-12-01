@@ -15,7 +15,7 @@ def filter_data_categories(
     target_categories: Set[str],
     data_category_fields: Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]],
     rule_key: str = "",
-    fides_connector_datasets: Set[str] = None,
+    fides_connector_datasets: Optional[Set[str]] = None,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
