@@ -537,6 +537,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-settings" class="md-nav__link">
+    Notification settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -563,8 +570,8 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#posgtres-database" class="md-nav__link">
-    Posgtres database
+  <a href="#postgres-database_1" class="md-nav__link">
+    Postgres database
   </a>
   
 </li>
@@ -621,6 +628,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifications" class="md-nav__link">
+    Notifications
   </a>
   
 </li>
@@ -1009,8 +1023,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../guides/email_communications/" class="md-nav__link">
-        Configure Email Communications
+      <a href="../../guides/messaging/" class="md-nav__link">
+        Configure Messaging
       </a>
     </li>
   
@@ -2162,6 +2176,13 @@ You're not viewing the latest version.
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-settings" class="md-nav__link">
+    Notification settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2188,8 +2209,8 @@ You're not viewing the latest version.
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#posgtres-database" class="md-nav__link">
-    Posgtres database
+  <a href="#postgres-database_1" class="md-nav__link">
+    Postgres database
   </a>
   
 </li>
@@ -2246,6 +2267,13 @@ You're not viewing the latest version.
           <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifications" class="md-nav__link">
+    Notifications
   </a>
   
 </li>
@@ -2399,6 +2427,13 @@ To learn more about configuring fides, see:
 <li><code>require_manual_request_approval</code></li>
 <li><code>masking_strict</code></li>
 </ul>
+<h4 id="notification-settings">Notification settings</h4>
+<ul>
+<li><code>send_request_completion_notification</code></li>
+<li><code>send_request_receipt_notification</code></li>
+<li><code>send_request_review_notification</code></li>
+<li><code>notification_service_type</code></li>
+</ul>
 <p>For more information, see the <a href="../../api/">API docs</a>.</p>
 <h2 id="configuration-file">Configuration file</h2>
 <p>After initializing Fides, a default configuration file will be generated and placed within the <code>.fides</code> directory:</p>
@@ -2502,7 +2537,7 @@ To learn more about configuring fides, see:
 </code></pre></div></td></tr></table></div>
 <h2 id="configuration-variable-reference">Configuration variable reference</h2>
 <p>The <code>fides.toml</code> file should specify the following variables:</p>
-<h4 id="posgtres-database">Posgtres database</h4>
+<h4 id="postgres-database_1">Postgres database</h4>
 <table>
 <thead>
 <tr>
@@ -2919,6 +2954,43 @@ To learn more about configuring fides, see:
 </tr>
 </tbody>
 </table>
+<h4 id="notifications">Notifications</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Name</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>send_request_completion_notification</code></td>
+<td align="left">bool</td>
+<td align="left"><code>False</code></td>
+<td align="left">When set to <code>True</code>, enables subject notifications upon privacy request completion.</td>
+</tr>
+<tr>
+<td align="left"><code>send_request_receipt_notification</code></td>
+<td align="left">bool</td>
+<td align="left"><code>False</code></td>
+<td align="left">When set to <code>True</code>, enables subject notifications upon privacy request receipt.</td>
+</tr>
+<tr>
+<td align="left"><code>send_request_review_notification</code></td>
+<td align="left">bool</td>
+<td align="left"><code>False</code></td>
+<td align="left">When set to <code>True</code>, enables subject notifications upon privacy request review.</td>
+</tr>
+<tr>
+<td align="left"><code>notification_service_type</code></td>
+<td align="left">String</td>
+<td align="left">N/A</td>
+<td align="left">Sets the notification service type used to send notifications. Accepts <code>mailgun</code>, <code>twilio_sms</code>, or <code>twilio_email</code>.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="set-environment-variables">Set environment variables</h2>
 <p>To configure environment variables for Fides, the following pattern is used:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>FIDES__&lt;SECTION&gt;__&lt;VAR_NAME&gt;
@@ -2960,11 +3032,6 @@ To learn more about configuring fides, see:
 <td><code>FIDES_CONFIG_PATH</code></td>
 <td>None</td>
 <td>If this is set to a path, that path will be used to load <code>.toml</code> files first. Any .toml files on this path will override any installed .toml files.</td>
-</tr>
-<tr>
-<td><code>FIDES__DATABASE__SQLALCHEMY_DATABASE_URI</code></td>
-<td>None</td>
-<td>An optional override for the URI used for the database connection, in the form of <code>postgresql://&lt;user&gt;:&lt;password&gt;@&lt;hostname&gt;:&lt;port&gt;/&lt;database&gt;</code>.</td>
 </tr>
 </tbody>
 </table>

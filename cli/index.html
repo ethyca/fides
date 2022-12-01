@@ -802,8 +802,8 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../guides/email_communications/" class="md-nav__link">
-        Configure Email Communications
+      <a href="../guides/messaging/" class="md-nav__link">
+        Configure Messaging
       </a>
     </li>
   
@@ -3375,13 +3375,15 @@ under the stated threshold.
   --help           Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-webserver">fides webserver</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Starts the fides API server using Uvicorn on port 8080.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Starts the fides API server using Uvicorn.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides webserver [OPTIONS]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -p, --port INTEGER
+  --help              Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-worker">fides worker</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Starts a celery worker.

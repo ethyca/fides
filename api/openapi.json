@@ -4977,6 +4977,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
                   }
                 ]
               }
@@ -7706,6 +7709,60 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/privacy-request/authenticated": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Create Privacy Request Authenticated",
+        "description": "Given a list of privacy request data elements, create corresponding PrivacyRequest objects\nor report failure and execute them within the Fidesops system.\n\nYou cannot update privacy requests after they've been created.\n\nThis route requires authentication instead of using verification codes.",
+        "operationId": "create_privacy_request_authenticated_api_v1_privacy_request_authenticated_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Data",
+                "maxItems": 50,
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyRequestCreate"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPostPrivacyRequests"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:create"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/privacy-request/{privacy_request_id}/log": {
@@ -10748,7 +10805,8 @@
           "manual",
           "email",
           "manual_webhook",
-          "timescale"
+          "timescale",
+          "fides"
         ],
         "description": "Supported types to which we can connect fidesops."
       },
@@ -11776,11 +11834,7 @@
             "type": "string"
           },
           "requests": {
-            "title": "Requests",
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/SaaSRequest"
-            }
+            "$ref": "#/components/schemas/SaaSRequestMap"
           },
           "after": {
             "title": "After",
@@ -12014,6 +12068,43 @@
           "user.political_opinion"
         ],
         "description": "An enumeration."
+      },
+      "FidesDocsSchema": {
+        "title": "FidesDocsSchema",
+        "required": [
+          "uri",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "uri": {
+            "title": "Uri",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "polling_timeout": {
+            "title": "Polling Timeout",
+            "type": "integer"
+          },
+          "polling_interval": {
+            "title": "Polling Interval",
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Fides Child Secrets Schema for API docs"
       },
       "FidesopsCollectionMeta": {
         "title": "FidesopsCollectionMeta",
@@ -14709,7 +14800,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ParamValue"
-            }
+            },
+            "default": []
           },
           "client_config": {
             "$ref": "#/components/schemas/ClientConfig"
@@ -14747,6 +14839,34 @@
         },
         "additionalProperties": false,
         "description": "A single request with static or dynamic path, headers, query, and body params.\nAlso specifies the names and sources for the param values needed to build the request.\n\nIncludes optional strategies for postprocessing and pagination."
+      },
+      "SaaSRequestMap": {
+        "title": "SaaSRequestMap",
+        "type": "object",
+        "properties": {
+          "read": {
+            "title": "Read",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSRequest"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SaaSRequest"
+                }
+              }
+            ],
+            "default": []
+          },
+          "update": {
+            "$ref": "#/components/schemas/SaaSRequest"
+          },
+          "delete": {
+            "$ref": "#/components/schemas/SaaSRequest"
+          }
+        },
+        "description": "A map of actions to SaaS requests"
       },
       "SaaSSchema": {
         "title": "SaaSSchema",
@@ -14831,6 +14951,9 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
               }
             ]
           },
