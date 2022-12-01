@@ -62,7 +62,7 @@ def get_platform(posargs: List[str]) -> str:
         nox.param("test", id="test"),
     ],
 )
-def build(session: nox.Session, image: str, machine_type: str = "") -> None:
+def build(session: nox.Session, image: str) -> None:
     """
     Build various Docker images.
 

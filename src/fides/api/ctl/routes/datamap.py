@@ -3,7 +3,7 @@ Contains an endpoint for extracting a data map from the server
 """
 from typing import Dict, List
 
-from fastapi import Response, status
+from fastapi import status
 from fideslang.parse import parse_dict
 from loguru import logger as log
 from pandas import DataFrame
@@ -87,9 +87,7 @@ router = APIRouter(tags=["Datamap"], prefix=f"{API_PREFIX}/datamap")
         },
     },
 )
-async def export_datamap(
-    organization_fides_key: str, response: Response
-) -> List[Dict[str, str]]:
+async def export_datamap(organization_fides_key: str) -> List[Dict[str, str]]:
     """
     An endpoint to return the data map for a given Organization.
 

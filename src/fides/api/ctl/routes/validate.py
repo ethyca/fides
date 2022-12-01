@@ -4,7 +4,7 @@ Contains all of the endpoints required to validate credentials.
 from enum import Enum
 from typing import Callable, Dict, Union
 
-from fastapi import Response, status
+from fastapi import status
 from pydantic import BaseModel
 
 from fides.api.ctl.routes.util import API_PREFIX
@@ -63,9 +63,7 @@ router = APIRouter(tags=["Validate"], prefix=f"{API_PREFIX}/validate")
     status_code=status.HTTP_200_OK,
     response_model=ValidateResponse,
 )
-async def validate(
-    validate_request_payload: ValidateRequest, response: Response
-) -> ValidateResponse:
+async def validate(validate_request_payload: ValidateRequest) -> ValidateResponse:
     """
     Endpoint used to validate different resource targets.
     """
