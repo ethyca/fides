@@ -1,0 +1,10 @@
+{
+  "core_fidesctl_version": "1.9.6",
+  "fidesctl_plus_server": "healthy",
+  "fidescls_version": "1.0.3",
+  "system_scanner": {
+    "enabled": true,
+    "cluster_health": "healthy",
+    "cluster_error": null
+  }
+}
