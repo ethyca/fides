@@ -22,6 +22,7 @@ import {
   ClassifySystem,
   GenerateTypes,
   HealthCheck,
+  SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
@@ -166,6 +167,13 @@ export const useHasPlus = () => {
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
+
+export const selectDataFlowScannerStatus: (
+  state: RootState
+) => SystemScannerStatus | undefined = createSelector(
+  plusApi.endpoints.getHealth.select(),
+  ({ data }) => data?.system_scanner
+);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(

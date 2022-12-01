@@ -13,7 +13,8 @@ import {
   Tooltip,
 } from "@fidesui/react";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import ConnectedCircle from "~/features/common/ConnectedCircle";
 import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
@@ -22,8 +23,9 @@ import {
   OktaLogoIcon,
   QuestionIcon,
 } from "~/features/common/Icon";
+import { selectDataFlowScannerStatus } from "~/features/plus/plus.slice";
 import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
-import { ValidTargets } from "~/types/api";
+import { ClusterHealth, ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
 import { iconButtonSize } from "./constants";
@@ -31,16 +33,30 @@ import { SystemMethods } from "./types";
 
 const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
   const { plus, dataFlowScanning } = useFeatures();
+  const scannerStatus = useAppSelector(selectDataFlowScannerStatus);
+
+  const clusterHealth = scannerStatus?.cluster_health ?? "unknown";
+  const isClusterHealthy = clusterHealth === ClusterHealth.HEALTHY;
+
   // If Plus is not enabled, do not show this feature at all
   if (!plus) {
     return null;
   }
-  const tooltip = dataFlowScanning
-    ? "The scanner will connect to your infrastructure to automatically scan and create a list of all systems available."
-    : "The data flow scanner is not enabled, please check your configuration.";
+
+  let tooltip =
+    "The scanner will connect to your infrastructure to automatically scan and create a list of all systems available.";
+  if (!dataFlowScanning) {
+    tooltip =
+      "The data flow scanner is not enabled, please check your configuration.";
+  } else if (!isClusterHealthy) {
+    tooltip = `Your cluster appears not to be healthy. Its status is ${clusterHealth}.`;
+  }
+
+  const disabled = !dataFlowScanning || !isClusterHealthy;
+
   return (
     <Stack direction="row" display="flex" alignItems="center">
-      <HStack>
+      <HStack position="relative">
         <IconButton
           aria-label="Data flow scan"
           boxSize={iconButtonSize}
@@ -50,7 +66,18 @@ const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
           icon={<DataFlowScannerLogo boxSize="10" />}
           onClick={onClick}
           data-testid="data-flow-scan-btn"
-          disabled={!dataFlowScanning}
+          disabled={disabled}
+        />
+        <ConnectedCircle
+          connected={isClusterHealthy}
+          title={
+            isClusterHealthy
+              ? "Cluster is connected and healthy"
+              : `Cluster is ${clusterHealth}`
+          }
+          position="absolute"
+          left={iconButtonSize - 12}
+          top={-1}
         />
       </HStack>
       <Text>Data Flow Scan</Text>
