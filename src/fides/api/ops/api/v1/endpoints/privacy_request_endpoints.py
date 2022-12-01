@@ -142,11 +142,10 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
-CONFIG = get_config()
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
@@ -209,7 +208,9 @@ async def create_privacy_request_authenticated(
 
 
 def _send_privacy_request_receipt_message_to_user(
-    policy: Optional[Policy], to_identity: Optional[Identity]
+    policy: Optional[Policy],
+    to_identity: Optional[Identity],
+    config: FidesConfig = get_config(),
 ) -> None:
     """Helper function to send request receipt message to the user"""
     if not to_identity:
@@ -237,7 +238,7 @@ def _send_privacy_request_receipt_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "service_type": CONFIG.notifications.notification_service_type,
+            "service_type": config.notifications.notification_service_type,
             "to_identity": to_identity.dict(),
         },
     )
@@ -1066,6 +1067,7 @@ def _send_privacy_request_review_message_to_user(
     action_type: MessagingActionType,
     identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
+    config: FidesConfig = get_config(),
 ) -> None:
     """Helper method to send review notification message to user, shared between approve and deny"""
     if not identity_data:
@@ -1089,7 +1091,7 @@ def _send_privacy_request_review_message_to_user(
                 if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "service_type": CONFIG.notifications.notification_service_type,
+            "service_type": config.notifications.notification_service_type,
             "to_identity": to_identity.dict(),
         },
     )
@@ -1105,6 +1107,7 @@ async def verify_identification_code(
     *,
     db: Session = Depends(deps.get_db),
     provided_code: VerificationCode,
+    config: FidesConfig = get_config(),
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code.
 
@@ -1120,7 +1123,7 @@ async def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if CONFIG.notifications.send_request_receipt_notification:
+        if config.notifications.send_request_receipt_notification:
             _send_privacy_request_receipt_message_to_user(
                 policy, privacy_request.get_persisted_identity()
             )
@@ -1132,7 +1135,7 @@ async def verify_identification_code(
 
     logger.info("Identity verified for %s.", privacy_request.id)
 
-    if not CONFIG.execution.require_manual_request_approval:
+    if not config.execution.require_manual_request_approval:
         AuditLog.create(
             db=db,
             data={
@@ -1160,6 +1163,7 @@ def approve_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_requests: ReviewPrivacyRequestIds,
+    config: FidesConfig = get_config(),
 ) -> BulkReviewResponse:
     """Approve and dispatch a list of privacy requests and/or report failure"""
     user_id = client.user_id
@@ -1179,7 +1183,7 @@ def approve_privacy_request(
                 "message": "",
             },
         )
-        if CONFIG.notifications.send_request_review_notification:
+        if config.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
                 identity_data=privacy_request.get_cached_identity_data(),
@@ -1208,6 +1212,7 @@ def deny_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_requests: DenyPrivacyRequests,
+    config: FidesConfig = get_config(),
 ) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
     user_id = client.user_id
@@ -1229,7 +1234,7 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        if CONFIG.notifications.send_request_review_notification:
+        if config.notifications.send_request_review_notification:
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 identity_data=privacy_request.get_cached_identity_data(),
@@ -1476,12 +1481,13 @@ def _create_privacy_request(
     db: Session,
     data: conlist(PrivacyRequestCreate),  # type: ignore
     authenticated: bool = False,
+    config: FidesConfig = get_config(),
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
 
     If authenticated is True the identity verification step is bypassed.
     """
-    if not CONFIG.redis.enabled:
+    if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
@@ -1549,7 +1555,7 @@ def _create_privacy_request(
 
             if (
                 not authenticated
-                and CONFIG.execution.subject_identity_verification_required
+                and config.execution.subject_identity_verification_required
             ):
                 send_verification_code_to_user(
                     db, privacy_request, privacy_request_data.identity
@@ -1558,12 +1564,12 @@ def _create_privacy_request(
                 continue  # Skip further processing for this privacy request
             if (
                 not authenticated
-                and CONFIG.notifications.send_request_receipt_notification
+                and config.notifications.send_request_receipt_notification
             ):
                 _send_privacy_request_receipt_message_to_user(
                     policy, privacy_request_data.identity
                 )
-            if not CONFIG.execution.require_manual_request_approval:
+            if not config.execution.require_manual_request_approval:
                 AuditLog.create(
                     db=db,
                     data={

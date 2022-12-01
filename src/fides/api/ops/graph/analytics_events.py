@@ -20,20 +20,24 @@ from fides.ctl.core.config import get_config
 if TYPE_CHECKING:
     from fides.api.ops.task.graph_task import GraphTask
 
-CONFIG = get_config()
 
-
-async def fideslog_graph_failure(event: Optional[AnalyticsEvent]) -> None:
+async def fideslog_graph_failure(
+    event: Optional[AnalyticsEvent],
+    analytics_opt_out: Optional[bool] = get_config().user.analytics_opt_out,
+) -> None:
     """Send an Analytics Event if privacy request execution has failed"""
-    if CONFIG.user.analytics_opt_out or not event:
+    if analytics_opt_out or not event:
         return
 
     await send_analytics_event(event)
 
 
-async def fideslog_graph_rerun(event: Optional[AnalyticsEvent]) -> None:
+async def fideslog_graph_rerun(
+    event: Optional[AnalyticsEvent],
+    analytics_opt_out: Optional[bool] = get_config().user.analytics_opt_out,
+) -> None:
     """Send an Analytics Event if a privacy request has been reprocessed, comparing its graph to the previous graph"""
-    if CONFIG.user.analytics_opt_out or not event:
+    if analytics_opt_out or not event:
         return
 
     await send_analytics_event(event)

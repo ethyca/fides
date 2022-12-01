@@ -34,8 +34,6 @@ from fides.api.ops.schemas.storage.storage import (
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 def _create_dsr_policy(
     db: orm.Session,
@@ -267,7 +265,8 @@ def create_test_data(db: orm.Session) -> FidesUser:
 
 
 if __name__ == "__main__":
-    asyncio.run(init_db(CONFIG.database.sqlalchemy_database_uri))
-    session_local = get_db_session(CONFIG)
+    config = get_config()
+    asyncio.run(init_db(config.database.sqlalchemy_database_uri))
+    session_local = get_db_session(config)
     with session_local() as session:
         create_test_data(session)

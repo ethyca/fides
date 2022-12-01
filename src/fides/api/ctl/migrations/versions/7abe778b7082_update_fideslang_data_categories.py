@@ -15,8 +15,6 @@ from sqlalchemy.exc import ProgrammingError
 from fides.api.ops.db.base import DatasetConfig
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
@@ -168,7 +166,8 @@ def update_field(field: dict, migration_direction: str) -> dict:
 
 
 def run_migration(migration_direction: str) -> None:
-    sessionlocal = get_db_session(CONFIG)
+    config = get_config()
+    sessionlocal = get_db_session(config)
     with sessionlocal() as session:
         try:
             datasets = DatasetConfig.all(db=session)

@@ -5,8 +5,6 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 class AesEncryptionRequest(BaseModel):
     """Specifies fields provided to the AES Encryption endpoint"""
@@ -18,7 +16,7 @@ class AesEncryptionRequest(BaseModel):
     def validate_key(cls, v: str) -> bytes:
         """Convert string into bytes and verify this is the correct length"""
 
-        key = v.encode(CONFIG.security.encoding)
+        key = v.encode(get_config().security.encoding)
         verify_encryption_key(key)
         return key
 

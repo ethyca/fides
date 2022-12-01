@@ -9,9 +9,7 @@ from loguru import logger as log
 
 from fides import __version__ as fides_version
 from fides.api.ops.models.registration import UserRegistration
-from fides.ctl.core.config import get_config
-
-CONFIG = get_config()
+from fides.ctl.core.config import FidesConfig, get_config
 
 
 def in_docker_container() -> bool:
@@ -26,20 +24,27 @@ def accessed_through_local_host(hostname: Optional[str]) -> bool:
     return hostname in LOCAL_HOSTS
 
 
-analytics_client = AnalyticsClient(
-    client_id=CONFIG.cli.analytics_id,
-    developer_mode=CONFIG.dev_mode,
-    extra_data=None,
-    os=system(),
-    product_name="fidesops",
-    production_version=fides_version,
-)
+def create_analytics_client(config: FidesConfig = get_config()) -> AnalyticsClient:
+    """Creates and returns an AnalyticsClient."""
+    analytics_client = AnalyticsClient(
+        client_id=config.cli.analytics_id,
+        developer_mode=config.dev_mode,
+        extra_data=None,
+        os=system(),
+        product_name="fidesops",
+        production_version=fides_version,
+    )
+    return analytics_client
 
 
-async def send_analytics_event(event: AnalyticsEvent) -> None:
-    if CONFIG.user.analytics_opt_out:
+async def send_analytics_event(
+    event: AnalyticsEvent, config: FidesConfig = get_config()
+) -> None:
+
+    if config.user.analytics_opt_out:
         return
     try:
+        analytics_client = create_analytics_client(config=config)
         await analytics_client.send_async(event)
     except AnalyticsError as err:
         log.warning(f"Error sending analytics event: {err}")
@@ -47,10 +52,11 @@ async def send_analytics_event(event: AnalyticsEvent) -> None:
         log.info(f"Analytics event sent with client id: {analytics_client.client_id}")
 
 
-async def send_registration(registration: UserRegistration) -> None:
-    if CONFIG.user.analytics_opt_out:
+async def send_registration(registration: UserRegistration, config: FidesConfig=get_config()) -> None:
+    if config.user.analytics_opt_out:
         return
     try:
+        analytics_client = create_analytics_client(config=config)
         await analytics_client.register_async(registration.as_fideslog())
     except AnalyticsError as err:
         log.warning(f"Error sending registration event: {err}")

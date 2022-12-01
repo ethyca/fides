@@ -17,8 +17,6 @@ from fides.ctl.core.utils import get_db_engine
 
 from .seed import load_default_resources
 
-CONFIG = get_config()
-
 
 def get_alembic_config(database_url: str) -> Config:
     """

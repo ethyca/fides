@@ -20,8 +20,6 @@ from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 class ConnectionTestStatus(enum.Enum):
     """Enum for supplying statuses of validating credentials for a Connection Config to the user"""
@@ -108,7 +106,7 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                get_config().security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

@@ -29,7 +29,6 @@ from fides.api.ops.util.oauth_util import (
 )
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["User Permissions"], prefix=V1_URL_PREFIX)
 
@@ -99,15 +98,16 @@ async def get_user_permissions(
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
+    oauth_root_client_id: str = get_config().security.oauth_root_client_id,
 ) -> FidesUserPermissions:
     # A user is able to retrieve their own permissions.
     if current_user.id == user_id:
         # The root user is a special case because they aren't persisted in the database.
-        if current_user.id == CONFIG.security.oauth_root_client_id:
+        if current_user.id == oauth_root_client_id:
             logger.info("Created FidesUserPermission for root user")
             return FidesUserPermissions(
-                id=CONFIG.security.oauth_root_client_id,
-                user_id=CONFIG.security.oauth_root_client_id,
+                id=oauth_root_client_id,
+                user_id=oauth_root_client_id,
                 scopes=SCOPE_REGISTRY,
             )
 

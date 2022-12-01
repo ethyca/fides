@@ -22,8 +22,6 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 class PrivacyRequestDRPStatus(EnumType):
     """A list of privacy request statuses specified by the Data Rights Protocol."""
@@ -71,7 +69,7 @@ class PrivacyRequestCreate(BaseSchema):
     ) -> Optional[str]:
         """Validate encryption key where applicable"""
         if value:
-            verify_encryption_key(value.encode(CONFIG.security.encoding))
+            verify_encryption_key(value.encode(get_config().security.encoding))
         return value
 
 

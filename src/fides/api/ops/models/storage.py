@@ -26,8 +26,6 @@ from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
 
-CONFIG = get_config()
-
 
 def get_schema_for_secrets(
     storage_type: StorageType,
@@ -67,7 +65,7 @@ class StorageConfig(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                get_config().security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

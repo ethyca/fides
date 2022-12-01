@@ -19,7 +19,6 @@ from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-CONFIG = get_config()
 
 
 class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
@@ -111,7 +110,9 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         )
 
     @staticmethod
-    def _generate_state() -> str:
+    def _generate_state(
+        oauth_instance: Optional[str] = get_config().oauth_instance,
+    ) -> str:
         """
         Generates a string value to associate the authentication request
         with an eventual OAuth2 callback response.
@@ -124,6 +125,6 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         """
 
         state = str(uuid4())
-        if CONFIG.oauth_instance:
-            state = f"{CONFIG.oauth_instance}-{state}"
+        if oauth_instance:
+            state = f"{oauth_instance}-{state}"
         return state

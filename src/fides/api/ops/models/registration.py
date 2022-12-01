@@ -10,8 +10,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +21,7 @@ class UserRegistration(Base):
     user_email = Column(
         StringEncryptedType(
             String,
-            CONFIG.security.app_encryption_key,
+            get_config().security.app_encryption_key,
             AesEngine,
         ),
         nullable=True,

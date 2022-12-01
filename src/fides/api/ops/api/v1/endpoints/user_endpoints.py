@@ -34,9 +34,8 @@ from fides.api.ops.util.oauth_util import (
     oauth2_scheme,
     verify_oauth_client,
 )
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
@@ -94,6 +93,7 @@ def update_user_password(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserPasswordReset,
+    security_encoding: str= get_config().security.encoding,
 ) -> FidesUser:
     """
     Update a user's password given a `user_id`. By default this is limited to users
@@ -102,7 +102,7 @@ def update_user_password(
     _validate_current_user(user_id, current_user)
 
     if not current_user.credentials_valid(
-        b64_str_to_str(data.old_password), CONFIG.security.encoding
+        b64_str_to_str(data.old_password), security_encoding
     ):
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
@@ -115,7 +115,9 @@ def update_user_password(
 
 
 def logout_oauth_client(
-    authorization: str = Security(oauth2_scheme), db: Session = Depends(get_db)
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+    config: FidesConfig = get_config(),
 ) -> Optional[ClientDetail]:
     """
     Streamlined oauth checks for logout.  Only raises an error if no authorization is supplied.
@@ -127,19 +129,19 @@ def logout_oauth_client(
 
     try:
         token_data = json.loads(
-            extract_payload(authorization, CONFIG.security.app_encryption_key)
+            extract_payload(authorization, config.security.app_encryption_key)
         )
     except jose.exceptions.JWEParseError:
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if (
-        not client_id or client_id == CONFIG.security.oauth_root_client_id
+        not client_id or client_id == config.security.oauth_root_client_id
     ):  # The root client is not a persisted object
         return None
 
     client = ClientDetail.get(
-        db, object_id=client_id, config=CONFIG, scopes=SCOPE_REGISTRY
+        db, object_id=client_id, config=config, scopes=SCOPE_REGISTRY
     )
 
     return client

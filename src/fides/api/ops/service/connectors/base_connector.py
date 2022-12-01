@@ -10,7 +10,6 @@ from fides.api.ops.service.connectors.query_config import QueryConfig
 from fides.api.ops.util.collection_util import Row
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
 logger = logging.getLogger(__name__)
 
@@ -31,11 +30,11 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     connector.test_connection()
     """
 
-    def __init__(self, configuration: ConnectionConfig):
+    def __init__(self, configuration: ConnectionConfig, dev_mode: bool=get_config().dev_mode):
         self.configuration = configuration
         # If Fidesops is running in dev mode, it's OK to show
         # parameters inside queries for debugging purposes.
-        self.hide_parameters = not CONFIG.dev_mode
+        self.hide_parameters = not dev_mode
         self.db_client: Optional[DB_CONNECTOR_TYPE] = None
 
     @abstractmethod

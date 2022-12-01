@@ -46,11 +46,10 @@ from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
-CONFIG = get_config()
 logger = logging.getLogger(__name__)
 
 
@@ -63,9 +62,10 @@ def create_consent_request(
     *,
     db: Session = Depends(get_db),
     data: Identity,
+    config: FidesConfig=get_config(),
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
-    if not CONFIG.redis.enabled:
+    if not config.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
@@ -96,7 +96,7 @@ def create_consent_request(
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if config.execution.subject_identity_verification_required:
         try:
             send_verification_code_to_user(db, consent_request, data)
         except MessageDispatchException as exc:
@@ -167,11 +167,11 @@ def consent_request_verify(
     },
 )
 def get_consent_preferences_no_id(
-    *, db: Session = Depends(get_db), consent_request_id: str
+    *, db: Session = Depends(get_db), consent_request_id: str, config: FidesConfig=get_config()
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if config.execution.subject_identity_verification_required:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Retrieving consent preferences without identity verification is "
@@ -273,6 +273,7 @@ def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
     verification_code: Optional[str],
+    config: FidesConfig=get_config()
 ) -> ProvidedIdentity:
     """Verifies the consent request and verification code, then return the ProvidedIdentity if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(
@@ -284,7 +285,7 @@ def _get_consent_request_and_provided_identity(
             status_code=HTTP_404_NOT_FOUND, detail="Consent request not found"
         )
 
-    if CONFIG.execution.subject_identity_verification_required:
+    if config.execution.subject_identity_verification_required:
         try:
             consent_request.verify_identity(verification_code)
         except IdentityVerificationException as exc:

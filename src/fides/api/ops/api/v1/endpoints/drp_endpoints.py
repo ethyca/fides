@@ -43,11 +43,10 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
-from fides.ctl.core.config import get_config
+from fides.ctl.core.config import FidesConfig, get_config
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
-CONFIG = get_config()
 
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
@@ -62,13 +61,14 @@ async def create_drp_privacy_request(
     cache: FidesopsRedis = Depends(deps.get_cache),
     db: Session = Depends(deps.get_db),
     data: DrpPrivacyRequestCreate,
+    config: FidesConfig = get_config(),
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Given a drp privacy request body, create and execute
     a corresponding Fidesops PrivacyRequest
     """
 
-    jwt_key = CONFIG.security.drp_jwt_secret
+    jwt_key = config.security.drp_jwt_secret
     if jwt_key is None:
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,

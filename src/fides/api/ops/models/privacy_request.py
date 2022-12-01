@@ -72,7 +72,6 @@ from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-CONFIG = get_config()
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -133,14 +132,17 @@ class PrivacyRequestStatus(str, EnumType):
     error = "error"
 
 
-def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
+def generate_request_callback_jwe(
+    webhook: PolicyPreWebhook,
+    app_encryption_key: str = get_config().security.app_encryption_key,
+) -> str:
     """Generate a JWE to be used to resume privacy request execution."""
     jwe = WebhookJWE(
         webhook_id=webhook.id,
         scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
         iat=datetime.now().isoformat(),
     )
-    return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
+    return generate_jwe(json.dumps(jwe.dict()), app_encryption_key)
 
 
 class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
@@ -764,7 +766,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                get_config().security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )

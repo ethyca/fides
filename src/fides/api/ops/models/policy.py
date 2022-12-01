@@ -25,8 +25,6 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.ctl.core.config import get_config
 
-CONFIG = get_config()
-
 
 class CurrentStep(EnumType):
     pre_webhooks = "pre_webhooks"
@@ -232,7 +230,7 @@ class Rule(Base):
         MutableDict.as_mutable(
             StringEncryptedType(
                 JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
+                get_config().security.app_encryption_key,
                 AesGcmEngine,
                 "pkcs5",
             )
