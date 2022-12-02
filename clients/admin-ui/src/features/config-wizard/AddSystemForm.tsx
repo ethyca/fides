@@ -78,6 +78,7 @@ const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
           position="absolute"
           left={iconButtonSize - 12}
           top={-1}
+          data-testid="cluster-health-indicator"
         />
       </HStack>
       <Text>Data Flow Scan</Text>
