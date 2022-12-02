@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 import pytest
 from pydantic import ValidationError
@@ -9,6 +9,7 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.schemas.dataset import FidesopsDatasetReference
 from fides.api.ops.schemas.saas.saas_config import (
     ConnectorParam,
+    Endpoint,
     ParamValue,
     SaaSConfig,
     SaaSRequest,
@@ -181,11 +182,12 @@ def test_saas_config_ignore_errors_param(saas_example_config: Dict[str, Dict]):
         end for end in saas_config.endpoints if end.name == "conversations"
     )
     # Specified on collections read endpoint
-    assert collections_endpoint.requests["read"].ignore_errors
+    assert collections_endpoint.requests.read.ignore_errors
 
     member_endpoint = next(end for end in saas_config.endpoints if end.name == "member")
     # Not specified on member read endpoint - defaults to False
-    assert not member_endpoint.requests["read"].ignore_errors
+    for read_request in member_endpoint.requests.read:
+        assert not read_request.ignore_errors
 
 
 @pytest.mark.unit_saas
@@ -246,5 +248,157 @@ class TestConnectorParam:
             )
         assert (
             "The default_value for the account_types connector_param must be a single value when multiselect is not enabled, not a list"
+            in str(exc.value)
+        )
+
+    def test_no_grouped_inputs(self):
+        Endpoint(
+            name="tickets",
+            requests={
+                "read": [
+                    SaaSRequest(
+                        method="GET",
+                        path="/tickets",
+                        param_values=[ParamValue(name="email", identity="email")],
+                    ),
+                    SaaSRequest(
+                        method="GET",
+                        path="/tickets",
+                        param_values=[
+                            ParamValue(name="phone", identity="phone"),
+                        ],
+                    ),
+                ],
+            },
+        )
+
+    def test_matching_grouped_inputs(self):
+        Endpoint(
+            name="tickets",
+            requests={
+                "read": [
+                    SaaSRequest(
+                        method="GET",
+                        path="/tickets",
+                        grouped_inputs=["a", "b"],
+                        param_values=[
+                            ParamValue(
+                                name="a",
+                                references=[
+                                    FidesopsDatasetReference(
+                                        dataset="test_dataset",
+                                        field="table.a",
+                                        direction="from",
+                                    )
+                                ],
+                            ),
+                            ParamValue(
+                                name="b",
+                                references=[
+                                    FidesopsDatasetReference(
+                                        dataset="test_dataset",
+                                        field="table.b",
+                                        direction="from",
+                                    )
+                                ],
+                            ),
+                        ],
+                    ),
+                    SaaSRequest(
+                        method="GET",
+                        path="/tickets",
+                        grouped_inputs=["a", "b"],
+                        param_values=[
+                            ParamValue(
+                                name="a",
+                                references=[
+                                    FidesopsDatasetReference(
+                                        dataset="test_dataset",
+                                        field="table.a",
+                                        direction="from",
+                                    )
+                                ],
+                            ),
+                            ParamValue(
+                                name="b",
+                                references=[
+                                    FidesopsDatasetReference(
+                                        dataset="test_dataset",
+                                        field="table.b",
+                                        direction="from",
+                                    )
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            },
+        )
+
+    def test_mismatching_grouped_inputs(self):
+        with pytest.raises(ValidationError) as exc:
+            Endpoint(
+                name="tickets",
+                requests={
+                    "read": [
+                        SaaSRequest(
+                            method="GET",
+                            path="/tickets",
+                            grouped_inputs=["a", "b"],
+                            param_values=[
+                                ParamValue(
+                                    name="a",
+                                    references=[
+                                        FidesopsDatasetReference(
+                                            dataset="test_dataset",
+                                            field="table.a",
+                                            direction="from",
+                                        )
+                                    ],
+                                ),
+                                ParamValue(
+                                    name="b",
+                                    references=[
+                                        FidesopsDatasetReference(
+                                            dataset="test_dataset",
+                                            field="table.b",
+                                            direction="from",
+                                        )
+                                    ],
+                                ),
+                            ],
+                        ),
+                        SaaSRequest(
+                            method="GET",
+                            path="/tickets",
+                            grouped_inputs=["b", "c"],
+                            param_values=[
+                                ParamValue(
+                                    name="b",
+                                    references=[
+                                        FidesopsDatasetReference(
+                                            dataset="test_dataset",
+                                            field="table.b",
+                                            direction="from",
+                                        )
+                                    ],
+                                ),
+                                ParamValue(
+                                    name="c",
+                                    references=[
+                                        FidesopsDatasetReference(
+                                            dataset="test_dataset",
+                                            field="table.c",
+                                            direction="from",
+                                        )
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
+                },
+            )
+        assert (
+            "The grouped_input values for every read request must be the same"
             in str(exc.value)
         )

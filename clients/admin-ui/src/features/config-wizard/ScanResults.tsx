@@ -15,18 +15,20 @@ import {
   ColumnDropdown,
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
-import { useFeatures } from "~/features/common/features.slice";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import { resolveLink } from "~/features/common/nav/zone-config";
+import { useInterzoneNav } from "~/features/common/hooks/useInterzoneNav";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import WarningModal from "~/features/common/WarningModal";
-import { useUpsertSystemsMutation } from "~/features/system";
+import {
+  setSystemsToClassify,
+  useUpsertSystemsMutation,
+} from "~/features/system";
 import { System } from "~/types/api";
 
 import {
   changeStep,
-  chooseSystemsForReview,
+  reset,
   selectAddSystemsMethod,
   selectSystemsForReview,
 } from "./config-wizard.slice";
@@ -42,6 +44,7 @@ const ScanResults = () => {
   const systems = useAppSelector(selectSystemsForReview);
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { systemOrDatamapRoute } = useInterzoneNav();
 
   const {
     isOpen: isWarningOpen,
@@ -50,14 +53,24 @@ const ScanResults = () => {
   } = useDisclosure();
   const [upsertSystems] = useUpsertSystemsMutation();
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
-  const features = useFeatures();
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
   const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
 
+  /**
+   * Wrapper around router.push which also cleans up the config wizard state
+   * so that if we navigate back, the flow will start over. This is useful here
+   * as this is the last step of the wizard, so when we navigate away, we can
+   * reset the state.
+   */
+  const navigateAndReset = (route: string) => {
+    router.push(route).then(() => {
+      dispatch(reset());
+    });
+  };
+
   const confirmRegisterSelectedSystems = async () => {
-    dispatch(chooseSystemsForReview(selectedSystems.map((s) => s.fides_key)));
     const response = await upsertSystems(selectedSystems);
 
     if (isErrorResult(response)) {
@@ -66,20 +79,14 @@ const ScanResults = () => {
 
     /*
      * Eventually, all scanners will go through some sort of classify flow.
-     * But for now, only the runtime scanner does
+     * But for now, only the data flow scanner does
      */
-    if (method === SystemMethods.RUNTIME) {
-      return router.push("/classify-systems");
+    if (method === SystemMethods.DATA_FLOW) {
+      dispatch(setSystemsToClassify(selectedSystems));
+      return navigateAndReset("/classify-systems");
     }
 
-    const datamapRoute = resolveLink({
-      href: "/datamap",
-      basePath: "/",
-    });
-
-    return features.plus
-      ? router.push(datamapRoute.href)
-      : router.push("/system");
+    return navigateAndReset(systemOrDatamapRoute);
   };
 
   const handleSubmit = () => {
@@ -93,9 +100,6 @@ const ScanResults = () => {
   const handleCancel = () => {
     dispatch(changeStep(2));
   };
-
-  // TODO: Store the region the user submitted through the form.
-  const region = "the specified region";
 
   const warningMessage = (
     <Text color="gray.500" mb={3}>
@@ -112,39 +116,59 @@ const ScanResults = () => {
           Scan results
         </Heading>
 
-        <Box>
-          <Text>
-            Below are search results for {region}. Please select and register
-            the systems you would like to maintain in your mapping and reports.
-          </Text>
-          <Box display="flex" justifyContent="end">
-            <ColumnDropdown
-              allColumns={ALL_COLUMNS}
-              selectedColumns={selectedColumns}
-              onChange={setSelectedColumns}
+        {systems.length === 0 ? (
+          <>
+            <Text data-testid="no-results">
+              No results were found for your infrastructure scan.
+            </Text>
+            <HStack>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                data-testid="back-btn"
+              >
+                Back
+              </Button>
+            </HStack>
+          </>
+        ) : (
+          <>
+            <Box>
+              <Text>
+                Below are the results of your infrastructure scan. To continue,
+                select the systems you would like registered in your data map
+                and reports.
+              </Text>
+              <Box display="flex" justifyContent="end">
+                <ColumnDropdown
+                  allColumns={ALL_COLUMNS}
+                  selectedColumns={selectedColumns}
+                  onChange={setSelectedColumns}
+                />
+              </Box>
+            </Box>
+            <SystemsCheckboxTable
+              allSystems={systems}
+              checked={selectedSystems}
+              onChange={setSelectedSystems}
+              columns={selectedColumns}
             />
-          </Box>
-        </Box>
-        <SystemsCheckboxTable
-          allSystems={systems}
-          checked={selectedSystems}
-          onChange={setSelectedSystems}
-          columns={selectedColumns}
-        />
 
-        <HStack>
-          <Button variant="outline" onClick={handleCancel}>
-            Back
-          </Button>
-          <Button
-            variant="primary"
-            isDisabled={selectedSystems.length === 0}
-            data-testid="register-btn"
-            onClick={handleSubmit}
-          >
-            Register selected systems
-          </Button>
-        </HStack>
+            <HStack>
+              <Button variant="outline" onClick={handleCancel}>
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                isDisabled={selectedSystems.length === 0}
+                data-testid="register-btn"
+                onClick={handleSubmit}
+              >
+                Register selected systems
+              </Button>
+            </HStack>
+          </>
+        )}
       </Stack>
 
       <WarningModal

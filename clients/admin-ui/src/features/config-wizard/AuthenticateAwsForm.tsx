@@ -21,7 +21,6 @@ import {
 } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
-  Dataset,
   GenerateResponse,
   GenerateTypes,
   System,
@@ -40,11 +39,10 @@ import {
   DOCS_URL_AWS_PERMISSIONS,
   DOCS_URL_IAM_POLICY,
 } from "./constants";
+import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
-
-const isSystem = (sd: System | Dataset): sd is System => "system_type" in sd;
 
 const initialValues = {
   aws_access_key_id: "",
@@ -133,7 +131,9 @@ const AuthenticateAwsForm = () => {
               />
             ) : null}
 
-            {scannerError ? <ScannerError error={scannerError} /> : null}
+            {scannerError ? (
+              <ScannerError error={scannerError} scanType="aws" />
+            ) : null}
             {!isSubmitting && !scannerError ? (
               <>
                 <Heading size="lg">Authenticate Scanner</Heading>

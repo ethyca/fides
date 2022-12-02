@@ -1,6 +1,7 @@
 import {
   CONNECTION_STRING,
   stubDatasetCrud,
+  stubHomePage,
   stubPlus,
 } from "cypress/support/stubs";
 
@@ -19,7 +20,7 @@ describe("Datasets with Fides Classify", () => {
   beforeEach(() => {
     stubDatasetCrud();
     stubPlus(true);
-    cy.intercept("GET", "/api/v1/plus/classify", {
+    cy.intercept("GET", "/api/v1/plus/classify?resource_type=datasets", {
       fixture: "classify/list.json",
     }).as("getClassifyList");
     cy.visit("/dataset/new");
@@ -33,6 +34,22 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("input-classify").find("input").should("be.checked");
       cy.getByTestId("input-classify").click();
       cy.getByTestId("input-classify").find("input").should("not.be.checked");
+    });
+
+    it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
+      stubHomePage();
+      cy.visit("/");
+      cy.getByTestId("nav-link-Datasets").click();
+      cy.wait("@getDatasets");
+      cy.getByTestId("dataset-table");
+      cy.getByTestId("dataset-row-demo_users_dataset_4");
+      cy.url().should("contain", "/dataset");
+
+      cy.getByTestId("dataset-table__status-table-header").should(
+        "have.text",
+        "Status"
+      );
+      cy.getByTestId("classification-status-badge").should("exist");
     });
 
     it("Classifies the dataset after generating it", () => {
@@ -171,7 +188,7 @@ describe("Datasets with Fides Classify", () => {
       cy.intercept("PUT", "/api/v1/dataset/*", {
         fixture: "classify/dataset-in-review.json",
       }).as("putDataset");
-      cy.intercept("PUT", "/api/v1/plus/classify", {
+      cy.intercept("PUT", "/api/v1/plus/classify?resource_type=datasets", {
         fixture: "classify/update.json",
       }).as("putClassify");
     });
@@ -228,11 +245,12 @@ describe("Datasets with Fides Classify", () => {
       // The plain list of categories should be replaced with the classified selector.
       cy.getByTestId("selected-categories").should("not.exist");
 
-      // Select a suggested category.
-      cy.getByTestId("classified-select")
-        .click()
-        .contains("user.contact.phone_number (80%)")
-        .click();
+      // The highest-scoring category should be shown.
+      cy.getByTestId("classified-select").contains("user.device");
+
+      // Select a suggested category from the dropdown.
+      cy.getByTestId("classified-select").click("right");
+      cy.get("[role=button]").contains("user.contact.phone_number").click();
 
       // Select a category from the taxonomy.
       cy.getByTestId("data-category-dropdown").click();
@@ -242,10 +260,8 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("data-category-done-btn").click();
 
       // Both selected categories should be rendered.
-      cy.getByTestId("classified-select").contains(
-        "user.contact.phone_number (80%)"
-      );
-      cy.getByTestId("classified-select").contains("user.location (N/A)");
+      cy.getByTestId("classified-select").contains("user.contact.phone_number");
+      cy.getByTestId("classified-select").contains("user.location");
 
       // Both selected categories should be submitted on the dataset.
       cy.getByTestId("save-btn");
@@ -253,6 +269,7 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
         expect(body.collections[0].fields[1].data_categories).to.eql([
+          "user.device",
           "user.contact.phone_number",
           "user.location",
         ]);

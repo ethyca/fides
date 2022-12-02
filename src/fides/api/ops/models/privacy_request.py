@@ -288,7 +288,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         """
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
-            if value is not None:
+            if value:
                 hashed_value = ProvidedIdentity.hash_value(value)
                 ProvidedIdentity.create(
                     db=db,

@@ -10,6 +10,7 @@ import {
 
 import DocsLink from "~/features/common/DocsLink";
 import { ParsedError } from "~/features/common/helpers";
+import { ValidTargets } from "~/types/api";
 
 import { DOCS_URL_AWS_PERMISSIONS, DOCS_URL_ISSUES } from "./constants";
 
@@ -25,7 +26,13 @@ const ErrorLog = ({ message }: { message: string }) => (
   </>
 );
 
-const ScannerError = ({ error }: { error: ParsedError }) => (
+const ScannerError = ({
+  error,
+  scanType = "",
+}: {
+  error: ParsedError;
+  scanType?: string;
+}) => (
   <Stack data-testid="scanner-error" spacing="4">
     <HStack>
       <Badge color="white" bg="red.500" py="2">
@@ -36,7 +43,7 @@ const ScannerError = ({ error }: { error: ParsedError }) => (
       </Heading>
     </HStack>
 
-    {error.status === 403 ? (
+    {error.status === 403 && scanType === ValidTargets.AWS ? (
       <>
         <Text data-testid="permission-msg">
           Fides was unable to scan AWS. It appears that the credentials were
