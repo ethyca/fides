@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import requests
-from fideslib.oauth.schemas.user import UserLogin
+from fides.lib.oauth.schemas.user import UserLogin
 from loguru import logger as log
 from requests import PreparedRequest, Request, RequestException, Session
 
