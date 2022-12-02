@@ -39,6 +39,7 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.lib.db.base_class import FidesBase
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.logger import Pii
@@ -79,7 +80,7 @@ async def create_drp_privacy_request(
     policy: Optional[Policy] = Policy.get_by(
         db=db,
         field="drp_action",
-        value=data.exercise[0],
+        value=data.exercise[0].value,
     )
 
     if not policy:

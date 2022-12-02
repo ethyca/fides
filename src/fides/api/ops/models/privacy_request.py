@@ -65,7 +65,6 @@ from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
 from fides.lib.db.base import Base
-from fides.lib.db.base_class import FidesBase
 from fides.lib.models.audit_log import AuditLog
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
@@ -145,8 +144,9 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
 
 class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
-    The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing the request's progression within the Fides system.
+    The DB ORM model to describe current and historic PrivacyRequests.
+    A privacy request is a database record representing the request's
+    progression within the Fides system.
     """
 
     external_id = Column(String, index=True)
@@ -227,7 +227,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         return delta.days
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> PrivacyRequest:
         """
         Check whether this object has been passed a `requested_at` value. Default to
         the current datetime if not.
@@ -235,17 +235,18 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         if data.get("requested_at", None) is None:
             data["requested_at"] = datetime.utcnow()
 
-        policy: Policy = Policy.get_by(
+        policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="id",
             value=data["policy_id"],
         )
 
-        if policy.execution_timeframe:
-            requested_at = data["requested_at"]
-            if isinstance(requested_at, str):
-                requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
-            data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
+        if policy:
+            if policy.execution_timeframe:
+                requested_at = data["requested_at"]
+                if isinstance(requested_at, str):
+                    requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
+                data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
 
         return super().create(db=db, data=data)
 

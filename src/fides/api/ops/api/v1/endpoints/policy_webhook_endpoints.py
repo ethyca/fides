@@ -50,8 +50,8 @@ def get_policy_pre_execution_webhooks(
     params: Params = Depends(),
 ) -> AbstractPage[PolicyPreWebhook]:
     """
-    Return a paginated list of all Pre-Execution Webhooks that will run in order for the Policy **before** a
-    Privacy Request is executed.
+    Return a paginated list of all Pre-Execution Webhooks that will
+    run in order for the Policy **before** a Privacy Request is executed.
     """
     policy = get_policy_or_error(db, policy_key)
 

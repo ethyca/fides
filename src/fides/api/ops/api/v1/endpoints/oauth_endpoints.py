@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
@@ -202,7 +202,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     """
 
     # find authentication request by state
-    authentication_request: AuthenticationRequest = AuthenticationRequest.get_by(
+    authentication_request: Optional[AuthenticationRequest] = AuthenticationRequest.get_by(
         db, field="state", value=state
     )
     if not authentication_request:

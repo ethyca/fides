@@ -6,3 +6,10 @@ from fides.lib.models.audit_log import AuditLog
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
+
+# Re-export the models explicitly
+Base = Base
+AuditLog = AuditLog
+ClientDetail = ClientDetail
+FidesUser = FidesUser
+FidesUserPermissions = FidesUserPermissions
