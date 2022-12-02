@@ -185,7 +185,6 @@ async def create_privacy_request(
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
     or report failure and execute them within the Fidesops system.
-
     You cannot update privacy requests after they've been created.
     """
     return _create_privacy_request(db, data, False)
@@ -205,7 +204,6 @@ async def create_privacy_request_authenticated(
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
     or report failure and execute them within the Fidesops system.
-
     You cannot update privacy requests after they've been created.
 
     This route requires authentication instead of using verification codes.
@@ -1419,7 +1417,7 @@ def privacy_request_data_transfer(
         dataset_graph.data_category_field_mapping,
     )
 
-    if not filtered_results:
+    if filtered_results is None:
         raise HTTPException(
             status_code=404,
             detail=f"No results found for privacy request {privacy_request_id}",
@@ -1614,6 +1612,8 @@ def _create_privacy_request(
                 privacy_request_data.encryption_key,
                 None,
             )
+
+            check_and_dispatch_error_notifications(db=db)
 
             if (
                 not authenticated

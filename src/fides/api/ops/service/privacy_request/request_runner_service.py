@@ -188,7 +188,7 @@ def upload_access_results(  # pylint: disable=R0912
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
-    fides_connectors_by_dataset: List[Tuple[str, ConnectionConfig]],
+    fides_connector_datasets: Set[str],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
@@ -209,33 +209,13 @@ def upload_access_results(  # pylint: disable=R0912
             access_result,
             target_categories,
             dataset_graph.data_category_field_mapping,
+            rule.key,
+            fides_connector_datasets,
         )
 
         filtered_results.update(
             manual_data
         )  # Add manual data directly to each upload packet
-
-        if fides_connectors_by_dataset:
-            for child in fides_connectors_by_dataset:
-                child_results: Optional[
-                    List[Dict[str, Optional[List[Row]]]]
-                ] = _retrieve_child_results(child, rule.key, access_result)
-
-                if child_results:
-                    for result in child_results:
-                        try:
-                            filtered_results.update(result)  # type: ignore
-                        except ValueError:
-                            for key, value in result.items():
-                                filtered: Optional[
-                                    List[Dict[str, Optional[Any]]]
-                                ] = filtered_results.get(key)
-                                if not filtered:
-                                    filtered_results[key] = value  # type: ignore
-                                else:
-                                    if value:
-                                        logger.info("Appending child rows to %s", key)
-                                        filtered.extend(value)  # type: ignore
 
         logging.info(
             "Starting access request upload for rule %s for privacy request %s",
@@ -354,9 +334,9 @@ async def run_privacy_request(
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
-            fides_connectors_by_dataset: List[
-                Tuple[str, ConnectionConfig]
-            ] = filter_fides_connector_datasets(connection_configs)
+            fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
+                connection_configs
+            )
             access_result_urls: List[str] = []
 
             if can_run_checkpoint(
@@ -377,7 +357,7 @@ async def run_privacy_request(
                     dataset_graph,
                     privacy_request,
                     manual_webhook_results.manual_data,
-                    fides_connectors_by_dataset,
+                    fides_connector_datasets,
                 )
 
             if policy.get_rules_for_action(

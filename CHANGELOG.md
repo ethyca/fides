@@ -17,10 +17,15 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.0...main)
 
+### Changed
+
+* Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
 
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 * Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
@@ -34,10 +39,12 @@ The types of changes are:
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 * Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
 
+
 ### Changed
 
 * The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
 * Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
+* Retrieve child results during fides connector execution [#1967](https://github.com/ethyca/fides/pull/1967)
 
 ### Fixed
 

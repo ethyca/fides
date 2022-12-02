@@ -4357,6 +4357,97 @@ class TestCreatePrivacyRequestAuthenticated:
         assert approval_audit_log is not None
         assert approval_audit_log.user_id == "system"
         assert run_access_request_mock.called
+
+
+@pytest.mark.integration
+class TestPrivacyReqeustDataTransfer:
+    @pytest.mark.usefixtures("postgres_integration_db")
+    async def test_privacy_request_data_transfer(
+        self,
+        api_client: TestClient,
+        privacy_request,
+        generate_auth_header,
+        policy,
+        db,
+        postgres_example_test_dataset_config_read_access,
+    ):
+        pr = privacy_request.save(db=db)
+        merged_graph = postgres_example_test_dataset_config_read_access.get_graph()
+        graph = DatasetGraph(merged_graph)
+
+        # execute the privacy request to mimic the expected workflow on the "child"
+        # this will populate the access results in the cache, which is required for the
+        # transfer endpoint to work
+        await graph_task.run_access_request(
+            privacy_request,
+            policy,
+            graph,
+            ConnectionConfig.all(db=db),
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
+        rules = policy.get_rules_for_action(action_type=ActionType.access)
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key=rules[0].key)}",
+            headers=auth_header,
+        )
+
+        # assert we've got some of our expected data in the response,
+        # in the shape we expect
+        response_data: dict = response.json()
+        assert "postgres_example_test_dataset:address" in response_data.keys()
+        assert response_data["postgres_example_test_dataset:address"] == [
+            {
+                "city": "Exampletown",
+                "state": "NY",
+                "street": "Example Street",
+                "zip": "12345",
+                "house": 123,
+            },
+            {
+                "city": "Exampletown",
+                "state": "NY",
+                "street": "Example Lane",
+                "zip": "12321",
+                "house": 4,
+            },
+        ]
+        assert "postgres_example_test_dataset:customer" in response_data.keys()
+        assert response_data["postgres_example_test_dataset:customer"] == [
+            {"name": "John Customer", "email": "customer-1@example.com", "id": 1}
+        ]
+
+    def test_privacy_request_data_transfer_wrong_scope(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_request,
+        db,
+    ):
+        pr = privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}",
+            headers=auth_header,
+        )
+
+        assert response.status_code == 403
+
+    def test_privacy_request_data_transfer_not_authenticated(
+        self,
+        api_client: TestClient,
+        privacy_request,
+        db,
+    ):
+        pr = privacy_request.save(db)
+        response = api_client.get(
+            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}"
+        )
+
+        assert response.status_code == 401
+
 class TestCreatePrivacyRequestErrorNotification:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -4452,93 +4543,3 @@ class TestCreatePrivacyRequestErrorNotification:
         response = api_client.put(url, json=data, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == data
-
-
-@pytest.mark.integration
-class TestPrivacyReqeustDataTransfer:
-    @pytest.mark.usefixtures("postgres_integration_db")
-    async def test_privacy_request_data_transfer(
-        self,
-        api_client: TestClient,
-        privacy_request,
-        generate_auth_header,
-        policy,
-        db,
-        postgres_example_test_dataset_config_read_access,
-    ):
-        pr = privacy_request.save(db=db)
-        merged_graph = postgres_example_test_dataset_config_read_access.get_graph()
-        graph = DatasetGraph(merged_graph)
-
-        # execute the privacy request to mimic the expected workflow on the "child"
-        # this will populate the access results in the cache, which is required for the
-        # transfer endpoint to work
-        await graph_task.run_access_request(
-            privacy_request,
-            policy,
-            graph,
-            ConnectionConfig.all(db=db),
-            {"email": "customer-1@example.com"},
-            db,
-        )
-
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_TRANSFER])
-        rules = policy.get_rules_for_action(action_type=ActionType.access)
-        response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key=rules[0].key)}",
-            headers=auth_header,
-        )
-
-        # assert we've got some of our expected data in the response,
-        # in the shape we expect
-        response_data: dict = response.json()
-        assert "postgres_example_test_dataset:address" in response_data.keys()
-        assert response_data["postgres_example_test_dataset:address"] == [
-            {
-                "city": "Exampletown",
-                "state": "NY",
-                "street": "Example Street",
-                "zip": "12345",
-                "house": 123,
-            },
-            {
-                "city": "Exampletown",
-                "state": "NY",
-                "street": "Example Lane",
-                "zip": "12321",
-                "house": 4,
-            },
-        ]
-        assert "postgres_example_test_dataset:customer" in response_data.keys()
-        assert response_data["postgres_example_test_dataset:customer"] == [
-            {"name": "John Customer", "email": "customer-1@example.com", "id": 1}
-        ]
-
-    def test_privacy_request_data_transfer_wrong_scope(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        privacy_request,
-        db,
-    ):
-        pr = privacy_request.save(db)
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}",
-            headers=auth_header,
-        )
-
-        assert response.status_code == 403
-
-    def test_privacy_request_data_transfer_not_authenticated(
-        self,
-        api_client: TestClient,
-        privacy_request,
-        db,
-    ):
-        pr = privacy_request.save(db)
-        response = api_client.get(
-            f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=pr.id, rule_key='test_rule')}"
-        )
-
-        assert response.status_code == 401
