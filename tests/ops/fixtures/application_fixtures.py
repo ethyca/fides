@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
+from toml import load as load_toml
 
 import pydash
 import pytest
@@ -53,7 +54,8 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.ctl.core.config import get_config, load_file, load_toml
+from fides.ctl.core.config import get_config
+from fides.ctl.core.config.utils import load_file
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
