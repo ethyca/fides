@@ -25,6 +25,9 @@ describe("Dataset", () => {
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
+
+      cy.getByTestId("dataset-table__status-table-header").should("not.exist");
+      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
     it("Can navigate to the datasets view via URL", () => {
