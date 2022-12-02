@@ -62,7 +62,7 @@ def create_consent_request(
     *,
     db: Session = Depends(get_db),
     data: Identity,
-    config: FidesConfig=get_config(),
+    config: FidesConfig = get_config(),
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
     if not config.redis.enabled:
@@ -167,7 +167,10 @@ def consent_request_verify(
     },
 )
 def get_consent_preferences_no_id(
-    *, db: Session = Depends(get_db), consent_request_id: str, config: FidesConfig=get_config()
+    *,
+    db: Session = Depends(get_db),
+    consent_request_id: str,
+    config: FidesConfig = get_config(),
 ) -> ConsentPreferences:
     """Returns the current consent preferences if successful."""
 
@@ -273,7 +276,7 @@ def _get_consent_request_and_provided_identity(
     db: Session,
     consent_request_id: str,
     verification_code: Optional[str],
-    config: FidesConfig=get_config()
+    config: FidesConfig = get_config(),
 ) -> ProvidedIdentity:
     """Verifies the consent request and verification code, then return the ProvidedIdentity if successful."""
     consent_request = ConsentRequest.get_by_key_or_id(

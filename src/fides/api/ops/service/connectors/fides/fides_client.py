@@ -19,7 +19,6 @@ from fides.api.ops.service.privacy_request.request_service import (
     poll_server_for_completion,
 )
 from fides.api.ops.util.wrappers import sync
-from fides.ctl.core.config import get_config
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

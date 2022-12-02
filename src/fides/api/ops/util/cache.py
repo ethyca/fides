@@ -95,7 +95,7 @@ class FidesopsRedis(Redis):
         return None
 
 
-def get_cache(config: FidesConfig=get_config()) -> FidesopsRedis:
+def get_cache(config: FidesConfig = get_config()) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
     global _connection  # pylint: disable=W0603
     if _connection is None:

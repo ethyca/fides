@@ -24,7 +24,7 @@ def domo_user_update(
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     secrets: Dict[str, Any],
-    dev_mode: bool=get_config().dev_mode
+    dev_mode: bool = get_config().dev_mode,
 ) -> int:
     rows_updated = 0
     # each update_params dict correspond to a record that needs to be updated
