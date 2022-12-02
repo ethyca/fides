@@ -1,7 +1,6 @@
 {
-  "core_fidesctl_version": "1.9.6",
-  "fidesctl_plus_server": "healthy",
-  "fidescls_version": "1.0.3",
+  "core_fides_version": "2.2.0",
+  "fidesplus_server": "healthy",
   "system_scanner": {
     "enabled": true,
     "cluster_health": "healthy",
