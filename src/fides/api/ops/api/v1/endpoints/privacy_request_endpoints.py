@@ -39,6 +39,8 @@ from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
@@ -125,7 +127,6 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.service.messaging.message_dispatch_service import (
-    check_and_dispatch_error_notifications,
     dispatch_message_task,
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
