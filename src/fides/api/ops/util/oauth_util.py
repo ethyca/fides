@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 
 import json
 from datetime import datetime
@@ -43,7 +44,7 @@ async def get_current_user(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     oauth_root_client_id: str = get_config().security.oauth_root_client_id,
-    root_username: str | None = get_config().security.root_username,
+    root_username: Optional[str] = get_config().security.root_username,
 ) -> FidesUser:
     """A wrapper around verify_oauth_client that returns that client's user if one exists."""
     client = await verify_oauth_client(
