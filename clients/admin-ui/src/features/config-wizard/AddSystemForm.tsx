@@ -68,18 +68,20 @@ const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
           data-testid="data-flow-scan-btn"
           disabled={disabled}
         />
-        <ConnectedCircle
-          connected={isClusterHealthy}
-          title={
-            isClusterHealthy
-              ? "Cluster is connected and healthy"
-              : `Cluster is ${clusterHealth}`
-          }
-          position="absolute"
-          left={iconButtonSize - 12}
-          top={-1}
-          data-testid="cluster-health-indicator"
-        />
+        {dataFlowScanning ? (
+          <ConnectedCircle
+            connected={isClusterHealthy}
+            title={
+              isClusterHealthy
+                ? "Cluster is connected and healthy"
+                : `Cluster is ${clusterHealth}`
+            }
+            position="absolute"
+            left={iconButtonSize - 12}
+            top={-1}
+            data-testid="cluster-health-indicator"
+          />
+        ) : null}
       </HStack>
       <Text>Data Flow Scan</Text>
       <Tooltip fontSize="md" label={tooltip} placement="right">

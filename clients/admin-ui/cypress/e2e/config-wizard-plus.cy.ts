@@ -52,6 +52,7 @@ describe("Config wizard with plus settings", () => {
       cy.wait("@getPlusHealth");
       cy.getByTestId("add-system-form");
       cy.getByTestId("data-flow-scan-btn").should("be.disabled");
+      cy.getByTestId("cluster-health-indicator").should("not.exist");
     });
 
     it("Can show the scanner as unhealthy", () => {
