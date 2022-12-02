@@ -1,18 +1,54 @@
+import os
 from os import getenv
-from typing import Any, Dict, Union
+from pathlib import Path
+from typing import Any, Dict, List, Union
 
 from click import echo
 from toml import dump, load
 
 from fides.ctl.core.utils import echo_red
-from fides.lib.core.config import load_file
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
+logger = logging.getLogger(__name__)
 
 
 def get_test_mode() -> bool:
     test_mode = getenv("FIDES__TEST_MODE", "").lower() == "true"
     return test_mode
+
+
+def load_file(file_names: Union[List[Path], List[str]]) -> str:
+    """Load a file from the first matching location.
+
+    In order, will check:
+    - A path set at ENV variable FIDES__CONFIG_PATH
+    - The current directory
+    - The parent directory
+    - Two directories up for the current directory
+    - The parent_directory/.fides
+    - users home (~) directory
+    raises FileNotFound if none is found
+    """
+
+    possible_directories = [
+        os.getenv("FIDES__CONFIG_PATH"),
+        os.curdir,
+        os.pardir,
+        os.path.abspath(os.path.join(os.curdir, "..", "..")),
+        os.path.join(os.pardir, ".fides"),
+        os.path.expanduser("~"),
+    ]
+
+    directories = [d for d in possible_directories if d]
+
+    for dir_str in directories:
+        for file_name in file_names:
+            possible_location = os.path.join(dir_str, file_name)
+            if possible_location and os.path.isfile(possible_location):
+                logger.info("Loading file %s from %s", file_name, dir_str)
+                return possible_location
+
+    raise FileNotFoundError
 
 
 def get_config_from_file(

@@ -8,7 +8,8 @@ from typing import Dict, Optional
 from pydantic import PostgresDsn, validator
 
 from fides.ctl.core.config.utils import get_test_mode
-from fides.lib.core.config import FidesSettings
+
+from .fides_settings import FidesSettings
 
 logger = logging.getLogger(__name__)
 

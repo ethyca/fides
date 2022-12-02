@@ -26,7 +26,7 @@ from fides.api.ops.util.saas_util import (
     load_dataset,
     load_dataset_with_replacement,
 )
-from fides.lib.core.config import load_toml
+from fides.ctl.core.config.utils import load_toml
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"

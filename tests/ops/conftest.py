@@ -18,7 +18,7 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.ctl.core.api import db_action
 from fides.ctl.core.config import get_config
-from fides.lib.core.config import load_toml
+from fides.ctl.core.config.utils import load_toml
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

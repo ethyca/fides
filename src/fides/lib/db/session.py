@@ -7,7 +7,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
 from sqlalchemy.orm import Session, sessionmaker
 
-from fides.lib.core.config import FidesConfig
+from fides.ctl.core.config import FidesConfig
 from fides.lib.exceptions import MissingConfig
 
 logger = logging.getLogger(__name__)

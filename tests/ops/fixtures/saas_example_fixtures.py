@@ -15,7 +15,7 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
 from fides.api.ops.util.saas_util import load_config
-from fides.lib.core.config import load_toml
+from fides.ctl.core.config.utils import load_toml
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)

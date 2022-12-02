@@ -15,7 +15,7 @@ from fides.api.ops.service.connectors import (
     SnowflakeConnector,
     get_connector,
 )
-from fides.lib.core.config import load_toml
+from fides.ctl.core.config.utils import load_toml
 
 logger = logging.getLogger(__name__)
 

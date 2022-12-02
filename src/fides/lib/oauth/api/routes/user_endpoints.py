@@ -17,7 +17,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.lib.core.config import FidesConfig
+from fides.ctl.core.config import FidesConfig
 from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions

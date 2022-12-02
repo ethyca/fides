@@ -10,7 +10,6 @@ from typing import Any, Dict, MutableMapping, Optional, Tuple
 
 import toml
 from loguru import logger as log
-from pydantic import BaseModel
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -21,6 +20,7 @@ from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings
+from .fides_settings import FidesSettings
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
@@ -29,7 +29,7 @@ from .user_settings import UserSettings
 from .utils import DEFAULT_CONFIG_PATH, get_test_mode
 
 
-class FidesConfig(BaseModel):
+class FidesConfig(FidesSettings):
     """
     Composite class that encapsulates all of the config subsections.
     """

@@ -53,8 +53,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-from fides.ctl.core.config import get_config
-from fides.lib.core.config import load_file, load_toml
+from fides.ctl.core.config import get_config, load_file, load_toml
 from fides.lib.models.audit_log import AuditLog, AuditLogAction
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser

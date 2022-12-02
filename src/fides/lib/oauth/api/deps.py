@@ -4,21 +4,12 @@ from fastapi import Depends, Security
 from fastapi.security import SecurityScopes
 from sqlalchemy.orm import Session
 
-from fides.lib.core.config import FidesConfig
-from fides.lib.core.config import get_config as core_get_config
+from fides.ctl.core.config import get_config
 from fides.lib.db.session import get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.oauth.api.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.lib.oauth.oauth_util import verify_oauth_client as verify
 from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
-
-
-def get_config() -> FidesConfig:
-    """Returns the config settings.
-
-    This should be overridden by the installing package.
-    """
-    return core_get_config()
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -27,7 +18,7 @@ def get_db() -> Generator[Session, None, None]:
     This should be overridden by the installing package.
     """
     try:
-        SessionLocal = get_db_session(core_get_config())
+        SessionLocal = get_db_session(get_config())
         db = SessionLocal()
         yield db
     finally:
@@ -52,5 +43,5 @@ def verify_oauth_client(
     This is here because config values are needed, this dependency should be overridden
     by the installing library.
     """
-    config = core_get_config()
+    config = get_config()
     return verify(security_scopes, authorization, db=db, config=config)
