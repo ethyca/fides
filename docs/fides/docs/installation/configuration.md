@@ -95,6 +95,13 @@ Fides will filter out any sensitive configuration variables. The full list of va
 - `require_manual_request_approval`
 - `masking_strict`
 
+#### Notification settings
+
+- `send_request_completion_notification`
+- `send_request_receipt_notification`
+- `send_request_review_notification`
+- `notification_service_type`
+
 For more information, see the [API docs](../api/index.md).
 
 ## Configuration file
@@ -158,7 +165,7 @@ enabled = true
 
 The `fides.toml` file should specify the following variables:
 
-#### Posgtres database
+#### Postgres database
 
 | Name | Type | Default | Description |
 | :---- | :---- | :------- | :----------- |
@@ -256,6 +263,15 @@ The credentials section uses custom keys which can be referenced in certain comm
 |---|---|---|---|
 | `enabled` | bool | `True` | Toggle whether the Admin UI is served from `/`. |
 
+#### Notifications
+
+| Name | Type   | Default | Description                                                                                                       |
+|:---- |:-------|:--------|:------------------------------------------------------------------------------------------------------------------|
+| `send_request_completion_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request completion.                                |
+| `send_request_receipt_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request receipt.                                   |
+| `send_request_review_notification` | bool   | `False` | When set to `True`, enables subject notifications upon privacy request review.                                    |
+| `notification_service_type` | String | N/A     | Sets the notification service type used to send notifications. Accepts `mailgun`, `twilio_sms`, or `twilio_email`.|
+
 ## Set environment variables
 
 To configure environment variables for Fides, the following pattern is used:
@@ -282,7 +298,6 @@ The following environment variables are not included in the default `fides.toml`
 | `FIDES__HOT_RELOAD` | `False` | If `True`, the Fides server will reload code changes without needing to restart the server. This variable should always be set to `False` in production systems.|
 | `FIDES__DEV_MODE` | `False` | If `True`, the Fides server will log error tracebacks, and log details of third party requests. This variable should always be set to `False` in production systems.|
 | `FIDES_CONFIG_PATH` | None | If this is set to a path, that path will be used to load `.toml` files first. Any .toml files on this path will override any installed .toml files. |
-| `FIDES__DATABASE__SQLALCHEMY_DATABASE_URI` | None | An optional override for the URI used for the database connection, in the form of `postgresql://<user>:<password>@<hostname>:<port>/<database>`. |
 
 ## Celery configuration
 

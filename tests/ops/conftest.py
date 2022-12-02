@@ -16,6 +16,7 @@ from fideslib.cryptography.schemas.jwt import (
 from fideslib.db.session import Session, get_db_engine, get_db_session
 from fideslib.models.client import ClientDetail
 from fideslib.oauth.jwt import generate_jwe
+from httpx import AsyncClient
 from sqlalchemy.exc import IntegrityError
 
 from fides.api.main import app
@@ -30,6 +31,7 @@ from fides.ctl.core.config import get_config
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
 from .fixtures.email_fixtures import *
+from .fixtures.fides_connector_example_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
 from .fixtures.manual_webhook_fixtures import *
@@ -46,6 +48,7 @@ from .fixtures.saas.connection_template_fixtures import *
 from .fixtures.saas.datadog_fixtures import *
 from .fixtures.saas.domo_fixtures import *
 from .fixtures.saas.doordash_fixtures import *
+from .fixtures.saas.fullstory_fixtures import *
 from .fixtures.saas.hubspot_fixtures import *
 from .fixtures.saas.mailchimp_fixtures import *
 from .fixtures.saas.outreach_fixtures import *
@@ -57,6 +60,7 @@ from .fixtures.saas.segment_fixtures import *
 from .fixtures.saas.sendgrid_fixtures import *
 from .fixtures.saas.sentry_fixtures import *
 from .fixtures.saas.shopify_fixtures import *
+from .fixtures.saas.slack_enterprise_fixtures import *
 from .fixtures.saas.square_fixtures import *
 from .fixtures.saas.stripe_fixtures import *
 from .fixtures.saas.twilio_conversations_fixtures import *
@@ -138,6 +142,25 @@ def api_client() -> Generator:
     """Return a client used to make API requests"""
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture(scope="session")
+async def async_api_client() -> Generator:
+    """Return an async client used to make API requests"""
+    async with AsyncClient(
+        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+    ) as client:
+        yield client
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop() -> Generator:
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="function")

@@ -2,8 +2,8 @@
   {
     "status": "Complete",
     "organization_key": "default_organization",
-    "dataset_key": "vzmgr-service",
-    "dataset_name": "vzmgr-service",
+    "dataset_key": "fidesctl_system",
+    "dataset_name": "fidesctl_system",
     "target": "aws",
     "type": "systems",
     "id": "d7316228-4e2d-4424-be3b-9d03c44301a4",
@@ -13,8 +13,8 @@
   {
     "status": "Complete",
     "organization_key": "default_organization",
-    "dataset_key": "kube-dns",
-    "dataset_name": "kube-dns",
+    "dataset_key": "demo_analytics_system",
+    "dataset_name": "demo_analytics_system",
     "target": "aws",
     "type": "systems",
     "id": "b4148f8f-d097-4990-b775-0dd94e82cb9c",

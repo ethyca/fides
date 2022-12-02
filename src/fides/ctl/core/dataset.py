@@ -12,7 +12,13 @@ from fides.ctl.connectors.models import BigQueryConfig
 from fides.ctl.core.api_helpers import list_server_resources
 from fides.ctl.core.parse import parse
 
-from .utils import check_fides_key, echo_green, echo_red, get_db_engine
+from .utils import (
+    check_fides_key,
+    echo_green,
+    echo_red,
+    generate_unique_fides_key,
+    get_db_engine,
+)
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],
@@ -114,6 +120,21 @@ def create_db_dataset(schema_name: str, db_tables: Dict[str, List[str]]) -> Data
             for table_name, table in db_tables.items()
         ],
     )
+    return dataset
+
+
+def make_dataset_key_unique(
+    dataset: Dataset, database_host: str, database_name: str
+) -> Dataset:
+    """
+    Ensure the dataset has a repeatable unique ID appended to the end
+    to avoid naming collisions.
+    """
+
+    dataset.fides_key = generate_unique_fides_key(
+        dataset.fides_key, database_host, database_name
+    )
+    dataset.meta = {"database_host": database_host, "database_name": database_name}
     return dataset
 
 
@@ -279,7 +300,11 @@ def generate_db_datasets(connection_string: str) -> List[Dataset]:
     db_engine = get_db_engine(connection_string)
     db_schemas = get_db_schemas(engine=db_engine)
     db_datasets = create_db_datasets(db_schemas=db_schemas)
-    return db_datasets
+    unique_db_datasets = [
+        make_dataset_key_unique(dataset, db_engine.url.host, db_engine.url.database)
+        for dataset in db_datasets
+    ]
+    return unique_db_datasets
 
 
 def write_dataset_manifest(
@@ -319,4 +344,10 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
     bigquery_engine = get_bigquery_engine(bigquery_config)
     bigquery_schemas = get_db_schemas(engine=bigquery_engine)
     bigquery_datasets = create_db_datasets(db_schemas=bigquery_schemas)
-    return bigquery_datasets
+    unique_bigquery_datasets = [
+        make_dataset_key_unique(
+            dataset, bigquery_engine.url.host, bigquery_engine.url.database
+        )
+        for dataset in bigquery_datasets
+    ]
+    return unique_bigquery_datasets

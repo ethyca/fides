@@ -3,6 +3,7 @@ import {
   chakra,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   Input,
   ModalBody,
   ModalFooter,
@@ -231,15 +232,16 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
               >
+                <FormLabel>
+                  {action.identity_inputs.name === "required"
+                    ? "Name*"
+                    : "Name"}
+                </FormLabel>
                 <Input
                   id="name"
                   name="name"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.name === "required"
-                      ? "Name*"
-                      : "Name"
-                  }
+                  placeholder="Michael Brown"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.name}
@@ -252,16 +254,17 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
               >
+                <FormLabel>
+                  {action.identity_inputs.email === "required"
+                    ? "Email*"
+                    : "Email"}
+                </FormLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.email === "required"
-                      ? "Email*"
-                      : "Email"
-                  }
+                  placeholder="test-email@example.com"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
@@ -274,17 +277,18 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
+                <FormLabel>
+                  {action.identity_inputs.phone === "required"
+                    ? "Phone*"
+                    : "Phone"}
+                </FormLabel>
                 <Input
                   as={PhoneInput}
                   id="phone"
                   name="phone"
                   type="tel"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.phone === "required"
-                      ? "Phone*"
-                      : "Phone"
-                  }
+                  placeholder="+1 000 000 0000"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}

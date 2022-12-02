@@ -17,11 +17,12 @@ import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features.slice";
 import {
   AWSLogoIcon,
+  DataFlowScannerLogo,
   ManualSetupIcon,
   OktaLogoIcon,
   QuestionIcon,
-  RuntimeScannerLogo,
 } from "~/features/common/Icon";
+import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";
 import { ValidTargets } from "~/types/api";
 
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
@@ -36,17 +37,14 @@ const AddSystemForm = () => {
     <chakra.form w="100%" data-testid="add-system-form">
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Scan for Systems
+          Add Systems
         </Heading>
         <Accordion allowToggle border="transparent">
           <AccordionItem>
             {({ isExpanded }) => (
               <>
                 <h2>
-                  The building blocks of your data map are the list of systems
-                  that exist in your organization. Think of systems as anything
-                  that might store or process data in your organization, from a
-                  web application, to a database or data warehouse.
+                  {ADD_SYSTEM_DESCRIPTION}
                   <AccordionButton
                     display="inline"
                     padding="0px"
@@ -116,12 +114,12 @@ const AddSystemForm = () => {
                     minW={iconButtonSize}
                     boxShadow="base"
                     variant="ghost"
-                    icon={<RuntimeScannerLogo boxSize="10" />}
+                    icon={<DataFlowScannerLogo boxSize="10" />}
                     onClick={() => {
                       dispatch(changeStep());
-                      dispatch(setAddSystemsMethod(SystemMethods.RUNTIME));
+                      dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
                     }}
-                    data-testid="runtime-scan-btn"
+                    data-testid="data-flow-scan-btn"
                   />
                 </HStack>
                 <Text>Data Flow Scan</Text>

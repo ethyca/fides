@@ -70,15 +70,24 @@ saas_config:
     - name: member
       requests:
         read:
-          method: GET
-          path: /3.0/search-members
-          query_params:
-            - name: query
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
-          data_path: exact_matches.members
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: exact_matches.members
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <phone>
+            param_values:
+              - name: phone
+                identity: phone
+            data_path: exact_matches.members
         update:
           method: PUT
           path: /3.0/lists/<list_id>/members/<subscriber_hash>
@@ -254,3 +263,28 @@ saas_config:
           param_values:
             - name: email
               identity: email
+    - name: tickets
+      requests:
+        read:
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from

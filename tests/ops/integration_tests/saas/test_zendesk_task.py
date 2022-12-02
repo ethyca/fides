@@ -114,7 +114,7 @@ async def test_zendesk_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:tickets"],
-        min_size=2,
+        min_size=1,
         keys=[
             "url",
             "id",

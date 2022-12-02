@@ -1,11 +1,13 @@
 import { getCookie, setCookie, Types } from "typescript-cookie";
 
-import config from "~/config/config.json";
+/**
+ * A mapping from the cookie keys (configurable strings) to the resolved consent value.
+ */
+export type CookieKeyConsent = {
+  [cookieKey: string]: boolean | undefined;
+};
 
-import { CookieKeyConsent } from "./types";
-
-export const CONSENT_COOKIE_NAME =
-  config.consent?.cookieName ?? "fides_consent";
+export const CONSENT_COOKIE_NAME = "fides_consent";
 
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 

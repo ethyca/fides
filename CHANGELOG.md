@@ -15,17 +15,59 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/1.9.6...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.2.0...main)
+
+### Changed
+
+* Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+
+## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
+
+### Added
+
+* Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
+* Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
+* Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
+* Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
+* Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
+* Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
+
+
+### Changed
+
+* The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+* Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
+* Retrieve child results during fides connector execution [#1967](https://github.com/ethyca/fides/pull/1967)
+
+### Fixed
+
+* Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
+* Fix DSR error due to unfiltered empty identities [#1901](https://github.com/ethyca/fides/pull/1907)
+
+### Docs
+
+* Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
+* Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+* Update documentation to reflect configs necessary for mailgun, twilio_sms and twilio_email service types [#1846](https://github.com/ethyca/fides/pull/1846)
+
+...
+
+## [2.1.0](https://github.com/ethyca/fides/compare/2.0.0...2.1.0)
 
 ### Added
 
 * Classification flow for system data flows
   * Classification is now triggered as part of data flow scanning
 * Include `ingress` and `egress` fields on system export and `datamap/` endpoint [#1740](https://github.com/ethyca/fides/pull/1740)
+* Repeatable unique identifier for dataset fides_keys and metadata [#1786](https://github.com/ethyca/fides/pull/1786)
 * Adds SMS support for identity verification notifications [#1726](https://github.com/ethyca/fides/pull/1726)
 * Added phone number validation in back-end and react phone number form in Privacy Center [#1745](https://github.com/ethyca/fides/pull/1745)
 * Adds SMS message template for all subject notifications [#1743](https://github.com/ethyca/fides/pull/1743)
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
+* Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
+* Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
+* Webserver port can now be configured via the CLI command [#1858](https://github.com/ethyca/fides/pull/1858)
 
 ### Changed
 
@@ -36,10 +78,11 @@ The types of changes are:
 ### Developer Experience
 
 * Admin-UI-Cypress tests that fail in CI will now upload screen recordings for debugging. [#1728](https://github.com/ethyca/fides/pull/1728/files/c23e62fea284f7910028c8483feff893903068b8#r1019491323)
+* Enable remote debugging from VSCode of live dev app [#1780](https://github.com/ethyca/fides/pull/1780)
 
 ### Removed
 
-* Removed the `view` endpoint for evaluations [#1703](https://github.com/ethyca/fides/pull/1703)
+* Removed the Privacy Center `cookieName` config introduced in 2.0.0. [#1756](https://github.com/ethyca/fides/pull/1756)
 
 ### Fixed
 
@@ -51,7 +94,9 @@ The types of changes are:
 * Allow users to query their own permissions, including root user. [#1698](https://github.com/ethyca/fides/pull/1698)
 * Single-select taxonomy fields legal basis and special category can be cleared. [#1712](https://github.com/ethyca/fides/pull/1712)
 * Fixes the issue where the security config is not properly loading from environment variables. [#1718](https://github.com/ethyca/fides/pull/1718)
+* Fixes the issue where the CLI can't run without the config values required by the webserver. [#1811](https://github.com/ethyca/fides/pull/1811)
 * Correctly handle response from adobe jwt auth endpoint as milliseconds, rather than seconds. [#1754](https://github.com/ethyca/fides/pull/1754)
+* Fixed styling issues with the `EditDrawer` component. [#1803](https://github.com/ethyca/fides/pull/1803)
 
 ### Security
 

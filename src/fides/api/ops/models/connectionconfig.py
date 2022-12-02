@@ -50,6 +50,7 @@ class ConnectionType(enum.Enum):
     email = "email"
     manual_webhook = "manual_webhook"  # Run before the traversal
     timescale = "timescale"
+    fides = "fides"
 
     @property
     def human_readable(self) -> str:
@@ -71,6 +72,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.email.value: "Email Connector",
             ConnectionType.manual_webhook.value: "Manual Webhook",
             ConnectionType.timescale.value: "TimescaleDB",
+            ConnectionType.fides.value: "Fides Connector",
         }
         try:
             return readable_mapping[self.value]

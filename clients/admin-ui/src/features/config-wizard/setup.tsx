@@ -10,7 +10,7 @@ const Setup = () => {
   const dispatch = useAppDispatch();
 
   return (
-    <Stack>
+    <Stack data-testid="setup">
       <Container
         height="35vh"
         maxW="100vw"
@@ -36,7 +36,7 @@ const Setup = () => {
           width="50%"
         >
           <Heading as="h3" size="lg">
-            Get Started
+            Generate your Data Map
           </Heading>
           <div>
             Privacy engineering can seem like an endlessly complex confluence of
@@ -53,7 +53,7 @@ const Setup = () => {
               onClick={() => dispatch(changeStep())}
               data-testid="guided-setup-btn"
             >
-              Guided Setup (Recommended)
+              Generate a Map Automatically (recommended)
             </Button>
             <Button
               variant="ghost"

@@ -24,7 +24,9 @@ from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
 from uvicorn import Config, Server
 
+from fides.api.ctl import view
 from fides.api.ctl.database.database import configure_db
+from fides.api.ctl.database.seed import create_or_update_parent_user
 from fides.api.ctl.routes import admin, crud, datamap, generate, health, validate
 from fides.api.ctl.routes.util import API_PREFIX
 from fides.api.ctl.ui import (
@@ -61,6 +63,7 @@ from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
+from fides.ctl.core.config.utils import check_required_webserver_config_values
 
 CONFIG: FidesConfig = get_ctl_config()
 
@@ -85,6 +88,7 @@ ROUTERS = crud.routers + [  # type: ignore[attr-defined]
     generate.router,
     health.router,
     validate.router,
+    view.router,
 ]
 
 
@@ -194,6 +198,7 @@ for handler in ExceptionHandlers.get_handlers():
 @app.on_event("startup")
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
+
     log.warning(
         f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
@@ -214,12 +219,23 @@ async def setup_server() -> None:
 
     await configure_db(CONFIG.database.sync_database_uri)
 
-    log.info("Validating SaaS connector templates...")
-    registry = load_registry(registry_file)
-    log.info("Finished loading saas templates")
     try:
+        create_or_update_parent_user()
+    except Exception as e:
+        log.error(f"Error creating parent user: {str(e)}")
+        raise FidesError(f"Error creating parent user: {str(e)}")
+
+    log.info("Validating SaaS connector templates...")
+    try:
+        registry = load_registry(registry_file)
         db = get_api_session()
         update_saas_configs(registry, db)
+        log.info("Finished loading saas templates")
+    except Exception as e:
+        log.error(
+            f"Error occurred during SaaS connector template validation: {str(e)}",
+        )
+        return
     finally:
         db.close()
 
@@ -319,7 +335,12 @@ def read_other_paths(request: Request) -> Response:
     return get_admin_index_as_response()
 
 
-def start_webserver() -> None:
-    "Run the webserver."
-    server = Server(Config(app, host="0.0.0.0", port=8080, log_level=WARNING))
+def start_webserver(port: int = 8080) -> None:
+    """Run the webserver."""
+    check_required_webserver_config_values()
+    server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
+
+    log.info(
+        f"Starting webserver - Host: {server.config.host}, Port: {server.config.port}, Log Level: {server.config.log_level}"
+    )
     server.run()
