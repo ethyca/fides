@@ -9,6 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.exc import IntegrityError
+from toml import load as load_toml
 
 from fides.api.main import app
 from fides.api.ops.api.v1.scope_registry import SCOPE_REGISTRY
@@ -18,7 +19,6 @@ from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
 from fides.ctl.core.api import db_action
 from fides.ctl.core.config import get_config
-from fides.ctl.core.config.utils import load_toml
 from fides.lib.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,

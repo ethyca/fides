@@ -3,9 +3,9 @@ from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Un
 from celery import Celery, Task
 from loguru import logger
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
 from fides.ctl.core.config import get_config
-from fides.ctl.core.config.utils import load_toml
 from fides.lib.db.session import get_db_session
 
 CONFIG = get_config()

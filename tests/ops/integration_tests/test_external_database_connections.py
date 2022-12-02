@@ -4,6 +4,7 @@ from typing import Generator
 
 import pytest
 from sqlalchemy import inspect
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.ops.schemas.connection_configuration import (
@@ -15,7 +16,6 @@ from fides.api.ops.service.connectors import (
     SnowflakeConnector,
     get_connector,
 )
-from fides.ctl.core.config.utils import load_toml
 
 logger = logging.getLogger(__name__)
 

@@ -8,6 +8,7 @@ from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -26,7 +27,6 @@ from fides.api.ops.util.saas_util import (
     load_dataset,
     load_dataset_with_replacement,
 )
-from fides.ctl.core.config.utils import load_toml
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"
