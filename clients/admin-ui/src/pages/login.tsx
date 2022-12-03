@@ -16,20 +16,29 @@ import Image from "common/Image";
 import { Formik } from "formik";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { CONFIG_WIZARD_ROUTE, DATAMAP_ROUTE, SYSTEM_ROUTE } from "~/constants";
 import { useFeatures } from "~/features/common/features.slice";
-import { resolveLink } from "~/features/common/nav/zone-config";
+import { getErrorMessage } from "~/features/common/helpers";
+import { resolveLink, ZONE_CONFIG } from "~/features/common/nav/zone-config";
 import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import { isErrorResult } from "~/types/errors";
 
-import { login, selectToken, useLoginMutation } from "../features/auth";
+import {
+  login,
+  selectToken,
+  selectUser,
+  useLoginMutation,
+} from "../features/auth";
 
 const useLogin = () => {
   const { data: systems, isLoading: isSystemsLoading } =
     useGetAllSystemsQuery();
   const [loginRequest, { isLoading }] = useLoginMutation();
   const token = useSelector(selectToken);
+  const user = useSelector(selectUser);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -46,8 +55,16 @@ const useLogin = () => {
       password: values.password,
     };
     try {
-      const user = await loginRequest(credentials).unwrap();
-      dispatch(login(user));
+      const result = await loginRequest(credentials);
+      if (isErrorResult(result)) {
+        toast({
+          status: "error",
+          description: getErrorMessage(result.error),
+        });
+        return;
+      }
+
+      dispatch(login(result.data));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
@@ -94,9 +111,41 @@ const useLogin = () => {
 
   const redirectRoute = getRedirectRoute();
 
-  if (redirectRoute) {
-    router.push(redirectRoute);
-  }
+  useEffect(() => {
+    if (redirectRoute) {
+      router.push(redirectRoute);
+    }
+  }, [router, redirectRoute]);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      // This only runs when hosted in development,
+      window.location.host !== ZONE_CONFIG.development.host ||
+      // only if the page is in an iframe,
+      window.parent !== window ||
+      // and only when the auth credentials arrive.
+      !(token && user)
+    ) {
+      return;
+    }
+
+    // When the main zone is authenticated, send a message to the parent host (fidesplus)
+    // with the auth payload.
+    ZONE_CONFIG.zones.forEach((zone) => {
+      window.parent.postMessage(
+        login({
+          token_data: {
+            access_token: token,
+          },
+          user_data: user,
+        }),
+        {
+          targetOrigin: `http://${zone.development.host}`,
+        }
+      );
+    });
+  }, [token, user]);
 
   return {
     initialValues,
