@@ -31,9 +31,13 @@ export const NavLink = ({
     basePath,
   });
 
-  const isActive = exact
-    ? router.pathname === zoneLink.href
-    : router.pathname.startsWith(zoneLink.href);
+  // To be active, a link has to be in the same zone (same base path) and its path on that zone must
+  // match the current path (either exactly or as as a prefix).
+  const isActive =
+    basePath === zoneLink.basePath &&
+    (exact
+      ? router.pathname === zoneLink.href
+      : router.pathname.startsWith(zoneLink.href));
 
   // Don't let Next's router wrap links that are disabled or link outside of the this app's zone.
   if (disabled || zoneLink.basePath !== basePath) {

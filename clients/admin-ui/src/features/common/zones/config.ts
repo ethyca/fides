@@ -3,7 +3,9 @@ import { RootConfig } from "./types";
 /**
  * Create a configuration with the required types and defaults.
  */
-export const configureZones = (config: Partial<RootConfig>): RootConfig => ({
+export const configureZones = <C extends Partial<RootConfig>>(
+  config: C
+): C & RootConfig => ({
   zones: [],
   ...config,
   basePath: "/",
