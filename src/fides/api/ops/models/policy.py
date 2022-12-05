@@ -103,6 +103,125 @@ def _validate_rule(
         )
 
 
+class WebhookDirection(EnumType):
+    """The webhook direction"""
+
+    one_way = "one_way"  # No response expected
+    two_way = "two_way"  # Response expected
+
+
+class WebhookBase:
+    """Mixin class to contain common fields between PolicyPreWebhooks and PolicyPostWebhooks"""
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return cls.__name__.lower()  # type: ignore
+
+    name = Column(String, unique=True, nullable=False)
+    key = Column(String, index=True, unique=True, nullable=False)
+
+    @declared_attr
+    def policy_id(cls: "WebhookBase") -> Column:
+        """Policy id defined as declared_attr because this is needed for FK's on mixins"""
+        return Column(
+            String,
+            ForeignKey(Policy.id_field_path),
+            nullable=False,
+        )
+
+    @declared_attr
+    def connection_config_id(cls: "WebhookBase") -> Column:
+        """Connection config id defined as declared_attr because this is needed for FK's on mixins"""
+        return Column(
+            String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
+        )
+
+    direction = Column(
+        EnumColumn(WebhookDirection),
+        nullable=False,
+    )
+    order = Column(Integer, nullable=False)
+
+    def reorder_related_webhooks(self, db: Session, new_index: int) -> None:
+        """Updates the order of the current webhook, and order of related webhooks where applicable.
+
+        For example, if you had five Pre-Execution webhooks on a Policy and you updated the order of the
+        fifth webhook to be the second webhook, the second, third, fourth, and fifth Pre-Execution
+        Webhooks on that Policy would likewise have their order updated.
+        """
+
+        cls = self.__class__
+        webhooks = getattr(self.policy, f"{cls.prefix}_execution_webhooks").order_by(  # type: ignore
+            cls.order
+        )  # pylint: disable=W0143
+
+        if new_index > webhooks.count() - 1 or new_index < 0:
+            raise WebhookOrderException(
+                f"Cannot set order to {new_index}: there are only {webhooks.count()} {cls.__name__}(s) defined on this Policy."
+            )
+        webhook_order = [webhook.key for webhook in webhooks]
+        webhook_order.insert(new_index, webhook_order.pop(self.order))
+
+        for webhook in webhooks:
+            webhook.update(db=db, data={"order": webhook_order.index(webhook.key)})
+        db.commit()
+
+
+class PolicyPreWebhook(WebhookBase, Base):
+    """
+    The configuration to describe webhooks that run before
+    Privacy Requests are executed for a given Policy.
+    """
+
+    prefix = "pre"  # For logging purposes
+
+    connection_config = relationship(
+        ConnectionConfig,
+        backref="policy_pre_execution_webhooks",
+    )
+
+    policy = relationship(
+        "Policy", backref=backref("pre_execution_webhooks", lazy="dynamic")
+    )
+
+    @classmethod
+    def persist_obj(
+        cls, db: Session, resource: "PolicyPreWebhook"
+    ) -> "PolicyPreWebhook":
+        """Override to have PolicyPreWebhooks not be committed to the database automatically."""
+        db.add(resource)
+        return resource
+
+
+class PolicyPostWebhook(WebhookBase, Base):
+    """
+    The configuration to describe webhooks that run after
+    Privacy Requests are executed for a given Policy.
+    """
+
+    prefix = "post"  # For logging purposes
+
+    connection_config = relationship(
+        ConnectionConfig,
+        backref="policy_post_execution_webhooks",
+    )
+
+    policy = relationship(
+        "Policy", backref=backref("post_execution_webhooks", lazy="dynamic")
+    )
+
+    @classmethod
+    def persist_obj(
+        cls, db: Session, resource: "PolicyPostWebhook"
+    ) -> "PolicyPostWebhook":
+        """Override to have PolicyPostWebhooks not be committed to the database automatically."""
+        db.add(resource)
+        return resource
+
+
+WebhookTypes = Union[PolicyPreWebhook, PolicyPostWebhook]
+
+
 class Policy(Base):
     """A set of constraints to apply to a privacy request"""
 
@@ -467,116 +586,3 @@ class RuleTarget(Base):
         ):
             _validate_data_category(data_category=updated_data_category)
         return super().update(db=db, data=data)
-
-
-class WebhookDirection(EnumType):
-    """The webhook direction"""
-
-    one_way = "one_way"  # No response expected
-    two_way = "two_way"  # Response expected
-
-
-class WebhookBase:
-    """Mixin class to contain common fields between PolicyPreWebhooks and PolicyPostWebhooks"""
-
-    @declared_attr
-    def __tablename__(cls) -> str:
-        return cls.__name__.lower()  # type: ignore
-
-    name = Column(String, unique=True, nullable=False)
-    key = Column(String, index=True, unique=True, nullable=False)
-
-    @declared_attr
-    def policy_id(cls: "WebhookBase") -> Column:
-        """Policy id defined as declared_attr because this is needed for FK's on mixins"""
-        return Column(
-            String,
-            ForeignKey(Policy.id_field_path),
-            nullable=False,
-        )
-
-    @declared_attr
-    def connection_config_id(cls: "WebhookBase") -> Column:
-        """Connection config id defined as declared_attr because this is needed for FK's on mixins"""
-        return Column(
-            String, ForeignKey(ConnectionConfig.id_field_path), nullable=False
-        )
-
-    direction = Column(
-        EnumColumn(WebhookDirection),
-        nullable=False,
-    )
-    order = Column(Integer, nullable=False)
-
-    def reorder_related_webhooks(self, db: Session, new_index: int) -> None:
-        """Updates the order of the current webhook, and order of related webhooks where applicable.
-
-        For example, if you had five Pre-Execution webhooks on a Policy and you updated the order of the
-        fifth webhook to be the second webhook, the second, third, fourth, and fifth Pre-Execution
-        Webhooks on that Policy would likewise have their order updated.
-        """
-
-        cls = self.__class__
-        webhooks = getattr(self.policy, f"{cls.prefix}_execution_webhooks").order_by(  # type: ignore
-            cls.order
-        )  # pylint: disable=W0143
-
-        if new_index > webhooks.count() - 1 or new_index < 0:
-            raise WebhookOrderException(
-                f"Cannot set order to {new_index}: there are only {webhooks.count()} {cls.__name__}(s) defined on this Policy."
-            )
-        webhook_order = [webhook.key for webhook in webhooks]
-        webhook_order.insert(new_index, webhook_order.pop(self.order))
-
-        for webhook in webhooks:
-            webhook.update(db=db, data={"order": webhook_order.index(webhook.key)})
-        db.commit()
-
-
-class PolicyPreWebhook(WebhookBase, Base):
-    """The configuration to describe webhooks that run before Privacy Requests are executed for a given Policy"""
-
-    prefix = "pre"  # For logging purposes
-
-    connection_config = relationship(
-        ConnectionConfig,
-        backref="policy_pre_execution_webhooks",
-    )
-
-    policy = relationship(
-        "Policy", backref=backref("pre_execution_webhooks", lazy="dynamic")
-    )
-
-    @classmethod
-    def persist_obj(
-        cls, db: Session, resource: "PolicyPreWebhook"
-    ) -> "PolicyPreWebhook":
-        """Override to have PolicyPreWebhooks not be committed to the database automatically."""
-        db.add(resource)
-        return resource
-
-
-class PolicyPostWebhook(WebhookBase, Base):
-    """The configuration to describe webhooks that run after Privacy Requests are executed for a given Policy"""
-
-    prefix = "post"  # For logging purposes
-
-    connection_config = relationship(
-        ConnectionConfig,
-        backref="policy_post_execution_webhooks",
-    )
-
-    policy = relationship(
-        "Policy", backref=backref("post_execution_webhooks", lazy="dynamic")
-    )
-
-    @classmethod
-    def persist_obj(
-        cls, db: Session, resource: "PolicyPostWebhook"
-    ) -> "PolicyPostWebhook":
-        """Override to have PolicyPostWebhooks not be committed to the database automatically."""
-        db.add(resource)
-        return resource
-
-
-WebhookTypes = Union[PolicyPreWebhook, PolicyPostWebhook]
