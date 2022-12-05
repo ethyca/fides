@@ -104,11 +104,11 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     <Box>
       <DatasetHeading />
 
-      <HStack mb={4} justifyContent="space-between">
+      <HStack mb={4}>
         <Select
           onChange={handleChangeCollection}
-          mr={2}
-          width="auto"
+          width="fit-content"
+          flexShrink={0}
           data-testid="collection-select"
         >
           {(activeCollections ?? []).map((collection) => (
@@ -118,23 +118,21 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
           ))}
         </Select>
         <ApproveClassification />
-        <HStack>
-          <Box>
-            <ColumnDropdown
-              allColumns={ALL_COLUMNS}
-              selectedColumns={columns}
-              onChange={setColumns}
-            />
-          </Box>
-          <MoreActionsMenu
-            onModifyCollection={() =>
-              dispatch(setActiveEditor(EditableType.COLLECTION))
-            }
-            onModifyDataset={() =>
-              dispatch(setActiveEditor(EditableType.DATASET))
-            }
+        <Box>
+          <ColumnDropdown
+            allColumns={ALL_COLUMNS}
+            selectedColumns={columns}
+            onChange={setColumns}
           />
-        </HStack>
+        </Box>
+        <MoreActionsMenu
+          onModifyCollection={() =>
+            dispatch(setActiveEditor(EditableType.COLLECTION))
+          }
+          onModifyDataset={() =>
+            dispatch(setActiveEditor(EditableType.DATASET))
+          }
+        />
       </HStack>
 
       <DatasetFieldsTable columns={columns} />

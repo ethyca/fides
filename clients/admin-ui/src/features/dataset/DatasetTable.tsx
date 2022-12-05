@@ -41,6 +41,7 @@ const DatasetsTable = () => {
   if (!datasets) {
     return <div>Empty state</div>;
   }
+
   return (
     <Table size="sm" data-testid="dataset-table">
       <Thead>
@@ -48,7 +49,11 @@ const DatasetsTable = () => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
-          <Th pl={1}>Status</Th>
+          {features.plus ? (
+            <Th data-testid="dataset-table__status-table-header" pl={1}>
+              Status
+            </Th>
+          ) : null}
         </Tr>
       </Thead>
       <Tbody>
@@ -77,12 +82,14 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
-              <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
-                <ClassificationStatusBadge
-                  resource={GenerateTypes.DATASETS}
-                  status={classifyDataset?.status}
-                />
-              </Td>
+              {features.plus ? (
+                <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+                  <ClassificationStatusBadge
+                    resource={GenerateTypes.DATASETS}
+                    status={classifyDataset?.status}
+                  />
+                </Td>
+              ) : null}
             </Tr>
           );
         })}

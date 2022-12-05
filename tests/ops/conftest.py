@@ -31,6 +31,7 @@ from fides.ctl.core.config import get_config
 from .fixtures.application_fixtures import *
 from .fixtures.bigquery_fixtures import *
 from .fixtures.email_fixtures import *
+from .fixtures.fides_connector_example_fixtures import *
 from .fixtures.integration_fixtures import *
 from .fixtures.manual_fixtures import *
 from .fixtures.manual_webhook_fixtures import *

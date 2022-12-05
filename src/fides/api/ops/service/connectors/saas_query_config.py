@@ -203,7 +203,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         identities: List[str] = []
         if self.privacy_request:
-            identities = list(self.privacy_request.get_cached_identity_data().keys())
+            identity_data: Dict[
+                str, Any
+            ] = self.privacy_request.get_cached_identity_data()
+            # filters out keys where associated value is None or empty str
+            identities = list({k for k, v in identity_data.items() if v})
             if len(identities) > 1:
                 raise FidesopsException(
                     "Only one identity can be specified for SaaS connector traversal"

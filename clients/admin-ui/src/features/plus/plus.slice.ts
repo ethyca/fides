@@ -1,6 +1,9 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { addCommonHeaders } from "common/CommonHeaders";
 
+import type { RootState } from "~/app/store";
+import { selectToken } from "~/features/auth";
 import {
   selectActiveCollection,
   selectActiveDatasetFidesKey,
@@ -18,14 +21,11 @@ import {
   ClassifyStatusUpdatePayload,
   ClassifySystem,
   GenerateTypes,
+  HealthCheck,
+  SystemScannerStatus,
   SystemScanResponse,
   SystemsDiff,
 } from "~/types/api";
-
-interface HealthResponse {
-  core_fidesctl_version: string;
-  status: "healthy";
-}
 
 interface ScanParams {
   classify?: boolean;
@@ -40,6 +40,11 @@ export const plusApi = createApi({
   reducerPath: "plusApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_FIDESCTL_API}/plus`,
+    prepareHeaders: (headers, { getState }) => {
+      const token: string | null = selectToken(getState() as RootState);
+      addCommonHeaders(headers, token);
+      return headers;
+    },
   }),
   tagTypes: [
     "Plus",
@@ -48,7 +53,7 @@ export const plusApi = createApi({
     "LatestScan",
   ],
   endpoints: (build) => ({
-    getHealth: build.query<HealthResponse, void>({
+    getHealth: build.query<HealthCheck, void>({
       query: () => "health",
     }),
     /**
@@ -159,6 +164,16 @@ export const useHasPlus = () => {
   const { isSuccess: hasPlus } = useGetHealthQuery();
   return hasPlus;
 };
+
+export const selectHealth: (state: RootState) => HealthCheck | undefined =
+  createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
+
+export const selectDataFlowScannerStatus: (
+  state: RootState
+) => SystemScannerStatus | undefined = createSelector(
+  plusApi.endpoints.getHealth.select(),
+  ({ data }) => data?.system_scanner
+);
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
 export const selectDatasetClassifyInstances = createSelector(

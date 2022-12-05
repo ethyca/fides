@@ -1,6 +1,7 @@
 import {
   CONNECTION_STRING,
   stubDatasetCrud,
+  stubHomePage,
   stubPlus,
 } from "cypress/support/stubs";
 
@@ -33,6 +34,22 @@ describe("Datasets with Fides Classify", () => {
       cy.getByTestId("input-classify").find("input").should("be.checked");
       cy.getByTestId("input-classify").click();
       cy.getByTestId("input-classify").find("input").should("not.be.checked");
+    });
+
+    it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
+      stubHomePage();
+      cy.visit("/");
+      cy.getByTestId("nav-link-Datasets").click();
+      cy.wait("@getDatasets");
+      cy.getByTestId("dataset-table");
+      cy.getByTestId("dataset-row-demo_users_dataset_4");
+      cy.url().should("contain", "/dataset");
+
+      cy.getByTestId("dataset-table__status-table-header").should(
+        "have.text",
+        "Status"
+      );
+      cy.getByTestId("classification-status-badge").should("exist");
     });
 
     it("Classifies the dataset after generating it", () => {

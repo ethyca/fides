@@ -53,6 +53,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
+    upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
