@@ -1,7 +1,6 @@
 """Contains reusable utils for the CLI commands."""
 
 import json
-import os
 import pprint
 import sys
 from datetime import datetime, timezone

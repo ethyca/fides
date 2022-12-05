@@ -1,11 +1,10 @@
 """
 This module is responsible for combining all of the different
-config sections into a single config.
+config sections into a single config object.
 """
 
 from functools import lru_cache
-from os import environ, getenv
-from re import compile as regex
+from os import getenv
 from typing import Any, Dict, Optional, Tuple
 
 import toml
@@ -21,12 +20,13 @@ from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings
 from .fides_settings import FidesSettings
+from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import DEFAULT_CONFIG_PATH, get_test_mode, CONFIG_KEY_ALLOWLIST
+from .utils import CONFIG_KEY_ALLOWLIST, DEFAULT_CONFIG_PATH, get_test_mode
 
 
 class FidesConfig(FidesSettings):
