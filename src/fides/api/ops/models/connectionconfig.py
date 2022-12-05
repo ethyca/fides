@@ -16,7 +16,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.api.ops.db.base_class import JSONTypeOverride
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.ctl.core.config import get_config
-from fides.lib.db.base import Base # type: ignore[attr-defined]
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.db.base_class import get_key_from_data
 from fides.lib.exceptions import KeyOrNameAlreadyExists
 

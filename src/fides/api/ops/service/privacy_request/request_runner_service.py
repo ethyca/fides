@@ -128,14 +128,14 @@ def run_webhooks_and_report_status(
     db: Session,
     privacy_request: PrivacyRequest,
     webhook_cls: WebhookTypes,
-    after_webhook_id: str = None,
+    after_webhook_id: Optional[str] = None,
 ) -> bool:
     """
     Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
     Updates privacy request status if execution is paused/errored.
     Returns True if execution should proceed.
     """
-    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
+    webhooks: WebhookTypes = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
 
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook

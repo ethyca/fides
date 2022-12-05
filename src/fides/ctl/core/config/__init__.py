@@ -85,7 +85,7 @@ class FidesConfig(FidesSettings):
                 )
 
 
-def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
+def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:
     """Custom logic for handling deprecated values."""
 
     if settings.get("api") and not settings.get("database"):
@@ -102,7 +102,7 @@ def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
     return settings
 
 
-def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
+def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
     """
     Custom logic for handling deprecated ENV variable configuration.
     """

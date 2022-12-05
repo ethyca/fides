@@ -8,7 +8,7 @@ from fides.api.ctl.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.ctl.utils import errors
 from fides.api.ctl.utils.api_router import APIRouter
-from fides.lib.db.base import Base # type: ignore[attr-defined]
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 API_PREFIX = "/api/v1"
 
