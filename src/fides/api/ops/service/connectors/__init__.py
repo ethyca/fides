@@ -14,6 +14,9 @@ from fides.api.ops.service.connectors.base_connector import (
 from fides.api.ops.service.connectors.email_connector import (
     EmailConnector as EmailConnector,
 )
+from fides.api.ops.service.connectors.fides_connector import (
+    FidesConnector as FidesConnector,
+)
 from fides.api.ops.service.connectors.http_connector import (
     HTTPSConnector as HTTPSConnector,
 )
@@ -69,6 +72,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.email.value: EmailConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.timescale.value: TimescaleConnector,
+    ConnectionType.fides.value: FidesConnector,
 }
 
 

@@ -190,6 +190,7 @@ markers = [
     "integration_datadog",
     "integration_domo",
     "integration_doordash",
+    "integration_fullstory",
     "integration_segment",
     "integration_sendgrid",
     "integration_auth0",

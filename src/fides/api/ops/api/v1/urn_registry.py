@@ -65,6 +65,9 @@ PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
 PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
     "/privacy-request/{privacy_request_id}/resume_from_requires_input"
 )
+PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
+    "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
+)
 
 
 # Identity Verification URLs

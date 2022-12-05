@@ -5,7 +5,7 @@ export const STEPS = [
   },
   {
     number: 2,
-    name: "Scan for Systems",
+    name: "Add Systems",
   },
   {
     number: 3,

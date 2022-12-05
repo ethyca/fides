@@ -3,11 +3,12 @@ import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { initialDataCategories } from "~/features/plus/helpers";
+import { selectClassifyInstanceField } from "~/features/plus/plus.slice";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
-import { CustomSelect, CustomTextInput } from "../common/form/inputs";
-import { selectClassifyInstanceField } from "../plus/plus.slice";
 import { COLLECTION, DATA_QUALIFIERS, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
 import { DataCategoryWithConfidence } from "./types";
@@ -68,23 +69,11 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
     }, [allDataCategories, classifyField]);
 
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
-    () => {
-      if (initialValues.data_categories?.length) {
-        return initialValues.data_categories;
-      }
-
-      // If there are classifier suggestions, choose the highest-confidence option.
-      if (mostLikelyCategories?.length) {
-        const topCategory = mostLikelyCategories.reduce((maxCat, nextCat) =>
-          (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0)
-            ? nextCat
-            : maxCat
-        );
-        return [topCategory.fides_key];
-      }
-
-      return [];
-    }
+    () =>
+      initialDataCategories({
+        dataCategories: initialValues.data_categories,
+        mostLikelyCategories,
+      })
   );
 
   const descriptionTooltip =

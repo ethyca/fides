@@ -67,6 +67,11 @@ which fidesops can communicate.
             "human_readable": "Datadog"
         },
         {
+            "identifier": "fullstory",
+            "type": "saas",
+            "human_readable": "Fullstory"
+        },
+        {
             "identifier": "hubspot",
             "type": "saas",
             "human_readable": "HubSpot"

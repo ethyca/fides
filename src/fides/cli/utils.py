@@ -152,6 +152,7 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
     }
 
     # create the .fides dir if it doesn't exist
+    print_divider()
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
         click.echo(f"Created a '{fides_dir_path}' directory.")
