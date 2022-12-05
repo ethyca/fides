@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder

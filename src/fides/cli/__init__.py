@@ -6,12 +6,9 @@ import click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
-from fides.cli.utils import (
-    check_and_update_analytics_config,
-    check_server,
-    create_config_file,
-)
+from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
+from fides.ctl.core.config.helpers import create_config_file
 
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
@@ -96,7 +93,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     ctx.obj["CONFIG"] = config
-    create_config_file(ctx)
+    create_config_file(config=config)
 
     # init also handles this workflow
     if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:

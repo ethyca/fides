@@ -9,11 +9,11 @@ from fides.cli.utils import (
     FIDES_ASCII_ART,
     check_and_update_analytics_config,
     check_server,
-    create_config_file,
     print_divider,
     send_init_analytics,
     with_analytics,
 )
+from fides.ctl.core.config.helpers import create_config_file
 from fides.ctl.core.deploy import (
     check_docker_version,
     check_fides_uploads_dir,
@@ -46,7 +46,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     # create the config file as needed
     config_path = create_config_file(
-        ctx=ctx, fides_directory_location=fides_directory_location
+        config=config, fides_directory_location=fides_directory_location
     )
     print_divider()
 
@@ -145,7 +145,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
         if not no_init:
             echo_green("Deployment successful! Initializing fides...")
-            config_path = create_config_file(ctx=ctx, fides_directory_location=".")
+            config_path = create_config_file(config=ctx.obj["CONFIG"])
             check_and_update_analytics_config(ctx=ctx, config_path=config_path)
         else:
             echo_green(
