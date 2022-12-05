@@ -108,12 +108,6 @@ def censor_config(config: FidesConfig) -> Dict[str, Any]:
     return filtered
 
 
-def hydrate_config(config_dict: Dict[str, Any]) -> FidesConfig:
-    """
-    Instantiates a Fides config,
-    """
-
-
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "", verbose: bool = False) -> FidesConfig:
     """
