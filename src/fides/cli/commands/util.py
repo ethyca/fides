@@ -51,7 +51,7 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
     print_divider()
 
     # request explicit consent for analytics collection
-    check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+    check_and_update_analytics_config(config=config, config_path=config_path)
     print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)

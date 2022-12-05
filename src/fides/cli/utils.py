@@ -115,24 +115,24 @@ def handle_cli_response(
     return response
 
 
-def is_user_registered(ctx: click.Context) -> bool:
+def is_user_registered(config: FidesConfig) -> bool:
     """
     Send a request to the API server, and determine if a registration is already present.
     """
 
-    response = get(f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
+    response = get(f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
     return response.json()["opt_in"]
 
 
-def register_user(ctx: click.Context, email: str, organization: str) -> None:
+def register_user(config: FidesConfig, email: str, organization: str) -> None:
     """
     Create a new registration record in the database.
     """
 
     put(
-        f"{ctx.obj['CONFIG'].cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
+        f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
         json={
-            "analytics_id": ctx.obj["CONFIG"].cli.analytics_id,
+            "analytics_id": config.cli.analytics_id,
             "opt_in": True,
             "user_email": email,
             "user_organization": organization,
@@ -140,7 +140,7 @@ def register_user(ctx: click.Context, email: str, organization: str) -> None:
     )
 
 
-def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> None:
+def check_and_update_analytics_config(config: FidesConfig, config_path: str) -> FidesConfig:
     """
     Ensure the analytics-related config is present. If not,
     prompt the user to opt-in to analytics and/or update the
@@ -155,23 +155,21 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     # their email/org information, but right now a lot of our test automation
     # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
-    if ctx.obj["CONFIG"].user.analytics_opt_out is None:
+    if config.user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
-        ctx.obj["CONFIG"].user.analytics_opt_out = bool(
+        config.user.analytics_opt_out = bool(
             input(OPT_OUT_PROMPT + "\n").lower() == "n"
         )
 
-        config_updates.update(
-            user={"analytics_opt_out": ctx.obj["CONFIG"].user.analytics_opt_out}
-        )
+        config_updates.update(user={"analytics_opt_out": config.user.analytics_opt_out})
 
         # If we've not opted out, attempt to register the user if they are
         # currently connected to a Fides server
-        if ctx.obj["CONFIG"].user.analytics_opt_out is False:
-            server_url = ctx.obj["CONFIG"].cli.server_url
+        if config.user.analytics_opt_out is False:
+            server_url = config.cli.server_url
             try:
                 check_server_health(server_url)
-                should_attempt_registration = not is_user_registered(ctx)
+                should_attempt_registration = not is_user_registered(config)
             except SystemExit:
                 should_attempt_registration = False
 
@@ -179,7 +177,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
                 email = input(EMAIL_PROMPT)
                 organization = input(ORGANIZATION_PROMPT)
                 if email and organization:
-                    register_user(ctx, email, organization)
+                    register_user(config, email, organization)
 
             # Either way, thank the user for their opt-in for analytics!
             click.echo(CONFIRMATION_COPY)
@@ -192,11 +190,11 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
     ) in ("", None)
     is_analytics_id_env_var_set = getenv("FIDES__CLI__ANALYTICS_ID")
     if (
-        not ctx.obj["CONFIG"].user.analytics_opt_out
+        not config.user.analytics_opt_out
         and is_analytics_id_config_empty
         and not is_analytics_id_env_var_set
     ):
-        config_updates.update(cli={"analytics_id": ctx.obj["CONFIG"].cli.analytics_id})
+        config_updates.update(cli={"analytics_id": config.cli.analytics_id})
 
     if len(config_updates) > 0:
         try:
@@ -204,6 +202,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         except FileNotFoundError as err:
             echo_red(f"Failed to update config file ({config_path}): {err.strerror}")
             click.echo("Run 'fides init' to create a configuration file.")
+    return config
 
 
 def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) -> None:
