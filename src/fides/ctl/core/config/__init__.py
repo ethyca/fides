@@ -148,6 +148,7 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
         # This is required to set security settings from the environment
         # if that section of the config is missing
+        # Load Explicitly
         security_settings = SecuritySettings.parse_obj(settings.get("security", {}))
 
         config = FidesConfig.parse_obj(settings)
