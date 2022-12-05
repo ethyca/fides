@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Generator, List
 from unittest import mock
 from uuid import uuid4
-from toml import load as load_toml
 
 import pydash
 import pytest
@@ -11,6 +10,7 @@ import yaml
 from faker import Faker
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
+from toml import load as load_toml
 
 from fides.api.ops.api.v1.scope_registry import PRIVACY_REQUEST_READ, SCOPE_REGISTRY
 from fides.api.ops.models.connectionconfig import (

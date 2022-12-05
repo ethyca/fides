@@ -246,7 +246,9 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
                 requested_at = data["requested_at"]
                 if isinstance(requested_at, str):
                     requested_at = datetime.strptime(requested_at, API_DATE_FORMAT)
-                data["due_date"] = requested_at + timedelta(days=policy.execution_timeframe)
+                data["due_date"] = requested_at + timedelta(
+                    days=policy.execution_timeframe
+                )
 
         return super().create(db=db, data=data)
 
