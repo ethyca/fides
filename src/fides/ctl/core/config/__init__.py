@@ -26,7 +26,12 @@ from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import CONFIG_KEY_ALLOWLIST, DEFAULT_CONFIG_PATH, get_test_mode
+from .utils import (
+    CONFIG_KEY_ALLOWLIST,
+    DEFAULT_CONFIG_PATH,
+    DEFAULT_CONFIG_PATH_ENV_VAR,
+    get_test_mode,
+)
 
 
 class FidesConfig(FidesSettings):
@@ -34,6 +39,7 @@ class FidesConfig(FidesSettings):
     Composite class that encapsulates all of the config subsections.
     """
 
+    # Setting Subsections
     admin_ui: AdminUISettings = AdminUISettings()
     cli: CLISettings = CLISettings()
     credentials: Dict[str, Dict] = {}
@@ -47,6 +53,7 @@ class FidesConfig(FidesSettings):
     security: SecuritySettings = SecuritySettings.construct()
     user: UserSettings = UserSettings()
 
+    # Root Settings
     test_mode: bool = get_test_mode()
     is_test_mode: bool = test_mode
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
@@ -101,24 +108,35 @@ def censor_config(config: FidesConfig) -> Dict[str, Any]:
     return filtered
 
 
+def hydrate_config(config_dict: Dict[str, Any]) -> FidesConfig:
+    """
+    Instantiates a Fides config,
+    """
+
+
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "", verbose: bool = False) -> FidesConfig:
     """
-    Attempt to load user-defined configuration.
+    Attempt to load user-defined configuration file, otherwise will use defaults
+    while still respecting any env vars set by the user.
+
+    Order of file checks is:
+        1. The config path provided by the user to the CLI
+        2. The config path provided by the user via an env var
+        3. The default config path
 
     This will fail if the first encountered configuration file is invalid.
-
-    On failure, returns default configuration.
     """
 
     # This prevents a Pydantic validator reuse error. For context see
     # https://github.com/streamlit/streamlit/issues/3218
     _FUNCS.clear()
 
-    env_config_path = getenv("FIDES__CONFIG_PATH")
+    env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
     if verbose:
         print(f"Loading config from: {config_path}")
+
     try:
         settings = toml.load(config_path)
 
@@ -142,9 +160,9 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         config.security = security_settings
         return config
     except FileNotFoundError:
-        print("No config file found")
+        print("No config file found.")
     except IOError:
-        echo_red("Error reading config file")
+        echo_red(f"Error reading config file: {config_path}")
 
     print("Using default configuration values.")
     security_settings = SecuritySettings()

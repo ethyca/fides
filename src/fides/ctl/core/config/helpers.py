@@ -3,12 +3,12 @@ import logging
 import os
 from os import environ, getenv
 from pathlib import Path
+from re import compile as regex
 from typing import Any, Dict, List, Union
 
 import toml
 from click import echo
 from pydantic import BaseSettings
-from re import compile as regex
 from toml import dump, load
 
 from fides.ctl.core.utils import echo_red
