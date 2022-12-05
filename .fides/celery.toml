@@ -1,3 +1,4 @@
+# Make this part of the full config
 event_queue_prefix = "fides_worker"
 task_default_queue = "fides"
 task_always_eager = true
