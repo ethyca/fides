@@ -15,7 +15,7 @@ from sqlalchemy.future import select
 
 from fides.api.ctl.database.session import async_session
 from fides.api.ctl.utils import errors
-from fides.lib.db.base import Base
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 
 # CRUD Functions

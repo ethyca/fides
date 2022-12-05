@@ -64,7 +64,7 @@ from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 from fides.lib.cryptography.cryptographic_util import hash_with_salt
-from fides.lib.db.base import Base
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.models.audit_log import AuditLog
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser

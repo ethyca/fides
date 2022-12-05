@@ -18,7 +18,7 @@ from fides.lib.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_SCOPES,
 )
-from fides.lib.db.base import Base
+from fides.lib.db.base import Base  # type: ignore[attr-defined]
 from fides.lib.db.session import get_db_engine, get_db_session
 from fides.lib.models.client import ClientDetail
 from fides.lib.models.fides_user import FidesUser
