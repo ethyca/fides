@@ -5,7 +5,7 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Dict, Optional, Tuple
 
 import toml
 from loguru import logger as log
@@ -48,9 +48,10 @@ class FidesConfig(FidesSettings):
     oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
 
     # Setting Subsections
+    # These should match the `settings_map` in `build_config`
     admin_ui: AdminUISettings
     cli: CLISettings
-    credentials: Dict[str, Dict] = {}
+    credentials: Dict[str, Dict]
     database: DatabaseSettings
     execution: ExecutionSettings
     logging: LoggingSettings
