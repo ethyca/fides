@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from fideslib.oauth.schemas.user import UserLogin
+from httpx import AsyncClient
 from loguru import logger as log
 from requests import PreparedRequest, Request, RequestException, Session
 
@@ -122,7 +123,11 @@ class FidesClient:
 
     @sync
     async def poll_for_request_completion(
-        self, privacy_request_id: str, timeout: int, interval: int
+        self,
+        privacy_request_id: str,
+        timeout: int,
+        interval: int,
+        async_client: AsyncClient | None = None,
     ) -> PrivacyRequestResponse:
         """
         Poll remote fides for status of privacy request with the given ID until it is complete.
@@ -143,6 +148,7 @@ class FidesClient:
             token=self.token,
             poll_interval_seconds=interval,
             timeout_seconds=timeout,
+            client=async_client,
         )
         if status.status == PrivacyRequestStatus.error:
             raise FidesError(

@@ -2,6 +2,7 @@ from typing import Dict
 from unittest import mock
 
 import pytest
+from httpx import AsyncClient
 from requests import HTTPError
 
 from fides.api.ctl.utils.errors import FidesError
@@ -212,7 +213,11 @@ class TestFidesClientUnit:
 
     @pytest.mark.asyncio
     def test_poll_for_completion(
-        self, db, policy, authenticated_fides_client: FidesClient
+        self,
+        db,
+        policy,
+        authenticated_fides_client: FidesClient,
+        async_api_client: AsyncClient,
     ):
         pr = PrivacyRequest.create(
             db=db,
@@ -227,12 +232,17 @@ class TestFidesClientUnit:
             privacy_request_id=pr.id,
             timeout=10,
             interval=1,
+            async_client=async_api_client,
         )
         assert pr_record.status == PrivacyRequestStatus.complete.value
 
     @pytest.mark.asyncio
     def test_poll_for_completion_errored(
-        self, db, policy, authenticated_fides_client: FidesClient
+        self,
+        db,
+        policy,
+        authenticated_fides_client: FidesClient,
+        async_api_client: AsyncClient,
     ):
 
         pr = PrivacyRequest.create(
@@ -248,12 +258,17 @@ class TestFidesClientUnit:
                 privacy_request_id=pr.id,
                 timeout=10,
                 interval=1,
+                async_client=async_api_client,
             )
         assert "encountered an error" in str(exc)
 
     @pytest.mark.asyncio
     def test_poll_for_completion_timeout(
-        self, db, policy, authenticated_fides_client: FidesClient
+        self,
+        db,
+        policy,
+        authenticated_fides_client: FidesClient,
+        async_api_client: AsyncClient,
     ):
         pr = PrivacyRequest.create(
             db=db,
@@ -265,7 +280,10 @@ class TestFidesClientUnit:
         )
         with pytest.raises(TimeoutError):
             pr_record = authenticated_fides_client.poll_for_request_completion(
-                privacy_request_id="p", interval=1, timeout=1
+                privacy_request_id="p",
+                interval=1,
+                timeout=1,
+                async_client=async_api_client,
             )
 
 
