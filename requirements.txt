@@ -37,7 +37,7 @@ pyyaml>=5,<6
 redis==3.5.3
 slowapi==0.1.5
 snowflake-sqlalchemy==1.4.3
-sqlalchemy[asyncio]==1.4.27
+sqlalchemy[asyncio,mypy]==1.4.27
 sqlalchemy-bigquery==1.4.4
 sqlalchemy-redshift==0.8.11
 sqlalchemy-stubs==0.4
