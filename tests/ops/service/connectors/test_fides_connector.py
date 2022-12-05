@@ -32,15 +32,15 @@ class TestFidesConnectorUnit:
 
     def test_connector_attributes_assigned(
         self,
-        test_fides_connector_overriden_polling: FidesConnector,
+        test_fides_connector_overridden_polling: FidesConnector,
         fides_connector_polling_overrides: Tuple[int, int],
     ):
         assert (
-            test_fides_connector_overriden_polling.polling_timeout
+            test_fides_connector_overridden_polling.polling_timeout
             == fides_connector_polling_overrides[0]
         )
         assert (
-            test_fides_connector_overriden_polling.polling_interval
+            test_fides_connector_overridden_polling.polling_interval
             == fides_connector_polling_overrides[1]
         )
 

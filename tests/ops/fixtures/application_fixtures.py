@@ -48,6 +48,7 @@ from fides.api.ops.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
+from fides.api.ops.service.connectors.fides.fides_client import FidesClient
 from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
@@ -1461,3 +1462,22 @@ def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistrat
             "opt_in": opt_in,
         },
     )
+
+
+@pytest.fixture(scope="function")
+def test_fides_client(
+    fides_connector_example_secrets: Dict[str, str], api_client
+) -> FidesClient:
+    return FidesClient(
+        fides_connector_example_secrets["uri"],
+        fides_connector_example_secrets["username"],
+        fides_connector_example_secrets["password"],
+    )
+
+
+@pytest.fixture(scope="function")
+def authenticated_fides_client(
+    test_fides_client: FidesClient,
+) -> FidesClient:
+    test_fides_client.login()
+    return test_fides_client

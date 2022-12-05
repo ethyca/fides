@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 from httpx import AsyncClient
-from requests import HTTPError
+from requests import HTTPError, Session
 
 from fides.api.ctl.utils.errors import FidesError
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
@@ -23,25 +23,6 @@ class MockResponse:
 
     def json(self):
         return self.json_data
-
-
-@pytest.fixture(scope="function")
-def test_fides_client(
-    fides_connector_example_secrets: Dict[str, str],
-) -> FidesClient:
-    return FidesClient(
-        fides_connector_example_secrets["uri"],
-        fides_connector_example_secrets["username"],
-        fides_connector_example_secrets["password"],
-    )
-
-
-@pytest.fixture(scope="function")
-def authenticated_fides_client(
-    test_fides_client: FidesClient,
-) -> FidesClient:
-    test_fides_client.login()
-    return test_fides_client
 
 
 @pytest.fixture(scope="function")
@@ -329,11 +310,15 @@ class TestFidesClientIntegration:
         authenticated_fides_client: FidesClient,
         policy,
         db,
+        monkeypatch,
+        api_client,
     ):
         """
         Test that properly configured fides client can create and execute a valid access privacy request
         Inspired by `test_privacy_request_endpoints.TestCreatePrivacyRequest`
         """
+        monkeypatch.setattr(Session, "send", api_client.send)
+
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",
             identity={"email": "test@example.com"},
@@ -347,20 +332,22 @@ class TestFidesClientIntegration:
         pr.delete(db=db)
 
     def test_request_status_no_privacy_request(
-        self, authenticated_fides_client: FidesClient
+        self, authenticated_fides_client: FidesClient, monkeypatch, api_client
     ):
         """
         Test that request status can be called successfully with no
         privacy request ID specified. This acts as a basic test to
         validate we can successfully hit authenticated endpoints.
         """
-
+        monkeypatch.setattr(Session, "send", api_client.send)
         statuses = authenticated_fides_client.request_status()
         assert len(statuses) == 0
 
     def test_request_status_privacy_request(
-        self, authenticated_fides_client: FidesClient, policy
+        self, authenticated_fides_client: FidesClient, policy, monkeypatch, api_client
     ):
+        monkeypatch.setattr(Session, "send", api_client.send)
+
         pr_id = authenticated_fides_client.create_privacy_request(
             external_id="test_external_id",
             identity={"email": "test@example.com"},

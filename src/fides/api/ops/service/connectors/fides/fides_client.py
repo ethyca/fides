@@ -97,7 +97,7 @@ class FidesClient:
     ) -> str:
         """
         Create privacy request on remote fides by hitting privacy request endpoint
-        Retruns the created privacy request ID
+        Returns the created privacy request ID
         """
         pr: PrivacyRequestCreate = PrivacyRequestCreate(
             external_id=external_id,
