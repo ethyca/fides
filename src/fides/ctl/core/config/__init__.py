@@ -5,7 +5,7 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Type
 
 import toml
 from loguru import logger as log
@@ -36,22 +36,9 @@ from .utils import (
 
 class FidesConfig(FidesSettings):
     """
-    Composite class that encapsulates all of the config subsections.
+    Composite class that encapsulates all of the config subsections
+    as well as root-level values.
     """
-
-    # Setting Subsections
-    admin_ui: AdminUISettings = AdminUISettings()
-    cli: CLISettings = CLISettings()
-    credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings = DatabaseSettings()
-    execution: ExecutionSettings = ExecutionSettings()
-    logging: LoggingSettings = LoggingSettings()
-    notifications: NotificationSettings = NotificationSettings()
-    redis: RedisSettings = RedisSettings()
-    # Use 'construct' to avoid running validation
-    # This allows us to use the correct type but populate later
-    security: SecuritySettings = SecuritySettings.construct()
-    user: UserSettings = UserSettings()
 
     # Root Settings
     test_mode: bool = get_test_mode()
@@ -59,6 +46,18 @@ class FidesConfig(FidesSettings):
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
     oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
+
+    # Setting Subsections
+    admin_ui: AdminUISettings
+    cli: CLISettings
+    credentials: Dict[str, Dict] = {}
+    database: DatabaseSettings
+    execution: ExecutionSettings
+    logging: LoggingSettings
+    notifications: NotificationSettings
+    redis: RedisSettings
+    security: SecuritySettings
+    user: UserSettings
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -108,6 +107,42 @@ def censor_config(config: FidesConfig) -> Dict[str, Any]:
     return filtered
 
 
+def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
+    """
+    This function builds and instantiates a FidesConfig.
+
+    It will pull from the provided config_dict when possible for subsections,
+    otherwise instantiating the settings with default values.
+
+    The settings_map will need to be kept up-to-date manually with the
+    expected subsections of the FidesConfig.
+    """
+    settings_map: Dict[str, Any] = {
+        "admin_ui": AdminUISettings,
+        "cli": CLISettings,
+        "database": DatabaseSettings,
+        "execution": ExecutionSettings,
+        "logging": LoggingSettings,
+        "notifications": NotificationSettings,
+        "redis": RedisSettings,
+        "security": SecuritySettings,
+        "user": UserSettings,
+    }
+
+    for key, value in settings_map.items():
+        settings_map[key] = value.parse_obj(config_dict.get(key, {}))
+
+    # credentials specific logic for populating environment variable configs.
+    # this is done to allow overrides without hard typed pydantic models
+    config_environment_dict = config_dict.get("credentials", {})
+    settings_map["credentials"] = merge_credentials_environment(
+        credentials_dict=config_environment_dict
+    )
+
+    fides_config = FidesConfig(**settings_map)
+    return fides_config
+
+
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "", verbose: bool = False) -> FidesConfig:
     """
@@ -133,26 +168,10 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     try:
         settings = toml.load(config_path)
-
-        # credentials specific logic for populating environment variable configs.
-        # this is done to allow overrides without hard typed pydantic models
         settings = handle_deprecated_fields(settings)
-
         # Called after `handle_deprecated_fields` to ensure ENV vars are respected
         settings = handle_deprecated_env_variables(settings)
-
-        config_environment_dict = settings.get("credentials", {})
-        settings["credentials"] = merge_credentials_environment(
-            credentials_dict=config_environment_dict
-        )
-
-        # This is required to set security settings from the environment
-        # if that section of the config is missing
-        # Load Explicitly
-        security_settings = SecuritySettings.parse_obj(settings.get("security", {}))
-
-        config = FidesConfig.parse_obj(settings)
-        config.security = security_settings
+        config = build_config(config_dict=settings)
         return config
     except FileNotFoundError:
         print("No config file found.")
@@ -160,7 +179,6 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
         echo_red(f"Error reading config file: {config_path}")
 
     print("Using default configuration values.")
-    security_settings = SecuritySettings()
-    config = FidesConfig(security=security_settings)
+    config = build_config(config_dict={})
 
     return config
