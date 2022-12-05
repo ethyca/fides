@@ -28,7 +28,9 @@ import dynamic from "next/dynamic";
 import * as Yup from "yup";
 import { ModalViews } from "../types";
 
-const PhoneInput = dynamic(() => import("react-phone-number-input/input"), {
+import "react-phone-number-input/style.css";
+
+const PhoneInput = dynamic(() => import("react-phone-number-input"), {
   ssr: false,
 });
 
@@ -289,6 +291,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   type="tel"
                   focusBorderColor="primary.500"
                   placeholder="+1 000 000 0000"
+                  defaultCountry="US"
                   onChange={(value) => {
                     setFieldValue("phone", value, true);
                   }}

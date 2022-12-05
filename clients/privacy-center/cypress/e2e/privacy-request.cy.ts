@@ -30,10 +30,20 @@ describe("Privacy request", () => {
       cy.getByTestId("privacy-request-form").within(() => {
         cy.get("input#name").type("Jenny");
         cy.get("input#email").type("jenny@example.com");
-        cy.get("input#phone").type("1 555 867 5309");
+
+        cy.get("input#phone").type("555 867 5309");
+        cy.get("select[name=phoneCountry]").should("have.value", "US");
+        cy.get("input#phone").clear().type("+44 55 8675 3090");
+        cy.get("select[name=phoneCountry]").should("have.value", "GB");
+
         cy.get("button").contains("Continue").click();
       });
-      cy.wait("@postPrivacyRequest");
+      cy.wait("@postPrivacyRequest").then((interception) => {
+        expect(interception.request.body[0].identity).to.eql({
+          email: "jenny@example.com",
+          phone_number: "+445586753090",
+        });
+      });
 
       cy.getByTestId("verification-form").within(() => {
         cy.get("input").type("112358");
