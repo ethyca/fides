@@ -118,6 +118,9 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     The settings_map will need to be kept up-to-date manually with the
     expected subsections of the FidesConfig.
     """
+    config_dict = handle_deprecated_fields(config_dict)
+    config_dict = handle_deprecated_env_variables(config_dict)
+
     settings_map: Dict[str, Any] = {
         "admin_ui": AdminUISettings,
         "cli": CLISettings,
@@ -133,8 +136,8 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     for key, value in settings_map.items():
         settings_map[key] = value.parse_obj(config_dict.get(key, {}))
 
-    # credentials specific logic for populating environment variable configs.
-    # this is done to allow overrides without hard typed pydantic models
+    # logic for populating the user-defined credentials sub-settings.
+    # this is done to allow overrides without typed pydantic models
     config_environment_dict = config_dict.get("credentials", {})
     settings_map["credentials"] = merge_credentials_environment(
         credentials_dict=config_environment_dict
@@ -169,9 +172,6 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     try:
         settings = toml.load(config_path)
-        settings = handle_deprecated_fields(settings)
-        # Called after `handle_deprecated_fields` to ensure ENV vars are respected
-        settings = handle_deprecated_env_variables(settings)
         config = build_config(config_dict=settings)
         return config
     except FileNotFoundError:
