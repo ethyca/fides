@@ -14,7 +14,7 @@ env:
 
 jobs:
   Build:
-    if: contains(github.event.pull_request.name, '#nobuild') == false
+    if: contains(github.event.pull_request.labels.*.name, 'dont build') == false
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
