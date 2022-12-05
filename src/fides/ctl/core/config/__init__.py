@@ -85,47 +85,6 @@ class FidesConfig(FidesSettings):
                 )
 
 
-def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:
-    """Custom logic for handling deprecated values."""
-
-    if settings.get("api") and not settings.get("database"):
-        api_settings = settings.pop("api")
-        database_settings = {}
-        database_settings["user"] = api_settings.get("database_user")
-        database_settings["password"] = api_settings.get("database_password")
-        database_settings["server"] = api_settings.get("database_host")
-        database_settings["port"] = api_settings.get("database_port")
-        database_settings["db"] = api_settings.get("database_name")
-        database_settings["test_db"] = api_settings.get("test_database_name")
-        settings["database"] = database_settings
-
-    return settings
-
-
-def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Custom logic for handling deprecated ENV variable configuration.
-    """
-
-    deprecated_env_vars = regex(r"FIDES__API__(\w+)")
-
-    for key, val in environ.items():
-        match = deprecated_env_vars.search(key)
-        if match:
-            setting = match.group(1).lower()
-            setting = setting[setting.startswith("database_") and len("database_") :]
-            if setting == "host":
-                setting = "server"
-            if setting == "name":
-                setting = "db"
-            if setting == "test_database_name":
-                setting = "test_db"
-
-            settings["database"][setting] = val
-
-    return settings
-
-
 def censor_config(config: FidesConfig) -> Dict[str, Any]:
     """
     Returns a config that is safe to expose over the API. This function will

@@ -1,8 +1,12 @@
 """This module contains logic related to loading/manipulatin/writing the config."""
+from pydantic import BaseSettings
 import logging
+import regex
 import os
+from os import environ
 from pathlib import Path
 from typing import Any, Dict, List, Union
+import toml
 
 from click import echo
 from toml import dump, load
@@ -107,3 +111,95 @@ def update_config_file(  # type: ignore
     for key, value in updates.items():
         for subkey, val in value.items():
             echo(f"\tSet {key}.{subkey} = {val}")
+
+
+def create_config_file(
+    config: BaseSettings, fides_directory_location: str = "."
+) -> str:
+    """
+    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
+
+    Returns the config_path if successful
+    """
+    # TODO: These important constants should live elsewhere
+    fides_dir_name = ".fides"
+    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
+    config_file_name = "fides.toml"
+    config_path = f"{fides_dir_path}/{config_file_name}"
+
+    included_values = {
+        "database": {
+            "server",
+            "user",
+            "password",
+            "port",
+            "db",
+        },
+        "logging": {
+            "level",
+            "destination",
+            "serialization",
+        },
+        "cli": {"server_protocol", "server_host", "server_port"},
+    }
+
+    # create the .fides dir if it doesn't exist
+    if not os.path.exists(fides_dir_path):
+        os.mkdir(fides_dir_path)
+        echo(f"Created a '{fides_dir_path}' directory.")
+    else:
+        echo(f"Directory '{fides_dir_path}' already exists.")
+
+    # create a fides.toml config file if it doesn't exist
+    if not os.path.isfile(config_path):
+        with open(config_path, "w", encoding="utf-8") as config_file:
+            config_dict = config.dict(include=included_values)
+            toml.dump(config_dict, config_file)
+        echo(f"Created a fides config file: {config_path}")
+    else:
+        echo(f"Configuration file already exists: {config_path}")
+
+    echo("To learn more about configuring fides, see:")
+    echo("\thttps://ethyca.github.io/fides/installation/configuration/")
+
+    return config_path
+
+def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:
+    """Custom logic for handling deprecated values."""
+
+    if settings.get("api") and not settings.get("database"):
+        api_settings = settings.pop("api")
+        database_settings = {}
+        database_settings["user"] = api_settings.get("database_user")
+        database_settings["password"] = api_settings.get("database_password")
+        database_settings["server"] = api_settings.get("database_host")
+        database_settings["port"] = api_settings.get("database_port")
+        database_settings["db"] = api_settings.get("database_name")
+        database_settings["test_db"] = api_settings.get("test_database_name")
+        settings["database"] = database_settings
+
+    return settings
+
+
+def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Custom logic for handling deprecated ENV variable configuration.
+    """
+
+    deprecated_env_vars = regex(r"FIDES__API__(\w+)")
+
+    for key, val in environ.items():
+        match = deprecated_env_vars.search(key)
+        if match:
+            setting = match.group(1).lower()
+            setting = setting[setting.startswith("database_") and len("database_") :]
+            if setting == "host":
+                setting = "server"
+            if setting == "name":
+                setting = "db"
+            if setting == "test_database_name":
+                setting = "test_db"
+
+            settings["database"][setting] = val
+
+    return settings

@@ -13,7 +13,6 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import click
 import requests
-import toml
 from fideslog.sdk.python.client import AnalyticsClient
 from fideslog.sdk.python.event import AnalyticsEvent
 from fideslog.sdk.python.exceptions import AnalyticsError
@@ -115,59 +114,6 @@ def handle_cli_response(
         finally:
             sys.exit(1)
     return response
-
-
-def create_config_file(ctx: click.Context, fides_directory_location: str = ".") -> str:
-    """
-    Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
-
-    Returns the config_path if successful
-    """
-    # TODO: These important constants should live elsewhere
-    fides_dir_name = ".fides"
-    fides_dir_path = f"{fides_directory_location}/{fides_dir_name}"
-    config_file_name = "fides.toml"
-    config_path = f"{fides_dir_path}/{config_file_name}"
-
-    config = ctx.obj["CONFIG"]
-
-    included_values = {
-        "database": {
-            "server",
-            "user",
-            "password",
-            "port",
-            "db",
-        },
-        "logging": {
-            "level",
-            "destination",
-            "serialization",
-        },
-        "cli": {"server_protocol", "server_host", "server_port"},
-    }
-
-    # create the .fides dir if it doesn't exist
-    print_divider()
-    if not os.path.exists(fides_dir_path):
-        os.mkdir(fides_dir_path)
-        click.echo(f"Created a '{fides_dir_path}' directory.")
-    else:
-        click.echo(f"Directory '{fides_dir_path}' already exists.")
-
-    # create a fides.toml config file if it doesn't exist
-    if not os.path.isfile(config_path):
-        with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)
-            toml.dump(config_dict, config_file)
-        click.echo(f"Created a fides config file: {config_path}")
-    else:
-        click.echo(f"Configuration file already exists: {config_path}")
-
-    click.echo("To learn more about configuring fides, see:")
-    click.echo("\thttps://ethyca.github.io/fides/installation/configuration/")
-
-    return config_path
 
 
 def is_user_registered(ctx: click.Context) -> bool:

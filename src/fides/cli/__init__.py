@@ -9,9 +9,9 @@ import fides
 from fides.cli.utils import (
     check_and_update_analytics_config,
     check_server,
-    create_config_file,
 )
 from fides.ctl.core.config import get_config
+from fides.ctl.core.config.helpers import create_config_file
 
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
