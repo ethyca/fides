@@ -131,6 +131,7 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
     """
 
     check_docker_version()
+    config = ctx.obj["CONFIG"]
     echo_green("Docker version is compatible, starting deploy...")
 
     if not no_pull:
@@ -145,8 +146,8 @@ def up(ctx: click.Context, no_pull: bool = False, no_init: bool = False) -> None
         # Deployment is ready! Perform the same steps as `fides init` to setup CLI
         if not no_init:
             echo_green("Deployment successful! Initializing fides...")
-            config_path = create_config_file(config=ctx.obj["CONFIG"])
-            check_and_update_analytics_config(ctx=ctx, config_path=config_path)
+            config_path = create_config_file(config=config)
+            check_and_update_analytics_config(config=config, config_path=config_path)
         else:
             echo_green(
                 "Deployment successful! Skipping CLI initialization (run 'fides init' to initialize)"

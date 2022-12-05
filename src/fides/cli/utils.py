@@ -140,7 +140,9 @@ def register_user(config: FidesConfig, email: str, organization: str) -> None:
     )
 
 
-def check_and_update_analytics_config(config: FidesConfig, config_path: str) -> FidesConfig:
+def check_and_update_analytics_config(
+    config: FidesConfig, config_path: str
+) -> FidesConfig:
     """
     Ensure the analytics-related config is present. If not,
     prompt the user to opt-in to analytics and/or update the
