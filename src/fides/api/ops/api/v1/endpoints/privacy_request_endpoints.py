@@ -297,7 +297,7 @@ def privacy_request_csv_download(
 
 def execution_and_audit_logs_by_dataset_name(
     self: PrivacyRequest,
-) -> DefaultDict[str, List["ExecutionLog"]]:
+) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
     """
     Returns a combined mapping of execution and audit logs for the given privacy request.
 

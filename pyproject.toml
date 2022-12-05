@@ -40,6 +40,7 @@ module = [
   "celery.*",
   "dask.*",
   "deepdiff.*",
+  "fides.lib.*",
   "fideslang.*",
   "fideslog.*",
   "firebase_admin.*",

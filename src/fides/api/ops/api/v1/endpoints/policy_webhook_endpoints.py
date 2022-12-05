@@ -105,7 +105,8 @@ def put_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     keys = [
-        get_key_from_data(webhook.dict(), webhook_cls.__name__) for webhook in webhooks
+        get_key_from_data(webhook.dict(), type(webhook_cls).__name__)
+        for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
     # Because resources are dependent on each other for order, we want to make sure that we don't have multiple
