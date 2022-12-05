@@ -221,7 +221,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}

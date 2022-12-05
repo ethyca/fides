@@ -19,7 +19,7 @@ const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
   action,
 }) => (
   <>
-    <HStack justifyContent="center">
+    <HStack justifyContent="center" data-testid="request-submitted">
       <Image
         mt="24px"
         src="/green-check.svg"
@@ -28,7 +28,12 @@ const RequestSubmitted: React.FC<RequestSubmittedProps> = ({
         height="48px"
       />
     </HStack>
-    <ModalHeader pt={6} pb={0} textAlign="center">
+    <ModalHeader
+      pt={6}
+      pb={0}
+      textAlign="center"
+      data-testid="request-submitted"
+    >
       Request submitted
     </ModalHeader>
 
