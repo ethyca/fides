@@ -44,7 +44,7 @@ from fides.ctl.core.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.ctl.core.config.utils import get_config_from_file, update_config_file
+from fides.ctl.core.config.helpers import get_config_from_file, update_config_file
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
 FIDES_ASCII_ART = """

@@ -6,7 +6,7 @@ config sections into a single config.
 from functools import lru_cache
 from os import environ, getenv
 from re import compile as regex
-from typing import Any, Dict, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import toml
 from loguru import logger as log
@@ -26,7 +26,7 @@ from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import DEFAULT_CONFIG_PATH, get_test_mode
+from .utils import DEFAULT_CONFIG_PATH, get_test_mode, CONFIG_KEY_ALLOWLIST
 
 
 class FidesConfig(FidesSettings):
@@ -84,7 +84,7 @@ class FidesConfig(FidesSettings):
                     f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",  # type: ignore
                 )
 
-# Cleanup
+
 def handle_deprecated_fields(settings: Dict[str, Any]) -> Dict[str, Any]:
     """Custom logic for handling deprecated values."""
 
@@ -124,45 +124,6 @@ def handle_deprecated_env_variables(settings: Dict[str, Any]) -> Dict[str, Any]:
             settings["database"][setting] = val
 
     return settings
-
-
-CONFIG_KEY_ALLOWLIST = {
-    "cli": ["server_host", "server_port"],
-    "user": ["analytics_opt_out"],
-    "logging": ["level"],
-    "database": [
-        "server",
-        "user",
-        "port",
-        "db",
-        "test_db",
-    ],
-    "notifications": [
-        "send_request_completion_notification",
-        "send_request_receipt_notification",
-        "send_request_review_notification",
-        "notification_service_type",
-    ],
-    "redis": [
-        "host",
-        "port",
-        "charset",
-        "decode_responses",
-        "default_ttl_seconds",
-        "db_index",
-    ],
-    "security": [
-        "cors_origins",
-        "encoding",
-        "oauth_access_token_expire_minutes",
-    ],
-    "execution": [
-        "task_retry_count",
-        "task_retry_delay",
-        "task_retry_backoff",
-        "require_manual_request_approval",
-    ],
-}
 
 
 def censor_config(config: FidesConfig) -> Dict[str, Any]:
