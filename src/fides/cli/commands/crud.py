@@ -36,6 +36,8 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View a resource from the server as a JSON object.
     """
+    
+    # Print it as TOML
     config = ctx.obj["CONFIG"]
     handle_cli_response(
         _api.get(
