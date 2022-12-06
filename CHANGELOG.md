@@ -25,6 +25,10 @@ The types of changes are:
 
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 
+### Developer Experience
+
+* Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
