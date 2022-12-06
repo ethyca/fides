@@ -77,6 +77,10 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "user:create",
   },
   {
+    privilege: "Reset their own password",
+    scope: "user:reset-password",
+  },
+  {
     privilege: "Assign user permissions",
     scope: "user-permission:create",
   },
