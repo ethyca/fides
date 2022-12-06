@@ -682,6 +682,15 @@ def create_or_update_privacy_request_notifications(
     *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
 ) -> PrivacyRequestNotificationInfo:
     """Create or update list of email addresses and number of failures for privacy request notifications."""
+    if not request_body.email_addresses:
+        info = PrivacyRequestNotifications.all(db)
+        if info:
+            info[0].delete(db)
+        return PrivacyRequestNotificationInfo(
+            email_addresses=[],
+            notify_after_failures=request_body.notify_after_failures,
+        )
+
     notification_info = {
         "email": ", ".join(request_body.email_addresses),
         "notify_after_failures": request_body.notify_after_failures,

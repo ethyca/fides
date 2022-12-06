@@ -4510,6 +4510,52 @@ class TestCreatePrivacyRequestErrorNotification:
         assert response.status_code == 200
         assert response.json() == data
 
+    def test_create_privacy_request_notification_info_deletes_addresses(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+        db,
+    ):
+        PrivacyRequestNotifications.create(
+            db=db,
+            data={"email": "test@email.com, test2@email.com", "notify_after_failures": 10},
+        )
+        auth_header = generate_auth_header(
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE]
+        )
+
+        data = {
+            "email_addresses": [],
+            "notify_after_failures": 5,
+        }
+
+        response = api_client.put(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == data
+
+        info = PrivacyRequestNotifications.all(db)
+        assert info == []
+
+    def test_create_privacy_request_notification_info_no_addresses(
+        self,
+        url,
+        generate_auth_header,
+        api_client,
+    ):
+        auth_header = generate_auth_header(
+            scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE]
+        )
+
+        data = {
+            "email_addresses": [],
+            "notify_after_failures": 1,
+        }
+
+        response = api_client.put(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+        assert response.json() == data
+
     def test_create_privacy_requests_notification_info_unauthenticated(
         self, api_client, url
     ):
