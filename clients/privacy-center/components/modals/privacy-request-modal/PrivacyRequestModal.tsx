@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from "react";
+
+import { config } from "~/constants";
+
 import RequestModal from "../RequestModal";
-
-import config from "../../../config/config.json";
-
 import PrivacyRequestForm from "./PrivacyRequestForm";
 import VerificationForm from "../VerificationForm";
 import RequestSubmitted from "./RequestSubmitted";
