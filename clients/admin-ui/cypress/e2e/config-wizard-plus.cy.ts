@@ -1,10 +1,17 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { ClusterHealth } from "~/types/api";
+
 /**
  * Handy function to bring us straight to the data flow scanner.
  * This could be put in a beforeEach, but then you can't overwrite intercepts
  */
 const goToDataFlowScanner = () => {
+  // Go through the initial config wizard steps
+  cy.visit("/add-systems");
+  cy.getByTestId("guided-setup-btn").click();
+  cy.wait("@getOrganization");
+
   // Select Runtime scanner to move to scan step.
   cy.getByTestId("add-system-form");
   cy.getByTestId("data-flow-scan-btn").click();
@@ -24,16 +31,72 @@ describe("Config wizard with plus settings", () => {
     cy.intercept("PUT", "/api/v1/organization**", {
       fixture: "organization.json",
     }).as("updateOrganization");
-    stubPlus(true);
+  });
 
-    // Go through the initial config wizard steps
-    cy.visit("/add-systems");
-    cy.getByTestId("guided-setup-btn").click();
-    cy.wait("@getOrganization");
+  describe("Data flow scanner health", () => {
+    it("Disables data flow scanner button if it is not enabled", () => {
+      stubPlus(true, {
+        core_fidesctl_version: "1.9.6",
+        fidesctl_plus_server: "healthy",
+        fidescls_version: "1.0.3",
+        system_scanner: {
+          enabled: false,
+          cluster_health: null,
+          cluster_error: null,
+        },
+      });
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.getByTestId("add-system-form");
+
+      cy.wait("@getPlusHealth");
+      cy.getByTestId("add-system-form");
+      cy.getByTestId("data-flow-scan-btn").should("be.disabled");
+      cy.getByTestId("cluster-health-indicator").should("not.exist");
+    });
+
+    it("Can show the scanner as unhealthy", () => {
+      stubPlus(true, {
+        core_fidesctl_version: "1.9.6",
+        fidesctl_plus_server: "healthy",
+        fidescls_version: "1.0.3",
+        system_scanner: {
+          enabled: true,
+          cluster_health: ClusterHealth.UNHEALTHY,
+          cluster_error: null,
+        },
+      });
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.getByTestId("add-system-form");
+
+      cy.wait("@getPlusHealth");
+      cy.getByTestId("add-system-form");
+      cy.getByTestId("data-flow-scan-btn").should("be.disabled");
+      cy.getByTestId("cluster-health-indicator")
+        .invoke("attr", "title")
+        .should("eq", "Cluster is unhealthy");
+    });
+
+    it("Can show the scanner as enabled and healthy", () => {
+      stubPlus(true);
+      cy.visit("/add-systems");
+      cy.getByTestId("guided-setup-btn").click();
+      cy.getByTestId("add-system-form");
+
+      cy.wait("@getPlusHealth");
+      cy.getByTestId("add-system-form");
+      cy.getByTestId("data-flow-scan-btn").should("be.enabled");
+      cy.getByTestId("cluster-health-indicator")
+        .invoke("attr", "title")
+        .should("eq", "Cluster is connected and healthy");
+    });
   });
 
   describe("Data flow scanner steps", () => {
     beforeEach(() => {
+      stubPlus(true);
+
       // Stub scan endpoints
       cy.intercept("PUT", "/api/v1/plus/scan*", {
         delay: 500,
