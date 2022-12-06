@@ -17,6 +17,7 @@ from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from jose import exceptions
 from jose.constants import ALGORITHMS
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
@@ -125,6 +126,7 @@ async def verify_oauth_client(
     if not
     """
     if authorization is None:
+        logger.debug("No authorization supplied.")
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
@@ -132,10 +134,12 @@ async def verify_oauth_client(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
     except exceptions.JWEParseError as exc:
+        logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
     if not issued_at:
+        logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     if is_token_expired(
@@ -146,10 +150,12 @@ async def verify_oauth_client(
 
     assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
     if not set(security_scopes.scopes).issubset(assigned_scopes):
+        logger.debug("Auth token missing required scopes.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
+        logger.debug("No client_id included in auth token.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
@@ -158,10 +164,12 @@ async def verify_oauth_client(
     )
 
     if not client:
+        logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     if not set(assigned_scopes).issubset(set(client.scopes)):
         # If the scopes on the token are not a subset of the scopes available
         # to the associated oauth client, this token is not valid
+        logger.debug("Client no longer allowed to issue these scopes.")
         raise AuthorizationError(detail="Not Authorized for this action")
     return client
