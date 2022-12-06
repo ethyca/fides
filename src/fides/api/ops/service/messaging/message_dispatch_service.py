@@ -40,7 +40,7 @@ def dispatch_message_task(
     self: DatabaseTask,
     message_meta: Dict[str, Any],
     service_type: Optional[str],
-    to_identity: Identity,
+    to_identity: Dict[str, Any],
 ) -> None:
     """
     A wrapper function to dispatch a message task into the Celery queues
@@ -50,7 +50,7 @@ def dispatch_message_task(
         dispatch_message(
             db,
             schema.action_type,
-            to_identity,
+            Identity.parse_obj(to_identity),
             service_type,
             schema.body_params,
         )
@@ -136,16 +136,46 @@ def dispatch_message(
     )
 
 
-def _build_sms(
+def _build_sms(  # pylint: disable=too-many-return-statements
     action_type: MessagingActionType,
     body_params: Any,
 ) -> str:
+    separator = ","
     if action_type == MessagingActionType.SUBJECT_IDENTITY_VERIFICATION:
         return (
             f"Your privacy request verification code is {body_params.verification_code}. "
             f"Please return to the Privacy Center and enter the code to continue. "
             f"This code will expire in {body_params.get_verification_code_ttl_minutes()} minutes"
         )
+    if action_type == MessagingActionType.CONSENT_REQUEST:
+        return (
+            "Your consent request verification code is {{code}}. "
+            "Please return to the consent request page and enter the code to continue. "
+            "This code will expire in {{minutes}} minutes"
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_RECEIPT:
+        if len(body_params.request_types) > 1:
+            return f"The following requests have been received: {separator.join(body_params.request_types)}"
+        return f"Your {body_params.request_types[0]} request has been received"
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS:
+        if len(body_params.download_links) > 1:
+            return (
+                "Your data access has been completed and can be downloaded at the following links. "
+                "For security purposes, these secret links will expire in 24 hours: "
+                f"{separator.join(body_params.download_links)}"
+            )
+        return (
+            f"Your data access has been completed and can be downloaded at {body_params.download_links[0]}. "
+            f"For security purposes, this secret link will expire in 24 hours."
+        )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
+        return "Your privacy request for deletion has been completed."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
+        return "Your privacy request has been approved and is currently processing."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
+        if body_params.rejection_reason:
+            return f"Your privacy request has been denied for the following reason: {body_params.rejection_reason}"
+        return "Your privacy request has been denied."
     logger.error("Message action type %s is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"

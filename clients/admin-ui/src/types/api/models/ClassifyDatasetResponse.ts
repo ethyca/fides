@@ -3,5 +3,5 @@
 /* eslint-disable */
 
 export type ClassifyDatasetResponse = {
-  classify_instances: Array<any>;
+  classify_instances: Array<Record<string, string>>;
 };

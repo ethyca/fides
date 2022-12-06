@@ -2,23 +2,26 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Stripe SaaS Config
   type: stripe
-  description: A sample schema representing the Stripe connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Stripe connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
       default_value: api.stripe.com
     - name: api_key
     - name: payment_types
-    - name: page_size
 
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: api_key
       configuration:
-        token: <api_key>
+        headers:
+          - name: Authorization
+            value: Bearer <api_key>
+          - name: Stripe-Version
+            value: "2022-08-01"
 
   test_request:
     method: GET
@@ -28,15 +31,28 @@ saas_config:
     - name: customer
       requests:
         read:
-          method: GET
-          path: /v1/customers
-          query_params:
-            - name: email
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
-          data_path: data
+          - method: GET
+            path: /v1/customers
+            query_params:
+              - name: email
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: data
+          - method: GET
+            path: /v1/customers/search
+            headers:
+              - name: Content-Type
+                value: application/x-www-form-urlencoded
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            body: |
+              {
+                "query": "phone:'<phone_number>'"
+              }
+            data_path: data
         update:
           method: POST
           path: /v1/customers/<customer_id>
@@ -62,15 +78,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -86,15 +100,13 @@ saas_config:
             - name: charge
               value: <charge_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: charge_id
               references:
                 - dataset: <instance_fides_key>
                   field: charge.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -110,15 +122,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -134,7 +144,7 @@ saas_config:
             - name: type
               value: <type>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
@@ -143,8 +153,6 @@ saas_config:
                   direction: from
             - name: type
               connector_param: payment_types
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -176,15 +184,13 @@ saas_config:
             - name: object
               value: bank_account
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -221,15 +227,13 @@ saas_config:
             - name: object
               value: card
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -266,15 +270,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -288,15 +290,13 @@ saas_config:
           path: /v1/customers/<customer_id>/balance_transactions
           query_params:
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -310,15 +310,13 @@ saas_config:
           path: /v1/customers/<customer_id>/tax_ids
           query_params:
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -348,15 +346,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -382,15 +378,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor
@@ -416,15 +410,13 @@ saas_config:
             - name: customer
               value: <customer_id>
             - name: limit
-              value: <limit>
+              value: 100
           param_values:
             - name: customer_id
               references:
                 - dataset: <instance_fides_key>
                   field: customer.id
                   direction: from
-            - name: limit
-              connector_param: page_size
           data_path: data
           pagination:
             strategy: cursor

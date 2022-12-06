@@ -30,14 +30,20 @@ def stripe_secrets(saas_config):
         "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
         or secrets["payment_types"],
-        "page_size": pydash.get(saas_config, "stripe.page_size")
-        or secrets["page_size"],
     }
 
 
 @pytest.fixture(scope="session")
 def stripe_identity_email(saas_config):
     return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def stripe_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "stripe.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="session")

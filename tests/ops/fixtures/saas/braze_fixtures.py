@@ -39,6 +39,14 @@ def braze_identity_email(saas_config):
 
 
 @pytest.fixture(scope="session")
+def braze_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "braze.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
+
+
+@pytest.fixture(scope="session")
 def braze_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
@@ -115,7 +123,6 @@ def braze_erasure_data(
                 "first_name": "Walter",
                 "last_name": "White",
                 "email": braze_erasure_identity_email,
-                "phone": "+16175551212",
                 "country": "US",
                 "date_of_first_session": "2022-09-14T16:14:56+00:00",
                 "dob": "1980-12-21",

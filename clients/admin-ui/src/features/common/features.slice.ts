@@ -1,4 +1,5 @@
-import { useHasPlus } from "./plus.slice";
+import { useAppSelector } from "~/app/hooks";
+import { selectHealth, useHasPlus } from "~/features/plus/plus.slice";
 
 /**
  * Features are currently stateless and only use the Plus API. However, this a ".slice" file because
@@ -6,12 +7,17 @@ import { useHasPlus } from "./plus.slice";
  */
 export interface Features {
   plus: boolean;
+  dataFlowScanning: boolean;
 }
 
 export const useFeatures = (): Features => {
   const hasPlus = useHasPlus();
+  const health = useAppSelector(selectHealth);
+
+  const dataFlowScanning = health ? !!health.system_scanner.enabled : false;
 
   return {
     plus: hasPlus,
+    dataFlowScanning,
   };
 };

@@ -58,7 +58,8 @@ module = [
   "sqlalchemy.future.*",
   "sqlalchemy_utils.*",
   "twilio.*",
-  "uvicorn.*"
+  "uvicorn.*",
+  "validators.*",
 ]
 ignore_missing_imports = true
 
@@ -189,6 +190,7 @@ markers = [
     "integration_datadog",
     "integration_domo",
     "integration_doordash",
+    "integration_fullstory",
     "integration_segment",
     "integration_sendgrid",
     "integration_auth0",

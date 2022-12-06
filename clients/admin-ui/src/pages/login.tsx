@@ -16,18 +16,24 @@ import Image from "common/Image";
 import { Formik } from "formik";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { INDEX_ROUTE } from "../constants";
+import { CONFIG_WIZARD_ROUTE, DATAMAP_ROUTE, SYSTEM_ROUTE } from "~/constants";
+import { useFeatures } from "~/features/common/features.slice";
+import { resolveLink } from "~/features/common/nav/zone-config";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+
 import { login, selectToken, useLoginMutation } from "../features/auth";
 
 const useLogin = () => {
+  const { data: systems, isLoading: isSystemsLoading } =
+    useGetAllSystemsQuery();
   const [loginRequest, { isLoading }] = useLoginMutation();
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
+  const features = useFeatures();
 
   const initialValues = {
     email: "",
@@ -70,8 +76,26 @@ const useLogin = () => {
     return errors;
   };
 
-  if (token) {
-    router.push(INDEX_ROUTE);
+  const getRedirectRoute = () => {
+    if (!token || isSystemsLoading) {
+      return undefined;
+    }
+
+    if (systems && systems.length > 0) {
+      const datamapRoute = resolveLink({
+        href: DATAMAP_ROUTE,
+        basePath: "/",
+      });
+
+      return features.plus ? datamapRoute.href : SYSTEM_ROUTE;
+    }
+    return CONFIG_WIZARD_ROUTE;
+  };
+
+  const redirectRoute = getRedirectRoute();
+
+  if (redirectRoute) {
+    router.push(redirectRoute);
   }
 
   return {

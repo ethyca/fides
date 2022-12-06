@@ -75,6 +75,11 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
     """Runs a health check and a version check against the server."""
 
     health_response = check_server_health(server_url)
+    if health_response.status_code == 429:
+        # The server is ratelimiting us
+        echo_red("Server ratelimit reached. Please wait one minute and try again.")
+        raise SystemExit(1)
+
     server_version = health_response.json()["version"]
     normalize_version = lambda v: str(v).replace(".dirty", "", 1)
     if normalize_version(server_version) == normalize_version(cli_version):
@@ -143,6 +148,7 @@ def create_config_file(ctx: click.Context, fides_directory_location: str = ".") 
     }
 
     # create the .fides dir if it doesn't exist
+    print_divider()
     if not os.path.exists(fides_dir_path):
         os.mkdir(fides_dir_path)
         click.echo(f"Created a '{fides_dir_path}' directory.")

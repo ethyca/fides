@@ -2,13 +2,8 @@ import logging
 from typing import Optional
 
 from fides.api.ops.common_exceptions import IdentityVerificationException
-from fides.api.ops.util.cache import (
-    FidesopsRedis,
-    get_cache,
-)
-
+from fides.api.ops.util.cache import FidesopsRedis, get_cache
 from fides.ctl.core.config import get_config
-
 
 logger = logging.getLogger(__name__)
 CONFIG = get_config()

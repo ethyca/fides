@@ -3,7 +3,7 @@ dataset:
     name: Braze Dataset
     description: A sample dataset representing the Braze connector for Fidesops
     collections:
-      - name: users
+      - name: user
         fields:
           - name: created_at
             data_categories: [system.operations]
@@ -92,7 +92,7 @@ dataset:
                 data_categories: [system.operations]
                 fides_meta:
                   data_type: string
-      - name: subscription_groups_email
+      - name: subscription_groups
         fields:
           - name: email
             data_categories: [user.contact.email]

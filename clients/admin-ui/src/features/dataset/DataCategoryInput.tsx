@@ -1,10 +1,10 @@
+import { ClassifiedDataCategoryDropdown } from "@fidesui/components";
 import { Box, FormLabel, Grid, Stack } from "@fidesui/react";
 
 import { DataCategory } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
-import ClassifiedDataCategoryDropdown from "./ClassifiedDataCategoryDropdown";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 import { DataCategoryWithConfidence } from "./types";
 
