@@ -51,7 +51,8 @@ class FidesConfig(FidesSettings):
     # These should match the `settings_map` in `build_config`
     admin_ui: AdminUISettings
     cli: CLISettings
-    credentials: Dict[str, Dict]
+    celery: Dict
+    credentials: Dict
     database: DatabaseSettings
     execution: ExecutionSettings
     logging: LoggingSettings
@@ -136,12 +137,15 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     for key, value in settings_map.items():
         settings_map[key] = value.parse_obj(config_dict.get(key, {}))
 
-    # logic for populating the user-defined credentials sub-settings.
+    # Logic for populating the user-defined credentials sub-settings.
     # this is done to allow overrides without typed pydantic models
     config_environment_dict = config_dict.get("credentials", {})
     settings_map["credentials"] = merge_credentials_environment(
         credentials_dict=config_environment_dict
     )
+
+    # The Celery subsection is uniquely simple
+    settings_map["celery"] = config_dict.get("celery", {})
 
     fides_config = FidesConfig(**settings_map)
     return fides_config
