@@ -77,11 +77,15 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "user:create",
   },
   {
-    privilege: "Create roles",
+    privilege: "Assign user permissions",
     scope: "user-permission:create",
   },
   {
-    privilege: "View roles",
+    privilege: "Update user permissions",
+    scope: "user-permission:update",
+  },
+  {
+    privilege: "Read user permissions",
     scope: "user-permission:read",
   },
   {
