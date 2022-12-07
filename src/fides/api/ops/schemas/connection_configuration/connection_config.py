@@ -38,6 +38,7 @@ class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
     """Schema for creatnig a connection configuration including secrets."""
 
     secrets: Optional[connection_secrets_schemas] = None
+    saas_connection_type: Optional[str]
 
     class Config:
         orm_mode = True

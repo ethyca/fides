@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
-from typing import Dict, List
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from fastapi import HTTPException
@@ -17,14 +17,13 @@ from fides.api.ops.api.v1.scope_registry import (
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.api.ops.api.v1.urn_registry import (
-    CONNECTIONS,
-    CONNECTIONS_WITH_SECRETS,
-    SAAS_CONFIG,
-    V1_URL_PREFIX,
-)
+from fides.api.ops.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.api.ops.graph.config import CollectionAddress
-from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.ops.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
 from fides.api.ops.models.policy import CurrentStep
 from fides.api.ops.models.privacy_request import (
@@ -34,15 +33,14 @@ from fides.api.ops.models.privacy_request import (
 )
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
-from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 
 page_size = Params().size
 
 
-class TestPatchConnectionsWithSecrets:
+class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self) -> str:
-        return V1_URL_PREFIX + CONNECTIONS_WITH_SECRETS
+        return V1_URL_PREFIX + CONNECTIONS
 
     @pytest.fixture(scope="function")
     def payload(self):
@@ -52,499 +50,15 @@ class TestPatchConnectionsWithSecrets:
                 "key": "postgres_db_1",
                 "connection_type": "postgres",
                 "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            },
-        ]
-
-    def test_patch_connections_with_secrets_not_authenticated(
-        self, api_client: TestClient, url, payload
-    ) -> None:
-        response = api_client.patch(url, headers={}, json=payload)
-        assert 401 == response.status_code
-
-    def test_patch_connections_incorrect_scope(
-        self, api_client: TestClient, generate_auth_header, url, payload
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
-
-    def test_patch_http_connection(self, url, api_client, generate_auth_header):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = [
-            {
-                "name": "My Post-Execution Webhook",
-                "key": "webhook_key",
-                "connection_type": "https",
-                "access": "read",
                 "secrets": {
-                    "url": "example.com",
-                    "authorization": "test_authorization123",
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
                 },
-            }
-        ]
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 200 == response.status_code
-        body = json.loads(response.text)
-        assert body["succeeded"][0]["connection_type"] == "https"
-
-    def test_patch_connections_bulk_create(
-        self, api_client: TestClient, db: Session, generate_auth_header, url, payload
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-
-        assert 200 == response.status_code
-        response_body = json.loads(response.text)
-        assert len(response_body) == 2
-        assert len(response_body["succeeded"]) == 2
-
-        postgres_connection = response_body["succeeded"][0]
-        db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
-        assert postgres_connection["name"] == "My Main Postgres DB"
-        assert postgres_connection["key"] == "postgres_db_1"
-        assert postgres_connection["connection_type"] == "postgres"
-        assert postgres_connection["access"] == "write"
-        assert postgres_connection["created_at"] is not None
-        assert postgres_connection["updated_at"] is not None
-        assert postgres_connection["last_test_timestamp"] is None
-        assert postgres_connection["disabled"] is False
-        assert postgres_connection["secrets"] == payload[0]["secrets"]
-
-        mongo_connection = response_body["succeeded"][1]
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
-        assert mongo_connection["name"] == "My Mongo DB"
-        assert mongo_connection["key"] == "my_mongo_db"  # stringified name
-        assert mongo_connection["connection_type"] == "mongodb"
-        assert mongo_connection["access"] == "read"
-        assert postgres_connection["disabled"] is False
-        assert mongo_connection["created_at"] is not None
-        assert mongo_connection["updated_at"] is not None
-        assert mongo_connection["last_test_timestamp"] is None
-        assert mongo_connection["secrets"] == payload[1]["secrets"]
-
-        assert response_body["failed"] == []  # No failures
-
-        mongo_resource.delete(db)
-
-    def test_patch_connections_bulk_update_key_error(
-        self, url, api_client: TestClient, generate_auth_header, payload
-    ) -> None:
-        # Create resources first
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.patch(url, headers=auth_header, json=payload)
-
-        # Update resources
-        response = api_client.patch(url, headers=auth_header, json=payload)
-
-        assert response.status_code == 200
-        response_json = response.json()
-        assert len(response_json["succeeded"]) == 1
-        assert len(response_json["failed"]) == 1
-
-        succeeded = response_json["succeeded"]
-        failed = response_json["failed"]
-
-        # key supplied matches existing key, so the rest of the configs are updated
-        assert succeeded[0]["key"] == "postgres_db_1"
-
-        # No key was supplied in request body, just a name, and that name turned into a key that exists
-        assert failed[0]["data"]["key"] is None
-        assert (
-            "Key my_mongo_db already exists in ConnectionConfig" in failed[0]["message"]
-        )
-
-    def test_patch_connections_bulk_create_limit_exceeded(
-        self, url, api_client: TestClient, db: Session, generate_auth_header
-    ):
-        payload = []
-        for i in range(0, 51):
-            payload.append(
-                {
-                    "name": f"My Main Postgres DB {i}",
-                    "key": f"postgres_db_{i}",
-                    "connection_type": "postgres",
-                    "access": "read",
-                    "secrets": {"host": "localhost"},
-                }
-            )
-
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 422 == response.status_code
-        assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
-        )
-
-    @mock.patch(
-        "fides.api.ops.api.v1.endpoints.connection_endpoints.queue_privacy_request"
-    )
-    def test_disable_manual_webhook(
-        self,
-        mock_queue,
-        db,
-        url,
-        generate_auth_header,
-        api_client,
-        privacy_request_requires_input,
-        integration_manual_webhook_config,
-        access_manual_webhook,
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-
-        # Update resources
-        payload = [
-            {
-                "name": integration_manual_webhook_config.name,
-                "key": integration_manual_webhook_config.key,
-                "connection_type": ConnectionType.manual_webhook.value,
-                "access": "write",
-                "disabled": True,
-            }
-        ]
-
-        response = api_client.patch(
-            V1_URL_PREFIX + CONNECTIONS, headers=auth_header, json=payload
-        )
-
-        assert 200 == response.status_code
-
-        assert (
-            mock_queue.called
-        ), "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
-        assert (
-            mock_queue.call_args.kwargs["privacy_request_id"]
-            == privacy_request_requires_input.id
-        )
-        db.refresh(privacy_request_requires_input)
-        assert (
-            privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
-        )
-
-    def test_patch_connections_bulk_update(
-        self, url, api_client: TestClient, db: Session, generate_auth_header, payload
-    ) -> None:
-        # Create resources first
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        api_client.patch(url, headers=auth_header, json=payload)
-
-        # Update resources
-        payload = [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "read",
-                "disabled": True,
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_mongo_db",
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_mysql_db",
-                "name": "My MySQL DB",
-                "connection_type": "mysql",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_mssql_db",
-                "name": "My MsSQL DB",
-                "connection_type": "mssql",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_mariadb_db",
-                "name": "My MariaDB",
-                "connection_type": "mariadb",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_bigquery_db",
-                "name": "BigQuery Warehouse",
-                "connection_type": "bigquery",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_redshift_cluster",
-                "name": "My Amazon Redshift",
-                "connection_type": "redshift",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "my_snowflake",
-                "name": "Snowflake Warehouse",
-                "connection_type": "snowflake",
-                "access": "write",
-                "description": "Backup snowflake db",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "email_connector",
-                "name": "Third Party Email Connector",
-                "connection_type": "email",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "key": "manual_webhook_type",
-                "name": "Third Party Manual Webhook",
-                "connection_type": "manual_webhook",
-                "access": "read",
-            },
-        ]
-
-        response = api_client.patch(url, headers=auth_header, json=payload)
-
-        assert 200 == response.status_code
-        response_json = response.json()
-        assert len(response_json) == 2
-        assert len(response_json["succeeded"]) == 10
-        assert len(response_json["failed"]) == 0
-
-        postgres_connection = response_json["succeeded"][0]
-        assert postgres_connection["access"] == "read"
-        assert postgres_connection["disabled"] is True
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-        assert postgres_connection["updated_at"] is not None
-        postgres_resource = (
-            db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
-        )
-        assert postgres_resource.access.value == "read"
-        assert postgres_resource.disabled
-
-        mongo_connection = response_json["succeeded"][1]
-        assert mongo_connection["access"] == "write"
-        assert mongo_connection["disabled"] is False
-        assert mongo_connection["updated_at"] is not None
-        mongo_resource = db.query(ConnectionConfig).filter_by(key="my_mongo_db").first()
-        assert mongo_resource.access.value == "write"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-        assert not mongo_resource.disabled
-
-        mysql_connection = response_json["succeeded"][2]
-        assert mysql_connection["access"] == "read"
-        assert mysql_connection["updated_at"] is not None
-        mysql_resource = db.query(ConnectionConfig).filter_by(key="my_mysql_db").first()
-        assert mysql_resource.access.value == "read"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        mssql_connection = response_json["succeeded"][3]
-        assert mssql_connection["access"] == "write"
-        assert mssql_connection["updated_at"] is not None
-        mssql_resource = db.query(ConnectionConfig).filter_by(key="my_mssql_db").first()
-        assert mssql_resource.access.value == "write"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        mariadb_connection = response_json["succeeded"][4]
-        assert mariadb_connection["access"] == "write"
-        assert mariadb_connection["updated_at"] is not None
-        mariadb_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_mariadb_db").first()
-        )
-        assert mariadb_resource.access.value == "write"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        bigquery_connection = response_json["succeeded"][5]
-        assert bigquery_connection["access"] == "write"
-        assert bigquery_connection["updated_at"] is not None
-        bigquery_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_bigquery_db").first()
-        )
-        assert bigquery_resource.access.value == "write"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        redshift_connection = response_json["succeeded"][6]
-        assert redshift_connection["access"] == "read"
-        assert redshift_connection["updated_at"] is not None
-        redshift_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_redshift_cluster").first()
-        )
-        assert redshift_resource.access.value == "read"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        snowflake_connection = response_json["succeeded"][7]
-        assert snowflake_connection["access"] == "write"
-        assert snowflake_connection["updated_at"] is not None
-        assert snowflake_connection["description"] == "Backup snowflake db"
-        snowflake_resource = (
-            db.query(ConnectionConfig).filter_by(key="my_snowflake").first()
-        )
-        assert snowflake_resource.access.value == "write"
-        assert snowflake_resource.description == "Backup snowflake db"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        email_connection = response_json["succeeded"][8]
-        assert email_connection["access"] == "write"
-        assert email_connection["updated_at"] is not None
-        email_resource = (
-            db.query(ConnectionConfig).filter_by(key="email_connector").first()
-        )
-        assert email_resource.access.value == "write"
-        assert postgres_connection["secrets"] == {"host": "localhost"}
-
-        manual_webhook_connection = response_json["succeeded"][9]
-        assert manual_webhook_connection["access"] == "read"
-        assert manual_webhook_connection["updated_at"] is not None
-        manual_webhook_resource = (
-            db.query(ConnectionConfig).filter_by(key="manual_webhook_type").first()
-        )
-        assert manual_webhook_resource.access.value == "read"
-        assert manual_webhook_resource.connection_type == ConnectionType.manual_webhook
-        assert manual_webhook_connection["secrets"] is None
-
-        postgres_resource.delete(db)
-        mongo_resource.delete(db)
-        redshift_resource.delete(db)
-        snowflake_resource.delete(db)
-        mariadb_resource.delete(db)
-        mysql_resource.delete(db)
-        mssql_resource.delete(db)
-        bigquery_resource.delete(db)
-        email_resource.delete(db)
-        manual_webhook_resource.delete(db)
-
-    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
-    def test_patch_connections_failed_response(
-        self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
-    ) -> None:
-        mock_create.side_effect = HTTPException(mock.Mock(status=400), "Test error")
-
-        payload = [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            },
-        ]
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert response.status_code == 200  # Returns 200 regardless
-        response_json = response.json()
-        assert response_json["succeeded"] == []
-        assert len(response_json["failed"]) == 2
-
-        for failed_response in response_json["failed"]:
-            assert (
-                "This connection configuration could not be added"
-                in failed_response["message"]
-            )
-            assert set(failed_response.keys()) == {"message", "data"}
-
-        assert response_json["failed"][0]["data"] == {
-            "name": "My Main Postgres DB",
-            "key": "postgres_db_1",
-            "connection_type": "postgres",
-            "access": "write",
-            "secrets": {"host": "localhost"},
-            "disabled": False,
-            "description": None,
-        }
-        assert response_json["failed"][1]["data"] == {
-            "name": "My Mongo DB",
-            "key": None,
-            "connection_type": "mongodb",
-            "access": "read",
-            "secrets": {"host": "localhost"},
-            "disabled": False,
-            "description": None,
-        }
-
-    @mock.patch("fides.api.main.prepare_and_log_request")
-    def test_patch_connections_incorrect_scope_analytics(
-        self,
-        mocked_prepare_and_log_request,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-        payload,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 403 == response.status_code
-        assert mocked_prepare_and_log_request.called
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
-
-        assert call_args[0] == "PATCH: http://testserver/api/v1/connection-with-secret"
-        assert call_args[1] == "testserver"
-        assert call_args[2] == 403
-        assert isinstance(call_args[3], datetime)
-        assert call_args[4] is None
-        assert call_args[5] == "HTTPException"
-
-    @mock.patch("fides.api.main.prepare_and_log_request")
-    def test_patch_http_connection_successful_analytics(
-        self,
-        mocked_prepare_and_log_request,
-        api_client,
-        db: Session,
-        generate_auth_header,
-        url,
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = [
-            {
-                "name": "My Post-Execution Webhook",
-                "key": "webhook_key",
-                "connection_type": "https",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            }
-        ]
-        response = api_client.patch(url, headers=auth_header, json=payload)
-        assert 200 == response.status_code
-        body = json.loads(response.text)
-        assert body["succeeded"][0]["connection_type"] == "https"
-        http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
-        http_config.delete(db)
-
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
-
-        assert call_args[0] == "PATCH: http://testserver/api/v1/connection-with-secret"
-        assert call_args[1] == "testserver"
-        assert call_args[2] == 200
-        assert isinstance(call_args[3], datetime)
-        assert call_args[4] is None
-        assert call_args[5] is None
-
-
-class TestPatchConnections:
-    @pytest.fixture(scope="function")
-    def url(self) -> str:
-        return V1_URL_PREFIX + CONNECTIONS
-
-    @pytest.fixture(scope="function")
-    def payload(self) -> List[Dict[str, str]]:
-        return [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "write",
             },
             {"name": "My Mongo DB", "connection_type": "mongodb", "access": "read"},
         ]
@@ -567,30 +81,6 @@ class TestPatchConnections:
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_patch_connections_add_secret_invalid(
-        self, api_client: TestClient, generate_auth_header, url
-    ) -> None:
-        payload_with_secrets = [
-            {
-                "name": "My Main Postgres DB",
-                "key": "postgres_db_1",
-                "connection_type": "postgres",
-                "access": "write",
-                "secrets": {"host": "localhost"},
-            },
-            {
-                "name": "My Mongo DB",
-                "connection_type": "mongodb",
-                "access": "read",
-                "secrets": {"host": "localhost"},
-            },
-        ]
-        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        response = api_client.patch(url, headers=auth_header, json=payload_with_secrets)
-        assert 422 == response.status_code
-        response_body = json.loads(response.text)
-        assert "extra fields not permitted" == response_body["detail"][0]["msg"]
-
     def test_patch_http_connection(
         self, url, api_client, db: Session, generate_auth_header
     ):
@@ -610,6 +100,101 @@ class TestPatchConnections:
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
         http_config.delete(db)
 
+    def test_patch_connection_saas_with_secrets_exists(
+        self, url, api_client, generate_auth_header, db, mailchimp_config
+    ):
+        payload = [
+            {
+                "secrets": {
+                    "domain": "test_mailchimp_domain",
+                    "username": "test_mailchimp_username",
+                    "api_key": "test_mailchimp_api_key",
+                },
+                "name": "My Mailchimp Test",
+                "description": "Mailchimp ConnectionConfig description",
+                "key": f"mailchimp{uuid4()}",
+                "connection_type": "saas",
+                "access": "read",
+            },
+        ]
+
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": payload[0]["key"],
+                "name": payload[0]["name"],
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "secrets": {"domain": "test", "username": "test", "api_key": "test"},
+                "saas_config": mailchimp_config,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == payload[0]["connection_type"]
+
+    def test_patch_connection_saas_with_secrets_new(
+        self, url, api_client, generate_auth_header, db, mailchimp_config
+    ):
+        payload = [
+            {
+                "secrets": {
+                    "domain": "test_mailchimp_domain",
+                    "username": "test_mailchimp_username",
+                    "api_key": "test_mailchimp_api_key",
+                },
+                "name": "My Mailchimp Test",
+                "description": "Mailchimp ConnectionConfig description",
+                "key": "mailchimp_1",
+                "connection_type": "saas",
+                "access": "read",
+            },
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == payload[0]["connection_type"]
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [
+                {
+                    "name": "My Main Postgres DB",
+                    "key": "postgres_key",
+                    "connection_type": "postgres",
+                    "access": "write",
+                    "secrets": {
+                        "host": "localhost",
+                        "bad": "bad",
+                    },
+                },
+            ],
+            [
+                {
+                    "instance_key": "mailchimp_instance_1",
+                    "secrets": {
+                        "bad": "test_mailchimp",
+                    },
+                    "name": "My Mailchimp Test",
+                    "description": "Mailchimp ConnectionConfig description",
+                    "key": "mailchimp_1",
+                },
+            ],
+        ],
+    )
+    def test_patch_connection_invalid_secrets(
+        self, payload, url, api_client, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+
     def test_patch_connections_bulk_create(
         self, api_client: TestClient, db: Session, generate_auth_header, url, payload
     ) -> None:
@@ -625,6 +210,7 @@ class TestPatchConnections:
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
+        assert postgres_resource.secrets == payload[0]["secrets"]
         assert postgres_connection["name"] == "My Main Postgres DB"
         assert postgres_connection["key"] == "postgres_db_1"
         assert postgres_connection["connection_type"] == "postgres"
@@ -761,6 +347,15 @@ class TestPatchConnections:
                 "connection_type": "postgres",
                 "access": "read",
                 "disabled": True,
+                "secrets": {
+                    "url": None,
+                    "host": "http://localhost",
+                    "port": 5432,
+                    "dbname": "test",
+                    "db_schema": "test",
+                    "username": "test",
+                    "password": "test",
+                },
             },
             {
                 "key": "my_mongo_db",
@@ -824,7 +419,7 @@ class TestPatchConnections:
         )
 
         assert 200 == response.status_code
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert len(response_body) == 2
         assert len(response_body["succeeded"]) == 10
         assert len(response_body["failed"]) == 0
@@ -839,6 +434,7 @@ class TestPatchConnections:
         )
         assert postgres_resource.access.value == "read"
         assert postgres_resource.disabled
+        assert postgres_resource.secrets == payload[0]["secrets"]
 
         mongo_connection = response_body["succeeded"][1]
         assert mongo_connection["access"] == "write"
@@ -949,7 +545,7 @@ class TestPatchConnections:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         response = api_client.patch(url, headers=auth_header, json=payload)
         assert response.status_code == 200  # Returns 200 regardless
-        response_body = json.loads(response.text)
+        response_body = response.json()
         assert response_body["succeeded"] == []
         assert len(response_body["failed"]) == 2
 
