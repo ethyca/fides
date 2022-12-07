@@ -127,6 +127,7 @@ from fides.api.ops.schemas.privacy_request import (
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
 from fides.api.ops.service.messaging.message_dispatch_service import (
+    EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
     dispatch_message_task,
 )
@@ -662,7 +663,7 @@ def get_privacy_request_notification_info(
         )
 
     return PrivacyRequestNotificationInfo(
-        email_addresses=[x for x in info[0].email.split(", ")],
+        email_addresses=[x for x in info[0].email.split(EMAIL_JOIN_STRING)],
         notify_after_failures=info[0].notify_after_failures,
     )
 
@@ -682,6 +683,11 @@ def create_or_update_privacy_request_notifications(
     *, db: Session = Depends(deps.get_db), request_body: PrivacyRequestNotificationInfo
 ) -> PrivacyRequestNotificationInfo:
     """Create or update list of email addresses and number of failures for privacy request notifications."""
+    # If email_addresses is empty it means notifications were turned off and the email
+    # information should be deleted from the database. In this situation an empty list
+    # of email address is returned along with the notify_after_failures sent from the
+    # front end. This allows the first end to control the default notifiy_after_failures
+    # number.
     if not request_body.email_addresses:
         info = PrivacyRequestNotifications.all(db)
         if info:
@@ -692,7 +698,7 @@ def create_or_update_privacy_request_notifications(
         )
 
     notification_info = {
-        "email": ", ".join(request_body.email_addresses),
+        "email": EMAIL_JOIN_STRING.join(request_body.email_addresses),
         "notify_after_failures": request_body.notify_after_failures,
     }
     info_check = PrivacyRequestNotifications.all(db)
