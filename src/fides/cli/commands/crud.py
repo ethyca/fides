@@ -29,12 +29,12 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     )
 
 
-@click.command()
+@click.command(name="get")
 @click.pass_context
 @resource_type_argument
 @fides_key_argument
 @with_analytics
-def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
+def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View a resource from the server as a YAML object.
     """
@@ -50,11 +50,11 @@ def get(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     echo_green(yaml.dump({resource_type: [resource]}))
 
 
-@click.command()
+@click.command(name="ls")
 @click.pass_context
 @resource_type_argument
 @with_analytics
-def ls(ctx: click.Context, resource_type: str) -> None:  # pylint: disable=invalid-name
+def list_resources(ctx: click.Context, resource_type: str) -> None:
     """
     Get a list of all resources of this type from the server and display them as YAML.
     """
