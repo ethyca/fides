@@ -177,7 +177,7 @@ class FidesClient:
             if privacy_request_id
             else None,
         )
-        response = self.session.send(request)
+        response = self.session.send(request, timeout=5)
         if not response.ok:
             log.error(
                 f"Error retrieving status of privacy request [{privacy_request_id}] on remote Fides {self.uri}",
