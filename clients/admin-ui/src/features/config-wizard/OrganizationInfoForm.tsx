@@ -6,12 +6,11 @@ import {
   Heading,
   Input,
   Stack,
-  Text,
   Tooltip,
   useToast,
 } from "@fidesui/react";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -35,10 +34,21 @@ const useOrganizationInfoForm = () => {
 
   const [createOrganization] = useCreateOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
-  const { data: existingOrg } = useGetOrganizationByFidesKeyQuery(
-    DEFAULT_ORGANIZATION_FIDES_KEY
-  );
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: existingOrg, isLoading: isLoadingOrganization } =
+    useGetOrganizationByFidesKeyQuery(DEFAULT_ORGANIZATION_FIDES_KEY);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  useEffect(() => {
+    // Only consider a redirect when data has loaded but before a user has submitted anything
+    if (isLoadingOrganization || hasSubmitted) {
+      return;
+    }
+    // If the organization name and description already exist, we bypass this step
+    if (existingOrg?.name && existingOrg?.description) {
+      dispatch(changeStep());
+    }
+  }, [isLoadingOrganization, existingOrg, dispatch, hasSubmitted]);
+
   const toast = useToast();
   const formik = useFormik({
     initialValues: {
@@ -46,14 +56,13 @@ const useOrganizationInfoForm = () => {
       description: existingOrg?.description ?? "",
     },
     onSubmit: async (values) => {
+      setHasSubmitted(true);
       const organizationBody = {
         name: values.name ?? existingOrg?.name,
         description: values.description ?? existingOrg?.description,
         fides_key: existingOrg?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY,
         organization_fides_key: DEFAULT_ORGANIZATION_FIDES_KEY,
       };
-
-      setIsLoading(true);
 
       if (!existingOrg) {
         const createOrganizationResult = await createOrganization(
@@ -88,8 +97,6 @@ const useOrganizationInfoForm = () => {
         toast.closeAll();
         handleSuccess(organizationBody);
       }
-
-      setIsLoading(false);
     },
     enableReinitialize: true,
     validate: (values) => {
@@ -110,7 +117,7 @@ const useOrganizationInfoForm = () => {
     },
   });
 
-  return { ...formik, isLoading };
+  return formik;
 };
 
 const OrganizationInfoForm = () => {
@@ -119,9 +126,9 @@ const OrganizationInfoForm = () => {
     handleBlur,
     handleChange,
     handleSubmit,
-    isLoading,
     touched,
     values,
+    isSubmitting,
   } = useOrganizationInfoForm();
 
   return (
@@ -132,21 +139,11 @@ const OrganizationInfoForm = () => {
     >
       <Stack spacing={10}>
         <Heading as="h3" size="lg">
-          Tell us about your business
+          Create your Organization
         </Heading>
         <div>
           Provide your organization information. This information is used to
-          configure your organization in Fidesctl for{" "}
-          <Tooltip
-            fontSize="md"
-            label="Wondering what a data map is? No problem, we've got your covered with this quick overview here"
-            placement="right"
-          >
-            <Text display="inline" color="complimentary.500">
-              data map
-            </Text>
-          </Tooltip>{" "}
-          reporting purposes.
+          configure your organization in Fides for data map reporting purposes.
         </div>
         <Stack>
           <FormControl>
@@ -203,7 +200,7 @@ const OrganizationInfoForm = () => {
           type="submit"
           variant="primary"
           isDisabled={!values.name || !values.description}
-          isLoading={isLoading}
+          isLoading={isSubmitting}
           data-testid="submit-btn"
         >
           Save and Continue

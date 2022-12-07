@@ -6,6 +6,7 @@ export { default as AWSLogoIcon } from "./AWSLogo";
 export { default as CircleHelpIcon } from "./CircleHelp";
 export { default as CloseSolidIcon } from "./CloseSolid";
 export { default as CloseSolidIconCtl } from "./CloseSolidCtl";
+export { default as DataFlowScannerLogo } from "./DataFlowScannerLogo";
 export { default as DownloadSolidIcon } from "./DownloadSolid";
 export { default as ErrorWarningIcon } from "./ErrorWarning";
 export { default as EyeIcon } from "./Eye";
@@ -23,3 +24,4 @@ export { default as StepperCircleCheckmarkIcon } from "./StepperCircleCheckmark"
 export { default as TrashCanSolidIcon } from "./TrashCanSolid";
 export { default as UserIcon } from "./User";
 export { default as VerticalLineIcon } from "./VerticalLine";
+export { default as WarningIcon } from "./Warning";

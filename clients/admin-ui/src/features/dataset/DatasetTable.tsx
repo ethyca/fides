@@ -1,23 +1,14 @@
-import {
-  Badge,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tooltip,
-  Tr,
-} from "@fidesui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@fidesui/react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useFeatures } from "~/features/common/features.slice";
+import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import {
-  selectClassifyInstanceMap,
+  selectDatasetClassifyInstanceMap,
   useGetAllClassifyInstancesQuery,
-} from "~/features/common/plus.slice";
-import { Dataset } from "~/types/api";
+} from "~/features/plus/plus.slice";
+import { Dataset, GenerateTypes } from "~/types/api";
 
-import { STATUS_DISPLAY } from "./constants";
 import {
   selectActiveDatasetFidesKey,
   setActiveDatasetFidesKey,
@@ -30,10 +21,13 @@ const DatasetsTable = () => {
 
   const { data: datasets } = useGetAllDatasetsQuery();
   const features = useFeatures();
-  useGetAllClassifyInstancesQuery(undefined, {
-    skip: !features.plus,
-  });
-  const classifyInstanceMap = useSelector(selectClassifyInstanceMap);
+  useGetAllClassifyInstancesQuery(
+    { resource_type: GenerateTypes.DATASETS },
+    {
+      skip: !features.plus,
+    }
+  );
+  const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const handleRowClick = (dataset: Dataset) => {
     // toggle the active dataset
@@ -47,6 +41,7 @@ const DatasetsTable = () => {
   if (!datasets) {
     return <div>Empty state</div>;
   }
+
   return (
     <Table size="sm" data-testid="dataset-table">
       <Thead>
@@ -54,7 +49,11 @@ const DatasetsTable = () => {
           <Th pl={1}>Name</Th>
           <Th pl={1}>Fides Key</Th>
           <Th pl={1}>Description</Th>
-          <Th pl={1}>Status</Th>
+          {features.plus ? (
+            <Th data-testid="dataset-table__status-table-header" pl={1}>
+              Status
+            </Th>
+          ) : null}
         </Tr>
       </Thead>
       <Tbody>
@@ -64,8 +63,6 @@ const DatasetsTable = () => {
             activeDatasetFidesKey === dataset.fides_key;
 
           const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
-          const statusDisplay =
-            STATUS_DISPLAY[classifyDataset?.status ?? "unknown"];
 
           return (
             <Tr
@@ -85,17 +82,14 @@ const DatasetsTable = () => {
               <Td pl={1}>{dataset.name}</Td>
               <Td pl={1}>{dataset.fides_key}</Td>
               <Td pl={1}>{dataset.description}</Td>
-              <Td pl={1}>
-                <Tooltip label={statusDisplay.tooltip}>
-                  <Badge
-                    variant="solid"
-                    colorScheme={statusDisplay.color}
-                    data-testid={`dataset-status-${dataset.fides_key}`}
-                  >
-                    {statusDisplay.title}
-                  </Badge>
-                </Tooltip>
-              </Td>
+              {features.plus ? (
+                <Td pl={1} data-testid={`dataset-status-${dataset.fides_key}`}>
+                  <ClassificationStatusBadge
+                    resource={GenerateTypes.DATASETS}
+                    status={classifyDataset?.status}
+                  />
+                </Td>
+              ) : null}
             </Tr>
           );
         })}

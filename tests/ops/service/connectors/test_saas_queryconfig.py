@@ -1,5 +1,7 @@
 import json
 from typing import List, Optional
+from unittest import mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -50,10 +52,18 @@ class TestSaaSQueryConfig:
             in customer.parents.keys()
         )
 
+    @mock.patch(
+        "fides.api.ops.models.privacy_request.PrivacyRequest.get_cached_identity_data"
+    )
     def test_generate_requests(
-        self, policy, combined_traversal, saas_example_connection_config
+        self,
+        mock_identity_data: Mock,
+        policy,
+        combined_traversal,
+        saas_example_connection_config,
     ):
-        saas_config = saas_example_connection_config.get_saas_config()
+        mock_identity_data.return_value = {"email": "customer-1@example.com"}
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
@@ -70,9 +80,13 @@ class TestSaaSQueryConfig:
         ]
 
         # static path with single query param
-        config = SaaSQueryConfig(member, endpoints, {})
+        config = SaaSQueryConfig(
+            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["member"].requests.read[0],
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/search-members"
@@ -87,6 +101,7 @@ class TestSaaSQueryConfig:
                 "placeholder": ["adaptors.india@ethyca.com"],
             },
             policy,
+            endpoints["conversations"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations"
@@ -96,7 +111,9 @@ class TestSaaSQueryConfig:
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
         prepared_request = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]}, policy
+            {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]},
+            policy,
+            endpoints["messages"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/3.0/conversations/abc/messages"
@@ -110,7 +127,9 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["payment_methods"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
@@ -132,7 +151,9 @@ class TestSaaSQueryConfig:
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
         prepared_request: SaaSRequestParams = config.generate_requests(
-            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]}, policy
+            {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
+            policy,
+            endpoints["payment_methods"].requests.read,
         )[0]
         assert prepared_request.method == HTTPMethod.GET.value
         assert prepared_request.path == "/2.0/payment_methods"
@@ -147,9 +168,9 @@ class TestSaaSQueryConfig:
         combined_traversal,
         saas_example_connection_config,
     ):
-        saas_config = saas_example_connection_config.get_saas_config()
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
         endpoints = saas_config.top_level_endpoint_dict
-        update_request = endpoints["member"].requests.get("update")
+        update_request = endpoints["member"].requests.update
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
@@ -185,13 +206,13 @@ class TestSaaSQueryConfig:
         saas_config: Optional[
             SaaSConfig
         ] = saas_example_connection_config.get_saas_config()
-        saas_config.endpoints[2].requests.get("update").method = HTTPMethod.POST
+        saas_config.endpoints[2].requests.update.method = HTTPMethod.POST
         endpoints = saas_config.top_level_endpoint_dict
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
-        update_request = endpoints["member"].requests.get("update")
+        update_request = endpoints["member"].requests.update
 
         config = SaaSQueryConfig(member, endpoints, {}, update_request)
         row = {
@@ -223,9 +244,11 @@ class TestSaaSQueryConfig:
         saas_config: Optional[
             SaaSConfig
         ] = saas_example_connection_config.get_saas_config()
-        saas_config.endpoints[2].requests.get(
-            "update"
-        ).body = '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
+        saas_config.endpoints[
+            2
+        ].requests.update.body = (
+            '{"properties": {<masked_object_fields>, "list_id": "<list_id>"}}'
+        )
         body_param_value = ParamValue(
             name="list_id",
             type="body",
@@ -237,11 +260,9 @@ class TestSaaSQueryConfig:
                 }
             ],
         )
-        saas_config.endpoints[2].requests.get("update").param_values.append(
-            body_param_value
-        )
+        saas_config.endpoints[2].requests.update.param_values.append(body_param_value)
         endpoints = saas_config.top_level_endpoint_dict
-        update_request = endpoints["member"].requests.get("update")
+        update_request = endpoints["member"].requests.update
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
         ]
@@ -276,7 +297,7 @@ class TestSaaSQueryConfig:
         )
 
         # update with connector_param reference
-        update_request = endpoints["payment_methods"].requests.get("update")
+        update_request = endpoints["payment_methods"].requests.update
         config = SaaSQueryConfig(
             payment_methods, endpoints, {"api_version": "2.0"}, update_request
         )
@@ -308,7 +329,7 @@ class TestSaaSQueryConfig:
         # update with multidimensional urlcoding
         # omit read-only fields and fields not defined in the dataset
         # 'created' and 'id' are flagged as read-only and 'livemode' is not in the dataset
-        update_request = endpoints["customer"].requests.get("update")
+        update_request = endpoints["customer"].requests.update
         config = SaaSQueryConfig(
             customer, endpoints, saas_example_secrets, update_request
         )
@@ -328,6 +349,51 @@ class TestSaaSQueryConfig:
         }
         assert prepared_request.query_params == {}
         assert prepared_request.body == "name%5Bfirst%5D=MASKED&name%5Blast%5D=MASKED"
+
+    @mock.patch(
+        "fides.api.ops.models.privacy_request.PrivacyRequest.get_cached_identity_data"
+    )
+    def test_get_read_requests_by_identity(
+        self,
+        mock_identity_data: Mock,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        mock_identity_data.return_value = {"email": "test@example.com"}
+
+        saas_config: Optional[
+            SaaSConfig
+        ] = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ]
+        tickets = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "tickets")
+        ]
+
+        query_config = SaaSQueryConfig(
+            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
+        saas_requests = query_config.get_read_requests_by_identity()
+        assert len(saas_requests) == 1
+        assert saas_requests[0].param_values[0].identity == "email"
+
+        mock_identity_data.return_value = {"phone": "+951555555"}
+
+        query_config = SaaSQueryConfig(
+            member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
+        saas_requests = query_config.get_read_requests_by_identity()
+        assert len(saas_requests) == 1
+        assert saas_requests[0].param_values[0].identity == "phone"
+
+        query_config = SaaSQueryConfig(
+            tickets, endpoints, {}, privacy_request=PrivacyRequest(id="123")
+        )
+        saas_requests = query_config.get_read_requests_by_identity()
+        assert len(saas_requests) == 2
 
     def test_get_masking_request(
         self, combined_traversal, saas_example_connection_config
@@ -364,7 +430,7 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Define delete request on conversations endpoint
-        endpoints["conversations"].requests["delete"] = SaaSRequest(
+        endpoints["conversations"].requests.delete = SaaSRequest(
             method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
         # Delete endpoint not used because masking_strict is True
@@ -375,6 +441,7 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Override masking_strict to False
+        masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
@@ -394,8 +461,8 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "PUT"
 
         # Reset
-        CONFIG.execution.masking_strict = True
-        del endpoints["conversations"].requests["delete"]
+        CONFIG.execution.masking_strict = masking_strict
+        del endpoints["conversations"].requests.delete
 
     def test_list_param_values(
         self, combined_traversal, saas_example_connection_config, policy
@@ -428,6 +495,7 @@ class TestSaaSQueryConfig:
                 ],
             },
             policy,
+            endpoints["accounts"].requests.read,
         )
         assert len(prepared_requests) == 3
 
@@ -449,6 +517,7 @@ class TestSaaSQueryConfig:
                 ],
             },
             policy,
+            endpoints["accounts"].requests.read,
         )
         assert len(prepared_requests) == 1
 
@@ -486,6 +555,7 @@ class TestSaaSQueryConfig:
                 "list_id": [[1, 2, 3]],
             },
             policy,
+            endpoints["mailing_lists"].requests.read,
         )
         assert len(prepared_requests) == 3
 

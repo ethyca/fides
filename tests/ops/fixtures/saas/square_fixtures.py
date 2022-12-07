@@ -1,5 +1,5 @@
 import random
-import time
+from time import sleep
 from typing import Any, Dict, Generator
 from uuid import uuid4
 
@@ -42,6 +42,14 @@ def square_secrets(saas_config):
 @pytest.fixture(scope="session")
 def square_identity_email(saas_config):
     return pydash.get(saas_config, "square.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def square_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "square.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="function")
@@ -149,7 +157,6 @@ class SquareTestClient:
             "birthday": str(faker.date_of_birth()),
             "family_name": faker.first_name(),
             "given_name": faker.last_name(),
-            "phone_number": faker.phone_number(),
         }
         customer_response: Response = requests.post(
             url=f"{self.base_url}/customers", json=body, headers=self.headers
@@ -252,8 +259,10 @@ def square_erasure_data(
     customer = customer_response.json()
     customer_id = customer["customer"]["id"]
 
+    sleep(30)
+
     error_message = (
-        f"customer with customer id [{customer_id}] could not be added to square"
+        f"customer with customer id [{customer_id}] could not be added to Square"
     )
     poll_for_existence(
         _customer_exists,
@@ -273,8 +282,8 @@ def square_erasure_data(
 
     order = order_response.json()["order"]
     order_id = order["id"]
-    error_message = f"Order with customer id [{customer_id}] for location [{location_id}] could not be added to square"
-    time.sleep(5)
+    error_message = f"Order with customer id [{customer_id}] for location [{location_id}] could not be added to Square"
+    sleep(5)
     poll_for_existence(
         _order_exists,
         (location_id, order_id, square_test_client),
@@ -288,7 +297,7 @@ def square_erasure_data(
 
     # verify customer is deleted
     error_message = (
-        f"customer with customer id {customer_id} could not be deleted from square"
+        f"customer with customer id {customer_id} could not be deleted from Square"
     )
     poll_for_existence(
         _customer_exists,

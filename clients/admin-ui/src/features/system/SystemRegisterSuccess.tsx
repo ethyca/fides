@@ -14,23 +14,24 @@ import {
   Thead,
   Tr,
 } from "@fidesui/react";
-import React from "react";
+import { useRouter } from "next/router";
 
+import { useAppDispatch } from "~/app/hooks";
 import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import {
+  setActiveSystem,
+  useGetAllSystemsQuery,
+} from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
 interface Props {
   system: System;
-  onContinue: () => void;
   onAddNextSystem: () => void;
 }
-const SystemRegisterSuccess = ({
-  system,
-  onAddNextSystem,
-  onContinue,
-}: Props) => {
+const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const { data: allRegisteredSystems } = useGetAllSystemsQuery();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
         (registeredSystem) => registeredSystem.name !== system.name
@@ -38,6 +39,12 @@ const SystemRegisterSuccess = ({
     : [];
 
   const systemName = system.name ?? system.fides_key;
+
+  const onFinish = () => {
+    dispatch(setActiveSystem(undefined));
+
+    router.push("/system");
+  };
 
   return (
     <chakra.form w="100%">
@@ -98,12 +105,12 @@ const SystemRegisterSuccess = ({
             Add next system
           </Button>
           <Button
-            onClick={onContinue}
+            onClick={onFinish}
             colorScheme="primary"
             size="sm"
-            data-testid="continue-btn"
+            data-testid="finish-btn"
           >
-            Continue
+            Finish
           </Button>
         </Box>
       </Stack>

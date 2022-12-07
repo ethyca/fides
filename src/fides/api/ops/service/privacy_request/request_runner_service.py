@@ -1,8 +1,9 @@
 import logging
 import random
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
+import requests
 from celery.utils.log import get_task_logger
 from fideslib.db.session import get_db_session
 from fideslib.models.audit_log import AuditLog, AuditLogAction
@@ -12,11 +13,15 @@ from redis.exceptions import DataError
 from sqlalchemy.orm import Session
 
 from fides.api.ops import common_exceptions
+from fides.api.ops.api.v1.urn_registry import (
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    V1_URL_PREFIX,
+)
 from fides.api.ops.common_exceptions import (
     ClientUnsuccessfulException,
-    EmailDispatchException,
     IdentityNotFoundException,
     ManualWebhookFieldsUnset,
+    MessageDispatchException,
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
@@ -24,6 +29,7 @@ from fides.api.ops.graph.analytics_events import (
     failed_graph_analytics_event,
     fideslog_graph_failure,
 )
+from fides.api.ops.graph.config import CollectionAddress
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
@@ -42,14 +48,19 @@ from fides.api.ops.models.privacy_request import (
     ProvidedIdentityType,
     can_run_checkpoint,
 )
-from fides.api.ops.schemas.email.email import (
+from fides.api.ops.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
-    EmailActionType,
+    MessagingActionType,
 )
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import FidesConnector
 from fides.api.ops.service.connectors.email_connector import (
     email_connector_erasure_send,
 )
-from fides.api.ops.service.email.email_dispatch_service import dispatch_email
+from fides.api.ops.service.connectors.fides_connector import (
+    filter_fides_connector_datasets,
+)
+from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.service.storage.storage_uploader_service import upload
 from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import (
@@ -170,19 +181,23 @@ def run_webhooks_and_report_status(
     return True
 
 
-def upload_access_results(
+def upload_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
     access_result: Dict[str, List[Row]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
+    fides_connector_datasets: Set[str],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     if not access_result:
         logging.info("No results returned for access request %s", privacy_request.id)
-    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+
+    for rule in policy.get_rules_for_action(  # pylint: disable=R1702
+        action_type=ActionType.access
+    ):
         if not rule.storage_destination:
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
@@ -194,6 +209,8 @@ def upload_access_results(
             access_result,
             target_categories,
             dataset_graph.data_category_field_mapping,
+            rule.key,
+            fides_connector_datasets,
         )
 
         filtered_results.update(
@@ -223,6 +240,7 @@ def upload_access_results(
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
+
     return download_urls
 
 
@@ -316,6 +334,9 @@ async def run_privacy_request(
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = privacy_request.get_cached_identity_data()
             connection_configs = ConnectionConfig.all(db=session)
+            fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
+                connection_configs
+            )
             access_result_urls: List[str] = []
 
             if can_run_checkpoint(
@@ -336,6 +357,7 @@ async def run_privacy_request(
                     dataset_graph,
                     privacy_request,
                     manual_webhook_results.manual_data,
+                    fides_connector_datasets,
                 )
 
             if policy.get_rules_for_action(
@@ -380,7 +402,7 @@ async def run_privacy_request(
                 email_connector_erasure_send(
                     db=session, privacy_request=privacy_request
                 )
-            except EmailDispatchException as exc:
+            except MessageDispatchException as exc:
                 privacy_request.cache_failed_checkpoint_details(
                     step=CurrentStep.erasure_email_post_send, collection=None
                 )
@@ -405,7 +427,7 @@ async def run_privacy_request(
                 initiate_privacy_request_completion_email(
                     session, policy, access_result_urls, identity_data
                 )
-            except (IdentityNotFoundException, EmailDispatchException) as e:
+            except (IdentityNotFoundException, MessageDispatchException) as e:
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
                 await fideslog_graph_failure(
@@ -444,22 +466,28 @@ def initiate_privacy_request_completion_email(
         raise IdentityNotFoundException(
             "Identity email was not found, so request completion email could not be sent."
         )
+    to_identity: Identity = Identity(
+        email=identity_data.get(ProvidedIdentityType.email.value),
+        phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
+    )
     if policy.get_rules_for_action(action_type=ActionType.access):
         # synchronous for now since failure to send complete emails is fatal to request
-        dispatch_email(
+        dispatch_message(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=AccessRequestCompleteBodyParams(
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+            to_identity=to_identity,
+            service_type=CONFIG.notifications.notification_service_type,
+            message_body_params=AccessRequestCompleteBodyParams(
                 download_links=access_result_urls
             ),
         )
     if policy.get_rules_for_action(action_type=ActionType.erasure):
-        dispatch_email(
+        dispatch_message(
             db=session,
-            action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-            to_email=identity_data.get(ProvidedIdentityType.email.value),
-            email_body_params=None,
+            action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+            to_identity=to_identity,
+            service_type=CONFIG.notifications.notification_service_type,
+            message_body_params=None,
         )
 
 
@@ -501,3 +529,74 @@ def generate_id_verification_code() -> str:
     Generate one-time identity verification code
     """
     return str(random.choice(range(100000, 999999)))
+
+
+def _retrieve_child_results(  # pylint: disable=R0911
+    fides_connector: Tuple[str, ConnectionConfig],
+    rule_key: str,
+    access_result: Dict[str, List[Row]],
+) -> Optional[List[Dict[str, Optional[List[Row]]]]]:
+    """Get child access request results to add to upload."""
+    try:
+        connector = FidesConnector(fides_connector[1])
+    except Exception as e:
+        logger.error(
+            "Error create client for child server %s: %s", fides_connector[0], e
+        )
+        return None
+
+    results = []
+
+    for key, rows in access_result.items():
+        address = CollectionAddress.from_string(key)
+        if address.dataset == fides_connector[0]:
+            if not rows:
+                logger.info("No rows found for result entry %s", key)
+                continue
+            privacy_request_id = rows[0]["id"]
+
+        if not privacy_request_id:
+            logger.error(
+                "No privacy request found for connector key %s", fides_connector[0]
+            )
+            continue
+
+        try:
+            client = connector.create_client()
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error logging into to child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        try:
+            request = client.authenticated_request(
+                method="get",
+                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
+                headers={"Authorization": f"Bearer {client.token}"},
+            )
+            response = client.session.send(request)
+        except requests.exceptions.HTTPError as e:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                e,
+            )
+            continue
+
+        if response.status_code != 200:
+            logger.error(
+                "Error retrieving data from child server for privacy request %s: %s",
+                privacy_request_id,
+                response.json(),
+            )
+            continue
+
+        results.append(response.json())
+
+    if not results:
+        return None
+
+    return results

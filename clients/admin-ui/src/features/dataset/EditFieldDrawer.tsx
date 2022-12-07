@@ -1,6 +1,11 @@
-import { Text } from "@fidesui/react";
+import { ConfirmationModal } from "@fidesui/components";
+import { Text, useDisclosure } from "@fidesui/react";
 import { useSelector } from "react-redux";
 
+import EditDrawer, {
+  EditDrawerFooter,
+  EditDrawerHeader,
+} from "~/features/common/EditDrawer";
 import { DatasetField } from "~/types/api";
 
 import {
@@ -9,8 +14,9 @@ import {
   selectActiveFieldIndex,
   useUpdateDatasetMutation,
 } from "./dataset.slice";
-import EditCollectionOrFieldForm from "./EditCollectionOrFieldForm";
-import EditDrawer from "./EditDrawer";
+import EditCollectionOrFieldForm, {
+  FORM_ID,
+} from "./EditCollectionOrFieldForm";
 import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
 
 interface Props {
@@ -27,6 +33,11 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   const collectionIndex = useSelector(selectActiveCollectionIndex);
   const fieldIndex = useSelector(selectActiveFieldIndex);
   const [updateDataset] = useUpdateDatasetMutation();
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const handleSubmit = (
     values: Pick<
@@ -61,30 +72,41 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   };
 
   return (
-    <EditDrawer
-      isOpen={isOpen}
-      onClose={onClose}
-      header={`Field Name: ${field.name}`}
-      description={DESCRIPTION}
-      onDelete={handleDelete}
-      deleteTitle="Delete Field"
-      deleteMessage={
-        <Text>
-          You are about to permanently delete the field named{" "}
-          <Text color="complimentary.500" as="span" fontWeight="bold">
-            {field.name}
-          </Text>{" "}
-          from this dataset. Are you sure you would like to continue?
-        </Text>
-      }
-    >
-      <EditCollectionOrFieldForm
-        values={field}
+    <>
+      <EditDrawer
+        isOpen={isOpen}
         onClose={onClose}
-        onSubmit={handleSubmit}
-        dataType="field"
+        description={DESCRIPTION}
+        header={
+          <EditDrawerHeader
+            title={`Field Name: ${field.name}`}
+            onDelete={onDeleteOpen}
+          />
+        }
+        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
+      >
+        <EditCollectionOrFieldForm
+          values={field}
+          onSubmit={handleSubmit}
+          dataType="field"
+        />
+      </EditDrawer>
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={onDeleteClose}
+        onConfirm={handleDelete}
+        title="Delete Field"
+        message={
+          <Text>
+            You are about to permanently delete the field named{" "}
+            <Text color="complimentary.500" as="span" fontWeight="bold">
+              {field.name}
+            </Text>{" "}
+            from this dataset. Are you sure you would like to continue?
+          </Text>
+        }
       />
-    </EditDrawer>
+    </>
   );
 };
 

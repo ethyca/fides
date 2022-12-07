@@ -43,6 +43,27 @@ class TestGetMaskingStrategies:
 
 
 class TestMaskValues:
+    def test_no_strategies_specified(self, api_client: TestClient):
+        value = "my_email"
+        request = {
+            "values": [value],
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 422 == response.status_code
+
+    def test_mask_nothing(self, api_client: TestClient):
+        request = {
+            "values": None,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 422 == response.status_code
+
     def test_mask_value_string_rewrite(self, api_client: TestClient):
         value = "check"
         rewrite_val = "mate"
@@ -210,3 +231,62 @@ class TestMaskValues:
         json_response = json.loads(response.text)
         assert value == json_response["plain"][0]
         assert json_response["masked_values"][0] is None
+
+    def test_masking_values_multiple_strategies(self, api_client: TestClient):
+        value = "check"
+        rewrite_val = "mate"
+        request = {
+            "values": [value],
+            "masking_strategy": [
+                {
+                    "strategy": StringRewriteMaskingStrategy.name,
+                    "configuration": {"rewrite_value": rewrite_val},
+                },
+                {
+                    "strategy": HashMaskingStrategy.name,
+                    "configuration": {},
+                },
+            ],
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 200 == response.status_code
+        assert response.json()["plain"] == ["check"]
+        assert response.json()["masked_values"] != [
+            rewrite_val
+        ], "Final value is hashed, because that was the last strategy"
+
+        switch_order = {
+            "values": [value],
+            "masking_strategy": [
+                {
+                    "strategy": HashMaskingStrategy.name,
+                    "configuration": {},
+                },
+                {
+                    "strategy": StringRewriteMaskingStrategy.name,
+                    "configuration": {"rewrite_value": rewrite_val},
+                },
+            ],
+        }
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=switch_order)
+        assert 200 == response.status_code
+        assert response.json()["plain"] == ["check"]
+        assert response.json()["masked_values"] == [
+            rewrite_val
+        ], "Final value is rewrite value, because that was the last strategy specified"
+
+    def test_flexible_config(self, api_client: TestClient):
+        """Test that this request is allowed.  Allow the configuration to be
+        very flexible so different configuration requirements by many masking strategies are supported"""
+        value = "my_email"
+        request = {
+            "values": [value],
+            "masking_strategy": {
+                "strategy": NullMaskingStrategy.name,
+                "configuration": {"test_val": {"test": [["test"]]}},
+            },
+        }
+
+        response = api_client.put(f"{V1_URL_PREFIX}{MASKING}", json=request)
+        assert 200 == response.status_code

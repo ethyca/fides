@@ -1,45 +1,54 @@
-import React, { useEffect, useState } from "react";
 import {
   Button,
   chakra,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   Input,
   ModalBody,
   ModalFooter,
   ModalHeader,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
+import React, { useEffect, useState } from "react";
 
 import { useFormik } from "formik";
 
 import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../../types/AlertState";
-import { PrivacyRequestStatus } from "../../../types";
-import { addCommonHeaders } from "../../../common/CommonHeaders";
+import { addCommonHeaders } from "~/common/CommonHeaders";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { PrivacyRequestStatus } from "~/types";
 
-import config from "../../../config/config.json";
+import config from "~/config/config.json";
+import { hostUrl } from "~/constants";
 
+import dynamic from "next/dynamic";
+import * as Yup from "yup";
 import { ModalViews } from "../types";
-import { hostUrl } from "../../../constants";
+
+import "react-phone-number-input/style.css";
+
+const PhoneInput = dynamic(() => import("react-phone-number-input"), {
+  ssr: false,
+});
 
 const usePrivacyRequestForm = ({
   onClose,
   action,
-  setAlert,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
 }: {
   onClose: () => void;
   action: typeof config.actions[0] | null;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -66,10 +75,17 @@ const usePrivacyRequestForm = ({
         },
       ];
 
-      const handleError = () => {
-        setAlert({
-          status: "error",
-          description: "Your request has failed. Please try again.",
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: any;
+      }) => {
+        toast({
+          title,
+          description: error,
+          ...ErrorToastOptions,
         });
         onClose();
       };
@@ -83,19 +99,20 @@ const usePrivacyRequestForm = ({
           headers,
           body: JSON.stringify(body),
         });
-
+        const data = await response.json();
         if (!response.ok) {
-          handleError();
+          handleError({
+            title: "An error occurred while creating your privacy request",
+            error: data?.detail,
+          });
           return;
         }
 
-        const data = await response.json();
-
         if (!isVerificationRequired && data.succeeded.length) {
-          setAlert({
-            status: "success",
-            description:
+          toast({
+            title:
               "Your request was successful, please await further instructions.",
+            ...SuccessToastOptions,
           });
         } else if (
           isVerificationRequired &&
@@ -105,10 +122,16 @@ const usePrivacyRequestForm = ({
           setPrivacyRequestId(data.succeeded[0].id);
           setCurrentView(ModalViews.IdentityVerification);
         } else {
-          handleError();
+          handleError({
+            title:
+              "An unhandled error occurred while processing your privacy request",
+          });
         }
       } catch (error) {
-        handleError();
+        handleError({
+          title:
+            "An unhandled error occurred while creating your privacy request",
+        });
         return;
       }
 
@@ -116,30 +139,34 @@ const usePrivacyRequestForm = ({
         onClose();
       }
     },
-    validate: (values) => {
-      if (!action) {
-        return {};
-      }
-      const errors: {
-        name?: string;
-        email?: string;
-        phone?: string;
-      } = {};
-
-      if (!values.email && action.identity_inputs.email === "required") {
-        errors.email = "Required";
-      }
-
-      if (!values.name && action.identity_inputs.name === "required") {
-        errors.name = "Required";
-      }
-
-      if (!values.phone && action.identity_inputs.phone === "required") {
-        errors.phone = "Required";
-      }
-
-      return errors;
-    },
+    validationSchema: Yup.object().shape({
+      name: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.name === "required") {
+          validation = validation.required("Name is required");
+        }
+        return validation;
+      })(),
+      email: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.email === "required") {
+          validation = validation
+            .email("Email is invalid")
+            .required("Email is required");
+        }
+        return validation;
+      })(),
+      phone: (() => {
+        let validation = Yup.string();
+        if (action?.identity_inputs.phone === "required") {
+          validation = validation
+            .required("Phone is required")
+            // E.164 international standard format
+            .matches(/^\+[1-9]\d{1,14}$/, "Phone is invalid");
+        }
+        return validation;
+      })(),
+    }),
   });
 
   return { ...formik, isLoading };
@@ -149,7 +176,6 @@ type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
   openAction: string | null;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -159,7 +185,6 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   isOpen,
   onClose,
   openAction,
-  setAlert,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
@@ -173,6 +198,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
     handleBlur,
     handleChange,
     handleSubmit,
+    setFieldValue,
     touched,
     values,
     isValid,
@@ -181,7 +207,6 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   } = usePrivacyRequestForm({
     onClose,
     action,
-    setAlert,
     setCurrentView,
     setPrivacyRequestId,
     isVerificationRequired,
@@ -198,7 +223,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
             {action.description}
@@ -209,20 +234,19 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="name"
                 isInvalid={touched.name && Boolean(errors.name)}
               >
+                <FormLabel>
+                  {action.identity_inputs.name === "required"
+                    ? "Name*"
+                    : "Name"}
+                </FormLabel>
                 <Input
                   id="name"
                   name="name"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.name === "required"
-                      ? "Name*"
-                      : "Name"
-                  }
-                  isRequired={action.identity_inputs.name === "required"}
+                  placeholder="Michael Brown"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.name}
-                  isInvalid={touched.name && Boolean(errors.name)}
                 />
                 <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
@@ -232,21 +256,20 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="email"
                 isInvalid={touched.email && Boolean(errors.email)}
               >
+                <FormLabel>
+                  {action.identity_inputs.email === "required"
+                    ? "Email*"
+                    : "Email"}
+                </FormLabel>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.email === "required"
-                      ? "Email*"
-                      : "Email"
-                  }
-                  isRequired={action.identity_inputs.email === "required"}
+                  placeholder="test-email@example.com"
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.email}
-                  isInvalid={touched.email && Boolean(errors.email)}
                 />
                 <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
@@ -256,21 +279,24 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                 id="phone"
                 isInvalid={touched.phone && Boolean(errors.phone)}
               >
+                <FormLabel>
+                  {action.identity_inputs.phone === "required"
+                    ? "Phone*"
+                    : "Phone"}
+                </FormLabel>
                 <Input
+                  as={PhoneInput}
                   id="phone"
                   name="phone"
-                  type="phone"
+                  type="tel"
                   focusBorderColor="primary.500"
-                  placeholder={
-                    action.identity_inputs.phone === "required"
-                      ? "Phone*"
-                      : "Phone"
-                  }
-                  isRequired={action.identity_inputs.phone === "required"}
-                  onChange={handleChange}
+                  placeholder="+1 000 000 0000"
+                  defaultCountry="US"
+                  onChange={(value) => {
+                    setFieldValue("phone", value, true);
+                  }}
                   onBlur={handleBlur}
                   value={values.phone}
-                  isInvalid={touched.phone && Boolean(errors.phone)}
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>

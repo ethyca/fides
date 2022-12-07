@@ -52,3 +52,8 @@ user="postgres"
 password="postgres"
 db="timescale_example"
 port=5432
+
+[fides_example]
+uri="http://fides:8080"
+username="root_user"
+password="Testpassword1!"

@@ -32,8 +32,9 @@ from fides.api.ops.models.privacy_request import (
     ManualAction,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.email.email import EmailActionType
-from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.schemas.messaging.messaging import MessagingActionType
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 
 page_size = Params().size
 
@@ -553,6 +554,11 @@ class TestPatchConnections:
     ) -> None:
         response = api_client.patch(url, headers={}, json=payload)
         assert 401 == response.status_code
+
+    def test_malformed_token_is_forbidden(self, api_client: TestClient, url, payload):
+        auth_header = {"Authorization": "Bearer invalid"}
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
 
     def test_patch_connections_incorrect_scope(
         self, api_client: TestClient, generate_auth_header, url, payload
@@ -1919,10 +1925,10 @@ class TestPutConnectionConfigSecrets:
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
 
-    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_email")
+    @mock.patch("fides.api.ops.service.connectors.email_connector.dispatch_message")
     def test_put_email_connection_config_secrets(
         self,
-        mock_dispatch_email,
+        mock_dispatch_message,
         api_client: TestClient,
         db: Session,
         generate_auth_header,
@@ -1959,13 +1965,14 @@ class TestPutConnectionConfigSecrets:
         assert email_connection_config.last_test_timestamp is not None
         assert email_connection_config.last_test_succeeded is not None
 
-        assert mock_dispatch_email.called
-        kwargs = mock_dispatch_email.call_args.kwargs
+        assert mock_dispatch_message.called
+        kwargs = mock_dispatch_message.call_args.kwargs
         assert (
-            kwargs["action_type"] == EmailActionType.EMAIL_ERASURE_REQUEST_FULFILLMENT
+            kwargs["action_type"]
+            == MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
         )
-        assert kwargs["to_email"] == "test@example.com"
-        assert kwargs["email_body_params"] == [
+        assert kwargs["to_identity"] == Identity(email="test@example.com")
+        assert kwargs["message_body_params"] == [
             CheckpointActionRequired(
                 step=CurrentStep.erasure,
                 collection=CollectionAddress("test_dataset", "test_collection"),

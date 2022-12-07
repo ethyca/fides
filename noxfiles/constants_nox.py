@@ -4,6 +4,8 @@ from os import getenv
 # Files
 COMPOSE_FILE = "docker-compose.yml"
 INTEGRATION_COMPOSE_FILE = "docker-compose.integration-tests.yml"
+TEST_ENV_COMPOSE_FILE = "docker-compose.test-env.yml"
+REMOTE_DEBUG_COMPOSE_FILE = "docker-compose.remote-debug.yml"
 WITH_TEST_CONFIG = ("-f", "tests/ctl/test_config.toml")
 
 # Image Names & Tags
@@ -23,7 +25,13 @@ IMAGE = f"{REGISTRY}/{IMAGE_NAME}"
 IMAGE_LOCAL = f"{IMAGE}:local"
 IMAGE_LOCAL_UI = f"{IMAGE}:local-ui"
 IMAGE_DEV = f"{IMAGE}:dev"
+IMAGE_SAMPLE = f"{IMAGE}:sample"
 IMAGE_LATEST = f"{IMAGE}:latest"
+
+# Image names for the secondary apps
+PRIVACY_CENTER_IMAGE = f"{REGISTRY}/fides-privacy-center"
+SAMPLE_APP_IMAGE = f"{REGISTRY}/fides-sample-app"
+
 
 # Disable TTY to perserve output within Github Actions logs
 # CI env variable is always set to true in Github Actions
@@ -39,6 +47,12 @@ RUN = (
     "docker",
     "compose",
     "run",
+    "-e",
+    "VAULT_ADDR",
+    "-e",
+    "VAULT_NAMESPACE",
+    "-e",
+    "VAULT_TOKEN",
     "--rm",
     *ANALYTICS_ID_OVERRIDE,
     *ANALYTICS_OPT_OUT,
@@ -56,7 +70,6 @@ RUN_NO_DEPS = (
     IMAGE_NAME,
 )
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
-START_APP_UI = ("docker", "compose", "up", "--wait", "fides-ui")
 START_APP_EXTERNAL = (
     "docker",
     "compose",
@@ -65,8 +78,28 @@ START_APP_EXTERNAL = (
     "-f",
     INTEGRATION_COMPOSE_FILE,
     "up",
-    "-d",
-    IMAGE_NAME,
+    "--wait",
+    COMPOSE_SERVICE_NAME,
+)
+START_TEST_ENV = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    TEST_ENV_COMPOSE_FILE,
+    "up",
+    "--wait",
+    COMPOSE_SERVICE_NAME,
+)
+START_APP_REMOTE_DEBUG = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    REMOTE_DEBUG_COMPOSE_FILE,
+    "up",
     COMPOSE_SERVICE_NAME,
 )
 START_APP_WITH_EXTERNAL_POSTGRES = (

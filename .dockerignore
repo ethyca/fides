@@ -7,6 +7,7 @@ src/ui-build/
 
 # Frontend
 **/node_modules
+.next
 
 
 # Ignore Python-Specific Files
@@ -44,3 +45,8 @@ venv/
 **/videos/
 **/screenshots/
 .DS_Store
+
+# Dev files
+.pre-commit-config.yaml
+docker/docker-compose.minimal-config.yml
+.fides/

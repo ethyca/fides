@@ -1,4 +1,5 @@
 import uuid
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -35,6 +36,14 @@ def braze_secrets(saas_config):
 @pytest.fixture(scope="session")
 def braze_identity_email(saas_config):
     return pydash.get(saas_config, "braze.identity_email") or secrets["identity_email"]
+
+
+@pytest.fixture(scope="session")
+def braze_identity_phone_number(saas_config):
+    return (
+        pydash.get(saas_config, "braze.identity_phone_number")
+        or secrets["identity_phone_number"]
+    )
 
 
 @pytest.fixture(scope="session")
@@ -114,7 +123,6 @@ def braze_erasure_data(
                 "first_name": "Walter",
                 "last_name": "White",
                 "email": braze_erasure_identity_email,
-                "phone": "+16175551212",
                 "country": "US",
                 "date_of_first_session": "2022-09-14T16:14:56+00:00",
                 "dob": "1980-12-21",
@@ -170,6 +178,8 @@ def braze_erasure_data(
     response_data = response.json()
 
     assert response.ok
+
+    sleep(30)
 
     error_message = (
         f"User with email {braze_erasure_identity_email} could not be added to Braze"

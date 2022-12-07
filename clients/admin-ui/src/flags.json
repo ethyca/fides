@@ -4,7 +4,7 @@
     "isActive": true
   },
   {
-    "name": "configWizardFlag",
-    "isActive": true
+    "name": "configWizardStepper",
+    "isActive": false
   }
 ]

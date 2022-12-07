@@ -1,65 +1,111 @@
 import React, { useEffect, useState, useCallback } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { Flex, Heading, Text, Stack, Image, Button } from "@fidesui/react";
+import {
+  Flex,
+  Heading,
+  Text,
+  Stack,
+  Image,
+  Button,
+  useToast,
+} from "@fidesui/react";
 import { useRouter } from "next/router";
+import {
+  ConfigErrorToastOptions,
+  ErrorToastOptions,
+  SuccessToastOptions,
+} from "~/common/toast-options";
 
 import { Headers } from "headers-polyfill";
 import {
   makeConsentItems,
   makeCookieKeyConsent,
 } from "~/features/consent/helpers";
-import { setConsentCookie } from "~/features/consent/cookie";
+import { setConsentCookie } from "fides-consent";
 import { ApiUserConsents, ConsentItem } from "~/features/consent/types";
-import ConsentItemCard from "../components/ConsentItemCard";
 
-import config from "../config/config.json";
-import { hostUrl } from "../constants";
-import { addCommonHeaders } from "../common/CommonHeaders";
-import { VerificationType } from "../components/modals/types";
-import { useLocalStorage } from "../common/hooks";
+import { hostUrl } from "~/constants";
+import { addCommonHeaders } from "~/common/CommonHeaders";
+import { VerificationType } from "~/components/modals/types";
+import { useLocalStorage } from "~/common/hooks";
+import consentConfig from "../config/config.json";
+import ConsentItemCard from "../components/ConsentItemCard";
 
 const Consent: NextPage = () => {
   const content: any = [];
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
   const router = useRouter();
-
-  useEffect(() => {
-    if (!consentRequestId || !verificationCode) {
-      router.push("/");
-    }
-  }, [consentRequestId, verificationCode, router]);
-
+  const toast = useToast();
   const [consentItems, setConsentItems] = useState<ConsentItem[]>([]);
 
   useEffect(() => {
     const getUserConsents = async () => {
+      if (!consentRequestId) {
+        router.push("/");
+        return;
+      }
+
       const headers: Headers = new Headers();
       addCommonHeaders(headers, null);
 
-      const response = await fetch(
-        `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/verify`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ code: verificationCode }),
-        }
-      );
+      const configResponse = await fetch(`${hostUrl}/id-verification/config`, {
+        headers,
+      });
+      const privacyCenterConfig = await configResponse.json();
+      if (!configResponse.ok) {
+        toast({
+          description: privacyCenterConfig.detail,
+          ...ConfigErrorToastOptions,
+        });
+        return;
+      }
+
+      if (
+        privacyCenterConfig.identity_verification_required &&
+        !verificationCode
+      ) {
+        router.push("/");
+        return;
+      }
+
+      const verifyUrl = privacyCenterConfig.identity_verification_required
+        ? `${VerificationType.ConsentRequest}/${consentRequestId}/verify`
+        : `${VerificationType.ConsentRequest}/${consentRequestId}/preferences`;
+
+      const requestOptions: RequestInit = {
+        method: privacyCenterConfig.identity_verification_required
+          ? "POST"
+          : "GET",
+        headers,
+      };
+      if (privacyCenterConfig.identity_verification_required) {
+        requestOptions.body = JSON.stringify({ code: verificationCode });
+      }
+
+      const response = await fetch(`${hostUrl}/${verifyUrl}`, requestOptions);
       const data = (await response.json()) as ApiUserConsents;
       if (!response.ok) {
+        toast({
+          title: "An error occurred while retrieving user consent preferences",
+          description: (data as any).detail,
+          ...ErrorToastOptions,
+        });
+
         router.push("/");
+        return;
       }
 
       const updatedConsentItems = makeConsentItems(
         data,
-        config.consent.consentOptions
+        consentConfig.consent.consentOptions
       );
       setConsentItems(updatedConsentItems);
       setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
     };
     getUserConsents();
-  }, [router, consentRequestId, verificationCode]);
+  }, [router, consentRequestId, verificationCode, toast]);
 
   consentItems.forEach((option) => {
     content.push(
@@ -94,7 +140,7 @@ const Consent: NextPage = () => {
     };
 
     const response = await fetch(
-      `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/preferences`,
+      `${hostUrl}/${VerificationType.ConsentRequest}/${consentRequestId}/preferences/`,
       {
         method: "PATCH",
         headers,
@@ -104,16 +150,28 @@ const Consent: NextPage = () => {
     );
 
     const data = (await response.json()) as ApiUserConsents;
+    if (!response.ok) {
+      toast({
+        title: "An error occurred while saving user consent preferences",
+        description: (data as any).detail,
+        ...ErrorToastOptions,
+      });
+      router.push("/");
+    }
     const updatedConsentItems = makeConsentItems(
       data,
-      config.consent.consentOptions
+      consentConfig.consent.consentOptions
     );
     setConsentCookie(makeCookieKeyConsent(updatedConsentItems));
+    toast({
+      title: "Your consent preferences have been saved",
+      ...SuccessToastOptions,
+    });
 
     router.push("/");
     // TODO: display alert on successful patch
     // TODO: display error alert on failed patch
-  }, [consentItems, consentRequestId, verificationCode, router]);
+  }, [verificationCode, consentItems, consentRequestId, toast, router]);
 
   return (
     <div>
@@ -133,7 +191,7 @@ const Consent: NextPage = () => {
           alignItems="center"
         >
           <Image
-            src={config.logo_path}
+            src={consentConfig.logo_path}
             height="56px"
             width="304px"
             alt="Logo"
@@ -141,7 +199,7 @@ const Consent: NextPage = () => {
         </Flex>
       </header>
 
-      <main>
+      <main data-testid="consent">
         <Stack align="center" py={["6", "16"]} px={5} spacing={8}>
           <Stack align="center" spacing={3}>
             <Heading
@@ -186,6 +244,7 @@ const Consent: NextPage = () => {
               onClick={() => {
                 saveUserConsentOptions();
               }}
+              data-testid="save-btn"
             >
               Save
             </Button>

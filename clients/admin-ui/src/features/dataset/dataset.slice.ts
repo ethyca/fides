@@ -100,7 +100,7 @@ export const datasetSlice = createSlice({
 
       // Clear out the related fields when the dataset is changed.
       draftState.activeDatasetFidesKey = action.payload;
-      draftState.activeCollectionIndex = undefined;
+      draftState.activeCollectionIndex = 0;
       draftState.activeFieldIndex = undefined;
     },
     setActiveCollectionIndex: (

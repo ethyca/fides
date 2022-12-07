@@ -1,0 +1,19 @@
+/*
+Add any global CSS overrides to this file.
+Override basic theme colors by uncommenting and editing those below
+*/
+
+:root:root {
+  /* Background color */
+  --chakra-colors-gray-50: #FDFDFC;
+  /* Header & highlight color */
+  --chakra-colors-gray-100: #FAF7F6;
+  /* Modal text color */
+  --chakra-colors-gray-500: #5B301D;
+  /* Body text color */
+  --chakra-colors-gray-600: #5B301D;
+  /* Primary button hover color */
+  --chakra-colors-primary-400: #CC805F;
+  /* Primary button color */
+  --chakra-colors-primary-800: #A85936;
+}

@@ -7,12 +7,19 @@ import requests
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.graph_task import get_cached_data_for_erasures
 from fides.ctl.core.config import get_config
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
+
+
+@pytest.mark.integration_saas
+@pytest.mark.integration_zendesk
+def test_zendesk_connection_test(zendesk_connection_config) -> None:
+    get_connector(zendesk_connection_config).test_connection()
 
 
 @pytest.mark.integration_saas
@@ -107,7 +114,7 @@ async def test_zendesk_access_request_task(
 
     assert_rows_match(
         v[f"{dataset_name}:tickets"],
-        min_size=2,
+        min_size=1,
         keys=[
             "url",
             "id",
@@ -190,7 +197,9 @@ async def test_zendesk_erasure_request_task(
     zendesk_erasure_identity_email,
     zendesk_create_erasure_data,
 ) -> None:
-    """Full erasure request based on the zendesk SaaS config"""
+    """Full erasure request based on the Zendesk SaaS config"""
+
+    masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = False  # Allow Delete
 
     privacy_request = PrivacyRequest(
@@ -335,4 +344,4 @@ async def test_zendesk_erasure_request_task(
         # Since ticket is deleted, it won't be available so response is 404
         assert response.status_code == 404
 
-    CONFIG.execution.masking_strict = True
+    CONFIG.execution.masking_strict = masking_strict

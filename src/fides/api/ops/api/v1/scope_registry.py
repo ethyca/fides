@@ -19,12 +19,14 @@ SAAS_CONNECTION_INSTANTIATE = "connection:instantiate"
 
 CONSENT_READ = "consent:read"
 
+PRIVACY_REQUEST_CREATE = "privacy-request:create"
 PRIVACY_REQUEST_READ = "privacy-request:read"
 PRIVACY_REQUEST_DELETE = "privacy-request:delete"
 PRIVACY_REQUEST_CALLBACK_RESUME = (
     "privacy-request:resume"  # User has permission to resume a privacy request
 )
 PRIVACY_REQUEST_REVIEW = "privacy-request:review"
+PRIVACY_REQUEST_TRANSFER = "privacy-request:transfer"
 PRIVACY_REQUEST_UPLOAD_DATA = "privacy-request:upload_data"
 PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data"
 
@@ -40,9 +42,9 @@ STORAGE_CREATE_OR_UPDATE = "storage:create_or_update"
 STORAGE_READ = "storage:read"
 STORAGE_DELETE = "storage:delete"
 
-EMAIL_CREATE_OR_UPDATE = "email:create_or_update"
-EMAIL_READ = "email:read"
-EMAIL_DELETE = "email:delete"
+MESSAGING_CREATE_OR_UPDATE = "messaging:create_or_update"
+MESSAGING_READ = "messaging:read"
+MESSAGING_DELETE = "messaging:delete"
 
 SCOPE_READ = "scope:read"
 
@@ -86,10 +88,12 @@ SCOPE_REGISTRY = [
     POLICY_CREATE_OR_UPDATE,
     POLICY_READ,
     POLICY_DELETE,
+    PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
     RULE_CREATE_OR_UPDATE,
@@ -99,9 +103,9 @@ SCOPE_REGISTRY = [
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
-    EMAIL_CREATE_OR_UPDATE,
-    EMAIL_DELETE,
-    EMAIL_READ,
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_READ,
     WEBHOOK_DELETE,

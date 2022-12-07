@@ -9,6 +9,12 @@ interface SystemDeleteResponse {
   resource: System;
 }
 
+interface UpsertResponse {
+  message: string;
+  inserted: number;
+  updated: number;
+}
+
 export const systemApi = createApi({
   reducerPath: "systemApi",
   baseQuery: fetchBaseQuery({
@@ -39,6 +45,14 @@ export const systemApi = createApi({
         url: `system/${key}`,
         params: { resource_type: "system" },
         method: "DELETE",
+      }),
+      invalidatesTags: ["System"],
+    }),
+    upsertSystems: build.mutation<UpsertResponse, System[]>({
+      query: (systems) => ({
+        url: `/system/upsert`,
+        method: "POST",
+        body: systems,
       }),
       invalidatesTags: ["System"],
     }),
@@ -88,26 +102,46 @@ export const {
   useCreateSystemMutation,
   useUpdateSystemMutation,
   useDeleteSystemMutation,
+  useUpsertSystemsMutation,
 } = systemApi;
 
 export interface State {
-  activeSystem: System | null;
+  activeSystem?: System;
+  activeClassifySystemFidesKey?: string;
+  systemsToClassify?: System[];
 }
-const initialState: State = {
-  activeSystem: null,
-};
+const initialState: State = {};
 
 export const systemSlice = createSlice({
   name: "system",
   initialState,
   reducers: {
-    setActiveSystem: (draftState, action: PayloadAction<System | null>) => {
+    setActiveSystem: (
+      draftState,
+      action: PayloadAction<System | undefined>
+    ) => {
       draftState.activeSystem = action.payload;
+    },
+    setActiveClassifySystemFidesKey: (
+      draftState,
+      action: PayloadAction<string | undefined>
+    ) => {
+      draftState.activeClassifySystemFidesKey = action.payload;
+    },
+    setSystemsToClassify: (
+      draftState,
+      action: PayloadAction<System[] | undefined>
+    ) => {
+      draftState.systemsToClassify = action.payload;
     },
   },
 });
 
-export const { setActiveSystem } = systemSlice.actions;
+export const {
+  setActiveSystem,
+  setActiveClassifySystemFidesKey,
+  setSystemsToClassify,
+} = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
@@ -116,4 +150,26 @@ const selectSystem = (state: RootState) => state.system;
 export const selectActiveSystem = createSelector(
   selectSystem,
   (state) => state.activeSystem
+);
+
+export const selectActiveClassifySystemFidesKey = createSelector(
+  selectSystem,
+  (state) => state.activeClassifySystemFidesKey
+);
+export const selectActiveClassifySystem = createSelector(
+  [(RootState) => RootState, selectActiveClassifySystemFidesKey],
+  (RootState, fidesKey) => {
+    if (fidesKey === undefined) {
+      return undefined;
+    }
+    const allSystems: System[] | undefined =
+      systemApi.endpoints.getAllSystems.select()(RootState).data;
+    const system = allSystems?.find((s) => s.fides_key === fidesKey);
+    return system;
+  }
+);
+
+export const selectSystemsToClassify = createSelector(
+  selectSystem,
+  (state) => state.systemsToClassify
 );

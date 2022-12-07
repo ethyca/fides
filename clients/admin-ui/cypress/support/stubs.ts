@@ -1,3 +1,5 @@
+import { HealthCheck } from "~/types/api";
+
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
     fixture: "data_categories.json",
@@ -69,19 +71,25 @@ export const stubDatasetCrud = () => {
 export const CONNECTION_STRING =
   "postgresql://postgres:fidesctl@fidesctl-db:5432/fidesctl_test";
 
-export const stubPlus = (available: boolean) => {
+export const stubPlus = (available: boolean, options?: HealthCheck) => {
   if (available) {
-    cy.intercept("GET", "/api/v1/plus/health", {
-      statusCode: 200,
-      body: {
-        status: "healthy",
-        core_fidesctl_version: "1.8",
-      },
-    }).as("getPlusHealth");
+    cy.fixture("plus_health.json").then((data) => {
+      cy.intercept("GET", "/api/v1/plus/health", {
+        statusCode: 200,
+        body: options ?? data,
+      }).as("getPlusHealth");
+    });
   } else {
     cy.intercept("GET", "/api/v1/plus/health", {
       statusCode: 400,
       body: {},
     }).as("getPlusHealth");
   }
+};
+
+export const stubHomePage = () => {
+  cy.intercept("GET", "/api/v1/privacy-request*", {
+    statusCode: 200,
+    body: { items: [], total: 0, page: 1, size: 25 },
+  }).as("getPrivacyRequests");
 };

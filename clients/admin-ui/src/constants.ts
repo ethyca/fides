@@ -13,27 +13,27 @@ export const STORAGE_ROOT_KEY = "persist:root";
 
 export const USER_PRIVILEGES: UserPrivileges[] = [
   {
-    privilege: "View subject requests",
+    privilege: "View privacy requests",
     scope: "privacy-request:read",
   },
   {
-    privilege: "Approve subject requests",
+    privilege: "Approve privacy requests",
     scope: "privacy-request:review",
   },
   {
-    privilege: "Resume subject requests",
+    privilege: "Resume privacy requests",
     scope: "privacy-request:resume",
   },
   {
-    privilege: "View datastore connections",
+    privilege: "View connections",
     scope: "connection:read",
   },
   {
-    privilege: "Create or Update datastore connections",
+    privilege: "Create or update connections",
     scope: "connection:create_or_update",
   },
   {
-    privilege: "Instantiate connections to SaaS datastores",
+    privilege: "Instantiate connections",
     scope: "connection:instantiate",
   },
   {
@@ -41,7 +41,7 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "connection_type:read",
   },
   {
-    privilege: "Delete datastore connections",
+    privilege: "Delete connections",
     scope: "connection:delete",
   },
   {
@@ -49,15 +49,15 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
     scope: "consent:read",
   },
   {
-    privilege: "View Datasets",
+    privilege: "View datasets",
     scope: "dataset:read",
   },
   {
-    privilege: "Create or Update Datasets",
+    privilege: "Create or update datasets",
     scope: "dataset:create_or_update",
   },
   {
-    privilege: "Delete Datasets",
+    privilege: "Delete datasets",
     scope: "dataset:delete",
   },
   {
@@ -106,6 +106,13 @@ export const USER_PRIVILEGES: UserPrivileges[] = [
   },
 ];
 
+/**
+ * Interval between re-fetching a logged-in user's permission to validate their auth token.
+ * Only applies to an active page -- token will always revalidate on page refresh.
+ * Ten minutes in milliseconds.
+ */
+export const VERIFY_AUTH_INTERVAL = 10 * 60 * 1000;
+
 // API ROUTES
 export const INDEX_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
@@ -114,4 +121,7 @@ export const CONNECTION_ROUTE = "/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
 
 // UI ROUTES
+export const CONFIG_WIZARD_ROUTE = "/add-systems";
+export const DATAMAP_ROUTE = "/datamap";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
+export const SYSTEM_ROUTE = "/system";

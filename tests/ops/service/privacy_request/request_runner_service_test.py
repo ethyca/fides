@@ -16,7 +16,7 @@ from fides.api.ops.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.ops.models.connectionconfig import AccessLevel
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import CurrentStep, PolicyPostWebhook
 from fides.api.ops.models.privacy_request import (
     ActionType,
@@ -26,18 +26,21 @@ from fides.api.ops.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.ops.schemas.email.email import (
-    AccessRequestCompleteBodyParams,
-    EmailActionType,
-    EmailForActionType,
-)
 from fides.api.ops.schemas.external_https import SecondPartyResponseFormat
 from fides.api.ops.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
 )
 from fides.api.ops.schemas.masking.masking_secrets import MaskingSecretCache
+from fides.api.ops.schemas.messaging.messaging import (
+    AccessRequestCompleteBodyParams,
+    EmailForActionType,
+    MessagingActionType,
+    MessagingServiceType,
+)
 from fides.api.ops.schemas.policy import Rule
+from fides.api.ops.schemas.redis_cache import Identity
+from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.service.connectors.sql_connector import (
@@ -50,6 +53,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_hmac import (
 )
 from fides.api.ops.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
+    upload_access_results,
 )
 from fides.api.ops.util.data_category import DataCategory
 from fides.ctl.core.config import get_config
@@ -70,10 +74,10 @@ def privacy_request_complete_email_notification_enabled():
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
 @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
-def test_policy_upload_dispatch_email_called(
+def test_policy_upload_dispatch_message_called(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
     privacy_request_status_pending: PrivacyRequest,
@@ -89,7 +93,7 @@ def test_policy_upload_dispatch_email_called(
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
 @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_sets_started_processing_at(
@@ -115,7 +119,7 @@ def test_start_processing_sets_started_processing_at(
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
 @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
 def test_start_processing_doesnt_overwrite_started_processing_at(
@@ -166,7 +170,7 @@ def test_halts_proceeding_if_cancelled(
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
 @mock.patch(
     "fides.api.ops.service.privacy_request.request_runner_service.upload_access_results"
@@ -216,7 +220,7 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
 
 
 @mock.patch(
-    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+    "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
 )
 @mock.patch(
     "fides.api.ops.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
@@ -609,6 +613,9 @@ def test_create_and_process_erasure_request_saas(
     )
 
     connector = SaaSConnector(mailchimp_connection_config)
+    connector.set_saas_request_state(
+        SaaSRequest(path="test_path", method=HTTPMethod.GET)
+    )  # dummy request as connector requires it
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/3.0/search-members",
@@ -1633,7 +1640,7 @@ def test_privacy_request_log_failure(
 
 class TestPrivacyRequestsEmailConnector:
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @pytest.mark.integration
     def test_create_and_process_erasure_request_email_connector(
@@ -1645,7 +1652,7 @@ class TestPrivacyRequestsEmailConnector:
         run_privacy_request_task,
         email_dataset_config,
         postgres_example_test_dataset_config_read_access,
-        email_config,
+        messaging_config,
         db,
     ):
         """
@@ -1671,12 +1678,12 @@ class TestPrivacyRequestsEmailConnector:
         )
         pr.delete(db=db)
         assert mailgun_send.called
-        kwargs = mailgun_send.call_args.kwargs
-        assert type(kwargs["email_config"]) == EmailConfig
-        assert type(kwargs["email"]) == EmailForActionType
+        args = mailgun_send.call_args.args
+        assert type(args[0]) == MessagingConfig
+        assert type(args[1]) == EmailForActionType
 
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @pytest.mark.integration
     def test_create_and_process_erasure_request_email_connector_email_send_error(
@@ -1691,7 +1698,7 @@ class TestPrivacyRequestsEmailConnector:
         db,
     ):
         """
-        Force error by having no email config setup
+        Force error by having no messaging config setup
         """
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
@@ -1730,7 +1737,7 @@ class TestPrivacyRequestsEmailConnector:
         assert mailgun_send.called is False
 
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @pytest.mark.integration
     def test_email_connector_read_only_permissions(
@@ -1741,12 +1748,12 @@ class TestPrivacyRequestsEmailConnector:
         integration_postgres_config,
         run_privacy_request_task,
         email_dataset_config,
-        email_config,
+        messaging_config,
         postgres_example_test_dataset_config_read_access,
         db,
     ):
         """
-        Set email config to read only - don't send email in this case.
+        Set messaging config to read only - don't send message in this case.
         """
         rule = erasure_policy.rules[0]
         target = rule.targets[0]
@@ -1784,7 +1791,7 @@ class TestPrivacyRequestsEmailConnector:
         ), "Email not sent because the connection was read only"
 
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @pytest.mark.integration
     def test_email_connector_no_updates_needed(
@@ -1795,7 +1802,7 @@ class TestPrivacyRequestsEmailConnector:
         integration_postgres_config,
         run_privacy_request_task,
         email_dataset_config,
-        email_config,
+        messaging_config,
         postgres_example_test_dataset_config_read_access,
         db,
     ):
@@ -1851,7 +1858,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
     )
     def test_email_complete_send_erasure(
         self,
@@ -1863,7 +1870,7 @@ class TestPrivacyRequestsEmailNotifications:
         generate_auth_header,
         erasure_policy,
         read_connection_config,
-        email_config,
+        messaging_config,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
@@ -1887,7 +1894,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
     )
     @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access(
@@ -1901,7 +1908,7 @@ class TestPrivacyRequestsEmailNotifications:
         generate_auth_header,
         policy,
         read_connection_config,
-        email_config,
+        messaging_config,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
@@ -1926,7 +1933,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_email"
+        "fides.api.ops.service.privacy_request.request_runner_service.dispatch_message"
     )
     @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_and_erasure(
@@ -1940,7 +1947,7 @@ class TestPrivacyRequestsEmailNotifications:
         generate_auth_header,
         access_and_erasure_policy,
         read_connection_config,
-        email_config,
+        messaging_config,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
@@ -1959,22 +1966,25 @@ class TestPrivacyRequestsEmailNotifications:
             data,
         )
         pr.delete(db=db)
+        identity = Identity(email=customer_email)
 
         mailgun_send.assert_has_calls(
             [
                 call(
                     db=ANY,
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-                    to_email=customer_email,
-                    email_body_params=AccessRequestCompleteBodyParams(
+                    action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
+                    to_identity=identity,
+                    service_type=MessagingServiceType.MAILGUN.value,
+                    message_body_params=AccessRequestCompleteBodyParams(
                         download_links=[upload_mock.return_value]
                     ),
                 ),
                 call(
                     db=ANY,
-                    action_type=EmailActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
-                    to_email=customer_email,
-                    email_body_params=None,
+                    action_type=MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION,
+                    to_identity=identity,
+                    service_type=MessagingServiceType.MAILGUN.value,
+                    message_body_params=None,
                 ),
             ],
             any_order=True,
@@ -1983,10 +1993,10 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
-    def test_email_complete_send_access_no_email_config(
+    def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
         mailgun_send,
@@ -2023,7 +2033,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration_postgres
     @pytest.mark.integration
     @mock.patch(
-        "fides.api.ops.service.email.email_dispatch_service._mailgun_dispatcher"
+        "fides.api.ops.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch("fides.api.ops.service.privacy_request.request_runner_service.upload")
     def test_email_complete_send_access_no_email_identity(
@@ -2044,7 +2054,7 @@ class TestPrivacyRequestsEmailNotifications:
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
-            "identity": {"phone": "1231231233"},
+            "identity": {"phone_number": "1231231233"},
         }
 
         pr = get_privacy_request_results(

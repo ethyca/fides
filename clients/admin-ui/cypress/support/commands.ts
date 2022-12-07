@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { STORAGE_ROOT_KEY } from "~/constants";
+import { STORAGE_ROOT_KEY, USER_PRIVILEGES } from "~/constants";
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
@@ -9,13 +9,26 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
 Cypress.Commands.add("login", () => {
   cy.fixture("login.json").then((body) => {
     const authState = {
-      user_data: body.user_data,
+      user: body.user_data,
       token: body.token_data.access_token,
     };
-    window.localStorage.setItem(
+    cy.window().then((win) => {
+      win.localStorage.setItem(
         STORAGE_ROOT_KEY,
-      JSON.stringify(authState)
-    );
+        // redux-persist stringifies the root object _and_ the first layer of children.
+        // https://github.com/rt2zz/redux-persist/issues/489#issuecomment-336928988
+        JSON.stringify({
+          auth: JSON.stringify(authState),
+        })
+      );
+    });
+    cy.intercept("/api/v1/user/*/permission", {
+      body: {
+        id: body.user_data.id,
+        user_id: body.user_data.id,
+        scopes: USER_PRIVILEGES.map((up) => up.scope),
+      },
+    }).as("getUserPermission");
   });
 });
 

@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { System } from "~/types/api";
 
 import DescribeSystemStep from "./DescribeSystemStep";
-import { transformSystemToFormValues } from "./form";
 import PrivacyDeclarationStep from "./PrivacyDeclarationStep";
 import ReviewSystemStep from "./ReviewSystemStep";
 import { selectActiveSystem, setActiveSystem } from "./system.slice";
@@ -52,17 +51,12 @@ const ManualSystemFlow = () => {
 
   const goBack = () => {
     router.back();
-    dispatch(setActiveSystem(null));
+    dispatch(setActiveSystem(undefined));
   };
 
   const handleSuccess = (system: System) => {
     setCurrentStepIndex(currentStepIndex + 1);
     dispatch(setActiveSystem(system));
-  };
-
-  const goToIndex = () => {
-    router.push("/system");
-    dispatch(setActiveSystem(null));
   };
 
   return (
@@ -79,27 +73,17 @@ const ManualSystemFlow = () => {
       </GridItem>
       <GridItem w="75%">
         {currentStepIndex === 0 ? (
-          <DescribeSystemStep
-            onSuccess={handleSuccess}
-            onCancel={goBack}
-            initialValues={
-              activeSystem
-                ? transformSystemToFormValues(activeSystem)
-                : undefined
-            }
-          />
+          <DescribeSystemStep onSuccess={handleSuccess} system={activeSystem} />
         ) : null}
         {currentStepIndex === 1 && activeSystem ? (
           <PrivacyDeclarationStep
             system={activeSystem}
             onSuccess={handleSuccess}
-            onCancel={goBack}
           />
         ) : null}
         {currentStepIndex === 2 && activeSystem ? (
           <ReviewSystemStep
             system={activeSystem}
-            onCancel={goBack}
             onSuccess={() => setCurrentStepIndex(currentStepIndex + 1)}
           />
         ) : null}
@@ -107,7 +91,6 @@ const ManualSystemFlow = () => {
           <SystemRegisterSuccess
             system={activeSystem}
             onAddNextSystem={goBack}
-            onContinue={goToIndex}
           />
         ) : null}
       </GridItem>

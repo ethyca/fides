@@ -11,49 +11,48 @@ nav:
   - Fides:
       - What is Fides?: index.md
       - Installation:
-          - Overview: installation/overview.md
-          - Project Requirements: installation/requirements.md
-          - Installation from PyPI: installation/pypi.md
-          - Installation from Docker: installation/docker.md
-          - Configuration: installation/configuration.md
-      - Working with Fides:
+        - Overview: installation/overview.md
+        - Requirements: installation/requirements.md
+        - PyPI: installation/pypi.md
+        - Docker: installation/docker.md
+        - Configuration: installation/configuration.md
+      - Get Started with DSR Automation:
+          - Sample Fides Application: getting-started/sample_project.md
+          - Basic Setup: dsr_quickstart/basic_setup.md
+          - Environment Configuration: dsr_quickstart/environment_configuration.md
+          - Configure Connectors: dsr_quickstart/configure_connectors.md
+          - Connect Databases: dsr_quickstart/connect_databases.md
+          - Customize the Privacy Center: dsr_quickstart/privacy_center.md
+          - Process a DSR: dsr_quickstart/dsr_processing.md
+      - Understanding Privacy Requests:
           - Connect to Databases: getting-started/database_connectors.md
           - Generate Resources: getting-started/generate_resources.md
           - Create Datasets: getting-started/datasets.md
           - Configure Storage Destinations: getting-started/storage.md
           - Create Execution Policies: getting-started/execution_policies.md
           - Execute Privacy Requests: getting-started/privacy_requests.md
-      - How-To Guides:
+      - In-Depth Guides:
           - Authenticate with OAuth: guides/oauth.md
           - Create Policies: guides/policies.md
           - Extend the Taxonomy: guides/extend_taxonomy.md
           - Generate Data Maps: guides/generate_datamaps.md
-          - Configure Email Communications: guides/email_communications.md
+          - Configure Messaging: guides/messaging.md
           - View Available Connection Types: guides/connection_types.md
           - Annotate Complex Fields: guides/complex_fields.md
           - Configure Data Masking: guides/masking_strategies.md
           - Execution Policy Webhooks: guides/policy_webhooks.md
           - Report on Privacy Requests: guides/reporting.md
-          - Integrate with OneTrust: guides/onetrust.md
           - Preview Query Execution: guides/query_execution.md
           - Data Rights Protocol: guides/data_rights_protocol.md
           - Configure Manual Webhooks: guides/manual_webhooks.md
-          - Understanding Privacy Request Execution: guides/fidesops_workflow.md
-          - Configuring Fides with Scripts: guides/utility_scripts.md
-      - Tutorial:
-          - Overview: tutorial/index.md
-          - Add Fides to the App: tutorial/add.md
-          - Annotate the Dataset: tutorial/dataset.md
-          - Annotate the System: tutorial/system.md
-          - Write a Policy: tutorial/policy.md
-          - Add Google Analytics: tutorial/google.md
-          - Manage Google Analytics with Fides: tutorial/pass.md
+          - Understanding Privacy Request Execution: guides/request_execution.md
       - SaaS Connectors:
           - Connect to SaaS Applications: saas_connectors/saas_connectors.md
           - SaaS Configuration: saas_connectors/saas_config.md
           - SaaS OAuth2 Configuration: saas_connectors/saas_oauth2.md
           - SaaS Post-Processors: saas_connectors/saas_postprocessors.md
           - SaaS Pagination: saas_connectors/saas_pagination.md
+          - SaaS Rate Limiting: saas_connectors/saas_rate_limiting.md
           - Connection Examples:
               - Adobe Campaign: saas_connectors/example_configs/adobe.md
               - Hubspot: saas_connectors/example_configs/hubspot.md
@@ -66,38 +65,42 @@ nav:
               - Stripe: saas_connectors/example_configs/stripe.md
               - Zendesk: saas_connectors/example_configs/zendesk.md
       - CI/CD Integrations: cicd.md
-      - CLI: cli.md
       - Deployment: deployment.md
       - Glossary: glossary.md
+      - API: api/index.md
+      - CLI: cli.md
+      - Community:
+        - Github, Slack, and Discord: community/overview.md
+        - Community Hints and Tips: community/hints_tips.md
+        - Code of Conduct: community/code_of_conduct.md
+        - Contributing:
+            - Overview: development/overview.md
+            - Contributing Details: development/contributing_details.md
+            - Code Style: development/code_style.md
+            - UI Development: development/ui.md
+            - Fideslog Analytics: development/fideslog.md
+            - Database Migration: development/database_migration.md
+            - Documentation: development/documentation.md
+            - Writing Tests: development/testing.md
+            - Testing Environment: development/testing_environment.md
+            - Local Fides Deploy: development/dev_deployment.md
+            - Pull Requests: development/pull_requests.md
+            - Releases: development/releases.md
+            - Release Checklist: development/release_checklist.md
+            - VSCode Debugging: development/vscode_debugging.md
+            - Jetbrains Debugging: development/jetbrains_debugging.md
+            - Using Postman: development/postman/using_postman.md
+            - Updating the Database Diagram: development/update_erd_diagram.md
   - Fides UI:
       - Overview: ui/overview.md
       - Configuration Wizard: ui/wizard.md
-      - Subject Requests: ui/subject_requests.md
+      - Privacy Requests: ui/privacy_requests.md
       - Manage Datasets: ui/datasets.md
-      - Manage Datastores: ui/datastores.md
+      - Manage Connections: ui/connections.md
       - Manage Users: ui/user_management.md
       - Privacy Center:  ui/privacy_center.md
       - Deployment: ui/deployment.md
-  - Fides Lang: https://ethyca.github.io/fideslang/
-  - API: api/index.md
-  - Development:
-      - Overview: development/overview.md
-      - Contributing Details: development/contributing_details.md
-      - Code Style: development/code_style.md
-      - UI Development: development/ui.md
-      - Fideslog Analytics: development/fideslog.md
-      - Database Migration: development/database_migration.md
-      - Documentation: development/documentation.md
-      - Testing: development/testing.md
-      - Pull Requests: development/pull_requests.md
-      - Releases: development/releases.md
-      - Jetbrains Debugging: development/jetbrains_debugging.md
-      - Using Postman: development/postman/using_postman.md
-      - Updating the Database Diagram: development/update_erd_diagram.md
-  - Community:
-      - Github, Slack, and Discord: community/overview.md
-      - Community Hints and Tips: community/hints_tips.md
-      - Code of Conduct: community/code_of_conduct.md
+  - Fides Lang Docs: https://ethyca.github.io/fideslang/
   - About Ethyca:
       - About Ethyca: ethyca.md
       - License: license.md

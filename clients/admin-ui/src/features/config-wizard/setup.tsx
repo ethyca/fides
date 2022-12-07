@@ -1,14 +1,16 @@
 import { Button, Container, Heading, Image, Stack } from "@fidesui/react";
 import { useRouter } from "next/router";
 
-interface Props {
-  wizardStep: Function;
-}
+import { useAppDispatch } from "~/app/hooks";
 
-const Setup = ({ wizardStep }: Props) => {
+import { changeStep } from "./config-wizard.slice";
+
+const Setup = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   return (
-    <Stack>
+    <Stack data-testid="setup">
       <Container
         height="35vh"
         maxW="100vw"
@@ -34,7 +36,7 @@ const Setup = ({ wizardStep }: Props) => {
           width="50%"
         >
           <Heading as="h3" size="lg">
-            Get Started
+            Generate your Data Map
           </Heading>
           <div>
             Privacy engineering can seem like an endlessly complex confluence of
@@ -48,16 +50,16 @@ const Setup = ({ wizardStep }: Props) => {
           <Stack direction={["column", "row"]} spacing="24px">
             <Button
               variant="primary"
-              onClick={() => wizardStep(true)}
+              onClick={() => dispatch(changeStep())}
               data-testid="guided-setup-btn"
             >
-              Guided Setup (Recommended)
+              Generate a Map Automatically (recommended)
             </Button>
             <Button
               variant="ghost"
               mr={4}
               colorScheme="complimentary"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/system")}
             >
               Skip (Power User)
             </Button>

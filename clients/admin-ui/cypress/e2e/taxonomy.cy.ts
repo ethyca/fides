@@ -1,9 +1,8 @@
-describe("Taxonomy management page", () => {
-  before(() => {
-    cy.login();
-  });
+import { stubHomePage } from "cypress/support/stubs";
 
+describe("Taxonomy management page", () => {
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/data_category", {
       fixture: "data_categories.json",
     }).as("getDataCategories");
@@ -19,6 +18,7 @@ describe("Taxonomy management page", () => {
   });
 
   it("Can navigate to the taxonomy page", () => {
+    stubHomePage();
     cy.visit("/");
     cy.getByTestId("nav-link-Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");
@@ -224,10 +224,15 @@ describe("Taxonomy management page", () => {
         "https://example.org/legitimate_interest_assessment"
       );
 
-      // trigger a PUT
       cy.getByTestId("input-legitimate_interest_impact_assessment")
         .clear()
         .type("foo");
+      // Test clearable single-select.
+      cy.getByTestId("input-legal_basis").within(() => {
+        cy.get('[aria-label="Clear selected options"]').click();
+      });
+      cy.getByTestId("input-special_category").click().type("{backspace}{esc}");
+      // trigger a PUT
       cy.getByTestId("submit-btn").click();
       cy.wait("@putDataUse").then((interception) => {
         const { body } = interception.request;
@@ -237,8 +242,6 @@ describe("Taxonomy management page", () => {
           description:
             "Provide, give, or make available the product, service, application or system.",
           is_default: true,
-          legal_basis: "Legitimate Interests",
-          special_category: "Vital Interests",
           recipients: ["marketing team", "dog shelter"],
           legitimate_interest: true,
           legitimate_interest_impact_assessment: "foo",

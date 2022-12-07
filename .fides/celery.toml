@@ -1,2 +1,3 @@
-event_queue_prefix = "fidesops_worker"
-task_default_queue = "fidesops"
+event_queue_prefix = "fides_worker"
+task_default_queue = "fides"
+task_always_eager = true

@@ -3,7 +3,9 @@ import glob
 import logging
 import re
 from functools import partial
+from hashlib import sha1
 from json.decoder import JSONDecodeError
+from os.path import isfile
 from typing import Dict, Iterator, List
 
 import click
@@ -12,7 +14,6 @@ import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
 from fideslang.validation import FidesValidationError
-from git.repo import Repo
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -102,8 +103,11 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
     """Get a list of manifest files from the manifest directory."""
-
     yml_endings = ["yml", "yaml"]
+
+    if isfile(manifests_dir) and manifests_dir.split(".")[-1] in yml_endings:
+        return [manifests_dir]
+
     manifest_list = []
     for yml_ending in yml_endings:
         manifest_list += glob.glob(f"{manifests_dir}/**/*.{yml_ending}", recursive=True)
@@ -133,11 +137,37 @@ def sanitize_fides_key(proposed_fides_key: str) -> str:
     return sanitized_fides_key
 
 
+def generate_unique_fides_key(
+    proposed_fides_key: str, database_host: str, database_name: str
+) -> str:
+    """
+    Uses host and name to generate a UUID to be
+    appended to the fides_key of a dataset
+    """
+    fides_key_uuid = sha1(
+        "-".join([database_host, database_name, proposed_fides_key]).encode()
+    )
+    return f"{proposed_fides_key}_{fides_key_uuid.hexdigest()[:10]}"
+
+
 def git_is_dirty(dir_to_check: str = ".") -> bool:
     """
     Checks to see if the local repo has unstaged changes.
     Can also specify a directory to check.
     """
+
+    try:
+        from git.repo import Repo
+        from git.repo.fun import is_git_dir
+    except ImportError:
+        print("Git executable not detected, skipping git check...")
+        return False
+
+    git_dir_path = ".git/"
+    if not is_git_dir(git_dir_path):
+        print(f"No git repo detected at '{git_dir_path}', skipping git check...")
+        return False
+
     repo = Repo()
     git_session = repo.git()
 

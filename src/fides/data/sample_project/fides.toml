@@ -1,0 +1,26 @@
+[database]
+server = "fides-db"
+user = "postgres"
+password = "postgres"
+port = "5432"
+db = "fides"
+
+[redis]
+enabled = true
+host = "redis"
+password = "redispass"
+port = 6379
+db_index = 0
+
+[security]
+cors_origins = [ "http://localhost:8080", "http://localhost:3001",]
+
+[execution]
+require_manual_request_approval = true
+
+[cli]
+server_host = "fides"
+server_port = 8080
+
+[user]
+analytics_opt_out = false

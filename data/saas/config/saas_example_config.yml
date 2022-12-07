@@ -18,7 +18,7 @@ saas_config:
 
   external_references:
     - name: customer_id
-      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset 
+      description: An external reference to customer ID that must be configured, i.e. as if it came from another dataset
 
   client_config:
     protocol: https
@@ -70,15 +70,24 @@ saas_config:
     - name: member
       requests:
         read:
-          method: GET
-          path: /3.0/search-members
-          query_params:
-            - name: query
-              value: <email>
-          param_values:
-            - name: email
-              identity: email
-          data_path: exact_matches.members
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <email>
+            param_values:
+              - name: email
+                identity: email
+            data_path: exact_matches.members
+          - method: GET
+            path: /3.0/search-members
+            query_params:
+              - name: query
+                value: <phone>
+            param_values:
+              - name: phone
+                identity: phone
+            data_path: exact_matches.members
         update:
           method: PUT
           path: /3.0/lists/<list_id>/members/<subscriber_hash>
@@ -171,17 +180,17 @@ saas_config:
           path: /v1/customers/<customer_id>
           param_values:
             - name: customer_id
-              references: 
-              - customer_id
+              references:
+                - customer_id
         update:
           method: POST
           path: /v1/customers/<customer_id>
           param_values:
             - name: customer_id
-              references: 
-              - dataset: saas_connector_example
-                field: customer.id
-                direction: from
+              references:
+                - dataset: saas_connector_example
+                  field: customer.id
+                  direction: from
           headers:
             - name: Content-Type
               value: application/x-www-form-urlencoded
@@ -254,3 +263,28 @@ saas_config:
           param_values:
             - name: email
               identity: email
+    - name: tickets
+      requests:
+        read:
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from
+          - method: GET
+            path: /v1/tickets
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: customer_id
+                references:
+                  - dataset: saas_connector_example
+                    field: customer.id
+                    direction: from

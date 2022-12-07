@@ -1,17 +1,15 @@
-from typing import Any, ContextManager, Dict, MutableMapping
+from typing import Any, ContextManager, Dict, List, MutableMapping, Optional, Union
 
 from celery import Celery, Task
-from celery.utils.log import get_task_logger
 from fideslib.core.config import load_toml
 from fideslib.db.session import get_db_session
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.ctl.core.config import get_config
 
-logger = get_task_logger(__name__)
-
 CONFIG = get_config()
-EMAIL_QUEUE_NAME = "fidesops.email"
+MESSAGING_QUEUE_NAME = "fidesops.messaging"
 
 
 class DatabaseTask(Task):  # pylint: disable=W0223
@@ -38,8 +36,11 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
         # Defaults for the celery config
         "broker_url": CONFIG.redis.connection_url,
         "result_backend": CONFIG.redis.connection_url,
+        "event_queue_prefix": "fides_worker",
+        "task_always_eager": True,
         # Fidesops requires this to route emails to separate queues
         "task_create_missing_queues": True,
+        "task_default_queue": "fides",
     }
 
     try:
@@ -65,6 +66,20 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
 celery_app = _create_celery()
 
 
+def get_worker_ids() -> List[Optional[str]]:
+    """
+    Returns a list of the connected heahtly worker UUIDs.
+    """
+    try:
+        connected_workers = [
+            key for key, _ in celery_app.control.inspect().ping().items()
+        ]
+    except Exception as exception:
+        logger.critical(exception)
+        connected_workers = []
+    return connected_workers
+
+
 def start_worker() -> None:
     logger.info("Running Celery worker...")
     default_queue_name = celery_app.conf.get("task_default_queue", "celery")
@@ -73,7 +88,7 @@ def start_worker() -> None:
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"--queues={default_queue_name},{EMAIL_QUEUE_NAME}",
+            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME}",
         ]
     )
 

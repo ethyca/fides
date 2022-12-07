@@ -7,19 +7,19 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { act } from "react-dom/test-utils";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
+import { act } from "react-dom/test-utils";
 
 import {
   PrivacyRequestModal,
   RequestModalProps,
-} from "../components/modals/privacy-request-modal/PrivacyRequestModal";
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
+import { ModalViews } from "~/components/modals/types";
+import { hostUrl } from "~/constants";
 import IndexPage from "../pages/index";
 
 import mockConfig from "../config/__mocks__/config.json";
-import { hostUrl } from "../constants";
-import { ModalViews } from "../components/modals/types";
 
 jest.mock("../config/config.json");
 
@@ -41,7 +41,6 @@ const defaultModalProperties: RequestModalProps = {
   isOpen: true,
   onClose: () => {},
   openAction: mockConfig.actions[0].policy_key,
-  setAlert: () => {},
   currentView: ModalViews.PrivacyRequest,
   setCurrentView: () => {},
   privacyRequestId: "",
@@ -63,9 +62,11 @@ describe("RequestModal", () => {
       <PrivacyRequestModal {...defaultModalProperties} />
     );
 
-    expect(screen.getByPlaceholderText("Name*")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Email*")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Phone")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Michael Brown")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("test-email@example.com")
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("+1 000 000 0000")).toBeInTheDocument();
 
     unmount();
 
@@ -76,9 +77,11 @@ describe("RequestModal", () => {
       />
     ));
 
-    expect(screen.getByPlaceholderText("Name")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Email*")).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText("Phone")).toBeNull();
+    expect(screen.getByPlaceholderText("Michael Brown")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("test-email@example.com")
+    ).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("+1 000 000 0000")).toBeNull();
 
     unmount();
 
@@ -89,9 +92,9 @@ describe("RequestModal", () => {
       />
     ));
 
-    expect(screen.queryByPlaceholderText("Name")).toBeNull();
-    expect(screen.queryByPlaceholderText("Email")).toBeNull();
-    expect(screen.getByPlaceholderText("Phone")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Michael Brown")).toBeNull();
+    expect(screen.queryByPlaceholderText("test-email@example.com")).toBeNull();
+    expect(screen.getByPlaceholderText("+1 000 000 0000")).toBeInTheDocument();
 
     unmount();
   });
@@ -105,15 +108,15 @@ describe("RequestModal", () => {
   it("renders the button as enabled after inputs are filled correctly", async () => {
     render(<PrivacyRequestModal {...defaultModalProperties} />);
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("Name*"), {
+      fireEvent.change(screen.getByPlaceholderText("Michael Brown"), {
         target: { value: "Ethyca" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Email*"), {
+      fireEvent.change(screen.getByPlaceholderText("test-email@example.com"), {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Phone"), {
+      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -140,15 +143,15 @@ describe("RequestModal", () => {
     });
 
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("Name*"), {
+      fireEvent.change(screen.getByPlaceholderText("Michael Brown"), {
         target: { value: "Ethyca" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Email*"), {
+      fireEvent.change(screen.getByPlaceholderText("test-email@example.com"), {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Phone"), {
+      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -158,11 +161,6 @@ describe("RequestModal", () => {
     });
 
     await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request was successful, please await further instructions."
-    );
-    expect(notification).toBeInTheDocument();
   });
 
   it("handles form submission failure with an appropriate alert", async () => {
@@ -183,15 +181,15 @@ describe("RequestModal", () => {
     });
 
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("Name*"), {
+      fireEvent.change(screen.getByPlaceholderText("Michael Brown"), {
         target: { value: "Ethyca" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Email*"), {
+      fireEvent.change(screen.getByPlaceholderText("test-email@example.com"), {
         target: { value: "testing@ethyca.com" },
       });
 
-      fireEvent.change(screen.getByPlaceholderText("Phone"), {
+      fireEvent.change(screen.getByPlaceholderText("+1 000 000 0000"), {
         target: { value: "0000000000" },
       });
     });
@@ -199,12 +197,5 @@ describe("RequestModal", () => {
     act(() => {
       userEvent.click(screen.getByText("Continue"));
     });
-
-    await waitForElementToBeRemoved(() => screen.queryByRole("dialog"));
-
-    const notification = await screen.getByText(
-      "Your request has failed. Please try again."
-    );
-    expect(notification).toBeInTheDocument();
   });
 });

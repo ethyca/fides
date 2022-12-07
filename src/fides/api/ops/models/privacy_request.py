@@ -68,6 +68,7 @@ from fides.api.ops.util.cache import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.constants import API_DATE_FORMAT
+from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
@@ -142,16 +143,16 @@ def generate_request_callback_jwe(webhook: PolicyPreWebhook) -> str:
     return generate_jwe(json.dumps(jwe.dict()), CONFIG.security.app_encryption_key)
 
 
-class PrivacyRequest(Base):  # pylint: disable=R0904
+class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests. A privacy request is a
-    database record representing a data subject request's progression within the Fidesops system.
+    database record representing the request's progression within the Fides system.
     """
 
     external_id = Column(String, index=True)
-    # When the request was dispatched into the Fidesops pipeline
+    # When the request was dispatched into the Fides pipeline
     started_processing_at = Column(DateTime(timezone=True), nullable=True)
-    # When the request finished or errored in the Fidesops pipeline
+    # When the request finished or errored in the Fides pipeline
     finished_processing_at = Column(DateTime(timezone=True), nullable=True)
     # When the request was created at the origin
     requested_at = Column(DateTime(timezone=True), nullable=True)
@@ -263,7 +264,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         super().delete(db=db)
 
     def cache_identity(self, identity: Identity) -> None:
-        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
@@ -280,7 +281,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         """
         identity_dict: Dict[str, Any] = dict(identity)
         for key, value in identity_dict.items():
-            if value is not None:
+            if value:
                 hashed_value = ProvidedIdentity.hash_value(value)
                 ProvidedIdentity.create(
                     db=db,
@@ -315,14 +316,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                 f"Invalid identity verification request. Privacy request '{self.id}' status = {self.status.value}."  # type: ignore # pylint: disable=no-member
             )
 
-        code: Optional[str] = self.get_cached_verification_code()
-        if not code:
-            raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
-            )
-
-        if code != provided_code:
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
+        self._verify_identity(provided_code=provided_code)
 
         self.status = PrivacyRequestStatus.pending
         self.identity_verified_at = datetime.utcnow()
@@ -350,7 +344,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         return res
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
-        """Sets the identity's values at their specific locations in the Fidesops app cache"""
+        """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
         for key, value in drp_request_body_dict.items():
@@ -368,7 +362,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
                     )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
-        """Sets the encryption key in the Fidesops app cache if provided"""
+        """Sets the encryption key in the Fides app cache if provided"""
         if not encryption_key:
             return
 
@@ -379,7 +373,7 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         )
 
     def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
-        """Sets masking encryption secrets in the Fidesops app cache if provided"""
+        """Sets masking encryption secrets in the Fides app cache if provided"""
         if not masking_secret:
             return
         cache: FidesopsRedis = get_cache()
@@ -613,26 +607,6 @@ class PrivacyRequest(Base):  # pylint: disable=R0904
         ] = cache.get_encoded_objects_by_prefix(f"ACCESS_GRAPH__{self.id}")
         return list(value_dict.values())[0] if value_dict else None
 
-    def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison"""
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
-        )
-
-    def get_cached_verification_code(self) -> Optional[str]:
-        """Retrieve the generated identity verification code if it exists"""
-        cache: FidesopsRedis = get_cache()
-        values: Optional[Dict[str, Any]] = (
-            cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
-        )
-        if not values:
-            return None
-
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
-
     def trigger_policy_webhook(self, webhook: WebhookTypes) -> None:
         """Trigger a request to a single customer-defined policy webhook. Raises an exception if webhook response
         should cause privacy request execution to stop.
@@ -836,7 +810,7 @@ class Consent(Base):
     UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
 
 
-class ConsentRequest(Base):
+class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
 
     provided_identity_id = Column(
@@ -848,15 +822,6 @@ class ConsentRequest(Base):
         back_populates="consent_request",
     )
 
-    def cache_identity_verification_code(self, value: str) -> None:
-        """Cache the generated identity verification code for later comparison."""
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            f"IDENTITY_VERIFICATION_CODE__{self.id}",
-            value,
-            CONFIG.redis.identity_verification_code_ttl_seconds,
-        )
-
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
         prefix = f"id-{self.id}-identity-*"
@@ -864,27 +829,12 @@ class ConsentRequest(Base):
         keys = cache.keys(prefix)
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
-    def get_cached_verification_code(self) -> Optional[str]:
-        """Retrieve the generated identity verification code if it exists"""
-        cache = get_cache()
-        values = cache.get_values([f"IDENTITY_VERIFICATION_CODE__{self.id}"]) or {}
-        if not values:
-            return None
-
-        return values.get(f"IDENTITY_VERIFICATION_CODE__{self.id}", None)
-
-    def verify_identity(self, provided_code: str) -> ConsentRequest:
-        """Verify the identification code supplied by the user."""
-        code: Optional[str] = self.get_cached_verification_code()
-        if not code:
-            raise IdentityVerificationException(
-                f"Identification code expired for {self.id}."
-            )
-
-        if code != provided_code:
-            raise PermissionError(f"Incorrect identification code for '{self.id}'")
-
-        return self
+    def verify_identity(self, provided_code: str) -> None:
+        """
+        A method to call the internal identity verification method provided by the
+        `IdentityVerificationMixin`.
+        """
+        self._verify_identity(provided_code=provided_code)
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.

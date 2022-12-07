@@ -34,7 +34,6 @@ import {
 } from "user-management/index";
 
 import { STORAGE_ROOT_KEY } from "~/constants";
-import { plusApi } from "~/features/common/plus.slice";
 import { reducer as configWizardReducer } from "~/features/config-wizard/config-wizard.slice";
 import { scannerApi } from "~/features/config-wizard/scanner.slice";
 import {
@@ -54,11 +53,11 @@ import {
   organizationApi,
   reducer as organizationReducer,
 } from "~/features/organization";
+import { plusApi } from "~/features/plus/plus.slice";
 import { reducer as systemReducer, systemApi } from "~/features/system";
 import { reducer as taxonomyReducer, taxonomyApi } from "~/features/taxonomy";
-import { reducer as userReducer } from "~/features/user";
 
-import { authApi, AuthState, reducer as authReducer } from "../features/auth";
+import { authApi, reducer as authReducer } from "../features/auth";
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -90,14 +89,12 @@ const reducer = {
   [dataUseApi.reducerPath]: dataUseApi.reducer,
   [datasetApi.reducerPath]: datasetApi.reducer,
   [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
-  [datastoreConnectionApi.reducerPath]: datastoreConnectionApi.reducer,
   [organizationApi.reducerPath]: organizationApi.reducer,
   [plusApi.reducerPath]: plusApi.reducer,
   [privacyRequestApi.reducerPath]: privacyRequestApi.reducer,
   [scannerApi.reducerPath]: scannerApi.reducer,
   [systemApi.reducerPath]: systemApi.reducer,
   [taxonomyApi.reducerPath]: taxonomyApi.reducer,
-  [userApi.reducerPath]: userApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   auth: authReducer,
   configWizard: configWizardReducer,
@@ -111,14 +108,15 @@ const reducer = {
   subjectRequests: privacyRequestsReducer,
   system: systemReducer,
   taxonomy: taxonomyReducer,
-  user: userReducer,
   userManagement: userManagementReducer,
 };
 
+export type RootState = StateFromReducersMapObject<typeof reducer>;
+
 const allReducers = combineReducers(reducer);
 
-const rootReducer = (state: any, action: AnyAction) => {
-  let newState = { ...state };
+const rootReducer = (state: RootState | undefined, action: AnyAction) => {
+  let newState = state;
   if (action.type === "auth/logout") {
     storage.removeItem(STORAGE_ROOT_KEY);
     newState = undefined;
@@ -155,8 +153,6 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export type RootState = StateFromReducersMapObject<typeof reducer>;
-
 export const makeStore = (preloadedState?: Partial<RootState>) =>
   configureStore({
     reducer: persistedReducer,
@@ -185,23 +181,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) =>
     preloadedState,
   });
 
-let storedAuthState: AuthState | undefined;
-if (typeof window !== "undefined" && "localStorage" in window) {
-  const storedAuthStateString = localStorage.getItem(STORAGE_ROOT_KEY);
-  if (storedAuthStateString) {
-    try {
-      storedAuthState = JSON.parse(storedAuthStateString);
-    } catch (error) {
-      // TODO: build in formal error logging system
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }
-}
-
-const store = makeStore({
-  auth: storedAuthState,
-});
+const store = makeStore();
 
 type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore["dispatch"];

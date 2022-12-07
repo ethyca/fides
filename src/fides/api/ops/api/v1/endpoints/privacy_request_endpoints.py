@@ -33,36 +33,43 @@ from starlette.status import (
 from fides.api.ops import common_exceptions
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1 import scope_registry as scopes
-from fides.api.ops.api.v1 import urn_registry as urls
 from fides.api.ops.api.v1.endpoints.dataset_endpoints import _get_connection_config
 from fides.api.ops.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT,
     PRIVACY_REQUEST_APPROVE,
+    PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_MANUAL_ERASURE,
     PRIVACY_REQUEST_MANUAL_INPUT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
+    PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
+    REQUEST_STATUS_LOGS,
+    V1_URL_PREFIX,
 )
 from fides.api.ops.common_exceptions import (
-    EmailDispatchException,
     FunctionalityNotConfigured,
     IdentityNotFoundException,
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
+    MessageDispatchException,
     NoCachedManualWebhookEntry,
     PolicyNotFoundException,
     TraversalError,
@@ -79,6 +86,7 @@ from fides.api.ops.models.policy import (
     CurrentStep,
     Policy,
     PolicyPreWebhook,
+    Rule,
 )
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -92,13 +100,13 @@ from fides.api.ops.schemas.dataset import (
     CollectionAddressResponse,
     DryRunDatasetResponse,
 )
-from fides.api.ops.schemas.email.email import (
-    EmailActionType,
-    FidesopsEmail,
+from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
+from fides.api.ops.schemas.messaging.messaging import (
+    FidesopsMessage,
+    MessagingActionType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
 )
-from fides.api.ops.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.ops.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -112,8 +120,11 @@ from fides.api.ops.schemas.privacy_request import (
     RowCountRequest,
     VerificationCode,
 )
+from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service._verification import send_verification_code_to_user
-from fides.api.ops.service.email.email_dispatch_service import dispatch_email_task
+from fides.api.ops.service.messaging.message_dispatch_service import (
+    dispatch_message_task,
+)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
@@ -121,9 +132,10 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.ops.task.task_resources import TaskResources
-from fides.api.ops.tasks import EMAIL_QUEUE_NAME
+from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.cache import FidesopsRedis
 from fides.api.ops.util.collection_util import Row
@@ -133,7 +145,7 @@ from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_cl
 from fides.ctl.core.config import get_config
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["Privacy Requests"], prefix=urls.V1_URL_PREFIX)
+router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 CONFIG = get_config()
 EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
@@ -156,7 +168,7 @@ def get_privacy_request_or_error(
 
 
 @router.post(
-    urls.PRIVACY_REQUESTS,
+    PRIVACY_REQUESTS,
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
@@ -171,139 +183,46 @@ async def create_privacy_request(
 
     You cannot update privacy requests after they've been created.
     """
-    if not CONFIG.redis.enabled:
-        raise FunctionalityNotConfigured(
-            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
-        )
-
-    created = []
-    failed = []
-    # Optional fields to validate here are those that are both nullable in the DB, and exist
-    # on the Pydantic schema
-
-    logger.info("Starting creation for %s privacy requests", len(data))
-
-    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
-    for privacy_request_data in data:
-        if not any(privacy_request_data.identity.dict().values()):
-            logger.warning(
-                "Create failed for privacy request with no identity provided"
-            )
-            failure = {
-                "message": "You must provide at least one identity to process",
-                "data": privacy_request_data,
-            }
-            failed.append(failure)
-            continue
-
-        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
-        policy: Optional[Policy] = Policy.get_by(
-            db=db,
-            field="key",
-            value=privacy_request_data.policy_key,
-        )
-        if policy is None:
-            logger.warning(
-                "Create failed for privacy request with invalid policy key %s'",
-                privacy_request_data.policy_key,
-            )
-
-            failure = {
-                "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
-                "data": privacy_request_data,
-            }
-            failed.append(failure)
-            continue
-
-        kwargs = build_required_privacy_request_kwargs(
-            privacy_request_data.requested_at, policy.id
-        )
-        for field in optional_fields:
-            attr = getattr(privacy_request_data, field)
-            if attr is not None:
-                kwargs[field] = attr
-
-        try:
-            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
-            privacy_request.persist_identity(
-                db=db, identity=privacy_request_data.identity
-            )
-
-            cache_data(
-                privacy_request,
-                policy,
-                privacy_request_data.identity,
-                privacy_request_data.encryption_key,
-                None,
-            )
-
-            if CONFIG.execution.subject_identity_verification_required:
-                send_verification_code_to_user(
-                    db, privacy_request, privacy_request_data.identity.email
-                )
-                created.append(privacy_request)
-                continue  # Skip further processing for this privacy request
-            if CONFIG.notifications.send_request_receipt_notification:
-                _send_privacy_request_receipt_email_to_user(
-                    policy, privacy_request_data.identity.email
-                )
-            if not CONFIG.execution.require_manual_request_approval:
-                AuditLog.create(
-                    db=db,
-                    data={
-                        "user_id": "system",
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.approved,
-                        "message": "",
-                    },
-                )
-                queue_privacy_request(privacy_request.id)
-        except EmailDispatchException as exc:
-            kwargs["privacy_request_id"] = privacy_request.id
-            logger.error("EmailDispatchException: %s", exc)
-            failure = {
-                "message": "Verification email could not be sent.",
-                "data": kwargs,
-            }
-            failed.append(failure)
-        except common_exceptions.RedisConnectionError as exc:
-            logger.error("RedisConnectionError: %s", Pii(str(exc)))
-            # Thrown when cache.ping() fails on cache connection retrieval
-            raise HTTPException(
-                status_code=HTTP_424_FAILED_DEPENDENCY,
-                detail=exc.args[0],
-            )
-        except Exception as exc:
-            logger.error("Exception: %s", Pii(str(exc)))
-            failure = {
-                "message": "This record could not be added",
-                "data": kwargs,
-            }
-            failed.append(failure)
-        else:
-            created.append(privacy_request)
-
-    return BulkPostPrivacyRequests(
-        succeeded=created,
-        failed=failed,
-    )
+    return _create_privacy_request(db, data, False)
 
 
-def _send_privacy_request_receipt_email_to_user(
-    policy: Optional[Policy], email: Optional[str]
+@router.post(
+    PRIVACY_REQUEST_AUTHENTICATED,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
+    response_model=BulkPostPrivacyRequests,
+)
+async def create_privacy_request_authenticated(
+    *,
+    db: Session = Depends(deps.get_db),
+    data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
+) -> BulkPostPrivacyRequests:
+    """
+    Given a list of privacy request data elements, create corresponding PrivacyRequest objects
+    or report failure and execute them within the Fidesops system.
+
+    You cannot update privacy requests after they've been created.
+
+    This route requires authentication instead of using verification codes.
+    """
+    return _create_privacy_request(db, data, True)
+
+
+def _send_privacy_request_receipt_message_to_user(
+    policy: Optional[Policy], to_identity: Optional[Identity]
 ) -> None:
-    """Helper function to send request receipt email to the user"""
-    if not email:
+    """Helper function to send request receipt message to the user"""
+    if not to_identity:
         logger.error(
             IdentityNotFoundException(
-                "Identity email was not found, so request receipt email could not be sent."
+                "Identity was not found, so request receipt message could not be sent."
             )
         )
         return
     if not policy:
         logger.error(
             PolicyNotFoundException(
-                "Policy was not found, so request receipt email could not be sent."
+                "Policy was not found, so request receipt message could not be sent."
             )
         )
         return
@@ -311,14 +230,15 @@ def _send_privacy_request_receipt_email_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
-                action_type=EmailActionType.PRIVACY_REQUEST_RECEIPT,
+            "message_meta": FidesopsMessage(
+                action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).dict(),
-            "to_email": email,
+            "service_type": CONFIG.notifications.notification_service_type,
+            "to_identity": to_identity.dict(),
         },
     )
 
@@ -596,7 +516,7 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
 
 
 @router.get(
-    urls.PRIVACY_REQUESTS,
+    PRIVACY_REQUESTS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
     response_model=Page[
         Union[
@@ -688,7 +608,7 @@ def get_request_status(
 
 
 @router.get(
-    urls.REQUEST_STATUS_LOGS,
+    REQUEST_STATUS_LOGS,
     dependencies=[Security(verify_oauth_client, scopes=[scopes.PRIVACY_REQUEST_READ])],
     response_model=Page[ExecutionLogDetailResponse],
 )
@@ -997,6 +917,68 @@ async def resume_with_erasure_confirmation(
 
 
 @router.post(
+    PRIVACY_REQUEST_BULK_RETRY,
+    status_code=HTTP_200_OK,
+    response_model=BulkPostPrivacyRequests,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+    ],
+)
+async def bulk_restart_privacy_request_from_failure(
+    privacy_request_ids: List[str],
+    *,
+    db: Session = Depends(deps.get_db),
+) -> BulkPostPrivacyRequests:
+    """Bulk restart a of privacy request from failure."""
+
+    succeeded: List[PrivacyRequestResponse] = []
+    failed: List[Dict[str, Any]] = []
+
+    #    privacy_request = PrivacyRequest.get(db, object_id=request_id)
+
+    for privacy_request_id in privacy_request_ids:
+        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+
+        if not privacy_request:
+            failed.append(
+                {
+                    "message": f"No privacy request found with id '{privacy_request_id}'",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        if privacy_request.status != PrivacyRequestStatus.error:
+            failed.append(
+                {
+                    "message": f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = {privacy_request.status.value}.",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        failed_details: Optional[
+            CheckpointActionRequired
+        ] = privacy_request.get_failed_checkpoint_details()
+        if not failed_details:
+            failed.append(
+                {
+                    "message": f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        succeeded.append(
+            _process_privacy_request_restart(
+                privacy_request, failed_details.step, failed_details.collection, db
+            )
+        )
+
+    return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
+
+
+@router.post(
     PRIVACY_REQUEST_RETRY,
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
@@ -1029,26 +1011,9 @@ async def restart_privacy_request_from_failure(
             detail=f"Cannot restart privacy request from failure '{privacy_request.id}'; no failed step or collection.",
         )
 
-    failed_step: CurrentStep = failed_details.step
-    failed_collection: Optional[CollectionAddress] = failed_details.collection
-
-    logger.info(
-        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
-        privacy_request_id,
-        failed_step,
-        failed_collection,
+    return _process_privacy_request_restart(
+        privacy_request, failed_details.step, failed_details.collection, db
     )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value,
-    )
-
-    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
-
-    return privacy_request
 
 
 def review_privacy_request(
@@ -1097,30 +1062,35 @@ def review_privacy_request(
     )
 
 
-def _send_privacy_request_review_email_to_user(
-    action_type: EmailActionType,
-    email: Optional[str],
+def _send_privacy_request_review_message_to_user(
+    action_type: MessagingActionType,
+    identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
 ) -> None:
-    """Helper method to send review notification email to user, shared between approve and deny"""
-    if not email:
+    """Helper method to send review notification message to user, shared between approve and deny"""
+    if not identity_data:
         logger.error(
             IdentityNotFoundException(
-                "Identity email was not found, so request review email could not be sent."
+                "Identity was not found, so request review message could not be sent."
             )
         )
-    dispatch_email_task.apply_async(
-        queue=EMAIL_QUEUE_NAME,
+    to_identity: Identity = Identity(
+        email=identity_data.get(ProvidedIdentityType.email.value),
+        phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
+    )
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
         kwargs={
-            "email_meta": FidesopsEmail(
+            "message_meta": FidesopsMessage(
                 action_type=action_type,
                 body_params=RequestReviewDenyBodyParams(
                     rejection_reason=rejection_reason
                 )
-                if action_type is EmailActionType.PRIVACY_REQUEST_REVIEW_DENY
+                if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                 else None,
             ).dict(),
-            "to_email": email,
+            "service_type": CONFIG.notifications.notification_service_type,
+            "to_identity": to_identity.dict(),
         },
     )
 
@@ -1151,8 +1121,8 @@ async def verify_identification_code(
             db=db, object_id=privacy_request.policy_id
         )
         if CONFIG.notifications.send_request_receipt_notification:
-            _send_privacy_request_receipt_email_to_user(
-                policy, privacy_request.get_persisted_identity().email
+            _send_privacy_request_receipt_message_to_user(
+                policy, privacy_request.get_persisted_identity()
             )
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
@@ -1210,11 +1180,9 @@ def approve_privacy_request(
             },
         )
         if CONFIG.notifications.send_request_review_notification:
-            _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
-                email=privacy_request.get_cached_identity_data().get(
-                    ProvidedIdentityType.email.value
-                ),
+            _send_privacy_request_review_message_to_user(
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+                identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=None,
             )
 
@@ -1262,11 +1230,9 @@ def deny_privacy_request(
             },
         )
         if CONFIG.notifications.send_request_review_notification:
-            _send_privacy_request_review_email_to_user(
-                action_type=EmailActionType.PRIVACY_REQUEST_REVIEW_DENY,
-                email=privacy_request.get_cached_identity_data().get(
-                    ProvidedIdentityType.email.value
-                ),
+            _send_privacy_request_review_message_to_user(
+                action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+                identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
             )
 
@@ -1322,6 +1288,76 @@ def upload_manual_webhook_data(
         access_manual_webhook,
         privacy_request,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
+    response_model=Dict[str, Optional[List[Row]]],
+)
+def privacy_request_data_transfer(
+    *,
+    privacy_request_id: str,
+    rule_key: str,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> Dict[str, Optional[List[Row]]]:
+    """Transfer access request iinformation to the parent server."""
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request with id {privacy_request_id} found",
+        )
+
+    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
+    if not rule:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Rule key {rule_key} not found",
+        )
+
+    value_dict: Dict[str, Optional[List[Row]]] = cache.get_encoded_objects_by_prefix(
+        f"{privacy_request_id}__access_request"
+    )
+
+    if not value_dict:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No access request information found for privacy request id {privacy_request_id}",
+        )
+
+    access_result = {k.split("__")[-1]: v for k, v in value_dict.items()}
+    datasets = DatasetConfig.all(db=db)
+    if not datasets:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No datasets found for privacy request {privacy_request_id}",
+        )
+
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    if not dataset_graphs:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset graphs found for privacy request {privacy_request_id}",
+        )
+    dataset_graph = DatasetGraph(*dataset_graphs)
+    target_categories = {target.data_category for target in rule.targets}
+    filtered_results: Optional[Dict[str, Optional[List[Row]]]] = filter_data_categories(
+        access_result,  # type: ignore
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+
+    if filtered_results is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No results found for privacy request {privacy_request_id}",
+        )
+
+    return filtered_results
 
 
 @router.get(
@@ -1432,5 +1468,164 @@ async def resume_privacy_request_from_requires_input(
     queue_privacy_request(
         privacy_request_id=privacy_request.id,
     )
+
+    return privacy_request
+
+
+def _create_privacy_request(
+    db: Session,
+    data: conlist(PrivacyRequestCreate),  # type: ignore
+    authenticated: bool = False,
+) -> BulkPostPrivacyRequests:
+    """Creates privacy requests.
+
+    If authenticated is True the identity verification step is bypassed.
+    """
+    if not CONFIG.redis.enabled:
+        raise FunctionalityNotConfigured(
+            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+        )
+
+    created = []
+    failed = []
+    # Optional fields to validate here are those that are both nullable in the DB, and exist
+    # on the Pydantic schema
+
+    logger.info("Starting creation for %s privacy requests", len(data))
+
+    optional_fields = ["external_id", "started_processing_at", "finished_processing_at"]
+    for privacy_request_data in data:
+        if not any(privacy_request_data.identity.dict().values()):
+            logger.warning(
+                "Create failed for privacy request with no identity provided"
+            )
+            failure = {
+                "message": "You must provide at least one identity to process",
+                "data": privacy_request_data,
+            }
+            failed.append(failure)
+            continue
+
+        logger.info("Finding policy with key '%s'", privacy_request_data.policy_key)
+        policy: Optional[Policy] = Policy.get_by(
+            db=db,
+            field="key",
+            value=privacy_request_data.policy_key,
+        )
+        if policy is None:
+            logger.warning(
+                "Create failed for privacy request with invalid policy key %s'",
+                privacy_request_data.policy_key,
+            )
+
+            failure = {
+                "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
+                "data": privacy_request_data,
+            }
+            failed.append(failure)
+            continue
+
+        kwargs = build_required_privacy_request_kwargs(
+            privacy_request_data.requested_at, policy.id
+        )
+        for field in optional_fields:
+            attr = getattr(privacy_request_data, field)
+            if attr is not None:
+                kwargs[field] = attr
+
+        try:
+            privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)
+            privacy_request.persist_identity(
+                db=db, identity=privacy_request_data.identity
+            )
+
+            cache_data(
+                privacy_request,
+                policy,
+                privacy_request_data.identity,
+                privacy_request_data.encryption_key,
+                None,
+            )
+
+            if (
+                not authenticated
+                and CONFIG.execution.subject_identity_verification_required
+            ):
+                send_verification_code_to_user(
+                    db, privacy_request, privacy_request_data.identity
+                )
+                created.append(privacy_request)
+                continue  # Skip further processing for this privacy request
+            if (
+                not authenticated
+                and CONFIG.notifications.send_request_receipt_notification
+            ):
+                _send_privacy_request_receipt_message_to_user(
+                    policy, privacy_request_data.identity
+                )
+            if not CONFIG.execution.require_manual_request_approval:
+                AuditLog.create(
+                    db=db,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.approved,
+                        "message": "",
+                    },
+                )
+                queue_privacy_request(privacy_request.id)
+        except MessageDispatchException as exc:
+            kwargs["privacy_request_id"] = privacy_request.id
+            logger.error("MessageDispatchException: %s", exc)
+            failure = {
+                "message": "Verification message could not be sent.",
+                "data": kwargs,
+            }
+            failed.append(failure)
+        except common_exceptions.RedisConnectionError as exc:
+            logger.error("RedisConnectionError: %s", Pii(str(exc)))
+            # Thrown when cache.ping() fails on cache connection retrieval
+            raise HTTPException(
+                status_code=HTTP_424_FAILED_DEPENDENCY,
+                detail=exc.args[0],
+            )
+        except Exception as exc:
+            logger.error("Exception: %s", Pii(str(exc)))
+            failure = {
+                "message": "This record could not be added",
+                "data": kwargs,
+            }
+            failed.append(failure)
+        else:
+            created.append(privacy_request)
+
+    return BulkPostPrivacyRequests(
+        succeeded=created,
+        failed=failed,
+    )
+
+
+def _process_privacy_request_restart(
+    privacy_request: PrivacyRequest,
+    failed_step: CurrentStep,
+    failed_collection: Optional[CollectionAddress],
+    db: Session,
+) -> PrivacyRequestResponse:
+
+    logger.info(
+        "Restarting failed privacy request '%s' from '%s step, 'collection '%s'",
+        privacy_request.id,
+        failed_step,
+        failed_collection,
+    )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step.value,
+    )
+
+    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
     return privacy_request

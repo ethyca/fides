@@ -1,0 +1,112 @@
+services:
+  fides:
+    image: ethyca/fides:sample
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0:8080/health" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8080:8080"
+    depends_on:
+      fides-db:
+        condition: service_healthy
+      postgres-test:
+        condition: service_healthy
+      mongodb-test:
+        condition: service_started
+    environment:
+      FIDES__CONFIG_PATH: "/fides/src/fides/data/sample_project/fides.toml"
+      # These need to be defined here instead of the config file
+      # due to the `check_required_webserver_config_values` function
+      FIDES__SECURITY__APP_ENCRYPTION_KEY: "examplevalidprojectencryptionkey"
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: "fidesadmin"
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: "fidesadminsecret"
+    # Mount a local volume so the user can see their privacy requests
+    volumes:
+      - type: bind
+        source: ${FIDES_UPLOADS_DIR}
+        target: /fides/fides_uploads
+        read_only: False
+
+  sample-app:
+    image: ethyca/fides-sample-app:sample
+    environment:
+      - PORT=3000
+      - DATABASE_HOST=postgres-test
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_DB=postgres_example
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres-test
+
+  fides-pc:
+    image: ethyca/fides-privacy-center:sample
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: bind
+        source: ./privacy_center/config
+        target: /app/config
+        read_only: False
+      - type: bind
+        source: ./privacy_center/public/assets
+        target: /app/public/assets
+        read_only: False
+
+  fides-db:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "7432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "fides"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.5-alpine
+    command: redis-server --requirepass redispass
+    environment:
+      - REDIS_PASSWORD=redispass
+    ports:
+      - "7379:6379"
+
+  postgres-test:
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres_example"
+    volumes:
+      - ./postgres_sample.sql:/docker-entrypoint-initdb.d/postgres_sample.sql:ro
+
+  mongodb-test:
+    image: mongo:5.0.3
+    environment:
+      - MONGO_INITDB_DATABASE=mongo_test
+      - MONGO_INITDB_ROOT_USERNAME=mongo_user
+      - MONGO_INITDB_ROOT_PASSWORD=mongo_pass
+    ports:
+      - "37017:27017"
+    volumes:
+      - ./mongo_sample.js:/docker-entrypoint-initdb.d/mongo_sample.js:ro
+
+volumes:
+  postgres: null

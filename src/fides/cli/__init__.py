@@ -1,13 +1,16 @@
 """Contains the groups and setup for the CLI."""
 from importlib.metadata import version
-from os import getenv
 from platform import system
 
 import click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
-from fides.cli.utils import check_and_update_analytics_config, check_server
+from fides.cli.utils import (
+    check_and_update_analytics_config,
+    check_server,
+    create_config_file,
+)
 from fides.ctl.core.config import get_config
 
 from .commands.annotate import annotate
@@ -17,11 +20,11 @@ from .commands.db import database
 from .commands.export import export
 from .commands.generate import generate
 from .commands.scan import scan
-from .commands.util import init, status, webserver, worker
+from .commands.util import deploy, init, status, webserver, worker
 from .commands.view import view
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
-LOCAL_COMMANDS = [evaluate, generate, init, scan, parse, view, webserver]
+LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_DICT = {
     command.name or str(command): command for command in LOCAL_COMMANDS
 }
@@ -42,6 +45,7 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
+WITHOUT_ANALYTICS_COMMANDS = ["init", "deploy", "webserver"]
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -92,9 +96,10 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     ctx.obj["CONFIG"] = config
+    create_config_file(ctx)
 
     # init also handles this workflow
-    if ctx.invoked_subcommand != "init":
+    if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:
         check_and_update_analytics_config(ctx, config_path)
 
         # Analytics requires explicit opt-in

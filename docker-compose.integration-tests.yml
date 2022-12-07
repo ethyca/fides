@@ -7,6 +7,11 @@ services:
 
   postgres-test:
     image: postgres:12
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -14,7 +19,7 @@ services:
     expose:
       - 6432
     ports:
-      - "6432:5432"
+      - "0.0.0.0:6432:5432"
 
   mysql-test:
     image: mysql:8

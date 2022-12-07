@@ -1,10 +1,10 @@
 const path = require("path");
 
-/** @type {import("next").NextConfig} */
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
     enabled: process.env.ANALYZE === "true",
 });
 
+/** @type {import("next").NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
     webpack(config) {
@@ -20,7 +20,19 @@ const nextConfig = {
 
         return config;
     },
+    experimental: {
+        /**
+         * Data flow scanning sometimes takes longer than the default of 30 seconds
+         */
+        proxyTimeout: 120000
+    },
     async rewrites() {
+        // The tests run without a server. Rewrites cause Next to continually try to connect,
+        // which spams the logs with "ECONNREFUSED".
+        if (process.env.NODE_ENV === "test") {
+            return [];
+        }
+
         // these paths are unnecessarily complicated due to our backend being
         // picky about trailing slashes https://github.com/ethyca/fides/issues/690
         return [

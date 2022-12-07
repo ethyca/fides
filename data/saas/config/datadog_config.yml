@@ -2,14 +2,14 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Datadog SaaS Config
   type: datadog
-  description: A sample schema representing the Datadog connector for Fidesops
-  version: 0.0.1
+  description: A sample schema representing the Datadog connector for Fides
+  version: 0.0.2
 
   connector_params:
     - name: domain
+      default_value: api.datadoghq.com
     - name: api_key
     - name: app_key
-    - name: page_size
 
   client_config:
     protocol: https
@@ -18,10 +18,10 @@ saas_config:
       strategy: api_key
       configuration:
         headers:
-        - name: DD-APPLICATION-KEY
-          value: <app_key>
-        - name: DD-API-KEY
-          value: <api_key>
+          - name: DD-APPLICATION-KEY
+            value: <app_key>
+          - name: DD-API-KEY
+            value: <api_key>
 
   test_request:
     method: GET
@@ -31,23 +31,43 @@ saas_config:
     - name: events
       requests:
         read:
-          method: GET
-          path: /api/v2/logs/events
-          query_params:
-            - name: filter[query]
-              value: <email>
-            - name: filter[from]
-              value: 0
-            - name: filter[to]
-              value: now
-            - name: page[limit]
-              value: <page_size>
-          param_values:
-            - name: email
-              identity: email
-          data_path: data
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: links.next
+          - method: GET
+            path: /api/v2/logs/events
+            query_params:
+              - name: filter[query]
+                value: <email>
+              - name: filter[from]
+                value: 0
+              - name: filter[to]
+                value: now
+              - name: page[limit]
+                value: 1000
+            param_values:
+              - name: email
+                identity: email
+            data_path: data
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: links.next
+          - method: GET
+            path: /api/v2/logs/events
+            query_params:
+              - name: filter[query]
+                value: <phone_number>
+              - name: filter[from]
+                value: 0
+              - name: filter[to]
+                value: now
+              - name: page[limit]
+                value: 1000
+            param_values:
+              - name: phone_number
+                identity: phone_number
+            data_path: data
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: links.next

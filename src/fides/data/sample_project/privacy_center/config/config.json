@@ -1,0 +1,67 @@
+{
+  "title": "Privacy Center",
+  "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
+  "server_url_development": "http://localhost:8080/api/v1",
+  "server_url_production": "http://localhost:8080/api/v1",
+  "logo_path": "/assets/logo.svg",
+  "actions": [
+    {
+      "policy_key": "default_access_policy",
+      "icon_path": "/assets/access.svg",
+      "title": "Access your data",
+      "description": "We will provide you a report of all your personal data.",
+      "identity_inputs": {
+        "name": "optional",
+        "email": "required",
+        "phone": "optional"
+      }
+    },
+    {
+      "policy_key": "default_erasure_policy",
+      "icon_path": "/assets/erase.svg",
+      "title": "Erase your data",
+      "description": "We will erase all of your personal data. This action cannot be undone.",
+      "identity_inputs": {
+        "name": "optional",
+        "email": "required",
+        "phone": "optional"
+      }
+    }
+  ],
+  "includeConsent": true,
+  "consent": {
+    "icon_path": "/assets/consent.svg",
+    "title": "Manage your consent",
+    "description": "Manage your consent preferences, including the option to select 'Do Not Sell My Personal Information'.",
+    "cookieName": "fides_consent",
+    "consentOptions": [
+      {
+        "fidesDataUseKey": "advertising",
+        "name": "Data Sales or Sharing",
+        "description": "We may use some of your personal information for behavioral advertising purposes, which may be interpreted as 'Data Sales' or 'Data Sharing' under regulations such as CCPA, CPRA, VCDPA, etc.",
+        "url": "https://example.com/privacy#data-sales",
+        "default": true,
+        "highlight": false,
+        "cookieKeys": ["data_sales"]
+      },
+      {
+        "fidesDataUseKey": "advertising.first_party",
+        "name": "Email Marketing",
+        "description": "We may use some of your personal information to contact you about our products & services.",
+        "url": "https://example.com/privacy#email-marketing",
+        "default": true,
+        "highlight": false,
+        "cookieKeys": []
+      },
+      {
+        "fidesDataUseKey": "improve",
+        "name": "Product Analytics",
+        "description": "We may use some of your personal information to collect analytics about how you use our products & services.",
+        "url": "https://example.com/privacy#analytics",
+        "default": true,
+        "highlight": false,
+        "cookieKeys": []
+      }
+    ]
+  }
+}

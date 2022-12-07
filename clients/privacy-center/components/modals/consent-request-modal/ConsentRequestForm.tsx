@@ -10,31 +10,34 @@ import {
   ModalHeader,
   Stack,
   Text,
+  useToast,
 } from "@fidesui/react";
 
 import { useFormik } from "formik";
 
-import { Headers } from "headers-polyfill";
-import type { AlertState } from "../../../types/AlertState";
-import { addCommonHeaders } from "../../../common/CommonHeaders";
+import { ErrorToastOptions } from "~/common/toast-options";
 
+import { Headers } from "headers-polyfill";
+import { addCommonHeaders } from "~/common/CommonHeaders";
+
+import { hostUrl } from "~/constants";
 import { ModalViews, VerificationType } from "../types";
-import { hostUrl } from "../../../constants";
 
 const useConsentRequestForm = ({
   onClose,
-  setAlert,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
+  successHandler,
 }: {
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  successHandler: () => void;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -45,10 +48,17 @@ const useConsentRequestForm = ({
       const body = {
         email: values.email,
       };
-      const handleError = () => {
-        setAlert({
-          status: "error",
-          description: "Your request has failed. Please try again.",
+      const handleError = ({
+        title,
+        error,
+      }: {
+        title: string;
+        error?: any;
+      }) => {
+        toast({
+          title,
+          description: error,
+          ...ErrorToastOptions,
         });
         onClose();
       };
@@ -65,33 +75,31 @@ const useConsentRequestForm = ({
             body: JSON.stringify(body),
           }
         );
-
+        const data = await response.json();
         if (!response.ok) {
-          handleError();
+          handleError({
+            title: "An error occurred while creating your consent request",
+            error: data?.detail,
+          });
           return;
         }
 
-        const data = await response.json();
+        if (!data.consent_request_id) {
+          handleError({ title: "No consent request id found" });
+          return;
+        }
 
-        if (!isVerificationRequired && data.consent_request_id) {
-          setAlert({
-            status: "success",
-            description:
-              "Your request was successful, please await further instructions.",
-          });
-        } else if (isVerificationRequired && data.consent_request_id) {
+        if (!isVerificationRequired) {
+          setConsentRequestId(data.consent_request_id);
+          successHandler();
+        } else {
           setConsentRequestId(data.consent_request_id);
           setCurrentView(ModalViews.IdentityVerification);
-        } else {
-          handleError();
         }
       } catch (error) {
-        handleError();
-        return;
-      }
-
-      if (!isVerificationRequired) {
-        onClose();
+        // eslint-disable-next-line no-console
+        console.error(error);
+        handleError({ title: "An unhandled exception occurred." });
       }
     },
     validate: (values) => {
@@ -114,19 +122,19 @@ const useConsentRequestForm = ({
 type ConsentRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  setAlert: (state: AlertState) => void;
   setCurrentView: (view: ModalViews) => void;
   setConsentRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  successHandler: () => void;
 };
 
 const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   isOpen,
   onClose,
-  setAlert,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
+  successHandler,
 }) => {
   const {
     errors,
@@ -140,10 +148,10 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
     resetForm,
   } = useConsentRequestForm({
     onClose,
-    setAlert,
     setCurrentView,
     setConsentRequestId,
     isVerificationRequired,
+    successHandler,
   });
 
   useEffect(() => resetForm(), [isOpen, resetForm]);
@@ -153,11 +161,13 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
       <ModalHeader pt={6} pb={0}>
         Manage your consent
       </ModalHeader>
-      <chakra.form onSubmit={handleSubmit}>
+      <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            We will email you a report of the data from your account.
-          </Text>
+          {isVerificationRequired ? (
+            <Text fontSize="sm" color="gray.500" mb={4}>
+              We will email you a verification code.
+            </Text>
+          ) : null}
           <Stack spacing={3}>
             <FormControl
               id="email"

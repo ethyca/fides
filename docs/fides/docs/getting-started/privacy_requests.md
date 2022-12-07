@@ -41,9 +41,9 @@ A full list of attributes available to set on a privacy request can be found in 
 Verifying user identity prior to processing their privacy request requires the following:
 
 1. Set the `subject_identity_verification_required` variable in your `fides.toml` to `TRUE`. 
-2. [Configure Emails](../guides/email_communications.md) that lets Fides send automated emails to your users.
+2. [Configure Messaging](../guides/messaging.md) that lets Fides send automated emails or text messages to your users.
 
-With identify verification enabled, a user will be emailed a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  
+With identify verification enabled, a user will be sent a six-digit code when they submit a privacy request. They must supply that verification code to Fides to continue privacy request execution.  
 
 Until the Privacy Request identity is verified, it will have a status of `identity_unverified`:
 
@@ -159,5 +159,3 @@ a similar process for each CSV file.
 ## Privacy request integrations
 
 * **Generic API interoperability**: Third party services can be authorized by creating additional OAuth clients. Tokens obtained from OAuth clients can be managed and revoked at any time. See [authenticating with OAuth](../guides/oauth.md) for more information.
-
-* **OneTrust**: Fides can be configured to act as (or as part of) the fulfillment layer in OneTrust's Data Subject Request automation flow. See the [OneTrust integration guide](../guides/onetrust.md) for more information.

@@ -5,7 +5,7 @@ export const STEPS = [
   },
   {
     number: 2,
-    name: "Add a system",
+    name: "Add Systems",
   },
   {
     number: 3,
@@ -46,10 +46,16 @@ export const iconButtonSize = 107;
 
 // When more links like these are introduced we should move them to a single file.
 export const DOCS_URL_AWS_PERMISSIONS =
-  "https://ethyca.github.io/fides/guides/generate_resources/#required-permissions";
+  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#required-permissions";
+export const DOCS_URL_OKTA_CREDENTIALS =
+  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#providing-credentials_2";
 export const DOCS_URL_IAM_POLICY =
-  "https://ethyca.github.io/fides/guides/generate_resources/#sample-iam-policy";
+  "https://ethyca.github.io/fides/2.0.0/getting-started/generate_resources/#sample-iam-policy";
+export const DOCS_URL_ACCESS_MANAGEMENT =
+  "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html";
 export const DOCS_URL_ISSUES = "https://github.com/ethyca/fides/issues";
+export const DOCS_URL_OKTA_TOKEN =
+  "https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm";
 
 // Source: https://docs.aws.amazon.com/general/latest/gr/rande.html
 export const AWS_REGION_OPTIONS = [

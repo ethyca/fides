@@ -25,6 +25,7 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
   defaultValue,
   consentValue,
   url,
+  fidesDataUseKey,
   setConsentValue,
 }) => {
   const [value, setValue] = useState("false");
@@ -44,6 +45,7 @@ const ConsentItemCard: React.FC<ConsentItemProps> = ({
       width="720px"
       backgroundColor={backgroundColor}
       justifyContent="center"
+      data-testid={`consent-item-card-${fidesDataUseKey}`}
     >
       <Flex mb="24px" mt="24px" mr="35px" ml="35px" width="100%">
         <Box width="100%" pr="60px">

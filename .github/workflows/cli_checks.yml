@@ -1,0 +1,58 @@
+# This file is used for testing various CLI commands,
+# either for development or users, that may otherwise be
+# difficult to test in a programmatic way or require
+# significant amounts of setup
+name: CLI Command Checks
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+  push:
+    branches:
+      - "main"
+
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10.7"
+
+jobs:
+  Test-Envs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Initialize the test environment
+        run: nox -s test_env -- test
+
+  Fides-Deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Build the sample image
+        run: nox -s "build(sample)"
+
+      - name: Install fides
+        run: pip install .
+
+      - name: Start the sample application
+        run: fides deploy up --no-pull --no-init
+      
+      - name: Stop the sample application
+        run: fides deploy down

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from pydantic import BaseModel, Extra, root_validator, validator
 
@@ -13,6 +13,7 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.dataset import FidesCollectionKey, FidesopsDatasetReference
+from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
@@ -95,13 +96,14 @@ class SaaSRequest(BaseModel):
     headers: Optional[List[Header]] = []
     query_params: Optional[List[QueryParam]] = []
     body: Optional[str]
-    param_values: Optional[List[ParamValue]]
+    param_values: Optional[List[ParamValue]] = []
     client_config: Optional[ClientConfig]
     data_path: Optional[str]
     postprocessors: Optional[List[Strategy]]
     pagination: Optional[Strategy]
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[bool] = False
+    rate_limit_config: Optional[RateLimitConfig]
 
     class Config:
         """Populate models with the raw value of enum fields, rather than the enum itself"""
@@ -201,12 +203,38 @@ class SaaSRequest(BaseModel):
         return values
 
 
+class SaaSRequestMap(BaseModel):
+    """A map of actions to SaaS requests"""
+
+    read: Union[SaaSRequest, List[SaaSRequest]] = []
+    update: Optional[SaaSRequest]
+    delete: Optional[SaaSRequest]
+
+
 class Endpoint(BaseModel):
     """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
 
     name: str
-    requests: Dict[Literal["read", "update", "delete"], SaaSRequest]
+    requests: SaaSRequestMap
     after: List[FidesCollectionKey] = []
+
+    @validator("requests")
+    def validate_grouped_inputs(
+        cls,
+        requests: SaaSRequestMap,
+    ) -> SaaSRequestMap:
+        """Validate that grouped_inputs are the same for every read request"""
+
+        read_requests = requests.read
+        if isinstance(read_requests, list) and len(read_requests) > 1:
+            first, *rest = read_requests
+            if not all(
+                request.grouped_inputs == first.grouped_inputs for request in rest
+            ):
+                raise ValueError(
+                    "The grouped_input values for every read request must be the same"
+                )
+        return requests
 
 
 class ConnectorParam(BaseModel):
@@ -308,6 +336,7 @@ class SaaSConfig(SaaSConfigBase):
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
+    rate_limit_config: Optional[RateLimitConfig]
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -319,11 +348,21 @@ class SaaSConfig(SaaSConfigBase):
         collections = []
         for endpoint in self.endpoints:
             fields: List[Field] = []
-            read_request = endpoint.requests.get("read")
-            delete_request = endpoint.requests.get("delete")
-            if read_request:
+
+            read_requests: List[SaaSRequest] = []
+            if endpoint.requests.read:
+                read_requests = (
+                    endpoint.requests.read
+                    if isinstance(endpoint.requests.read, list)
+                    else [endpoint.requests.read]
+                )
+
+            delete_request = endpoint.requests.delete
+
+            for read_request in read_requests:
                 self._process_param_values(fields, read_request.param_values, secrets)
-            elif delete_request:
+
+            if not read_requests and delete_request:
                 # If the endpoint only specifies a delete request without a read,
                 # then we must use the delete request's param_values instead.
                 # One of the fields must automatically be flagged as a primary key
@@ -333,9 +372,11 @@ class SaaSConfig(SaaSConfigBase):
                     fields[0].primary_key = True
 
             if fields:
-                grouped_inputs: Optional[Set[str]] = set()
-                if endpoint.requests.get("read"):
-                    grouped_inputs = set(endpoint.requests["read"].grouped_inputs or [])
+                grouped_inputs: Set[str] = set()
+                if read_requests:
+                    # the endpoint validator enforces that grouped inputs are the same
+                    # for all read requests so we can just take the first one
+                    grouped_inputs = set(read_requests[0].grouped_inputs or [])
                 collections.append(
                     Collection(
                         name=endpoint.name,

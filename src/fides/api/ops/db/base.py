@@ -10,8 +10,9 @@ from fideslib.models.fides_user_permissions import FidesUserPermissions
 from fides.api.ops.models.authentication_request import AuthenticationRequest
 from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.email import EmailConfig
 from fides.api.ops.models.manual_webhook import AccessManualWebhook
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_request import PrivacyRequest
+from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import StorageConfig

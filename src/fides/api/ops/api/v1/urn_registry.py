@@ -38,9 +38,9 @@ STORAGE_BY_KEY = "/storage/config/{config_key}"
 STORAGE_UPLOAD = "/storage/{request_id}"
 
 # Email URLs
-EMAIL_CONFIG = "/email/config"
-EMAIL_SECRETS = "/email/config/{config_key}/secret"
-EMAIL_BY_KEY = "/email/config/{config_key}"
+MESSAGING_CONFIG = "/messaging/config"
+MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
+MESSAGING_BY_KEY = "/messaging/config/{config_key}"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -49,6 +49,8 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
+PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
@@ -62,6 +64,9 @@ PRIVACY_REQUEST_ACCESS_MANUAL_WEBHOOK_INPUT = (
 )
 PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
     "/privacy-request/{privacy_request_id}/resume_from_requires_input"
+)
+PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
+    "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
 
 
@@ -136,3 +141,6 @@ DRP_EXERCISE = "/drp/exercise"
 DRP_STATUS = "/drp/status"
 DRP_DATA_RIGHTS = "/drp/data-rights"
 DRP_REVOKE = "/drp/revoke"
+
+# Registration
+REGISTRATION = "/registration"

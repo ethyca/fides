@@ -20,11 +20,11 @@ def test_celery_default_config() -> None:
     celery_app = _create_celery()
     assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
     assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
-    assert celery_app.conf["event_queue_prefix"] == "fidesops_worker"
-    assert celery_app.conf["task_default_queue"] == "fidesops"
+    assert celery_app.conf["event_queue_prefix"] == "fides_worker"
+    assert celery_app.conf["task_default_queue"] == "fides"
 
 
 def test_celery_config_override() -> None:
-    celery_app = _create_celery(config_path="data/config/celery.toml")
-    assert celery_app.conf["event_queue_prefix"] == "overridden_fidesops_worker"
-    assert celery_app.conf["task_default_queue"] == "overridden_fidesops"
+    celery_app = _create_celery(config_path="data/config/celery.override.toml")
+    assert celery_app.conf["event_queue_prefix"] == "overridden_fides_worker"
+    assert celery_app.conf["task_default_queue"] == "overridden_fides"

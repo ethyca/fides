@@ -15,9 +15,10 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { CustomTextInput } from "~/features/common/form/inputs";
+
 import { USER_MANAGEMENT_ROUTE, USER_PRIVILEGES } from "../../constants";
-import { CustomTextInput } from "./form/inputs";
-import { User } from "./types";
+import { User, UserCreateResponse } from "./types";
 import UpdatePasswordModal from "./UpdatePasswordModal";
 import { useUpdateUserPermissionsMutation } from "./user-management.slice";
 
@@ -49,7 +50,7 @@ const ValidationSchema = Yup.object().shape({
 interface Props {
   onSubmit: (values: FormValues) => Promise<
     | {
-        data: User;
+        data: User | UserCreateResponse;
       }
     | {
         error: FetchBaseQueryError | SerializedError;
@@ -86,7 +87,7 @@ const UserForm = ({
     // then issue a separate call to update their permissions
     const { data } = result;
     const userWithPrivileges = {
-      id: data.id,
+      user_id: data.id,
       scopes: [...new Set([...values.scopes, "privacy-request:read"])],
     };
     const updateUserPermissionsResult = await updateUserPermissions(
@@ -134,6 +135,7 @@ const UserForm = ({
                     label="Password"
                     placeholder="********"
                     type="password"
+                    tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                   />
                 ) : (
                   canChangePassword &&

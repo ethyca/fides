@@ -23,7 +23,7 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
-from fides.api.ops.models.email import EmailConfig
+from fides.api.ops.models.messaging import MessagingConfig
 from fides.api.ops.models.policy import (
     ActionType,
     Policy,
@@ -33,11 +33,12 @@ from fides.api.ops.models.policy import (
     RuleTarget,
 )
 from fides.api.ops.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.ops.models.registration import UserRegistration
 from fides.api.ops.models.storage import ResponseFormat, StorageConfig
-from fides.api.ops.schemas.email.email import (
-    EmailServiceDetails,
-    EmailServiceSecrets,
-    EmailServiceType,
+from fides.api.ops.schemas.messaging.messaging import (
+    MessagingServiceDetails,
+    MessagingServiceSecrets,
+    MessagingServiceType,
 )
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.schemas.storage.storage import (
@@ -112,6 +113,11 @@ integration_secrets = {
         "username": pydash.get(integration_config, "timescale_example.user"),
         "password": pydash.get(integration_config, "timescale_example.password"),
     },
+    "fides_example": {
+        "uri": pydash.get(integration_config, "fides_example.uri"),
+        "username": pydash.get(integration_config, "fides_example.username"),
+        "password": pydash.get(integration_config, "fides_example.password"),
+    },
 }
 
 
@@ -152,30 +158,18 @@ def storage_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def storage_config_onetrust(db: Session) -> Generator:
-    """
-    This fixture adds onetrust config data to the database.
-    """
-    name = "onetrust config"
+def storage_config_local(db: Session) -> Generator:
+    name = str(uuid4())
     storage_config = StorageConfig.create(
         db=db,
         data={
             "name": name,
-            "type": StorageType.onetrust,
+            "type": StorageType.local,
             "details": {
-                StorageDetails.SERVICE_NAME.value: "Meow Services",
-                StorageDetails.ONETRUST_POLLING_DAY_OF_WEEK.value: 1,
-                StorageDetails.ONETRUST_POLLING_HR.value: 8,
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
             },
-            "key": "my_onetrust_config",
-        },
-    )
-    storage_config.set_secrets(
-        db=db,
-        storage_secrets={
-            StorageSecrets.ONETRUST_CLIENT_SECRET.value: "23tcrcrewg",
-            StorageSecrets.ONETRUST_CLIENT_ID.value: "9upqn3ufqnff",
-            StorageSecrets.ONETRUST_HOSTNAME.value: "meow-services.onetrust",
+            "key": "my_test_config_local",
+            "format": ResponseFormat.json,
         },
     )
     yield storage_config
@@ -183,26 +177,73 @@ def storage_config_onetrust(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def email_config(db: Session) -> Generator:
+def messaging_config(db: Session) -> Generator:
     name = str(uuid4())
-    email_config = EmailConfig.create(
+    messaging_config = MessagingConfig.create(
         db=db,
         data={
             "name": name,
-            "key": "my_email_config",
-            "service_type": EmailServiceType.MAILGUN,
+            "key": "my_mailgun_messaging_config",
+            "service_type": MessagingServiceType.MAILGUN,
             "details": {
-                EmailServiceDetails.API_VERSION.value: "v3",
-                EmailServiceDetails.DOMAIN.value: "some.domain",
-                EmailServiceDetails.IS_EU_DOMAIN.value: False,
+                MessagingServiceDetails.API_VERSION.value: "v3",
+                MessagingServiceDetails.DOMAIN.value: "some.domain",
+                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
         },
     )
-    email_config.set_secrets(
-        db=db, email_secrets={EmailServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"}
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"
+        },
     )
-    yield email_config
-    email_config.delete(db)
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_config_twilio_email(db: Session) -> Generator:
+    name = str(uuid4())
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_twilio_email_config",
+            "service_type": MessagingServiceType.TWILIO_EMAIL,
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.TWILIO_API_KEY.value: "123489ctynpiqurwfh"
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_config_twilio_sms(db: Session) -> Generator:
+    name = str(uuid4())
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_twilio_sms_config",
+            "service_type": MessagingServiceType.TWILIO_TEXT,
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "23rwrfwxwef",
+            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23984y29384y598432",
+            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "2ieurnoqw",
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -626,6 +667,60 @@ def policy(
 
 
 @pytest.fixture(scope="function")
+def policy_local_storage(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config_local: StorageConfig,
+) -> Generator:
+    """
+    A basic example policy fixture that uses a local storage config
+    in cases where end-to-end request execution must actually succeed
+    """
+    access_request_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example access request policy",
+            "key": "example_access_request_policy",
+            "client_id": oauth_client.id,
+            "execution_timeframe": 7,
+        },
+    )
+
+    access_request_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.access.value,
+            "client_id": oauth_client.id,
+            "name": "Access Request Rule",
+            "policy_id": access_request_policy.id,
+            "storage_destination_id": storage_config_local.id,
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user").value,
+            "rule_id": access_request_rule.id,
+        },
+    )
+    yield access_request_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        access_request_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
@@ -778,6 +873,72 @@ def erasure_policy_string_rewrite(
 
 
 @pytest.fixture(scope="function")
+def erasure_policy_string_rewrite_name_and_email(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "string rewrite policy",
+            "key": "string_rewrite_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "string rewrite erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    erasure_rule_target_name = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
+    erasure_rule_target_email = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.email").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
+    yield erasure_policy
+    try:
+        erasure_rule_target_name.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule_target_email.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_hmac(
     db: Session,
     oauth_client: ClientDetail,
@@ -897,7 +1058,7 @@ def _create_privacy_request_for_policy(
         db=db,
         identity=Identity(
             email=email_identity,
-            phone_number="+1 234 567 8910",
+            phone_number="+12345678910",
         ),
     )
     return pr
@@ -1158,6 +1319,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/bigquery_example_test_dataset.yml",
         "data/dataset/manual_dataset.yml",
         "data/dataset/email_dataset.yml",
+        "data/dataset/remote_fides_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -1274,3 +1436,28 @@ def short_redis_cache_expiration():
     )
     yield CONFIG
     CONFIG.redis.default_ttl_seconds = original_value
+
+
+@pytest.fixture(scope="function")
+def user_registration_opt_out(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as False."""
+    return create_user_registration(db, opt_in=False)
+
+
+@pytest.fixture(scope="function")
+def user_registration_opt_in(db: Session) -> UserRegistration:
+    """Adds a UserRegistration record with `opt_in` as True."""
+    return create_user_registration(db, opt_in=True)
+
+
+def create_user_registration(db: Session, opt_in: bool = False) -> UserRegistration:
+    """Adds a UserRegistration record."""
+    return UserRegistration.create(
+        db=db,
+        data={
+            "user_email": "user@example.com",
+            "user_organization": "Example Org.",
+            "analytics_id": "example-analytics-id",
+            "opt_in": opt_in,
+        },
+    )

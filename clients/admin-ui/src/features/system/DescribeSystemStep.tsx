@@ -2,20 +2,23 @@ import { Box, Button, Heading, Stack, useToast } from "@fidesui/react";
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import { Form, Formik } from "formik";
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
+import { useAppDispatch } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import DescribeSystemsFormExtension from "~/features/system/DescribeSystemsFormExtension";
 import {
   defaultInitialValues,
   FormValues,
   transformFormValuesToSystem,
+  transformSystemToFormValues,
 } from "~/features/system/form";
 import {
   useCreateSystemMutation,
@@ -29,30 +32,59 @@ const ValidationSchema = Yup.object().shape({
   system_type: Yup.string().required().label("System type"),
 });
 
+const SystemHeading = ({ system }: { system?: System }) => {
+  const isManual = !system;
+  const headingName = isManual
+    ? "your new system"
+    : system.name ?? "this system";
+
+  return (
+    <Heading as="h3" size="lg">
+      Describe {headingName}
+    </Heading>
+  );
+};
+
 interface Props {
-  onCancel: () => void;
   onSuccess: (system: System) => void;
   abridged?: boolean;
-  initialValues?: FormValues;
+  system?: System;
 }
 
 const DescribeSystemStep = ({
-  onCancel,
   onSuccess,
   abridged,
-  initialValues: passedInInitialValues,
+  system: passedInSystem,
 }: Props) => {
-  const isEditing = !!passedInInitialValues;
-  const initialValues = passedInInitialValues ?? defaultInitialValues;
+  const initialValues = useMemo(
+    () =>
+      passedInSystem
+        ? transformSystemToFormValues(passedInSystem)
+        : defaultInitialValues,
+    [passedInSystem]
+  );
   const [createSystem] = useCreateSystemMutation();
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useAppDispatch();
   const { data: systems } = useGetAllSystemsQuery();
   const systemOptions = systems
     ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
     : [];
+  const isEditing = useMemo(
+    () =>
+      Boolean(
+        passedInSystem &&
+          systems?.some((s) => s.fides_key === passedInSystem?.fides_key)
+      ),
+    [passedInSystem, systems]
+  );
 
   const toast = useToast();
+
+  const handleBack = () => {
+    dispatch(changeStep(2));
+  };
 
   const handleSubmit = async (values: FormValues) => {
     const systemBody = transformFormValuesToSystem(values);
@@ -100,10 +132,8 @@ const DescribeSystemStep = ({
       {({ dirty, values }) => (
         <Form>
           <Stack spacing={10}>
-            <Heading as="h3" size="lg">
-              {/* TODO FUTURE: Path when describing system from infra scanning */}
-              Describe your system
-            </Heading>
+            <SystemHeading system={passedInSystem} />
+
             <div>
               By providing a small amount of additional context for each system
               we can make reporting and understanding our tech stack much easier
@@ -121,8 +151,8 @@ const DescribeSystemStep = ({
                 id="fides_key"
                 name="fides_key"
                 label="System key"
-                // TODO FUTURE: This tooltip text is misleading since at the moment for MVP we are manually creating a fides key for this resource
-                tooltip="System keys are automatically generated from the resource id and system name to provide a unique key for identifying systems in the registry."
+                disabled={isEditing}
+                tooltip="A string token of your own invention that uniquely identifies this System. It's your responsibility to ensure that the value is unique across all of your System objects. The value may only contain alphanumeric characters, underscores, and hyphens. ([A-Za-z0-9_.-])."
               />
               <CustomTextInput
                 id="description"
@@ -162,20 +192,23 @@ const DescribeSystemStep = ({
             </Stack>
             <Box>
               <Button
-                onClick={() => onCancel()}
+                onClick={handleBack}
                 mr={2}
                 size="sm"
                 variant="outline"
-                data-testid="cancel-btn"
+                data-testid="back-btn"
               >
-                Cancel
+                Back
               </Button>
               <Button
                 type="submit"
                 variant="primary"
                 size="sm"
-                // if isEditing, always allow going to the next step
-                disabled={isEditing ? false : !dirty}
+                isDisabled={
+                  isLoading ||
+                  // If this system was created from scratch, the fields must be edited.
+                  (!passedInSystem && !dirty)
+                }
                 isLoading={isLoading}
                 data-testid="confirm-btn"
               >

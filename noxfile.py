@@ -1,26 +1,41 @@
 """
 This file aggregates nox commands for various development tasks.
-
-To learn more about nox, visit https://nox.thea.codes/en/stable/index.html
 """
+
+import shutil
 import sys
+from os.path import isfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
 import nox
 
 sys.path.append("noxfiles")
+# pylint: disable=unused-wildcard-import, wildcard-import, wrong-import-position
 from ci_nox import *
 from dev_nox import *
 from docker_nox import *
 from docs_nox import *
 from utils_nox import *
 
+# pylint: enable=unused-wildcard-import, wildcard-import, wrong-import-position
+
 REQUIRED_DOCKER_VERSION = "20.10.17"
 
 # Sets the default session to `--list`
 nox.options.sessions = []
 nox.options.reuse_existing_virtualenvs = True
+
+
+def check_for_env_file() -> None:
+    """Create a .env file if none exists."""
+    env_file_example = "example.env"
+    env_file = ".env"
+    if not isfile(env_file):
+        print(
+            f"Creating env file for local testing & development from {env_file_example}: {env_file}"
+        )
+        shutil.copy(env_file_example, env_file)
 
 
 def convert_semver_to_list(semver: str) -> List[int]:
@@ -94,4 +109,6 @@ def check_docker_version() -> bool:
     return version_is_valid
 
 
+# Run startup checks
 check_docker_version()
+check_for_env_file()

@@ -29,25 +29,36 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
-def black(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def black(session: nox.Session, mode: str) -> None:
     """Run the 'black' style linter."""
     install_requirements(session)
-    command = (
-        "black",
-        "--check",
-        "src",
-        "tests",
-        "noxfiles",
-        "scripts",
-    )
+    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
 @nox.session()
-def isort(session: nox.Session) -> None:
+@nox.parametrize(
+    "mode",
+    [
+        nox.param("fix", id="fix"),
+        nox.param("check", id="check"),
+    ],
+)
+def isort(session: nox.Session, mode: str) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "--check")
+    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    if mode == "check":
+        command = (*command, "--check")
     session.run(*command)
 
 
@@ -63,7 +74,7 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles")
+    command = ("pylint", "src", "noxfiles", "noxfile.py")
     session.run(*command)
 
 
@@ -86,13 +97,24 @@ def xenon(session: nox.Session) -> None:
     session.run(*command)
 
 
-# Fidesctl Checks
+# Fides Checks
 @nox.session()
 def check_install(session: nox.Session) -> None:
-    """Check that fidesctl is installed."""
+    """Check that fides installs works correctly."""
     session.install(".")
-    run_command = ("fides", *(WITH_TEST_CONFIG), "--version")
-    session.run(*run_command)
+
+    REQUIRED_ENV_VARS = {
+        "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID": "fidesadmin",
+        "FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET": "fidesadminsecret",
+        "FIDES__SECURITY__DRP_JWT_SECRET": "secret",
+    }
+
+    run_command = ("fides", "--version")
+    session.run(*run_command, env=REQUIRED_ENV_VARS)
+
+    run_command = ("python", "-c", "from fides.api.main import start_webserver")
+    session.run(*run_command, env=REQUIRED_ENV_VARS)
 
 
 @nox.session()
@@ -117,6 +139,27 @@ def fides_db_scan(session: nox.Session) -> None:
         "app_postgres",
     )
     session.run(*run_command, external=True)
+
+
+@nox.session()
+def minimal_config_startup(session: nox.Session) -> None:
+    """
+    Check that the server can start successfully with a minimal
+    configuration set through environment vairables.
+    """
+    session.notify("teardown")
+    compose_file = "docker/docker-compose.minimal-config.yml"
+    start_command = (
+        "docker",
+        "compose",
+        "-f",
+        compose_file,
+        "up",
+        "--wait",
+        "-d",
+        IMAGE_NAME,
+    )
+    session.run(*start_command, external=True)
 
 
 # Pytest

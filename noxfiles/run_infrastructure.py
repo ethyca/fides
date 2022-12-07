@@ -33,11 +33,12 @@ def run_infrastructure(
     datastores: List[str] = [],  # Which infra should we create? If empty, we create all
     open_shell: bool = False,  # Should we open a bash shell?
     pytest_path: str = "",  # Which subset of tests should we run?
-    run_application: bool = False,  # Should we run the Fidesops webserver?
+    run_application: bool = False,  # Should we run the Fides webserver?
     run_quickstart: bool = False,  # Should we run the quickstart command?
     run_tests: bool = False,  # Should we run the tests after creating the infra?
     run_create_test_data: bool = False,  # Should we run the create_test_data command?
     analytics_opt_out: bool = False,  # Should we opt out of analytics?
+    remote_debug: bool = False,  # Should remote debugging be enabled?
 ) -> None:
     """
     - Create a Docker Compose file path for all datastores specified in `datastores`.
@@ -64,7 +65,7 @@ def run_infrastructure(
     ]
 
     # Configure docker compose path
-    path: str = get_path_for_datastores(datastores)
+    path: str = get_path_for_datastores(datastores, remote_debug)
 
     _run_cmd_or_err(
         f"docker compose {path} up --wait {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
@@ -120,11 +121,13 @@ def seed_initial_data(
             )
 
 
-def get_path_for_datastores(datastores: List[str]) -> str:
+def get_path_for_datastores(datastores: List[str], remote_debug: bool) -> str:
     """
     Returns the docker compose file paths for the specified datastores
     """
     path: str = "-f docker-compose.yml"
+    if remote_debug:
+        path += " -f docker-compose.remote-debug.yml"
     for datastore in datastores:
         _run_cmd_or_err(f'echo "configuring infrastructure for {datastore}"')
         if datastore in DOCKERFILE_DATASTORES:

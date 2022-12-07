@@ -1,16 +1,19 @@
-import { stubSystemCrud, stubTaxonomyEntities } from "../support/stubs";
+import {
+  stubHomePage,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 describe("System management page", () => {
-  before(() => {
-    cy.login();
-  });
   beforeEach(() => {
+    cy.login();
     cy.intercept("GET", "/api/v1/system", { fixture: "systems.json" }).as(
       "getSystems"
     );
   });
 
   it("Can navigate to the system management page", () => {
+    stubHomePage();
     cy.visit("/");
     cy.getByTestId("nav-link-Systems").click();
     cy.wait("@getSystems");
@@ -228,7 +231,7 @@ describe("System management page", () => {
             "contain",
             `${system.name} successfully registered`
           );
-          cy.getByTestId("continue-btn").click();
+          cy.getByTestId("finish-btn").click();
           cy.url().should("match", /system$/);
         });
       });

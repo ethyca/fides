@@ -15,6 +15,7 @@ from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.oauth_util import extract_payload, is_token_expired
 from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
+from jose import exceptions
 from jose.constants import ALGORITHMS
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -43,12 +44,20 @@ async def get_current_user(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> FidesUser:
-    """A wrapper around verify_oauth_client that returns that client's user if one exsits."""
+    """A wrapper around verify_oauth_client that returns that client's user if one exists."""
     client = await verify_oauth_client(
         security_scopes=security_scopes,
         authorization=authorization,
         db=db,
     )
+
+    if client.id == CONFIG.security.oauth_root_client_id:
+        return FidesUser(
+            id=CONFIG.security.oauth_root_client_id,
+            username=CONFIG.security.root_username,
+            created_at=datetime.utcnow(),
+        )
+
     return client.user
 
 
@@ -118,9 +127,12 @@ async def verify_oauth_client(
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
-    token_data = json.loads(
-        extract_payload(authorization, CONFIG.security.app_encryption_key)
-    )
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEParseError as exc:
+        raise AuthorizationError(detail="Not Authorized for this action") from exc
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
     if not issued_at:

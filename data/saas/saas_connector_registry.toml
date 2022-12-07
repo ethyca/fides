@@ -22,6 +22,12 @@ dataset = "data/saas/dataset/doordash_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Doordash"
 
+[fullstory]
+config = "data/saas/config/fullstory_config.yml"
+dataset = "data/saas/dataset/fullstory_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Fullstory"
+
 [firebase_auth]
 config = "data/saas/config/firebase_auth_config.yml"
 dataset = "data/saas/dataset/firebase_auth_dataset.yml"
@@ -50,7 +56,7 @@ human_readable = "Outreach"
 config = "data/saas/config/salesforce_config.yml"
 dataset = "data/saas/dataset/salesforce_dataset.yml"
 icon = "data/saas/icon/salesforce.svg"
-human_readable = "Salesforce"
+human_readable = "Salesforce Classic"
 
 [segment]
 config = "data/saas/config/segment_config.yml"
@@ -88,6 +94,12 @@ dataset = "data/saas/dataset/stripe_dataset.yml"
 icon = "data/saas/icon/stripe.svg"
 human_readable = "Stripe"
 
+[twilio_conversations]
+config = "data/saas/config/twilio_conversations_config.yml"
+dataset = "data/saas/dataset/twilio_conversations_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Twilio Conversations"
+
 [zendesk]
 config = "data/saas/config/zendesk_config.yml"
 dataset = "data/saas/dataset/zendesk_dataset.yml"
@@ -105,3 +117,15 @@ config = "data/saas/config/braze_config.yml"
 dataset = "data/saas/dataset/braze_dataset.yml"
 icon = "data/saas/icon/default.svg"
 human_readable = "Braze"
+
+[domo]
+config = "data/saas/config/domo_config.yml"
+dataset = "data/saas/dataset/domo_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Domo"
+
+[slack_enterprise]
+config = "data/saas/config/slack_enterprise_config.yml"
+dataset = "data/saas/dataset/slack_enterprise_dataset.yml"
+icon = "data/saas/icon/default.svg"
+human_readable = "Slack Enterprise"

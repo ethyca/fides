@@ -30,14 +30,14 @@ ssl = false
 ssl_cert_reqs = "required"
 
 [security]
-app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 cors_origins = [ "http://localhost", "http://localhost:8080", "http://localhost:3000", "http://localhost:3001",]
 encoding = "UTF-8"
+root_username = "root_user"
+root_password = "Testpassword1!"
+app_encryption_key = "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3"
 oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
-root_username = "root_user"
-root_password = "Testpassword1!"
 
 [execution]
 masking_strict = true
@@ -49,8 +49,3 @@ task_retry_delay = 1
 
 [admin_ui]
 enabled = true
-
-[notifications]
-send_request_completion_notification = true
-send_request_receipt_notification = true
-send_request_review_notification = true

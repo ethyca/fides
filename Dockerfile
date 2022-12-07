@@ -2,16 +2,16 @@
 ARG PYTHON_VERSION="3.10.7"
 
 
-
-##############
-## Frontend ##
-##############
+###################
+## Frontend Base ##
+###################
 FROM node:16 as frontend
 
-# Build the admin-io frontend
+# Build the admin-ui frontend
 WORKDIR /fides/clients/admin-ui
-COPY clients/admin-ui/ .
+COPY clients/admin-ui/package.json clients/admin-ui/package-lock.json ./
 RUN npm install
+COPY clients/admin-ui/ .
 RUN npm run export
 
 #########################
@@ -32,9 +32,6 @@ RUN apt-get update && \
 # Install Python Dependencies
 COPY dangerous-requirements.txt .
 RUN if [ $TARGETPLATFORM != linux/arm64 ] ; then pip install --user -U pip --no-cache-dir install -r dangerous-requirements.txt ; fi
-
-COPY optional-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
 RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
@@ -88,7 +85,6 @@ ENV PYTHONUNBUFFERED=TRUE
 
 # Reset the busted git cache
 RUN git rm --cached -r .
-RUN git reset --hard
 
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
@@ -108,9 +104,9 @@ RUN pip install -e . --no-deps
 #############################
 FROM backend as prod
 
+# Copy frontend build over
+COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+
 # Install without a symlink
 RUN python setup.py sdist
 RUN pip install dist/ethyca-fides-*.tar.gz
-
-# Copy frontend build over
-COPY --from=frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
