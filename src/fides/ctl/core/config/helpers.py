@@ -57,7 +57,8 @@ def get_config_from_file(
     option: str,
 ) -> Union[str, bool, int, None]:
     """
-    Return the value currently written to the config file for the specified `section.option`.
+    Return the value currently written to the config file for the
+    specified `section.option`.
     """
 
     try:
@@ -120,7 +121,7 @@ def create_config_file(
     """
     Creates the .fides/fides.toml file and initializes it, if it doesn't exist.
 
-    Returns the config_path if successful
+    Returns the config_path if successful.
     """
     # TODO: These important constants should live elsewhere
     fides_dir_name = ".fides"

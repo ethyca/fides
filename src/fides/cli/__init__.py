@@ -92,12 +92,13 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
-    ctx.obj["CONFIG"] = config
     create_config_file(config=config)
 
     # init also handles this workflow
     if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:
-        check_and_update_analytics_config(ctx, config_path)
+        config = check_and_update_analytics_config(
+            config=config, config_path=config_path
+        )
 
         # Analytics requires explicit opt-in
         if config.user.analytics_opt_out is False:
@@ -108,6 +109,9 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
                 product_name=APP + "-cli",
                 production_version=version(PACKAGE),
             )
+
+    # Setting the config context after all mutations
+    ctx.obj["CONFIG"] = config
 
 
 # Add all commands here before dynamically checking them in the CLI

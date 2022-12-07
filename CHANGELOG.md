@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Changed
 
+* The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
@@ -32,7 +33,6 @@ The types of changes are:
 * Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 * Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
-
 
 ### Changed
 
