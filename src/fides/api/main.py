@@ -15,7 +15,7 @@ from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_clie
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger as log
-from redis.exceptions import ResponseError
+from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
@@ -59,7 +59,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.logger import Pii, get_fides_log_record_factory
+from fides.api.ops.util.logger import get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
@@ -238,13 +238,15 @@ async def setup_server() -> None:
     finally:
         db.close()
 
-    log.info("Running Redis connection test...")
+    log.info("Running Cache connection test...")
 
     try:
         get_cache()
-    except (RedisConnectionError, ResponseError) as e:
-        log.error("Connection to cache failed: %s", Pii(str(e)))
+    except (RedisConnectionError, RedisError, ResponseError) as e:
+        log.error(f"Connection to cache failed: {str(e)}")
         return
+    else:
+        log.debug("Connection to cache succeeded")
 
     if not scheduler.running:
         scheduler.start()
