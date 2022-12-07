@@ -82,6 +82,9 @@ typings/
 # The consent script is a build artifact.
 public/fides-consent.js
 
+# Fix conflict with root .gitignore Python rule.
+!lib
+
 # Nuxt.js build / generate output
 .nuxt
 dist

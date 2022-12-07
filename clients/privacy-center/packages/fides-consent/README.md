@@ -27,7 +27,7 @@ In this example, `data_sharing` is a cookie key that has been [configured in the
 
 ## fides-consent.mjs & fides-consent.d.ts
 
-This package also exports its cookie utilities (`cookie.ts`) as a module the Privacy Center can import. This ensures the Privacy Center uses the exact same logic for reading & writing cookie data. This module is only used locally for convenience and is not published.
+This package also exports its library (`src/lib`) as a module the Privacy Center can import. This ensures the Privacy Center uses the exact same logic for reading & writing cookie data. This module is only used locally for convenience and is not published.
 
 Note that this module does _not_ define the `Fides.consent` global, as that is unnecessary when using modules.
 

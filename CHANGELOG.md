@@ -15,23 +15,49 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.2.0...main)
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.1.0...main)
+### Added
+
+* Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
+
+### Changed
+
+* Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+
+### Developer Experience
+
+* Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
+
+## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
 
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
-* Enabled the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
+* Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
+* Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
+* Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
+* Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
+* Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
+
+
+### Changed
+
+* The organization info form step is now skipped if the server already has organization info. [#1840](https://github.com/ethyca/fides/pull/1840)
+* Removed the description column from the classify systems page. [#1867](https://github.com/ethyca/fides/pull/1867)
+* Retrieve child results during fides connector execution [#1967](https://github.com/ethyca/fides/pull/1967)
 
 ### Fixed
 
 * Fix error in parent user creation seeding. [#1832](https://github.com/ethyca/fides/issues/1832)
+* Fix DSR error due to unfiltered empty identities [#1901](https://github.com/ethyca/fides/pull/1907)
 
 ### Docs
 
 * Remove documentation about no-longer used connection string override [#1824](https://github.com/ethyca/fides/pull/1824)
 * Fix typo in headings [#1824](https://github.com/ethyca/fides/pull/1824)
+* Update documentation to reflect configs necessary for mailgun, twilio_sms and twilio_email service types [#1846](https://github.com/ethyca/fides/pull/1846)
 
 ...
 
@@ -49,6 +75,7 @@ The types of changes are:
 * Privacy-Center-Cypress workflow for CI checks of the Privacy Center. [#1722](https://github.com/ethyca/fides/pull/1722)
 * Privacy Center `fides-consent.js` script for accessing consent on external pages. [Details](/clients/privacy-center/packages/fides-consent/README.md)
 * Erasure support for Twilio Conversations API [#1673](https://github.com/ethyca/fides/pull/1673)
+* Webserver port can now be configured via the CLI command [#1858](https://github.com/ethyca/fides/pull/1858)
 
 ### Changed
 

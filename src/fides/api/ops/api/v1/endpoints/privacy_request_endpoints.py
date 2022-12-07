@@ -42,6 +42,7 @@ from fides.api.ops.api.v1.scope_registry import (
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
@@ -56,6 +57,7 @@ from fides.api.ops.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
     REQUEST_PREVIEW,
@@ -84,6 +86,7 @@ from fides.api.ops.models.policy import (
     CurrentStep,
     Policy,
     PolicyPreWebhook,
+    Rule,
 )
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
@@ -129,6 +132,7 @@ from fides.api.ops.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.ops.task.filter_results import filter_data_categories
 from fides.api.ops.task.graph_task import EMPTY_REQUEST, collect_queries
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
@@ -1284,6 +1288,76 @@ def upload_manual_webhook_data(
         access_manual_webhook,
         privacy_request,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_TRANSFER])],
+    response_model=Dict[str, Optional[List[Row]]],
+)
+def privacy_request_data_transfer(
+    *,
+    privacy_request_id: str,
+    rule_key: str,
+    db: Session = Depends(deps.get_db),
+    cache: FidesopsRedis = Depends(deps.get_cache),
+) -> Dict[str, Optional[List[Row]]]:
+    """Transfer access request iinformation to the parent server."""
+    privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+
+    if not privacy_request:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request with id {privacy_request_id} found",
+        )
+
+    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
+    if not rule:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Rule key {rule_key} not found",
+        )
+
+    value_dict: Dict[str, Optional[List[Row]]] = cache.get_encoded_objects_by_prefix(
+        f"{privacy_request_id}__access_request"
+    )
+
+    if not value_dict:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No access request information found for privacy request id {privacy_request_id}",
+        )
+
+    access_result = {k.split("__")[-1]: v for k, v in value_dict.items()}
+    datasets = DatasetConfig.all(db=db)
+    if not datasets:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No datasets found for privacy request {privacy_request_id}",
+        )
+
+    dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+    if not dataset_graphs:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset graphs found for privacy request {privacy_request_id}",
+        )
+    dataset_graph = DatasetGraph(*dataset_graphs)
+    target_categories = {target.data_category for target in rule.targets}
+    filtered_results: Optional[Dict[str, Optional[List[Row]]]] = filter_data_categories(
+        access_result,  # type: ignore
+        target_categories,
+        dataset_graph.data_category_field_mapping,
+    )
+
+    if filtered_results is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No results found for privacy request {privacy_request_id}",
+        )
+
+    return filtered_results
 
 
 @router.get(

@@ -1,4 +1,4 @@
-import { Button, chakra, HStack, useToast } from "@fidesui/react";
+import { Button, chakra, Spacer, useToast } from "@fidesui/react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
@@ -75,12 +75,12 @@ const ApproveClassification = () => {
       classifyDataset.status === ClassificationStatus.COMPLETE
     )
   ) {
-    return null;
+    return <Spacer />;
   }
 
   return (
-    <HStack>
-      <chakra.p fontSize="sm" color="gray.600">
+    <>
+      <chakra.p flexGrow={1} textAlign="center" fontSize="sm" color="gray.600">
         <chakra.span fontWeight="bold">{fieldCount}</chakra.span>{" "}
         {fieldCount === 1 ? "field has" : "fields have"} been identified within
         this{" "}
@@ -98,7 +98,7 @@ const ApproveClassification = () => {
       >
         Approve dataset classification
       </Button>
-    </HStack>
+    </>
   );
 };
 

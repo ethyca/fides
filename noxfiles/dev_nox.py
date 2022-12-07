@@ -30,6 +30,17 @@ def dev(session: Session) -> None:
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
 
+    if "child" in session.posargs:
+        session.run(
+            "docker",
+            "compose",
+            "-f",
+            "docker-compose.child-env.yml",
+            "up",
+            "-d",
+            external=True,
+        )
+
     if "ui" in session.posargs:
         build(session, "admin_ui")
         session.run("docker", "compose", "up", "-d", "fides-ui", external=True)

@@ -11,8 +11,8 @@ const Landing = () => (
         <div className={css.content}>
             <div className={css.headingContent}>
                 <Image src={landingImage} width={1860} alt="" className={css.box} />
-                <h1>Welcome to Fides 2.0</h1>
-                <p className={css.subhead}>Let's run our first privacy request in under 5 minutes!</p>
+                <h1>Welcome to Fides!</h1>
+                <p className={css.subhead}>Let's run our first privacy request in under 5 minutes</p>
             </div>
             <main>
                 <h2>What's in the box?</h2>
