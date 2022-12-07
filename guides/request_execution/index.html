@@ -15,7 +15,7 @@
     
     
       
-        <title>Privacy Request Execution - Fides</title>
+        <title>Understanding Privacy Request Execution - Fides</title>
       
     
     
@@ -123,7 +123,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Privacy Request Execution
+              Understanding Privacy Request Execution
             
           </span>
         </div>
@@ -217,13 +217,15 @@ You're not viewing the latest version.
         
   
   
+    
+  
 
 
   
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link md-tabs__link--active">
         Fides
       </a>
     </li>
@@ -323,12 +325,14 @@ You're not viewing the latest version.
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
       
       
       
@@ -714,12 +718,14 @@ You're not viewing the latest version.
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" checked>
       
       
       
@@ -922,11 +928,175 @@ You're not viewing the latest version.
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../fidesops_workflow.md" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Understanding Privacy Request Execution
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Understanding Privacy Request Execution
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#privacy-request-submission" class="md-nav__link">
+    Privacy request submission
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy-request-execution_1" class="md-nav__link">
+    Privacy request execution
+  </a>
+  
+    <nav class="md-nav" aria-label="Privacy request execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#respond-to-manual-webhooks" class="md-nav__link">
+    Respond to manual webhooks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-pre-execution-webhooks" class="md-nav__link">
+    Run pre-execution webhooks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-request-automation" class="md-nav__link">
+    Access request automation
+  </a>
+  
+    <nav class="md-nav" aria-label="Access request automation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graph-building" class="md-nav__link">
+    Graph building
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graph-execution" class="md-nav__link">
+    Graph Execution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-result-retrieval" class="md-nav__link">
+    Final result retrieval
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upload-results" class="md-nav__link">
+    Upload results
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#erasure-request-automation" class="md-nav__link">
+    Erasure request automation
+  </a>
+  
+    <nav class="md-nav" aria-label="Erasure request automation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graph-building_1" class="md-nav__link">
+    Graph building
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graph-execution_1" class="md-nav__link">
+    Graph execution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#send-erasure-request-emails" class="md-nav__link">
+    Send erasure request emails
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-policy-post-execution-webhooks" class="md-nav__link">
+    Run policy post-execution webhooks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#send-email-notifications" class="md-nav__link">
+    Send email notifications
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-notes" class="md-nav__link">
+    Additional notes
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2196,6 +2366,59 @@ visiting a Collection in one Dataset to be able to find data on a Collection in 
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
+  
+    <nav
+      class="md-footer__inner md-grid"
+      aria-label="Footer"
+    >
+      <div class="nav-wrap">
+      <!-- Link to previous page -->
+      
+        
+        <a
+          href="../manual_webhooks/"
+          class="md-footer__link md-footer__link--prev"
+          aria-label="Previous: Configure Manual Webhooks"
+          rel="prev"
+        >
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Configure Manual Webhooks
+            </div>
+          </div>
+        </a>
+      
+
+      <!-- Link to next page -->
+      
+        
+        <a
+          href="../../saas_connectors/saas_connectors/"
+          class="md-footer__link md-footer__link--next"
+          aria-label="Next: Connect to SaaS Applications"
+          rel="next"
+        >
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Connect to SaaS Applications
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </div>
+    </nav>
   
 
   </div>
