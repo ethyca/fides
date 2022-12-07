@@ -150,7 +150,11 @@ async def verify_oauth_client(
 
     assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
     if not set(security_scopes.scopes).issubset(assigned_scopes):
-        logger.debug("Auth token missing required scopes.")
+        scopes_required = ",".join(security_scopes.scopes)
+        scopes_provided = ",".join(assigned_scopes)
+        logger.debug(
+            f"Auth token missing required scopes: {scopes_required}. Scopes provided: {scopes_provided}."
+        )
         raise AuthorizationError(detail="Not Authorized for this action")
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
