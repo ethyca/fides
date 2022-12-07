@@ -1,16 +1,18 @@
 import {
   Button,
+  CloseSolidIcon,
+  DownloadSolidIcon,
   Flex,
   Input,
   InputGroup,
   InputLeftAddon,
   InputLeftElement,
+  SearchLineIcon,
   Stack,
   Text,
   useToast,
 } from "@fidesui/react";
 import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
-import { CloseSolidIcon, DownloadSolidIcon, SearchLineIcon } from "common/Icon";
 import PIIToggle from "common/PIIToggle";
 import React, { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";

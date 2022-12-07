@@ -7,8 +7,13 @@
  *   * "Selected" children render expanded up until the child
  */
 
-import { Box, Checkbox, IconButton } from "@fidesui/react";
-import { ArrowDownLineIcon, ArrowUpLineIcon } from "common/Icon";
+import {
+  ArrowDownLineIcon,
+  ArrowUpLineIcon,
+  Box,
+  Checkbox,
+  IconButton,
+} from "@fidesui/react";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
 import { TreeNode } from "./types";

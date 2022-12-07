@@ -8,6 +8,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  MoreIcon,
   Portal,
   Tag,
   Td,
@@ -23,7 +24,6 @@ import React, { useRef, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 
-import { MoreIcon } from "../common/Icon";
 import PII from "../common/PII";
 import RequestStatusBadge from "../common/RequestStatusBadge";
 import ReprocessButton from "./buttons/ReprocessButton";

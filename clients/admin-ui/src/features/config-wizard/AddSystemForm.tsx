@@ -8,6 +8,7 @@ import {
   Heading,
   HStack,
   IconButton,
+  QuestionIcon,
   Stack,
   Text,
   Tooltip,
@@ -21,7 +22,6 @@ import {
   DataFlowScannerLogo,
   ManualSetupIcon,
   OktaLogoIcon,
-  QuestionIcon,
 } from "~/features/common/Icon";
 import { selectDataFlowScannerStatus } from "~/features/plus/plus.slice";
 import { ADD_SYSTEM_DESCRIPTION } from "~/features/system/constants";

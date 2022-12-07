@@ -2,6 +2,7 @@ import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useDisclosure } from "@chakra-ui/react";
 import {
   Box,
+  CloseSolidIcon,
   Divider,
   Drawer,
   DrawerBody,
@@ -12,7 +13,6 @@ import {
   IconButton,
   Text,
 } from "@fidesui/react";
-import { CloseSolidIcon } from "common/Icon";
 import { ExecutionLog } from "privacy-requests/types";
 import React, { useState } from "react";
 

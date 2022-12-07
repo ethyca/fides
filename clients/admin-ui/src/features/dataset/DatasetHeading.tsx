@@ -1,8 +1,13 @@
-import { Heading, HStack, Text, VStack } from "@fidesui/react";
+import {
+  Heading,
+  HStack,
+  StepperCircleCheckmarkIcon,
+  Text,
+  VStack,
+} from "@fidesui/react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
-import { StepperCircleCheckmarkIcon } from "~/features/common/Icon";
 import { selectActiveClassifyDataset } from "~/features/plus/plus.slice";
 import { ClassificationStatus } from "~/types/api";
 

@@ -1,5 +1,4 @@
-import { Box, Flex, Text } from "@fidesui/react";
-import { GreenCheckCircleIcon } from "common/Icon";
+import { Box, Flex, GreenCheckCircleIcon, Text } from "@fidesui/react";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 import React from "react";
 
