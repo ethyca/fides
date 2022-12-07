@@ -54,10 +54,8 @@ from fides.api.ops.schemas.connection_configuration import (
 )
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     BulkPatchConnectionConfigurationWithSecrets,
-    BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     ConnectionConfigurationWithSecretsResponse,
-    CreateConnectionConfiguration,
     CreateConnectionConfigurationWithSecrets,
     SystemType,
     TestStatus,
@@ -264,27 +262,28 @@ def patch_connections_with_secrets(
     CONNECTIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
-    response_model=BulkPutConnectionConfiguration,
+    response_model=BulkPatchConnectionConfigurationWithSecrets,
 )
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfiguration, max_items=50),  # type: ignore
-) -> BulkPutConnectionConfiguration:
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+) -> BulkPatchConnectionConfigurationWithSecrets:
     """
-    Given a list of connection config data elements, create or update corresponding ConnectionConfig objects
-    or report failure
+    Given a list of connection config data elements, optionally containing the secrets,
+    create or update corresponding ConnectionConfig objects or report failure
 
     If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
     Otherwise, a new ConnectionConfiguration will be created for you.
-
-    Note that ConnectionConfiguration.secrets are not updated through this endpoint.
     """
-    created_or_updated: List[ConnectionConfig] = []
+    created_or_updated: List[ConnectionConfigurationWithSecretsResponse] = []
     failed: List[BulkUpdateFailed] = []
     logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
 
     for config in configs:
+        if config.secrets:
+            connection_config = get_connection_config_or_error(db, config.key)
+            config.secrets = validate_secrets(db, config.secrets, connection_config)
         orig_data = config.dict().copy()
         try:
             connection_config = ConnectionConfig.create_or_update(
@@ -317,7 +316,7 @@ def patch_connections(
     # Check if possibly disabling a manual webhook here causes us to need to queue affected privacy requests
     requeue_requires_input_requests(db)
 
-    return BulkPutConnectionConfiguration(
+    return BulkPatchConnectionConfigurationWithSecrets(
         succeeded=created_or_updated,
         failed=failed,
     )
