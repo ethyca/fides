@@ -9,6 +9,7 @@ from fides.api.ops.email_templates.template_names import (
     EMAIL_ERASURE_REQUEST_FULFILLMENT,
     PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE,
     PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE,
+    PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE,
     PRIVACY_REQUEST_RECEIPT_TEMPLATE,
     PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE,
     PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE,
@@ -41,6 +42,8 @@ def get_email_template(  # pylint: disable=too-many-return-statements
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_ACCESS_TEMPLATE)
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return template_env.get_template(PRIVACY_REQUEST_COMPLETE_DELETION_TEMPLATE)
+    if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
+        return template_env.get_template(PRIVACY_REQUEST_ERROR_NOTIFICATION_TEMPLATE)
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
         return template_env.get_template(PRIVACY_REQUEST_REVIEW_DENY_TEMPLATE)
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
