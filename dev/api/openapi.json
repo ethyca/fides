@@ -7670,7 +7670,7 @@
           "Privacy Requests"
         ],
         "summary": "Create Privacy Request",
-        "description": "Given a list of privacy request data elements, create corresponding PrivacyRequest objects\nor report failure and execute them within the Fidesops system.\n\nYou cannot update privacy requests after they've been created.",
+        "description": "Given a list of privacy request data elements, create corresponding PrivacyRequest objects\nor report failure and execute them within the Fidesops system.\nYou cannot update privacy requests after they've been created.",
         "operationId": "create_privacy_request_api_v1_privacy_request_post",
         "requestBody": {
           "content": {
@@ -7717,7 +7717,7 @@
           "Privacy Requests"
         ],
         "summary": "Create Privacy Request Authenticated",
-        "description": "Given a list of privacy request data elements, create corresponding PrivacyRequest objects\nor report failure and execute them within the Fidesops system.\n\nYou cannot update privacy requests after they've been created.\n\nThis route requires authentication instead of using verification codes.",
+        "description": "Given a list of privacy request data elements, create corresponding PrivacyRequest objects\nor report failure and execute them within the Fidesops system.\nYou cannot update privacy requests after they've been created.\nThis route requires authentication instead of using verification codes.",
         "operationId": "create_privacy_request_authenticated_api_v1_privacy_request_authenticated_post",
         "requestBody": {
           "content": {
@@ -7833,6 +7833,82 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "privacy-request:read"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/notification": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Privacy Request Notification Info",
+        "description": "Retrieve privacy request notification email addresses and number of failures to trigger notifications.",
+        "operationId": "get_privacy_request_notification_info_api_v1_privacy_request_notification_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestNotificationInfo"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-notifications:read"
+            ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Create Or Update Privacy Request Notifications",
+        "description": "Create or update list of email addresses and number of failures for privacy request notifications.",
+        "operationId": "create_or_update_privacy_request_notifications_api_v1_privacy_request_notification_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyRequestNotificationInfo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestNotificationInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-notifications:create_or_update"
             ]
           }
         ]
@@ -14132,6 +14208,28 @@
           }
         },
         "description": "A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."
+      },
+      "PrivacyRequestNotificationInfo": {
+        "title": "PrivacyRequestNotificationInfo",
+        "required": [
+          "email_addresses",
+          "notify_after_failures"
+        ],
+        "type": "object",
+        "properties": {
+          "email_addresses": {
+            "title": "Email Addresses",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notify_after_failures": {
+            "title": "Notify After Failures",
+            "type": "integer"
+          }
+        },
+        "description": "A base template for all other Fidesops Schemas to inherit from."
       },
       "PrivacyRequestResponse": {
         "title": "PrivacyRequestResponse",
