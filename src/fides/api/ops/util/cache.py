@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
 from redis import Redis
-from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 from redis.client import Script  # type: ignore
+from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 
 from fides.api.ops import common_exceptions
 from fides.api.ops.schemas.masking.masking_secrets import SecretType
