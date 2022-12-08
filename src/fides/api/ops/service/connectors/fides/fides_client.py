@@ -216,5 +216,6 @@ class FidesClient:
                 privacy_request_id,
                 response.json(),
             )
+            return {}
 
         return response.json()
