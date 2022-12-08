@@ -195,7 +195,7 @@ const RequestFilters: React.FC = () => {
       <Button
         variant="ghost"
         flexShrink={0}
-        rightIcon={<CloseSolidIcon />}
+        rightIcon={<CloseSolidIcon width="17px" />}
         size="sm"
         onClick={handleClearAllFilters}
       >

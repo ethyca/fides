@@ -90,7 +90,7 @@ const EditDrawer = ({
           onClick={onClose}
           data-testid="close-drawer-btn"
         >
-          <CloseSolidIcon />
+          <CloseSolidIcon width="17px" />
         </Button>
       </Box>
       {header}

@@ -56,7 +56,7 @@ const ConfigWizardWalkthrough = () => {
               ml={6}
               onClick={handleCancelSetup}
             >
-              <CloseSolidIcon /> Cancel setup
+              <CloseSolidIcon width="17px" /> Cancel setup
             </Button>
           </Box>
           <Divider orientation="horizontal" />
