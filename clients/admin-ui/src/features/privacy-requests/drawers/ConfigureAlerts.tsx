@@ -49,9 +49,13 @@ import {
 const DEFAULT_MIN_ERROR_COUNT = 1;
 
 const validationSchema = Yup.object().shape({
-  emails: Yup.array(Yup.string())
-    .min(1, "Must enter at least one valid email")
-    .label("Email"),
+  emails: Yup.array(Yup.string()).when(["notify"], {
+    is: true,
+    then: Yup.array(Yup.string())
+      .min(1, "Must enter at least one valid email")
+      .label("Email"),
+  }),
+  notify: Yup.boolean(),
   minErrorCount: Yup.number().required(),
 });
 
@@ -154,6 +158,7 @@ const ConfigureAlerts = () => {
                         render={(fieldArrayProps) => (
                           <EmailChipList
                             {...fieldArrayProps}
+                            isRequired={props.values.notify}
                             ref={firstField}
                           />
                         )}
@@ -183,6 +188,11 @@ const ConfigureAlerts = () => {
                                   "minErrorCount",
                                   DEFAULT_MIN_ERROR_COUNT
                                 );
+                                if (!event.target.checked) {
+                                  setTimeout(() => {
+                                    props.setFieldTouched("emails", false);
+                                  }, 0);
+                                }
                               }}
                             />
                           </FormControl>
@@ -217,7 +227,7 @@ const ConfigureAlerts = () => {
                             <NumberInput
                               allowMouseWheel
                               color="gray.700"
-                              defaultValue={props.values.minErrorCount}
+                              defaultValue={props.values.minErrorCount || DEFAULT_MIN_ERROR_COUNT}
                               min={DEFAULT_MIN_ERROR_COUNT}
                               ml="8px"
                               mr="8px"

@@ -310,6 +310,15 @@ export const privacyRequestApi = createApi({
         url: `privacy-request/notification`,
       }),
       providesTags: ["Notification"],
+      transformResponse: (response: PrivacyRequestNotificationInfo) => {
+        const cloneResponse = { ...response };
+        if (cloneResponse.email_addresses?.length > 0) {
+          cloneResponse.email_addresses = cloneResponse.email_addresses.filter(
+            (item) => item !== ""
+          );
+        }
+        return cloneResponse;
+      },
     }),
     getUploadedManualWebhookData: build.query<
       any,
