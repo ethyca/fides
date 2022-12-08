@@ -18,6 +18,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
 
+### Changed
+
+* Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
 
 ## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
 
