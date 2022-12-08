@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator, validator
 
 from fides.api.ops.common_exceptions import ValidationError
@@ -15,7 +16,6 @@ from fides.api.ops.graph.config import (
 from fides.api.ops.schemas.base_class import BaseSchema
 from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class ParamValue(BaseModel):
@@ -294,12 +294,12 @@ class SaaSConfigBase(BaseModel):
     Used to store base info for a saas config
     """
 
-    fides_key: FidesOpsKey
+    fides_key: FidesKey
     name: str
     type: str
 
     @property
-    def fides_key_prop(self) -> FidesOpsKey:
+    def fides_key_prop(self) -> FidesKey:
         return self.fides_key
 
     @property

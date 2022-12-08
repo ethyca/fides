@@ -37,7 +37,7 @@ def validate_data_categories_against_db(dataset: Dataset, db: Session) -> None:
             return _valid_data_categories(v, defined_data_categories)
 
     class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
-        fields: Optional[List["FieldDataCategoryValidation"]] = []
+        fields: Optional[List["FieldDataCategoryValidation"]]
 
     FieldDataCategoryValidation.update_forward_refs()
 
@@ -47,7 +47,7 @@ def validate_data_categories_against_db(dataset: Dataset, db: Session) -> None:
         fields: List[FieldDataCategoryValidation] = []
 
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
-        collections: List[CollectionDataCategoryValidation] = []
+        collections: List[CollectionDataCategoryValidation]
 
     DatasetDataCategoryValidation(**dataset.dict())
 

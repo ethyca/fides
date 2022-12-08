@@ -2,11 +2,11 @@ from enum import Enum
 from re import compile as regex
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from fideslang.validation import FidesKey
 from pydantic import BaseModel, Extra, root_validator
 
 from fides.api.ops.models.privacy_request import CheckpointActionRequired
 from fides.api.ops.schemas import Msg
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 
 class MessagingMethod(Enum):
@@ -196,7 +196,7 @@ class MessagingConfigRequest(BaseModel):
     """Messaging Config Request Schema"""
 
     name: str
-    key: Optional[FidesOpsKey]
+    key: Optional[FidesKey]
     service_type: MessagingServiceType
     details: Optional[MessagingServiceDetailsMailgun]
 
@@ -221,7 +221,7 @@ class MessagingConfigResponse(BaseModel):
     """Messaging Config Response Schema"""
 
     name: str
-    key: FidesOpsKey
+    key: FidesKey
     service_type: MessagingServiceType
     details: Optional[Dict[MessagingServiceDetails, Any]]
 

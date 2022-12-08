@@ -8,6 +8,7 @@ from fastapi.params import Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.validation import FidesKey
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import ValidationError, conlist
 from sqlalchemy import or_
@@ -65,7 +66,6 @@ from fides.api.ops.schemas.connection_configuration.connection_secrets import (
 from fides.api.ops.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -80,7 +80,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_connection_config_or_error(
-    db: Session, connection_key: FidesOpsKey
+    db: Session, connection_key: FidesKey
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -189,7 +189,7 @@ def get_connections(
     response_model=ConnectionConfigurationResponse,
 )
 def get_connection_detail(
-    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     """Returns connection configuration with matching key."""
     return get_connection_config_or_error(db, connection_key)
@@ -264,7 +264,7 @@ def patch_connections(
     status_code=HTTP_204_NO_CONTENT,
 )
 def delete_connection(
-    connection_key: FidesOpsKey, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
 ) -> None:
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
@@ -358,7 +358,7 @@ def connection_status(
     response_model=TestStatusMessage,
 )
 async def put_connection_config_secrets(
-    connection_key: FidesOpsKey,
+    connection_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     unvalidated_secrets: connection_secrets_schemas,
@@ -393,7 +393,7 @@ async def put_connection_config_secrets(
     response_model=TestStatusMessage,
 )
 async def test_connection_config_secrets(
-    connection_key: FidesOpsKey,
+    connection_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
 ) -> TestStatusMessage:

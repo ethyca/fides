@@ -8,6 +8,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import Dataset
+from fideslang.validation import FidesKey
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
@@ -54,7 +55,6 @@ from fides.api.ops.schemas.dataset import (
     ValidateDatasetResponse,
     validate_data_categories_against_db,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ops.util.saas_util import merge_datasets
@@ -67,7 +67,7 @@ router = APIRouter(tags=["Datasets"], prefix=V1_URL_PREFIX)
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_connection_config(
-    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -369,7 +369,7 @@ def get_datasets(
     response_model=Dataset,
 )
 def get_dataset(
-    fides_key: FidesOpsKey,
+    fides_key: FidesKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> Dataset:
@@ -399,7 +399,7 @@ def get_dataset(
     status_code=HTTP_204_NO_CONTENT,
 )
 def delete_dataset(
-    fides_key: FidesOpsKey,
+    fides_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),

@@ -1,6 +1,7 @@
 import random
 from typing import Iterable
 
+from fideslang.validation import FidesKey
 from fideslib.db.base_class import FidesBase
 from sqlalchemy.engine import Engine
 
@@ -25,7 +26,7 @@ class MockResources(TaskResources):
     def __init__(self, request: PrivacyRequest):
         super().__init__(request, Policy(), [])
 
-    def get_connector(self, key: FidesOpsKey) -> Any:
+    def get_connector(self, key: FidesKey) -> Any:
         return MockSqlConnector()
 
 

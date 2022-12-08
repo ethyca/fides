@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, Set
 
 from fideslang.models import Dataset as FidesDataset
 from fideslang.models import DatasetField, FidesDatasetReference
+from fideslang.validation import FidesKey
 from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -21,7 +22,6 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
 
 logger = logging.getLogger(__name__)
@@ -179,7 +179,7 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: FidesDataset, connection_key: FidesOpsKey
+    dataset: FidesDataset, connection_key: FidesKey
 ) -> Dataset:
     """
     Converts the given Fides dataset dataset into the concrete graph

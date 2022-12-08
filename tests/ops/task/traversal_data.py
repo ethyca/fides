@@ -1,5 +1,7 @@
 from typing import Optional, Tuple
 
+from fideslang.validation import FidesKey
+
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
@@ -19,7 +21,6 @@ from fides.api.ops.graph.data_type import (
 from fides.api.ops.graph.graph import DatasetGraph
 from fides.api.ops.graph.traversal import Traversal
 from fides.api.ops.models.connectionconfig import ConnectionConfig
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value
@@ -28,7 +29,7 @@ int_converter = DataType.integer.value
 
 
 def integration_db_mongo_graph(
-    db_name: str, connection_key: FidesOpsKey
+    db_name: str, connection_key: FidesKey
 ) -> Tuple[Dataset, DatasetGraph]:
     dataset = integration_db_dataset(db_name, connection_key)
     for coll in dataset.collections:
@@ -567,7 +568,7 @@ def postgres_and_manual_nodes(postgres_db_name: str, manual_db_name: str):
     return DatasetGraph(postgres_db, manual_db)
 
 
-def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset:
+def integration_db_dataset(db_name: str, connection_key: FidesKey) -> Dataset:
     """A traversal that maps tables in the postgresql test database"""
     customers = Collection(
         name="customer",
@@ -640,7 +641,7 @@ def integration_db_dataset(db_name: str, connection_key: FidesOpsKey) -> Dataset
 
 
 def integration_db_graph(
-    db_name: str, connection_key: Optional[FidesOpsKey] = None
+    db_name: str, connection_key: Optional[FidesKey] = None
 ) -> DatasetGraph:
     """A traversal that maps tables in the postgresql test database"""
     if not connection_key:
