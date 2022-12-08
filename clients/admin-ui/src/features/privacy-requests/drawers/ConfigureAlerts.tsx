@@ -227,7 +227,10 @@ const ConfigureAlerts = () => {
                             <NumberInput
                               allowMouseWheel
                               color="gray.700"
-                              defaultValue={props.values.minErrorCount || DEFAULT_MIN_ERROR_COUNT}
+                              defaultValue={
+                                props.values.minErrorCount ||
+                                DEFAULT_MIN_ERROR_COUNT
+                              }
                               min={DEFAULT_MIN_ERROR_COUNT}
                               ml="8px"
                               mr="8px"
