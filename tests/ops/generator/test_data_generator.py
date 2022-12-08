@@ -44,11 +44,11 @@ f = """dataset:
 """
 
 
-def parse_yaml() -> Dataset:
+def parse_yaml() -> GraphDataset:
     """Test that 'after' parameters are properly read"""
     d = yaml.safe_load(f)
     dataset = d.get("dataset")[0]
-    d: Dataset = Dataset.parse_obj(dataset)
+    d: GraphDataset = GraphDataset.parse_obj(dataset)
     return convert_dataset_to_graph(d, "ignore")
 
 

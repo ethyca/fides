@@ -491,7 +491,7 @@ class Collection(BaseModel):
         arbitrary_types_allowed = True
 
 
-class Dataset(BaseModel):
+class GraphDataset(BaseModel):
     """Master collection of collections that are accessed in a common way"""
 
     name: str

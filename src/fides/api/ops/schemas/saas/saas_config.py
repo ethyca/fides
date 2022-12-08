@@ -8,9 +8,9 @@ from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     Field,
     FieldAddress,
+    GraphDataset,
     ScalarField,
 )
 from fides.api.ops.schemas.base_class import BaseSchema
@@ -343,7 +343,7 @@ class SaaSConfig(SaaSConfigBase):
         """Returns a map of endpoint names mapped to Endpoints"""
         return {endpoint.name: endpoint for endpoint in self.endpoints}
 
-    def get_graph(self, secrets: Dict[str, Any]) -> Dataset:
+    def get_graph(self, secrets: Dict[str, Any]) -> GraphDataset:
         """Converts endpoints to a Dataset with collections and field references"""
         collections = []
         for endpoint in self.endpoints:
@@ -388,7 +388,7 @@ class SaaSConfig(SaaSConfigBase):
                     )
                 )
 
-        return Dataset(
+        return GraphDataset(
             name=super().name_prop,
             collections=collections,
             connection_key=super().fides_key_prop,

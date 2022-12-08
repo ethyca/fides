@@ -14,10 +14,10 @@ from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     Field,
     FieldAddress,
     FieldPath,
+    GraphDataset,
     generate_field,
 )
 from fides.api.ops.graph.data_type import parse_data_type_string
@@ -70,7 +70,7 @@ class DatasetConfig(Base):
 
         return dataset
 
-    def get_graph(self) -> Dataset:
+    def get_graph(self) -> GraphDataset:
         """
         Return the saved dataset JSON as a dataset graph for query execution.
 
@@ -180,7 +180,7 @@ def to_graph_field(
 
 def convert_dataset_to_graph(
     dataset: FidesDataset, connection_key: FidesKey
-) -> Dataset:
+) -> GraphDataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
     representation needed for query execution
@@ -216,7 +216,7 @@ def convert_dataset_to_graph(
         len(graph_collections),
     )
 
-    return Dataset(
+    return GraphDataset(
         name=dataset_name,
         collections=graph_collections,
         connection_key=connection_key,
@@ -241,7 +241,7 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
         )
-    dataset: Dataset = convert_dataset_to_graph(
+    dataset: GraphDataset = convert_dataset_to_graph(
         FidesDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")

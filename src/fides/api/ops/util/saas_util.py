@@ -13,7 +13,12 @@ from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.ops.common_exceptions import FidesopsException
-from fides.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
+from fides.api.ops.graph.config import (
+    Collection,
+    CollectionAddress,
+    Field,
+    GraphDataset,
+)
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
 
@@ -111,7 +116,7 @@ def get_collection_after(
     return collection.after
 
 
-def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
+def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
     """
     Merges all Collections and Fields from the config_dataset into the dataset.
     In the event of a collection/field name collision, the target field
@@ -135,7 +140,7 @@ def merge_datasets(dataset: Dataset, config_dataset: Dataset) -> Dataset:
             )
         )
 
-    return Dataset(
+    return GraphDataset(
         name=dataset.name,
         collections=collections,
         connection_key=dataset.connection_key,

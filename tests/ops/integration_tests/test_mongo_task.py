@@ -8,7 +8,12 @@ import pytest
 from bson import ObjectId
 from fideslang.models import Dataset as FideslangDataset
 
-from fides.api.ops.graph.config import Collection, Dataset, FieldAddress, ScalarField
+from fides.api.ops.graph.config import (
+    Collection,
+    FieldAddress,
+    GraphDataset,
+    ScalarField,
+)
 from fides.api.ops.graph.data_type import (
     IntTypeConverter,
     ObjectIdTypeConverter,
@@ -378,7 +383,7 @@ async def test_composite_key_erasure(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="mongo_test",
         collections=[customer, composite_pk_test],
         connection_key=integration_mongodb_config.key,
@@ -473,7 +478,7 @@ async def test_access_erasure_type_conversion(
         ],
     )
 
-    dataset = Dataset(
+    dataset = GraphDataset(
         name="mongo_test",
         collections=[employee, type_link],
         connection_key=integration_mongodb_config.key,
