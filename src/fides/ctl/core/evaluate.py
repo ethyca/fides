@@ -273,7 +273,7 @@ def evaluate_dataset_reference(
     dataset: Dataset,
 ) -> List[Violation]:
     """
-    Evaluates the contraints of a given rule and dataset that was referenced
+    Evaluates the constraints of a given rule and dataset that was referenced
     from a given privacy declaration
     """
     evaluation_violation_list = []

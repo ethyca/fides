@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Set, Union
 
+from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from pydantic import BaseModel, Extra, root_validator, validator
 
 from fides.api.ops.common_exceptions import ValidationError
@@ -16,7 +17,6 @@ from fides.api.ops.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
-from fideslang.models import FidesDatasetReference, FidesCollectionKey
 
 class ParamValue(BaseModel):
     """
@@ -212,7 +212,7 @@ class SaaSRequestMap(BaseModel):
 
 
 class Endpoint(BaseModel):
-    """A collection of read/update/delete requests which corresponds to a FidesopsDataset collection (by name)"""
+    """A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"""
 
     name: str
     requests: SaaSRequestMap

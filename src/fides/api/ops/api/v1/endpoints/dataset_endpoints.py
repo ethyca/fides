@@ -7,6 +7,8 @@ from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fideslang.models import Dataset
+from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -16,6 +18,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fides.api.ops.api import deps
@@ -49,8 +52,8 @@ from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
+    validate_data_categories_against_db,
 )
-from fideslang import Dataset
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
@@ -76,6 +79,20 @@ def _get_connection_config(
     return connection_config
 
 
+def validate_data_categories(dataset: Dataset, db: Session) -> None:
+    """Validate data categories on a given Dataset
+
+    As a separate method because we want to be able to match against data_categories in the
+    database instead of a static list.
+    """
+    try:
+        validate_data_categories_against_db(dataset, db)
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+        )
+
+
 @router.put(
     DATASET_VALIDATE,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
@@ -84,6 +101,7 @@ def _get_connection_config(
 )
 def validate_dataset(
     dataset: Dataset,
+    db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> ValidateDatasetResponse:
     """
@@ -101,6 +119,7 @@ def validate_dataset(
     Returns a 200 OK for all valid datasets, and a traversal_details object with
     information about the traversal (or traversal errors).
     """
+    validate_data_categories(dataset, db)
 
     try:
         # Attempt to generate a traversal for this dataset by providing an empty
@@ -173,6 +192,7 @@ def patch_datasets(
         )
 
     for dataset in datasets:
+        validate_data_categories(dataset, db)
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
@@ -220,6 +240,7 @@ async def patch_yaml_datasets(
     failed: List[BulkUpdateFailed] = []
     if isinstance(datasets, list):
         for dataset in datasets:  # type: ignore
+            validate_data_categories(Dataset(**dataset), db)
             data: dict = {
                 "connection_config_id": connection_config.id,
                 "fides_key": dataset["fides_key"],

@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from fideslang import Dataset as FideslangDataset
 from sqlalchemy import text
 
 from fides.api.ops.graph.config import (
@@ -22,7 +23,6 @@ from fides.api.ops.models.connectionconfig import ConnectionConfig
 from fides.api.ops.models.datasetconfig import convert_dataset_to_graph
 from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.service.connectors import get_connector
 from fides.api.ops.task import graph_task
 from fides.api.ops.task.filter_results import filter_data_categories
@@ -743,7 +743,7 @@ async def test_filter_on_data_categories(
         },
     )
 
-    dataset = FidesopsDataset(**example_datasets[0])
+    dataset = FideslangDataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
@@ -942,7 +942,7 @@ class TestRetrievingData:
 
     @pytest.fixture
     def traversal_node(self, example_datasets, integration_postgres_config):
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = FideslangDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         node = Node(graph, graph.collections[1])  # customer collection
         traversal_node = TraversalNode(node)
@@ -1066,7 +1066,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = FideslangDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 
@@ -1119,7 +1119,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FidesopsDataset(**example_datasets[0])
+        dataset = FideslangDataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 

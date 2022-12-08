@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Dict, Optional, Set
 
+from fideslang.models import Dataset as FidesDataset
+from fideslang.models import DatasetField, FidesDatasetReference
 from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -19,9 +21,6 @@ from fides.api.ops.graph.config import (
 )
 from fides.api.ops.graph.data_type import parse_data_type_string
 from fides.api.ops.models.connectionconfig import ConnectionConfig, ConnectionType
-
-from fideslang import  FidesDatasetReference, DatasetField
-from fideslang import Dataset as FidesDataset
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
 
@@ -112,7 +111,7 @@ def to_graph_field(
     is_pk = False
     is_array = False
     references = []
-    meta_section = field.fidesops_meta
+    meta_section = field.fides_meta
     sub_fields = []
     length = None
     data_type_name = None
@@ -189,8 +188,8 @@ def convert_dataset_to_graph(
 
     dataset_name = dataset.fides_key
     after = set()
-    if dataset.fidesops_meta and dataset.fidesops_meta.after:
-        after = set(dataset.fidesops_meta.after)
+    if dataset.fides_meta and dataset.fides_meta.after:
+        after = set(dataset.fides_meta.after)
     logger.debug("Parsing dataset '%s' into graph representation", dataset_name)
     graph_collections = []
     for collection in dataset.collections:
@@ -202,9 +201,9 @@ def convert_dataset_to_graph(
             len(graph_fields),
         )
         collection_after: Set[CollectionAddress] = set()
-        if collection.fidesops_meta and collection.fidesops_meta.after:
+        if collection.fides_meta and collection.fides_meta.after:
             collection_after = {
-                CollectionAddress(*s.split(".")) for s in collection.fidesops_meta.after
+                CollectionAddress(*s.split(".")) for s in collection.fides_meta.after
             }
 
         graph_collection = Collection(

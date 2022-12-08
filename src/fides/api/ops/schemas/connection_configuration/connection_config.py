@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Union
 
+from fideslang.models import Dataset
 from pydantic import BaseModel, Extra
 
 from fides.api.ops.models.connectionconfig import AccessLevel, ConnectionType
@@ -9,7 +10,6 @@ from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.ops.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.ops.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-from fideslang import Dataset
 
 
 class CreateConnectionConfiguration(BaseModel):
