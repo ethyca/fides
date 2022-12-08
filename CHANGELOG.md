@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Changed
 
+* Update connection test endpoint to be effectively non-blocking [#2000](https://github.com/ethyca/fides/pull/2000)
 * Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
 
 ## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
