@@ -11,7 +11,7 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fidesops_meta:
+            fides_meta:
               primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
