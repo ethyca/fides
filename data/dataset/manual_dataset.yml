@@ -35,6 +35,6 @@ dataset:
               primary_key: true
           - name: email
             data_categories: [user.contact.email]
-            fidesops_meta:
+            fides_meta:
               identity: email
               data_type: string
