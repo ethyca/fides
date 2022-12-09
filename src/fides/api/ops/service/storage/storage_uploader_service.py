@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
-from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import (

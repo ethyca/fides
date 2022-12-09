@@ -87,7 +87,7 @@ def setup_db():
 @pytest.fixture(scope="session")
 def db() -> Generator:
     """Return a connection to the test DB"""
-    # Create the test DB enginge
+    # Create the test DB engine
     assert CONFIG.test_mode
     engine = get_db_engine(
         database_uri=CONFIG.database.sqlalchemy_test_database_uri,

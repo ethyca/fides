@@ -357,7 +357,7 @@ def connection_status(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
     response_model=TestStatusMessage,
 )
-async def put_connection_config_secrets(
+def put_connection_config_secrets(
     connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
@@ -392,7 +392,7 @@ async def put_connection_config_secrets(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
     response_model=TestStatusMessage,
 )
-async def test_connection_config_secrets(
+def test_connection_config_secrets(
     connection_key: FidesOpsKey,
     *,
     db: Session = Depends(deps.get_db),
