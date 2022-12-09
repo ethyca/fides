@@ -18,6 +18,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
 
+
+### Docs
+* Updated the readme to use new new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
+### Deprecated
+* The documentation site hosted in the `/docs` directory has been deprecated. All documentation updates will be hosted at the new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
 ### Fixed
 
 * Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
