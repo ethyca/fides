@@ -35,6 +35,7 @@ The types of changes are:
 
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 * `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
+* Remove several fidesops schemas for DSR's in favor of updated Fideslang schemas [#2009](https://github.com/ethyca/fides/pull/2009)
 
 ### Developer Experience
 
