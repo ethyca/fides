@@ -187,9 +187,15 @@ class FidesClient:
         """
         Return privacy request object that tracks its status
         """
-        log.info(
-            f"Retrieving request status for privacy request {privacy_request_id if privacy_request_id else ''} on remote fides {self.uri}..."
-        )
+        if privacy_request_id:
+            log.info(
+                f"Retrieving request status for privacy request {privacy_request_id if privacy_request_id else ''} on remote fides {self.uri}..."
+            )
+        else:
+            log.info(
+                f"Retrieving request status for all privacy requests on remote fides {self.uri}..."
+            )
+
         request: PreparedRequest = self.authenticated_request(
             method="GET",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
@@ -204,9 +210,14 @@ class FidesClient:
             )
             response.raise_for_status()
 
-        log.info(
-            f"Retrieved request status for privacy request {privacy_request_id if privacy_request_id else ''} on remote fides {self.uri}"
-        )
+        if privacy_request_id:
+            log.info(
+                f"Retrieved request status for privacy request {privacy_request_id if privacy_request_id else ''} on remote fides {self.uri}"
+            )
+        else:
+            log.info(
+                f"Retrieved request status for all privacy requests on remote fides {self.uri}"
+            )
         return response.json()["items"]
 
     def retrieve_request_results(
