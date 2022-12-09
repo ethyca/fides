@@ -1708,6 +1708,4 @@ def _process_privacy_request_restart(
         from_step=failed_step.value,
     )
 
-    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
-
     return privacy_request
