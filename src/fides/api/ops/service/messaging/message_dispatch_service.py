@@ -86,47 +86,6 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
     return None
 
 
-def check_and_dispatch_error_notifications(db: Session) -> None:
-    privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
-    if not privacy_request_notifications:
-        return None
-
-    unsent_errors = PrivacyRequestError.filter(
-        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
-    ).all()
-    if not unsent_errors:
-        return None
-
-    email_config = CONFIG.notifications.notification_service_type in (
-        MessagingServiceType.MAILGUN.value,
-        MessagingServiceType.TWILIO_EMAIL.value,
-    )
-
-    if (
-        email_config
-        and len(unsent_errors) >= privacy_request_notifications[0].notify_after_failures
-    ):
-        for email in privacy_request_notifications[0].email.split(", "):
-            dispatch_message_task.apply_async(
-                queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
-                        action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificaitonBodyParams(
-                            unsent_errors=len(unsent_errors)
-                        ),
-                    ).dict(),
-                    "service_type": CONFIG.notifications.notification_service_type,
-                    "to_identity": {"email": email},
-                },
-            )
-
-        for error in unsent_errors:
-            error.update(db=db, data={"message_sent": True})
-
-    return None
-
-
 @celery_app.task(base=DatabaseTask, bind=True)
 def dispatch_message_task(
     self: DatabaseTask,
