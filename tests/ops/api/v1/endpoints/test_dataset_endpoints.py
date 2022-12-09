@@ -318,8 +318,8 @@ class TestValidateDataset:
         # Remove all the "reference" annotations; this will make traversal impossible
         for collection in invalid_dataset["collections"]:
             for field in collection["fields"]:
-                if field.get("fidesops_meta"):
-                    field["fidesops_meta"]["references"] = None
+                if field.get("fides_meta"):
+                    field["fides_meta"]["references"] = None
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
