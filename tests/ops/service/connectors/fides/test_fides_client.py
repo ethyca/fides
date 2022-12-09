@@ -355,3 +355,20 @@ class TestFidesClientIntegration:
         # or environment-specific issues,
         # let's not assume anything about the status here.
         assert statuses[0]["status"] is not None
+
+    def test_retrieve_request_results_nonexistent_request(
+        self, authenticated_fides_client: FidesClient, policy
+    ):
+        """
+        Tests that retrieving requests results for a nonexistent request
+        properly returns an empty dict.
+
+        At this point, a nonexistent request behaves the same as a
+        legitimate request that does not output data. So we use this to
+        ensure that these requests are handled well by the client,
+        and simply return no data.
+        """
+        result = authenticated_fides_client.retrieve_request_results(
+            "some_nonexistent_request", "some_nonexistent_rule"
+        )
+        assert result == {}
