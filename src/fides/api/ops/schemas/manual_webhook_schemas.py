@@ -73,7 +73,9 @@ class AccessManualWebhooks(BaseSchema):
 
         for field in value:
             if not field.dsr_package_label:
-                field.dsr_package_label = to_snake_case(field.pii_field)
+                field.dsr_package_label = DSRLabelFieldType(
+                    to_snake_case(field.pii_field)
+                )
 
         unique_dsr_package_labels: Set[Optional[str]] = {
             field.dsr_package_label for field in value
@@ -100,7 +102,9 @@ class AccessManualWebhooks(BaseSchema):
 
         for field in value:
             if not field.dsr_package_label:
-                field.dsr_package_label = to_snake_case(field.pii_field)
+                field.dsr_package_label = DSRLabelFieldType(
+                    to_snake_case(field.pii_field)
+                )
 
         unique_dsr_package_labels: Set[Optional[str]] = {
             field.dsr_package_label for field in value
