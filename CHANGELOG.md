@@ -18,6 +18,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
 
+* Access and Erasure support for Friendbuy API [#2019](https://github.com/ethyca/fides/pull/2019)
+
 ### Fixed
 
 * Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
