@@ -10,7 +10,11 @@ from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
+from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
+    EMAIL_MESSAGING_SERVICES,
+    MessagingConfig,
+    get_messaging_method,
+)
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     PrivacyRequestError,
@@ -38,6 +42,48 @@ from fides.ctl.core.config import get_config
 CONFIG = get_config()
 
 logger = logging.getLogger(__name__)
+
+EMAIL_JOIN_STRING = ", "
+
+
+def check_and_dispatch_error_notifications(db: Session) -> None:
+    privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
+    if not privacy_request_notifications:
+        return None
+
+    unsent_errors = PrivacyRequestError.filter(
+        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
+    ).all()
+    if not unsent_errors:
+        return None
+
+    email_config = (
+        CONFIG.notifications.notification_service_type in EMAIL_MESSAGING_SERVICES
+    )
+
+    if (
+        email_config
+        and len(unsent_errors) >= privacy_request_notifications[0].notify_after_failures
+    ):
+        for email in privacy_request_notifications[0].email.split(EMAIL_JOIN_STRING):
+            dispatch_message_task.apply_async(
+                queue=MESSAGING_QUEUE_NAME,
+                kwargs={
+                    "message_meta": FidesopsMessage(
+                        action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
+                        body_params=ErrorNotificaitonBodyParams(
+                            unsent_errors=len(unsent_errors)
+                        ),
+                    ).dict(),
+                    "service_type": CONFIG.notifications.notification_service_type,
+                    "to_identity": {"email": email},
+                },
+            )
+
+        for error in unsent_errors:
+            error.update(db=db, data={"message_sent": True})
+
+    return None
 
 
 def check_and_dispatch_error_notifications(db: Session) -> None:

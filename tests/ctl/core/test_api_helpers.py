@@ -87,7 +87,7 @@ class TestGetServerResource:
         """
         resource_type = created_resources[0]
         resource_key = created_resources[1][0]
-        result: FidesModel = _api_helpers.get_server_resource(
+        result = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
@@ -103,13 +103,13 @@ class TestGetServerResource:
         Tests that a missing resource returns None
         """
         resource_key = str(uuid.uuid4())
-        result: Optional[FidesModel] = _api_helpers.get_server_resource(
+        result = _api_helpers.get_server_resource(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             resource_key=resource_key,
             headers=test_config.user.request_headers,
         )
-        assert result is None
+        assert not result
 
 
 @pytest.mark.integration
@@ -155,13 +155,13 @@ class TestGetServerResources:
 class TestListServerResources:
     def test_list_server_resources_passing(self, test_config: FidesConfig) -> None:
         resource_type = "data_category"
-        result: List[FidesModel] = _api_helpers.list_server_resources(
+        result = _api_helpers.list_server_resources(
             url=test_config.cli.server_url,
             resource_type=resource_type,
             headers=test_config.user.request_headers,
             exclude_keys=[],
         )
-        assert len(result) > 1
+        assert result
 
     def test_list_server_resources_none(self, test_config: FidesConfig) -> None:
         resource_type = "system"

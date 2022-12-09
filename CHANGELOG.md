@@ -18,6 +18,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
 
+### Fixed
+
+* Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
+* Update connection test endpoint to be effectively non-blocking [#2000](https://github.com/ethyca/fides/pull/2000)
+* Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
+
 
 ## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
 
@@ -28,6 +34,7 @@ The types of changes are:
 ### Changed
 
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+* `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
 
 ### Developer Experience
 
@@ -50,7 +57,6 @@ The types of changes are:
 * Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
 * Classification UI now polls for updates to classifications [#1908](https://github.com/ethyca/fides/pull/1908)
-
 
 ### Changed
 
