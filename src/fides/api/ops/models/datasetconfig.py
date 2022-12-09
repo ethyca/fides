@@ -1,8 +1,7 @@
 import logging
 from typing import Any, Dict, Optional, Set
 
-from fideslang.models import Dataset as FidesDataset
-from fideslang.models import DatasetField, FidesDatasetReference
+from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
 from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
@@ -78,7 +77,7 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            FidesDataset(**self.dataset), self.connection_config.key  # type: ignore
+            Dataset(**self.dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -179,7 +178,7 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: FidesDataset, connection_key: FidesKey
+    dataset: Dataset, connection_key: FidesKey
 ) -> GraphDataset:
     """
     Converts the given Fides dataset dataset into the concrete graph
@@ -242,7 +241,7 @@ def validate_dataset_reference(
             f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
         )
     dataset: GraphDataset = convert_dataset_to_graph(
-        FidesDataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        Dataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

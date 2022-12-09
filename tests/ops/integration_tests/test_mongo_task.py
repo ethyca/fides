@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from bson import ObjectId
-from fideslang.models import Dataset as FideslangDataset
+from fideslang.models import Dataset
 
 from fides.api.ops.graph.config import (
     Collection,
@@ -526,9 +526,9 @@ async def test_object_querying_mongo(
 
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FideslangDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FideslangDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -673,9 +673,9 @@ async def test_return_all_elements_config_access_request(
     """
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FideslangDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FideslangDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -798,9 +798,9 @@ async def test_array_querying_mongo(
 ):
     postgres_config = copy.copy(integration_postgres_config)
 
-    dataset_postgres = FideslangDataset(**example_datasets[0])
+    dataset_postgres = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset_postgres, integration_postgres_config.key)
-    dataset_mongo = FideslangDataset(**example_datasets[1])
+    dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(
         dataset_mongo, integration_mongodb_config.key
     )
@@ -1093,7 +1093,7 @@ class TestRetrievingDataMongo:
 
     @pytest.fixture
     def traversal_node(self, example_datasets, integration_mongodb_config):
-        dataset = FideslangDataset(**example_datasets[1])
+        dataset = Dataset(**example_datasets[1])
         graph = convert_dataset_to_graph(dataset, integration_mongodb_config.key)
         customer_details_collection = None
         for collection in graph.collections:

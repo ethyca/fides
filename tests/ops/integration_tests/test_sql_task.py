@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from fideslang import Dataset as FideslangDataset
+from fideslang import Dataset
 from sqlalchemy import text
 
 from fides.api.ops.graph.config import (
@@ -743,7 +743,7 @@ async def test_filter_on_data_categories(
         },
     )
 
-    dataset = FideslangDataset(**example_datasets[0])
+    dataset = Dataset(**example_datasets[0])
     graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
     dataset_graph = DatasetGraph(*[graph])
 
@@ -942,7 +942,7 @@ class TestRetrievingData:
 
     @pytest.fixture
     def traversal_node(self, example_datasets, integration_postgres_config):
-        dataset = FideslangDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         node = Node(graph, graph.collections[1])  # customer collection
         traversal_node = TraversalNode(node)
@@ -1066,7 +1066,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FideslangDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 
@@ -1119,7 +1119,7 @@ class TestRetryIntegration:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
 
-        dataset = FideslangDataset(**example_datasets[0])
+        dataset = Dataset(**example_datasets[0])
         graph = convert_dataset_to_graph(dataset, integration_postgres_config.key)
         dataset_graph = DatasetGraph(*[graph])
 
