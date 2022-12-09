@@ -10,14 +10,17 @@ from twilio.rest import Client
 
 from fides.api.ops.common_exceptions import MessageDispatchException
 from fides.api.ops.email_templates import get_email_template
-from fides.api.ops.models.messaging import MessagingConfig, get_messaging_method
+from fides.api.ops.models.messaging import (  # type: ignore[attr-defined]
+    EMAIL_MESSAGING_SERVICES,
+    MessagingConfig,
+    get_messaging_method,
+)
 from fides.api.ops.models.privacy_request import (
     CheckpointActionRequired,
     PrivacyRequestError,
     PrivacyRequestNotifications,
 )
 from fides.api.ops.schemas.messaging.messaging import (
-    EMAIL_MESSAGING_SERVICES,
     AccessRequestCompleteBodyParams,
     EmailForActionType,
     ErrorNotificaitonBodyParams,
