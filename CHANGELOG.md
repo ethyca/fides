@@ -18,6 +18,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
 
+### Fixes
+
+* Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
+
 
 ## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
 
