@@ -26,20 +26,21 @@ REQUIRED_DOCKER_VERSION = "20.10.17"
 nox.options.sessions = []
 nox.options.reuse_existing_virtualenvs = True
 
+
 @nox.session()
 def usage(session: nox.Session) -> None:
-    """
-    Get the docstring for a Nox Session.
-    """
+    """Prints the full docstring of a nox session provided via a pos arg."""
+
     if not session.posargs:
         session.error("Please provide a session name")
 
     command = session.posargs[0]
 
-    if not command in globals() and not hasattr(command, "python"):
+    if not command in globals():
         session.error("Sorry, this isn't a valid nox session")
 
     session.log(globals()[command].__doc__)
+
 
 def check_for_env_file() -> None:
     """Create a .env file if none exists."""
