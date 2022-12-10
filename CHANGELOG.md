@@ -15,18 +15,38 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.2.0...main)
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
+
+### Fixed
+
+* Fixed mypy and pylint errors [#2013](https://github.com/ethyca/fides/pull/2013)
+* Update connection test endpoint to be effectively non-blocking [#2000](https://github.com/ethyca/fides/pull/2000)
+* Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
+
+
+## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
+
+### Added
+
+* Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
 
 ### Changed
 
 * The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
 * The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
+* `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
+
+### Developer Experience
+
+* Remove duplicate fastapi-caching and pin version. [#1765](https://github.com/ethyca/fides/pull/1765)
 
 ## [2.2.0](https://github.com/ethyca/fides/compare/2.1.0...2.2.0)
 
 ### Added
 
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * Add authenticated privacy request route. [#1819](https://github.com/ethyca/fides/pull/1819)
 * Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)

@@ -32,6 +32,9 @@ from fides.api.ops.schemas.drp_privacy_request import (
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
+from fides.api.ops.service.messaging.message_dispatch_service import (
+    check_and_dispatch_error_notifications,
+)
 from fides.api.ops.service.privacy_request.request_runner_service import (
     queue_privacy_request,
 )
@@ -109,6 +112,8 @@ async def create_drp_privacy_request(
             db=db,
             identity=mapped_identity,
         )
+
+        check_and_dispatch_error_notifications(db=db)
 
         logger.info(
             "Decrypting identity for DRP privacy request %s", privacy_request.id
