@@ -4519,7 +4519,10 @@ class TestCreatePrivacyRequestErrorNotification:
     ):
         PrivacyRequestNotifications.create(
             db=db,
-            data={"email": "test@email.com, test2@email.com", "notify_after_failures": 10},
+            data={
+                "email": "test@email.com, test2@email.com",
+                "notify_after_failures": 10,
+            },
         )
         auth_header = generate_auth_header(
             scopes=[PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE]
