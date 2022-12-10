@@ -496,7 +496,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data: BaseSchema = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_INPUT__{self.id}__{manual_webhook.id}",
@@ -629,12 +629,12 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
         )
 
         headers = {}
-        is_pre_webhook = webhook.__class__ == PolicyPreWebhook
+        is_pre_webhook = isinstance(webhook, PolicyPreWebhook)
         response_expected = webhook.direction == WebhookDirection.two_way
         if is_pre_webhook and response_expected:
             headers = {
                 "reply-to": f"/privacy-request/{self.id}/resume",
-                "reply-to-token": generate_request_callback_jwe(webhook),
+                "reply-to-token": generate_request_callback_jwe(webhook),  # type: ignore[arg-type]
             }
 
         logger.info(

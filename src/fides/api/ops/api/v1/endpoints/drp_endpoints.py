@@ -79,7 +79,7 @@ async def create_drp_privacy_request(
     policy: Optional[Policy] = Policy.get_by(
         db=db,
         field="drp_action",
-        value=data.exercise[0],
+        value=data.exercise[0],  # type: ignore[arg-type]
     )
 
     if not policy:

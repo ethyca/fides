@@ -296,7 +296,7 @@ def instantiate_connection_from_template(
 
     if DatasetConfig.filter(
         db=db,
-        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
     ).count():
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

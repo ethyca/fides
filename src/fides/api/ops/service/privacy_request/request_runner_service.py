@@ -146,7 +146,7 @@ def run_webhooks_and_report_status(
 
     current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
 
-    for webhook in webhooks.order_by(webhook_cls.order): # type: ignore[union-attr]
+    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
             privacy_request.trigger_policy_webhook(webhook)
         except PrivacyRequestPaused:
@@ -202,7 +202,7 @@ def upload_access_results(  # pylint: disable=R0912
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
             )
-        target_categories: Set[str] = {target.data_category for target in rule.targets} # type: ignore[attr-defined]
+        target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
         filtered_results: Dict[
             str, List[Dict[str, Optional[Any]]]
         ] = filter_data_categories(

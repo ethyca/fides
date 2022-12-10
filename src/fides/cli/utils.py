@@ -72,7 +72,7 @@ def check_server_health(server_url: str) -> requests.Response:
 def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None:
     """Runs a health check and a version check against the server."""
 
-    health_response = check_server_health(server_url)
+    health_response = check_server_health(str(server_url) or "")
     if health_response.status_code == 429:
         # The server is ratelimiting us
         echo_red("Server ratelimit reached. Please wait one minute and try again.")
@@ -170,7 +170,7 @@ def check_and_update_analytics_config(
         if config.user.analytics_opt_out is False:
             server_url = config.cli.server_url
             try:
-                check_server_health(server_url)
+                check_server_health(str(server_url) or "")
                 should_attempt_registration = not is_user_registered(config)
             except SystemExit:
                 should_attempt_registration = False

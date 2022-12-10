@@ -58,7 +58,7 @@ async def get_current_user(
             created_at=datetime.utcnow(),
         )
 
-    return client.user
+    return client.user  # type: ignore[attr-defined]
 
 
 def is_callback_token_expired(issued_at: datetime | None) -> bool:

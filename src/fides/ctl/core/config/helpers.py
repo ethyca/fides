@@ -155,7 +155,7 @@ def create_config_file(
     # create a fides.toml config file if it doesn't exist
     if not os.path.isfile(config_path):
         with open(config_path, "w", encoding="utf-8") as config_file:
-            config_dict = config.dict(include=included_values)
+            config_dict = config.dict(include=included_values)  # type: ignore[arg-type]
             toml.dump(config_dict, config_file)
         echo(f"Created a fides config file: {config_path}")
     else:

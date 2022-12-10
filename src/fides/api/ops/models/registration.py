@@ -33,7 +33,7 @@ class UserRegistration(Base):
     opt_in = Column(Boolean, nullable=False, default=False)
 
     @classmethod
-    def create_or_update(
+    def create_or_update(  # type: ignore[override]
         cls, db: Session, *, data: Dict[str, Any]
     ) -> Tuple[FidesBase, bool]:
         """
@@ -52,7 +52,7 @@ class UserRegistration(Base):
 
         return (cls.create(db=db, data=data), created_or_updated)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> Tuple[FidesBase, bool]:
+    def update(self, db: Session, data: Dict[str, Any]) -> Tuple[FidesBase, bool]:  # type: ignore[override]
         """
         Updates a registration with the keys provided in `data`.
         """

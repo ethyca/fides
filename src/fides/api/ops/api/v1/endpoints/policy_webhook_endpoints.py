@@ -60,7 +60,7 @@ def get_policy_pre_execution_webhooks(
         policy.key,
         params,
     )
-    return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)
+    return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)  # type: ignore[attr-defined]
 
 
 @router.get(
