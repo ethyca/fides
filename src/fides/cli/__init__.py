@@ -96,6 +96,7 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     ctx.obj["CONFIG"] = config
+    # This should only get called by `fides init`
     create_config_file(ctx)
 
     # init also handles this workflow
