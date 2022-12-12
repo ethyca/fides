@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
+from fides.api.ctl.sql_models import Dataset
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
@@ -40,6 +41,7 @@ class DatasetConfig(Base):
     dataset = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=False
     )
+    ctl_dataset_id = Column(String, ForeignKey(Dataset.id), index=True, nullable=False)
 
     connection_config = relationship(
         ConnectionConfig,
