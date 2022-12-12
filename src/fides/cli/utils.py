@@ -59,16 +59,17 @@ FIDES_ASCII_ART = """
 """
 
 
-def check_server_health(server_url: str) -> requests.Response:
+def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:
     """Hit the '/health' endpoint and verify the server is available."""
 
     healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
-        echo_red(
-            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
-        )
+        if verbose:
+            echo_red(
+                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+            )
         raise SystemExit(1)
     return health_response
 
@@ -227,7 +228,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         if ctx.obj["CONFIG"].user.analytics_opt_out is False:
             server_url = ctx.obj["CONFIG"].cli.server_url
             try:
-                check_server_health(server_url)
+                check_server_health(server_url, verbose=False)
                 should_attempt_registration = not is_user_registered(ctx)
             except SystemExit:
                 should_attempt_registration = False
