@@ -197,18 +197,18 @@ def register_user(ctx: click.Context, email: str, organization: str) -> None:
 
 def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> None:
     """
-    Ensure the analytics-related config is present. If not,
-    prompt the user to opt-in to analytics and/or update the
-    config file with their preferences.
+    Verify that the analytics opt-out value is populated. If not,
+    prompt the user to opt-in to analytics and update the config
+    file with their preferences if needed.
+
+    NOTE: This doesn't handle the case where we've collected consent for this
+    CLI instance, but are connected to a server for the first time that is
+    unregistered. This *should* be something we can detect and then
+    "re-prompt" the user for their email/org information, but right
+    now a lot of our test automation runs headless and this kind of
+    prompt can't be skipped otherwise.
     """
 
-    # Prompt for user prompt if we've not collected explicit opt-out or opt-in
-    #
-    # NOTE: this doesn't handle the case where we've collected consent for this CLI,
-    # but are connected to a server for the first time that is unregistered.
-    # This *should* be something we can detect and then "re-prompt" the user for
-    # their email/org information, but right now a lot of our test automation
-    # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
     if ctx.obj["CONFIG"].user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
