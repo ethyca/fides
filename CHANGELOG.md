@@ -17,6 +17,7 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
+
 ## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
 
 ### Docs
