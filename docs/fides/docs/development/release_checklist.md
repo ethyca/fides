@@ -11,7 +11,8 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 - [ ] Quickstart verified working and up-to-date
 - [ ] New tables/columns added to [database diagram](https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docs/fides/docs/development/update_erd_diagram.md)
 - [ ] `nox -s test_env` works (verify the admin UI, privacy center, CLI and webserver)
-- [ ] `fides deploy up` works (verify the admin UI, privacy center, CLI and webserver)
+- [ ] `nox -s "build(sample)"` works on the release branch, creating the sample images (this is also prereq for `fides deploy up`)
+- [ ] `fides deploy up --no-pull` works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
 ```
 mkdir ~/fides-2-1-0-test
 cd ~/fides-2-1-0-test
