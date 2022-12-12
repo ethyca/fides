@@ -29,7 +29,7 @@ nox.options.reuse_existing_virtualenvs = True
 
 @nox.session()
 def usage(session: nox.Session) -> None:
-    """Prints the full docstring of a nox session provided via a pos arg."""
+    """Prints the documentation for a nox session provided: `nox -s usage -- <session>`."""
 
     if not session.posargs:
         session.error("Please provide a session name")
