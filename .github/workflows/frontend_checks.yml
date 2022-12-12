@@ -65,7 +65,7 @@ jobs:
           npm install
 
       - name: Cypress E2E tests
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v5
         with:
           working-directory: clients/admin-ui
           install: false
@@ -131,7 +131,7 @@ jobs:
           npm install
 
       - name: Cypress E2E tests
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v5
         with:
           working-directory: clients/privacy-center
           install: false
