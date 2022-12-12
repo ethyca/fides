@@ -28,7 +28,7 @@ from fideslog.sdk.python.utils import (
 )
 from requests import get, put
 
-from fides import __name__ as app_name
+import fides
 from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.ctl.connectors.models import (
     AWSConfig,
@@ -47,6 +47,8 @@ from fides.ctl.core.config.credentials_settings import (
 from fides.ctl.core.config.utils import get_config_from_file, update_config_file
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
+APP = fides.__name__
+PACKAGE = "ethyca-fides"
 FIDES_ASCII_ART = """
 ███████╗██╗██████╗ ███████╗███████╗
 ██╔════╝██║██╔══██╗██╔════╝██╔════╝
@@ -277,8 +279,8 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
             developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
             os=system(),
-            product_name=app_name + "-cli",
-            production_version=version(app_name),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
         )
 
         event = AnalyticsEvent(
