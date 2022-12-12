@@ -1,8 +1,4 @@
-import {
-  stubHomePage,
-  stubSystemCrud,
-  stubTaxonomyEntities,
-} from "cypress/support/stubs";
+import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
 describe("System management page", () => {
   beforeEach(() => {
@@ -13,7 +9,6 @@ describe("System management page", () => {
   });
 
   it("Can navigate to the system management page", () => {
-    stubHomePage();
     cy.visit("/");
     cy.getByTestId("nav-link-Systems").click();
     cy.wait("@getSystems");

@@ -5,7 +5,7 @@ import { Form, Formik } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import { useAppDispatch } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
   CustomCreatableMultiSelect,
   CustomMultiSelect,
@@ -21,8 +21,8 @@ import {
   transformSystemToFormValues,
 } from "~/features/system/form";
 import {
+  selectAllSystems,
   useCreateSystemMutation,
-  useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
@@ -67,7 +67,7 @@ const DescribeSystemStep = ({
   const [updateSystem] = useUpdateSystemMutation();
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
-  const { data: systems } = useGetAllSystemsQuery();
+  const systems = useAppSelector(selectAllSystems);
   const systemOptions = systems
     ? systems.map((s) => ({ label: s.name ?? s.fides_key, value: s.fides_key }))
     : [];
