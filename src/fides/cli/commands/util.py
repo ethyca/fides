@@ -42,7 +42,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     click.echo(FIDES_ASCII_ART)
     click.echo("Initializing fides...")
-    print_divider()
 
     # create the config file as needed
     config_path = create_config_file(
@@ -52,7 +51,6 @@ def init(ctx: click.Context, fides_directory_location: str) -> None:
 
     # request explicit consent for analytics collection
     check_and_update_analytics_config(config=config, config_path=config_path)
-    print_divider()
 
     send_init_analytics(config.user.analytics_opt_out, config_path, executed_at)
     echo_green("fides initialization complete.")

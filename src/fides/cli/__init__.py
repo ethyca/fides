@@ -42,7 +42,6 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
-WITHOUT_ANALYTICS_COMMANDS = ["init", "deploy", "webserver"]
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -92,23 +91,16 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
-    create_config_file(config=config)
-
-    # init also handles this workflow
-    if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:
-        config = check_and_update_analytics_config(
-            config=config, config_path=config_path
+    # Analytics requires explicit opt-in
+    no_analytics = config.user.analytics_opt_out
+    if not no_analytics:
+        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+            client_id=config.cli.analytics_id,
+            developer_mode=config.test_mode,
+            os=system(),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
         )
-
-        # Analytics requires explicit opt-in
-        if config.user.analytics_opt_out is False:
-            ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-                client_id=config.cli.analytics_id,
-                developer_mode=config.test_mode,
-                os=system(),
-                product_name=APP + "-cli",
-                production_version=version(PACKAGE),
-            )
 
     # Setting the config context after all mutations
     ctx.obj["CONFIG"] = config
