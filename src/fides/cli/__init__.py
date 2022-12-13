@@ -9,7 +9,6 @@ import fides
 from fides.cli.utils import (
     check_and_update_analytics_config,
     check_server,
-    create_config_file,
 )
 from fides.ctl.core.config import get_config
 
@@ -45,7 +44,6 @@ ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 SERVER_CHECK_COMMAND_NAMES = [
     command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
 ]
-WITHOUT_ANALYTICS_COMMANDS = ["init", "deploy", "webserver"]
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -96,21 +94,17 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     ctx.obj["CONFIG"] = config
-    create_config_file(ctx)
 
-    # init also handles this workflow
-    if ctx.invoked_subcommand not in WITHOUT_ANALYTICS_COMMANDS:
-        check_and_update_analytics_config(ctx, config_path)
-
-        # Analytics requires explicit opt-in
-        if config.user.analytics_opt_out is False:
-            ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
-                client_id=config.cli.analytics_id,
-                developer_mode=config.test_mode,
-                os=system(),
-                product_name=APP + "-cli",
-                production_version=version(PACKAGE),
-            )
+    # Analytics requires explicit opt-in
+    no_analytics = config.user.analytics_opt_out
+    if not no_analytics:
+        ctx.meta["ANALYTICS_CLIENT"] = AnalyticsClient(
+            client_id=config.cli.analytics_id,
+            developer_mode=config.test_mode,
+            os=system(),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
+        )
 
 
 # Add all commands here before dynamically checking them in the CLI

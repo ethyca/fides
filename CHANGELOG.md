@@ -15,8 +15,17 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
+## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
+
+### Docs
+
+* Updated the readme to use new new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
+### Deprecated
+
+* The documentation site hosted in the `/docs` directory has been deprecated. All documentation updates will be hosted at the new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
 
 ### Fixed
 
@@ -24,12 +33,12 @@ The types of changes are:
 * Update connection test endpoint to be effectively non-blocking [#2000](https://github.com/ethyca/fides/pull/2000)
 * Update Fides connector to better handle children with no access results [#2012](https://github.com/ethyca/fides/pull/2012)
 
-
 ## [2.2.1](https://github.com/ethyca/fides/compare/2.2.0...2.2.1)
 
 ### Added
 
 * Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
+* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
 ### Changed
 

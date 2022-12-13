@@ -50,8 +50,8 @@ If your browser does not open automatically, you should navigate to <http://loca
 
 The project contains:
 
-* The Fides [Admin UI](https://ethyca.github.io/fides/ui/overview/) for managing privacy requests
-* The Fides [Privacy Center](https://ethyca.github.io/fides/ui/privacy_center/) for submitting requests
+* The Fides Admin UI for managing privacy requests
+* The Fides [Privacy Center](https://docs.ethyca.com/fides/dsr_quickstart/privacy_center) for submitting requests
 * The sample "Cookie House" eCommerce site for testing
 * A DSR Directory on your computer to view results (`./fides_uploads`)
 
@@ -65,17 +65,17 @@ Use username `fidestest` and password `Apassword1!` to login, approve the reques
 
 ### Next Steps
 
-Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.github.io/fides/dsr_quickstart/basic_setup/), discover [data mapping](https://ethyca.github.io/fides/guides/generate_datamaps/), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://docs.ethyca.com/fides/dsr_quickstart/overview), discover [data mapping](https://docs.ethyca.com/fides/data_mapping/overview), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
 ## :book: Learn More
 
-The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
 
 ### Documentation
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-* Documentation: <https://ethyca.github.io/fides/>
+* Documentation: <https://docs.ethyca.com>
 * Website: www.ethyca.com/fides
 
 ### Support
@@ -88,9 +88,9 @@ Join the conversation on:
 
 ### Contributing
 
-We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.github.io/fides/development/overview/) to opening issues for bugs, new features, and security or experience enhancements.
+We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://docs.ethyca.com/fides/community/overview) to opening issues for bugs, new features, and security or experience enhancements.
 
-Read about the [Fides community](https://ethyca.github.io/fides/community/hints_tips/) or dive into the [contributor guides](https://ethyca.github.io/fides/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.github.io/fides/community/code_of_conduct/).
+Read about the [Fides community](https://docs.ethyca.com/fides/community/hints_tips) or dive into the [contributor guides](https://docs.ethyca.com/fides/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
 
 ## :balance_scale: License
 

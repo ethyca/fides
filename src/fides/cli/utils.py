@@ -28,7 +28,7 @@ from fideslog.sdk.python.utils import (
 )
 from requests import get, put
 
-from fides import __name__ as app_name
+import fides
 from fides.api.ops.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 from fides.ctl.connectors.models import (
     AWSConfig,
@@ -47,6 +47,8 @@ from fides.ctl.core.config.credentials_settings import (
 from fides.ctl.core.config.utils import get_config_from_file, update_config_file
 from fides.ctl.core.utils import check_response, echo_green, echo_red
 
+APP = fides.__name__
+PACKAGE = "ethyca-fides"
 FIDES_ASCII_ART = """
 ███████╗██╗██████╗ ███████╗███████╗
 ██╔════╝██║██╔══██╗██╔════╝██╔════╝
@@ -57,16 +59,17 @@ FIDES_ASCII_ART = """
 """
 
 
-def check_server_health(server_url: str) -> requests.Response:
+def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:
     """Hit the '/health' endpoint and verify the server is available."""
 
     healthcheck_url = server_url + "/health"
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
-        echo_red(
-            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
-        )
+        if verbose:
+            echo_red(
+                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}."
+            )
         raise SystemExit(1)
     return health_response
 
@@ -197,18 +200,18 @@ def register_user(ctx: click.Context, email: str, organization: str) -> None:
 
 def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> None:
     """
-    Ensure the analytics-related config is present. If not,
-    prompt the user to opt-in to analytics and/or update the
-    config file with their preferences.
+    Verify that the analytics opt-out value is populated. If not,
+    prompt the user to opt-in to analytics and update the config
+    file with their preferences if needed.
+
+    NOTE: This doesn't handle the case where we've collected consent for this
+    CLI instance, but are connected to a server for the first time that is
+    unregistered. This *should* be something we can detect and then
+    "re-prompt" the user for their email/org information, but right
+    now a lot of our test automation runs headless and this kind of
+    prompt can't be skipped otherwise.
     """
 
-    # Prompt for user prompt if we've not collected explicit opt-out or opt-in
-    #
-    # NOTE: this doesn't handle the case where we've collected consent for this CLI,
-    # but are connected to a server for the first time that is unregistered.
-    # This *should* be something we can detect and then "re-prompt" the user for
-    # their email/org information, but right now a lot of our test automation
-    # runs headless and this kind of prompt can't be skipped otherwsie
     config_updates: Dict[str, Dict] = {}
     if ctx.obj["CONFIG"].user.analytics_opt_out is None:
         click.echo(OPT_OUT_COPY)
@@ -225,7 +228,7 @@ def check_and_update_analytics_config(ctx: click.Context, config_path: str) -> N
         if ctx.obj["CONFIG"].user.analytics_opt_out is False:
             server_url = ctx.obj["CONFIG"].cli.server_url
             try:
-                check_server_health(server_url)
+                check_server_health(server_url, verbose=False)
                 should_attempt_registration = not is_user_registered(ctx)
             except SystemExit:
                 should_attempt_registration = False
@@ -277,8 +280,8 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
             client_id=analytics_id or generate_client_id(FIDESCTL_CLI),
             developer_mode=bool(getenv("FIDES_TEST_MODE") == "True"),
             os=system(),
-            product_name=app_name + "-cli",
-            production_version=version(app_name),
+            product_name=APP + "-cli",
+            production_version=version(PACKAGE),
         )
 
         event = AnalyticsEvent(
