@@ -15,8 +15,16 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.2.1...main)
+
+## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
+
+### Docs
+* Updated the readme to use new new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
+
+### Deprecated
+* The documentation site hosted in the `/docs` directory has been deprecated. All documentation updates will be hosted at the new [docs site](http://docs.ethyca.com) [#2020](https://github.com/ethyca/fides/pull/2020)
 
 ### Fixed
 
