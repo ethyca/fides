@@ -177,7 +177,7 @@ def get_privacy_request_or_error(
     status_code=HTTP_200_OK,
     response_model=BulkPostPrivacyRequests,
 )
-async def create_privacy_request(
+def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
@@ -196,7 +196,7 @@ async def create_privacy_request(
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
     response_model=BulkPostPrivacyRequests,
 )
-async def create_privacy_request_authenticated(
+def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
     data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
@@ -793,7 +793,7 @@ def get_request_preview_queries(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
-async def resume_privacy_request(
+def resume_privacy_request(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -850,7 +850,7 @@ def validate_manual_input(
                 )
 
 
-async def resume_privacy_request_with_manual_input(
+def resume_privacy_request_with_manual_input(
     privacy_request_id: str,
     db: Session,
     expected_paused_step: CurrentStep,
@@ -950,7 +950,7 @@ async def resume_privacy_request_with_manual_input(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-async def resume_with_manual_input(
+def resume_with_manual_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -960,7 +960,7 @@ async def resume_with_manual_input(
 
     If there's no manual data to submit, pass in an empty list to resume the privacy request.
     """
-    return await resume_privacy_request_with_manual_input(
+    return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
         expected_paused_step=CurrentStep.access,
@@ -976,7 +976,7 @@ async def resume_with_manual_input(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-async def resume_with_erasure_confirmation(
+def resume_with_erasure_confirmation(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -987,7 +987,7 @@ async def resume_with_erasure_confirmation(
 
     If no rows were masked, pass in a 0 to resume the privacy request.
     """
-    return await resume_privacy_request_with_manual_input(
+    return resume_privacy_request_with_manual_input(
         privacy_request_id=privacy_request_id,
         db=db,
         expected_paused_step=CurrentStep.erasure,
@@ -1003,7 +1003,7 @@ async def resume_with_erasure_confirmation(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-async def bulk_restart_privacy_request_from_failure(
+def bulk_restart_privacy_request_from_failure(
     privacy_request_ids: List[str],
     *,
     db: Session = Depends(deps.get_db),
@@ -1065,7 +1065,7 @@ async def bulk_restart_privacy_request_from_failure(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-async def restart_privacy_request_from_failure(
+def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -1179,7 +1179,7 @@ def _send_privacy_request_review_message_to_user(
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestResponse,
 )
-async def verify_identification_code(
+def verify_identification_code(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -1505,7 +1505,7 @@ def view_uploaded_manual_webhook_data(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
     ],
 )
-async def resume_privacy_request_from_requires_input(
+def resume_privacy_request_from_requires_input(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
@@ -1706,7 +1706,5 @@ def _process_privacy_request_restart(
         privacy_request_id=privacy_request.id,
         from_step=failed_step.value,
     )
-
-    privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
     return privacy_request

@@ -292,6 +292,9 @@ async def run_privacy_request(
 
     with self.session as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+
+        privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
+
         if privacy_request.status == PrivacyRequestStatus.canceled:
             logger.info(
                 "Terminating privacy request {}: request canceled.", privacy_request.id

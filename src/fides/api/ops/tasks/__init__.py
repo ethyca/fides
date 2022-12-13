@@ -58,6 +58,7 @@ def _create_celery(config_path: str = CONFIG.execution.celery_config_path) -> Ce
             "fides.api.ops.tasks",
             "fides.api.ops.tasks.scheduled",
             "fides.api.ops.service.privacy_request",
+            "fides.api.ops.service.privacy_request.request_runner_service",
         ]
     )
     return app
