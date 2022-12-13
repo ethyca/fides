@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
+### Changed
+* Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
+
 
 ## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
 
