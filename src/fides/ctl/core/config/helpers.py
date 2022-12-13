@@ -1,4 +1,4 @@
-"""This module contains logic related to loading/manipulatin/writing the config."""
+"""This module contains logic related to loading/manipulation/writing the config."""
 import logging
 import os
 from os import environ, getenv
@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def load_file(file_names: Union[List[Path], List[str]]) -> str:
-    """Load a file from the first matching location.
+    """
+    Load a file from the first matching location.
 
     In order, will check:
     - A path set at ENV variable FIDES__CONFIG_PATH
@@ -61,13 +62,7 @@ def get_config_from_file(
     specified `section.option`.
     """
 
-    try:
-        config_path = config_path_override or load_file(
-            file_names=[DEFAULT_CONFIG_PATH]
-        )
-    except FileNotFoundError as error:
-        raise error
-
+    config_path = config_path_override or load_file(file_names=[DEFAULT_CONFIG_PATH])
     current_config = load(config_path)
 
     config_section = current_config.get(section)
@@ -90,13 +85,7 @@ def update_config_file(  # type: ignore
     :param config_path: The path to the current configuration file.
     """
 
-    try:
-        config_path = config_path_override or load_file(
-            file_names=[DEFAULT_CONFIG_PATH]
-        )
-    except FileNotFoundError as error:
-        raise error
-
+    config_path = config_path_override or load_file(file_names=[DEFAULT_CONFIG_PATH])
     current_config = load(config_path)
 
     for key, value in updates.items():

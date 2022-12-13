@@ -118,6 +118,7 @@ dist/
 downloads/
 eggs/
 lib64/
+/lib/
 parts/
 sdist/
 var/
