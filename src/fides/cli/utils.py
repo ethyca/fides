@@ -171,7 +171,7 @@ def check_and_update_analytics_config(
         # If we've not opted out, attempt to register the user if they are
         # currently connected to a Fides server
         if config.user.analytics_opt_out is False:
-            server_url = config.cli.server_url
+            server_url = str(config.cli.server_url) or ""
             try:
                 check_server_health(server_url, verbose=False)
                 should_attempt_registration = not is_user_registered(config)
