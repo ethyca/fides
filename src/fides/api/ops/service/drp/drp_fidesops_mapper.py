@@ -1,5 +1,6 @@
-import logging
 from typing import Dict
+
+from loguru import logger
 
 from fides.api.ops.models.privacy_request import (
     PrivacyRequestStatus,
@@ -8,8 +9,6 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.drp_privacy_request import DrpIdentity
 from fides.api.ops.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.ops.schemas.redis_cache import Identity
-
-logger = logging.getLogger(__name__)
 
 
 class DrpFidesopsMapper:
@@ -34,7 +33,7 @@ class DrpFidesopsMapper:
         for attr, val in drp_identity.__dict__.items():
             if attr not in DRP_TO_FIDESOPS_SUPPORTED_IDENTITY_PROPS_MAP:
                 logger.warning(
-                    "Identity attribute of %s is not supported by Fidesops at this time. Continuing to use other identity props, if provided.",
+                    "Identity attribute of {} is not supported by Fidesops at this time. Continuing to use other identity props, if provided.",
                     attr,
                 )
             else:

@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 from fastapi import Body, Depends, Security
@@ -7,6 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslib.db.base_class import get_key_from_data
 from fideslib.exceptions import KeyOrNameAlreadyExists
+from loguru import logger
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -34,8 +34,6 @@ from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 
-logger = logging.getLogger(__name__)
-
 
 @router.get(
     urls.POLICY_WEBHOOKS_PRE,
@@ -56,7 +54,7 @@ def get_policy_pre_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        "Finding all Pre-Execution Webhooks for Policy '%s' with pagination params '%s'",
+        "Finding all Pre-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
     )
@@ -82,7 +80,7 @@ def get_policy_post_execution_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     logger.info(
-        "Finding all Post-Execution Webhooks for Policy '%s' with pagination params '%s'",
+        "Finding all Post-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
     )
@@ -150,7 +148,7 @@ def put_webhooks(
 
     if webhooks_to_remove.count():
         logger.info(
-            "Removing %s-Execution Webhooks from Policy '%s' that were not included in request: %s",
+            "Removing {}-Execution Webhooks from Policy '{}' that were not included in request: {}",
             webhook_cls.prefix.capitalize(),
             policy.key,
             [webhook.key for webhook in webhooks_to_remove],
@@ -158,7 +156,7 @@ def put_webhooks(
         webhooks_to_remove.delete()
 
     logger.info(
-        "Creating/updating Policy Pre-Execution Webhooks: %s", staged_webhook_keys
+        "Creating/updating Policy Pre-Execution Webhooks: {}", staged_webhook_keys
     )
     # Committing to database now, as a last step, once we've verified that all the webhooks
     # in the request are free of issues.
@@ -223,7 +221,7 @@ def get_policy_webhook_or_error(
     Also verifies that the webhook belongs to the given Policy.
     """
     logger.info(
-        "Finding %s-Execution Webhook with key '%s' for Policy '%s'",
+        "Finding {}-Execution Webhook with key '{}' for Policy '{}'",
         webhook_cls.prefix.capitalize(),
         webhook_key,
         policy.key,
@@ -307,7 +305,7 @@ def _patch_webhook(
 
     try:
         logger.info(
-            "Updating %s-Execution Webhook with key '%s' on Policy '%s' ",
+            "Updating {}-Execution Webhook with key '{}' on Policy '{}' ",
             webhook_cls.prefix.capitalize(),
             webhook_key,
             policy_key,
@@ -321,7 +319,7 @@ def _patch_webhook(
 
     if index is not None and index != loaded_webhook.order:
         logger.info(
-            "Reordering %s-Execution Webhooks for Policy '%s'",
+            "Reordering {}-Execution Webhooks for Policy '{}'",
             webhook_cls.prefix.capitalize(),
             policy_key,
         )
@@ -422,14 +420,14 @@ def delete_webhook(
     if reordering:
         # Move the webhook to the end and shuffle other webhooks
         logger.info(
-            "Reordering %s-Execution Webhooks for Policy '%s'",
+            "Reordering {}-Execution Webhooks for Policy '{}'",
             webhook_cls.prefix.capitalize(),
             policy_key,
         )
         loaded_webhook.reorder_related_webhooks(db=db, new_index=total_webhook_count)
 
     logger.info(
-        "Deleting %s-Execution Webhook with key '%s' off of Policy '%s'",
+        "Deleting {}-Execution Webhook with key '{}' off of Policy '{}'",
         webhook_cls.prefix.capitalize(),
         webhook_key,
         policy_key,

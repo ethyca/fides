@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import re
 from collections import defaultdict
 from functools import reduce
@@ -16,8 +15,6 @@ from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
-
-logger = logging.getLogger(__name__)
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"

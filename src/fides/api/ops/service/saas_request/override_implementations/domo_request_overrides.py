@@ -1,4 +1,3 @@
-import logging
 from json import dumps
 from typing import Any, Dict, List
 
@@ -18,7 +17,6 @@ from fides.api.ops.util.saas_util import PRIVACY_REQUEST_ID
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @register("domo_user_update", [SaaSRequestType.UPDATE])

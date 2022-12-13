@@ -1,10 +1,10 @@
-import logging
 from typing import Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -50,7 +50,6 @@ from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
 router = APIRouter(tags=["messaging"], prefix=V1_URL_PREFIX)
-logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -109,14 +108,14 @@ def patch_config_by_key(
     try:
         return update_messaging_config(db=db, key=config_key, config=messaging_config)
     except MessagingConfigNotFoundException:
-        logger.warning("No messaging config found with key %s", config_key)
+        logger.warning("No messaging config found with key {}", config_key)
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No messaging config found with key {config_key}",
         )
     except Exception as exc:
         logger.warning(
-            "Patch failed for messaging config %s: %s",
+            "Patch failed for messaging config {}: {}",
             messaging_config.key,
             Pii(str(exc)),
         )
@@ -141,7 +140,7 @@ def put_config_secrets(
     """
     Add or update secrets for messaging config.
     """
-    logger.info("Finding messaging config with key '%s'", config_key)
+    logger.info("Finding messaging config with key '{}'", config_key)
     messaging_config = MessagingConfig.get_by(db=db, field="key", value=config_key)
     if not messaging_config:
         raise HTTPException(
@@ -166,7 +165,7 @@ def put_config_secrets(
         )
 
     logger.info(
-        "Updating messaging config secrets for config with key '%s'", config_key
+        "Updating messaging config secrets for config with key '{}'", config_key
     )
     try:
         messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())
@@ -192,7 +191,7 @@ def get_configs(
     Retrieves configs for messaging.
     """
     logger.info(
-        "Finding all messaging configurations with pagination params %s", params
+        "Finding all messaging configurations with pagination params {}", params
     )
     return paginate(
         MessagingConfig.query(db=db).order_by(MessagingConfig.created_at.desc()),
@@ -211,7 +210,7 @@ def get_config_by_key(
     """
     Retrieves configs for messaging service by key.
     """
-    logger.info("Finding messaging config with key '%s'", config_key)
+    logger.info("Finding messaging config with key '{}'", config_key)
 
     try:
         return get_messaging_config_by_key(db=db, key=config_key)

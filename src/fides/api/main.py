@@ -1,10 +1,8 @@
 """
 Contains the code that sets up the API.
 """
-import logging
 from datetime import datetime, timezone
-from logging import WARNING
-from os import getenv
+from logging import DEBUG, WARNING
 from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
@@ -14,7 +12,7 @@ from fideslib.oauth.api.deps import get_db as lib_get_db
 from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
 from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
-from loguru import logger as log
+from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import Limiter, _rate_limit_exceeded_handler  # type: ignore
@@ -59,17 +57,12 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.logger import get_fides_log_record_factory
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import get_config as get_ctl_config
 from fides.ctl.core.config.utils import check_required_webserver_config_values
 
 CONFIG: FidesConfig = get_ctl_config()
-
-logging.basicConfig(level=CONFIG.logging.level)
-logging.setLogRecordFactory(get_fides_log_record_factory())
-logger = logging.getLogger(__name__)
 
 app = FastAPI(title="fides")
 app.state.limiter = Limiter(
@@ -199,16 +192,15 @@ for handler in ExceptionHandlers.get_handlers():
 async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
 
-    log.warning(
+    logger.warning(
         f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
     )
-    log_pii = getenv("FIDES__LOG_PII", "").lower() == "true"
-    log.warning(
-        f"Startup configuration: pii logging = {log_pii}",
+    logger.warning(
+        f"Startup configuration: pii logging = {CONFIG.logging.log_pii}",
     )
 
-    if logger.getEffectiveLevel() == logging.DEBUG:
-        log.warning(
+    if CONFIG.logging.level == DEBUG:
+        logger.warning(
             "WARNING: log level is DEBUG, so sensitive or personal data may be logged. "
             "Set FIDES__LOGGING__LEVEL to INFO or higher in production."
         )
@@ -222,36 +214,36 @@ async def setup_server() -> None:
     try:
         create_or_update_parent_user()
     except Exception as e:
-        log.error(f"Error creating parent user: {str(e)}")
+        logger.error(f"Error creating parent user: {str(e)}")
         raise FidesError(f"Error creating parent user: {str(e)}")
 
-    log.info("Validating SaaS connector templates...")
+    logger.info("Validating SaaS connector templates...")
     try:
         registry = load_registry(registry_file)
         db = get_api_session()
         update_saas_configs(registry, db)
     except Exception as e:
-        log.error(
+        logger.error(
             f"Error occurred during SaaS connector template validation: {str(e)}",
         )
         return
     finally:
         db.close()
 
-    log.info("Running Cache connection test...")
+    logger.info("Running Cache connection test...")
 
     try:
         get_cache()
     except (RedisConnectionError, RedisError, ResponseError) as e:
-        log.error(f"Connection to cache failed: {str(e)}")
+        logger.error(f"Connection to cache failed: {str(e)}")
         return
     else:
-        log.debug("Connection to cache succeeded")
+        logger.debug("Connection to cache succeeded")
 
     if not scheduler.running:
         scheduler.start()
 
-    log.debug("Sending startup analytics events...")
+    logger.debug("Sending startup analytics events...")
     await send_analytics_event(
         AnalyticsEvent(
             docker=in_docker_container(),
@@ -266,7 +258,7 @@ async def setup_server() -> None:
         desination=CONFIG.logging.destination,
     )
 
-    log.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
+    logger.bind(api_config=CONFIG.logging.json()).debug("Configuration options in use")
 
 
 @app.middleware("http")
@@ -275,7 +267,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
     start = datetime.now()
     response = await call_next(request)
     handler_time = datetime.now() - start
-    log.bind(
+    logger.bind(
         method=request.method,
         status_code=response.status_code,
         handler_time=f"{handler_time.microseconds * 0.001}ms",
@@ -315,14 +307,14 @@ def read_other_paths(request: Request) -> Response:
 
     # If any of those worked, serve the file.
     if ui_file and ui_file.is_file():
-        log.debug(
+        logger.debug(
             f"catchall request path '{path}' matched static admin UI file: {ui_file}"
         )
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
-        log.debug(
+        logger.debug(
             f"catchall request path '{path}' matched an invalid API route, return 404"
         )
         raise HTTPException(
@@ -330,7 +322,7 @@ def read_other_paths(request: Request) -> Response:
         )
 
     # otherwise return the index
-    log.debug(
+    logger.debug(
         f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index"
     )
     return get_admin_index_as_response()
@@ -341,7 +333,7 @@ def start_webserver(port: int = 8080) -> None:
     check_required_webserver_config_values()
     server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
 
-    log.info(
+    logger.info(
         f"Starting webserver - Host: {server.config.host}, Port: {server.config.port}, Log Level: {server.config.log_level}"
     )
     server.run()

@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, Optional, Tuple
 
 from fideslib.db.base_class import Base, FidesBase
@@ -11,8 +10,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-
-logger = logging.getLogger(__name__)
 
 
 class UserRegistration(Base):

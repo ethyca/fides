@@ -1,6 +1,5 @@
-import logging
-
 from fideslib.db.base import Base
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -23,8 +22,6 @@ from fides.api.ops.schemas.storage.storage_secrets_docs_only import (
 )
 from fides.api.ops.util.logger import Pii
 from fides.ctl.core.config import get_config
-
-logger = logging.getLogger(__name__)
 
 CONFIG = get_config()
 

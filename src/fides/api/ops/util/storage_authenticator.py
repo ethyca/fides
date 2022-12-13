@@ -1,12 +1,10 @@
-import logging
 from typing import Any, Dict
 
 from boto3 import Session
+from loguru import logger
 
 from fides.api.ops.common_exceptions import StorageUploadError
 from fides.api.ops.schemas.storage.storage import S3AuthMethod, StorageSecrets
-
-logger = logging.getLogger(__name__)
 
 
 def get_s3_session(

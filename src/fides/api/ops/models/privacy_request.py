@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Union
@@ -16,6 +15,7 @@ from fideslib.models.audit_log import AuditLog
 from fideslib.models.client import ClientDetail
 from fideslib.models.fides_user import FidesUser
 from fideslib.oauth.jwt import generate_jwe
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -71,7 +71,6 @@ from fides.api.ops.util.constants import API_DATE_FORMAT
 from fides.api.ops.util.identity_verification import IdentityVerificationMixin
 from fides.ctl.core.config import get_config
 
-logger = logging.getLogger(__name__)
 CONFIG = get_config()
 
 
@@ -642,7 +641,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             }
 
         logger.info(
-            "Calling webhook '%s' for privacy_request '%s'", webhook.key, self.id
+            "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
             request_body.dict(),
@@ -659,7 +658,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
             [response_body.derived_identity.dict().values()]
         ):
             logger.info(
-                "Updating known identities on privacy request '%s' from webhook '%s'.",
+                "Updating known identities on privacy request '{}' from webhook '{}'.",
                 self.id,
                 webhook.key,
             )
@@ -703,7 +702,7 @@ class PrivacyRequest(IdentityVerificationMixin, Base):  # pylint: disable=R0904
 
             task_id = self.get_cached_task_id()
             if task_id:
-                logger.info("Revoking task %s for request %s", task_id, self.id)
+                logger.info("Revoking task {} for request {}", task_id, self.id)
                 # Only revokes if execution is not already in progress
                 celery_app.control.revoke(task_id, terminate=False)
 

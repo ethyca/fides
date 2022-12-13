@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 import firebase_admin
@@ -13,8 +12,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
