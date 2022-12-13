@@ -517,8 +517,8 @@ def combined_mongo_postgresql_graph(
     return mongo_dataset, postgres_dataset
 
 
-def manual_dataset(db_name: str, postgres_db_name) -> GraphDataset:
-    """Manual dataset depending on upstream postgres collection and pointing to a node in a downstream
+def manual_graph_dataset(db_name: str, postgres_db_name) -> GraphDataset:
+    """Manual GraphDataset depending on upstream postgres collection and pointing to a node in a downstream
     postgres collection"""
     filing_cabinet = Collection(
         name="filing_cabinet",
@@ -564,7 +564,7 @@ def manual_dataset(db_name: str, postgres_db_name) -> GraphDataset:
 
 def postgres_and_manual_nodes(postgres_db_name: str, manual_db_name: str):
     postgres_db = integration_db_dataset(postgres_db_name, postgres_db_name)
-    manual_db = manual_dataset(manual_db_name, postgres_db_name)
+    manual_db = manual_graph_dataset(manual_db_name, postgres_db_name)
     return DatasetGraph(postgres_db, manual_db)
 
 

@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
+from loguru import logger
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
 
@@ -26,6 +27,9 @@ def validate_data_categories_against_db(dataset: Dataset, db: Session) -> None:
         cat[0] for cat in db.query(DataCategory.fides_key).all()
     ]
     if not defined_data_categories:
+        logger.info(
+            "No data categories in the database: reverting to default data categories."
+        )
         defined_data_categories = list(DefaultTaxonomyDataCategories.__members__.keys())
 
     class DataCategoryValidationMixin(BaseModel):

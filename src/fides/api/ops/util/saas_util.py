@@ -118,7 +118,7 @@ def get_collection_after(
 
 def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
     """
-    Merges all Collections and Fields from the config_dataset into the dataset.
+    Merges all Collections and Fields from the "config_dataset" into the "dataset".
     In the event of a collection/field name collision, the target field
     will inherit the identity and field references. This is by design since
     dataset references for SaaS connectors should not have any references.

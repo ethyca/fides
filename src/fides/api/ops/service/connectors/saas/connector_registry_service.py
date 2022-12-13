@@ -54,11 +54,7 @@ class ConnectorTemplate(BaseModel):
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        try:
-            Dataset(**load_dataset(dataset)[0])
-        except Exception as e:
-            print(f"failed to load file: {e}")
-            raise e
+        Dataset(**load_dataset(dataset)[0])
         return dataset
 
     @validator("icon")
