@@ -153,7 +153,9 @@ async def verify_oauth_client(
         scopes_required = ",".join(security_scopes.scopes)
         scopes_provided = ",".join(assigned_scopes)
         logger.debug(
-            f"Auth token missing required scopes: {scopes_required}. Scopes provided: {scopes_provided}."
+            "Auth token missing required scopes: {}. Scopes provided: {}.",
+            scopes_required,
+            scopes_provided,
         )
         raise AuthorizationError(detail="Not Authorized for this action")
 

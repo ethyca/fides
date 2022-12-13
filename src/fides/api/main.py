@@ -193,11 +193,11 @@ async def setup_server() -> None:
     "Run all of the required setup steps for the webserver."
 
     logger.warning(
-        f"Startup configuration: reloading = {CONFIG.hot_reloading}, dev_mode = {CONFIG.dev_mode}",
+        "Startup configuration: reloading = {}, dev_mode = {}",
+        CONFIG.hot_reloading,
+        CONFIG.dev_mode,
     )
-    logger.warning(
-        f"Startup configuration: pii logging = {CONFIG.logging.log_pii}",
-    )
+    logger.warning("Startup configuration: pii logging = {}", CONFIG.logging.log_pii)
 
     if CONFIG.logging.level == DEBUG:
         logger.warning(
@@ -214,7 +214,7 @@ async def setup_server() -> None:
     try:
         create_or_update_parent_user()
     except Exception as e:
-        logger.error(f"Error creating parent user: {str(e)}")
+        logger.error("Error creating parent user: {}", str(e))
         raise FidesError(f"Error creating parent user: {str(e)}")
 
     logger.info("Validating SaaS connector templates...")
@@ -224,7 +224,8 @@ async def setup_server() -> None:
         update_saas_configs(registry, db)
     except Exception as e:
         logger.error(
-            f"Error occurred during SaaS connector template validation: {str(e)}",
+            "Error occurred during SaaS connector template validation: {}",
+            str(e),
         )
         return
     finally:
@@ -235,7 +236,7 @@ async def setup_server() -> None:
     try:
         get_cache()
     except (RedisConnectionError, RedisError, ResponseError) as e:
-        logger.error(f"Connection to cache failed: {str(e)}")
+        logger.error("Connection to cache failed: {}", str(e))
         return
     else:
         logger.debug("Connection to cache succeeded")
@@ -308,14 +309,17 @@ def read_other_paths(request: Request) -> Response:
     # If any of those worked, serve the file.
     if ui_file and ui_file.is_file():
         logger.debug(
-            f"catchall request path '{path}' matched static admin UI file: {ui_file}"
+            "catchall request path '{}' matched static admin UI file: {}",
+            path,
+            ui_file,
         )
         return FileResponse(ui_file)
 
     # raise 404 for anything that should be backend endpoint but we can't find it
     if path.startswith(API_PREFIX[1:]):
         logger.debug(
-            f"catchall request path '{path}' matched an invalid API route, return 404"
+            "catchall request path '{}' matched an invalid API route, return 404",
+            path,
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
@@ -323,7 +327,8 @@ def read_other_paths(request: Request) -> Response:
 
     # otherwise return the index
     logger.debug(
-        f"catchall request path '{path}' did not match any admin UI routes, return generic admin UI index"
+        "catchall request path '{}' did not match any admin UI routes, return generic admin UI index",
+        path,
     )
     return get_admin_index_as_response()
 
@@ -334,6 +339,9 @@ def start_webserver(port: int = 8080) -> None:
     server = Server(Config(app, host="0.0.0.0", port=port, log_level=WARNING))
 
     logger.info(
-        f"Starting webserver - Host: {server.config.host}, Port: {server.config.port}, Log Level: {server.config.log_level}"
+        "Starting webserver - Host: {}, Port: {}, Log Level: {}",
+        server.config.host,
+        server.config.port,
+        server.config.log_level,
     )
     server.run()
