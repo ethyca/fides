@@ -16,11 +16,10 @@ The types of changes are:
 * `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
-### Added
 
+### Added
 * Common Subscriptions for app-wide data and feature checks. [#2030](https://github.com/ethyca/fides/pull/2030)
-
-### Added
+* Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)

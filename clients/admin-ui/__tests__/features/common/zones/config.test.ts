@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@jest/globals";
+
 import { configureZones, resolveZone } from "~/features/common/zones";
 
 describe("resolveZone", () => {
