@@ -32,12 +32,14 @@ def usage(session: nox.Session) -> None:
     """Prints the documentation for a nox session provided: `nox -s usage -- <session>`."""
 
     if not session.posargs:
-        session.error("Please provide a session name")
+        session.error("Please provide a session name, such as `clean`")
 
     command = session.posargs[0]
 
     if not command in globals():
-        session.error("Sorry, this isn't a valid nox session")
+        session.error(
+            "Sorry, this isn't a valid nox session.\nExamples: `clean`, `build`, `pytest_ctl`"
+        )
 
     session.log(globals()[command].__doc__)
 
