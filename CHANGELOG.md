@@ -47,6 +47,7 @@ The types of changes are:
 
 * Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
 * Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
+* Added ability to use Mailgun templates when sending emails. [#2039](https://github.com/ethyca/fides/pull/2039)
 
 ### Changed
 
