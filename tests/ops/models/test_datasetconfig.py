@@ -13,17 +13,23 @@ from fides.api.ops.models.datasetconfig import (
 from ..graph.graph_test_util import field
 
 
-def test_create_dataset(example_datasets, connection_config, db: Session) -> None:
+def test_create_dataset(
+    example_datasets, connection_config, db: Session, ctl_dataset
+) -> None:
     postgres_dataset = example_datasets[0]
     dataset_config = DatasetConfig.create(
         db=db,
         data={
             "connection_config_id": connection_config.id,
             "fides_key": postgres_dataset["fides_key"],
-            "dataset": postgres_dataset,
+            "dataset": postgres_dataset,  # TODO remove dataset as an argument
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     assert dataset_config.id is not None
+    assert dataset_config.ctl_dataset_id is not None
+    linked_ctl_dataset = dataset_config.ctl_dataset
+    assert linked_ctl_dataset == ctl_dataset
 
     assert dataset_config.connection_config_id == connection_config.id
     assert dataset_config.fides_key == postgres_dataset["fides_key"]
@@ -157,8 +163,8 @@ def test_validate_dataset_reference(db: Session, dataset_config: DatasetConfig):
     Happy path, test valid reference to existing dataset
     """
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
-    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
+    field_name = dataset_config.ctl_dataset.collections[0]["fields"][0]["name"]
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
     )
@@ -181,7 +187,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
 
     dataset_key = dataset_config.fides_key
     collection_name = "fake_collection"
-    field_name = dataset_config.dataset["collections"][0]["fields"][0]["name"]
+    field_name = dataset_config.ctl_dataset.collections[0]["fields"][0]["name"]
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
     )
@@ -190,7 +196,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "Unknown collection" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(
         dataset=dataset_key, field=f"{collection_name}.{field_name}"
@@ -200,7 +206,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "Unknown field" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f"{collection_name}.")
     with pytest.raises(ValidationError) as e:
@@ -208,7 +214,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f".{field_name}")
     with pytest.raises(ValidationError) as e:
@@ -216,7 +222,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f"{collection_name}")
     with pytest.raises(ValidationError) as e:
@@ -224,7 +230,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field=f".")
     with pytest.raises(ValidationError) as e:
@@ -232,7 +238,7 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
     dataset_key = dataset_config.fides_key
-    collection_name = dataset_config.dataset["collections"][0]["name"]
+    collection_name = dataset_config.ctl_dataset.collections[0]["name"]
     field_name = "fake_field"
     dsr = FidesDatasetReference(dataset=dataset_key, field="")
     with pytest.raises(ValidationError) as e:

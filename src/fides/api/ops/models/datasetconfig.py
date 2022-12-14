@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.ctl.sql_models import Dataset
+from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
@@ -40,13 +40,75 @@ class DatasetConfig(Base):
     fides_key = Column(String, index=True, unique=True, nullable=False)
     dataset = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=False
+    )  # TODO Unified Fides Resources: Remove this column.
+    ctl_dataset_id = Column(
+        String, ForeignKey(CtlDataset.id), index=True, nullable=False
     )
-    ctl_dataset_id = Column(String, ForeignKey(Dataset.id), index=True, nullable=False)
 
     connection_config = relationship(
         ConnectionConfig,
         backref="datasets",
     )
+
+    ctl_dataset = relationship(
+        CtlDataset,
+        backref="dataset_configs",
+    )
+
+    @classmethod
+    def create_or_update_with_ctl_dataset(
+        cls, db: Session, *, data: Dict[str, Any]
+    ) -> "DatasetConfig":
+        """
+        TEMPORARY METHOD FOR BACKWARDS-COMPATIBILITY.
+
+        Create or update the DatasetConfig and the corresponding CTL Dataset
+
+        If DatasetConfig exists with this FidesKey, update the corresponding CtlDataset with the dataset contents
+        If the DatasetConfig does not exist, upsert a CtlDataset, and then link to the DatasetConfig on creation.
+
+        """
+
+        def upsert_ctl_dataset(ctl_dataset_obj: Optional[CtlDataset]) -> CtlDataset:
+            ctl_dataset_data = data.copy()
+            validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
+
+            if ctl_dataset_obj:
+                ctl_dataset_data.pop("fides_key", None)
+                for key, val in ctl_dataset_data.get("dataset", {}).items():
+                    setattr(ctl_dataset_obj, key, val)
+            else:
+                ctl_dataset_obj = CtlDataset(**validated_data.dict())
+
+            db.add(ctl_dataset_obj)
+            db.commit()
+            db.refresh(ctl_dataset_obj)
+            return ctl_dataset_obj
+
+        dataset = DatasetConfig.filter(
+            db=db,
+            conditions=(
+                (DatasetConfig.connection_config_id == data["connection_config_id"])
+                & (DatasetConfig.fides_key == data["fides_key"])
+            ),
+        ).first()
+
+        if dataset:
+            upsert_ctl_dataset(dataset.ctl_dataset)  # Update existing ctl_dataset first
+            dataset.update(db=db, data=data)
+        else:
+            fetched_ctl_dataset = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == data["fides_key"])
+                .first()
+            )
+            ctl_dataset = upsert_ctl_dataset(
+                fetched_ctl_dataset
+            )  # Create/update existing ctl_dataset first
+            data["ctl_dataset_id"] = ctl_dataset.id
+            dataset = cls.create(db=db, data=data)
+
+        return dataset
 
     @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
@@ -77,7 +139,7 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            Dataset(**self.dataset), self.connection_config.key  # type: ignore
+            Dataset.from_orm(self.ctl_dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -240,8 +302,9 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown dataset '{dataset_reference.dataset}' referenced by external reference"
         )
+
     dataset: GraphDataset = convert_dataset_to_graph(
-        Dataset(**dataset_config.dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        Dataset.from_orm(dataset_config.ctl_dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

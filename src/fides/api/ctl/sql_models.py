@@ -6,6 +6,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
+from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,
@@ -19,6 +20,7 @@ from sqlalchemy import (
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import BYTEA
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -199,6 +201,16 @@ class Dataset(Base, FidesBase):
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))
+
+    @classmethod
+    def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
+        """Add a method to create directly using a synchronous session"""
+        validated_dataset: FideslangDataset = FideslangDataset(**dataset)
+        ctl_dataset = cls(**validated_dataset.dict())
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+        return ctl_dataset
 
 
 # Evaluation

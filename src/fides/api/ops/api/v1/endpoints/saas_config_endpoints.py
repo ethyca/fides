@@ -334,6 +334,7 @@ def instantiate_connection_from_template(
         template_values.instance_key,
         saas_connector_type,
     )
+
     return SaasConnectionTemplateResponse(
-        connection=connection_config, dataset=dataset_config.dataset
+        connection=connection_config, dataset=dataset_config.ctl_dataset
     )

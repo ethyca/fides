@@ -99,6 +99,11 @@ class ValidateDatasetResponse(BaseSchema):
     traversal_details: DatasetTraversalDetails
 
 
+class DatasetConfigCtlDataset(BaseSchema):
+    fides_key: FidesKey  # The fides_key for the DatasetConfig
+    ctl_dataset_fides_key: FidesKey  # The fides_key for the ctl_datasets record
+
+
 class BulkPutDataset(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Datasets."""
 

@@ -12,8 +12,9 @@ import json
 import uuid
 from typing import Any, Dict
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+from fideslang.models import Dataset
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
@@ -68,28 +69,21 @@ def upgrade():
         appended_meta: Dict = dataset["meta"] or {}
         appended_meta["fides_source"] = AUTO_MIGRATED_STRING
 
+        validated_dataset: Dict = Dataset(**dataset).dict()
+        validated_dataset["id"] = new_ctl_dataset_id
+        validated_dataset["fides_key"] = fides_key
+        validated_dataset["collections"] = json.dumps(validated_dataset["collections"])
+        validated_dataset["meta"] = json.dumps(appended_meta)
+        validated_dataset["created_at"] = row["created_at"]
+        validated_dataset["updated_at"] = row["updated_at"]
+        validated_dataset["fides_meta"] = dataset.get("fides_meta") or dataset.get(
+            "fidesops_meta"
+        )
+
         try:
             bind.execute(
                 insert_into_ctl_datasets_query,
-                {
-                    "id": new_ctl_dataset_id,
-                    "fides_key": fides_key,
-                    "organization_fides_key": dataset["organization_fides_key"],
-                    "name": dataset["name"],
-                    "description": dataset["description"],
-                    "meta": json.dumps(appended_meta),
-                    "data_categories": dataset["data_categories"],
-                    "collections": json.dumps(dataset["collections"]),
-                    "data_qualifier": dataset["data_qualifier"],
-                    "created_at": row["created_at"],
-                    "updated_at": row["updated_at"],
-                    "joint_controller": dataset["joint_controller"],
-                    "retention": dataset["retention"],
-                    "fides_meta": dataset.get("fides_meta")
-                    or dataset.get("fidesops_meta"),
-                    "third_country_transfers": dataset["third_country_transfers"],
-                    "tags": dataset["tags"],
-                },
+                validated_dataset,
             )
         except IntegrityError as exc:
             raise Exception(
@@ -98,7 +92,7 @@ def upgrade():
             )
 
         update_dataset_config_query: TextClause = text(
-            "UPDATE datasetconfig set ctl_dataset_id= :new_ctl_dataset_id WHERE id= :datasetconfig_id"
+            "UPDATE datasetconfig SET ctl_dataset_id= :new_ctl_dataset_id WHERE id= :datasetconfig_id"
         )
 
         bind.execute(
@@ -117,7 +111,7 @@ def downgrade():
     # Data migration - remove ctl_datasets that were automatically created by the forward migration
     bind = op.get_bind()
     remove_automigrated_ctl_datasets_query: TextClause = text(
-        "delete from ctl_datasets where meta->>'source'= :automigration_string"
+        "DELETE FROM ctl_datasets WHERE meta->>'fides_source'= :automigration_string"
     )
     bind.execute(
         remove_automigrated_ctl_datasets_query,

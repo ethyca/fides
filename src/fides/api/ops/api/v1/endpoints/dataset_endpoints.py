@@ -1,4 +1,4 @@
-from typing import List
+from typing import Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -22,6 +22,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
+from fides.api.ctl.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.ops.api import deps
 from fides.api.ops.api.v1.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -30,6 +31,7 @@ from fides.api.ops.api.v1.scope_registry import (
 )
 from fides.api.ops.api.v1.urn_registry import (
     DATASET_BY_KEY,
+    DATASET_CONFIGS,
     DATASET_VALIDATE,
     DATASETS,
     V1_URL_PREFIX,
@@ -51,6 +53,7 @@ from fides.api.ops.models.datasetconfig import (
 from fides.api.ops.schemas.api import BulkUpdateFailed
 from fides.api.ops.schemas.dataset import (
     BulkPutDataset,
+    DatasetConfigCtlDataset,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
@@ -158,6 +161,65 @@ def validate_dataset(
 
 
 @router.patch(
+    DATASET_CONFIGS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPutDataset,
+)
+def patch_dataset_configs(
+    dataset_pairs: conlist(DatasetConfigCtlDataset, max_items=50),  # type: ignore
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> BulkPutDataset:
+    """
+    Endpoint to create or update DatasetConfigs by passing in pairs of:
+    1) A DatasetConfig fides_key
+    2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
+
+    Currently this endpoint looks up the ctl dataset and writes its contents back to the DatasetConfig.dataset
+    field for backwards compatibility but soon DatasetConfig.dataset will go away.
+
+    """
+    created_or_updated: List[Dataset] = []
+    failed: List[BulkUpdateFailed] = []
+    logger.info("Starting bulk upsert for %s Dataset Configs", len(dataset_pairs))
+
+    for dataset_pair in dataset_pairs:
+        logger.info(
+            "Finding ctl_dataset with key '%s'", dataset_pair.ctl_dataset_fides_key
+        )
+
+        ctl_dataset: CtlDataset = (
+            db.query(CtlDataset)
+            .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
+            .first()
+        )
+        fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+
+        data = {
+            "connection_config_id": connection_config.id,
+            "fides_key": dataset_pair.fides_key,
+            "dataset": fetched_dataset.dict(),  # TODO Unified Fides Resources: Remove writing to this field.
+            "ctl_dataset_id": ctl_dataset.id,
+        }
+
+        create_or_update_dataset(
+            connection_config,
+            created_or_updated,
+            data,
+            fetched_dataset,
+            db,
+            failed,
+            DatasetConfig.create_or_update,
+        )
+
+    return BulkPutDataset(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
+
+
+@router.patch(
     DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
     status_code=HTTP_200_OK,
@@ -172,10 +234,10 @@ def patch_datasets(
     Given a list of dataset elements, create or update corresponding Dataset objects
     or report failure
 
-    Use for bulk creating and/or updating datasets.
+    Use for bulk creating and/or updating DatasetConfig resources.
 
-    If the fides_key for a given dataset exists, it will be treated as an update.
-    Otherwise, a new dataset will be created.
+    If the fides_key for a given DatasetConfig exists, it will be treated as an update.
+    Otherwise, a new DatasetConfig will be created.
     """
 
     created_or_updated: List[Dataset] = []
@@ -198,7 +260,13 @@ def patch_datasets(
             "dataset": dataset.dict(),
         }
         create_or_update_dataset(
-            connection_config, created_or_updated, data, dataset, db, failed
+            connection_config,
+            created_or_updated,
+            data,
+            dataset,
+            db,
+            failed,
+            DatasetConfig.create_or_update_with_ctl_dataset,
         )
     return BulkPutDataset(
         succeeded=created_or_updated,
@@ -249,9 +317,10 @@ async def patch_yaml_datasets(
                 connection_config,
                 created_or_updated,
                 data,
-                yaml_request_body,
+                Dataset(**dataset),
                 db,
                 failed,
+                DatasetConfig.create_or_update_with_ctl_dataset,
             )
     return BulkPutDataset(
         succeeded=created_or_updated,
@@ -263,15 +332,16 @@ def create_or_update_dataset(
     connection_config: ConnectionConfig,
     created_or_updated: List[Dataset],
     data: dict,
-    dataset: dict,
+    dataset: Dataset,
     db: Session,
     failed: List[BulkUpdateFailed],
+    create_method: Callable,
 ) -> None:
     try:
         if connection_config.connection_type == ConnectionType.saas:
             _validate_saas_dataset(connection_config, dataset)  # type: ignore
         # Try to find an existing DatasetConfig matching the given connection & key
-        dataset_config = DatasetConfig.create_or_update(db, data=data)
+        dataset_config = create_method(db, data=data)
         created_or_updated.append(dataset_config.dataset)
     except (
         SaaSConfigNotFoundException,
@@ -340,7 +410,7 @@ def get_datasets(
     params: Params = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AbstractPage[Dataset]:
-    """Returns all datasets in the database."""
+    """Returns all DatasetConfig datasets in the database."""
 
     logger.info(
         "Finding all datasets for connection '{}' with pagination params {}",
@@ -357,7 +427,7 @@ def get_datasets(
     # paginated query is handled by paginate()
     paginated_results = paginate(dataset_configs, params=params)
     paginated_results.items = [  # type: ignore
-        dataset_config.dataset for dataset_config in paginated_results.items  # type: ignore
+        dataset_config.ctl_dataset for dataset_config in paginated_results.items  # type: ignore
     ]
     return paginated_results
 
@@ -389,7 +459,7 @@ def get_dataset(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No dataset with fides_key '{fides_key}' and connection key {connection_config.key}'",
         )
-    return dataset_config.dataset
+    return dataset_config.ctl_dataset
 
 
 @router.delete(
@@ -403,7 +473,7 @@ def delete_dataset(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> None:
-    """Removes the dataset based on the given key."""
+    """Removes the DatasetConfig based on the given key."""
 
     logger.info(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
