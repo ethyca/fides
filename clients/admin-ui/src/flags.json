@@ -1,9 +1,5 @@
 [
   {
-    "name": "configureAlertsFlag",
-    "isActive": false
-  },
-  {
     "name": "configWizardStepper",
     "isActive": false
   }

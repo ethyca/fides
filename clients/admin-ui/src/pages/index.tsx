@@ -4,9 +4,6 @@ import dynamic from "next/dynamic";
 import RequestFilters from "privacy-requests/RequestFilters";
 import RequestTable from "privacy-requests/RequestTable";
 import { useEffect } from "react";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { Flags } from "react-feature-flags";
 
 import Layout from "~/features/common/Layout";
 import { useDSRErrorAlert } from "~/features/privacy-requests/hooks/useDSRErrorAlert";
@@ -30,10 +27,7 @@ const Home: NextPage = () => {
           Privacy Requests
         </Heading>
         <Spacer />
-        <Flags
-          authorizedFlags={["configureAlertsFlag"]}
-          renderOn={() => <ActionButtons />}
-        />
+        <ActionButtons />
       </Flex>
       <RequestFilters />
       <RequestTable />
