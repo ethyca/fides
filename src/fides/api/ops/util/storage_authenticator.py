@@ -35,5 +35,5 @@ def get_s3_session(
         logger.info("Successfully created automatic session")
         return session
 
-    logger.error("Auth method not supported for S3: %s", auth_method)
+    logger.error("Auth method not supported for S3: {}", auth_method)
     raise ValueError(f"Auth method not supported for S3: {auth_method}")

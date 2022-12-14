@@ -71,7 +71,7 @@ def post_config(
         return create_or_update_messaging_config(db=db, config=messaging_config)
     except ValueError as e:
         logger.warning(
-            "Create failed for messaging config %s: %s",
+            "Create failed for messaging config {}: {}",
             messaging_config.key,
             Pii(str(e)),
         )
@@ -81,7 +81,7 @@ def post_config(
         )
     except Exception as exc:
         logger.warning(
-            "Create failed for messaging config %s: %s",
+            "Create failed for messaging config {}: {}",
             messaging_config.key,
             Pii(str(exc)),
         )
