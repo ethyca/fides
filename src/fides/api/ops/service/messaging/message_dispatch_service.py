@@ -392,7 +392,7 @@ def _mailgun_dispatcher(
                 "subject": message.subject,
                 "html": message.body,
             }
-            response: requests.Response = requests.post(
+            response = requests.post(
                 f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
                 auth=(
                     "api",
