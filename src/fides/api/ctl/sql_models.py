@@ -190,7 +190,7 @@ class Dataset(Base, FidesBase):
     data_categories = Column(ARRAY(String))
     data_qualifier = Column(String)
     collections = Column(JSON)
-    fidesctl_meta = Column(JSON)
+    fides_meta = Column(JSON)
     joint_controller = Column(PGEncryptedString, nullable=True)
     retention = Column(String)
     third_country_transfers = Column(ARRAY(String))

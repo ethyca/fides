@@ -4,18 +4,19 @@ import logging
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
+from fideslang.validation import FidesKey
+
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
     Collection,
     CollectionAddress,
-    Dataset,
     EdgeDirection,
     Field,
     FieldAddress,
     FieldPath,
+    GraphDataset,
     SeedAddress,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class Node:
     Node children are any nodes that are reachable via this traversal_node.
     """
 
-    def __init__(self, dataset: Dataset, collection: Collection):
+    def __init__(self, dataset: GraphDataset, collection: Collection):
         self.address = CollectionAddress(dataset.name, collection.name)
         self.dataset = dataset
         self.collection = collection
@@ -182,7 +183,7 @@ class DatasetGraph:
     (or nodes) represent the start nodes.
     """
 
-    def __init__(self, *datasets: Dataset) -> None:
+    def __init__(self, *datasets: GraphDataset) -> None:
         """We create all edges based on field specifications.
         We also add child references to nodes. Note that this means that
         this is a destructive operation on the input datasets, as it
@@ -231,7 +232,7 @@ class DatasetGraph:
     @property
     def data_category_field_mapping(
         self,
-    ) -> Dict[CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]]:
+    ) -> Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]:
         """
         Maps the data_categories for each traversal_node to a list of field paths that have that
         same data category.
@@ -248,9 +249,9 @@ class DatasetGraph:
         }
 
         """
-        mapping: Dict[
-            CollectionAddress, Dict[FidesOpsKey, List[FieldPath]]
-        ] = defaultdict(lambda: defaultdict(list))
+        mapping: Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]] = defaultdict(
+            lambda: defaultdict(list)
+        )
         for node_address, node in self.nodes.items():
             mapping[node_address] = node.collection.field_paths_by_category
         return mapping

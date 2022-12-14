@@ -18,7 +18,7 @@ def test_get_key_from_data_method_invalid_key() -> None:
         get_key_from_data({"key": "test*key", "name": "config name"}, "StorageConfig")
     assert (
         str(exc.value)
-        == "FidesKeys must only contain alphanumeric characters, '.', '_' or '-'. Value provided: test*key"
+        == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: test*key"
     )
 
 

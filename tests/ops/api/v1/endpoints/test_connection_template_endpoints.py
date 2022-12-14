@@ -625,8 +625,8 @@ class TestInstantiateConnectionFromTemplate:
         )
         assert resp.json()["detail"][0] == {
             "loc": ["body", "instance_key"],
-            "msg": "FidesKey must only contain alphanumeric characters, '.', '_' or '-'.",
-            "type": "value_error",
+            "msg": "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
+            "type": "value_error.fidesvalidation",
         }
 
     @mock.patch(

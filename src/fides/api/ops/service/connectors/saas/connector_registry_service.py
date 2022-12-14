@@ -4,6 +4,7 @@ import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
+from fideslang.models import Dataset
 from fideslib.core.config import load_toml
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
@@ -19,7 +20,6 @@ from fides.api.ops.models.datasetconfig import DatasetConfig
 from fides.api.ops.schemas.connection_configuration.connection_config import (
     SaasConnectionTemplateValues,
 )
-from fides.api.ops.schemas.dataset import FidesopsDataset
 from fides.api.ops.schemas.saas.saas_config import SaaSConfig
 from fides.api.ops.util.saas_util import (
     load_config,
@@ -54,7 +54,7 @@ class ConnectorTemplate(BaseModel):
     @validator("dataset")
     def validate_dataset(cls, dataset: str) -> str:
         """Validates the dataset at the given path"""
-        FidesopsDataset(**load_dataset(dataset)[0])
+        Dataset(**load_dataset(dataset)[0])
         return dataset
 
     @validator("icon")
@@ -141,7 +141,8 @@ def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
     global _registry  # pylint: disable=W0603
     if _registry is None:
-        _registry = ConnectorRegistry.parse_obj(load_toml([config_file]))
+        toml_file = load_toml([config_file])
+        _registry = ConnectorRegistry.parse_obj(toml_file)
     return _registry
 
 

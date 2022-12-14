@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
+from fideslang.validation import FidesKey
 from fideslib.exceptions import KeyOrNameAlreadyExists
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -43,7 +44,6 @@ from fides.api.ops.schemas.saas.saas_config import (
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_saas_connection_config(
-    connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
     logger.info("Finding connection config with key '%s'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)

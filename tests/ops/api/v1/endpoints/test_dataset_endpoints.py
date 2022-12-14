@@ -178,7 +178,7 @@ class TestValidateDataset:
         assert response.status_code == 200
         assert (
             json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fidesops_meta"
+                "fides_meta"
             ]["length"]
             == 123
         )
@@ -192,7 +192,7 @@ class TestValidateDataset:
         assert response.status_code == 422
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "Illegal length (-1). Only positive non-zero values are allowed."
+            == "ensure this value is greater than 0"
         )
 
     def test_put_validate_dataset_invalid_data_type(
@@ -215,7 +215,7 @@ class TestValidateDataset:
         assert response.status_code == 200
         assert (
             json.loads(response.text)["dataset"]["collections"][0]["fields"][0][
-                "fidesops_meta"
+                "fides_meta"
             ]["data_type"]
             == "string"
         )
@@ -265,7 +265,7 @@ class TestValidateDataset:
             0,
             "fields",
             0,
-            "fidesops_meta",
+            "fides_meta",
             "references",
             0,
             "direction",
@@ -288,7 +288,7 @@ class TestValidateDataset:
         )
         assert response.status_code == 422
         details = json.loads(response.text)["detail"]
-        assert ["body", "collections", 0, "fields", 0, "data_categories"] in [
+        assert ["collections", 0, "fields", 0, "data_categories"] in [
             e["loc"] for e in details
         ]
 
@@ -318,8 +318,8 @@ class TestValidateDataset:
         # Remove all the "reference" annotations; this will make traversal impossible
         for collection in invalid_dataset["collections"]:
             for field in collection["fields"]:
-                if field.get("fidesops_meta"):
-                    field["fidesops_meta"]["references"] = None
+                if field.get("fides_meta"):
+                    field["fides_meta"]["references"] = None
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
