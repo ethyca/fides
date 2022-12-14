@@ -1,7 +1,6 @@
 import random
 from typing import Iterable
 
-from fideslib.db.base_class import FidesBase
 from sqlalchemy.engine import Engine
 
 from fides.api.ops.graph.config import *
@@ -17,6 +16,7 @@ from fides.api.ops.service.connectors.sql_connector import SQLConnector
 from fides.api.ops.task.graph_task import GraphTask
 from fides.api.ops.task.task_resources import TaskResources
 from fides.api.ops.util.collection_util import Row
+from fides.lib.db.base_class import FidesBase
 
 from ..fixtures.application_fixtures import faker
 

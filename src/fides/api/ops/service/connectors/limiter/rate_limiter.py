@@ -1,12 +1,11 @@
-import logging
 import time
 from enum import Enum
 from typing import List
 
+from loguru import logger
+
 from fides.api.ops.common_exceptions import RedisConnectionError
 from fides.api.ops.util.cache import FidesopsRedis, get_cache
-
-logger = logging.getLogger(__name__)
 
 
 class RateLimiterPeriod(Enum):
@@ -129,7 +128,7 @@ class RateLimiter:
             redis: FidesopsRedis = get_cache()
         except RedisConnectionError as exc:
             logger.warning(
-                "Failed to connect to redis, skipping limiter for requests %s. %s",
+                "Failed to connect to redis, skipping limiter for requests {}. {}",
                 ",".join(str(r) for r in requests),
                 exc,
             )
@@ -151,7 +150,7 @@ class RateLimiter:
 
             if breached_requests:
                 logger.debug(
-                    "Breached rate limits: %s. Decrementing usage and trying again.",
+                    "Breached rate limits: {}. Decrementing usage and trying again.",
                     ",".join(str(r) for r in breached_requests),
                 )
                 self.decrement_usage(

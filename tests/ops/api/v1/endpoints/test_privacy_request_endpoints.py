@@ -12,14 +12,6 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.endpoints.privacy_request_endpoints import (
@@ -99,6 +91,14 @@ from fides.api.ops.util.cache import (
     get_masking_secret_cache_key,
 )
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
 
 CONFIG = get_config()
 page_size = Params().size

@@ -27,6 +27,23 @@ nox.options.sessions = []
 nox.options.reuse_existing_virtualenvs = True
 
 
+@nox.session()
+def usage(session: nox.Session) -> None:
+    """Prints the documentation for a nox session provided: `nox -s usage -- <session>`."""
+
+    if not session.posargs:
+        session.error("Please provide a session name, such as `clean`")
+
+    command = session.posargs[0]
+
+    if not command in globals():
+        session.error(
+            "Sorry, this isn't a valid nox session.\nExamples: `clean`, `build`, `pytest_ctl`"
+        )
+
+    session.log(globals()[command].__doc__)
+
+
 def check_for_env_file() -> None:
     """Create a .env file if none exists."""
     env_file_example = "example.env"

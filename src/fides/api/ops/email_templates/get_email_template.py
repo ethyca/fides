@@ -1,7 +1,7 @@
-import logging
 import pathlib
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
+from loguru import logger
 
 from fides.api.ops.common_exceptions import EmailTemplateUnhandledActionType
 from fides.api.ops.email_templates.template_names import (
@@ -18,7 +18,6 @@ from fides.api.ops.email_templates.template_names import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 
 pathlib.Path(__file__).parent.resolve()
-logger = logging.getLogger(__name__)
 
 abs_path_to_current_file_dir = pathlib.Path(__file__).parent.resolve()
 template_env = Environment(
@@ -49,7 +48,7 @@ def get_email_template(  # pylint: disable=too-many-return-statements
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         return template_env.get_template(PRIVACY_REQUEST_REVIEW_APPROVE_TEMPLATE)
 
-    logger.error("No corresponding template linked to the %s", action_type)
+    logger.error("No corresponding template linked to the {}", action_type)
     raise EmailTemplateUnhandledActionType(
         f"No corresponding template linked to the {action_type}"
     )

@@ -1,5 +1,4 @@
 import copy
-import logging
 import traceback
 from abc import ABC
 from functools import wraps
@@ -9,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.threaded import get
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
@@ -44,8 +44,6 @@ from fides.api.ops.util.collection_util import NodeInput, Row, append, partition
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.ctl.core.config import get_config
-
-logger = logging.getLogger(__name__)
 
 dask.config.set(scheduler="threads")
 
@@ -87,7 +85,7 @@ def retry(
                     return func(*args, **kwargs)
                 except PrivacyRequestPaused as ex:
                     logger.warning(
-                        "Privacy request %s paused %s",
+                        "Privacy request {} paused {}",
                         method_name,
                         self.traversal_node.address,
                     )
@@ -102,7 +100,7 @@ def retry(
                     return 0
                 except CollectionDisabled as exc:
                     logger.warning(
-                        "Skipping disabled collection %s for privacy_request: %s",
+                        "Skipping disabled collection {} for privacy_request: {}",
                         self.traversal_node.address,
                         self.resources.request.id,
                     )
@@ -111,7 +109,7 @@ def retry(
                 except BaseException as ex:  # pylint: disable=W0703
                     func_delay *= CONFIG.execution.task_retry_backoff
                     logger.warning(
-                        "Retrying %s %s in %s seconds...",
+                        "Retrying {} {} in {} seconds...",
                         method_name,
                         self.traversal_node.address,
                         func_delay,
@@ -268,7 +266,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """
         if not len(data) == len(self.input_keys):
             logger.warning(
-                "%s expected %s input keys, received %s",
+                "{} expected {} input keys, received {}",
                 self,
                 len(self.input_keys),
                 len(data),
@@ -293,7 +291,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 continue
 
             logger.info(
-                "Consolidating incoming data into %s from %s.",
+                "Consolidating incoming data into {} from {}.",
                 self.traversal_node.node.address,
                 collection_address,
             )
@@ -349,7 +347,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
         logger.info(
-            "Starting %s, traversal_node %s", self.resources.request.id, self.key
+            "Starting {}, traversal_node {}", self.resources.request.id, self.key
         )
 
         self.update_status(
@@ -358,19 +356,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying %s, node %s", self.resources.request.id, self.key)
+        logger.info("Retrying {}, node {}", self.resources.request.id, self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
     def log_paused(self, action_type: ActionType, ex: Optional[BaseException]) -> None:
         """On paused activities"""
-        logger.info("Pausing %s, node %s", self.resources.request.id, self.key)
+        logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.paused)
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
-        logger.info("Skipping %s, node %s", self.resources.request.id, self.key)
+        logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
 
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
 
@@ -384,14 +382,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if ex:
             traceback.print_exc()
             logger.warning(
-                "Ending %s, %s with failure %s",
+                "Ending {}, {} with failure {}",
                 self.resources.request.id,
                 self.key,
                 Pii(ex),
             )
             self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
         else:
-            logger.info("Ending %s, %s", self.resources.request.id, self.key)
+            logger.info("Ending {}, {}", self.resources.request.id, self.key)
             self.update_status(
                 str(success_override_msg) if success_override_msg else "success",
                 build_affected_field_logs(
@@ -470,7 +468,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:
             logger.info(
-                "Filtering row in %s for matching array elements.",
+                "Filtering row in {} for matching array elements.",
                 self.traversal_node.node.address,
             )
             filter_element_match(row, post_processed_node_input_data)
@@ -513,7 +511,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # note this in the execution log and perform no erasures on this node
         if not self.traversal_node.node.contains_field(lambda f: f.primary_key):
             logger.warning(
-                "No erasures on %s as there is no primary_key defined.",
+                "No erasures on {} as there is no primary_key defined.",
                 self.traversal_node.node.address,
             )
             self.update_status(
@@ -526,7 +524,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         if not self.can_write_data():
             logger.warning(
-                "No erasures on %s as its ConnectionConfig does not have write access.",
+                "No erasures on {} as its ConnectionConfig does not have write access.",
                 self.traversal_node.node.address,
             )
             self.update_status(
@@ -775,7 +773,7 @@ def build_affected_field_logs(
 
     targeted_field_paths: Dict[FieldAddress, str] = {}
 
-    for rule in policy.rules:
+    for rule in policy.rules:  # type: ignore[attr-defined]
         if rule.action_type != action_type:
             continue
         rule_categories: List[str] = rule.get_target_data_categories()
