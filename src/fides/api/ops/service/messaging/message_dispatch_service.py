@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -288,29 +289,69 @@ def _mailgun_dispatcher(
         if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
         else "https://api.eu.mailgun.net"
     )
+
     domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
-    data = {
-        "from": f"<mailgun@{domain}>",
-        "to": [to.strip()],
-        "subject": message.subject,
-        "html": message.body,
-    }
+
     try:
-        response: requests.Response = requests.post(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+        # Check if a fides template exists
+        template_test = requests.get(
+            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/fides",
             auth=(
                 "api",
                 messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
             ),
-            data=data,
         )
-        if not response.ok:
-            logger.error(
-                "Email failed to send with status code: %s", response.status_code
+
+        if template_test.status_code == 200:
+            response = requests.post(
+                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+                auth=(
+                    "api",
+                    messaging_config.secrets[
+                        MessagingServiceSecrets.MAILGUN_API_KEY.value
+                    ],
+                ),
+                data={
+                    "from": f"<mailgun@{domain}>",
+                    "to": [to.strip()],
+                    "subject": message.subject,
+                    "template": "fides",
+                    "h:X-Mailgun-Variables": json.dumps(
+                        {"fides_email_body": message.body}
+                    ),
+                },
             )
-            raise MessageDispatchException(
-                f"Email failed to send with status code {response.status_code}"
+            if not response.ok:
+                logger.error(
+                    "Email failed to send with status code: %s", response.status_code
+                )
+                raise MessageDispatchException(
+                    f"Email failed to send with status code {response.status_code}"
+                )
+        else:
+            data = {
+                "from": f"<mailgun@{domain}>",
+                "to": [to.strip()],
+                "subject": message.subject,
+                "html": message.body,
+            }
+            response: requests.Response = requests.post(
+                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
+                auth=(
+                    "api",
+                    messaging_config.secrets[
+                        MessagingServiceSecrets.MAILGUN_API_KEY.value
+                    ],
+                ),
+                data=data,
             )
+            if not response.ok:
+                logger.error(
+                    "Email failed to send with status code: %s", response.status_code
+                )
+                raise MessageDispatchException(
+                    f"Email failed to send with status code {response.status_code}"
+                )
     except Exception as e:
         logger.error("Email failed to send: %s", Pii(str(e)))
         raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
