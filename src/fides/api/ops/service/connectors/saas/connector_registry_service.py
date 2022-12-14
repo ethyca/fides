@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
 from fideslang.models import Dataset
-from fideslib.core.config import load_toml
+from loguru import logger
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -30,8 +30,6 @@ from fides.api.ops.util.saas_util import (
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"
-
-logger = logging.getLogger(__name__)
 
 
 class ConnectorTemplate(BaseModel):
@@ -141,8 +139,7 @@ def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
     global _registry  # pylint: disable=W0603
     if _registry is None:
-        toml_file = load_toml([config_file])
-        _registry = ConnectorRegistry.parse_obj(toml_file)
+        _registry = ConnectorRegistry.parse_obj(load_toml(config_file))
     return _registry
 
 
@@ -156,7 +153,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
     """
     for connector_type in registry.connector_types():
         logger.debug(
-            "Determining if any updates are needed for connectors of type %s based on templates...",
+            "Determining if any updates are needed for connectors of type {} based on templates...",
             connector_type,
         )
         template: ConnectorTemplate = registry.get_connector_template(  # type: ignore
@@ -175,7 +172,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
             saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
             if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
-                    "Updating SaaS config instance '%s' of type '%s' as its version, %s, was found to be lower than the template version %s",
+                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
                     saas_config_instance.fides_key,
                     connector_type,
                     saas_config_instance.version,
@@ -190,7 +187,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
                     )
                 except Exception:
                     logger.error(
-                        "Encountered error attempting to update SaaS config instance %s",
+                        "Encountered error attempting to update SaaS config instance {}",
                         saas_config_instance.fides_key,
                         exc_info=True,
                     )

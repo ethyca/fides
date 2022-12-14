@@ -1,7 +1,5 @@
-import logging
 from typing import Any, Dict, Optional, Tuple
 
-from fideslib.db.base_class import Base, FidesBase
 from fideslog.sdk.python.registration import Registration
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.orm import Session
@@ -9,10 +7,9 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from fides.ctl.core.config import get_config
+from fides.lib.db.base_class import Base, FidesBase
 
 CONFIG = get_config()
-
-logger = logging.getLogger(__name__)
 
 
 class UserRegistration(Base):
@@ -33,7 +30,7 @@ class UserRegistration(Base):
     opt_in = Column(Boolean, nullable=False, default=False)
 
     @classmethod
-    def create_or_update(
+    def create_or_update(  # type: ignore[override]
         cls, db: Session, *, data: Dict[str, Any]
     ) -> Tuple[FidesBase, bool]:
         """
@@ -52,7 +49,7 @@ class UserRegistration(Base):
 
         return (cls.create(db=db, data=data), created_or_updated)
 
-    def update(self, db: Session, data: Dict[str, Any]) -> Tuple[FidesBase, bool]:
+    def update(self, db: Session, data: Dict[str, Any]) -> Tuple[FidesBase, bool]:  # type: ignore[override]
         """
         Updates a registration with the keys provided in `data`.
         """

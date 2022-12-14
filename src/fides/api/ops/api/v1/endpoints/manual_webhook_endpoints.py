@@ -1,8 +1,8 @@
-import logging
-from typing import Optional, Sequence
+from typing import List, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -36,7 +36,6 @@ from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
 
-logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)
 
 
@@ -71,7 +70,7 @@ def create_access_manual_webhook(
     *,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
-) -> AccessManualWebhookResponse:
+) -> AccessManualWebhook:
     """
     Create an Access Manual Webhook to describe the fields that should be manually uploaded and passed directly to the user
     """
@@ -88,7 +87,7 @@ def create_access_manual_webhook(
         )
 
     logger.info(
-        "Creating access manual webhook for connection config '%s'",
+        "Creating access manual webhook for connection config '{}'",
         connection_config.key,
     )
 
@@ -117,7 +116,7 @@ def patch_access_manual_webhook(
     *,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
-) -> Optional[AccessManualWebhookResponse]:
+) -> AccessManualWebhook:
     """
     Updates the AccessManualWebhook associated with this ConnectionConfig
     """
@@ -132,7 +131,7 @@ def patch_access_manual_webhook(
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=Pii(str(exc)))
 
     logger.info(
-        "Updated access manual webhook for connection config '%s'",
+        "Updated access manual webhook for connection config '{}'",
         connection_config.key,
     )
     return access_manual_webhook
@@ -146,7 +145,7 @@ def patch_access_manual_webhook(
 )
 def get_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> AccessManualWebhookResponse:
+) -> AccessManualWebhook:
     """
     Gets the Access Manual Webhook associated with this ConnectionConfig.
     """
@@ -154,7 +153,7 @@ def get_access_manual_webhook(
         connection_config
     )
     logger.info(
-        "Retrieved access manual webhook for connection config '%s'",
+        "Retrieved access manual webhook for connection config '{}'",
         connection_config.key,
     )
     return access_manual_webhook
@@ -179,7 +178,7 @@ def delete_access_manual_webhook(
 
     access_manual_webhook.delete(db)
     logger.info(
-        "Deleted access manual webhook for connection config '%s'",
+        "Deleted access manual webhook for connection config '{}'",
         connection_config.key,
     )
 
@@ -192,7 +191,7 @@ def delete_access_manual_webhook(
 )
 def get_access_manual_webhooks(
     db: Session = Depends(deps.get_db),
-) -> Sequence[AccessManualWebhookResponse]:
+) -> List[AccessManualWebhook]:
     """
     Get all enabled Access Manual Webhooks
     """

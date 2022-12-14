@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException
@@ -9,7 +8,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from loguru import logger
 from pydantic import ValidationError, conlist
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -73,10 +72,9 @@ from fides.api.ops.service.privacy_request.request_runner_service import (
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
-
-logger = logging.getLogger(__name__)
 
 
 def get_connection_config_or_error(
@@ -84,7 +82,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '%s'", connection_key)
+    logger.info("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -119,7 +117,7 @@ def get_connections(
     SaaS connector types.
     """
     logger.info(
-        "Finding connection configurations with pagination params %s and search query: '%s'.",
+        "Finding connection configurations with pagination params {} and search query: '{}'.",
         params,
         search if search else "",
     )
@@ -217,7 +215,7 @@ def patch_connections(
     """
     created_or_updated: List[ConnectionConfig] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for %s connection configuration(s)", len(configs))
+    logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
     for config in configs:
         orig_data = config.dict().copy()
@@ -228,7 +226,7 @@ def patch_connections(
             created_or_updated.append(connection_config)
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
-                "Create/update failed for connection config with key '%s': %s",
+                "Create/update failed for connection config with key '{}': {}",
                 config.key,
                 exc,
             )
@@ -240,7 +238,7 @@ def patch_connections(
             )
         except Exception:
             logger.warning(
-                "Create/update failed for connection config with key '%s'.", config.key
+                "Create/update failed for connection config with key '{}'.", config.key
             )
             failed.append(
                 BulkUpdateFailed(
@@ -269,7 +267,7 @@ def delete_connection(
     """Removes the connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
     connection_type = connection_config.connection_type
-    logger.info("Deleting connection config with key '%s'.", connection_key)
+    logger.info("Deleting connection config with key '{}'.", connection_key)
     connection_config.delete(db)
 
     # Access Manual Webhooks are cascade deleted if their ConnectionConfig is deleted,
@@ -297,7 +295,7 @@ def validate_secrets(
     try:
         schema = get_connection_secrets_schema(connection_type.value, saas_config)  # type: ignore
         logger.info(
-            "Validating secrets on connection config with key '%s'",
+            "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
         connection_secrets = schema.parse_obj(request_body)
@@ -329,7 +327,7 @@ def connection_status(
 
     except (ConnectionException, ClientUnsuccessfulException) as exc:
         logger.warning(
-            "Connection test failed on %s: %s",
+            "Connection test failed on {}: {}",
             connection_config.key,
             Pii(str(exc)),
         )
@@ -342,7 +340,7 @@ def connection_status(
             failure_reason=str(exc),
         )
 
-    logger.info("Connection test %s on %s", status.value, connection_config.key)  # type: ignore
+    logger.info("Connection test {} on {}", status.value, connection_config.key)  # type: ignore
     connection_config.update_test_status(test_status=status, db=db)  # type: ignore
 
     return TestStatusMessage(
@@ -376,7 +374,7 @@ def put_connection_config_secrets(
         db, unvalidated_secrets, connection_config
     ).dict()
     # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '%s'", connection_key)
+    logger.info("Updating connection config secrets for '{}'", connection_key)
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
@@ -419,7 +417,7 @@ def requeue_requires_input_requests(db: Session) -> None:
             conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
         ):
             logger.info(
-                "Queuing privacy request '%s with '%s' status now that manual inputs are no longer required.",
+                "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
                 pr.id,
                 pr.status.value,
             )

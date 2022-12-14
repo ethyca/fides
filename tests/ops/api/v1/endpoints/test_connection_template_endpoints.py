@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest
-from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1.scope_registry import (
@@ -28,6 +27,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
     registry_file,
 )
 from fides.api.ops.util.saas_util import encode_file_contents
+from fides.lib.models.client import ClientDetail
 
 
 class TestGetConnections:

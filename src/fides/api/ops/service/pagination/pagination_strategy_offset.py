@@ -1,7 +1,7 @@
-import logging
 from typing import Any, Dict, Optional, Union
 
 import pydash
+from loguru import logger
 from requests import Response
 
 from fides.api.ops.common_exceptions import FidesopsException
@@ -13,8 +13,6 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     OffsetPaginationConfiguration,
 )
 from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
-
-logger = logging.getLogger(__name__)
 
 
 class OffsetPaginationStrategy(PaginationStrategy):

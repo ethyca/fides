@@ -1,11 +1,8 @@
-import logging
 from typing import Optional
 
 from pydantic import validator
 
 from .fides_settings import FidesSettings
-
-logger = logging.getLogger(__name__)
 
 ENV_PREFIX = "FIDES__NOTIFICATIONS__"
 

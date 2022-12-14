@@ -1,4 +1,3 @@
-import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
@@ -7,8 +6,6 @@ from pydantic import Extra, ValidationError, root_validator, validator
 from pydantic.main import BaseModel
 
 from fides.api.ops.schemas.api import BulkResponse, BulkUpdateFailed
-
-logger = logging.getLogger(__name__)
 
 
 class ResponseFormat(Enum):

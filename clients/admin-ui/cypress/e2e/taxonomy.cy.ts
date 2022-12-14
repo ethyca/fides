@@ -1,5 +1,3 @@
-import { stubHomePage } from "cypress/support/stubs";
-
 describe("Taxonomy management page", () => {
   beforeEach(() => {
     cy.login();
@@ -18,7 +16,6 @@ describe("Taxonomy management page", () => {
   });
 
   it("Can navigate to the taxonomy page", () => {
-    stubHomePage();
     cy.visit("/");
     cy.getByTestId("nav-link-Taxonomy").click();
     cy.getByTestId("taxonomy-tabs");

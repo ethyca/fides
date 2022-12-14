@@ -2,7 +2,6 @@ import json
 from uuid import uuid4
 
 import pytest
-from fideslib.models.client import ClientDetail
 from starlette.testclient import TestClient
 
 from fides.api.ops.api.v1 import scope_registry as scopes
@@ -23,6 +22,7 @@ from fides.api.ops.util.data_category import (
     DataCategory,
     generate_fides_data_categories,
 )
+from fides.lib.models.client import ClientDetail
 
 
 class TestGetPolicies:

@@ -1,14 +1,12 @@
 import itertools
-import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.validation import FidesKey
+from loguru import logger
 
 from fides.api.ops.graph.config import CollectionAddress, FieldPath
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 def filter_data_categories(
@@ -178,7 +176,7 @@ def unpack_fides_connector_results(
             rule_results = results[rule_key]
         except KeyError:
             logger.error(
-                "Did not find a result entry on Fides connector %s for rule %s",
+                "Did not find a result entry on Fides connector {} for rule {}",
                 node_address,
                 rule_key,
             )
@@ -197,5 +195,5 @@ def unpack_fides_connector_results(
                     filtered_access_results[key] = value  # type: ignore
                 else:
                     if value:
-                        logger.info("Appending child rows to %s", key)
+                        logger.info("Appending child rows to {}", key)
                         filtered.extend(value)  # type: ignore

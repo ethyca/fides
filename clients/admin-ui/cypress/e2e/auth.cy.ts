@@ -1,5 +1,3 @@
-import { stubHomePage } from "cypress/support/stubs";
-
 import { USER_PRIVILEGES } from "~/constants";
 
 describe("User Authentication", () => {
@@ -21,7 +19,6 @@ describe("User Authentication", () => {
       cy.visit("/login");
       cy.getByTestId("Login");
 
-      stubHomePage();
       cy.intercept("GET", "/api/v1/system", { body: [] });
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/login", body).as("postLogin");
@@ -44,7 +41,6 @@ describe("User Authentication", () => {
   describe("when the user is logged in", () => {
     beforeEach(() => {
       cy.login();
-      stubHomePage();
     });
 
     it("lets them navigate to protected routes", () => {
