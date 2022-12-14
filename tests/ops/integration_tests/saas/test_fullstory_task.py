@@ -1,4 +1,3 @@
-import logging
 import random
 
 import pytest
@@ -15,7 +14,6 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.skip("API keys are temporary for free accounts")

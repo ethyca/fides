@@ -1,5 +1,4 @@
 import copy
-import logging
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock
@@ -43,7 +42,6 @@ from ..task.traversal_data import (
 
 CONFIG = get_config()
 
-logger = logging.getLogger(__name__)
 sample_postgres_configuration_policy = erasure_policy(
     "system.operations",
     "user.unique_id",
