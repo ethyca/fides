@@ -1,7 +1,7 @@
-import logging
 from typing import Any, Dict, List, Union
 
 import pydash
+from loguru import logger
 
 from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.schemas.saas.shared_schemas import IdentityParamRef
@@ -11,8 +11,6 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
 from fides.api.ops.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class FilterPostProcessorStrategy(PostProcessorStrategy):
@@ -70,7 +68,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         if isinstance(self.value, IdentityParamRef):
             if identity_data is None or identity_data.get(self.value.identity) is None:
                 logger.warning(
-                    "Could not retrieve identity reference '%s' due to missing identity data for the following post processing strategy: %s",
+                    "Could not retrieve identity reference '{}' due to missing identity data for the following post processing strategy: {}",
                     self.value.identity,
                     self.name,
                 )
@@ -101,7 +99,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             )
         except KeyError:
             logger.warning(
-                "%s could not be found on data for the following post processing strategy: %s",
+                "{} could not be found on data for the following post processing strategy: {}",
                 self.field,
                 self.name,
             )

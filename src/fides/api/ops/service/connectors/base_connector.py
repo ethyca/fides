@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
@@ -12,7 +11,6 @@ from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
 DB_CONNECTOR_TYPE = TypeVar("DB_CONNECTOR_TYPE")
-logger = logging.getLogger(__name__)
 
 
 class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):

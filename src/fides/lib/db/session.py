@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import logging
-
+from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import URL
@@ -9,8 +8,6 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fides.ctl.core.config import FidesConfig
 from fides.lib.exceptions import MissingConfig
-
-logger = logging.getLogger(__name__)
 
 
 def get_db_engine(
@@ -62,7 +59,7 @@ class ExtendedSession(Session):
         try:
             return super().commit()
         except Exception as exc:
-            logger.error("Exception: %s", exc)
+            logger.error("Exception: {}", exc)
             # Rollback the current transaction after each failed commit
             self.rollback()
             raise

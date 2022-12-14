@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, Optional, Tuple
 
 from fideslog.sdk.python.registration import Registration
@@ -11,8 +10,6 @@ from fides.ctl.core.config import get_config
 from fides.lib.db.base_class import Base, FidesBase
 
 CONFIG = get_config()
-
-logger = logging.getLogger(__name__)
 
 
 class UserRegistration(Base):

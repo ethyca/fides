@@ -1,9 +1,7 @@
-import logging
 from os import getenv
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 DEFAULT_CONFIG_PATH_ENV_VAR = "FIDES__CONFIG_PATH"
-logger = logging.getLogger(__name__)
 
 
 def get_test_mode() -> bool:

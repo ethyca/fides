@@ -1,5 +1,3 @@
-import logging
-
 from requests import PreparedRequest
 
 from fides.api.ops.models.connectionconfig import ConnectionConfig
@@ -7,8 +5,6 @@ from fides.api.ops.schemas.saas.strategy_configuration import OAuth2BaseConfigur
 from fides.api.ops.service.authentication.authentication_strategy_oauth2_base import (
     OAuth2AuthenticationStrategyBase,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategyBase):
