@@ -4,16 +4,18 @@ import React from "react";
 import { useAppSelector } from "~/app/hooks";
 
 import { selectRetryRequests } from "../privacy-requests.slice";
+import MoreButton from "./MoreButton";
 import ReprocessButton from "./ReprocessButton";
 
 const ActionButtons: React.FC = () => {
   const { errorRequests } = useAppSelector(selectRetryRequests);
 
-  return errorRequests?.length > 0 ? (
+  return (
     <ButtonGroup flexDirection="row" size="sm" spacing="8px" variant="outline">
-      <ReprocessButton />
+      {errorRequests?.length > 0 && <ReprocessButton />}
+      <MoreButton />
     </ButtonGroup>
-  ) : null;
+  );
 };
 
 export default ActionButtons;
