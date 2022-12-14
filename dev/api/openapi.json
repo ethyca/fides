@@ -4260,6 +4260,28 @@
         "summary": "Create User",
         "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.",
         "operationId": "create_user_api_v1_user_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verbose",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "verbose",
+            "in": "query"
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -4458,6 +4480,28 @@
         "summary": "User Login",
         "description": "Login the user by creating a client if it doesn't exist, and have that client\ngenerate a token.",
         "operationId": "user_login_api_v1_login_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verbose",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "verbose",
+            "in": "query"
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -6775,7 +6819,7 @@
           "DSR Policy Webhooks"
         ],
         "summary": "Get Policy Pre Execution Webhooks",
-        "description": "Return a paginated list of all Pre-Execution Webhooks that will run in order for the Policy **before** a\nPrivacy Request is executed.",
+        "description": "Return a paginated list of all Pre-Execution Webhooks that will\nrun in order for the Policy **before** a Privacy Request is executed.",
         "operationId": "get_policy_pre_execution_webhooks_api_v1_dsr_policy__policy_key__webhook_pre_execution_get",
         "parameters": [
           {
@@ -10978,13 +11022,13 @@
             "title": "Default Value",
             "anyOf": [
               {
+                "type": "string"
+              },
+              {
                 "type": "array",
                 "items": {
                   "type": "string"
                 }
-              },
-              {
-                "type": "string"
               }
             ]
           },
