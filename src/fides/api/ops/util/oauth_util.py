@@ -5,18 +5,9 @@ from datetime import datetime
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.exceptions import AuthenticationError, AuthorizationError
-from fideslib.models.client import ClientDetail
-from fideslib.models.fides_user import FidesUser
-from fideslib.oauth.oauth_util import extract_payload, is_token_expired
-from fideslib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 from jose import exceptions
 from jose.constants import ALGORITHMS
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
@@ -27,6 +18,16 @@ from fides.api.ops.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.api.ops.models.policy import PolicyPreWebhook
 from fides.api.ops.schemas.external_https import WebhookJWE
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.exceptions import AuthenticationError, AuthorizationError
+from fides.lib.models.client import ClientDetail
+from fides.lib.models.fides_user import FidesUser
+from fides.lib.oauth.oauth_util import extract_payload, is_token_expired
+from fides.lib.oauth.schemas.oauth import OAuth2ClientCredentialsBearer
 
 CONFIG = get_config()
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
@@ -58,7 +59,7 @@ async def get_current_user(
             created_at=datetime.utcnow(),
         )
 
-    return client.user
+    return client.user  # type: ignore[attr-defined]
 
 
 def is_callback_token_expired(issued_at: datetime | None) -> bool:
@@ -125,6 +126,7 @@ async def verify_oauth_client(
     if not
     """
     if authorization is None:
+        logger.debug("No authorization supplied.")
         raise AuthenticationError(detail="Authentication Failure")
 
     try:
@@ -132,10 +134,12 @@ async def verify_oauth_client(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
     except exceptions.JWEParseError as exc:
+        logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
     issued_at = token_data.get(JWE_ISSUED_AT, None)
     if not issued_at:
+        logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     if is_token_expired(
@@ -146,10 +150,16 @@ async def verify_oauth_client(
 
     assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
     if not set(security_scopes.scopes).issubset(assigned_scopes):
+        scopes_required = ",".join(security_scopes.scopes)
+        scopes_provided = ",".join(assigned_scopes)
+        logger.debug(
+            f"Auth token missing required scopes: {scopes_required}. Scopes provided: {scopes_provided}."
+        )
         raise AuthorizationError(detail="Not Authorized for this action")
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
+        logger.debug("No client_id included in auth token.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # scopes param is only used if client is root client, otherwise we use the client's associated scopes
@@ -158,10 +168,12 @@ async def verify_oauth_client(
     )
 
     if not client:
+        logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     if not set(assigned_scopes).issubset(set(client.scopes)):
         # If the scopes on the token are not a subset of the scopes available
         # to the associated oauth client, this token is not valid
+        logger.debug("Client no longer allowed to issue these scopes.")
         raise AuthorizationError(detail="Not Authorized for this action")
     return client

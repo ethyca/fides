@@ -5,8 +5,6 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.db.base_class import get_key_from_data
-from fideslib.exceptions import KeyOrNameAlreadyExists
 from pydantic import conlist
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -31,6 +29,8 @@ from fides.api.ops.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.db.base_class import get_key_from_data
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 
@@ -50,8 +50,8 @@ def get_policy_pre_execution_webhooks(
     params: Params = Depends(),
 ) -> AbstractPage[PolicyPreWebhook]:
     """
-    Return a paginated list of all Pre-Execution Webhooks that will run in order for the Policy **before** a
-    Privacy Request is executed.
+    Return a paginated list of all Pre-Execution Webhooks that will
+    run in order for the Policy **before** a Privacy Request is executed.
     """
     policy = get_policy_or_error(db, policy_key)
 
@@ -60,7 +60,7 @@ def get_policy_pre_execution_webhooks(
         policy.key,
         params,
     )
-    return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)
+    return paginate(policy.pre_execution_webhooks.order_by("order"), params=params)  # type: ignore[attr-defined]
 
 
 @router.get(
@@ -86,7 +86,7 @@ def get_policy_post_execution_webhooks(
         policy.key,
         params,
     )
-    return paginate(policy.post_execution_webhooks.order_by("order"), params=params)
+    return paginate(policy.post_execution_webhooks.order_by("order"), params=params)  # type: ignore[attr-defined]
 
 
 def put_webhooks(
@@ -105,7 +105,8 @@ def put_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     keys = [
-        get_key_from_data(webhook.dict(), webhook_cls.__name__) for webhook in webhooks
+        get_key_from_data(webhook.dict(), type(webhook_cls).__name__)
+        for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
     # Because resources are dependent on each other for order, we want to make sure that we don't have multiple

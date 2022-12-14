@@ -7,7 +7,6 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 from fastapi_pagination import Params
-from fideslib.models.client import ClientDetail
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -30,6 +29,7 @@ from fides.api.ops.models.privacy_request import (
 from fides.api.ops.schemas.messaging.messaging import MessagingActionType
 from fides.api.ops.schemas.redis_cache import Identity
 from fides.api.ops.tasks import MESSAGING_QUEUE_NAME
+from fides.lib.models.client import ClientDetail
 
 page_size = Params().size
 
@@ -428,7 +428,7 @@ class TestPatchConnections:
         email_resource.delete(db)
         manual_webhook_resource.delete(db)
 
-    @mock.patch("fideslib.db.base_class.OrmWrappedFidesBase.create_or_update")
+    @mock.patch("fides.lib.db.base_class.OrmWrappedFidesBase.create_or_update")
     def test_patch_connections_failed_response(
         self, mock_create: Mock, api_client: TestClient, generate_auth_header, url
     ) -> None:

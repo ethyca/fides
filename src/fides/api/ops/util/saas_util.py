@@ -8,14 +8,14 @@ from functools import reduce
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import yaml
-from fideslib.core.config import load_file
-from fideslib.cryptography.cryptographic_util import bytes_to_b64_str
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.ops.common_exceptions import FidesopsException
 from fides.api.ops.graph.config import Collection, CollectionAddress, Dataset, Field
 from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.ctl.core.config.helpers import load_file
+from fides.lib.cryptography.cryptographic_util import bytes_to_b64_str
 
 logger = logging.getLogger(__name__)
 

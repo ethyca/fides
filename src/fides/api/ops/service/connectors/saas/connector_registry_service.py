@@ -4,11 +4,11 @@ import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
-from fideslib.core.config import load_toml
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -141,7 +141,7 @@ def load_registry(config_file: str) -> ConnectorRegistry:
     """Loads a SaaS connector registry from the given config file."""
     global _registry  # pylint: disable=W0603
     if _registry is None:
-        _registry = ConnectorRegistry.parse_obj(load_toml([config_file]))
+        _registry = ConnectorRegistry.parse_obj(load_toml(config_file))
     return _registry
 
 

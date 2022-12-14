@@ -1,6 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 
-import config from "../config/config.json";
+import { Config } from "~/types/config";
+import configJson from "~/config/config.json";
+
+export const config: Config = configJson;
 
 // Compute the host URL for the server, while being backwards compatible with
 // the previous "fidesops_host_***" configuration

@@ -5,10 +5,11 @@
 import logging
 from typing import Dict, Optional
 
-from fideslib.core.config import FidesSettings
 from pydantic import PostgresDsn, validator
 
 from fides.ctl.core.config.utils import get_test_mode
+
+from .fides_settings import FidesSettings
 
 logger = logging.getLogger(__name__)
 

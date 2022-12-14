@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, Optional, Set
 
-from fideslib.db.base_class import Base
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -26,6 +25,7 @@ from fides.api.ops.schemas.dataset import (
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
+from fides.lib.db.base_class import Base
 
 logger = logging.getLogger(__name__)
 
