@@ -58,7 +58,7 @@ class QueryConfig(Generic[T], ABC):
         {<fides.api.ops.models.policy.Rule object at 0xffff9160e190>: [FieldPath('name'), FieldPath('code'), FieldPath('ccn')]}
         """
         rule_updates: Dict[Rule, List[FieldPath]] = {}
-        for rule in policy.rules:
+        for rule in policy.rules:  # type: ignore[attr-defined]
             if rule.action_type != ActionType.erasure:
                 continue
             rule_categories: List[str] = rule.get_target_data_categories()

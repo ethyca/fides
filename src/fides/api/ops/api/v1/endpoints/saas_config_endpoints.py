@@ -2,7 +2,6 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from fideslib.exceptions import KeyOrNameAlreadyExists
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -60,6 +59,7 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 
@@ -295,7 +295,7 @@ def instantiate_connection_from_template(
 
     if DatasetConfig.filter(
         db=db,
-        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
     ).count():
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

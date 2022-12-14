@@ -14,14 +14,6 @@ from uuid import uuid4
 import pytest
 import yaml
 from fideslang import models
-from fideslib.cryptography.schemas.jwt import (
-    JWE_ISSUED_AT,
-    JWE_PAYLOAD_CLIENT_ID,
-    JWE_PAYLOAD_SCOPES,
-)
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.jwt import generate_jwe
-from fideslib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
@@ -31,6 +23,14 @@ from fides.api.ctl.database.session import engine, sync_session
 from fides.api.ctl.sql_models import FidesUser, FidesUserPermissions
 from fides.ctl.core import api
 from fides.ctl.core.config import FidesConfig, get_config
+from fides.lib.cryptography.schemas.jwt import (
+    JWE_ISSUED_AT,
+    JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_SCOPES,
+)
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.jwt import generate_jwe
+from fides.lib.oauth.scopes import PRIVACY_REQUEST_READ, SCOPES
 
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"

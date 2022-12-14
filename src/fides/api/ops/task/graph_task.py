@@ -773,7 +773,7 @@ def build_affected_field_logs(
 
     targeted_field_paths: Dict[FieldAddress, str] = {}
 
-    for rule in policy.rules:
+    for rule in policy.rules:  # type: ignore[attr-defined]
         if rule.action_type != action_type:
             continue
         rule_categories: List[str] = rule.get_target_data_categories()

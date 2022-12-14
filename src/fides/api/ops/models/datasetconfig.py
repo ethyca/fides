@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional, Set
 
-from fideslib.db.base_class import Base
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -26,6 +25,7 @@ from fides.api.ops.schemas.dataset import (
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.saas_util import merge_datasets
+from fides.lib.db.base_class import Base
 
 
 class DatasetConfig(Base):

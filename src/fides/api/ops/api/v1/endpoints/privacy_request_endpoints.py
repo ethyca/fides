@@ -12,8 +12,6 @@ from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.models.client import ClientDetail
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
@@ -149,6 +147,8 @@ from fides.api.ops.util.enums import ColumnSort
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_callback_oauth, verify_oauth_client
 from fides.ctl.core.config import get_config
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 CONFIG = get_config()
@@ -299,7 +299,7 @@ def privacy_request_csv_download(
 
 def execution_and_audit_logs_by_dataset_name(
     self: PrivacyRequest,
-) -> DefaultDict[str, List["ExecutionLog"]]:
+) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
     """
     Returns a combined mapping of execution and audit logs for the given privacy request.
 

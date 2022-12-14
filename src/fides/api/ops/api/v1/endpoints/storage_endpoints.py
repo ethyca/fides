@@ -4,7 +4,6 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.exceptions import KeyOrNameAlreadyExists
 from loguru import logger
 from pydantic import conlist
 from requests import RequestException
@@ -57,6 +56,7 @@ from fides.api.ops.service.storage.storage_uploader_service import upload
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 

@@ -1,10 +1,9 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
-from fideslib.models.client import ClientDetail
-from fideslib.oauth.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from loguru import logger
+
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -50,6 +49,11 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_authori
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import get_config
+from fides.lib.models.client import ClientDetail
+from fides.lib.oauth.schemas.oauth import (
+    AccessToken,
+    OAuth2ClientCredentialsRequestForm,
+)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
@@ -198,9 +202,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> None
     """
 
     # find authentication request by state
-    authentication_request: AuthenticationRequest = AuthenticationRequest.get_by(
-        db, field="state", value=state
-    )
+    authentication_request: Optional[
+        AuthenticationRequest
+    ] = AuthenticationRequest.get_by(db, field="state", value=state)
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

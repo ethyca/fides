@@ -7,10 +7,6 @@ from typing import Callable, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
-from fideslib.oauth.api.deps import get_config as lib_get_config
-from fideslib.oauth.api.deps import get_db as lib_get_db
-from fideslib.oauth.api.deps import verify_oauth_client as lib_verify_oauth_client
-from fideslib.oauth.api.routes.user_endpoints import router as user_router
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
@@ -42,7 +38,6 @@ from fides.api.ops.analytics import (
     send_analytics_event,
 )
 from fides.api.ops.api.deps import get_api_session
-from fides.api.ops.api.deps import get_db as get_ctl_db
 from fides.api.ops.api.v1.api import api_router
 from fides.api.ops.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.ops.common_exceptions import (
@@ -57,12 +52,12 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig
-from fides.ctl.core.config import get_config as get_ctl_config
-from fides.ctl.core.config.utils import check_required_webserver_config_values
+from fides.ctl.core.config import FidesConfig, get_config
+from fides.ctl.core.config.helpers import check_required_webserver_config_values
+from fides.lib.oauth.api.routes.user_endpoints import router as user_router
 
-CONFIG: FidesConfig = get_ctl_config()
+CONFIG: FidesConfig = get_config()
 
 app = FastAPI(title="fides")
 app.state.limiter = Limiter(
@@ -180,9 +175,6 @@ def configure_routes() -> None:
 
 # Configure the routes here so we can generate the openapi json file
 configure_routes()
-app.dependency_overrides[lib_get_config] = get_ctl_config
-app.dependency_overrides[lib_get_db] = get_ctl_db
-app.dependency_overrides[lib_verify_oauth_client] = verify_oauth_client
 
 for handler in ExceptionHandlers.get_handlers():
     app.add_exception_handler(FunctionalityNotConfigured, handler)
