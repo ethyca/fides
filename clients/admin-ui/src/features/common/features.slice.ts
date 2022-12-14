@@ -1,5 +1,7 @@
 import { useAppSelector } from "~/app/hooks";
-import { selectHealth, useHasPlus } from "~/features/plus/plus.slice";
+import { selectInitialConnections } from "~/features/datastore-connections";
+import { selectHealth } from "~/features/plus/plus.slice";
+import { selectAllSystems } from "~/features/system";
 
 /**
  * Features are currently stateless and only use the Plus API. However, this a ".slice" file because
@@ -8,16 +10,26 @@ import { selectHealth, useHasPlus } from "~/features/plus/plus.slice";
 export interface Features {
   plus: boolean;
   dataFlowScanning: boolean;
+  systemsCount: number;
+  connectionsCount: number;
 }
 
 export const useFeatures = (): Features => {
-  const hasPlus = useHasPlus();
   const health = useAppSelector(selectHealth);
+  const allSystems = useAppSelector(selectAllSystems);
+  const initialConnections = useAppSelector(selectInitialConnections);
 
+  const plus = health !== undefined;
   const dataFlowScanning = health ? !!health.system_scanner.enabled : false;
 
+  const systemsCount = allSystems?.length ?? 0;
+
+  const connectionsCount = initialConnections?.total ?? 0;
+
   return {
-    plus: hasPlus,
+    plus,
     dataFlowScanning,
+    systemsCount,
+    connectionsCount,
   };
 };
