@@ -175,7 +175,8 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
       <chakra.form onSubmit={handleSubmit} data-testid="verification-form">
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={4}>
-            A verification code has been sent. Return to this window and enter the code below.
+            A verification code has been sent. Return to this window and enter
+            the code below.
           </Text>
           <Stack spacing={3}>
             <FormControl
