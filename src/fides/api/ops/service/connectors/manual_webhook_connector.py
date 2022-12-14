@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List
 
 from fides.api.ops.graph.traversal import TraversalNode
@@ -7,8 +6,6 @@ from fides.api.ops.models.policy import Policy
 from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 class ManualWebhookConnector(BaseConnector[None]):

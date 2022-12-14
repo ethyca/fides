@@ -1,7 +1,7 @@
-import logging
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Type
 
+from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
 from sqlalchemy.engine import (  # type: ignore
@@ -46,8 +46,6 @@ from fides.api.ops.service.connectors.query_config import (
     SQLQueryConfig,
 )
 from fides.api.ops.util.collection_util import Row
-
-logger = logging.getLogger(__name__)
 
 
 class SQLConnector(BaseConnector[Engine]):
@@ -97,7 +95,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
-        logger.info("Starting test connection to %s", self.configuration.key)
+        logger.info("Starting test connection to {}", self.configuration.key)
 
         try:
             engine = self.client()
@@ -129,7 +127,7 @@ class SQLConnector(BaseConnector[Engine]):
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
-        logger.info("Starting data retrieval for %s", node.address)
+        logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(stmt)
@@ -161,7 +159,7 @@ class SQLConnector(BaseConnector[Engine]):
     def close(self) -> None:
         """Close any held resources"""
         if self.db_client:
-            logger.debug(" disposing of %s", self.__class__)
+            logger.debug(" disposing of {}", self.__class__)
             self.db_client.dispose()
 
     def create_client(self) -> Engine:

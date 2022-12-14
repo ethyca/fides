@@ -1,13 +1,9 @@
-import logging
 import random
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
-from celery.utils.log import get_task_logger
-from fideslib.db.session import get_db_session
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.schemas.base_class import BaseSchema
+from loguru import logger
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -79,9 +75,11 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.ctl.core.config import get_config
+from fides.lib.db.session import get_db_session
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.schemas.base_class import BaseSchema
 
 CONFIG = get_config()
-logger = get_task_logger(__name__)
 
 
 class ManualWebhookResults(BaseSchema):
@@ -128,7 +126,7 @@ def run_webhooks_and_report_status(
     db: Session,
     privacy_request: PrivacyRequest,
     webhook_cls: WebhookTypes,
-    after_webhook_id: str = None,
+    after_webhook_id: Optional[str] = None,
 ) -> bool:
     """
     Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
@@ -140,18 +138,18 @@ def run_webhooks_and_report_status(
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
         pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
-        webhooks = webhooks.filter(
-            webhook_cls.order > pre_webhook.order,
+        webhooks = webhooks.filter(  # type: ignore[call-arg]
+            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
         )
 
     current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
 
-    for webhook in webhooks.order_by(webhook_cls.order):
+    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
             privacy_request.trigger_policy_webhook(webhook)
         except PrivacyRequestPaused:
-            logging.info(
-                "Pausing execution of privacy request %s. Halt instruction received from webhook %s.",
+            logger.info(
+                "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
                 privacy_request.id,
                 webhook.key,
             )
@@ -159,8 +157,8 @@ def run_webhooks_and_report_status(
             initiate_paused_privacy_request_followup(privacy_request)
             return False
         except ClientUnsuccessfulException as exc:
-            logging.error(
-                "Privacy Request '%s' exited after response from webhook '%s': %s.",
+            logger.error(
+                "Privacy Request '{}' exited after response from webhook '{}': {}.",
                 privacy_request.id,
                 webhook.key,
                 Pii(str(exc.args[0])),
@@ -169,8 +167,8 @@ def run_webhooks_and_report_status(
             privacy_request.cache_failed_checkpoint_details(current_step)
             return False
         except ValidationError:
-            logging.error(
-                "Privacy Request '%s' errored due to response validation error from webhook '%s'.",
+            logger.error(
+                "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
                 privacy_request.id,
                 webhook.key,
             )
@@ -193,7 +191,7 @@ def upload_access_results(  # pylint: disable=R0912
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     if not access_result:
-        logging.info("No results returned for access request %s", privacy_request.id)
+        logger.info("No results returned for access request {}", privacy_request.id)
 
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
@@ -202,7 +200,7 @@ def upload_access_results(  # pylint: disable=R0912
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
             )
-        target_categories: Set[str] = {target.data_category for target in rule.targets}
+        target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
         filtered_results: Dict[
             str, List[Dict[str, Optional[Any]]]
         ] = filter_data_categories(
@@ -217,8 +215,8 @@ def upload_access_results(  # pylint: disable=R0912
             manual_data
         )  # Add manual data directly to each upload packet
 
-        logging.info(
-            "Starting access request upload for rule %s for privacy request %s",
+        logger.info(
+            "Starting access request upload for rule {} for privacy request {}",
             rule.key,
             privacy_request.id,
         )
@@ -232,8 +230,8 @@ def upload_access_results(  # pylint: disable=R0912
             if download_url:
                 download_urls.append(download_url)
         except common_exceptions.StorageUploadError as exc:
-            logging.error(
-                "Error uploading subject access data for rule %s on policy %s and privacy request %s : %s",
+            logger.error(
+                "Error uploading subject access data for rule {} on policy {} and privacy request {} : {}",
                 rule.key,
                 policy.key,
                 privacy_request.id,
@@ -263,7 +261,7 @@ def queue_privacy_request(
         )
     except DataError:
         logger.debug(
-            "Error tracking task_id for request with id %s", privacy_request_id
+            "Error tracking task_id for request with id {}", privacy_request_id
         )
 
     return task.task_id
@@ -290,7 +288,7 @@ async def run_privacy_request(
     """
     resume_step: Optional[CurrentStep] = CurrentStep(from_step) if from_step else None  # type: ignore
     if from_step:
-        logger.info("Resuming privacy request from checkpoint: '%s'", from_step)
+        logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
     with self.session as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
@@ -298,11 +296,11 @@ async def run_privacy_request(
         privacy_request.cache_failed_checkpoint_details()  # Reset failed step and collection to None
 
         if privacy_request.status == PrivacyRequestStatus.canceled:
-            logging.info(
-                "Terminating privacy request %s: request canceled.", privacy_request.id
+            logger.info(
+                "Terminating privacy request {}: request canceled.", privacy_request.id
             )
             return
-        logging.info("Dispatching privacy request %s", privacy_request.id)
+        logger.info("Dispatching privacy request {}", privacy_request.id)
         privacy_request.start_processing(session)
 
         policy = privacy_request.policy
@@ -449,7 +447,7 @@ async def run_privacy_request(
             },
         )
         privacy_request.status = PrivacyRequestStatus.complete
-        logging.info("Privacy request %s run completed.", privacy_request.id)
+        logger.info("Privacy request {} run completed.", privacy_request.id)
         privacy_request.save(db=session)
 
 
@@ -513,14 +511,14 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
     if not privacy_request:
         logger.info(
-            "Attempted to mark as expired. No privacy request with id '%s' found.",
+            "Attempted to mark as expired. No privacy request with id '{}' found.",
             privacy_request_id,
         )
         db.close()
         return
     if privacy_request.status == PrivacyRequestStatus.paused:
         logger.error(
-            "Privacy request '%s' has expired. Please resubmit information.",
+            "Privacy request '{}' has expired. Please resubmit information.",
             privacy_request.id,
         )
         privacy_request.error_processing(db=db)
@@ -544,7 +542,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
         connector = FidesConnector(fides_connector[1])
     except Exception as e:
         logger.error(
-            "Error create client for child server %s: %s", fides_connector[0], e
+            "Error create client for child server {}: {}", fides_connector[0], e
         )
         return None
 
@@ -554,13 +552,13 @@ def _retrieve_child_results(  # pylint: disable=R0911
         address = CollectionAddress.from_string(key)
         if address.dataset == fides_connector[0]:
             if not rows:
-                logger.info("No rows found for result entry %s", key)
+                logger.info("No rows found for result entry {}", key)
                 continue
             privacy_request_id = rows[0]["id"]
 
         if not privacy_request_id:
             logger.error(
-                "No privacy request found for connector key %s", fides_connector[0]
+                "No privacy request found for connector key {}", fides_connector[0]
             )
             continue
 
@@ -568,7 +566,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
             client = connector.create_client()
         except requests.exceptions.HTTPError as e:
             logger.error(
-                "Error logging into to child server for privacy request %s: %s",
+                "Error logger into to child server for privacy request {}: {}",
                 privacy_request_id,
                 e,
             )
@@ -583,7 +581,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
             response = client.session.send(request)
         except requests.exceptions.HTTPError as e:
             logger.error(
-                "Error retrieving data from child server for privacy request %s: %s",
+                "Error retrieving data from child server for privacy request {}: {}",
                 privacy_request_id,
                 e,
             )
@@ -591,7 +589,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
 
         if response.status_code != 200:
             logger.error(
-                "Error retrieving data from child server for privacy request %s: %s",
+                "Error retrieving data from child server for privacy request {}: {}",
                 privacy_request_id,
                 response.json(),
             )

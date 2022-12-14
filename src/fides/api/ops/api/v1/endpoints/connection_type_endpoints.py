@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -32,8 +31,6 @@ from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.api.ops.util.saas_util import encode_file_contents, load_config
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
-
-logger = logging.getLogger(__name__)
 
 
 def get_connection_types(

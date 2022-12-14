@@ -1,9 +1,9 @@
-import logging
 from typing import Any, Dict, Optional
 from urllib import parse
 from urllib.parse import urlsplit
 
 import pydash
+from loguru import logger
 from requests import Response
 
 from fides.api.ops.schemas.saas.shared_schemas import SaaSRequestParams
@@ -13,8 +13,6 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
 )
 from fides.api.ops.service.pagination.pagination_strategy import PaginationStrategy
 from fides.api.ops.util.logger import Pii
-
-logger = logging.getLogger(__name__)
 
 
 class LinkPaginationStrategy(PaginationStrategy):
@@ -58,7 +56,7 @@ class LinkPaginationStrategy(PaginationStrategy):
         updated_path = urlsplit(next_link).path
         updated_query_params = dict(parse.parse_qsl(urlsplit(next_link).query))
         logger.debug(
-            "Replacing path with %s and query params with %s",
+            "Replacing path with {} and query params with {}",
             updated_path,
             Pii(updated_query_params),
         )

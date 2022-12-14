@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict
 
 from botocore.exceptions import ClientError
@@ -10,8 +9,6 @@ from fides.api.ops.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.ops.util.storage_authenticator import get_s3_session
-
-logger = logging.getLogger(__name__)
 
 
 def secrets_are_valid(

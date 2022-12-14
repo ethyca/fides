@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import logging
 from asyncio import sleep
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
+from loguru import logger
 
 from fides.api.ops.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.api.ops.models.policy import ActionType, Policy
@@ -18,7 +18,6 @@ from fides.api.ops.service.masking.strategy.masking_strategy import MaskingStrat
 from fides.ctl.core.config import get_config
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 def build_required_privacy_request_kwargs(
@@ -50,12 +49,12 @@ def cache_data(
 ) -> None:
     """Cache privacy request data"""
     # Store identity and encryption key in the cache
-    logger.info("Caching identity for privacy request %s", privacy_request.id)
+    logger.info("Caching identity for privacy request {}", privacy_request.id)
     privacy_request.cache_identity(identity)
     privacy_request.cache_encryption(encryption_key)  # handles None already
 
     # Store masking secrets in the cache
-    logger.info("Caching masking secrets for privacy request %s", privacy_request.id)
+    logger.info("Caching masking secrets for privacy request {}", privacy_request.id)
     erasure_rules = policy.get_rules_for_action(action_type=ActionType.erasure)
     unique_masking_strategies_by_name: Set[str] = set()
     for rule in erasure_rules:

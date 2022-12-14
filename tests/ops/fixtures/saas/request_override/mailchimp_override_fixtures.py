@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict, Generator
 
 import pytest
-from fideslib.db import session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -15,6 +14,7 @@ from fides.api.ops.schemas.saas.saas_config import SaaSRequest
 from fides.api.ops.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.ops.service.connectors.saas_connector import SaaSConnector
 from fides.api.ops.util.saas_util import load_config
+from fides.lib.db import session
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 

@@ -3,7 +3,6 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
-from fideslib.db import session
 from sqlalchemy.orm import Session
 
 from fides.api.ops.models.connectionconfig import (
@@ -19,6 +18,7 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("mailchimp")

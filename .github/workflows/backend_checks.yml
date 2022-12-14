@@ -84,6 +84,7 @@ jobs:
           - "pytest_ctl(not-external)"
           - "pytest_ops(unit)"
           - "pytest_ops(integration)"
+          - "pytest_lib"
           - "check_fides_annotations"
           - "fides_db_scan"
           - "docs_check"

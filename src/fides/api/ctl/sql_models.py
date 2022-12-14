@@ -6,8 +6,6 @@ Contains all of the SqlAlchemy models for the Fides resources.
 
 from typing import Dict
 
-from fideslib.db.base import Base, ClientDetail, FidesUser, FidesUserPermissions
-from fideslib.db.base_class import FidesBase as FideslibBase
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,
@@ -25,6 +23,13 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
 
 from fides.ctl.core.config import FidesConfig, get_config
+from fides.lib.db.base import (  # type: ignore[attr-defined]
+    Base,
+    ClientDetail,
+    FidesUser,
+    FidesUserPermissions,
+)
+from fides.lib.db.base_class import FidesBase as FideslibBase
 
 CONFIG: FidesConfig = get_config()
 

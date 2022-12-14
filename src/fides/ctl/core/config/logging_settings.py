@@ -19,6 +19,7 @@ class LoggingSettings(FidesSettings):
     destination: str = ""
     level: str = "INFO"
     serialization: str = ""
+    log_pii: bool = False
 
     @validator("destination", pre=True)
     @classmethod

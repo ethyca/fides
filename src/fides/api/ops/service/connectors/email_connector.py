@@ -1,7 +1,6 @@
-import logging
 from typing import Any, Dict, List, Optional
 
-from fideslib.models.audit_log import AuditLog, AuditLogAction
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import (
@@ -33,8 +32,7 @@ from fides.api.ops.service.connectors.base_connector import BaseConnector
 from fides.api.ops.service.connectors.query_config import ManualQueryConfig
 from fides.api.ops.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.ops.util.collection_util import Row, append
-
-logger = logging.getLogger(__name__)
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
 
 
 class EmailConnector(BaseConnector[None]):
@@ -55,7 +53,7 @@ class EmailConnector(BaseConnector[None]):
         Sends an email to the "test_email" configured, just to establish that the email workflow is working.
         """
         config = EmailSchema(**self.configuration.secrets or {})
-        logger.info("Starting test connection to %s", self.configuration.key)
+        logger.info("Starting test connection to {}", self.configuration.key)
 
         db = Session.object_session(self.configuration)
 
@@ -85,7 +83,7 @@ class EmailConnector(BaseConnector[None]):
                 ],
             )
         except MessageDispatchException as exc:
-            logger.info("Email connector test failed with exception %s", exc)
+            logger.info("Email connector test failed with exception {}", exc)
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
@@ -98,7 +96,7 @@ class EmailConnector(BaseConnector[None]):
     ) -> Optional[List[Row]]:
         """Access requests are not supported at this time."""
         logger.info(
-            "Access requests not supported for email connector '%s' at this time.",
+            "Access requests not supported for email connector '{}' at this time.",
             node.address.value,
         )
         return []
@@ -119,7 +117,7 @@ class EmailConnector(BaseConnector[None]):
             node, policy, input_data
         )
 
-        logger.info("Caching action needed for collection: '%s", node.address.value)
+        logger.info("Caching action needed for collection: '{}", node.address.value)
         privacy_request.cache_email_connector_template_contents(
             step=CurrentStep.erasure,
             collection=node.address,
@@ -184,7 +182,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
 
         if not template_values:
             logger.info(
-                "No email sent: no template values saved for '%s'",
+                "No email sent: no template values saved for '{}'",
                 ds.dataset.get("fides_key"),
             )
             return
@@ -198,7 +196,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
             )
         ):
             logger.info(
-                "No email sent: no masking needed on '%s'", ds.dataset.get("fides_key")
+                "No email sent: no masking needed on '{}'", ds.dataset.get("fides_key")
             )
             return
 
@@ -213,7 +211,7 @@ def email_connector_erasure_send(db: Session, privacy_request: PrivacyRequest) -
         )
 
         logger.info(
-            "Email send succeeded for request '%s' for dataset: '%s'",
+            "Email send succeeded for request '{}' for dataset: '{}'",
             privacy_request.id,
             ds.dataset.get("fides_key"),
         )

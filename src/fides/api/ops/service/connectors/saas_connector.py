@@ -1,8 +1,8 @@
-import logging
 from json import JSONDecodeError
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
+from loguru import logger
 from requests import Response
 
 from fides.api.ops.common_exceptions import FidesopsException, PostProcessingException
@@ -28,8 +28,6 @@ from fides.api.ops.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
-
-logger = logging.getLogger(__name__)
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient]):
@@ -135,7 +133,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         client_config = self.get_client_config()
         rate_limit_config = self.get_rate_limit_config()
 
-        logger.info("Creating client to %s", uri)
+        logger.info("Creating client to {}", uri)
         return AuthenticatedClient(
             uri, self.configuration, client_config, rate_limit_config
         )
@@ -169,7 +167,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             # then we return a single empty row to still trigger the mask_data method
             if delete_request:
                 logger.info(
-                    "Skipping read for the '%s' collection, it is delete-only",
+                    "Skipping read for the '{}' collection, it is delete-only",
                     self.current_collection_name,
                 )
                 return [{}]
@@ -243,7 +241,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if missing_dataset_reference_values:
             logger.info(
-                "The '%s' request of %s is missing the following dataset reference values [%s], skipping traversal",
+                "The '{}' request of {} is missing the following dataset reference values [{}], skipping traversal",
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
                 ", ".join(missing_dataset_reference_values),
@@ -274,7 +272,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         )
 
         logger.info(
-            "%s row(s) returned after postprocessing '%s' collection.",
+            "{} row(s) returned after postprocessing '{}' collection.",
             len(rows),
             self.current_collection_name,
         )
@@ -292,7 +290,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
 
         if next_request:
             logger.info(
-                "Using '%s' pagination strategy to get next page for '%s'.",
+                "Using '{}' pagination strategy to get next page for '{}'.",
                 saas_request.pagination.strategy,  # type: ignore
                 self.current_collection_name,
             )
@@ -319,7 +317,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
             )
             logger.info(
-                "Starting postprocessing of '%s' collection with '%s' strategy.",
+                "Starting postprocessing of '{}' collection with '{}' strategy.",
                 self.current_collection_name,
                 postprocessor.strategy,  # type: ignore
             )
@@ -419,7 +417,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
         """
         if saas_request.ignore_errors and not response.ok:
             logger.info(
-                "Ignoring and clearing errored response with status code %s.",
+                "Ignoring and clearing errored response with status code {}.",
                 response.status_code,
             )
             response = Response()
@@ -471,7 +469,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )  # type: ignore
         except Exception:
             logger.error(
-                "Encountered error executing override access function '%s'",
+                "Encountered error executing override access function '{}'",
                 override_function_name,
                 exc_info=True,
             )
@@ -519,7 +517,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient]):
             )  # type: ignore
         except Exception:
             logger.error(
-                "Encountered error executing override mask function '%s",
+                "Encountered error executing override mask function '{}",
                 override_function_name,
                 exc_info=True,
             )

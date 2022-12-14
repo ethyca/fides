@@ -11,6 +11,7 @@ app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db
 
 [logging]
 level = "INFO"
+log_pii = true
 
 [cli]
 server_host = "localhost"
@@ -49,3 +50,8 @@ task_retry_delay = 1
 
 [admin_ui]
 enabled = true
+
+[celery]
+event_queue_prefix = "fides_worker"
+task_default_queue = "fides"
+task_always_eager = true
