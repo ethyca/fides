@@ -1,6 +1,6 @@
-import logging
 from typing import Optional
 
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -31,7 +31,6 @@ from fides.ctl.core.config import get_config
 from fides.lib.db.base import Base  # type: ignore[attr-defined]
 
 CONFIG = get_config()
-logger = logging.getLogger(__name__)
 
 
 def get_messaging_method(
@@ -109,7 +108,7 @@ class MessagingConfig(Base):
             )
         if not instance.secrets:
             logger.warning(
-                "Messaging secrets not found for config with key: %s", instance.key
+                "Messaging secrets not found for config with key: {}", instance.key
             )
             raise MessageDispatchException(
                 f"Messaging secrets not found for config with key: {instance.key}"
@@ -139,7 +138,7 @@ class MessagingConfig(Base):
             KeyError,
             ValidationError,
         ) as exc:
-            logger.error("Error: %s", Pii(str(exc)))
+            logger.error("Error: {}", Pii(str(exc)))
             # We don't want to handle these explicitly here, only in the API view
             raise
 

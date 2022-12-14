@@ -1,7 +1,7 @@
-import logging
 from typing import Any, List
 
 from fastapi import HTTPException
+from loguru import logger
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.ops.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
@@ -19,8 +19,6 @@ from fides.api.ops.util.api_router import APIRouter
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
 
-logger = logging.getLogger(__name__)
-
 
 @router.put(MASKING, response_model=MaskingAPIResponse)
 def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
@@ -34,7 +32,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
 
         if num_strat > 1:
             logger.info(
-                "%s masking strategies requested; running in order.",
+                "{} masking strategies requested; running in order.",
                 num_strat,
             )
 
@@ -43,7 +41,7 @@ def mask_value(request: MaskingAPIRequest) -> MaskingAPIResponse:
                 strategy.strategy, strategy.configuration
             )
             logger.info(
-                "Starting masking of %s value(s) with strategy %s",
+                "Starting masking of {} value(s) with strategy {}",
                 len(values),
                 strategy.strategy,
             )

@@ -1,6 +1,5 @@
-import logging
-
 from fastapi import Depends, status
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
@@ -15,8 +14,6 @@ router = APIRouter(
     tags=["Registration"],
     prefix=urls.V1_URL_PREFIX,
 )
-
-logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -60,7 +57,7 @@ async def update_registration_status(
         registration = registrations[0]
         if registration.analytics_id != data.analytics_id:
             logger.debug(
-                "Error registering Fides with analytics_id: %s to opt_in: %s. Fides with analytics_id: %s already registered.",
+                "Error registering Fides with analytics_id: {} to opt_in: {}. Fides with analytics_id: {} already registered.",
                 data.analytics_id,
                 data.opt_in,
                 registration.analytics_id,
@@ -74,7 +71,7 @@ async def update_registration_status(
         send_to_fideslog = data.opt_in
 
     logger.debug(
-        "Registering Fides with analytics_id: %s to opt_in: %s",
+        "Registering Fides with analytics_id: {} to opt_in: {}",
         data.analytics_id,
         data.opt_in,
     )

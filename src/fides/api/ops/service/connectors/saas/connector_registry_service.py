@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
 from os.path import exists
 from typing import Dict, Iterable, List, Optional, Union
 
+from loguru import logger
 from packaging.version import LegacyVersion, Version
 from packaging.version import parse as parse_version
 from pydantic import BaseModel, validator
@@ -30,8 +30,6 @@ from fides.api.ops.util.saas_util import (
 
 _registry: Optional[ConnectorRegistry] = None
 registry_file = "data/saas/saas_connector_registry.toml"
-
-logger = logging.getLogger(__name__)
 
 
 class ConnectorTemplate(BaseModel):
@@ -155,7 +153,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
     """
     for connector_type in registry.connector_types():
         logger.debug(
-            "Determining if any updates are needed for connectors of type %s based on templates...",
+            "Determining if any updates are needed for connectors of type {} based on templates...",
             connector_type,
         )
         template: ConnectorTemplate = registry.get_connector_template(  # type: ignore
@@ -174,7 +172,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
             saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
             if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
-                    "Updating SaaS config instance '%s' of type '%s' as its version, %s, was found to be lower than the template version %s",
+                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
                     saas_config_instance.fides_key,
                     connector_type,
                     saas_config_instance.version,
@@ -189,7 +187,7 @@ def update_saas_configs(registry: ConnectorRegistry, db: Session) -> None:
                     )
                 except Exception:
                     logger.error(
-                        "Encountered error attempting to update SaaS config instance %s",
+                        "Encountered error attempting to update SaaS config instance {}",
                         saas_config_instance.fides_key,
                         exc_info=True,
                     )

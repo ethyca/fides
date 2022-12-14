@@ -32,8 +32,8 @@ def static_checks(session: nox.Session) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def black(session: nox.Session, mode: str) -> None:
@@ -49,8 +49,8 @@ def black(session: nox.Session, mode: str) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def isort(session: nox.Session, mode: str) -> None:

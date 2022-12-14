@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Optional
 
@@ -6,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from loguru import logger
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
@@ -37,8 +37,6 @@ from fides.lib.oauth.scopes import (
     USER_DELETE,
     USER_READ,
 )
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -80,7 +78,7 @@ def create_user(
         )
 
     user = FidesUser.create(db=db, data=user_data.dict())
-    logger.info("Created user with id: '%s'.", user.id)
+    logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db, data={"user_id": user.id, "scopes": [PRIVACY_REQUEST_READ]}
     )
@@ -114,7 +112,7 @@ def delete_user(
             detail="Users can only remove themselves, or be the Admin UI Root User.",
         )
 
-    logger.info("Deleting user with id: '%s'.", user_id)
+    logger.info("Deleting user with id: '{}'.", user_id)
 
     user.delete(db)
 
@@ -130,7 +128,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    logger.info("Returning user with id: '%s'.", user_id)
+    logger.info("Returning user with id: '{}'.", user_id)
     return user
 
 

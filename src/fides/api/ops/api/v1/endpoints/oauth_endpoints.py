@@ -1,8 +1,8 @@
-import logging
 from typing import List, Optional
 
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -56,7 +56,6 @@ from fides.lib.oauth.schemas.oauth import (
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
-logger = logging.getLogger(__name__)
 
 CONFIG = get_config()
 
@@ -114,7 +113,7 @@ def create_client(
     scopes: List[str] = Body([]),
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials"""
-    logging.info("Creating new client")
+    logger.info("Creating new client")
     if not all(scope in SCOPE_REGISTRY for scope in scopes):
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -139,7 +138,7 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
     if not client:
         return
-    logging.info("Deleting client")
+    logger.info("Deleting client")
     client.delete(db)
 
 
@@ -154,7 +153,7 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
     if not client:
         return []
 
-    logging.info("Getting client scopes")
+    logger.info("Getting client scopes")
     return client.scopes
 
 
@@ -179,7 +178,7 @@ def set_client_scopes(
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 
-    logging.info("Updating client scopes")
+    logger.info("Updating client scopes")
     client.update(db, data={"scopes": scopes})
 
 
@@ -190,7 +189,7 @@ def set_client_scopes(
 )
 def read_scopes() -> List[str]:
     """Returns a list of all scopes available for assignment in the system"""
-    logging.info("Getting all available scopes")
+    logger.info("Getting all available scopes")
     return SCOPE_REGISTRY
 
 

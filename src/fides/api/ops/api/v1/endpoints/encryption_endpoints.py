@@ -1,7 +1,7 @@
-import logging
 import secrets
 
 from fastapi import Security
+from loguru import logger
 
 from fides.api.ops.api.v1.scope_registry import ENCRYPTION_EXEC
 from fides.api.ops.api.v1.urn_registry import (
@@ -29,7 +29,7 @@ from fides.lib.cryptography import cryptographic_util
 from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
-logger = logging.getLogger(__name__)
+
 
 CONFIG = get_config()
 

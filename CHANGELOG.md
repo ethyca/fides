@@ -17,6 +17,10 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
+### Changed
+
+* Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
+
 ### Fixed
 
 * Timing issues with bulk DSR reprocessing, specifically when analytics are enabled [#2015](https://github.com/ethyca/fides/pull/2015)
