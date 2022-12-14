@@ -358,7 +358,17 @@ def _mailgun_dispatcher(
             ),
         )
 
+        data = {
+            "from": f"<mailgun@{domain}>",
+            "to": [to.strip()],
+            "subject": message.subject,
+        }
+
         if template_test.status_code == 200:
+            data["template"] = "fides"
+            data["h:X-Mailgun-Variables"] = json.dumps(
+                {"fides_email_body": message.body}
+            )
             response = requests.post(
                 f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
                 auth=(
@@ -367,15 +377,7 @@ def _mailgun_dispatcher(
                         MessagingServiceSecrets.MAILGUN_API_KEY.value
                     ],
                 ),
-                data={
-                    "from": f"<mailgun@{domain}>",
-                    "to": [to.strip()],
-                    "subject": message.subject,
-                    "template": "fides",
-                    "h:X-Mailgun-Variables": json.dumps(
-                        {"fides_email_body": message.body}
-                    ),
-                },
+                data=data,
             )
 
             if not response.ok:
@@ -386,12 +388,7 @@ def _mailgun_dispatcher(
                     f"Email failed to send with status code {response.status_code}"
                 )
         else:
-            data = {
-                "from": f"<mailgun@{domain}>",
-                "to": [to.strip()],
-                "subject": message.subject,
-                "html": message.body,
-            }
+            data["html"] = message.body
             response = requests.post(
                 f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
                 auth=(
