@@ -2,8 +2,6 @@ import logging
 import secrets
 
 from fastapi import Security
-from fideslib.cryptography import cryptographic_util
-from fideslib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
 from fides.api.ops.api.v1.scope_registry import ENCRYPTION_EXEC
 from fides.api.ops.api.v1.urn_registry import (
@@ -27,6 +25,8 @@ from fides.api.ops.util.encryption.aes_gcm_encryption_scheme import (
 )
 from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import get_config
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.cryptography.cryptographic_util import b64_str_to_bytes, bytes_to_b64_str
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)
 logger = logging.getLogger(__name__)

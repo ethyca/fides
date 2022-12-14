@@ -1,0 +1,13 @@
+[database]
+server="testserver"
+user="postgres"
+password="postgres"
+db="test"
+test_db="test"
+
+[security]
+app_encryption_key = "atestencryptionkeythatisvalidlen"
+cors_origins = [ "http://test.com", "https://test.com",]
+oauth_root_client_id = "testrootclientid"
+oauth_root_client_secret = "testrootclientsecret"
+drp_jwt_secret = "testdrpsecret"

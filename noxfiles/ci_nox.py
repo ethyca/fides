@@ -119,14 +119,14 @@ def check_install(session: nox.Session) -> None:
 
 @nox.session()
 def check_fides_annotations(session: nox.Session) -> None:
-    """Run a fidesctl evaluation."""
+    """Run a fides evaluation."""
     run_command = (*RUN_NO_DEPS, "fides", "--local", *(WITH_TEST_CONFIG), "evaluate")
     session.run(*run_command, external=True)
 
 
 @nox.session()
 def fides_db_scan(session: nox.Session) -> None:
-    """Scan the fidesctl application database to check for dataset discrepancies."""
+    """Scan the fides application database to check for dataset discrepancies."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -164,6 +164,19 @@ def minimal_config_startup(session: nox.Session) -> None:
 
 # Pytest
 @nox.session()
+def pytest_lib(session: nox.Session) -> None:
+    """Runs ctl tests."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *RUN_NO_DEPS,
+        "pytest",
+        "tests/lib/",
+    )
+    session.run(*run_command, external=True)
+
+
+@nox.session()
 @nox.parametrize(
     "mark",
     [
@@ -174,7 +187,7 @@ def minimal_config_startup(session: nox.Session) -> None:
     ],
 )
 def pytest_ctl(session: nox.Session, mark: str) -> None:
-    """Runs fidesctl tests."""
+    """Runs ctl tests."""
     session.notify("teardown")
     if mark == "external":
         start_command = (

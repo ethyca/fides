@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Sequence
+from typing import List, Sequence
 
 from fastapi import Depends, Security
 from fastapi.encoders import jsonable_encoder
@@ -71,7 +71,7 @@ def create_access_manual_webhook(
     *,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
-) -> AccessManualWebhookResponse:
+) -> AccessManualWebhook:
     """
     Create an Access Manual Webhook to describe the fields that should be manually uploaded and passed directly to the user
     """
@@ -117,7 +117,7 @@ def patch_access_manual_webhook(
     *,
     db: Session = Depends(deps.get_db),
     request_body: AccessManualWebhooks,
-) -> Optional[AccessManualWebhookResponse]:
+) -> AccessManualWebhook:
     """
     Updates the AccessManualWebhook associated with this ConnectionConfig
     """
@@ -146,7 +146,7 @@ def patch_access_manual_webhook(
 )
 def get_access_manual_webhook(
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> AccessManualWebhookResponse:
+) -> AccessManualWebhook:
     """
     Gets the Access Manual Webhook associated with this ConnectionConfig.
     """
@@ -192,7 +192,7 @@ def delete_access_manual_webhook(
 )
 def get_access_manual_webhooks(
     db: Session = Depends(deps.get_db),
-) -> Sequence[AccessManualWebhookResponse]:
+) -> List[AccessManualWebhook]:
     """
     Get all enabled Access Manual Webhooks
     """

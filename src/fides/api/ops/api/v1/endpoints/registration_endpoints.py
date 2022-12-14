@@ -50,7 +50,7 @@ async def update_registration_status(
     *,
     db: Session = Depends(deps.get_db),
     data: schemas.Registration,
-) -> schemas.Registration:
+) -> UserRegistration:
     """
     Return the registration status of this Fides deployment.
     """
@@ -78,7 +78,7 @@ async def update_registration_status(
         data.analytics_id,
         data.opt_in,
     )
-    registration, _ = UserRegistration.create_or_update(
+    registration, _ = UserRegistration.create_or_update(  # type: ignore[assignment]
         db=db,
         data=data.dict(),
     )

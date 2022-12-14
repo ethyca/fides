@@ -6,11 +6,9 @@ import click
 from fideslog.sdk.python.client import AnalyticsClient
 
 import fides
-from fides.cli.utils import (
-    check_and_update_analytics_config,
-    check_server,
-)
+from fides.cli.utils import check_and_update_analytics_config, check_server
 from fides.ctl.core.config import get_config
+from fides.ctl.core.config.helpers import create_config_file
 
 from .commands.annotate import annotate
 from .commands.core import evaluate, parse, pull, push
@@ -93,8 +91,6 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
     if ctx.invoked_subcommand in SERVER_CHECK_COMMAND_NAMES:
         check_server(VERSION, str(config.cli.server_url), quiet=True)
 
-    ctx.obj["CONFIG"] = config
-
     # Analytics requires explicit opt-in
     no_analytics = config.user.analytics_opt_out
     if not no_analytics:
@@ -105,6 +101,9 @@ def cli(ctx: click.Context, config_path: str, local: bool) -> None:
             product_name=APP + "-cli",
             production_version=version(PACKAGE),
         )
+
+    # Setting the config context after all mutations
+    ctx.obj["CONFIG"] = config
 
 
 # Add all commands here before dynamically checking them in the CLI

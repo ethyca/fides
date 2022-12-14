@@ -5,8 +5,6 @@ from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslib.exceptions import KeyOrNameAlreadyExists
-from fideslib.models.client import ClientDetail
 from pydantic import conlist
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -31,6 +29,8 @@ from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
+from fides.lib.models.client import ClientDetail
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 
@@ -79,11 +79,11 @@ def get_policy(
     *,
     policy_key: FidesOpsKey,
     db: Session = Depends(deps.get_db),
-) -> schemas.PolicyResponse:
+) -> schemas.Policy:
     """
     Return a single Policy
     """
-    return get_policy_or_error(db, policy_key)
+    return get_policy_or_error(db, policy_key)  # type: ignore[return-value]
 
 
 @router.patch(
@@ -142,7 +142,7 @@ def create_or_update_policies(
             failed.append(BulkUpdateFailed(**failure))
             continue
         else:
-            created_or_updated.append(policy)
+            created_or_updated.append(policy)  # type: ignore[arg-type]
 
     return schemas.BulkPutPolicyResponse(
         succeeded=created_or_updated,
@@ -263,7 +263,7 @@ def create_or_update_rules(
             failed.append(BulkUpdateFailed(**failure))
             continue
         else:
-            created_or_updated.append(rule)
+            created_or_updated.append(rule)  # type: ignore[arg-type]
 
     return schemas.BulkPutRuleResponse(succeeded=created_or_updated, failed=failed)
 
@@ -287,7 +287,7 @@ def delete_rule(
     logger.info("Finding rule with key '%s'", rule_key)
 
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
+        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -322,7 +322,7 @@ def create_or_update_rule_targets(
 
     logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
+        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -417,7 +417,7 @@ def delete_rule_target(
 
     logger.info("Finding rule with key '%s'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)
+        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -429,7 +429,7 @@ def delete_rule_target(
     target = RuleTarget.filter(
         db=db,
         conditions=(
-            RuleTarget.key == rule_target_key and RuleTarget.rule_id == rule.id
+            RuleTarget.key == rule_target_key and RuleTarget.rule_id == rule.id  # type: ignore[arg-type]
         ),
     ).first()
     if not target:

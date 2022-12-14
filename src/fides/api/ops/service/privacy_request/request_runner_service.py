@@ -5,9 +5,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
 from celery.utils.log import get_task_logger
-from fideslib.db.session import get_db_session
-from fideslib.models.audit_log import AuditLog, AuditLogAction
-from fideslib.schemas.base_class import BaseSchema
 from pydantic import ValidationError
 from redis.exceptions import DataError
 from sqlalchemy.orm import Session
@@ -79,6 +76,9 @@ from fides.api.ops.util.collection_util import Row
 from fides.api.ops.util.logger import Pii, _log_exception, _log_warning
 from fides.api.ops.util.wrappers import sync
 from fides.ctl.core.config import get_config
+from fides.lib.db.session import get_db_session
+from fides.lib.models.audit_log import AuditLog, AuditLogAction
+from fides.lib.schemas.base_class import BaseSchema
 
 CONFIG = get_config()
 logger = get_task_logger(__name__)
@@ -128,7 +128,7 @@ def run_webhooks_and_report_status(
     db: Session,
     privacy_request: PrivacyRequest,
     webhook_cls: WebhookTypes,
-    after_webhook_id: str = None,
+    after_webhook_id: Optional[str] = None,
 ) -> bool:
     """
     Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
@@ -140,13 +140,13 @@ def run_webhooks_and_report_status(
     if after_webhook_id:
         # Only run webhooks configured to run after this Pre-Execution webhook
         pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
-        webhooks = webhooks.filter(
-            webhook_cls.order > pre_webhook.order,
+        webhooks = webhooks.filter(  # type: ignore[call-arg]
+            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
         )
 
     current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
 
-    for webhook in webhooks.order_by(webhook_cls.order):
+    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
         try:
             privacy_request.trigger_policy_webhook(webhook)
         except PrivacyRequestPaused:
@@ -202,7 +202,7 @@ def upload_access_results(  # pylint: disable=R0912
             raise common_exceptions.RuleValidationError(
                 f"No storage destination configured on rule {rule.key}"
             )
-        target_categories: Set[str] = {target.data_category for target in rule.targets}
+        target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
         filtered_results: Dict[
             str, List[Dict[str, Optional[Any]]]
         ] = filter_data_categories(
