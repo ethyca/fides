@@ -52,7 +52,6 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.tasks.scheduled.scheduler import scheduler
 from fides.api.ops.util.cache import get_cache
-from fides.ctl.core.config import FidesConfig
 from fides.ctl.core.config import FidesConfig, get_config
 from fides.ctl.core.config.helpers import check_required_webserver_config_values
 from fides.lib.oauth.api.routes.user_endpoints import router as user_router

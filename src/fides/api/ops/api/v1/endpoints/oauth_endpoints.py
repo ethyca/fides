@@ -3,7 +3,6 @@ from typing import List, Optional
 from fastapi import Body, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBasic
 from loguru import logger
-
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
