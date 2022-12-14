@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
 
+### Added
+* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
+* DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
+* DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
+
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
@@ -68,10 +74,6 @@ The types of changes are:
 * Enable the onboarding flow [#1836](https://github.com/ethyca/fides/pull/1836)
 * Access and erasure support for Fullstory API [#1821](https://github.com/ethyca/fides/pull/1821)
 * Add function to poll privacy request for completion [#1860](https://github.com/ethyca/fides/pull/1860)
-* Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
-* DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
-* DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
-* DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
 * Added rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add rescan flow for the data flow scanner [#1844](https://github.com/ethyca/fides/pull/1844)
 * Add Fides connector to support parent-child Fides deployments [#1861](https://github.com/ethyca/fides/pull/1861)
