@@ -68,6 +68,7 @@ export type { PolicyMaskingSpecResponse } from "./models/PolicyMaskingSpecRespon
 export type { PolicyResponse } from "./models/PolicyResponse";
 export type { PolicyRule } from "./models/PolicyRule";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
+export type { PrivacyRequestNotificationInfo } from "./models/PrivacyRequestNotificationInfo";
 export type { PrivacyRequestResponse } from "./models/PrivacyRequestResponse";
 export type { PrivacyRequestReviewer } from "./models/PrivacyRequestReviewer";
 export type { PrivacyRequestStatus } from "./models/PrivacyRequestStatus";

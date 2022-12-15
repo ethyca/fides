@@ -1,5 +1,6 @@
-import logging
 from typing import Any, Dict, List, Optional, Union
+
+from loguru import logger
 
 from fides.api.ops.graph.config import FieldPath
 from fides.api.ops.util.collection_util import FIDESOPS_DO_NOT_MASK_INDEX, Row
@@ -9,7 +10,6 @@ Level = Union[
 ]  # A specific level along the path to a resource. Can be a dictionary key or an array index.
 DetailedPath = List[Level]  # A more detailed field path, potentially containing indices
 FieldPathNodeInput = Dict[FieldPath, Optional[List[Any]]]
-logger = logging.getLogger(__name__)
 
 
 def join_detailed_path(detailed_path: DetailedPath) -> str:
@@ -101,7 +101,7 @@ def refine_target_path(
         IndexError,
         TypeError,
     ):  # No/invalid field path. Expected when the path has been eliminated.
-        logger.warning("Could not locate target path %s on row", target_path)
+        logger.warning("Could not locate target path {} on row", target_path)
         return []
 
     if isinstance(current_elem, dict):

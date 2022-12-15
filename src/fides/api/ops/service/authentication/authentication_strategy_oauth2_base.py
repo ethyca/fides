@@ -1,7 +1,7 @@
-import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Literal, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import FidesopsException, OAuth2TokenException
@@ -16,8 +16,6 @@ from fides.api.ops.service.connectors.saas.authenticated_client import (
 )
 from fides.api.ops.util.logger import Pii
 from fides.api.ops.util.saas_util import assign_placeholders, map_param_values
-
-logger = logging.getLogger(__name__)
 
 
 class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
@@ -44,7 +42,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
 
         if expires_at is None:
             logger.info(
-                "The expires_at value is not defined for %s, skipping token refresh",
+                "The expires_at value is not defined for {}, skipping token refresh",
                 connection_config.key,
             )
             return False
@@ -62,7 +60,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         and connection config secrets.
         """
 
-        logger.info("Attempting %s token request for %s", action, connection_config.key)
+        logger.info("Attempting {} token request for {}", action, connection_config.key)
 
         # get the client config from the token request or default to the
         # protocol and host specified by the root client config (no auth)
@@ -97,7 +95,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
             json_response = response.json()
         except Exception as exc:
             logger.error(
-                "Error occurred during the %s request for %s: %s",
+                "Error occurred during the {} request for {}: {}",
                 action,
                 connection_config.key,
                 Pii(str(exc)),
@@ -183,7 +181,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         updated_secrets = {**connection_config.secrets, **data}  # type: ignore
         connection_config.update(db, data={"secrets": updated_secrets})
         logger.info(
-            "Successfully updated the OAuth2 token(s) for %s", connection_config.key
+            "Successfully updated the OAuth2 token(s) for {}", connection_config.key
         )
 
         return access_token

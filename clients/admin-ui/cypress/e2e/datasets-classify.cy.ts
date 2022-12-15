@@ -1,7 +1,6 @@
 import {
   CONNECTION_STRING,
   stubDatasetCrud,
-  stubHomePage,
   stubPlus,
 } from "cypress/support/stubs";
 
@@ -37,7 +36,6 @@ describe("Datasets with Fides Classify", () => {
     });
 
     it("Can render the 'Status' column and classification status badges in the dataset table when plus features are enabled", () => {
-      stubHomePage();
       cy.visit("/");
       cy.getByTestId("nav-link-Datasets").click();
       cy.wait("@getDatasets");

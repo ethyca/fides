@@ -1,5 +1,4 @@
 """This module contains logic related to loading/manipulation/writing the config."""
-import logging
 import os
 from os import environ, getenv
 from pathlib import Path
@@ -8,13 +7,13 @@ from typing import Any, Dict, List, Union
 
 import toml
 from click import echo
+from loguru import logger
 from pydantic import BaseSettings
 from toml import dump, load
 
 from fides.ctl.core.utils import echo_red
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
-logger = logging.getLogger(__name__)
 
 
 def load_file(file_names: Union[List[Path], List[str]]) -> str:
@@ -46,7 +45,7 @@ def load_file(file_names: Union[List[Path], List[str]]) -> str:
         for file_name in file_names:
             possible_location = os.path.join(dir_str, file_name)
             if possible_location and os.path.isfile(possible_location):
-                logger.info("Loading file %s from %s", file_name, dir_str)
+                logger.info("Loading file {} from {}", file_name, dir_str)
                 return possible_location
 
     raise FileNotFoundError
