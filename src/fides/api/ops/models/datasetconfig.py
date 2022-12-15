@@ -108,7 +108,9 @@ class DatasetConfig(Base):
         else:
             fetched_ctl_dataset = (
                 db.query(CtlDataset)
-                .filter(CtlDataset.fides_key == data["fides_key"])
+                .filter(
+                    CtlDataset.fides_key == data.get("dataset", {}).get("fides_key")
+                )
                 .first()
             )
             ctl_dataset = upsert_ctl_dataset(
