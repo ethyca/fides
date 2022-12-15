@@ -1,20 +1,21 @@
 import type { NextPage } from "next";
 
+import { useFeatures } from "~/features/common/features.slice";
 import Layout from "~/features/common/Layout";
 import PrivacyRequestsContainer from "~/features/privacy-requests/PrivacyRequestsContainer";
 import HomeContainer from "~/home/HomeContainer";
 
 const Home: NextPage = () => {
-  const navBar2 = true;
+  const { navV2 } = useFeatures();
 
   return (
     <>
-      {navBar2 && (
-        <Layout noPadding title="Home">
+      {navV2 && (
+        <Layout title="Home">
           <HomeContainer />
         </Layout>
       )}
-      {!navBar2 && (
+      {!navV2 && (
         <Layout title="Privacy Requests">
           <PrivacyRequestsContainer />
         </Layout>
