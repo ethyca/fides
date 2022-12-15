@@ -89,7 +89,7 @@ def mysql_example_test_dataset_config(
             "connection_config_id": connection_config_mysql.id,
             "fides_key": fides_key,
             "dataset": mysql_dataset,
-            "ctl_dataset_id": ctl_dataset,
+            "ctl_dataset_id": ctl_dataset.id,
         },
     )
     yield dataset
