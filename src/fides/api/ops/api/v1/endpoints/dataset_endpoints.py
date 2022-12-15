@@ -182,13 +182,12 @@ def patch_dataset_configs(
     """
     created_or_updated: List[Dataset] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for %s Dataset Configs", len(dataset_pairs))
+    logger.info("Starting bulk upsert for {} Dataset Configs", len(dataset_pairs))
 
     for dataset_pair in dataset_pairs:
         logger.info(
-            "Finding ctl_dataset with key '%s'", dataset_pair.ctl_dataset_fides_key
+            "Finding ctl_dataset with key '{}'", dataset_pair.ctl_dataset_fides_key
         )
-
         ctl_dataset: CtlDataset = (
             db.query(CtlDataset)
             .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
@@ -199,7 +198,7 @@ def patch_dataset_configs(
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset_pair.fides_key,
-            "dataset": fetched_dataset.dict(),  # TODO Unified Fides Resources: Remove writing to this field.
+            "dataset": fetched_dataset.dict(),
             "ctl_dataset_id": ctl_dataset.id,
         }
 
@@ -266,7 +265,7 @@ def patch_datasets(
             dataset,
             db,
             failed,
-            DatasetConfig.create_or_update_with_ctl_dataset,
+            DatasetConfig.upsert_with_ctl_dataset,
         )
     return BulkPutDataset(
         succeeded=created_or_updated,
@@ -320,7 +319,7 @@ async def patch_yaml_datasets(
                 Dataset(**dataset),
                 db,
                 failed,
-                DatasetConfig.create_or_update_with_ctl_dataset,
+                DatasetConfig.upsert_with_ctl_dataset,
             )
     return BulkPutDataset(
         succeeded=created_or_updated,
@@ -342,7 +341,7 @@ def create_or_update_dataset(
             _validate_saas_dataset(connection_config, dataset)  # type: ignore
         # Try to find an existing DatasetConfig matching the given connection & key
         dataset_config = create_method(db, data=data)
-        created_or_updated.append(dataset_config.dataset)
+        created_or_updated.append(dataset_config.ctl_dataset)
     except (
         SaaSConfigNotFoundException,
         ValidationError,

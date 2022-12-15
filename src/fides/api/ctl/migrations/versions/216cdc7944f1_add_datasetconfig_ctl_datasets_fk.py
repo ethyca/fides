@@ -30,7 +30,7 @@ AUTO_MIGRATED_STRING = "auto-migrated from datasetconfig.dataset"
 
 
 def upgrade():
-    # Schema migration
+    # Schema migration - add a nullable datasetconfig.ctl_dataset_id field.  We will shortly make it non-nullable.
     op.add_column(
         "datasetconfig", sa.Column("ctl_dataset_id", sa.String(), nullable=True)
     )
@@ -48,10 +48,10 @@ def upgrade():
         ["id"],
     )
 
-    # Data migration - automatically trying to port datasetconfig.dataset -> ctl_datasets if possible.
+    # Data migration - automatically try to port datasetconfig.dataset -> ctl_datasets if possible.
     bind = op.get_bind()
     existing_datasetconfigs = bind.execute(
-        text("select id, created_at, updated_at, dataset from datasetconfig;")
+        text("SELECT id, created_at, updated_at, dataset FROM datasetconfig;")
     )
     for row in existing_datasetconfigs:
         dataset: Dict[str, Any] = row["dataset"]
@@ -69,7 +69,9 @@ def upgrade():
         appended_meta: Dict = dataset["meta"] or {}
         appended_meta["fides_source"] = AUTO_MIGRATED_STRING
 
-        validated_dataset: Dict = Dataset(**dataset).dict()
+        validated_dataset: Dict = Dataset(
+            **dataset
+        ).dict()  # Validating before we store.
         validated_dataset["id"] = new_ctl_dataset_id
         validated_dataset["fides_key"] = fides_key
         validated_dataset["collections"] = json.dumps(validated_dataset["collections"])
@@ -87,7 +89,7 @@ def upgrade():
             )
         except IntegrityError as exc:
             raise Exception(
-                f"Attempted to copy datasetconfig.datasets into their own ctl_datasets rows but got error: {exc}. "
+                f"Fides attempted to copy datasetconfig.datasets into their own ctl_datasets rows but got error: {exc}. "
                 f"Adjust fides_keys in ctl_datasets table to not conflict."
             )
 
@@ -102,13 +104,14 @@ def upgrade():
 
 
 def downgrade():
+    # Reverse schema migration
     op.drop_constraint(
         "datasetconfig_ctl_dataset_id_fkey", "datasetconfig", type_="foreignkey"
     )
     op.drop_index(op.f("ix_datasetconfig_ctl_dataset_id"), table_name="datasetconfig")
     op.drop_column("datasetconfig", "ctl_dataset_id")
 
-    # Data migration - remove ctl_datasets that were automatically created by the forward migration
+    # Reverse data migration: remove ctl_datasets that were automatically created by the forward migration
     bind = op.get_bind()
     remove_automigrated_ctl_datasets_query: TextClause = text(
         "DELETE FROM ctl_datasets WHERE meta->>'fides_source'= :automigration_string"

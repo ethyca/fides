@@ -22,14 +22,13 @@ def test_create_dataset(
         data={
             "connection_config_id": connection_config.id,
             "fides_key": postgres_dataset["fides_key"],
-            "dataset": postgres_dataset,  # TODO remove dataset as an argument
+            "dataset": postgres_dataset,
             "ctl_dataset_id": ctl_dataset.id,
         },
     )
     assert dataset_config.id is not None
     assert dataset_config.ctl_dataset_id is not None
-    linked_ctl_dataset = dataset_config.ctl_dataset
-    assert linked_ctl_dataset == ctl_dataset
+    assert dataset_config.ctl_dataset == ctl_dataset
 
     assert dataset_config.connection_config_id == connection_config.id
     assert dataset_config.fides_key == postgres_dataset["fides_key"]

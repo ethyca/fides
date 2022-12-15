@@ -40,7 +40,7 @@ class DatasetConfig(Base):
     fides_key = Column(String, index=True, unique=True, nullable=False)
     dataset = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=False
-    )  # TODO Unified Fides Resources: Remove this column.
+    )
     ctl_dataset_id = Column(
         String, ForeignKey(CtlDataset.id), index=True, nullable=False
     )
@@ -56,29 +56,36 @@ class DatasetConfig(Base):
     )
 
     @classmethod
-    def create_or_update_with_ctl_dataset(
+    def upsert_with_ctl_dataset(
         cls, db: Session, *, data: Dict[str, Any]
     ) -> "DatasetConfig":
         """
-        TEMPORARY METHOD FOR BACKWARDS-COMPATIBILITY.
+        Create or update the DatasetConfig AND the corresponding CTL Dataset
 
-        Create or update the DatasetConfig and the corresponding CTL Dataset
-
-        If DatasetConfig exists with this FidesKey, update the corresponding CtlDataset with the dataset contents
-        If the DatasetConfig does not exist, upsert a CtlDataset, and then link to the DatasetConfig on creation.
+        If the DatasetConfig exists with the supplied FidesKey, update the linked CtlDataset with the dataset contents.
+        If the DatasetConfig *does not exist*, upsert a CtlDataset on fides_key, and then link to the DatasetConfig on creation.
 
         """
 
         def upsert_ctl_dataset(ctl_dataset_obj: Optional[CtlDataset]) -> CtlDataset:
+            """
+            If ctl_dataset_obj specified, update that resource directly, otherwise
+            create a new resource.
+            """
             ctl_dataset_data = data.copy()
             validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
 
             if ctl_dataset_obj:
-                ctl_dataset_data.pop("fides_key", None)
+                # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
+                # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
                 for key, val in ctl_dataset_data.get("dataset", {}).items():
-                    setattr(ctl_dataset_obj, key, val)
+                    setattr(
+                        ctl_dataset_obj, key, val
+                    )  # Just update the existing ctl_dataset with the new values
             else:
-                ctl_dataset_obj = CtlDataset(**validated_data.dict())
+                ctl_dataset_obj = CtlDataset(
+                    **validated_data.dict()
+                )  # Validate the values if creating a new CtlDataset
 
             db.add(ctl_dataset_obj)
             db.commit()
@@ -94,7 +101,9 @@ class DatasetConfig(Base):
         ).first()
 
         if dataset:
-            upsert_ctl_dataset(dataset.ctl_dataset)  # Update existing ctl_dataset first
+            upsert_ctl_dataset(
+                dataset.ctl_dataset
+            )  # Update existing ctl_dataset first.
             dataset.update(db=db, data=data)
         else:
             fetched_ctl_dataset = (
