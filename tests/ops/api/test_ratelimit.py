@@ -38,7 +38,7 @@ def api_client_for_rate_limiting() -> Generator:
         )
 
 
-def test_requests_rate_limited(api_client_for_rate_limiting, cache):
+def test_requests_rate_limited(api_client_for_rate_limiting):
     """
     Asserts that incremental HTTP requests above the ratelimit threshold are
     rebuffed from the API with a 429 response.
