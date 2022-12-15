@@ -54,14 +54,6 @@ def test_requests_rate_limited(api_client_for_rate_limiting, cache):
     response = api_client_for_rate_limiting.get(HEALTH)
     assert response.status_code == 429
 
-    ratelimiter_cache_keys = [key for key in cache.keys() if key.startswith("LIMITER/")]
-    for key in ratelimiter_cache_keys:
-        # Depending on what requests have been stored previously, the ratelimtier will
-        # store keys in the format `LIMITER/fides-/127.0.0.1//health/100/1/minute`
-        assert key.startswith(f"LIMITER/{CONFIG.security.rate_limit_prefix}")
-        # Reset the cache to not interere with any other tests
-        cache.delete(key)
-
 
 def test_rate_limit_validation():
     """Tests `SecuritySettings.validate_request_rate_limit`"""
