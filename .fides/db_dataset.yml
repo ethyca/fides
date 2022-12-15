@@ -1025,6 +1025,9 @@ dataset:
     - name: connection_config_id
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
+    - name: ctl_dataset_id
+      data_categories: [ system.operations ]
+      data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
     - name: created_at
       data_categories: [system.operations]
       data_qualifier: aggregated.anonymized.unlinked_pseudonymized.pseudonymized.identified
