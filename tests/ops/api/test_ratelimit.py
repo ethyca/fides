@@ -24,7 +24,6 @@ def api_client_for_rate_limiting() -> Generator:
         key_prefix=CONFIG.security.rate_limit_prefix,
         key_func=get_remote_address,
         retry_after="http-date",
-        storage_uri=CONFIG.redis.connection_url,
     )
     with TestClient(app) as c:
         yield c
@@ -34,7 +33,6 @@ def api_client_for_rate_limiting() -> Generator:
             key_prefix=CONFIG.security.rate_limit_prefix,
             key_func=get_remote_address,
             retry_after="http-date",
-            storage_uri=CONFIG.redis.connection_url,
         )
 
 
