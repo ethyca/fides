@@ -15,12 +15,13 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.2.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.3.0...main)
+
+## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
+
 ### Added
 
 * Common Subscriptions for app-wide data and feature checks. [#2030](https://github.com/ethyca/fides/pull/2030)
-
-### Added
 * Send email alerts on privacy request failures once the specified threshold is reached. [#1793](https://github.com/ethyca/fides/pull/1793)
 * DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
