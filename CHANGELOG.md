@@ -34,6 +34,7 @@ The types of changes are:
 
 * Timing issues with bulk DSR reprocessing, specifically when analytics are enabled [#2015](https://github.com/ethyca/fides/pull/2015)
 * Error caused by running erasure requests with disabled connectors [#2045](https://github.com/ethyca/fides/pull/2045)
+* Changes the SlowAPI ratelimiter's backend to use memory instead of Redis [#2054](https://github.com/ethyca/fides/pull/2058)
 
 ## [2.2.2](https://github.com/ethyca/fides/compare/2.2.1...2.2.2)
 
