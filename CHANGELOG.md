@@ -26,10 +26,14 @@ The types of changes are:
 * DSR Notifications (toast) [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alerts btn [#1895](https://github.com/ethyca/fides/pull/1895)
 * DSR configure alters (FE) [#1895](https://github.com/ethyca/fides/pull/1895)
+* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
 ### Changed
 
 * Updated to use `loguru` logging library throughout codebase [#2031](https://github.com/ethyca/fides/pull/2031)
+* Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
+* The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
+* Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
 
 ### Fixed
 
@@ -58,12 +62,10 @@ The types of changes are:
 ### Added
 
 * Add health check indicator for data flow scanning option [#1973](https://github.com/ethyca/fides/pull/1973)
-* Add a `usage` session to Nox to print full session docstrings. [#2022](https://github.com/ethyca/fides/pull/2022)
 
 ### Changed
 
 * The `celery.toml` is no longer used, instead it is a subsection of the `fides.toml` file [#1990](https://github.com/ethyca/fides/pull/1990)
-* The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Update sample project landing page copy to be version-agnostic [#1958](https://github.com/ethyca/fides/pull/1958)
 * `get` and `ls` CLI commands now return valid `fides` object YAML [#1991](https://github.com/ethyca/fides/pull/1991)
 
