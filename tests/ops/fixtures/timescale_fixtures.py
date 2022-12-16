@@ -2,9 +2,8 @@ from typing import Generator
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import text
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import create_database, database_exists, drop_database
+from sqlalchemy_utils import drop_database
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
