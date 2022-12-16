@@ -5,10 +5,11 @@ import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features.slice";
 
-import { MODULE_CARD_ITEMS,ModuleCardKeys } from "./constants";
+import { MODULE_CARD_ITEMS, ModuleCardKeys } from "./constants";
 import { ModuleCard } from "./types";
 
 const HomeContent: React.FC = () => {
+  const COLUMNS = 3;
   const [list, setList] = useState<ModuleCard[]>(
     MODULE_CARD_ITEMS.filter((item) =>
       [
@@ -18,25 +19,28 @@ const HomeContent: React.FC = () => {
     )
   );
   const { connectionsCount, systemsCount } = useFeatures();
-  const COLUMNS = 3;
-  const MIN_COUNT = 0;
+  const hasConnections = connectionsCount > 0;
+  const hasSystems = systemsCount > 0;
+
+  const getCardItem = (key: ModuleCardKeys) => {
+    const cardItem = MODULE_CARD_ITEMS.find((item) => item.key === key);
+    return cardItem;
+  };
 
   useEffect(() => {
-    if (connectionsCount > MIN_COUNT || systemsCount > MIN_COUNT) {
+    if (hasConnections || hasSystems) {
       let card: ModuleCard | undefined;
-      if (connectionsCount > MIN_COUNT) {
-        card = MODULE_CARD_ITEMS.find(
-          (item) => item.key === ModuleCardKeys.REVIEW_PRIVACY_REQUESTS
-        );
+      if (hasConnections) {
+        card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
       }
-      if (systemsCount > MIN_COUNT) {
-        card = MODULE_CARD_ITEMS.find(
-          (item) => item.key === ModuleCardKeys.MANAGE_SYSTEMS
-        );
+      if (hasSystems) {
+        card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
       }
-      setList((prev) => [...prev, card as ModuleCard]);
+      if (card && !list.includes(card)) {
+        setList((prev) => [...prev, card as ModuleCard]);
+      }
     }
-  }, [connectionsCount, systemsCount]);
+  }, [hasConnections, hasSystems, list]);
 
   return (
     <Center>
@@ -47,7 +51,12 @@ const HomeContent: React.FC = () => {
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link href={item.href} key={item.key} passHref>
+            <Link
+              data-testid={item.name}
+              href={item.href}
+              key={item.key}
+              passHref
+            >
               <Flex
                 background={item.backgroundColor}
                 borderRadius="8px"
