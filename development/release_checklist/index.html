@@ -2093,7 +2093,8 @@ You're not viewing the latest version.
 <li>[ ] Quickstart verified working and up-to-date</li>
 <li>[ ] New tables/columns added to <a href="https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docs/fides/docs/development/update_erd_diagram.md">database diagram</a></li>
 <li>[ ] <code>nox -s test_env</code> works (verify the admin UI, privacy center, CLI and webserver)</li>
-<li>[ ] <code>fides deploy up</code> works (verify the admin UI, privacy center, CLI and webserver)
+<li>[ ] <code>nox -s "build(sample)"</code> works on the release branch, creating the sample images (this is also prereq for <code>fides deploy up</code>)</li>
+<li>[ ] <code>fides deploy up --no-pull</code> works using the images built in previous step (verify the admin UI, privacy center, CLI and webserver)
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>

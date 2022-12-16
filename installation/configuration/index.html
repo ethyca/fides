@@ -626,6 +626,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#celery" class="md-nav__link">
+    Celery
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
   </a>
@@ -2265,6 +2272,13 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#celery" class="md-nav__link">
+    Celery
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#admin-ui" class="md-nav__link">
     Admin UI
   </a>
@@ -2485,7 +2499,12 @@ To learn more about configuring fides, see:
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[database]</span><span class="w"></span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">[database]</span><span class="w"></span>
 <span class="n">server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides-db&quot;</span><span class="w"></span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;postgres&quot;</span><span class="w"></span>
 <span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span><span class="w"></span>
@@ -2534,6 +2553,11 @@ To learn more about configuring fides, see:
 
 <span class="k">[admin_ui]</span><span class="w"></span>
 <span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
+
+<span class="k">[celery]</span><span class="w"></span>
+<span class="n">event_queue_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides_worker&quot;</span><span class="w"></span>
+<span class="n">task_default_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;fides&quot;</span><span class="w"></span>
+<span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"></span>
 </code></pre></div></td></tr></table></div>
 <h2 id="configuration-variable-reference">Configuration variable reference</h2>
 <p>The <code>fides.toml</code> file should specify the following variables:</p>
@@ -2935,6 +2959,8 @@ To learn more about configuring fides, see:
 </tr>
 </tbody>
 </table>
+<h4 id="celery">Celery</h4>
+<p>The celery section is a place for user-defined key-value overrides that get passed directly to Celery and are not validated by <code>fides</code>.</p>
 <h4 id="admin-ui">Admin UI</h4>
 <table>
 <thead>
