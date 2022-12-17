@@ -21,6 +21,10 @@ The types of changes are:
 
 * Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
 
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
 ### Added
