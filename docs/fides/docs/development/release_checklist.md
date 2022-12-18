@@ -34,7 +34,7 @@ Next, run the following checks against the environment you've spun up using `fid
 ### API
 
 - [ ] Verify that the generated API docs are correct
-- [ ] Verify that the Postman collection has been updated
+- [ ] Verify that the [Postman collection](https://github.com/ethyca/fides/blob/main/docs/fides/docs/development/postman/Fides.postman_collection.json) has been updated
 
 ### CLI
 
