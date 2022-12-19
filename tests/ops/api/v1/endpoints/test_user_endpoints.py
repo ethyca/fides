@@ -159,7 +159,7 @@ class TestCreateUser:
         assert response_body == {"id": user.id}
         assert user.permissions is not None
         user.delete(db)
-        
+
     def test_create_user_as_root(
         self,
         db,
