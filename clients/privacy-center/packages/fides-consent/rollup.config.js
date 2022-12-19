@@ -5,13 +5,15 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 
 const name = require("./package.json").name;
 
+const isDev = process.env.NODE_ENV === "development";
+
 export default [
   {
     input: `src/${name}.ts`,
     plugins: [
       nodeResolve(),
       esbuild({
-        minify: process.env.NODE_ENV !== "development",
+        minify: !isDev,
       }),
       copy({
         // Automatically add the built script to the privacy center's static files for testing:
@@ -26,7 +28,7 @@ export default [
         file: `dist/${name}.js`,
         name: "Fides",
         format: "umd",
-        sourcemap: true,
+        sourcemap: isDev,
       },
     ],
   },

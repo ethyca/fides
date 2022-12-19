@@ -15,13 +15,23 @@ The types of changes are:
 * `Fixed` for any bug fixes.
 * `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.3.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.3.1...main)
+
 
 ## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
 
 ### Fixed
 
 * Resolved an issue where the root_user was not being created [#2082](https://github.com/ethyca/fides/pull/2082)
+
+### Added
+
+* Nav redesign with sidebar groups. Feature flagged to only be visible in dev mode until release. [#2030](https://github.com/ethyca/fides/pull/2047)
+
+### Fixed
+
+* Store `fides_consent` cookie on the root domain of the Privacy Center [#2071](https://github.com/ethyca/fides/pull/2071)
+
 
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
