@@ -17,12 +17,13 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from fides.api.ops.util.oauth_util import verify_oauth_client
 from fides.ctl.core.config import FidesConfig, get_config
 from fides.lib.models.client import ADMIN_UI_ROOT, ClientDetail
 from fides.lib.models.fides_user import FidesUser
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.api import urn_registry as urls
-from fides.lib.oauth.api.deps import get_db, verify_oauth_client
+from fides.lib.oauth.api.deps import get_db
 from fides.lib.oauth.schemas.oauth import AccessToken
 from fides.lib.oauth.schemas.user import (
     UserCreate,
