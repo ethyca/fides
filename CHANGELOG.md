@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.3.0...main)
 
+## [2.3.1](https://github.com/ethyca/fides/compare/2.3.0...2.3.1)
+
+### Fixed
+
+* Resolved an issue where the root_user was not being created [#2082](https://github.com/ethyca/fides/pull/2082)
+
 ## [2.3.0](https://github.com/ethyca/fides/compare/2.2.2...2.3.0)
 
 ### Added
