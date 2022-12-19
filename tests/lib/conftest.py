@@ -44,9 +44,9 @@ def db(config):
     """Yield a connection to the test DB."""
     # Included so that `AccessManualWebhook` can be located when
     # `ConnectionConfig` is instantiated.
-    from fides.api.ops.models.manual_webhook import (
+    from fides.api.ops.models.manual_webhook import (  # pylint: disable=unused-import
         AccessManualWebhook,
-    )  # pylint: disable=unused-import
+    )
 
     # Create the test DB engine
     assert config.is_test_mode
