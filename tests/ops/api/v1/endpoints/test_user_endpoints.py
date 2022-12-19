@@ -159,6 +159,25 @@ class TestCreateUser:
         assert response_body == {"id": user.id}
         assert user.permissions is not None
         user.delete(db)
+        
+    def test_create_user_as_root(
+        self,
+        db,
+        api_client,
+        root_auth_header,
+        url,
+    ) -> None:
+        auth_header = root_auth_header
+        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        response_body = json.loads(response.text)
+        assert HTTP_201_CREATED == response.status_code
+        assert response_body == {"id": user.id}
+        assert user.permissions is not None
+        user.delete(db)
 
     def test_create_user_with_name(
         self,
