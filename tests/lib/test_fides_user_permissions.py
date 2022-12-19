@@ -19,6 +19,7 @@ from fides.lib.oauth.scopes import (
 
 def test_create_user_permissions():
     permissions: FidesUserPermissions = FidesUserPermissions.create(  # type: ignore
+        # Not using the `db` here allows us to omit PK and FK data
         db=MagicMock(),
         data={"user_id": "test", "scopes": [PRIVACY_REQUEST_READ]},
     )
@@ -30,6 +31,7 @@ def test_create_user_permissions():
 
 def test_associated_privileges():
     permissions: FidesUserPermissions = FidesUserPermissions.create(  # type: ignore
+        # Not using the `db` here allows us to omit PK and FK data
         db=MagicMock(),
         data={
             "user_id": "test",
