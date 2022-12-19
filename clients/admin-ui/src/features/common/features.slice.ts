@@ -18,6 +18,7 @@ export interface Features {
   systemsCount: number;
   connectionsCount: number;
   navV2: boolean;
+  configWizardStepper: boolean;
 }
 
 export const useFeatures = (): Features => {
@@ -41,5 +42,6 @@ export const useFeatures = (): Features => {
     systemsCount,
     connectionsCount,
     navV2,
+    configWizardStepper: false,
   };
 };
