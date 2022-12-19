@@ -3,9 +3,7 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-
 from sqlalchemy.orm import Session
-from faker import Faker
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -22,7 +20,6 @@ from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("friendbuy_nextgen")
-faker = Faker()
 
 
 @pytest.fixture(scope="function")
