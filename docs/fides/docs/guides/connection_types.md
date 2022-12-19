@@ -67,6 +67,11 @@ which fidesops can communicate.
             "human_readable": "Datadog"
         },
         {
+            "identifier": "friendbuy_nextgen",
+            "type": "saas",
+            "human_readable": "Friendbuy Nextgen"
+        },
+        {
             "identifier": "fullstory",
             "type": "saas",
             "human_readable": "Fullstory"
