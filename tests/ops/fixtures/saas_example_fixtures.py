@@ -12,16 +12,10 @@ from fides.api.ops.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.ops.models.datasetconfig import DatasetConfig
+from fides.api.ops.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.ops.schemas.saas.saas_config import ParamValue
 from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
-)
-from fides.api.ops.util.saas_util import load_config
-from fides.api.ops.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget,
 )
 from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -33,7 +27,7 @@ from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite impo
     StringRewriteMaskingStrategy,
 )
 from fides.api.ops.util.data_category import DataCategory
-
+from fides.api.ops.util.saas_util import load_config
 from fides.lib.models.client import ClientDetail
 from tests.ops.fixtures.application_fixtures import load_dataset
 
@@ -79,9 +73,9 @@ def saas_external_example_dataset() -> Dict:
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config(
-        db: Session,
-        saas_example_config: Dict[str, Any],
-        saas_example_secrets: Dict[str, Any],
+    db: Session,
+    saas_example_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     fides_key = saas_example_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -101,9 +95,9 @@ def saas_example_connection_config(
 
 @pytest.fixture(scope="function")
 def saas_external_example_connection_config(
-        db: Session,
-        saas_external_example_config: Dict[str, Any],
-        saas_example_secrets: Dict[str, Any],
+    db: Session,
+    saas_external_example_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     fides_key = saas_external_example_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -123,9 +117,9 @@ def saas_external_example_connection_config(
 
 @pytest.fixture
 def saas_example_dataset_config(
-        db: Session,
-        saas_example_connection_config: ConnectionConfig,
-        saas_example_dataset: Dict,
+    db: Session,
+    saas_example_connection_config: ConnectionConfig,
+    saas_example_dataset: Dict,
 ) -> Generator:
     fides_key = saas_example_dataset["fides_key"]
     saas_example_connection_config.name = fides_key
@@ -145,9 +139,9 @@ def saas_example_dataset_config(
 
 @pytest.fixture
 def saas_external_example_dataset_config(
-        db: Session,
-        saas_external_example_connection_config: ConnectionConfig,
-        saas_external_example_dataset: Dict,
+    db: Session,
+    saas_external_example_connection_config: ConnectionConfig,
+    saas_external_example_dataset: Dict,
 ) -> Generator:
     fides_key = saas_external_example_dataset["fides_key"]
     saas_external_example_connection_config.name = fides_key
@@ -167,7 +161,7 @@ def saas_external_example_dataset_config(
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config_without_saas_config(
-        db: Session, saas_example_secrets
+    db: Session, saas_example_secrets
 ) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -185,9 +179,9 @@ def saas_example_connection_config_without_saas_config(
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config_with_invalid_saas_config(
-        db: Session,
-        saas_example_config: Dict[str, Any],
-        saas_example_secrets: Dict[str, Any],
+    db: Session,
+    saas_example_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     invalid_saas_config = saas_example_config.copy()
     invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
@@ -271,7 +265,7 @@ def oauth2_authorization_code_configuration() -> OAuth2AuthorizationCodeConfigur
 
 @pytest.fixture(scope="function")
 def oauth2_authorization_code_connection_config(
-        db: Session, oauth2_authorization_code_configuration
+    db: Session, oauth2_authorization_code_configuration
 ) -> Generator:
     secrets = {
         "domain": "localhost",
@@ -328,8 +322,8 @@ def saas_config() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def erasure_policy_complete_mask(
-        db: Session,
-        oauth_client: ClientDetail,
+    db: Session,
+    oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
