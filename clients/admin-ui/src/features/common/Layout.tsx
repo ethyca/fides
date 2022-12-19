@@ -29,8 +29,7 @@ const Layout = ({
       {features.navV2 ? (
         <>
           <NavTopBar />
-
-          <Flex as="main" px={9} py={10}>
+          <Flex as="main" px={9} py={10} gap="40px">
             <Box flex={0} flexShrink={0}>
               <NavSideBar />
             </Box>

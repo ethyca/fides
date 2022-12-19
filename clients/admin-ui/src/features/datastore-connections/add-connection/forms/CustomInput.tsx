@@ -48,7 +48,7 @@ const CustomInput = ({
           fontSize="14px"
           fontWeight="semibold"
           htmlFor={props.id || props.name}
-          minWidth="141px"
+          minWidth="150px"
         >
           {label}
         </FormLabel>

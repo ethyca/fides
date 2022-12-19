@@ -104,7 +104,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
-      minWidth="141px"
+      minWidth="150px"
     >
       {value}
     </FormLabel>
@@ -259,7 +259,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       {/* @ts-ignore */}
       {(props: FormikProps<Values>) => (
         <Form noValidate>
-          <VStack align="stretch" gap="24px">
+          <VStack align="stretch" gap="16px">
             {/* Name */}
             <Field
               id="name"

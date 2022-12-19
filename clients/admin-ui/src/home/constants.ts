@@ -1,7 +1,8 @@
 import {
+  CONFIG_WIZARD_ROUTE,
   DATASTORE_CONNECTION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
-  SYSTEM_ROUTE,
+  SYSTEM_ROUTE
 } from "~/constants";
 
 import { ModuleCard } from "./types";
@@ -20,10 +21,10 @@ export const MODULE_CARD_ITEMS: ModuleCard[] = [
   {
     backgroundColor: "orange.50",
     description:
-      "As your organization grows you can continue adding systems to you Fides data map.",
+      "As your organization grows you can continue adding systems to your Fides data map.",
     descriptionColor: "gray.500",
     hoverBorderColor: "orange.500",
-    href: `${SYSTEM_ROUTE}/new`,
+    href: `${CONFIG_WIZARD_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
     name: "Add systems",
     nameColor: "orange.800",
@@ -34,7 +35,7 @@ export const MODULE_CARD_ITEMS: ModuleCard[] = [
   {
     backgroundColor: "purple.50",
     description:
-      "Review and update systems information across your data map including data categories and purposes of processing.",
+      "Review and update system information across your data map including data categories and purposes of processing.",
     descriptionColor: "gray.500",
     hoverBorderColor: "purple.500",
     href: `${SYSTEM_ROUTE}`,

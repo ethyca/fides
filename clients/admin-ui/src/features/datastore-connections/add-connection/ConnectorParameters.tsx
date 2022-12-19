@@ -82,7 +82,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
 
   return (
     <Flex gap="97px">
-      <VStack w="579px" gap="24px" align="stretch">
+      <VStack w="579px" gap="16px" align="stretch">
         {(isFetching || isLoading) && (
           <Center>
             <Spinner />

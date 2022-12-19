@@ -76,7 +76,6 @@ const ChooseConnection: React.FC = () => {
         alignItems="center"
         gap="4"
         mb="24px"
-        mt="24px"
         minWidth="fit-content"
       >
         <ConnectionTypeFilter />

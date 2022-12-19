@@ -29,15 +29,17 @@ const HomeContent: React.FC = () => {
 
   useEffect(() => {
     if (hasConnections || hasSystems) {
-      let card: ModuleCard | undefined;
       if (hasConnections) {
-        card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
+        const card = getCardItem(ModuleCardKeys.REVIEW_PRIVACY_REQUESTS);
+        if (card && !list.includes(card)) {
+          setList((prev) => [...prev, card as ModuleCard]);
+        }
       }
       if (hasSystems) {
-        card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
-      }
-      if (card && !list.includes(card)) {
-        setList((prev) => [...prev, card as ModuleCard]);
+        const card = getCardItem(ModuleCardKeys.MANAGE_SYSTEMS);
+        if (card && !list.includes(card)) {
+          setList((prev) => [...prev, card as ModuleCard]);
+        }
       }
     }
   }, [hasConnections, hasSystems, list]);
@@ -69,8 +71,6 @@ const HomeContent: React.FC = () => {
                 _hover={{
                   border: "1px solid",
                   borderColor: `${item.hoverBorderColor}`,
-                  boxShadow:
-                    "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
                   cursor: "pointer",
                 }}
               >
