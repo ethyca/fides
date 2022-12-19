@@ -2,6 +2,12 @@
 
 from unittest.mock import MagicMock
 
+# Included so that `AccessManualWebhook` can be located when
+# `ConnectionConfig` is instantiated.
+from fides.api.ops.models.manual_webhook import (
+    AccessManualWebhook,
+)  # pylint: disable=unused-import
+
 from fides.lib.models.fides_user_permissions import FidesUserPermissions
 from fides.lib.oauth.scopes import (
     PRIVACY_REQUEST_READ,
@@ -12,10 +18,6 @@ from fides.lib.oauth.scopes import (
 
 
 def test_create_user_permissions():
-    from fides.api.ops.models.manual_webhook import (
-        AccessManualWebhook,
-    )  # pylint: disable=unused-import
-
     permissions: FidesUserPermissions = FidesUserPermissions.create(  # type: ignore
         db=MagicMock(),
         data={"user_id": "test", "scopes": [PRIVACY_REQUEST_READ]},
@@ -27,10 +29,6 @@ def test_create_user_permissions():
 
 
 def test_associated_privileges():
-    from fides.api.ops.models.manual_webhook import (
-        AccessManualWebhook,
-    )  # pylint: disable=unused-import
-
     permissions: FidesUserPermissions = FidesUserPermissions.create(  # type: ignore
         db=MagicMock(),
         data={
