@@ -67,7 +67,6 @@ faker = Faker()
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 CONFIG = get_config()
-logger = logging.getLogger(_name_)
 
 # Unified list of connections to integration dbs specified from fides.api-integration.toml
 
@@ -572,6 +571,7 @@ def erasure_policy_string_rewrite_long(
 def erasure_policy_two_rules(
     db: Session, oauth_client: ClientDetail, erasure_policy: Policy
 ) -> Generator:
+
     second_erasure_rule = Rule.create(
         db=db,
         data={
