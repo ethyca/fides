@@ -4,8 +4,6 @@ import pydash
 import pytest
 import requests
 
-from fideslib.cryptography import cryptographic_util
-from fideslib.db import session
 from sqlalchemy.orm import Session
 from faker import Faker
 
@@ -19,6 +17,8 @@ from fides.api.ops.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.lib.cryptography import cryptographic_util
+from fides.lib.db import session
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("friendbuy_nextgen")
