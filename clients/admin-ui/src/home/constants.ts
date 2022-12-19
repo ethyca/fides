@@ -1,4 +1,8 @@
-import { DATASTORE_CONNECTION_ROUTE, PRIVACY_REQUESTS_ROUTE, SYSTEM_ROUTE } from "~/constants";
+import {
+  DATASTORE_CONNECTION_ROUTE,
+  PRIVACY_REQUESTS_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/constants";
 
 import { ModuleCard } from "./types";
 
@@ -9,7 +13,7 @@ export enum ModuleCardKeys {
   ADD_SYSTEMS = 1,
   MANAGE_SYSTEMS = 2,
   CONFIGURE_PRIVACY_REQUESTS = 3,
-  REVIEW_PRIVACY_REQUESTS = 4
+  REVIEW_PRIVACY_REQUESTS = 4,
 }
 
 export const MODULE_CARD_ITEMS: ModuleCard[] = [

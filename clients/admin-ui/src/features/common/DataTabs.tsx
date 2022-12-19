@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 export interface TabData {
   label: string;
   content: ReactNode;
+  isDisabled?: boolean;
 }
 
 interface Props {
@@ -31,6 +32,7 @@ const DataTabs = ({ data, ...other }: Props & Omit<TabsProps, "children">) => (
           }}
           fontWeight="500"
           color="gray.500"
+          isDisabled={tab.isDisabled || false}
         >
           {tab.label}
         </Tab>
