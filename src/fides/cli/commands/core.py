@@ -170,5 +170,5 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.request_headers,
-        all_resources=all_resources,
+        all_resources_file=all_resources,
     )
