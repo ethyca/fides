@@ -42,6 +42,7 @@ The types of changes are:
 * Do not always create a `fides.toml` by default [#2023](https://github.com/ethyca/fides/pull/2023)
 * The `fideslib` module has been merged into `fides`, code redundancies have been removed [#1859](https://github.com/ethyca/fides/pull/1859)
 * Replace 'ingress' and 'egress' with 'sources' and 'destinations' across UI [#2044](https://github.com/ethyca/fides/pull/2044)
+* Update the functionality of `fides pull -a <filename>` to include _all_ resource types. [#2083](https://github.com/ethyca/fides/pull/2083)
 
 ### Fixed
 
