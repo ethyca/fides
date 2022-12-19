@@ -7,7 +7,7 @@ from py._path.local import LocalPath
 from toml import dump, load
 
 from fides.ctl.core.config import FidesConfig
-from fides.ctl.core.config.utils import update_config_file
+from fides.ctl.core.config.helpers import update_config_file
 
 
 @pytest.fixture

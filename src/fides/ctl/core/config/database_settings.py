@@ -2,15 +2,13 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-import logging
 from typing import Dict, Optional
 
-from fideslib.core.config import FidesSettings
 from pydantic import PostgresDsn, validator
 
 from fides.ctl.core.config.utils import get_test_mode
 
-logger = logging.getLogger(__name__)
+from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__DATABASE__"
 

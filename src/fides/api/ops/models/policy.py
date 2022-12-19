@@ -4,8 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
-from fideslib.db.base_class import Base, FidesBase
-from fideslib.models.client import ClientDetail
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
@@ -24,6 +22,8 @@ from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.util.data_category import _validate_data_category
 from fides.ctl.core.config import get_config
+from fides.lib.db.base_class import Base, FidesBase
+from fides.lib.models.client import ClientDetail
 
 CONFIG = get_config()
 
@@ -121,7 +121,7 @@ class Policy(Base):
     )  # Which client created the Policy
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """Overrides base create or update to add custom error for drp action already exists"""
         db_obj = cls.get_by_key_or_id(db=db, data=data)
         if hasattr(cls, "drp_action"):
@@ -135,13 +135,13 @@ class Policy(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all rules on deletion of a Policy."""
-        _ = [rule.delete(db=db) for rule in self.rules]
+        _ = [rule.delete(db=db) for rule in self.rules]  # type: ignore[attr-defined]
         return super().delete(db=db)
 
     def get_erasure_target_categories(self) -> List[str]:
         """Returns all data categories that are the target of erasure rules."""
         erasure_categories = []
-        for rule in self.rules:
+        for rule in self.rules:  # type: ignore[attr-defined]
             if rule.action_type == ActionType.erasure:
                 erasure_categories.extend(rule.get_target_data_categories())
 
@@ -149,7 +149,7 @@ class Policy(Base):
 
     def get_rules_for_action(self, action_type: ActionType) -> List["Rule"]:
         """Returns all Rules related to this Policy filtered by `action_type`."""
-        return [rule for rule in self.rules if rule.action_type == action_type]
+        return [rule for rule in self.rules if rule.action_type == action_type]  # type: ignore[attr-defined]
 
 
 def _get_ref_from_taxonomy(fides_key: FidesOpsKey) -> FideslangDataCategory:
@@ -268,7 +268,7 @@ class Rule(Base):
         return super().save(db=db)
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """Validate this object's data before deferring to the superclass on update"""
         _validate_rule(
             action_type=data.get("action_type"),
@@ -279,7 +279,7 @@ class Rule(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Cascade delete all targets on deletion of a Rule."""
-        _ = [target.delete(db=db) for target in self.targets]
+        _ = [target.delete(db=db) for target in self.targets]  # type: ignore[attr-defined]
         return super().delete(db=db)
 
     def get_target_data_categories(self) -> List[str]:
@@ -287,10 +287,10 @@ class Rule(Base):
         Returns a list of DataCategory enum values representing the targets
         that this Rule is configured to apply to.
         """
-        return [target.data_category for target in self.targets]
+        return [target.data_category for target in self.targets]  # type: ignore[attr-defined]
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """
         An override of `FidesBase.create_or_update` that handles the specific edge case where
         a `Rule` getting updated may be having its `policy_id` changed, potentially causing
@@ -313,9 +313,9 @@ class Rule(Base):
                 )
             db_obj.update(db=db, data=data)
         else:
-            db_obj = cls.create(db=db, data=data)
+            db_obj = cls.create(db=db, data=data)  # type: ignore[assignment]
 
-        return db_obj
+        return db_obj  # type: ignore[return-value]
 
 
 def _validate_rule_target_name(name: str) -> None:
@@ -375,7 +375,7 @@ class RuleTarget(Base):
         return f"{rule_id}-{data_category}"
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """
         An override of `FidesBase.create_or_update` that handles the specific edge case where
         a `RuleTarget` getting updated may be having its `rule_id` changed, potentially causing
@@ -398,12 +398,12 @@ class RuleTarget(Base):
                 )
             db_obj.update(db=db, data=data)
         else:
-            db_obj = cls.create(db=db, data=data)
+            db_obj = cls.create(db=db, data=data)  # type: ignore[assignment]
 
-        return db_obj
+        return db_obj  # type: ignore[return-value]
 
     @classmethod
-    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:
+    def create(cls, db: Session, *, data: Dict[str, Any]) -> FidesBase:  # type: ignore[override]
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:
@@ -430,7 +430,7 @@ class RuleTarget(Base):
                 f"Rule with ID {rule_id} does not exist."
             )
 
-        if rule.action_type.value == ActionType.erasure.value:
+        if rule.action_type.value == ActionType.erasure.value:  # type: ignore[attr-defined]
             # If we're adding a data category to an erasure rule, we need to validate that there
             # are no conflicting actions in the erasure rules.
             erasure_categories = [data_category]
@@ -534,7 +534,10 @@ class WebhookBase:
 
 
 class PolicyPreWebhook(WebhookBase, Base):
-    """The configuration to describe webhooks that run before Privacy Requests are executed for a given Policy"""
+    """
+    The configuration to describe webhooks that run before
+    Privacy Requests are executed for a given Policy.
+    """
 
     prefix = "pre"  # For logging purposes
 
@@ -557,7 +560,10 @@ class PolicyPreWebhook(WebhookBase, Base):
 
 
 class PolicyPostWebhook(WebhookBase, Base):
-    """The configuration to describe webhooks that run after Privacy Requests are executed for a given Policy"""
+    """
+    The configuration to describe webhooks that run after
+    Privacy Requests are executed for a given Policy.
+    """
 
     prefix = "post"  # For logging purposes
 

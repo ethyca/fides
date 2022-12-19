@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { addCommonHeaders } from "common/CommonHeaders";
 
@@ -341,3 +341,23 @@ export const {
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,
 } = datastoreConnectionApi;
+
+/**
+ * This constant is used for a `getAllDatastoreConnections` query that is run as a global
+ * subscription just to check whether the user has any connections at all.
+ */
+export const INITIAL_CONNECTIONS_FILTERS: DatastoreConnectionParams = {
+  search: "",
+  page: 1,
+  size: 5,
+};
+
+/**
+ * Returns the globally cached datastore connections response.
+ */
+export const selectInitialConnections = createSelector(
+  datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
+    INITIAL_CONNECTIONS_FILTERS
+  ),
+  ({ data }) => data
+);

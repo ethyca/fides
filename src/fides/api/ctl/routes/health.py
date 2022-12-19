@@ -1,7 +1,7 @@
-import logging
 from typing import Any, Dict, List, Union
 
 from fastapi import Depends, HTTPException, status
+from loguru import logger
 from redis.exceptions import ResponseError
 from sqlalchemy.orm import Session
 
@@ -19,21 +19,17 @@ CONFIG: FidesConfig = get_config()
 
 router = APIRouter(tags=["Health"])
 
-logger = logging.getLogger(__name__)
-# stops polluting logs with sqlalchemy / alembic info-level logs
-logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
-logging.getLogger("alembic").setLevel(logging.WARNING)
-
 
 def get_cache_health() -> str:
     """Checks if the cache is reachable"""
+
     if not CONFIG.redis.enabled:
         return "no cache configured"
     try:
         get_cache()
         return "healthy"
     except (RedisConnectionError, ResponseError) as e:
-        logger.error("Unable to reach cache: %s", Pii(str(e)))
+        logger.error("Unable to reach cache: {}", Pii(str(e)))
         return "unhealthy"
 
 

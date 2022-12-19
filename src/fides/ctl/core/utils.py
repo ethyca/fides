@@ -1,6 +1,5 @@
 """Utils to help with API calls."""
 import glob
-import logging
 import re
 from functools import partial
 from hashlib import sha1
@@ -14,12 +13,13 @@ import requests
 import sqlalchemy
 from fideslang.models import DatasetField, FidesModel
 from fideslang.validation import FidesValidationError
+from loguru import logger
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 from fides.ctl.connectors.models import ConnectorAuthFailureException
 
-logger = logging.getLogger("server_api")
+logger.bind(name="server_api")
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
