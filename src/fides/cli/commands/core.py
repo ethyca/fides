@@ -157,6 +157,7 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
     The pull is aborted if there are unstaged or untracked files in the manifests dir.
     """
 
+    # Make the resources that are pulled configurable
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
