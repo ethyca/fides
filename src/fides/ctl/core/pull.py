@@ -2,8 +2,8 @@
 from typing import Dict, List, Optional
 
 import yaml
-from fideslang.manifests import load_yaml_into_dict
 from fideslang import model_list
+from fideslang.manifests import load_yaml_into_dict
 
 from fides.cli.utils import print_divider
 from fides.ctl.core.api_helpers import get_server_resource, list_server_resources
