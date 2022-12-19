@@ -3,6 +3,7 @@ from typing import Any, Dict, Generator
 
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import (
@@ -16,6 +17,24 @@ from fides.api.ops.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
 )
 from fides.api.ops.util.saas_util import load_config
+from fides.api.ops.models.policy import (
+    ActionType,
+    Policy,
+    Rule,
+    RuleTarget,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
+)
+from fides.api.ops.service.masking.strategy.masking_strategy_string_rewrite import (
+    StringRewriteMaskingStrategy,
+)
+from fides.api.ops.util.data_category import DataCategory
+
+from fides.lib.models.client import ClientDetail
 from tests.ops.fixtures.application_fixtures import load_dataset
 
 logger = logging.getLogger(__name__)
@@ -60,9 +79,9 @@ def saas_external_example_dataset() -> Dict:
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config(
-    db: Session,
-    saas_example_config: Dict[str, Any],
-    saas_example_secrets: Dict[str, Any],
+        db: Session,
+        saas_example_config: Dict[str, Any],
+        saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     fides_key = saas_example_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -82,9 +101,9 @@ def saas_example_connection_config(
 
 @pytest.fixture(scope="function")
 def saas_external_example_connection_config(
-    db: Session,
-    saas_external_example_config: Dict[str, Any],
-    saas_example_secrets: Dict[str, Any],
+        db: Session,
+        saas_external_example_config: Dict[str, Any],
+        saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     fides_key = saas_external_example_config["fides_key"]
     connection_config = ConnectionConfig.create(
@@ -104,9 +123,9 @@ def saas_external_example_connection_config(
 
 @pytest.fixture
 def saas_example_dataset_config(
-    db: Session,
-    saas_example_connection_config: ConnectionConfig,
-    saas_example_dataset: Dict,
+        db: Session,
+        saas_example_connection_config: ConnectionConfig,
+        saas_example_dataset: Dict,
 ) -> Generator:
     fides_key = saas_example_dataset["fides_key"]
     saas_example_connection_config.name = fides_key
@@ -126,9 +145,9 @@ def saas_example_dataset_config(
 
 @pytest.fixture
 def saas_external_example_dataset_config(
-    db: Session,
-    saas_external_example_connection_config: ConnectionConfig,
-    saas_external_example_dataset: Dict,
+        db: Session,
+        saas_external_example_connection_config: ConnectionConfig,
+        saas_external_example_dataset: Dict,
 ) -> Generator:
     fides_key = saas_external_example_dataset["fides_key"]
     saas_external_example_connection_config.name = fides_key
@@ -148,7 +167,7 @@ def saas_external_example_dataset_config(
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config_without_saas_config(
-    db: Session, saas_example_secrets
+        db: Session, saas_example_secrets
 ) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -166,9 +185,9 @@ def saas_example_connection_config_without_saas_config(
 
 @pytest.fixture(scope="function")
 def saas_example_connection_config_with_invalid_saas_config(
-    db: Session,
-    saas_example_config: Dict[str, Any],
-    saas_example_secrets: Dict[str, Any],
+        db: Session,
+        saas_example_config: Dict[str, Any],
+        saas_example_secrets: Dict[str, Any],
 ) -> Generator:
     invalid_saas_config = saas_example_config.copy()
     invalid_saas_config["endpoints"][0]["requests"]["read"]["param_values"].pop()
@@ -252,7 +271,7 @@ def oauth2_authorization_code_configuration() -> OAuth2AuthorizationCodeConfigur
 
 @pytest.fixture(scope="function")
 def oauth2_authorization_code_connection_config(
-    db: Session, oauth2_authorization_code_configuration
+        db: Session, oauth2_authorization_code_configuration
 ) -> Generator:
     secrets = {
         "domain": "localhost",
@@ -305,3 +324,289 @@ def saas_config() -> Dict[str, Any]:
     except FileNotFoundError as e:
         logger.warning("saas_config.toml could not be loaded: %s", e)
     return saas_config
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_complete_mask(
+        db: Session,
+        oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy string rewrite",
+            "key": "example_erasure_policy_string_rewrite",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    user_device_ip_address_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_device_ip_address Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": NullMaskingStrategy.name,
+                "configuration": {},
+            },
+        },
+    )
+    user_device_ip_address_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.device.ip_address").value,
+            "rule_id": user_device_ip_address_rule.id,
+        },
+    )
+    user_gender_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_gender Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
+            },
+        },
+    )
+    user_gender_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.gender").value,
+            "rule_id": user_gender_rule.id,
+        },
+    )
+
+    user_contact_address_city_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_address_city Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
+            },
+        },
+    )
+    user_contact_address_city_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.city").value,
+            "rule_id": user_contact_address_city_rule.id,
+        },
+    )
+    user_contact_address_country_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_address_country Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": NullMaskingStrategy,
+                "configuration": {},
+            },
+        },
+    )
+    user_contact_address_country_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.country").value,
+            "rule_id": user_contact_address_country_rule.id,
+        },
+    )
+    user_contact_email_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_email Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": RandomStringRewriteMaskingStrategy.name,
+                "configuration": {
+                    "length": 20,
+                    "format_preservation": {"suffix": "@email.com"},
+                },
+            },
+        },
+    )
+    user_contact_email_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.email").value,
+            "rule_id": user_contact_email_rule.id,
+        },
+    )
+    user_contact_phone_number_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_phone_number Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": NullMaskingStrategy.name,
+                "configuration": {},
+            },
+        },
+    )
+    user_contact_phone_number_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.phone_number").value,
+            "rule_id": user_contact_phone_number_rule.id,
+        },
+    )
+    user_contact_address_postal_code_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_address_postal_code Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "99999"},
+            },
+        },
+    )
+    user_contact_address_postal_code_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.postal_code").value,
+            "rule_id": user_contact_address_postal_code_rule.id,
+        },
+    )
+    user_contact_address_state_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_address_state Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
+            },
+        },
+    )
+    user_contact_address_state_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.state").value,
+            "rule_id": user_contact_address_state_rule.id,
+        },
+    )
+    user_contact_address_street_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_contact_address_street Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
+            },
+        },
+    )
+    user_contact_address_street_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.street").value,
+            "rule_id": user_contact_address_street_rule.id,
+        },
+    )
+    user_date_of_birth_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_date_of_birth Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "1/1/1900"},
+            },
+        },
+    )
+    user_date_of_birth_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.date_of_birth").value,
+            "rule_id": user_date_of_birth_rule.id,
+        },
+    )
+    user_name_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "user_name Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "Masked"},
+            },
+        },
+    )
+    user_name_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": user_name_rule.id,
+        },
+    )
+
+    yield erasure_policy
+
+    try:
+        user_device_ip_address_rule.delete(db)
+        user_gender_rule.delete(db)
+        user_contact_address_city_rule.delete(db)
+        user_contact_address_country_rule.delete(db)
+        user_contact_email_rule.delete(db)
+        user_contact_phone_number_rule.delete(db)
+        user_contact_address_postal_code_rule.delete(db)
+        user_contact_address_state_rule.delete(db)
+        user_contact_address_street_rule.delete(db)
+        user_date_of_birth_rule.delete(db)
+        user_name_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        user_device_ip_address_target.delete(db)
+        user_gender_target.delete(db)
+        user_contact_address_city_target.delete(db)
+        user_contact_address_country_target.delete(db)
+        user_contact_email_target.delete(db)
+        user_contact_phone_number_target.delete(db)
+        user_contact_address_postal_code_target.delete(db)
+        user_contact_address_state_target.delete(db)
+        user_contact_address_street_target.delete(db)
+        user_date_of_birth_target.delete(db)
+        user_name_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
