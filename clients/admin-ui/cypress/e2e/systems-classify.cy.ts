@@ -1,8 +1,4 @@
-import {
-  stubHomePage,
-  stubPlus,
-  stubTaxonomyEntities,
-} from "cypress/support/stubs";
+import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
 describe("Classify systems page", () => {
   beforeEach(() => {
@@ -13,7 +9,6 @@ describe("Classify systems page", () => {
   });
 
   it("Should reroute if not in plus", () => {
-    stubHomePage();
     stubPlus(false);
     cy.visit("/classify-systems");
     cy.url().should("eql", `${Cypress.config().baseUrl}/`);

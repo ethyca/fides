@@ -8,6 +8,7 @@ import {
   useToast,
   UseToastOptions,
 } from "@fidesui/react";
+import { MouseEventHandler } from "react";
 
 /**
  * Custom hook for toast notifications
@@ -24,12 +25,16 @@ export const useAlert = () => {
   const errorAlert = (
     description: string | JSX.Element,
     title?: string,
-    options?: UseToastOptions
+    addedOptions?: UseToastOptions
   ) => {
-    toast({
-      ...options,
-      position: options?.position || DEFAULT_POSITION,
-      render: ({ onClose }) => (
+    const options = {
+      ...addedOptions,
+      position: addedOptions?.position || DEFAULT_POSITION,
+      render: ({
+        onClose,
+      }: {
+        onClose: MouseEventHandler<HTMLButtonElement> | undefined;
+      }) => (
         <Alert alignItems="normal" status="error">
           <AlertIcon />
           <Box>
@@ -45,7 +50,13 @@ export const useAlert = () => {
           />
         </Alert>
       ),
-    });
+    };
+
+    if (addedOptions?.id && toast.isActive(addedOptions.id)) {
+      toast.update(addedOptions.id, options);
+    } else {
+      toast(options);
+    }
   };
 
   /**
@@ -55,12 +66,16 @@ export const useAlert = () => {
   const successAlert = (
     description: string,
     title?: string,
-    options?: UseToastOptions
+    addedOptions?: UseToastOptions
   ) => {
-    toast({
-      ...options,
-      position: options?.position || DEFAULT_POSITION,
-      render: ({ onClose }) => (
+    const options = {
+      ...addedOptions,
+      position: addedOptions?.position || DEFAULT_POSITION,
+      render: ({
+        onClose,
+      }: {
+        onClose: MouseEventHandler<HTMLButtonElement> | undefined;
+      }) => (
         <Alert alignItems="normal" status="success" variant="subtle">
           <AlertIcon />
           <Box>
@@ -76,7 +91,12 @@ export const useAlert = () => {
           />
         </Alert>
       ),
-    });
+    };
+    if (addedOptions?.id && toast.isActive(addedOptions.id)) {
+      toast.update(addedOptions.id, options);
+    } else {
+      toast(options);
+    }
   };
 
   return { errorAlert, successAlert };

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import logging
 from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Set, Tuple
+
+from loguru import logger
 
 from fides.api.ops.common_exceptions import ValidationError
 from fides.api.ops.graph.config import (
@@ -16,8 +17,6 @@ from fides.api.ops.graph.config import (
     SeedAddress,
 )
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
-
-logger = logging.getLogger(__name__)
 
 
 class Node:
@@ -206,7 +205,7 @@ class DatasetGraph:
                 for (dest_field_address, direction) in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
                         logger.warning(
-                            "Referenced object %s does not exist", dest_field_address
+                            "Referenced object {} does not exist", dest_field_address
                         )
                         raise ValidationError(
                             f"Referred to object {dest_field_address} does not exist"

@@ -61,14 +61,15 @@ class FidesConnector(BaseConnector[FidesClient]):
         Tests connection to the configured Fides server with configured credentials
         by attempting an authorized API call and ensuring success
         """
-        log.info(f"Starting test connection to {self.configuration.key}")
+        log.info("Starting test connection to {}", self.configuration.key)
         try:
             client: FidesClient = self.client()
             client.request_status()
         except Exception as e:
-            log.error(f"Error testing connection to remote Fides {str(e)}")
+            log.error("Error testing connection to remote Fides {}", str(e))
             return ConnectionTestStatus.failed
 
+        log.info("Successful connection test for {}", self.configuration.key)
         return ConnectionTestStatus.succeeded
 
     def retrieve_data(
@@ -84,6 +85,9 @@ class FidesConnector(BaseConnector[FidesClient]):
             raise FidesError(
                 f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"
             )
+        log.info(
+            f"{self.configuration.key} starting retrieve_data for privacy request {privacy_request.id}..."
+        )
 
         client: FidesClient = self.client()
 
@@ -110,6 +114,9 @@ class FidesConnector(BaseConnector[FidesClient]):
             for rule in policy.get_rules_for_action(action_type=ActionType.access)
         }
 
+        log.info(
+            f"{self.configuration.key} finished retrieve_data for privacy request {privacy_request.id}"
+        )
         return [results]
 
     def mask_data(
@@ -126,6 +133,9 @@ class FidesConnector(BaseConnector[FidesClient]):
             raise FidesError(
                 f"No identity data found for privacy request {privacy_request.id}, cannot execute Fides connector!"
             )
+        log.info(
+            f"{self.configuration.key} starting mask_data for privacy request {privacy_request.id}..."
+        )
 
         client: FidesClient = self.client()
         update_ct = 0
@@ -142,6 +152,9 @@ class FidesConnector(BaseConnector[FidesClient]):
             )
             update_ct += 1
 
+        log.info(
+            f"{self.configuration.key} finished mask_data for privacy request {privacy_request.id}"
+        )
         return update_ct
 
     def close(self) -> None:

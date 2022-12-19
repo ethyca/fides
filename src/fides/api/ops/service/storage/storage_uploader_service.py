@@ -1,10 +1,9 @@
-import logging
 from typing import Any, Dict, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.ops.common_exceptions import StorageUploadError
-from fides.api.ops.models.privacy_request import PrivacyRequest
 from fides.api.ops.models.storage import StorageConfig
 from fides.api.ops.schemas.shared_schemas import FidesOpsKey
 from fides.api.ops.schemas.storage.storage import (
@@ -14,8 +13,6 @@ from fides.api.ops.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.ops.tasks.storage import upload_to_local, upload_to_s3
-
-logger = logging.getLogger(__name__)
 
 
 def upload(
@@ -34,7 +31,7 @@ def upload(
     )
 
     if config is None:
-        logger.warning("Storage type not found: %s", storage_key)
+        logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
     return uploader(db, config, data, request_id)

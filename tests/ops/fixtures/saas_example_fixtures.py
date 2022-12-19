@@ -2,8 +2,8 @@ import logging
 from typing import Any, Dict, Generator
 
 import pytest
-from fideslib.core.config import load_toml
 from sqlalchemy.orm import Session
+from toml import load as load_toml
 
 from fides.api.ops.models.connectionconfig import (
     AccessLevel,
@@ -301,7 +301,7 @@ def oauth2_authorization_code_connection_config(
 def saas_config() -> Dict[str, Any]:
     saas_config: Dict[str, Any] = {}
     try:
-        saas_config: Dict[str, Any] = load_toml(["saas_config.toml"])
+        saas_config: Dict[str, Any] = load_toml("saas_config.toml")
     except FileNotFoundError as e:
         logger.warning("saas_config.toml could not be loaded: %s", e)
     return saas_config

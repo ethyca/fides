@@ -12,6 +12,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
+import CommonSubscriptions from "~/features/common/CommonSubscriptions";
 
 import store, { persistor } from "../app/store";
 import flags from "../flags.json";
@@ -43,6 +44,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
               <Component {...pageProps} />
             ) : (
               <ProtectedRoute>
+                <CommonSubscriptions />
                 <Component {...pageProps} />
               </ProtectedRoute>
             )}

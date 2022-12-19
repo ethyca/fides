@@ -1,9 +1,5 @@
 [
   {
-    "name": "createNewConnection",
-    "isActive": true
-  },
-  {
     "name": "configWizardStepper",
     "isActive": false
   }

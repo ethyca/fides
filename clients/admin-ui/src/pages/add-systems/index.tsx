@@ -11,7 +11,7 @@ const ConfigWizard: NextPage = () => {
   const step = useAppSelector(selectStep);
 
   return step === 0 ? (
-    <Layout title="Config Wizard" noPadding>
+    <Layout title="Config Wizard">
       <Setup />
     </Layout>
   ) : (
