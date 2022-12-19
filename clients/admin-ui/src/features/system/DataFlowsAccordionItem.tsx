@@ -118,6 +118,12 @@ const DataFlowAccordionItem = ({
 const DataFlowsAccordionItem = ({ classifyDataFlows, type }: Props) => {
   const { values } = useFormikContext<IngressEgress>();
   const flows = values[type];
+  const typeLabel = {
+    // When type is `ingress` display `sources`,
+    ingress: "source",
+    // and when type is `egress` display `destinations`
+    egress: "destination",
+  }[type];
 
   if (flows.length === 0) {
     return <Text p={4}>No {type}es found.</Text>;
@@ -128,7 +134,7 @@ const DataFlowsAccordionItem = ({ classifyDataFlows, type }: Props) => {
       <AccordionItemContents
         headingLevel="h2"
         title={`Connected ${
-          type[0].toLocaleUpperCase() + type.slice(1)
+          typeLabel[0].toLocaleUpperCase() + typeLabel.slice(1)
         } Systems`}
       >
         {flows.map((flow, idx) => (
