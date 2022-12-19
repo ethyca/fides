@@ -2,6 +2,11 @@ import { useAppSelector } from "~/app/hooks";
 import { selectInitialConnections } from "~/features/datastore-connections";
 import { selectHealth } from "~/features/plus/plus.slice";
 import { selectAllSystems } from "~/features/system";
+import FlagValues from "~/flags.json";
+
+const isNavV2 = FlagValues.some(
+  (flag) => flag.name === "navV2" && flag.isActive
+);
 
 /**
  * Features are currently stateless and only use the Plus API. However, this a ".slice" file because
@@ -28,7 +33,7 @@ export const useFeatures = (): Features => {
   const connectionsCount = initialConnections?.total ?? 0;
 
   // TODO(#1909): Remove condition when we're ready to release Nav 2.0
-  const navV2 = process.env.NODE_ENV === "development";
+  const navV2 = isNavV2;
 
   return {
     plus,
