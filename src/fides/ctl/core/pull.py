@@ -88,6 +88,10 @@ def pull_missing_resources(
         for resource in MODEL_LIST
     }
 
+    resource_manifest = {
+        key: value for key, value in resource_manifest.items() if value
+    }
+
     # Write out the resources in a file
     write_manifest_file(manifest_path, resource_manifest)
     print_divider()
