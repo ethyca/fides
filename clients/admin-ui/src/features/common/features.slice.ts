@@ -12,6 +12,7 @@ export interface Features {
   dataFlowScanning: boolean;
   systemsCount: number;
   connectionsCount: number;
+  navV2: boolean;
 }
 
 export const useFeatures = (): Features => {
@@ -26,10 +27,14 @@ export const useFeatures = (): Features => {
 
   const connectionsCount = initialConnections?.total ?? 0;
 
+  // TODO(#1909): Remove condition when we're ready to release Nav 2.0
+  const navV2 = false;
+
   return {
     plus,
     dataFlowScanning,
     systemsCount,
     connectionsCount,
+    navV2,
   };
 };

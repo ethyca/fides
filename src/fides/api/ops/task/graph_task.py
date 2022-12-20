@@ -724,13 +724,13 @@ async def run_erasure(  # pylint: disable = too-many-arguments
         dsk: Dict[CollectionAddress, Any] = {
             k: (
                 t.erasure_request,
-                access_request_data[
-                    str(k)
-                ],  # Pass in the results of the access request for this collection
+                access_request_data.get(
+                    str(k), []
+                ),  # Pass in the results of the access request for this collection
                 *[
-                    access_request_data[
-                        str(upstream_key)
-                    ]  # Additionally pass in the original input data we used for the access request. It's helpful in
+                    access_request_data.get(
+                        str(upstream_key), []
+                    )  # Additionally pass in the original input data we used for the access request. It's helpful in
                     # cases like the EmailConnector where the access request doesn't actually retrieve data.
                     for upstream_key in t.input_keys
                 ],
