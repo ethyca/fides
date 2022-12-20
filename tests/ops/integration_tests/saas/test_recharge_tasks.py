@@ -245,7 +245,7 @@ async def test_recharge_erasure_request_task(
 
     assert x == {
         'recharge_instance:addresses': 1,
-        'recharge_instance:customers': 1
+        'recharge_instance:customer': 1
     }
 
     address = recharge_test_client.get_addresses(

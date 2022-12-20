@@ -5,7 +5,7 @@ import pydash
 import pytest
 import requests
 from faker import Faker
-from fideslib.db import session
+from fides.lib.db import session
 from requests import Response
 from sqlalchemy.orm import Session
 
