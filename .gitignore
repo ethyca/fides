@@ -1,5 +1,7 @@
 # Source for the following rules: https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore
 
+# Files to keep that would otherwise get ignored
+
 # frontend
 ui-build/
 
@@ -115,8 +117,8 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
 lib64/
+/lib/
 parts/
 sdist/
 var/

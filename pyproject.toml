@@ -41,7 +41,6 @@ module = [
   "dask.*",
   "deepdiff.*",
   "fideslang.*",
-  "fideslib.*",
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",

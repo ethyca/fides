@@ -1,17 +1,14 @@
 """
 This module is responsible for combining all of the different
-config sections into a single config.
+config sections into a single config object.
 """
 
 from functools import lru_cache
-from os import environ, getenv
-from re import compile as regex
-from typing import Any, Dict, MutableMapping, Optional, Tuple
+from os import getenv
+from typing import Any, Dict, Optional, Tuple
 
 import toml
-from fideslib.core.config import load_toml
 from loguru import logger as log
-from pydantic import BaseModel
 from pydantic.class_validators import _FUNCS
 from pydantic.env_settings import SettingsSourceCallable
 
@@ -22,37 +19,47 @@ from .cli_settings import CLISettings
 from .credentials_settings import merge_credentials_environment
 from .database_settings import DatabaseSettings
 from .execution_settings import ExecutionSettings
+from .fides_settings import FidesSettings
+from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
 from .redis_settings import RedisSettings
 from .security_settings import SecuritySettings
 from .user_settings import UserSettings
-from .utils import DEFAULT_CONFIG_PATH, get_test_mode
+from .utils import (
+    CONFIG_KEY_ALLOWLIST,
+    DEFAULT_CONFIG_PATH,
+    DEFAULT_CONFIG_PATH_ENV_VAR,
+    get_test_mode,
+)
 
 
-class FidesConfig(BaseModel):
+class FidesConfig(FidesSettings):
     """
-    Composite class that encapsulates all of the config subsections.
+    Composite class that encapsulates all of the config subsections
+    as well as root-level values.
     """
 
-    admin_ui: AdminUISettings = AdminUISettings()
-    cli: CLISettings = CLISettings()
-    credentials: Dict[str, Dict] = {}
-    database: DatabaseSettings = DatabaseSettings()
-    execution: ExecutionSettings = ExecutionSettings()
-    logging: LoggingSettings = LoggingSettings()
-    notifications: NotificationSettings = NotificationSettings()
-    redis: RedisSettings = RedisSettings()
-    # Use 'construct' to avoid running validation
-    # This allows us to use the correct type but populate later
-    security: SecuritySettings = SecuritySettings.construct()
-    user: UserSettings = UserSettings()
-
+    # Root Settings
     test_mode: bool = get_test_mode()
     is_test_mode: bool = test_mode
     hot_reloading: bool = getenv("FIDES__HOT_RELOAD", "").lower() == "true"
     dev_mode: bool = getenv("FIDES__DEV_MODE", "").lower() == "true"
     oauth_instance: Optional[str] = getenv("FIDES__OAUTH_INSTANCE")
+
+    # Setting Subsections
+    # These should match the `settings_map` in `build_config`
+    admin_ui: AdminUISettings
+    cli: CLISettings
+    celery: Dict
+    credentials: Dict
+    database: DatabaseSettings
+    execution: ExecutionSettings
+    logging: LoggingSettings
+    notifications: NotificationSettings
+    redis: RedisSettings
+    security: SecuritySettings
+    user: UserSettings
 
     class Config:  # pylint: disable=C0115
         case_sensitive = True
@@ -86,86 +93,6 @@ class FidesConfig(BaseModel):
                 )
 
 
-def handle_deprecated_fields(settings: MutableMapping) -> MutableMapping:
-    """Custom logic for handling deprecated values."""
-
-    if settings.get("api") and not settings.get("database"):
-        api_settings = settings.pop("api")
-        database_settings = {}
-        database_settings["user"] = api_settings.get("database_user")
-        database_settings["password"] = api_settings.get("database_password")
-        database_settings["server"] = api_settings.get("database_host")
-        database_settings["port"] = api_settings.get("database_port")
-        database_settings["db"] = api_settings.get("database_name")
-        database_settings["test_db"] = api_settings.get("test_database_name")
-        settings["database"] = database_settings
-
-    return settings
-
-
-def handle_deprecated_env_variables(settings: MutableMapping) -> MutableMapping:
-    """
-    Custom logic for handling deprecated ENV variable configuration.
-    """
-
-    deprecated_env_vars = regex(r"FIDES__API__(\w+)")
-
-    for key, val in environ.items():
-        match = deprecated_env_vars.search(key)
-        if match:
-            setting = match.group(1).lower()
-            setting = setting[setting.startswith("database_") and len("database_") :]
-            if setting == "host":
-                setting = "server"
-            if setting == "name":
-                setting = "db"
-            if setting == "test_database_name":
-                setting = "test_db"
-
-            settings["database"][setting] = val
-
-    return settings
-
-
-CONFIG_KEY_ALLOWLIST = {
-    "cli": ["server_host", "server_port"],
-    "user": ["analytics_opt_out"],
-    "logging": ["level"],
-    "database": [
-        "server",
-        "user",
-        "port",
-        "db",
-        "test_db",
-    ],
-    "notifications": [
-        "send_request_completion_notification",
-        "send_request_receipt_notification",
-        "send_request_review_notification",
-        "notification_service_type",
-    ],
-    "redis": [
-        "host",
-        "port",
-        "charset",
-        "decode_responses",
-        "default_ttl_seconds",
-        "db_index",
-    ],
-    "security": [
-        "cors_origins",
-        "encoding",
-        "oauth_access_token_expire_minutes",
-    ],
-    "execution": [
-        "task_retry_count",
-        "task_retry_delay",
-        "task_retry_backoff",
-        "require_manual_request_approval",
-    ],
-}
-
-
 def censor_config(config: FidesConfig) -> Dict[str, Any]:
     """
     Returns a config that is safe to expose over the API. This function will
@@ -182,57 +109,81 @@ def censor_config(config: FidesConfig) -> Dict[str, Any]:
     return filtered
 
 
+def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
+    """
+    This function builds and instantiates a FidesConfig.
+
+    It will pull from the provided config_dict when possible for subsections,
+    otherwise instantiating the settings with default values.
+
+    The settings_map will need to be kept up-to-date manually with the
+    expected subsections of the FidesConfig.
+    """
+    config_dict = handle_deprecated_fields(config_dict)
+    config_dict = handle_deprecated_env_variables(config_dict)
+
+    settings_map: Dict[str, Any] = {
+        "admin_ui": AdminUISettings,
+        "cli": CLISettings,
+        "database": DatabaseSettings,
+        "execution": ExecutionSettings,
+        "logging": LoggingSettings,
+        "notifications": NotificationSettings,
+        "redis": RedisSettings,
+        "security": SecuritySettings,
+        "user": UserSettings,
+    }
+
+    for key, value in settings_map.items():
+        settings_map[key] = value.parse_obj(config_dict.get(key, {}))
+
+    # Logic for populating the user-defined credentials sub-settings.
+    # this is done to allow overrides without typed pydantic models
+    config_environment_dict = config_dict.get("credentials", {})
+    settings_map["credentials"] = merge_credentials_environment(
+        credentials_dict=config_environment_dict
+    )
+
+    # The Celery subsection is uniquely simple
+    settings_map["celery"] = config_dict.get("celery", {})
+
+    fides_config = FidesConfig(**settings_map)
+    return fides_config
+
+
 @lru_cache(maxsize=1)
 def get_config(config_path_override: str = "", verbose: bool = False) -> FidesConfig:
     """
-    Attempt to load user-defined configuration.
+    Attempt to load user-defined configuration file, otherwise will use defaults
+    while still respecting any env vars set by the user.
+
+    Order of file checks is:
+        1. The config path provided by the user to the CLI
+        2. The config path provided by the user via an env var
+        3. The default config path
 
     This will fail if the first encountered configuration file is invalid.
-
-    On failure, returns default configuration.
     """
 
     # This prevents a Pydantic validator reuse error. For context see
     # https://github.com/streamlit/streamlit/issues/3218
     _FUNCS.clear()
 
-    env_config_path = getenv("FIDES__CONFIG_PATH")
+    env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
     if verbose:
         print(f"Loading config from: {config_path}")
+
     try:
-        settings = (
-            toml.load(config_path)
-            if config_path_override
-            else load_toml(file_names=[config_path])
-        )
-
-        # credentials specific logic for populating environment variable configs.
-        # this is done to allow overrides without hard typed pydantic models
-        settings = handle_deprecated_fields(settings)
-
-        # Called after `handle_deprecated_fields` to ensure ENV vars are respected
-        settings = handle_deprecated_env_variables(settings)
-
-        config_environment_dict = settings.get("credentials", {})
-        settings["credentials"] = merge_credentials_environment(
-            credentials_dict=config_environment_dict
-        )
-
-        # This is required to set security settings from the environment
-        # if that section of the config is missing
-        security_settings = SecuritySettings.parse_obj(settings.get("security", {}))
-
-        config = FidesConfig.parse_obj(settings)
-        config.security = security_settings
+        settings = toml.load(config_path)
+        config = build_config(config_dict=settings)
         return config
     except FileNotFoundError:
-        print("No config file found")
+        print("No config file found.")
     except IOError:
-        echo_red("Error reading config file")
+        echo_red(f"Error reading config file: {config_path}")
 
     print("Using default configuration values.")
-    security_settings = SecuritySettings()
-    config = FidesConfig(security=security_settings)
+    config = build_config(config_dict={})
 
     return config

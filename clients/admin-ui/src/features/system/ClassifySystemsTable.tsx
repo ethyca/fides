@@ -10,14 +10,12 @@ import EditClassifySystemDrawer from "./EditClassifySystemDrawer";
 import {
   selectActiveClassifySystem,
   setActiveClassifySystemFidesKey,
-  useGetAllSystemsQuery,
 } from "./system.slice";
 
 const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const dispatch = useAppDispatch();
   const classifyInstanceMap = useAppSelector(selectSystemClassifyInstanceMap);
   const activeSystem = useAppSelector(selectActiveClassifySystem);
-  useGetAllSystemsQuery();
 
   const handleClick = (system: System) => {
     dispatch(setActiveClassifySystemFidesKey(system.fides_key));

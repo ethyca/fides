@@ -12,7 +12,6 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useGetAllPrivacyRequestsQuery } from "privacy-requests/index";
-import React from "react";
 import SubjectRequest from "subject-request/SubjectRequest";
 
 import Layout from "~/features/common/Layout";
@@ -60,7 +59,7 @@ const SubjectRequestDetails: NextPage = () => {
           <Breadcrumb fontWeight="medium" fontSize="sm">
             <BreadcrumbItem>
               <BreadcrumbLink as={NextLink} href={INDEX_ROUTE}>
-                Privacy Request
+                Privacy Requests
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem>

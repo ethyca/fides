@@ -1,4 +1,3 @@
-import logging
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -25,8 +24,6 @@ from fides.api.ops.service.authentication.authentication_strategy_oauth2_client_
 from fides.api.ops.service.authentication.authentication_strategy_query_param import (
     QueryParamAuthenticationStrategy,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class SupportedAuthenticationStrategies(Enum):

@@ -1,9 +1,8 @@
-import logging
 from typing import Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.params import Security
-from fideslib.exceptions import KeyOrNameAlreadyExists
+from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -60,15 +59,15 @@ from fides.api.ops.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.ops.util.api_router import APIRouter
 from fides.api.ops.util.oauth_util import verify_oauth_client
+from fides.lib.exceptions import KeyOrNameAlreadyExists
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
-logger = logging.getLogger(__name__)
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_saas_connection_config(
     connection_key: FidesOpsKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info("Finding connection config with key '%s'", connection_key)
+    logger.info("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -138,7 +137,7 @@ def validate_saas_config(
     - each connector_param only has one of references or identity, not both
     """
 
-    logger.info("Validation successful for SaaS config '%s'", saas_config.fides_key)
+    logger.info("Validation successful for SaaS config '{}'", saas_config.fides_key)
     return ValidateSaaSConfigResponse(
         saas_config=saas_config,
         validation_details=SaaSConfigValidationDetails(
@@ -163,7 +162,7 @@ def patch_saas_config(
     or report failure
     """
     logger.info(
-        "Updating SaaS config '%s' on connection config '%s'",
+        "Updating SaaS config '{}' on connection config '{}'",
         saas_config.fides_key,
         connection_config.key,
     )
@@ -181,7 +180,7 @@ def get_saas_config(
 ) -> SaaSConfig:
     """Returns the SaaS config for the given connection config."""
 
-    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
+    logger.info("Finding SaaS config for connection '{}'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -203,7 +202,7 @@ def delete_saas_config(
     """Removes the SaaS config for the given connection config.
     The corresponding dataset and secrets must be deleted before deleting the SaaS config"""
 
-    logger.info("Finding SaaS config for connection '%s'", connection_config.key)
+    logger.info("Finding SaaS config for connection '{}'", connection_config.key)
     saas_config = connection_config.saas_config
     if not saas_config:
         raise HTTPException(
@@ -240,7 +239,7 @@ def delete_saas_config(
     if warnings:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=" ".join(warnings))
 
-    logger.info("Deleting SaaS config for connection '%s'", connection_config.key)
+    logger.info("Deleting SaaS config for connection '{}'", connection_config.key)
     connection_config.update(db, data={"saas_config": None})
 
 
@@ -296,7 +295,7 @@ def instantiate_connection_from_template(
 
     if DatasetConfig.filter(
         db=db,
-        conditions=(DatasetConfig.fides_key == template_values.instance_key),
+        conditions=(DatasetConfig.fides_key == template_values.instance_key),  # type: ignore[arg-type]
     ).count():
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -331,7 +330,7 @@ def instantiate_connection_from_template(
             detail=f"SaaS Connector could not be created from the '{saas_connector_type}' template at this time.",
         )
     logger.info(
-        "SaaS Connector and Dataset %s successfully created from '%s' template.",
+        "SaaS Connector and Dataset {} successfully created from '{}' template.",
         template_values.instance_key,
         saas_connector_type,
     )
